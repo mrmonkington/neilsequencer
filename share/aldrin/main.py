@@ -445,8 +445,8 @@ class AldrinFrame(wx.Frame, IMainFrame):
 			self.aldrinframe_menubar.Remove(self.toolsmenuid)
 
 		import sys
-		if len(sys.argv) > 1:
-			self.open_file(sys.argv[1])
+		if len(app_args) > 1:
+			self.open_file(app_args[1])
 		if audiotrouble:
 			wx.MessageDialog(self, message="Aldrin tried to guess an audio driver but that didn't work. You need to select your own. Hit OK to show the preferences dialog.", caption = "Aldrin", style = wx.ICON_ERROR|wx.OK|wx.CENTER).ShowModal()
 			show_preferences(self,self)
@@ -1705,6 +1705,21 @@ class AldrinApplication(wx.App):
 		self.frame.Show()
 		return 1
 
+from optparse import OptionParser
+parser = OptionParser()
+parser.add_option("--profile", metavar="profile", default='', help="Start Aldrin with profiling enabled, save results to <profile>.")
+app_options = None
+app_args = None
+
+def main():
+	app = AldrinApplication(0)
+	app.MainLoop()
+	if player:
+		import sys
+		print >> sys.stderr, "uninitializing midi driver..."
+		player.mididriver_close_all()
+		driver.get_audiodriver().destroy()
+
 def run(argv):
 	"""
 	Starts the application and runs the mainloop.
@@ -1713,13 +1728,14 @@ def run(argv):
 	@type argv: str list
 	"""
 	global app
-	app = AldrinApplication(0)
-	app.MainLoop()
-	if player:
-		import sys
-		print >> sys.stderr, "uninitializing midi driver..."
-		player.mididriver_close_all()
-		driver.get_audiodriver().destroy()
+	global app_options
+	global app_args
+	app_options, app_args = parser.parse_args(argv)
+	if app_options.profile:
+		import profile
+		profile.runctx('main()', globals(), locals(), app_options.profile)
+	else:
+		main()
 
 __all__ = [
 'CancelException',
@@ -1730,6 +1746,7 @@ __all__ = [
 'MasterPanel',
 'TimePanel',
 'AldrinApplication',
+'main',
 'run',
 ]
 
