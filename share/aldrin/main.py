@@ -431,7 +431,7 @@ class AldrinFrame(wx.Frame, IMainFrame):
 		
 		self.timer = wx.Timer(self, -1)
 		self.timer.Start(100)
-		wx.EVT_TIMER(self, -1, self.on_handle_events)
+		wx.EVT_TIMER(self, self.timer.GetId(), self.on_handle_events)
 		
 		self.document_changed()
 		self.load_view()
@@ -814,9 +814,7 @@ class AldrinFrame(wx.Frame, IMainFrame):
 		@param event: timer event
 		@type event: wx.TimerEvent
 		"""
-		#~ st = time.time()
 		player.handle_events()
-		#~ print "%ims" % ((time.time() - st)*1000)
 		
 	def on_help_contents(self, event):
 		"""
@@ -1712,6 +1710,7 @@ app_options = None
 app_args = None
 
 def main():
+	global app
 	app = AldrinApplication(0)
 	app.MainLoop()
 	if player:
