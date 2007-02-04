@@ -1,0 +1,111 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 2.0//EN" "TBD">
+<html xmlns="http://www.w3.org/2002/06/xhtml2" xml:lang="en" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemalocation="http://www.w3.org/2002/06/xhtml2 TBD">
+ <head>
+  <title>
+   Configuring the DirectX Sound Driver
+  </title>
+  <link rel="stylesheet" type="text/css" href="buzzstyle.css" />
+ </head>
+ <body>
+  <div class="header">
+   <b>
+      Configuring the DirectX 
+      Sound Driver
+     </b>
+  </div>
+  <div>
+   In most instance the DirectX driver should work correctly as soon as it is 
+      applied. In some cases, this performance just isn't good enough for the power 
+      user, meaning you are after a quicker response (for less delay when tweaking sliders 
+      or using MIDI input). The following options are available to tweak your 
+      DirectX drivers:
+  </div>
+  <div>
+  <img height="282" src="images/pref_directxdriver.gif" width="282" />
+  </div>
+  <div>
+   <table width="100%" border="0" cellspacing="2" cellpadding="5">
+<tr bgcolor="#000000">
+<td width="155">
+<font color="#ffffff">
+<b>
+          Option
+         </b>
+</font>
+</td>
+<td width="415">
+<font color="#ffffff">
+<b>
+          Description
+         </b>
+</font>
+</td>
+</tr>
+<tr bgcolor="#eeeeee">
+<td valign="top">
+        Device
+       </td>
+<td valign="top">
+        This select-box will list all available 
+            audio devices on your system. In most cases
+        <b>
+         Primary Sound Driver
+        </b>
+        should work correctly as it is your default windows audio card.
+       </td>
+</tr>
+<tr bgcolor="#eeeeee">
+<td valign="top">
+        Latency
+       </td>
+<td valign="top">
+        Latency controls how many milliseconds 
+            audio data to buffer. Lower values make Aldrin more responsive and increase 
+            as well the probability of pops and noise. It is sometimes worth experimenting 
+            with different values until you find one which suites your machine.
+       </td>
+</tr>
+<tr bgcolor="#eeeeee">
+<td valign="top">
+        CpuLag
+       </td>
+<td valign="top">
+        The faster your CPU the smallest it can 
+            be. On a Pentium 200 roughly 1500 seems to work fine. On the other 
+            hand, a Pentium 800 can easily handle a CPU Lag setting of 64.
+       </td>
+</tr>
+<tr bgcolor="#eeeeee">
+<td valign="top">
+        Resolution
+       </td>
+<td valign="top">
+        This preference defines the number of parts 
+            to divide the buffer in. For example a latency of 80ms and a resolution 
+            of 4x creates four buffers of 20ms each.
+       </td>
+</tr>
+<tr bgcolor="#eeeeee">
+<td valign="top">
+        Dithering
+       </td>
+<td valign="top">
+        Enabling dithering produces slightly better 
+            sound quality with slightly more overhead on the CPU.
+       </td>
+</tr>
+<tr bgcolor="#eeeeee">
+<td valign="top">
+        Timing
+       </td>
+<td valign="top">
+        This number defines how frequently the 
+            driver refreshes its buffers. It should be less than latency divided 
+            by the resolution.
+       </td>
+</tr>
+</table>
+  </div>
+ </body>
+</html>

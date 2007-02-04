@@ -1,0 +1,3 @@
+docbook2html -o aldrin/html aldrin/docbook/aldrin.xml && \
+docbook2txt -o aldrin/txt aldrin/docbook/aldrin.xml && \
+docbook2pdf -o aldrin/pdf aldrin/docbook/aldrin.xml

@@ -1,0 +1,147 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 2.0//EN" "TBD">
+<html xmlns="http://www.w3.org/2002/06/xhtml2" xml:lang="en" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemalocation="http://www.w3.org/2002/06/xhtml2 TBD">
+ <head>
+  <title>
+   Understanding the Sequence Editor
+  </title>
+  <link rel="stylesheet" type="text/css" href="buzzstyle.css" />
+ </head>
+ <body>
+  <div class="header">
+   Understanding Sequence Editing
+  </div>
+  <div>
+   The Sequence Editor is one of the easiest areas of Aldrin to master.  It is composed of the following elements:
+  </div>
+  <div>
+   <img src="images/aboutsequencer.gif" />
+   &nbsp;Figure 3.1
+  </div>
+  <div>
+   <span class="bolder">
+      Sequencer Elements:
+     </span>
+   <br />
+   <br />
+   <span class="bolder">
+<strong>
+       1. Step (Bar) Value:
+      </strong>
+</span>
+   The number 
+            of ticks (pattern rows) shown in each horizontal bar in the sequence view.  This is used to view more or less of the current song at one time.
+   <a href="changing_step_values_in_the_sequence_editor.html">
+<b>
+       More later
+      </b>
+</a>
+   .
+   <br />
+   <br />
+<strong>
+       2. Column (Machine) Title:
+      </strong>
+   Each column is titled with the name of the machine which it represents.  In other words, everything under that heading is used to sequence that individual machine.
+   <br />
+   <br />
+<strong>
+       3. Row Number:
+      </strong>
+   This indicates the global pattern row number of the entire sequence. There is no limit to the amount of rows a song may have (well technically there is, but its somewhere in the multiple millions).
+   <span class="bolder">
+      Note:
+     </span>
+   In this example, the numbers are shown in 16 number increments, this is changed by altering the
+   <a href="changing_step_values_in_the_sequence_editor.html">
+<b>
+       Step value
+      </b>
+</a>
+   .
+   <br />
+   <br />
+<strong>
+       4. Pattern Name:
+      </strong>
+   The column of numbers here refers directly to the names of each pattern used by that machine.  This string of numbers (flowing vertically) is what builds the sequence over time, and eventually the entire song.
+   <span class="bolder">
+      Note:
+     </span>
+   while these use numbers (default in Aldrin), they may be renamed in the
+   <a href="naming_&_renaming_patterns.html">
+<b>
+       Pattern Editor
+      </b>
+</a>
+   , in which case these numbers will be replaced with your defined names.
+   <br />
+   <br />
+<strong>
+       5. 
+            &lt;break&gt;:
+      </strong>
+   A
+   <a href="using_pattern_breaks.html">
+<b>
+       break
+      </b>
+</a>
+   is a special item that may be added to any column to indicate a break in the currently playing pattern. Note  unlike a mute which actually mutes the notes and sounds currently playing in a pattern. The  &lt;break&gt; will only stop further notes from being played, while letting the already triggered notes complete or fade regularly.
+   <br />
+   <br />
+<strong>
+       6. Blank Bar (...):
+      </strong>
+   The three blank dots indicate that a bar is blank. This 
+            means that a pattern placed in the prior bar will continue to play. Of course  if the length of the prior pattern is not longer then the amout of ticks that one bar represents (in this case 16), there is nothing to be continued playing.
+   <br />
+   <br />
+<strong>
+       7. &lt;mute&gt;:
+      </strong>
+   Much like a &lt;break&gt;, the
+   <a href="using_pattern_mutes.html">
+<b>
+       &lt;mute&gt;
+      </b>
+</a>
+   may be used in any column to stop last called pattern from being played.  The difference is that a &lt;mute&gt; cuts off the sounds completely, while the &lt;break&gt; simply stops further notes from being triggered.
+   <br />
+   <br />
+<strong>
+       8. Location Cursor:
+      </strong>
+   The  (in this theme) black bar 
+			indicates where you currently are within the pattern.  This may be changed by
+   <a href="navigating_the_sequence_editor.html">
+<b>
+       navigating
+      </b>
+</a>
+   throughout the Sequence Editor with your keyboard or mouse.  Note that the column you are currently located in,  dynamically changes the
+   <a href="understanding_the_pattern_list.html">
+<b>
+       Pattern List
+      </b>
+</a>
+   to the far right.
+   <br />
+   <br />
+<strong>
+       9. Pattern List:
+      </strong>
+   The list of available patterns for the current 
+            machine (column) is located to the far right of your screen. As you 
+            move horizontally throughout the Sequence View, this list will 
+            change to show patterns relevant to the current machine. Note that 
+            this list is for viewing only, letting you know which patterns are 
+            available for the current column.
+   <a href="understanding_the_pattern_list.html">
+<b>
+       More later
+      </b>
+</a>
+  </div>
+ </body>
+</html>

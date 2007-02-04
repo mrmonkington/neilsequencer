@@ -1,0 +1,929 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>aldrin.config.AldrinConfig</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css"></link>
+</head>
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+
+<!-- =========== START OF NAVBAR =========== -->
+<table class="navbar" border="0" width="100%" cellpadding="0" bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="center">
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="aldrin-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="trees.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="indices.html">Index</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar" align="right" width="100%">
+      <table border="0" cellpadding="0" cellspacing="0">
+      <tr><th class="navbar" align="center">
+        <p class="nomargin">
+          Aldrin&nbsp;API
+      </p></th></tr></table>
+    </th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <font size="-1"><b class="breadcrumbs">
+        <a href="aldrin-module.html">Package&nbsp;aldrin</a> ::
+        <a href="aldrin.config-module.html">Module&nbsp;config</a> ::
+        Class&nbsp;AldrinConfig
+      </b></font></br>
+    </td>
+    <td><table cellpadding="0" cellspacing="0">
+      <tr><td align="right"><font size="-2">[<a href="../private/aldrin.config.AldrinConfig-class.html">show&nbsp;private</a>&nbsp;|&nbsp;hide&nbsp;private]</font></td></tr>
+      <tr><td align="right"><font size="-2">[<a href="frames.html"target="_top">frames</a>&nbsp;|&nbsp;<a href="aldrin.config.AldrinConfig-class.html" target="_top">no&nbsp;frames</a>]</font></td></tr>
+    </table></td>
+</tr></table>
+
+<!-- =========== START OF CLASS DESCRIPTION =========== -->
+<h2 class="class">Type AldrinConfig</h2>
+
+<pre class="base-tree">
+<a href="__builtin__.object-class.html"><code>object</code></a> --+        
+         |        
+<a href="../private/wx._misc.ConfigBase-class.html"><code>ConfigBase</code></a> --+    
+             |    
+    <a href="../private/wx._misc.FileConfig-class.html"><code>FileConfig</code></a> --+
+                 |
+                <b>AldrinConfig</b>
+</pre><br />
+
+<hr/>
+
+<p>Streamlines access to the applications configuration. You should set 
+all applications to and retrieve them from the config object.</p>
+<p>Do not instantiate this class, use {get_config} instead.</p>
+<p>On Windows, most settings will be saved in ~/aldrin/settings.cfg</p>
+On Linux, most settings will be saved in ~/.aldrin/settings.cfg
+<hr/>
+
+
+<!-- =========== START OF METHOD SUMMARY =========== -->
+<table class="summary" border="1" cellpadding="3" cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="summary">
+  <th colspan="2">Method Summary</th></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.config.AldrinConfig-class.html#__init__" class="summary-sig-name"><code>__init__</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Initializer.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.config.AldrinConfig-class.html#add_recent_file_config" class="summary-sig-name"><code>add_recent_file_config</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>filename</span>)</span></code>
+<br />
+Adds a filename to the list of recently used files, if not already 
+included.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        str or None
+</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.config.AldrinConfig-class.html#get_active_theme" class="summary-sig-name"><code>get_active_theme</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Returns the name of the currently active theme.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        (str,str,int,int)
+</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.config.AldrinConfig-class.html#get_audiodriver_config" class="summary-sig-name"><code>get_audiodriver_config</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Retrieves current audiodriver settings.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        wx.Brush
+</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.config.AldrinConfig-class.html#get_brush" class="summary-sig-name"><code>get_brush</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>name</span>)</span></code>
+<br />
+Returns a certain theme color as brush</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        str
+</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.config.AldrinConfig-class.html#get_color" class="summary-sig-name"><code>get_color</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>name</span>)</span></code>
+<br />
+Returns a certain theme color as html hex color string.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.config.AldrinConfig-class.html#get_credentials" class="summary-sig-name"><code>get_credentials</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>service</span>)</span></code>
+<br />
+returns the credentials required for a service 
+(username/password).</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.config.AldrinConfig-class.html#get_default_int" class="summary-sig-name"><code>get_default_int</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>key</span>,
+          <span class=summary-sig-arg>defval</span>)</span></code>
+<br />
+Returns the default value for a UI setting.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        [str,...]
+</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.config.AldrinConfig-class.html#get_enabled_extensions" class="summary-sig-name"><code>get_enabled_extensions</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Returns the current list of enabled extension uris.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.config.AldrinConfig-class.html#get_float_color" class="summary-sig-name"><code>get_float_color</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>name</span>)</span></code>
+<br />
+Returns a certain theme color as float tuples</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.config.AldrinConfig-class.html#get_freesound_samples_folder" class="summary-sig-name"><code>get_freesound_samples_folder</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Returns the samples folder designated for samples downloaded from 
+freesound.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        str
+</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.config.AldrinConfig-class.html#get_index_path" class="summary-sig-name"><code>get_index_path</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+yields a a tree of plugins, to be used in the machine view for 
+menus.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.config.AldrinConfig-class.html#get_keymap" class="summary-sig-name"><code>get_keymap</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+returns a keymap for the pattern editor, to be used for note 
+input.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.config.AldrinConfig-class.html#get_keymap_language" class="summary-sig-name"><code>get_keymap_language</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Returns the current keymap language</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        [(str,int,int),...]
+</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.config.AldrinConfig-class.html#get_midi_controllers" class="summary-sig-name"><code>get_midi_controllers</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Returns the list of mapped midi controllers.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        [str,...]
+</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.config.AldrinConfig-class.html#get_mididriver_inputs" class="summary-sig-name"><code>get_mididriver_inputs</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Returns the current list of MIDI input driver names.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        [str,...]
+</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.config.AldrinConfig-class.html#get_mididriver_outputs" class="summary-sig-name"><code>get_mididriver_outputs</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Returns the current list of MIDI output driver names.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        wx.Brush
+</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.config.AldrinConfig-class.html#get_pen" class="summary-sig-name"><code>get_pen</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>name</span>)</span></code>
+<br />
+Returns a certain theme color as brush</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        preset.PresetCollection
+</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.config.AldrinConfig-class.html#get_plugin_presets" class="summary-sig-name"><code>get_plugin_presets</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>pluginloader</span>)</span></code>
+<br />
+Returns a PresetCollection for the given pluginloader.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        str list
+</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.config.AldrinConfig-class.html#get_recent_files_config" class="summary-sig-name"><code>get_recent_files_config</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Retrieves list of recently used files.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.config.AldrinConfig-class.html#get_sample_preview_volume" class="summary-sig-name"><code>get_sample_preview_volume</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Returns the volume with which samples shall be previewed.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.config.AldrinConfig-class.html#get_settings_folder" class="summary-sig-name"><code>get_settings_folder</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Returns the users settings folder.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        [str,...]
+</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.config.AldrinConfig-class.html#get_theme_names" class="summary-sig-name"><code>get_theme_names</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Returns a list of color theme names</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.config.AldrinConfig-class.html#get_wavetable_paths" class="summary-sig-name"><code>get_wavetable_paths</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Returns the list of wavetable paths.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.config.AldrinConfig-class.html#load_window_pos" class="summary-sig-name"><code>load_window_pos</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>windowid</span>,
+          <span class=summary-sig-arg>window</span>)</span></code>
+<br />
+Retrieves a windows position from the config and applies it.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.config.AldrinConfig-class.html#save_window_pos" class="summary-sig-name"><code>save_window_pos</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>windowid</span>,
+          <span class=summary-sig-arg>window</span>)</span></code>
+<br />
+Stores a windows position to the config.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.config.AldrinConfig-class.html#select_theme" class="summary-sig-name"><code>select_theme</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>name</span>)</span></code>
+<br />
+Selects a color theme with a specific name to be used.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.config.AldrinConfig-class.html#set_audiodriver_config" class="summary-sig-name"><code>set_audiodriver_config</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>inputname</span>,
+          <span class=summary-sig-arg>outputname</span>,
+          <span class=summary-sig-arg>samplerate</span>,
+          <span class=summary-sig-arg>buffersize</span>)</span></code>
+<br />
+Stores audiodriver settings.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.config.AldrinConfig-class.html#set_credentials" class="summary-sig-name"><code>set_credentials</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>service</span>,
+          <span class=summary-sig-arg>username</span>,
+          <span class=summary-sig-arg>password</span>)</span></code>
+<br />
+stores the credentials required for a service (username/password).</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.config.AldrinConfig-class.html#set_default_int" class="summary-sig-name"><code>set_default_int</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>key</span>,
+          <span class=summary-sig-arg>val</span>)</span></code>
+<br />
+Stores a default value for an UI setting.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.config.AldrinConfig-class.html#set_enabled_extensions" class="summary-sig-name"><code>set_enabled_extensions</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>uris</span>)</span></code>
+<br />
+Stores the current list of enabled extension uris.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.config.AldrinConfig-class.html#set_keymap_language" class="summary-sig-name"><code>set_keymap_language</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>lang</span>)</span></code>
+<br />
+Sets the current keymap language</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.config.AldrinConfig-class.html#set_midi_controllers" class="summary-sig-name"><code>set_midi_controllers</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>ctrllist</span>)</span></code>
+<br />
+Sets the list of mapped midi controllers.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.config.AldrinConfig-class.html#set_mididriver_inputs" class="summary-sig-name"><code>set_mididriver_inputs</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>inputlist</span>)</span></code>
+<br />
+Stores the current list of used MIDI input driver names.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.config.AldrinConfig-class.html#set_mididriver_outputs" class="summary-sig-name"><code>set_mididriver_outputs</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>outputlist</span>)</span></code>
+<br />
+Stores the current list of used MIDI output driver names.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.config.AldrinConfig-class.html#set_plugin_presets" class="summary-sig-name"><code>set_plugin_presets</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>pluginloader</span>,
+          <span class=summary-sig-arg>presets</span>)</span></code>
+<br />
+Stores a preset collection for the given pluginloader.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.config.AldrinConfig-class.html#set_wavetable_paths" class="summary-sig-name"><code>set_wavetable_paths</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>pathlist</span>)</span></code>
+<br />
+Sets the list of wavetable paths.</td></tr>
+<tr bgcolor="#e8f0f8" class="group">
+  <th colspan="2">&nbsp;&nbsp;&nbsp;&nbsp;Inherited from object</th></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="__builtin__.object-class.html#__delattr__" class="summary-sig-name"><code>__delattr__</code></a>(<span class="summary-sig-vararg">...</span>)</span></code>
+<br />
+x.__delattr__('name') &lt;==&gt; del x.name</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="__builtin__.object-class.html#__getattribute__" class="summary-sig-name"><code>__getattribute__</code></a>(<span class="summary-sig-vararg">...</span>)</span></code>
+<br />
+x.__getattribute__('name') &lt;==&gt; x.name</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="__builtin__.object-class.html#__hash__" class="summary-sig-name"><code>__hash__</code></a>(<span class=summary-sig-arg>x</span>)</span></code>
+<br />
+x.__hash__() &lt;==&gt; hash(x)</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="__builtin__.object-class.html#__new__" class="summary-sig-name"><code>__new__</code></a>(<span class=summary-sig-arg>T</span>,
+          <span class=summary-sig-arg>S</span>,
+          <span class="summary-sig-vararg">...</span>)</span></code>
+<br />
+T.__new__(S, ...) -&gt; a new object with type S, a subtype of T</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="__builtin__.object-class.html#__reduce__" class="summary-sig-name"><code>__reduce__</code></a>(<span class="summary-sig-vararg">...</span>)</span></code>
+<br />
+helper for pickle</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="__builtin__.object-class.html#__reduce_ex__" class="summary-sig-name"><code>__reduce_ex__</code></a>(<span class="summary-sig-vararg">...</span>)</span></code>
+<br />
+helper for pickle</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="__builtin__.object-class.html#__setattr__" class="summary-sig-name"><code>__setattr__</code></a>(<span class="summary-sig-vararg">...</span>)</span></code>
+<br />
+x.__setattr__('name', value) &lt;==&gt; x.name = value</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="__builtin__.object-class.html#__str__" class="summary-sig-name"><code>__str__</code></a>(<span class=summary-sig-arg>x</span>)</span></code>
+<br />
+x.__str__() &lt;==&gt; str(x)</td></tr>
+</table><br />
+
+
+<!-- =========== START OF INSTANCE METHOD DETAILS =========== -->
+<table class="details" border="1" cellpadding="3" cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="details">
+  <th colspan="2">Instance Method Details</th></tr>
+</table>
+
+<a name="__init__"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">__init__</span>(<span class=sig-arg>self</span>)</span>
+    <br /><i>(Constructor)</i>
+  </h3>
+  Initializer.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Overrides:</b></dt>
+      <dd><a href="../private/wx._misc.FileConfig-class.html#__init__"><code>wx._misc.FileConfig.__init__</code></a></dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="add_recent_file_config"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">add_recent_file_config</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>filename</span>)</span>
+  </h3>
+  Adds a filename to the list of recently used files, if not already 
+  included.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>filename</b></code> -
+         path to file.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=str)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="get_active_theme"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">get_active_theme</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Returns the name of the currently active theme.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        name of theme or None, if default
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=str or None)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="get_audiodriver_config"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">get_audiodriver_config</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Retrieves current audiodriver settings.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        A tuple containing input driver name, output driver name, 
+        samplerate and buffer size.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=(str,str,int,int))</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="get_brush"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">get_brush</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>name</span>)</span>
+  </h3>
+  Returns a certain theme color as brush
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>name</b></code> -
+         name of color theme key.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=str)</i>
+      </dd>
+    </dl>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        brush
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=wx.Brush)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="get_color"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">get_color</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>name</span>)</span>
+  </h3>
+  Returns a certain theme color as html hex color string.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>name</b></code> -
+         name of color theme key.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=str)</i>
+      </dd>
+    </dl>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        color of key.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=str)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="get_credentials"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">get_credentials</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>service</span>)</span>
+  </h3>
+  returns the credentials required for a service 
+  (username/password).
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="get_default_int"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">get_default_int</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>key</span>,
+          <span class=sig-arg>defval</span>=<span class=sig-default>0</span>)</span>
+  </h3>
+  Returns the default value for a UI setting.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="get_enabled_extensions"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">get_enabled_extensions</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Returns the current list of enabled extension uris.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        List of uris.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=[str,...])</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="get_float_color"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">get_float_color</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>name</span>)</span>
+  </h3>
+  Returns a certain theme color as float tuples
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="get_freesound_samples_folder"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">get_freesound_samples_folder</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Returns the samples folder designated for samples downloaded from 
+  freesound.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="get_index_path"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">get_index_path</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  <p>yields a a tree of plugins, to be used in the machine view for 
+  menus.</p>
+  <p>On Posix platforms, ~/.aldrin/index.txt overrides 
+  ${PREFIX}/share/aldrin/index.txt.</p>
+  On Windows, &lt;user folder&gt;/aldrin/index.txt overrides &lt;app 
+  folder&gt;/share/aldrin/index.txt.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        Path to the index file.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=str)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="get_keymap"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">get_keymap</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  returns a keymap for the pattern editor, to be used for note 
+  input.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="get_keymap_language"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">get_keymap_language</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Returns the current keymap language
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="get_midi_controllers"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">get_midi_controllers</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Returns the list of mapped midi controllers.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        List of tuples containing name, channel and controller id
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=[(str,int,int),...])</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="get_mididriver_inputs"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">get_mididriver_inputs</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Returns the current list of MIDI input driver names.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        List of driver names.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=[str,...])</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="get_mididriver_outputs"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">get_mididriver_outputs</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Returns the current list of MIDI output driver names.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        List of driver names.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=[str,...])</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="get_pen"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">get_pen</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>name</span>)</span>
+  </h3>
+  Returns a certain theme color as brush
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>name</b></code> -
+         name of color theme key.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=str)</i>
+      </dd>
+    </dl>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        brush
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=wx.Brush)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="get_plugin_presets"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">get_plugin_presets</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>pluginloader</span>)</span>
+  </h3>
+  Returns a PresetCollection for the given pluginloader.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>pluginloader</b></code> -
+         A pluginloader.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=zzub.Pluginloader)</i>
+      </dd>
+    </dl>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        A preset collection.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=preset.PresetCollection)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="get_recent_files_config"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">get_recent_files_config</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Retrieves list of recently used files.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        List of file paths.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=str list)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="get_sample_preview_volume"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">get_sample_preview_volume</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Returns the volume with which samples shall be previewed.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="get_settings_folder"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">get_settings_folder</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Returns the users settings folder.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="get_theme_names"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">get_theme_names</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Returns a list of color theme names
+  <dl><dt></dt><dd>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        A list of color theme names.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=[str,...])</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="get_wavetable_paths"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">get_wavetable_paths</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Returns the list of wavetable paths.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        List of paths to directories containing samples. 
+        &#64;rtype:[str,...]
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="load_window_pos"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">load_window_pos</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>windowid</span>,
+          <span class=sig-arg>window</span>)</span>
+  </h3>
+  Retrieves a windows position from the config and applies it.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>windowid</b></code> -
+         Name of window in config.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=str)</i>
+      <dd><code><b>window</b></code> -
+         The window whose properties to save.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=wx.Window)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="save_window_pos"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">save_window_pos</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>windowid</span>,
+          <span class=sig-arg>window</span>)</span>
+  </h3>
+  Stores a windows position to the config.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>windowid</b></code> -
+         Name of window in config.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=str)</i>
+      <dd><code><b>window</b></code> -
+         The window whose properties to save.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=wx.Window)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="select_theme"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">select_theme</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>name</span>)</span>
+  </h3>
+  Selects a color theme with a specific name to be used.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>name</b></code> -
+         name of theme as returned by get_theme_names.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=str)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="set_audiodriver_config"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">set_audiodriver_config</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>inputname</span>,
+          <span class=sig-arg>outputname</span>,
+          <span class=sig-arg>samplerate</span>,
+          <span class=sig-arg>buffersize</span>)</span>
+  </h3>
+  Stores audiodriver settings.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>samplerate</b></code> -
+         Selected samples per seconds.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=int)</i>
+      <dd><code><b>buffersize</b></code> -
+         Buffer size in samples.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=int)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="set_credentials"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">set_credentials</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>service</span>,
+          <span class=sig-arg>username</span>,
+          <span class=sig-arg>password</span>)</span>
+  </h3>
+  stores the credentials required for a service 
+  (username/password).
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="set_default_int"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">set_default_int</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>key</span>,
+          <span class=sig-arg>val</span>)</span>
+  </h3>
+  Stores a default value for an UI setting.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="set_enabled_extensions"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">set_enabled_extensions</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>uris</span>)</span>
+  </h3>
+  Stores the current list of enabled extension uris.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>uris</b></code> -
+         List of uris
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=[str,...])</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="set_keymap_language"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">set_keymap_language</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>lang</span>)</span>
+  </h3>
+  Sets the current keymap language
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>lang</b></code> -
+         Language ('en', 'de')
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=str)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="set_midi_controllers"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">set_midi_controllers</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>ctrllist</span>)</span>
+  </h3>
+  Sets the list of mapped midi controllers.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>ctrllist</b></code> -
+         List of tuples containing name,channel and controller id
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=[(str,int,int),...])</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="set_mididriver_inputs"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">set_mididriver_inputs</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>inputlist</span>)</span>
+  </h3>
+  Stores the current list of used MIDI input driver names.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="set_mididriver_outputs"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">set_mididriver_outputs</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>outputlist</span>)</span>
+  </h3>
+  Stores the current list of used MIDI output driver names.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="set_plugin_presets"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">set_plugin_presets</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>pluginloader</span>,
+          <span class=sig-arg>presets</span>)</span>
+  </h3>
+  Stores a preset collection for the given pluginloader.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>pluginloader</b></code> -
+         A pluginloader.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=zzub.Pluginloader)</i>
+      <dd><code><b>presets</b></code> -
+         A preset collection
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=preset.PresetCollection)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="set_wavetable_paths"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">set_wavetable_paths</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>pathlist</span>)</span>
+  </h3>
+  Sets the list of wavetable paths.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>pathlist</b></code> -
+         List of paths to directories containing samples.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=[str,...])</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+<br />
+
+
+<!-- =========== START OF NAVBAR =========== -->
+<table class="navbar" border="0" width="100%" cellpadding="0" bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="center">
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="aldrin-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="trees.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="indices.html">Index</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar" align="right" width="100%">
+      <table border="0" cellpadding="0" cellspacing="0">
+      <tr><th class="navbar" align="center">
+        <p class="nomargin">
+          Aldrin&nbsp;API
+      </p></th></tr></table>
+    </th>
+  </tr>
+</table>
+
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+  <tr>
+    <td align="left"><font size="-2">Generated by Epydoc 2.1 on Sun Feb  4 18:01:14 2007</font></td>
+    <td align="right"><a href="http://epydoc.sourceforge.net"
+                      ><font size="-2">http://epydoc.sf.net</font></a></td>
+  </tr>
+</table>
+</body>
+</html>

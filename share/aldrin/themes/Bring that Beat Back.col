@@ -1,0 +1,36 @@
+MV Amp BG		872929
+MV Amp Handle		FFACAC
+MV Arrow		D74A4A
+MV Background		D5D5D5
+MV Effect		68D875
+MV Effect LED Off	48804E
+MV Effect LED On	83FF96
+MV Effect Mute		48804E
+MV Effect Pan BG	83FF96
+MV Generator		43B3FF
+MV Generator LED Off	356E94
+MV Generator LED On	4FC9FF
+MV Generator Mute	356E94
+MV Generator Pan BG	4FC9FF
+MV Machine Text		000000
+MV Master		CCCCCC
+MV Master LED Off	666666
+MV Master LED On	EEEEEE
+MV Pan Handle		000000
+MV Line			000000
+MV Machine Border	000000
+PE BG			D5D5D5
+PE BG Dark		BBBBBB
+PE BG Very Dark		4D9755
+PE Sel BG		AAAAAA
+PE Text			000000
+SA Amp BG		356E94
+SA Amp Line		FFFFFF
+SA Freq BG		356E94
+SA Freq Line		FFFFFF
+SE BG			D5D5D5
+SE BG Dark		BBBBBB
+SE BG Very Dark		356E94
+SE Line			000000
+SE Sel BG		AAAAAA
+SE Text			303021

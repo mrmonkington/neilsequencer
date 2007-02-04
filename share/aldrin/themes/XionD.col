@@ -1,0 +1,60 @@
+######################################################
+#                                                    #
+# MaxB YABuzzTools v1.0                              #
+#                                                    #
+# Email: MaxB@hotpop.com - please send any comments! #
+# My free music: www.mp3.com/SilentBeats             #
+#                                                    #
+######################################################
+
+# Date Modified: [12:12:17 AM] 9/11/2002
+# Editor: MaxB YABuzzTools Theme Editor
+
+# Machines
+MV Amp BG		000000
+MV Amp Handle		FF0000
+MV Arrow		FFFFFF
+MV Background		B4B4B4
+MV Effect		927AEF
+MV Effect LED Off	979700
+MV Effect LED On	FFFF00
+MV Effect LED Border	000000
+MV Effect Mute		000000
+MV Effect Pan BG	A30707
+MV Generator		645BB5
+MV Generator LED Off	00B000
+MV Generator LED On	00FF00
+MV Generator LED Border	000000
+MV Generator Mute	000088
+MV Generator Pan BG	A30707
+MV Machine Text		FFFFFF
+MV Master		616265
+MV Master LED Off	666666
+MV Master LED On	FF0000
+MV Master LED Border	000000
+MV Pan Handle		000000
+MV Line			000000
+MV Machine Border	000000
+
+# Pattern Editor
+PE BG			B4B4B4
+PE BG Dark		808080
+PE BG Very Dark		545556
+PE Sel BG		FFFFFF
+PE Text			000000
+
+# Sequence Editor
+SE BG			B4B4B4
+SE BG Dark		808080
+SE BG Very Dark		545556
+SE Line			000000
+SE Sel BG		FFFFFF
+SE Text			000000
+
+# Signal Analysis
+SA Amp BG		C0C0C0
+SA Amp Line		0000FF
+SA Freq BG		C0C0C0
+SA Freq Line		FF0000
+
+# <End of File> | MaxB YABuzzTools |

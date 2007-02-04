@@ -1,0 +1,74 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 2.0//EN" "TBD">
+<html xmlns="http://www.w3.org/2002/06/xhtml2" xml:lang="en" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemalocation="http://www.w3.org/2002/06/xhtml2 TBD">
+ <head>
+  <title>
+   Wave Editor File Support
+  </title>
+  <link rel="stylesheet" type="text/css" href="buzzstyle.css" />
+ </head>
+ <body>
+  <div class="header">
+      Wavetable Editor File Support
+  </div>
+  <div>
+   <p>
+      Aldrin supports the following file formats:
+      <br />
+<br />
+<b>
+       Windows Wave (.WAV)
+       <br />
+<br />
+</b>
+      The .WAV file was invented by Microsoft as the standard windows audio 
+        file format. Windows Wave files hold data without compression and 
+        loss-less quality. These files are available just about everywhere 
+        and supported by nearly every audio program on the Windows platform. Aldrin 
+        supports the following features of Windows .WAV files:
+     </p>
+   <ul>
+<li>
+       8 or 16 Bit
+      </li>
+<li>
+       8kHz-196kHz (for Internal 
+                oversampling)
+      </li>
+<li>
+       Mono or Stereo (older machines may 
+                experience problems with stereo samples. For playing stereo 
+                samples, the most suitable machine right now is the Matilde 
+          Tracker)
+      </li>
+</ul>
+   <b>
+      Fast Tracker II Instrument (.XI)
+     </b>
+   <br />
+   <br />
+   The .XI standard was invented by Triton (now Starbreeze Studios) in the 
+      early 90's as a multi-sample instrument file format for their Fast Tracker 
+      II tracking software. Unfortunately Aldrin does not support the full feature 
+      set of .XI's (buggy Multi-sample support), but serves the purpose of saving 
+      loop points well. Aldrin supports the following features of the .XI file format:
+   <br />
+   <ul>
+<li>
+       8 or 16 Bit
+      </li>
+<li>
+       8Khz-44Khz
+      </li>
+<li>
+       Loop Points
+      </li>
+<li>
+       Partial Multi-sample Support (doesn't 
+                correctly load all files)
+       <br />
+</li>
+</ul>
+  </div>
+ </body>
+</html>

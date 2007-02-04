@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<aldrin>
+	<extension
+		uri="@zzub.org/extension/testbutton;1"
+		name="Test Button"
+		description="A simple Aldrin UI extension example. Adds a new toolbar button which displays a message when clicked."
+		author="Leonard Ritter"
+		email="contact@leonard-ritter.com"
+		minversion="0.7"
+		maxversion="0.7">
+		<module language="python" path="testbutton.py"/>
+	</extension>
+</aldrin>

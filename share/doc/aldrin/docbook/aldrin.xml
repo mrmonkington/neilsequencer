@@ -1,0 +1,587 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd">
+<book lang="en">
+  <bookinfo>
+    <title>Aldrin User Manual</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Leonard</firstname>
+
+        <surname>Ritter</surname>
+      </author>
+    </authorgroup>
+
+    <date>02/04/2007</date>
+
+    <releaseinfo>0.10</releaseinfo>
+
+    <copyright>
+      <year>2007</year>
+
+      <holder>The Aldrin Development Team</holder>
+    </copyright>
+
+    <abstract>
+      <para>This book describes usage and configuration of Aldrin, a powerful
+      music composition software for the GNU/Linux operating system.</para>
+    </abstract>
+  </bookinfo>
+
+  <chapter id="introduction">
+    <title>Introduction</title>
+
+    <para>Welcome to the Aldrin User Manual. In this book you are going to
+    learn how to master Aldrin, a powerful music composition software for the
+    GNU/Linux operating system. Its compact and integrated structure allows
+    you to write electronic music without requiring expensive audio gear, but
+    in case you have those already, they can be easily utilized as
+    well.</para>
+
+    <para>Aldrin features a flexible audio routing system commonly found in
+    expensive audio software, enabling you to mix, split, mutilate and modify
+    audio signals emitted by software synthesizers and samples. An
+    ever-expanding number of included plugins ensures that you never run out
+    of good sounds. The wavetable organizes your samples and sampler patches,
+    enabling multiple instruments to share the same set of sounds. The classic
+    tracker interface supports sequencing rhythms and melody patterns using
+    your PC keyboard as a piano. Finally, a multitrack sequencer organizes
+    your overall song structure, allowing you to arrange patterns along a
+    vertical timeline.</para>
+
+    <para>With Aldrin, you're no longer alone. Exchange songs with others,
+    remix and extend unfinished works. Aldrin embeds easy access to Freesound,
+	the online sample library for creative commons licensed sounds. Aldrins 
+	CCM song format contains everything required to faithfully reproduce
+	a composition on a different installation: patterns, sequences, sounds,
+	effects, instruments, everything is preserved in a compact and extensible
+	format.</para>
+
+    <sect1 id="features">
+      <title>Features</title>
+
+      <para>Here is a list of some of Aldrins features to wet your appetite.
+      It can never be complete, as Aldrin is constantly being extended and
+      improved.</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>Utilizes the powerful libzzub player library for best
+          performance and feature richness.</para>
+        </listitem>
+
+        <listitem>
+          <para>Playing-piano-like pattern editor with extensive keyboard
+          command support.</para>
+        </listitem>
+
+        <listitem>
+          <para>Step sequencer with unlimited number of tracks per
+          plugin.</para>
+        </listitem>
+
+        <listitem>
+          <para>Modular router supporting generator and effect plugins.</para>
+        </listitem>
+
+        <listitem>
+          <para>Plugin parameter editor with preset management and sliders to control individual
+          parameters.</para>
+        </listitem>
+
+        <listitem>
+          <para>Sound library supporting import and export of FLAC, WAV, AIF and MP3 files.</para>
+        </listitem>
+		
+		<listitem>
+		  <para>Embedded interface to The Freesound Project. Allows to preview and download samples on the fly.</para>
+		</listitem>
+
+        <listitem>
+          <para>Recording events sent from external MIDI gear and mouse cursor.</para>
+        </listitem>
+
+        <listitem>
+          <para>Envelope editor for samples with ADSR generator and load/save
+          support.</para>
+        </listitem>
+
+        <listitem>
+          <para>Support for CCM as default fileformat: XML song data, Flac
+          samples and Lunar dsp scripts packed as zip archive.</para>
+        </listitem>
+
+        <listitem>
+          <para>Features the powerful Lunar DSP scripting engine.</para>
+        </listitem>
+
+        <listitem>
+          <para>Support for ALSA, Jack and OSS audio drivers.</para>
+        </listitem>
+
+        <listitem>
+          <para>All effects operate on stereo 32-bit floating point buffers
+          for maximum quality.</para>
+        </listitem>
+
+        <listitem>
+          <para>Supports CD- and production-grade samplerates.</para>
+        </listitem>
+
+        <listitem>
+          <para>HD Recorder supports downmixing of songs to WAV for production
+          use.</para>
+        </listitem>
+
+        <listitem>
+          <para>Support for color themes.</para>
+        </listitem>
+
+        <listitem>
+          <para>Support for importing Jeskola BMX files.</para>
+        </listitem>
+      </itemizedlist>
+    </sect1>
+  </chapter>
+
+  <chapter id="walkthrough">
+    <title>Walkthrough Guide</title>
+
+    <para>The Aldrin walkthrough should give you a quick and helpful
+    introduction into Aldrin. By the end of reading this chapter you will know
+    how to install Aldrin, load generators and effects, write patterns and
+    arrange those patterns in a sequence.</para>
+
+    <sect1 id="installation">
+      <title>Installation</title>
+
+      <para>Aldrin is open source and therefore its releases are source code
+      only - no binaries. If you use a popular distribution of GNU/Linux,
+      chances are that your local package manager already offers an Aldrin
+      package. If not, you will need to build Aldrin yourself.</para>
+
+      <para>Independent of which distribution you use, building and installing
+      Aldrin shouldn't be hard, given that you follow this guide. If you have
+      trouble installing Aldrin, please contact your distribution maintainers
+      and ask them to include support for Aldrin.</para>
+
+      <para>First make sure that you have all programs and libraries installed
+      required to build Aldrin. Usually, all of them should be provided by
+      your distribution of GNU/Linux. Please check with your distributions
+      package manager documentation on how to search and install packages. You
+      are going to need following packages:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para><ulink url="http://www.python.org/">Python 2.4</ulink> or
+          later.</para>
+        </listitem>
+
+        <listitem>
+          <para><ulink url="http://www.wxpython.org/">wxPython 2.6</ulink> or
+          later, although 2.6 is recommended.</para>
+        </listitem>
+
+        <listitem>
+          <para><ulink
+          url="http://python.net/crew/theller/ctypes/">ctypes</ulink>,
+          if you are using Python 2.4. Since Python 2.5, ctypes is
+          included.</para>
+        </listitem>
+
+        <listitem>
+          <para><ulink url="http://www.scons.org/">SCons 0.96.92</ulink> or
+          later.</para>
+        </listitem>
+
+        <listitem>
+          <para><ulink url="http://trac.zeitherrschaft.org/zzub/">pyzzub
+          0.2.2</ulink> or later. pyzzub is a specialized component based on
+          libzzub that your distribution is most likely not supplying. Please
+          see the installation guide for libzzub for details.</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>Aldrin packages can be downloaded from the SourceForge.net <ulink
+      url="http://aldrin.sf.net">project website</ulink>. You can either
+      download a release or build Aldrin from the source repository. In this
+      guide, we are going to download a release.</para>
+
+      <orderedlist numeration="arabic">
+        <listitem>
+          <para>On the project website, click on
+          <guilabel>Downloads</guilabel> to see available releases. You will
+          see the downloads page on which one or more releases are
+          listed.</para>
+        </listitem>
+
+        <listitem>
+          <para>Download the sources of the most recent release. Usually, the
+          link should be named something like Aldrin <replaceable>x.x Source
+          Release (x86, .tar.bz2)</replaceable>, where x.x is the release
+          number.</para>
+        </listitem>
+
+        <listitem>
+          <para>Unpack the downloaded sources into a new folder. You will get
+          a new subfolder named something like
+          <replaceable>aldrin-x.x</replaceable>:</para>
+
+          <screen><prompt>[paniq@aspera tmp]$</prompt><command> tar -vxf <replaceable>aldrin-x.x.tar.bz2</replaceable></command>
+...
+aldrin-x.x/CREDITS
+aldrin-x.x/INSTALL
+aldrin-x.x/ChangeLog
+aldrin-x.x/LICENCE</screen>
+        </listitem>
+
+        <listitem>
+          <para>Change into the newly created folder and run scons to see if
+          everything is fine:</para>
+
+          <screen><prompt>[paniq@aspera tmp]$</prompt> <command>cd <replaceable>aldrin-x.x</replaceable></command><prompt>
+[paniq@aspera aldrin-x.x]$</prompt> <command>scons</command>
+scons: Reading SConscript files ...
+scons: done reading SConscript files.
+scons: Building targets ...
+scons: `.' is up to date.
+scons: done building targets.</screen>
+        </listitem>
+
+        <listitem>
+		<para>Please make sure that any previous versions of Aldrin have been uninstalled from your system before proceeding with the next step.</para>
+          <para>Now install aldrin to your system (you will need root rights
+          for this):</para>
+
+          <screen><prompt>[paniq@aspera aldrin-x.x]$</prompt> <command>sudo scons install</command>
+Password:
+scons: Reading SConscript files ...
+scons: done reading SConscript files.
+scons: Building targets ...
+Install file: "bin/aldrin" as "/usr/local/bin/aldrin"
+...
+scons: done building targets.</screen>
+
+          <para>If you don't want to install aldrin systemwide, create a
+          folder in your home directory and change your installation
+          prefix:</para>
+
+          <screen><prompt>[paniq@aspera aldrin-x.x]$</prompt> <command>mkdir <replaceable>~/usr</replaceable></command>
+<prompt>[paniq@aspera aldrin-x.x]$</prompt> <command>scons install PREFIX=<replaceable>/home/paniq/usr</replaceable></command>
+scons: Reading SConscript files ...
+scons: done reading SConscript files.
+scons: Building targets ...
+Install file: "bin/aldrin" as "/home/paniq/usr/bin/aldrin"
+...
+scons: done building targets.</screen>
+        </listitem>
+      </orderedlist>
+
+      <para>You are now ready to run Aldrin for the first time.</para>
+    </sect1>
+
+    <sect1 id="running">
+      <title>Running Aldrin</title>
+
+      <para>If you installed Aldrin systemwide, you can find Aldrin in your
+      desktop environments start menu in the section <guimenu>Sound &amp;
+      Video</guimenu>.</para>
+
+      <para>If you installed Aldrin into your homefolder, you have to run it
+      manually. In the previous example, we installed Aldrin to
+      <replaceable>/home/paniq/usr</replaceable>, which means that the
+      applications start script <command>aldrin</command> will reside in
+      <replaceable>/home/paniq/usr/bin</replaceable>. Run that script.</para>
+
+      <para>You will be greeted by a splash screen that fades when Aldrin has
+      been fully initialized. During startup, Aldrin will guess the best sound
+      driver available and run it. If there was a problem during
+      initialization of the sound device, you will be notified of the problem
+      and asked to pick a different configuration in the Preferences
+      dialog.</para>
+
+      <para>Pretend that everything has worked correctly. Your startup screen
+      should be looking like this:</para>
+
+      <figure>
+        <title>Aldrin main window after first start.</title>
+
+        <graphic fileref="../images/aldrin_startview.png" scale="30" />
+      </figure>
+    </sect1>
+
+    <sect1 id="configure">
+      <title>Configuring Aldrin</title>
+
+      <para>Most likely, you will want to configure Aldrin a bit before you
+      get started. If it hasn't opened automatically, open the preferences by
+      selecting <menuchoice>
+          <guimenu>View</guimenu>
+
+          <guimenuitem>Preferences...</guimenuitem>
+        </menuchoice> from the menu. The preferences dialog will reveal itself to you:</para>
+
+      <figure>
+        <title>Aldrin preferences window (Audio tab).</title>
+
+        <graphic fileref="../images/aldrin_preferences_wave.png" scale="30" />
+      </figure>
+
+      <para>The <guibutton>Audio</guibutton> tab is usually selected by
+      default. It allows you to change settings related to audio output.
+      Following explanation of parameters should you give a better understanding on what to choose.</para>
+
+      <variablelist>
+        <varlistentry>
+          <term><guilabel>Device</guilabel></term>
+
+          <listitem>
+            <para>The output device you wish to use. This usually lists JACK
+            (if enabled), ALSA and OSS output drivers available on your
+            system. All of these drivers require exclusive access to the
+            soundcard for performance reasons, so make sure you have no other
+            sound applications active in the background. I recommend ALSA to be tried first, then JACK, then OSS.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><guilabel>Samplerate</guilabel></term>
+
+          <listitem>
+            <para>The samplerate at which to render audio in Hz (impulses per
+            second). 44100Hz is usually a good setting (CD Quality). The
+            higher your samplerate is, the more performance Aldrin consumes to
+            render sound. With a lower samplerate, Aldrin consumes less CPU
+            time, but the sound quality is degraded.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><guilabel>Latency</guilabel></term>
+
+          <listitem>
+            <para>The time between the rendering of a signal and the actual
+            output on the soundcard. Latency controls the size of the internal
+            audio buffer that data is being rendered into before it is sent to
+            the soundcard. A low latency value will give you a better response
+            time, while a higher latency value gives you better
+            performance. A value of 5-10ms should be acceptable.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+
+      <para>Once you have set up your favorite settings, hit
+      <guibutton>Apply</guibutton> to test your new settings. If everything
+      works correctly, move over to the <guibutton>Sound Library</guibutton>
+      tab:</para>
+
+      <figure>
+        <title>Aldrin preferences window (Sound Library tab).</title>
+
+        <graphic fileref="../images/aldrin_preferences_wt.png" scale="30" />
+      </figure>
+
+      <para>The <interface>Sound Library</interface> window allows you to manage a
+      list of sample repositories. In order to access samples on your
+      harddrive, you should at least add one sample repository. Click on
+      <guibutton>Add...</guibutton>, then choose a folder to add.</para>
+	  
+	  <para>If you want to download samples online from within Aldrin, you need
+	  to supply your freesound credentials. If you don't have a freesound account
+	  yet, visit the website and get yourself one.</para>
+
+      <para>If you are using external MIDI gear, you should have a look at the
+      <guibutton>MIDI</guibutton> and <guibutton>Controllers</guibutton>
+      tabs. They allow you to select MIDI input/output devices and configure MIDI controller bindings.</para>
+
+      <!-- XXX: describe midi tabs -->
+
+      <para>Aldrin allows you to use your keyboard like a 2-octave piano.
+      Depending which keymap you use, you need to select a proper keymap on
+      the <guibutton>Keyboard</guibutton> tab:</para>
+
+      <figure>
+        <title>Aldrin preferences window (Keyboard tab).</title>
+
+        <graphic fileref="../images/aldrin_preferences_kb.png" scale="30" />
+      </figure>
+
+      <para>These are the most important settings. Once you are done
+      adjusting, hit <guibutton>OK</guibutton> to apply your preferences and
+      close the preferences window.</para>
+    </sect1>
+
+    <sect1 id="makingnoise">
+      <title>Making Some Noise</title>
+
+      <para>Now that Aldrin is set up, you are ready to create a very small
+      song, consisting of one plugin, one pattern and one sequence. This is a
+      repeating process for every new song, and every new instrument you
+      introduce.</para>
+
+      <sect2 id="addingplugin">
+        <title>Right Where It Belongs: Routing Plugins</title>
+
+        <para>You should now be back where you begun:</para>
+
+        <figure>
+          <title>The router view.</title>
+
+          <graphic fileref="../images/aldrin_startview.png" scale="30" />
+        </figure>
+
+        <para>What you are seeing is the <interface>Router View</interface> of
+        Aldrin. It allows you to chain generators and effects to define a
+        processing order of signals. What does that mean? Let's try an
+        example.</para>
+
+        <para>Right-click somewhere in the empty space of the view. You should
+        see the routers context menu. Select <menuchoice>
+            <guimenuitem>Makk M4wII</guimenuitem>
+          </menuchoice>. A new generator plugin will appear at the coordinates where you
+        right-clicked the view:</para>
+
+        <figure>
+          <title>A new plugin.</title>
+
+          <graphic fileref="../images/aldrin_newplugin.png" scale="30" />
+        </figure>
+
+        <para>The Makk M4wII is a quite feature-rich synthesizer, imitating an
+        analogue synth model. Right now, the M4wII is not connected to the
+        master output, and thus you will not be able to hear anything. Connect
+        the synth to the master by clicking the plugin with the
+        <mousebutton>middle</mousebutton> mouse button, and dragging the
+        appearing arrow to the master plugin. You can also connect machines by
+        holding <keycap>Shift</keycap> and using the
+        <mousebutton>left</mousebutton> mouse button.</para>
+
+        <figure>
+          <title>A router connection.</title>
+
+          <graphic fileref="../images/aldrin_connection.png" scale="30" />
+        </figure>
+      </sect2>
+
+      <sect2 id="createpattern">
+        <title>The Core of Composition: Editing Patterns</title>
+
+        <para>Now that the synth is created, hit the <keycap>F2</keycap> key
+        to show the <interface>Pattern View</interface>.When you create a
+        generator, Aldrin automatically adds a first empty pattern for you to
+        work on, so you should now see the empty pattern:</para>
+
+        <figure>
+          <title>The pattern view.</title>
+
+          <graphic fileref="../images/aldrin_pattern.png" scale="30" />
+        </figure>
+
+        <para>In this pattern, time flows vertically, while actual changes in
+        parameters are arranged horizontally. When a parameter does not
+        change, it's associated column only shows one or more dots. You can
+        click on fields or use the arrows on your keyboard to navigate in the
+        pattern. For each column, the status bar will display the row index,
+        the column index, the current value, it's readable representation, if
+        any, and a long description of the parameter.</para>
+
+        <para>It is possible that you can not see the entire pattern width, so
+        you need to move to the first track. Hit <keycap>Tab</keycap> to jump
+        to the first track, then use the keyboard to enter a few notes into
+        the first column named <guilabel>Note</guilabel>:</para>
+
+        <figure>
+          <title>A pattern track with a few notes entered.</title>
+
+          <graphic fileref="../images/aldrin_patterntrack.png" scale="30" />
+        </figure>
+
+        <para>As you enter each note, M4wII will be triggered to play that
+        note, allowing you to preview what you are writing. The cursor
+        travels down by one row. You can change the pattern
+        length and name either by selecting <guimenuitem>Pattern
+        Properties...</guimenuitem> from the pattern views context menu, or
+        using the keyboard shortcut <keycombo>
+            <keycap>Ctrl</keycap>
+
+            <keycap>Backspace</keycap>
+          </keycombo>.</para>
+
+        <figure>
+          <title>Pattern properties.</title>
+
+          <graphic fileref="../images/aldrin_patternprops.png" scale="30" />
+        </figure>
+
+        <variablelist>
+          <varlistentry>
+            <term><guilabel>Name</guilabel></term>
+
+            <listitem>
+              <para>The name of the pattern. Aldrin usually enumerates
+              patterns with a sequence like 00, 01, 02, and so on, but you are
+              free to choose your own names.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><guilabel>Length</guilabel></term>
+
+            <listitem>
+              <para>The length of the pattern in rows (= ticks). You can see
+              from the <guilabel>TPB</guilabel> edit field at the top of the
+              main window that the song is currently set up to 4 "ticks per
+              beats", which is the number of rows that is being played per
+              beat. One bar consists of four beats, so that's 4x4 rows = 16
+              rows - precisely the number of rows that your pattern has right
+              now. The dropdown box provides you with a set of defaults for
+              different speed and bar settings.</para>
+            </listitem>
+          </varlistentry>
+        </variablelist>
+      </sect2>
+
+      <sect2 id="createsequence">
+        <title>Putting It All Together: Sequences</title>
+
+        <para>Once your pattern contains some notes, you will want to put your
+        pattern into your songs sequence. In order to do that, hit
+        <keycap>F4</keycap> to enter the <interface>Sequence View</interface>.
+        You will see a screen that looks like this:</para>
+
+        <figure>
+          <title>Sequencer View.</title>
+
+          <graphic fileref="../images/aldrin_sequencer.png" scale="30" />
+        </figure>
+
+        <para>Since you created a generator, the sequence view already
+        contains a track for the M4wII, but it is currently empty. By moving
+        left and right with the <keycap>arrow keys</keycap> on your keyboard, you
+        can change the time index. Moving up and down will change the track and plugin
+		you are adding patterns for. On the right side of the window, there is a <interface>Pattern
+        List</interface>, which lists the available patterns you can put into
+        that track. Each pattern is prefixed by the name of the key that you
+        should press on the keyboard to place that pattern into the sequence.
+        In our example, pressing <keycap>0</keycap> will put pattern 00 in the
+        current track at the current time index your cursor is at.</para>
+
+        <para>Now hit <keycap>F5</keycap> to listen to what your song sounds
+        like. <keycap>F8</keycap> will stop the song. Your first track -
+        although a bit bland and simple - is finished!</para>
+      </sect2>
+    </sect1>
+  </chapter>
+
+  <chapter>
+    <title>Keyboard Shortcuts Reference</title>
+
+    <sect1>
+      <title>Universal Shortcuts</title>
+
+      <para>These keyboard shortcuts can be triggered from all locations in
+      the application.</para>
+    </sect1>
+  </chapter>
+</book>

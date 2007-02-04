@@ -1,0 +1,226 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 2.0//EN" "TBD">
+<html xmlns="http://www.w3.org/2002/06/xhtml2" xml:lang="en" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemalocation="http://www.w3.org/2002/06/xhtml2 TBD">
+ <head>
+  <title>
+   Aldrin Specifications
+  </title>
+  <link rel="stylesheet" type="text/css" href="buzzstyle.css" />
+ </head>
+ <body>
+  <div>
+   <table width="100%" border="0" cellspacing="0" cellpadding="2">
+<tr>
+<td height="10">
+<font face="Arial" size="6">
+         Aldrin Specifications
+        </font>
+</td>
+</tr>
+<tr>
+<td height="10">
+</td>
+</tr>
+<tr>
+<td height="25" class="bolder" bgcolor="#eeeeee">
+        GENERAL OVERVIEW
+       </td>
+</tr>
+<tr>
+<td>
+<ul>
+<li>
+          Step sequencer 
+                (pattern editing w/ realtime recording of parameter changes).
+         </li>
+<li>
+          Basic elements 
+                are Generators (produce sound) and Effects (modifies audio signals, 
+                such as DSP).
+         </li>
+<li>
+          Generator 
+                types: subtractive synthesis/sampling/physical modelling/FM/Additive 
+                is all currently possible under one interface (i.e. Buzz).
+         </li>
+<li>
+          DSP effects 
+                include chorus, flange, reverb, EQ, tremolo, distortion, saturation, 
+                analog delays, vocoding, filters and practically anything else 
+                imaginable.
+         </li>
+<li>
+          Each generator 
+                has limited polyphony (anywhere from 1 to 32 tracks may be used), 
+                yet multiple generators produce unlimited polyphony.
+         </li>
+<li>
+          Effects may be mono -&gt; mono or mono -&gt; 
+                            stereo and stereo -&gt; stereo. Not 
+                  all effects support stereo input, 
+                in that case left and right channels 
+                of a stereo input may be seperately linked to two mono effects.
+         </li>
+<li>
+          Complete 
+                Modular soft-studio interface allows generators to be linked 
+                to any number of effects, while effects may be chained to other 
+                effects and so on.
+         </li>
+</ul>
+</td>
+</tr>
+<tr>
+<td height="25" class="bolder" bgcolor="#eeeeee">
+        CUSTOMIZATION
+       </td>
+</tr>
+<tr>
+<td>
+<ul>
+<li>
+          Supports 
+                Color Themes (Includes many, more available on BuzzTrack.com)
+         </li>
+<li>
+          Allows Saving 
+                Presets (Patches) for any Generator
+         </li>
+<li>
+          Allows users 
+                to organize machines (indexing) as well as hide and rename them.
+         </li>
+</ul>
+</td>
+</tr>
+<tr>
+<td height="25" class="bolder" bgcolor="#eeeeee">
+        MIXING SPECIFICATIONS
+       </td>
+</tr>
+<tr>
+<td>
+<ul>
+<li>
+          Internal 
+                operations are done with 32-bit precision floating point numbers.
+         </li>
+<li>
+          44100 hz 
+                CD quality sampling rate (Samples may be oversampled to 196Khz).
+         </li>
+<li>
+          Each signal 
+                chain may be panned and volume adjusted seperately to allow full 
+                mixing inside buzz.
+         </li>
+<li>
+          Hard disk 
+                recorder option is available for recording songs or individual 
+                tracks to .wav for external mastering, converting to mp3, or other 
+                use you might have.
+         </li>
+</ul>
+</td>
+</tr>
+<tr>
+<td height="25" class="bolder" bgcolor="#eeeeee">
+        FILE TYPE SUPPORT
+       </td>
+</tr>
+<tr>
+<td>
+<ul>
+<li>
+          Standard Windows .WAV files may be read into 
+                            the wavetable (supports stereo, 
+                mono, 16/8 bits, and any sampling rate through 196Khz). Be sure 
+                to select the suitable machines to handle the samples.
+         </li>
+<li>
+          Loads XI 
+                (Fast Tracker Instrument) files, with multi-samples &amp; loop 
+                points.
+         </li>
+<li>
+          VST DSP 
+                Plugins may be read through the Rout VST Plugin loader
+         </li>
+<li>
+          Sound Fonts 
+                through the Rout Sound Font Loader.
+         </li>
+<li>
+          Generators may also read their own file formats (such as drum 
+                kits) through their own editing interface.
+         </li>
+<li>
+                Zzub libraries for effects and generators.
+         </li>
+</ul>
+</td>
+</tr>
+<tr>
+<td height="25" class="bolder" bgcolor="#eeeeee">
+        PLUG-IN ARCHITECTURE
+       </td>
+</tr>
+<tr>
+<td>
+<ul>
+<li>
+          Visual 
+                C++ SDK
+         </li>
+<li>
+          Machine 
+                Source Available
+         </li>
+<li>
+          Supports 
+                Machine Skins, Graphic User Interfaces
+          <a href="gui-examples.html">
+           (screenshots)
+          </a>
+          , completely up to the developer
+         </li>
+<li>
+          Community 
+                Support
+         </li>
+</ul>
+</td>
+</tr>
+<tr>
+<td height="25" class="bolder" bgcolor="#eeeeee">
+        REGISTRATION AND SUPPORT
+       </td>
+</tr>
+<tr>
+<td>
+<ul>
+<li>
+	Open Source
+</li>
+<li>
+          Large community 
+                of avid users always willing to help (
+          <a href="http://go.to/buzzfaq" target="_blank">
+           www.buzzfaq.com
+          </a>
+          )
+         </li>
+</ul>
+</td>
+</tr>
+</table>
+  </div>
+  <br />
+  <br />
+  <a href="frequently_asked_questions.html">
+   <b>
+    Next
+   </b>
+  </a>
+ </body>
+</html>

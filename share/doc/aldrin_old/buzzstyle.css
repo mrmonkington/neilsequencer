@@ -1,0 +1,54 @@
+body
+{
+    color: black;
+    font-family: Arial;
+    font-size: 12px;
+}
+a
+{
+    color: blue;
+    font-family: Arial;
+    font-size: 10pt;
+    text-decoration: underline;
+}
+a:hover
+{
+    color: #333333;
+    text-decoration: none;
+}
+.smallnote
+{
+    font-family: Arial;
+    font-size: 8pt;
+}
+.bolder
+{
+    font-size: 8pt;
+    font-style: normal;
+    font-weight: bold;
+}
+.header
+{
+	background-color: #eeeeee;
+	font-weight: bold;
+	padding: 10px; 
+	margin-bottom: 10px;
+}
+.red
+{
+	color: #ff0000;
+	font-size: 8pt;
+}
+.blue
+{
+	color: #0000ff;
+}
+ul 
+{
+list-style-type: none;
+}
+ul label
+{
+	font-size: 10pt;
+	font-weight: bold;
+}

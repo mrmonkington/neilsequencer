@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<aldrin>
+	<extension
+		uri="@zzub.org/extension/ifacebrowser;1"
+		name="Interface Browser"
+		description="A view that allows browsing available extension interfaces and documentation."
+		author="Leonard Ritter"
+		email="contact@leonard-ritter.com"
+		minversion="0.7"
+		maxversion="0.7">
+		<module language="python" path="ifacebrowser.py"/>
+	</extension>
+</aldrin>

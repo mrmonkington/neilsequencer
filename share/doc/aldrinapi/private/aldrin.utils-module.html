@@ -1,0 +1,764 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>aldrin.utils</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css"></link>
+</head>
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+
+<!-- =========== START OF NAVBAR =========== -->
+<table class="navbar" border="0" width="100%" cellpadding="0" bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="center">
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="aldrin-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="trees.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="indices.html">Index</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar" align="right" width="100%">
+      <table border="0" cellpadding="0" cellspacing="0">
+      <tr><th class="navbar" align="center">
+        <p class="nomargin">
+          Aldrin&nbsp;API
+      </p></th></tr></table>
+    </th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <font size="-1"><b class="breadcrumbs">
+        <a href="aldrin-module.html">Package&nbsp;aldrin</a> ::
+        Module&nbsp;utils
+      </b></font></br>
+    </td>
+    <td><table cellpadding="0" cellspacing="0">
+      <tr><td align="right"><font size="-2">[show&nbsp;private&nbsp;|&nbsp;<a href="../public/aldrin.utils-module.html">hide&nbsp;private</a>]</font></td></tr>
+      <tr><td align="right"><font size="-2">[<a href="frames.html"target="_top">frames</a>&nbsp;|&nbsp;<a href="aldrin.utils-module.html" target="_top">no&nbsp;frames</a>]</font></td></tr>
+    </table></td>
+</tr></table>
+
+<!-- =========== START OF MODULE DESCRIPTION =========== -->
+<h2 class="module">Module aldrin.utils</h2>
+
+Provides utility functions needed all over the place, which have no 
+specific module or class they belong to.
+<hr/>
+
+<!-- =========== START OF FUNCTION SUMMARY =========== -->
+<table class="summary" border="1" cellpadding="3" cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="summary">
+  <th colspan="2">Function Summary</th></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        int
+</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.utils-module.html#bn2mn" class="summary-sig-name"><code>bn2mn</code></a>(<span class=summary-sig-arg>v</span>)</span></code>
+<br />
+Converts a Buzz note value into a MIDI note value.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        float
+</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.utils-module.html#buffersize_to_latency" class="summary-sig-name"><code>buffersize_to_latency</code></a>(<span class=summary-sig-arg>bs</span>,
+          <span class=summary-sig-arg>sr</span>)</span></code>
+<br />
+Translates buffer size to latency.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        str
+</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.utils-module.html#byte2str" class="summary-sig-name"><code>byte2str</code></a>(<span class=summary-sig-arg>p</span>,
+          <span class=summary-sig-arg>v</span>)</span></code>
+<br />
+Translates a Buzz byte value into a hexstring ready to be printed in a 
+pattern view.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        float
+</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.utils-module.html#db2linear" class="summary-sig-name"><code>db2linear</code></a>(<span class=summary-sig-arg>val</span>,
+          <span class=summary-sig-arg>limit</span>)</span></code>
+<br />
+Translates a dB volume to a linear amplitude.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.utils-module.html#error" class="summary-sig-name"><code>error</code></a>(<span class=summary-sig-arg>parent</span>,
+          <span class=summary-sig-arg>msg</span>)</span></code>
+<br />
+Shows an error message dialog.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        str
+</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.utils-module.html#filenameify" class="summary-sig-name"><code>filenameify</code></a>(<span class=summary-sig-arg>text</span>)</span></code>
+<br />
+Replaces characters in a text in such a way that it's feasible to use 
+it as a filename.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        str
+</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.utils-module.html#filepath" class="summary-sig-name"><code>filepath</code></a>(<span class=summary-sig-arg>path</span>)</span></code>
+<br />
+Translates a path relative to a base dir into an absolute path.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        int
+</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.utils-module.html#fixbn" class="summary-sig-name"><code>fixbn</code></a>(<span class=summary-sig-arg>v</span>)</span></code>
+<br />
+Occasionally, invalid note inputs are being made, either by user error 
+or invalid paste or loading operations.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        str
+</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.utils-module.html#format_time" class="summary-sig-name"><code>format_time</code></a>(<span class=summary-sig-arg>t</span>)</span></code>
+<br />
+Translates a time value into a string of the format 
+&quot;h:mm:ss:ms&quot;.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.utils-module.html#from_hsb" class="summary-sig-name"><code>from_hsb</code></a>(<span class=summary-sig-arg>h</span>,
+          <span class=summary-sig-arg>s</span>,
+          <span class=summary-sig-arg>b</span>)</span></code>
+<br />
+Converts hue/saturation/brightness into red/green/blue components.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        str
+</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.utils-module.html#get_root_folder_path" class="summary-sig-name"><code>get_root_folder_path</code></a>()</span></code>
+<br />
+Returns the base folder from which this script is being executed.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        bool
+</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.utils-module.html#is_frozen" class="summary-sig-name"><code>is_frozen</code></a>()</span></code>
+<br />
+Determines whether the application is being executed by a Python 
+installation or it is running standalone (as a py2exe executable.)</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        float
+</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.utils-module.html#linear2db" class="summary-sig-name"><code>linear2db</code></a>(<span class=summary-sig-arg>val</span>,
+          <span class=summary-sig-arg>limit</span>)</span></code>
+<br />
+Translates a linear amplitude to a dB volume.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        int
+</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.utils-module.html#mn2bn" class="summary-sig-name"><code>mn2bn</code></a>(<span class=summary-sig-arg>v</span>)</span></code>
+<br />
+Converts a MIDI note value into a Buzz note value.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        str
+</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.utils-module.html#note2str" class="summary-sig-name"><code>note2str</code></a>(<span class=summary-sig-arg>p</span>,
+          <span class=summary-sig-arg>v</span>)</span></code>
+<br />
+Translates a Buzz note value into a string of the format 
+&quot;NNO&quot;, where NN is note, and O is octave.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        str
+</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.utils-module.html#prepstr" class="summary-sig-name"><code>prepstr</code></a>(<span class=summary-sig-arg>s</span>)</span></code>
+<br />
+prepstr ensures that a string is always ready to be displayed in a GUI 
+control by wxWidgets.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.utils-module.html#read_int" class="summary-sig-name"><code>read_int</code></a>(<span class=summary-sig-arg>f</span>)</span></code>
+<br />
+Reads an 32bit integer from a binary file.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.utils-module.html#read_string" class="summary-sig-name"><code>read_string</code></a>(<span class=summary-sig-arg>f</span>)</span></code>
+<br />
+Reads a pascal string (32bit len, data) from a binary file.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        int
+</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.utils-module.html#roundint" class="summary-sig-name"><code>roundint</code></a>(<span class=summary-sig-arg>v</span>)</span></code>
+<br />
+Rounds a float value to the next integer if its fractional part is 
+larger than 0.5.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        str
+</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.utils-module.html#switch2str" class="summary-sig-name"><code>switch2str</code></a>(<span class=summary-sig-arg>p</span>,
+          <span class=summary-sig-arg>v</span>)</span></code>
+<br />
+Translates a Buzz switch value into a hexstring ready to be printed in 
+a pattern view.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        float
+</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.utils-module.html#ticks_to_time" class="summary-sig-name"><code>ticks_to_time</code></a>(<span class=summary-sig-arg>ticks</span>,
+          <span class=summary-sig-arg>bpm</span>,
+          <span class=summary-sig-arg>tpb</span>)</span></code>
+<br />
+Translates positions in ticks as returned by zzub to time values.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.utils-module.html#to_hsb" class="summary-sig-name"><code>to_hsb</code></a>(<span class=summary-sig-arg>r</span>,
+          <span class=summary-sig-arg>g</span>,
+          <span class=summary-sig-arg>b</span>)</span></code>
+<br />
+Converts red/green/blue into hue/saturation/brightness components.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        str
+</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.utils-module.html#word2str" class="summary-sig-name"><code>word2str</code></a>(<span class=summary-sig-arg>p</span>,
+          <span class=summary-sig-arg>v</span>)</span></code>
+<br />
+Translates a Buzz word value into a hexstring ready to be printed in a 
+pattern view.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.utils-module.html#write_int" class="summary-sig-name"><code>write_int</code></a>(<span class=summary-sig-arg>f</span>,
+          <span class=summary-sig-arg>v</span>)</span></code>
+<br />
+Writes a 32bit integer to a binary file.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.utils-module.html#write_string" class="summary-sig-name"><code>write_string</code></a>(<span class=summary-sig-arg>f</span>,
+          <span class=summary-sig-arg>s</span>)</span></code>
+<br />
+Writes a pascal string (32bit len, data) to a binary file.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><a name="is_debug"></a><span class="summary-sig"><span class="summary-sig-name">is_debug</span>()</span></code>
+</td></tr>
+</table><br />
+
+
+<!-- =========== START OF FUNCTION DETAILS =========== -->
+<table class="details" border="1" cellpadding="3" cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="details">
+  <th colspan="2">Function Details</th></tr>
+</table>
+
+<a name="bn2mn"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">bn2mn</span>(<span class=sig-arg>v</span>)</span>
+  </h3>
+  Converts a Buzz note value into a MIDI note value.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>v</b></code> -
+         Buzz note value.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=int)</i>
+      </dd>
+    </dl>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        MIDI note value.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=int)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="buffersize_to_latency"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">buffersize_to_latency</span>(<span class=sig-arg>bs</span>,
+          <span class=sig-arg>sr</span>)</span>
+  </h3>
+  Translates buffer size to latency.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>bs</b></code> -
+         Size of buffer in samples.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=int)</i>
+      <dd><code><b>sr</b></code> -
+         Samples per second in Hz.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=int)</i>
+      </dd>
+    </dl>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        Latency in ms.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=float)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="byte2str"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">byte2str</span>(<span class=sig-arg>p</span>,
+          <span class=sig-arg>v</span>)</span>
+  </h3>
+  Translates a Buzz byte value into a hexstring ready to be printed in 
+  a pattern view.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>p</b></code> -
+         A plugin parameter object.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=zzub.Parameter)</i>
+      <dd><code><b>v</b></code> -
+         A Buzz byte value.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=int)</i>
+      </dd>
+    </dl>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        A 2-digit hexstring or &quot;..&quot; for no value.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=str)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="db2linear"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">db2linear</span>(<span class=sig-arg>val</span>,
+          <span class=sig-arg>limit</span>=<span class=sig-default>-48.0</span>)</span>
+  </h3>
+  Translates a dB volume to a linear amplitude.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>val</b></code> -
+         Volume in dB.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=float)</i>
+      <dd><code><b>limit</b></code> -
+         If val is lower than limit, 0.0 will be returned.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=float)</i>
+      </dd>
+    </dl>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        Linear amplitude.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=float)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="error"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">error</span>(<span class=sig-arg>parent</span>,
+          <span class=sig-arg>msg</span>)</span>
+  </h3>
+  Shows an error message dialog.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="filenameify"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">filenameify</span>(<span class=sig-arg>text</span>)</span>
+  </h3>
+  Replaces characters in a text in such a way that it's feasible to 
+  use it as a filename. The result will be lowercase and all special 
+  chars replaced by underscores.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>text</b></code> -
+         The original text.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=str)</i>
+      </dd>
+    </dl>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        The filename.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=str)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="filepath"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">filepath</span>(<span class=sig-arg>path</span>)</span>
+  </h3>
+  Translates a path relative to a base dir into an absolute path.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>path</b></code> -
+         Relative path to file.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=str)</i>
+      </dd>
+    </dl>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        Absolute path to file.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=str)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="fixbn"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">fixbn</span>(<span class=sig-arg>v</span>)</span>
+  </h3>
+  Occasionally, invalid note inputs are being made, either by user 
+  error or invalid paste or loading operations. This function fixes a 
+  Buzz note value so it has always a correct value.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>v</b></code> -
+         Buzz note value.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=int)</i>
+      </dd>
+    </dl>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        Corrected Buzz note value.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=int)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="format_time"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">format_time</span>(<span class=sig-arg>t</span>)</span>
+  </h3>
+  Translates a time value into a string of the format 
+  &quot;h:mm:ss:ms&quot;.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>t</b></code> -
+         Relative time value.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=float)</i>
+      </dd>
+    </dl>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        String of the format &quot;h:mm:ss:ms&quot;.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=str)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="from_hsb"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">from_hsb</span>(<span class=sig-arg>h</span>=<span class=sig-default>0.0</span>,
+          <span class=sig-arg>s</span>=<span class=sig-default>1.0</span>,
+          <span class=sig-arg>b</span>=<span class=sig-default>1.0</span>)</span>
+  </h3>
+  Converts hue/saturation/brightness into red/green/blue 
+  components.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="get_root_folder_path"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">get_root_folder_path</span>()</span>
+  </h3>
+  Returns the base folder from which this script is being executed. 
+  This is mainly used for windows, where loading of resources relative to 
+  the execution folder must be possible, regardless of current working 
+  directory.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        Path to execution folder.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=str)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="is_frozen"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">is_frozen</span>()</span>
+  </h3>
+  Determines whether the application is being executed by a Python 
+  installation or it is running standalone (as a py2exe executable.)
+  <dl><dt></dt><dd>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        True if frozen, otherwise False
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=bool)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="linear2db"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">linear2db</span>(<span class=sig-arg>val</span>,
+          <span class=sig-arg>limit</span>=<span class=sig-default>-48.0</span>)</span>
+  </h3>
+  Translates a linear amplitude to a dB volume.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>val</b></code> -
+         Linear amplitude between 0.0 and 1.0.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=float)</i>
+      <dd><code><b>limit</b></code> -
+         If amplitude is zero or lower, limit will be returned.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=float)</i>
+      </dd>
+    </dl>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        Volume in dB.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=float)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="mn2bn"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">mn2bn</span>(<span class=sig-arg>v</span>)</span>
+  </h3>
+  Converts a MIDI note value into a Buzz note value.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>v</b></code> -
+         MIDI note value.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=int)</i>
+      </dd>
+    </dl>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        Buzz note value.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=int)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="note2str"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">note2str</span>(<span class=sig-arg>p</span>,
+          <span class=sig-arg>v</span>)</span>
+  </h3>
+  Translates a Buzz note value into a string of the format 
+  &quot;NNO&quot;, where NN is note, and O is octave.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>p</b></code> -
+         A parameter object. You can supply None here if the value is 
+        not associated with a plugin parameter.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=zzub.Parameter)</i>
+      </dd>
+    </dl>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        A string of the format &quot;NNO&quot;, where NN is note, and 
+        O is octave, or &quot;...&quot; for no value.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=str)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="prepstr"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">prepstr</span>(<span class=sig-arg>s</span>)</span>
+  </h3>
+  prepstr ensures that a string is always ready to be displayed in a 
+  GUI control by wxWidgets.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>s</b></code> -
+         Text to be prepared.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=str)</i>
+      </dd>
+    </dl>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        Correctly encoded text.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=str)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="read_int"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">read_int</span>(<span class=sig-arg>f</span>)</span>
+  </h3>
+  Reads an 32bit integer from a binary file.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="read_string"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">read_string</span>(<span class=sig-arg>f</span>)</span>
+  </h3>
+  Reads a pascal string (32bit len, data) from a binary file.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="roundint"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">roundint</span>(<span class=sig-arg>v</span>)</span>
+  </h3>
+  Rounds a float value to the next integer if its fractional part is 
+  larger than 0.5.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>v</b></code>
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=float)</i>
+      </dd>
+    </dl>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        int
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="switch2str"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">switch2str</span>(<span class=sig-arg>p</span>,
+          <span class=sig-arg>v</span>)</span>
+  </h3>
+  Translates a Buzz switch value into a hexstring ready to be printed 
+  in a pattern view.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>p</b></code> -
+         A plugin parameter object.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=zzub.Parameter)</i>
+      <dd><code><b>v</b></code> -
+         A Buzz switch value.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=int)</i>
+      </dd>
+    </dl>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        A 1-digit hexstring or &quot;.&quot; for no value.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=str)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="ticks_to_time"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">ticks_to_time</span>(<span class=sig-arg>ticks</span>,
+          <span class=sig-arg>bpm</span>,
+          <span class=sig-arg>tpb</span>)</span>
+  </h3>
+  Translates positions in ticks as returned by zzub to time 
+  values.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>ticks</b></code> -
+         Tick value as returned by zzub.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=int)</i>
+      <dd><code><b>bpm</b></code> -
+         Beats per minutes.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=int)</i>
+      <dd><code><b>tpb</b></code> -
+         Ticks per beats.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=int)</i>
+      </dd>
+    </dl>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        Relative time value.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=float)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="to_hsb"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">to_hsb</span>(<span class=sig-arg>r</span>,
+          <span class=sig-arg>g</span>,
+          <span class=sig-arg>b</span>)</span>
+  </h3>
+  Converts red/green/blue into hue/saturation/brightness 
+  components.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="word2str"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">word2str</span>(<span class=sig-arg>p</span>,
+          <span class=sig-arg>v</span>)</span>
+  </h3>
+  Translates a Buzz word value into a hexstring ready to be printed in 
+  a pattern view.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>p</b></code> -
+         A plugin parameter object.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=zzub.Parameter)</i>
+      <dd><code><b>v</b></code> -
+         A Buzz word value.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=int)</i>
+      </dd>
+    </dl>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        A 4-digit hexstring or &quot;....&quot; for no value.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=str)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="write_int"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">write_int</span>(<span class=sig-arg>f</span>,
+          <span class=sig-arg>v</span>)</span>
+  </h3>
+  Writes a 32bit integer to a binary file.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="write_string"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">write_string</span>(<span class=sig-arg>f</span>,
+          <span class=sig-arg>s</span>)</span>
+  </h3>
+  Writes a pascal string (32bit len, data) to a binary file.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+<br />
+
+
+<!-- =========== START OF NAVBAR =========== -->
+<table class="navbar" border="0" width="100%" cellpadding="0" bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="center">
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="aldrin-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="trees.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="indices.html">Index</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar" align="right" width="100%">
+      <table border="0" cellpadding="0" cellspacing="0">
+      <tr><th class="navbar" align="center">
+        <p class="nomargin">
+          Aldrin&nbsp;API
+      </p></th></tr></table>
+    </th>
+  </tr>
+</table>
+
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+  <tr>
+    <td align="left"><font size="-2">Generated by Epydoc 2.1 on Sun Feb  4 18:01:14 2007</font></td>
+    <td align="right"><a href="http://epydoc.sourceforge.net"
+                      ><font size="-2">http://epydoc.sf.net</font></a></td>
+  </tr>
+</table>
+</body>
+</html>

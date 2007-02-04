@@ -1,0 +1,1376 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>aldrin.patterns.PatternView</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css"></link>
+</head>
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+
+<!-- =========== START OF NAVBAR =========== -->
+<table class="navbar" border="0" width="100%" cellpadding="0" bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="center">
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="aldrin-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="trees.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="indices.html">Index</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar" align="right" width="100%">
+      <table border="0" cellpadding="0" cellspacing="0">
+      <tr><th class="navbar" align="center">
+        <p class="nomargin">
+          Aldrin&nbsp;API
+      </p></th></tr></table>
+    </th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <font size="-1"><b class="breadcrumbs">
+        <a href="aldrin-module.html">Package&nbsp;aldrin</a> ::
+        <a href="aldrin.patterns-module.html">Module&nbsp;patterns</a> ::
+        Class&nbsp;PatternView
+      </b></font></br>
+    </td>
+    <td><table cellpadding="0" cellspacing="0">
+      <tr><td align="right"><font size="-2">[<a href="../private/aldrin.patterns.PatternView-class.html">show&nbsp;private</a>&nbsp;|&nbsp;hide&nbsp;private]</font></td></tr>
+      <tr><td align="right"><font size="-2">[<a href="frames.html"target="_top">frames</a>&nbsp;|&nbsp;<a href="aldrin.patterns.PatternView-class.html" target="_top">no&nbsp;frames</a>]</font></td></tr>
+    </table></td>
+</tr></table>
+
+<!-- =========== START OF CLASS DESCRIPTION =========== -->
+<h2 class="class">Type PatternView</h2>
+
+<pre class="base-tree">
+        <a href="../private/aldrin.canvas.CanvasBase-class.html"><code>CanvasBase</code></a> --+    
+                     |    
+<a href="__builtin__.object-class.html"><code>object</code></a> --+           |    
+         |           |    
+    <a href="../private/wx._core.Object-class.html"><code>Object</code></a> --+       |    
+             |       |    
+    <a href="../private/wx._core.EvtHandler-class.html"><code>EvtHandler</code></a> --+   |    
+                 |   |    
+            <a href="../private/wx._core.Window-class.html"><code>Window</code></a> --+    
+                     |    
+                <a href="aldrin.canvas.Canvas-class.html"><code>Canvas</code></a> --+
+                         |
+                        <b>PatternView</b>
+</pre><br />
+
+<hr/>
+
+Pattern viewer class.
+<hr/>
+
+
+<!-- =========== START OF METHOD SUMMARY =========== -->
+<table class="summary" border="1" cellpadding="3" cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="summary">
+  <th colspan="2">Method Summary</th></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#__init__" class="summary-sig-name"><code>__init__</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>rootwindow</span>,
+          <span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwds</span>)</span></code>
+<br />
+Initialization.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><a name="adjust_scrollbars"></a><span class="summary-sig"><span class="summary-sig-name">adjust_scrollbars</span>(<span class=summary-sig-arg>self</span>)</span></code>
+</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#adjust_selection" class="summary-sig-name"><code>adjust_selection</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Adjusts the selection variables according to the selection mode.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        (int, int, int, int, int)
+</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#charpos_to_pattern" class="summary-sig-name"><code>charpos_to_pattern</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>position</span>)</span></code>
+<br />
+Converts a (x,y) character coordinate into a pattern position.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#copy" class="summary-sig-name"><code>copy</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Copies the current selection into the clipboard</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#cut" class="summary-sig-name"><code>cut</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Cuts the current selection into the clipboard</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#DrawBuffer" class="summary-sig-name"><code>DrawBuffer</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>row</span>,
+          <span class=summary-sig-arg>rows</span>,
+          <span class=summary-sig-arg>fulldraw</span>)</span></code>
+<br />
+Overriding a <a href="aldrin.canvas.Canvas-class.html" 
+class="link"><code>Canvas</code></a> method that paints onto an offscreen 
+buffer.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#get_charbounds" class="summary-sig-name"><code>get_charbounds</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Returns the outermost coordinates in characters.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        (zzub.Plugin, zzub.Pattern)
+</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#get_datasource" class="summary-sig-name"><code>get_datasource</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Returns the plugin and the current pattern in the pattern view</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#get_new_pattern_name" class="summary-sig-name"><code>get_new_pattern_name</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Finds an unused pattern name.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        zzub.Plugin
+</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#get_plugin" class="summary-sig-name"><code>get_plugin</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Returns the plugin of the pattern in the pattern view.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#get_virtual_size" class="summary-sig-name"><code>get_virtual_size</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Returns the size in characters of the virtual view area.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#init_values" class="summary-sig-name"><code>init_values</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Initializes pattern storage and information.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#interpolate_selection" class="summary-sig-name"><code>interpolate_selection</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Fills the current selection with values interpolated from selection 
+start to selection end.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#move_down" class="summary-sig-name"><code>move_down</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>step</span>)</span></code>
+<br />
+Moves the cursor down.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#move_index_left" class="summary-sig-name"><code>move_index_left</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Moves the cursor one index position left.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#move_index_right" class="summary-sig-name"><code>move_index_right</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Moves the cursor one index position right.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#move_left" class="summary-sig-name"><code>move_left</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Moves the cursor left.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#move_right" class="summary-sig-name"><code>move_right</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Moves the cursor right.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#move_subindex_left" class="summary-sig-name"><code>move_subindex_left</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Moves the cursor one subindex position left.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#move_subindex_right" class="summary-sig-name"><code>move_subindex_right</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Moves the cursor one subindex position right.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#move_track_left" class="summary-sig-name"><code>move_track_left</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Moves the cursor one track position left.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#move_track_right" class="summary-sig-name"><code>move_track_right</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Moves the cursor one track position right.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#move_up" class="summary-sig-name"><code>move_up</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>step</span>)</span></code>
+<br />
+Moves the cursor up.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#on_char" class="summary-sig-name"><code>on_char</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>event</span>)</span></code>
+<br />
+Callback that responds to key stroke in pattern view.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#on_context_menu" class="summary-sig-name"><code>on_context_menu</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>event</span>)</span></code>
+<br />
+Callback that constructs and displays the popup menu</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#on_copy" class="summary-sig-name"><code>on_copy</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>event</span>)</span></code>
+<br />
+Sent when the copy function is selected from the menu.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#on_cut" class="summary-sig-name"><code>on_cut</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>event</span>)</span></code>
+<br />
+Sent when the cut function is selected from the menu.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#on_key_down" class="summary-sig-name"><code>on_key_down</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>event</span>)</span></code>
+<br />
+Callback that responds to key stroke in pattern view.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#on_left_down" class="summary-sig-name"><code>on_left_down</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>event</span>)</span></code>
+<br />
+Callback that responds to left click in pattern view.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#on_mousewheel" class="summary-sig-name"><code>on_mousewheel</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>event</span>)</span></code>
+<br />
+Callback that responds to mousewheeling in pattern view.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#on_paste" class="summary-sig-name"><code>on_paste</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>event</span>)</span></code>
+<br />
+Sent when the paste function is selected from the menu.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#on_popup_add_track" class="summary-sig-name"><code>on_popup_add_track</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>event</span>)</span></code>
+<br />
+Callback that adds a track.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#on_popup_create_copy" class="summary-sig-name"><code>on_popup_create_copy</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>event</span>)</span></code>
+<br />
+Callback that creates a copy of the current pattern.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#on_popup_create_pattern" class="summary-sig-name"><code>on_popup_create_pattern</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>event</span>)</span></code>
+<br />
+Callback that creates a pattern.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#on_popup_delete_track" class="summary-sig-name"><code>on_popup_delete_track</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>event</span>)</span></code>
+<br />
+Callback that deletes last track.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#on_popup_properties" class="summary-sig-name"><code>on_popup_properties</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>event</span>)</span></code>
+<br />
+Callback that shows the properties of the current pattern.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#on_popup_remove_pattern" class="summary-sig-name"><code>on_popup_remove_pattern</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>event</span>)</span></code>
+<br />
+Callback that removes the current pattern.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#on_popup_solo" class="summary-sig-name"><code>on_popup_solo</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>event</span>)</span></code>
+<br />
+Callback that solos current plugin.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#on_scroll_window" class="summary-sig-name"><code>on_scroll_window</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>event</span>)</span></code>
+<br />
+Handles window scrolling.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#onPostPaint" class="summary-sig-name"><code>onPostPaint</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>dc</span>)</span></code>
+<br />
+Overriding a <a href="aldrin.canvas.Canvas-class.html" 
+class="link"><code>Canvas</code></a> method that is called after painting 
+is completed.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#paste" class="summary-sig-name"><code>paste</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Pastes the clipboard data into the pattern view.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#pattern_changed" class="summary-sig-name"><code>pattern_changed</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Loads and redraws the pattern view after the pattern has been 
+changed.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        (int, int, int, int)
+</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#pattern_range" class="summary-sig-name"><code>pattern_range</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Iterator that moves through the entire pattern.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        (int, int)
+</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#pattern_to_charpos" class="summary-sig-name"><code>pattern_to_charpos</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>row</span>,
+          <span class=summary-sig-arg>group</span>,
+          <span class=summary-sig-arg>track</span>,
+          <span class=summary-sig-arg>index</span>,
+          <span class=summary-sig-arg>subindex</span>)</span></code>
+<br />
+Converts a pattern position into a (x,y) character coordinate.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        (int, int)
+</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#pattern_to_pos" class="summary-sig-name"><code>pattern_to_pos</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>row</span>,
+          <span class=summary-sig-arg>group</span>,
+          <span class=summary-sig-arg>track</span>,
+          <span class=summary-sig-arg>index</span>,
+          <span class=summary-sig-arg>subindex</span>)</span></code>
+<br />
+Converts a pattern position into a (x,y) pixel coordinate.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        (int, int, int, int, int)
+</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#pos_to_pattern" class="summary-sig-name"><code>pos_to_pattern</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>position</span>)</span></code>
+<br />
+Converts a (x,y) pixel coordinate into a pattern position.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#prepare_textbuffer" class="summary-sig-name"><code>prepare_textbuffer</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Initializes a buffer to handle the current pattern data.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#randomize_selection" class="summary-sig-name"><code>randomize_selection</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Fills the current selection with random values.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><a name="refresh_view"></a><span class="summary-sig"><span class="summary-sig-name">refresh_view</span>(<span class=summary-sig-arg>self</span>)</span></code>
+</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">        (int, int, int, int)
+</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#selection_range" class="summary-sig-name"><code>selection_range</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Iterator that moves through the current selection.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#set_group" class="summary-sig-name"><code>set_group</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>g</span>)</span></code>
+<br />
+Sets the current group position.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#set_index" class="summary-sig-name"><code>set_index</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>i</span>)</span></code>
+<br />
+Sets the current index position.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#set_octave" class="summary-sig-name"><code>set_octave</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>o</span>)</span></code>
+<br />
+Sets the octave.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#set_row" class="summary-sig-name"><code>set_row</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>r</span>)</span></code>
+<br />
+Sets the current row position.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#set_subindex" class="summary-sig-name"><code>set_subindex</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>si</span>)</span></code>
+<br />
+Sets the current subindex position.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#set_track" class="summary-sig-name"><code>set_track</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>t</span>)</span></code>
+<br />
+Sets the current track position.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#show_cursor_left" class="summary-sig-name"><code>show_cursor_left</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Puts the cursor into visible frame after a jump to the left.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#show_cursor_right" class="summary-sig-name"><code>show_cursor_right</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Puts the cursor into visible frame after a jump to the right.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#transpose_selection" class="summary-sig-name"><code>transpose_selection</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>offset</span>)</span></code>
+<br />
+Transposes the current selection by an offset.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#unpack_clipboard_data" class="summary-sig-name"><code>unpack_clipboard_data</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>d</span>)</span></code>
+<br />
+Unpacks clipboard data</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#update_line" class="summary-sig-name"><code>update_line</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>row</span>)</span></code>
+<br />
+Updates a line of the pattern.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="aldrin.patterns.PatternView-class.html#update_position" class="summary-sig-name"><code>update_position</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>event</span>)</span></code>
+<br />
+Updates the position.</td></tr>
+<tr bgcolor="#e8f0f8" class="group">
+  <th colspan="2">&nbsp;&nbsp;&nbsp;&nbsp;Inherited from object</th></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="__builtin__.object-class.html#__delattr__" class="summary-sig-name"><code>__delattr__</code></a>(<span class="summary-sig-vararg">...</span>)</span></code>
+<br />
+x.__delattr__('name') &lt;==&gt; del x.name</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="__builtin__.object-class.html#__getattribute__" class="summary-sig-name"><code>__getattribute__</code></a>(<span class="summary-sig-vararg">...</span>)</span></code>
+<br />
+x.__getattribute__('name') &lt;==&gt; x.name</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="__builtin__.object-class.html#__hash__" class="summary-sig-name"><code>__hash__</code></a>(<span class=summary-sig-arg>x</span>)</span></code>
+<br />
+x.__hash__() &lt;==&gt; hash(x)</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="__builtin__.object-class.html#__new__" class="summary-sig-name"><code>__new__</code></a>(<span class=summary-sig-arg>T</span>,
+          <span class=summary-sig-arg>S</span>,
+          <span class="summary-sig-vararg">...</span>)</span></code>
+<br />
+T.__new__(S, ...) -&gt; a new object with type S, a subtype of T</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="__builtin__.object-class.html#__reduce__" class="summary-sig-name"><code>__reduce__</code></a>(<span class="summary-sig-vararg">...</span>)</span></code>
+<br />
+helper for pickle</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="__builtin__.object-class.html#__reduce_ex__" class="summary-sig-name"><code>__reduce_ex__</code></a>(<span class="summary-sig-vararg">...</span>)</span></code>
+<br />
+helper for pickle</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="__builtin__.object-class.html#__setattr__" class="summary-sig-name"><code>__setattr__</code></a>(<span class="summary-sig-vararg">...</span>)</span></code>
+<br />
+x.__setattr__('name', value) &lt;==&gt; x.name = value</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="__builtin__.object-class.html#__str__" class="summary-sig-name"><code>__str__</code></a>(<span class=summary-sig-arg>x</span>)</span></code>
+<br />
+x.__str__() &lt;==&gt; str(x)</td></tr>
+</table><br />
+
+
+<!-- =========== START OF CLASS VARIABLE SUMMARY =========== -->
+<table class="summary" border="1" cellpadding="3" cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="summary">
+  <th colspan="2">Class Variable Summary</th></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1"><code>str</code></font></td>
+<td><b><a href="aldrin.patterns.PatternView-class.html#CLIPBOARD_MAGIC"><code>CLIPBOARD_MAGIC</code></a></b> = <span title="'PATTERNDATA'"><code><span class="variable-quote">'</span>PATTERNDATA<span class="variable-quote">'</span>                          </code>
+</span></td></tr>
+</table><br />
+
+
+<!-- =========== START OF INSTANCE METHOD DETAILS =========== -->
+<table class="details" border="1" cellpadding="3" cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="details">
+  <th colspan="2">Instance Method Details</th></tr>
+</table>
+
+<a name="__init__"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">__init__</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>rootwindow</span>,
+          <span class="sig-vararg">*args</span>,
+          <span class="sig-kwarg">**kwds</span>)</span>
+    <br /><i>(Constructor)</i>
+  </h3>
+  Initialization.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>rootwindow</b></code> -
+         Window that contains the component.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=main.AldrinFrame)</i>
+      </dd>
+    </dl>
+    <dl><dt><b>Overrides:</b></dt>
+      <dd><a href="aldrin.canvas.Canvas-class.html#__init__"><code>aldrin.canvas.Canvas.__init__</code></a></dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="adjust_selection"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">adjust_selection</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Adjusts the selection variables according to the selection mode.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="charpos_to_pattern"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">charpos_to_pattern</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>position</span>)</span>
+  </h3>
+  Converts a (x,y) character coordinate into a pattern position.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>position</b></code> -
+         Character coordinate.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=(int, int))</i>
+      </dd>
+    </dl>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        (row, group, track, index, subindex) representing a pattern 
+        position.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=(int, int, int, int, int))</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="copy"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">copy</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Copies the current selection into the clipboard
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="cut"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">cut</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Cuts the current selection into the clipboard
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="DrawBuffer"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">DrawBuffer</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>row</span>=<span class=sig-default>None</span>,
+          <span class=sig-arg>rows</span>=<span class=sig-default>None</span>,
+          <span class=sig-arg>fulldraw</span>=<span class=sig-default>True</span>)</span>
+  </h3>
+  Overriding a <a href="aldrin.canvas.Canvas-class.html" 
+  class="link"><code>Canvas</code></a> method that paints onto an 
+  offscreen buffer. Draws the pattern view graphics.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Overrides:</b></dt>
+      <dd><a href="../private/aldrin.canvas.CanvasBase-class.html#DrawBuffer"><code>aldrin.canvas.CanvasBase.DrawBuffer</code></a></dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="get_charbounds"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">get_charbounds</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Returns the outermost coordinates in characters.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="get_datasource"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">get_datasource</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Returns the plugin and the current pattern in the pattern view
+  <dl><dt></dt><dd>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        A tuple holding the plugin and the current pattern
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=(zzub.Plugin, zzub.Pattern))</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="get_new_pattern_name"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">get_new_pattern_name</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Finds an unused pattern name.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="get_plugin"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">get_plugin</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Returns the plugin of the pattern in the pattern view.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        zzub plugin plugin.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=zzub.Plugin)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="get_virtual_size"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">get_virtual_size</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Returns the size in characters of the virtual view area.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="init_values"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">init_values</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Initializes pattern storage and information.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="interpolate_selection"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">interpolate_selection</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Fills the current selection with values interpolated from selection 
+  start to selection end.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="move_down"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">move_down</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>step</span>=<span class=sig-default>1</span>)</span>
+  </h3>
+  Moves the cursor down.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>step</b></code> -
+         Amount the cursor is moved down.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=int)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="move_index_left"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">move_index_left</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Moves the cursor one index position left.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="move_index_right"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">move_index_right</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Moves the cursor one index position right.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="move_left"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">move_left</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Moves the cursor left.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="move_right"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">move_right</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Moves the cursor right.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="move_subindex_left"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">move_subindex_left</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Moves the cursor one subindex position left.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="move_subindex_right"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">move_subindex_right</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Moves the cursor one subindex position right.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="move_track_left"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">move_track_left</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Moves the cursor one track position left.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="move_track_right"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">move_track_right</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Moves the cursor one track position right.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="move_up"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">move_up</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>step</span>=<span class=sig-default>1</span>)</span>
+  </h3>
+  Moves the cursor up.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>step</b></code> -
+         Amount the cursor is moved up.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=int)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="on_char"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">on_char</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>event</span>)</span>
+  </h3>
+  Callback that responds to key stroke in pattern view.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>event</b></code> -
+         Key event
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=wx.KeyEvent)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="on_context_menu"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">on_context_menu</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>event</span>)</span>
+  </h3>
+  Callback that constructs and displays the popup menu
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>event</b></code> -
+         Menu event.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=wx.CommandEvent)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="on_copy"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">on_copy</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>event</span>)</span>
+  </h3>
+  Sent when the copy function is selected from the menu.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>event</b></code> -
+         Menu event.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=wx.MenuEvent)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="on_cut"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">on_cut</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>event</span>)</span>
+  </h3>
+  Sent when the cut function is selected from the menu.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>event</b></code> -
+         Menu event.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=wx.MenuEvent)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="on_key_down"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">on_key_down</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>event</span>)</span>
+  </h3>
+  Callback that responds to key stroke in pattern view.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>event</b></code> -
+         Key event
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=wx.KeyEvent)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="on_left_down"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">on_left_down</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>event</span>)</span>
+  </h3>
+  Callback that responds to left click in pattern view.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>event</b></code> -
+         Mouse event
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=wx.MouseEvent)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="on_mousewheel"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">on_mousewheel</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>event</span>)</span>
+  </h3>
+  Callback that responds to mousewheeling in pattern view.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>event</b></code> -
+         Mouse event
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=wx.MouseEvent)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="on_paste"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">on_paste</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>event</span>)</span>
+  </h3>
+  Sent when the paste function is selected from the menu.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>event</b></code> -
+         Menu event.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=wx.MenuEvent)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="on_popup_add_track"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">on_popup_add_track</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>event</span>=<span class=sig-default>None</span>)</span>
+  </h3>
+  Callback that adds a track.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="on_popup_create_copy"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">on_popup_create_copy</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>event</span>=<span class=sig-default>None</span>)</span>
+  </h3>
+  Callback that creates a copy of the current pattern.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="on_popup_create_pattern"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">on_popup_create_pattern</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>event</span>=<span class=sig-default>None</span>)</span>
+  </h3>
+  Callback that creates a pattern.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="on_popup_delete_track"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">on_popup_delete_track</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>event</span>=<span class=sig-default>None</span>)</span>
+  </h3>
+  Callback that deletes last track.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="on_popup_properties"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">on_popup_properties</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>event</span>=<span class=sig-default>None</span>)</span>
+  </h3>
+  Callback that shows the properties of the current pattern.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="on_popup_remove_pattern"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">on_popup_remove_pattern</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>event</span>=<span class=sig-default>None</span>)</span>
+  </h3>
+  Callback that removes the current pattern.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="on_popup_solo"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">on_popup_solo</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>event</span>=<span class=sig-default>None</span>)</span>
+  </h3>
+  Callback that solos current plugin.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="on_scroll_window"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">on_scroll_window</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>event</span>)</span>
+  </h3>
+  Handles window scrolling.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="onPostPaint"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">onPostPaint</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>dc</span>)</span>
+  </h3>
+  Overriding a <a href="aldrin.canvas.Canvas-class.html" 
+  class="link"><code>Canvas</code></a> method that is called after 
+  painting is completed. Draws an XOR play cursor over the pattern 
+  view.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>dc</b></code> -
+         wx device context.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=wx.PaintDC)</i>
+      </dd>
+    </dl>
+    <dl><dt><b>Overrides:</b></dt>
+      <dd><a href="../private/aldrin.canvas.CanvasBase-class.html#onPostPaint"><code>aldrin.canvas.CanvasBase.onPostPaint</code></a></dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="paste"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">paste</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  <p>Pastes the clipboard data into the pattern view.</p>
+  <p>The pasting mechanism looks a bit weird but its effective. you can 
+  serialize pattern data in a pasteable form, and upon deserialization 
+  the app tries to make parameters as valid as possible.</p>
+  Buzz used to not paste at all if the format wasnt right we still try 
+  to make some sense out of what we get.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="pattern_changed"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">pattern_changed</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Loads and redraws the pattern view after the pattern has been 
+  changed.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="pattern_range"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">pattern_range</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Iterator that moves through the entire pattern.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        Tuple pair of the next position (row, group, track, index)
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=(int, int, int, int))</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="pattern_to_charpos"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">pattern_to_charpos</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>row</span>,
+          <span class=sig-arg>group</span>,
+          <span class=sig-arg>track</span>=<span class=sig-default>0</span>,
+          <span class=sig-arg>index</span>=<span class=sig-default>0</span>,
+          <span class=sig-arg>subindex</span>=<span class=sig-default>0</span>)</span>
+  </h3>
+  Converts a pattern position into a (x,y) character coordinate.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>row</b></code> -
+         Pattern row
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=int)</i>
+      <dd><code><b>group</b></code> -
+         Specific pattern group (Connection, Global or Tracks)
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=int)</i>
+      <dd><code><b>track</b></code> -
+         Track of the group
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=int)</i>
+      <dd><code><b>index</b></code> -
+         Parameter index of the track
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=int)</i>
+      <dd><code><b>subindex</b></code> -
+         Subindex of the index
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=int)</i>
+      </dd>
+    </dl>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        (x,y) character coordinate
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=(int, int))</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="pattern_to_pos"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">pattern_to_pos</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>row</span>,
+          <span class=sig-arg>group</span>,
+          <span class=sig-arg>track</span>=<span class=sig-default>0</span>,
+          <span class=sig-arg>index</span>=<span class=sig-default>0</span>,
+          <span class=sig-arg>subindex</span>=<span class=sig-default>0</span>)</span>
+  </h3>
+  Converts a pattern position into a (x,y) pixel coordinate.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>row</b></code> -
+         Pattern row
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=int)</i>
+      <dd><code><b>group</b></code> -
+         Specific pattern group (Connection, Global or Tracks)
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=int)</i>
+      <dd><code><b>track</b></code> -
+         Track of the group
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=int)</i>
+      <dd><code><b>index</b></code> -
+         Parameter index of the track
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=int)</i>
+      <dd><code><b>subindex</b></code> -
+         Subindex of the index
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=int)</i>
+      </dd>
+    </dl>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        (x,y) pixel coordinate
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=(int, int))</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="pos_to_pattern"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">pos_to_pattern</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>position</span>)</span>
+  </h3>
+  Converts a (x,y) pixel coordinate into a pattern position.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>position</b></code> -
+         Pixel coordinate.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=(int, int))</i>
+      </dd>
+    </dl>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        (row, group, track, index, subindex) representing a pattern 
+        position.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=(int, int, int, int, int))</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="prepare_textbuffer"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">prepare_textbuffer</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Initializes a buffer to handle the current pattern data.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="randomize_selection"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">randomize_selection</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Fills the current selection with random values.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="selection_range"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">selection_range</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Iterator that moves through the current selection.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Returns:</b></dt>
+      <dd>
+        Tuple pair of the next position (row, group, track, index)
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=(int, int, int, int))</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="set_group"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">set_group</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>g</span>)</span>
+  </h3>
+  Sets the current group position.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>g</b></code> -
+         Group position.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=int)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="set_index"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">set_index</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>i</span>)</span>
+  </h3>
+  Sets the current index position.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>i</b></code> -
+         Index position.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=int)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="set_octave"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">set_octave</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>o</span>)</span>
+  </h3>
+  Sets the octave.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>o</b></code> -
+         Octave
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=int)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="set_row"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">set_row</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>r</span>)</span>
+  </h3>
+  Sets the current row position.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>r</b></code> -
+         Row position.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=int)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="set_subindex"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">set_subindex</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>si</span>)</span>
+  </h3>
+  Sets the current subindex position.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>si</b></code> -
+         Subindex position.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=int)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="set_track"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">set_track</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>t</span>)</span>
+  </h3>
+  Sets the current track position.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>t</b></code> -
+         Track position.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=int)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="show_cursor_left"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">show_cursor_left</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Puts the cursor into visible frame after a jump to the left.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="show_cursor_right"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">show_cursor_right</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Puts the cursor into visible frame after a jump to the right.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="transpose_selection"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">transpose_selection</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>offset</span>)</span>
+  </h3>
+  Transposes the current selection by an offset.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>offset</b></code> -
+         The amount that the values is incremented.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=int)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="unpack_clipboard_data"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">unpack_clipboard_data</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>d</span>)</span>
+  </h3>
+  Unpacks clipboard data
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>d</b></code> -
+         Data that is to be unpacked.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=unicode)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="update_line"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">update_line</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>row</span>)</span>
+  </h3>
+  Updates a line of the pattern.
+  <dl><dt></dt><dd>
+    <dl><dt><b>Parameters:</b></dt>
+      <dd><code><b>row</b></code> -
+         Line that will be updated.
+        <br /><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        (type=int)</i>
+      </dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="update_position"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">update_position</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>event</span>)</span>
+  </h3>
+  Updates the position.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+<br />
+
+
+<!-- =========== START OF CLASS VARIABLE DETAILS =========== -->
+<table class="details" border="1" cellpadding="3" cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="details">
+  <th colspan="2">Class Variable Details</th></tr>
+</table>
+<table width="100%" class="var-details" bgcolor="#e0e0e0"><tr><td>
+<a name="CLIPBOARD_MAGIC"></a>
+<h3>CLIPBOARD_MAGIC</h3>
+<dl>
+  <dt></dt>
+  <dd>
+    <dl>
+      <dt><b>Type:</b></dt>
+      <dd>
+          <code>str</code>
+
+      </dd>
+<span title="'PATTERNDATA'">      <dt><b>Value:</b></dt>
+      <dd><table><tr><td>
+<pre class="variable">
+<span class="variable-quote">'</span>PATTERNDATA<span class="variable-quote">'</span>                                                          </pre>
+        </td></tr></table></dd>
+</span>    </dl>
+  </dd>
+</dl></td></tr></table>
+<br />
+
+
+<!-- =========== START OF NAVBAR =========== -->
+<table class="navbar" border="0" width="100%" cellpadding="0" bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="center">
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="aldrin-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="trees.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="indices.html">Index</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar" align="right" width="100%">
+      <table border="0" cellpadding="0" cellspacing="0">
+      <tr><th class="navbar" align="center">
+        <p class="nomargin">
+          Aldrin&nbsp;API
+      </p></th></tr></table>
+    </th>
+  </tr>
+</table>
+
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+  <tr>
+    <td align="left"><font size="-2">Generated by Epydoc 2.1 on Sun Feb  4 18:01:16 2007</font></td>
+    <td align="right"><a href="http://epydoc.sourceforge.net"
+                      ><font size="-2">http://epydoc.sf.net</font></a></td>
+  </tr>
+</table>
+</body>
+</html>

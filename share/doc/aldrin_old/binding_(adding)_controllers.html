@@ -1,0 +1,87 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 2.0//EN" "TBD">
+<html xmlns="http://www.w3.org/2002/06/xhtml2" xml:lang="en" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemalocation="http://www.w3.org/2002/06/xhtml2 TBD">
+ <head>
+  <title>
+   Binding (Adding) Controllers
+  </title>
+  <link rel="stylesheet" type="text/css" href="buzzstyle.css" />
+ </head>
+ <body>
+  <div class="header">
+   <b>
+      Binding (Adding) Controllers:
+     </b>
+  </div>
+  <div>
+   <p>
+      Take the following steps to configure MIDI controllers in Aldrin:
+      <b>
+</b>
+</p>
+   <ol>
+<li>
+       First you must select an appropriate device from the list of available 
+          MIDI devices. In most cases, the first listed will be your default device 
+          and the device you wish to use. You may have other preference. If so 
+          select it from the list now.
+       <br />
+<br />
+<img height="348" src="images/pref_midiinput.gif" width="344" />
+<br />
+<br />
+</li>
+<li>
+       To bind a controller to a name in Aldrin, first click the
+       <b>
+<font color="#ff0000">
+         Add...
+        </font>
+</b>
+       button pictured above. The following window should now appear:
+       <br />
+<br />
+<img height="149" src="images/pref_addcontroller.gif" width="249" />
+<br />
+<br />
+</li>
+<li>
+       You will quickly notice that the OK button is grayed out. This is 
+          because Aldrin is waiting for you define a controller for which to bind. 
+          You do this by moving any valid continuous controller on your MIDI device. 
+          If your MIDI is functioning correctly you will see the controller number 
+          and MIDI channel displayed as so:
+       <br />
+<br />
+<img height="149" src="images/pref_addcontroller2.gif" width="249" />
+<br />
+<br />
+</li>
+<li>
+       Clicking OK on the dialog above will bind the MIDI device. You 
+          may now bind MIDI to any parameter in Aldrin.
+      </li>
+</ol>
+  </div>
+  <div>
+   Continue this for all controllers on all devices you wish to bind. Note 
+      that you may bind devices on multiple MIDI channels, but only one MIDI device.
+   <br />
+   <br />
+   The most common MIDI-controller is a plain MIDI-keyboard with a pitch control and a modulation wheel.
+	  Don't forget that you can use the modulation wheel for 128 different parameters by 
+	  assigning it to different MIDI-controls. This assigning is done with your MIDI-keyboard, not with buzz.
+	  When you assigned another control to the modulation wheel, you can go through the former four steps again and 
+	  thus re-use the modulation wheel for 128 different bindings.
+   <br />
+   <br />
+   <b>
+      Note:
+     </b>
+   This process only needs to be done once per controller. After you have binded 
+      names to your controllers, you may bind controllers to them in any song. 
+      That song then saves the binding information so that you may continue to 
+      control the same parameter with the same controllers in the future.
+  </div>
+ </body>
+</html>

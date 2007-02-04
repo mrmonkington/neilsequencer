@@ -1,0 +1,113 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 2.0//EN" "TBD">
+<html xmlns="http://www.w3.org/2002/06/xhtml2" xml:lang="en" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemalocation="http://www.w3.org/2002/06/xhtml2 TBD">
+ <head>
+  <title>
+   Understanding BPM and TPB
+  </title>
+  <link rel="stylesheet" type="text/css" href="buzzstyle.css" />
+ </head>
+ <body>
+  <div class="header">
+   Understanding BPM and TPB
+  </div>
+  <div>
+   <b>
+      BPM (Beats per Minute)
+     </b>
+   and
+   <b>
+      TPB (Ticks Per Beat)
+     </b>
+   are the 
+      two main forms of timing and speed control used throughout Aldrin. These two 
+      items are used to adjust the general speed of your song as well as sync 
+      and time certain parameters.
+  </div>
+  <div class="header">
+   <b>
+      Beats Per Minute
+     </b>
+  </div>
+  <div>
+  </div>
+  <div>
+   BPM is something that should be familiar to most musicians. BPM is the standard 
+      way to manage time in music. It literally refers to the amount of given beats 
+      per standard minute.
+   <br />
+   <br />
+   What must
+      be understood is that this is the amount of Beats Per Minute and not the 
+      amount of Rows per Minute. A row is actually equal to one tick. There for 
+      the number of rows in a minute is equal to the BPM times the TPB (i.e. 
+      Rows per minute = TPB * BPM).
+   <b>
+</b>
+  </div>
+  <div class="header">
+   <b>
+      Ticks Per Beat
+     </b>
+  </div>
+  <div>
+   <p>
+      What is a
+      <b>
+       Tick
+      </b>
+      you ask? The word 
+            'Tick'&nbsp; is used to indicate the overall position in your song. 
+            As stated, a Tick is represented by a single row in a pattern. Simple as that. Every row within your pattern editor is equal to one 
+      Tick, and in sequence editor default one bar is equal to 16 Pattern rows, so to 16 Ticks. 
+      If you want to change this, read
+      <a href="understanding_bars_in_the_sequence_editor.html">
+<b>
+        Understanding Bars in the Sequence Editor.
+       </b>
+</a>
+      The best way to explain the concept 'Ticks per Beat' 
+            is the probably the following example:
+     </p>
+   <p>
+      You compose a trance song, you standard assign 1 bassdrum hit 
+            every eight rows in the patterns of your bassdrum generator. In that 
+            case, if you want to have a commonly accepted tempo and you leave 
+            the BPM value between 120 and 150, you will have to set the TPB 
+            value at 8. Then you have your song orientated in 8 'ticks per beat' 
+            (the BPM multiplied by 8 will then give you the amount of rows that 
+            cover one minute of music).
+      <br />
+</p>
+  </div>
+  <div>
+   &nbsp;
+  </div>
+  <div class="header">
+   <b>
+      Why does Aldrin use ticks?
+     </b>
+  </div>
+  <div>
+  </div>
+  <div>
+   Ticks make for a nice common way to sync parameters and effects between 
+      each other, as well as the current song. For example it is sometimes useful 
+      to have delays be in &quot;time&quot; with the song. This means that each 
+      trailing repetition of the delay would need to hit exactly on a beat, with 
+      the rest of the song. While this would be very difficult to accomplish with 
+      units such as &quot;milliseconds&quot;, it can be easily accomplished in 
+      Aldrin by setting the delay
+   <b>
+      unit
+     </b>
+   parameter to
+   <b>
+      ticks
+     </b>
+   and then 
+      defining the number of ticks. Remember that each tick is equal to a row, 
+      so 4 ticks will delay every 4th row.
+  </div>
+ </body>
+</html>

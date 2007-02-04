@@ -1,0 +1,10 @@
+#!/usr/bin/python
+
+import os, sys
+if '--debug' in sys.argv:
+	sys.argv.remove('--debug')
+	os.system('gdb --eval-command=run --args python "%s" --nosplash $*' % sys.argv[0])
+	raise SystemExit, 0
+sys.path += [os.path.join(os.path.dirname(__file__),'..','share')]
+import aldrin
+aldrin.run(sys.argv)

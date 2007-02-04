@@ -1,0 +1,12 @@
+[Desktop Entry]
+Categories=Application;AudioVideo;
+Comment=Aldrin Modular Sequencer
+Encoding=UTF-8
+Exec=aldrin
+Hidden=false
+Icon=aldrin
+Name=Aldrin
+GenericName=Aldrin Modular Sequencer
+Terminal=false
+Type=Application
+MimeType=application/x-aldrin

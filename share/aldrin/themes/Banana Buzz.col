@@ -1,0 +1,36 @@
+MV Amp BG		AAAAAA
+MV Amp Handle		666666
+MV Arrow		CCCCCC
+MV Background		D2CD8F
+MV Effect		A99C28
+MV Effect LED Off	897C08
+MV Effect LED On	CFC24E
+MV Effect Mute		897C08
+MV Effect Pan BG	CFC24E
+MV Generator		E2CE71
+MV Generator LED Off	ADA557
+MV Generator LED On	EBE377
+MV Generator Mute	ADA557
+MV Generator Pan BG	EBE377
+MV Machine Text		494524
+MV Master		AAAAAA
+MV Master LED Off	EEEEEE
+MV Master LED On	666666
+MV Pan Handle		000000
+MV Line			000000
+MV Machine Border	000000
+PE BG			D2CD8F
+PE BG Dark		E2CE71
+PE BG Very Dark		D0C645
+PE Sel BG		999999
+PE Text			494524
+SA Amp BG		000000
+SA Amp Line		494524
+SA Freq BG		000000
+SA Freq Line		494524
+SE BG			D2CD8F
+SE BG Dark		E2CE71
+SE BG Very Dark		D0C645
+SE Line			000000
+SE Sel BG		999999
+SE Text			494524

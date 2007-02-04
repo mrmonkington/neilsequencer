@@ -1,0 +1,111 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 2.0//EN" "TBD">
+<html xmlns="http://www.w3.org/2002/06/xhtml2" xml:lang="en" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemalocation="http://www.w3.org/2002/06/xhtml2 TBD">
+ <head>
+  <title>
+   Configuring the Windows Waveform Audio Driver
+  </title>
+  <link rel="stylesheet" type="text/css" href="buzzstyle.css" />
+ </head>
+ <body>
+  <div class="header">
+   <b>
+      Configuring the Windows 
+      Waveform Audio Driver
+     </b>
+  </div>
+  <div>
+  </div>
+  <div>
+   If you are working within Windows NT 4, or using a sound-card without DirectX 
+      support you will be limited to using the Windows Waveform Audio Driver. 
+      Since the quality of this driver will not be much greater than the 
+      DirectX driver, the DirectX driver still remains the preferred of the two 
+      due to its lower latency (quicker response) ability.
+  </div>
+  <div>
+   &nbsp;
+  </div>
+  <div>
+   <img height="171" src="images/pref_wavedriver.gif" width="285" />
+  </div>
+  <div>
+   &nbsp;
+  </div>
+  <div>
+   <table width="100%" border="0" cellspacing="2" cellpadding="5">
+<tr bgcolor="#000000">
+<td width="155">
+<font color="#ffffff">
+<b>
+          Option
+         </b>
+</font>
+</td>
+<td width="415">
+<font color="#ffffff">
+<b>
+          Description
+         </b>
+</font>
+</td>
+</tr>
+<tr bgcolor="#eeeeee">
+<td width="155" valign="top">
+        Device
+       </td>
+<td width="415" valign="top">
+        This select-box will list all available 
+            audio devices on your system. In most cases only one will appear. 
+            This should work fine. If more appear, chances are you are aware of them, 
+            and you should pick the one most appropriate for Buzz.
+       </td>
+</tr>
+<tr bgcolor="#eeeeee">
+<td width="155" valign="top">
+        Samplerate
+       </td>
+<td width="415" valign="top">
+        This is the sample-rate in which Aldrin will 
+            play audio. In most cases the default (44100) will work fine. If your 
+            audio-card supports higher sampling rates feel free to use them. This 
+            will produce much clearer audio.
+       </td>
+</tr>
+<tr bgcolor="#eeeeee">
+<td width="155" valign="top">
+        Dither
+       </td>
+<td width="415" valign="top">
+        Enabling dithering produces slightly better 
+            sound quality with slightly more overhead on the CPU.
+       </td>
+</tr>
+<tr bgcolor="#eeeeee">
+<td width="155" valign="top">
+        Buffers (Left)
+       </td>
+<td width="415" valign="top">
+        This is the amount of buffer chunks 
+            your audio will be sent in. It may be worth trying various amounts
+            to adjust audio quality.
+       </td>
+</tr>
+<tr bgcolor="#eeeeee">
+<td width="155" valign="top">
+        Buffer Size (Right)
+       </td>
+<td width="415" valign="top">
+        This is the size in bytes of the Buffers 
+            your audio will be stored in. In most cases the default of 8192 should 
+            function smoothly. It may be worth trying various sizes 
+            to adjust audio quality.
+       </td>
+</tr>
+</table>
+  </div>
+  <div>
+   &nbsp;
+  </div>
+ </body>
+</html>

@@ -1,0 +1,620 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>wx._core.App</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css"></link>
+</head>
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+
+<!-- =========== START OF NAVBAR =========== -->
+<table class="navbar" border="0" width="100%" cellpadding="0" bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="center">
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="aldrin-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="trees.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="indices.html">Index</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar" align="right" width="100%">
+      <table border="0" cellpadding="0" cellspacing="0">
+      <tr><th class="navbar" align="center">
+        <p class="nomargin">
+          Aldrin&nbsp;API
+      </p></th></tr></table>
+    </th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <font size="-1"><b class="breadcrumbs">
+        Package&nbsp;wx ::
+        Module&nbsp;_core ::
+        Class&nbsp;App
+      </b></font></br>
+    </td>
+    <td><table cellpadding="0" cellspacing="0">
+      <tr><td align="right"><font size="-2">[<b>show&nbsp;private</b>&nbsp;|&nbsp;hide&nbsp;private]</font></td></tr>
+      <tr><td align="right"><font size="-2">[<a href="frames.html"target="_top">frames</a>&nbsp;|&nbsp;<a href="../private/wx._core.App-class.html" target="_top">no&nbsp;frames</a>]</font></td></tr>
+    </table></td>
+</tr></table>
+
+<!-- =========== START OF CLASS DESCRIPTION =========== -->
+<h2 class="class">Type App</h2>
+
+<pre class="base-tree">
+<a href="__builtin__.object-class.html"><code>object</code></a> --+            
+         |            
+    <a href="../private/wx._core.Object-class.html"><code>Object</code></a> --+        
+             |        
+    <a href="../private/wx._core.EvtHandler-class.html"><code>EvtHandler</code></a> --+    
+                 |    
+             <a href="../private/wx._core.PyApp-class.html"><code>PyApp</code></a> --+
+                     |
+                    <b>App</b>
+</pre><br />
+
+<dl><dt><b>Known Subclasses:</b></dt>
+<dd>
+    <a href="aldrin.main.AldrinApplication-class.html"><code>AldrinApplication</code></a></dd></dl>
+
+<hr/>
+
+<pre class="literalblock">
+The ``wx.App`` class represents the application and is used to:
+
+  * bootstrap the wxPython system and initialize the underlying
+    gui toolkit
+  * set and get application-wide properties
+  * implement the windowing system main message or event loop,
+    and to dispatch events to window instances
+  * etc.
+
+Every application must have a ``wx.App`` instance, and all
+creation of UI objects should be delayed until after the
+``wx.App`` object has been created in order to ensure that the gui
+platform and wxWidgets have been fully initialized.
+
+Normally you would derive from this class and implement an
+``OnInit`` method that creates a frame and then calls
+``self.SetTopWindow(frame)``.
+
+:see: `wx.PySimpleApp` for a simpler app class that can be used
+       directly.
+</pre>
+<hr/>
+
+
+<!-- =========== START OF METHOD SUMMARY =========== -->
+<table class="summary" border="1" cellpadding="3" cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="summary">
+  <th colspan="2">Method Summary</th></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.App-class.html#__init__" class="summary-sig-name"><code>__init__</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>redirect</span>,
+          <span class=summary-sig-arg>filename</span>,
+          <span class=summary-sig-arg>useBestVisual</span>,
+          <span class=summary-sig-arg>clearSigInt</span>)</span></code>
+<br />
+Construct a ``wx.App`` object.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.App-class.html#__del__" class="summary-sig-name"><code>__del__</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>destroy</span>)</span></code>
+<br />
+__del__(self)</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><a name="Destroy"></a><span class="summary-sig"><span class="summary-sig-name">Destroy</span>(<span class=summary-sig-arg>self</span>)</span></code>
+</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.App-class.html#MainLoop" class="summary-sig-name"><code>MainLoop</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+<br />
+Execute the main GUI event loop</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.App-class.html#RedirectStdio" class="summary-sig-name"><code>RedirectStdio</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>filename</span>)</span></code>
+<br />
+Redirect sys.stdout and sys.stderr to a file or a popup window.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><a name="RestoreStdio"></a><span class="summary-sig"><span class="summary-sig-name">RestoreStdio</span>(<span class=summary-sig-arg>self</span>)</span></code>
+</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.App-class.html#SetOutputWindowAttributes" class="summary-sig-name"><code>SetOutputWindowAttributes</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>title</span>,
+          <span class=summary-sig-arg>pos</span>,
+          <span class=summary-sig-arg>size</span>)</span></code>
+<br />
+Set the title, position and/or size of the output window if the stdio 
+has been redirected.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.App-class.html#SetTopWindow" class="summary-sig-name"><code>SetTopWindow</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>frame</span>)</span></code>
+<br />
+Set the &quot;main&quot; top level window</td></tr>
+<tr bgcolor="#e8f0f8" class="group">
+  <th colspan="2">&nbsp;&nbsp;&nbsp;&nbsp;Inherited from PyApp</th></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.PyApp-class.html#__repr__" class="summary-sig-name"><code>__repr__</code></a>(<span class=summary-sig-arg>self</span>)</span></code>
+</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.PyApp-class.html#_BootstrapApp" class="summary-sig-name"><code>_BootstrapApp</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+_BootstrapApp(self)</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.PyApp-class.html#_setCallbackInfo" class="summary-sig-name"><code>_setCallbackInfo</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+_setCallbackInfo(self, PyObject self, PyObject _class, bool 
+incref)</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.PyApp-class.html#Dispatch" class="summary-sig-name"><code>Dispatch</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+Dispatch(self) -&gt; bool</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.PyApp-class.html#Exit" class="summary-sig-name"><code>Exit</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+Exit(self)</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.PyApp-class.html#ExitMainLoop" class="summary-sig-name"><code>ExitMainLoop</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+ExitMainLoop(self)</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.PyApp-class.html#GetAppName" class="summary-sig-name"><code>GetAppName</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+GetAppName(self) -&gt; String</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.PyApp-class.html#GetAssertMode" class="summary-sig-name"><code>GetAssertMode</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+GetAssertMode(self) -&gt; int</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.PyApp-class.html#GetClassName" class="summary-sig-name"><code>GetClassName</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+GetClassName(self) -&gt; String</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.PyApp-class.html#GetComCtl32Version" class="summary-sig-name"><code>GetComCtl32Version</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+GetComCtl32Version() -&gt; int    <i>(Static method)</i>
+</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.PyApp-class.html#GetExitOnFrameDelete" class="summary-sig-name"><code>GetExitOnFrameDelete</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+GetExitOnFrameDelete(self) -&gt; bool</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.PyApp-class.html#GetMacAboutMenuItemId" class="summary-sig-name"><code>GetMacAboutMenuItemId</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+GetMacAboutMenuItemId() -&gt; long    <i>(Static method)</i>
+</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.PyApp-class.html#GetMacExitMenuItemId" class="summary-sig-name"><code>GetMacExitMenuItemId</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+GetMacExitMenuItemId() -&gt; long    <i>(Static method)</i>
+</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.PyApp-class.html#GetMacHelpMenuTitleName" class="summary-sig-name"><code>GetMacHelpMenuTitleName</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+GetMacHelpMenuTitleName() -&gt; String    <i>(Static method)</i>
+</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.PyApp-class.html#GetMacPreferencesMenuItemId" class="summary-sig-name"><code>GetMacPreferencesMenuItemId</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+GetMacPreferencesMenuItemId() -&gt; long    <i>(Static method)</i>
+</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.PyApp-class.html#GetMacSupportPCMenuShortcuts" class="summary-sig-name"><code>GetMacSupportPCMenuShortcuts</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+GetMacSupportPCMenuShortcuts() -&gt; bool    <i>(Static method)</i>
+</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.PyApp-class.html#GetPrintMode" class="summary-sig-name"><code>GetPrintMode</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+GetPrintMode(self) -&gt; int</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.PyApp-class.html#GetTopWindow" class="summary-sig-name"><code>GetTopWindow</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+GetTopWindow(self) -&gt; Window</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.PyApp-class.html#GetTraits" class="summary-sig-name"><code>GetTraits</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+GetTraits(self) -&gt; wxAppTraits</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.PyApp-class.html#GetUseBestVisual" class="summary-sig-name"><code>GetUseBestVisual</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+GetUseBestVisual(self) -&gt; bool</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.PyApp-class.html#GetVendorName" class="summary-sig-name"><code>GetVendorName</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+GetVendorName(self) -&gt; String</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.PyApp-class.html#IsActive" class="summary-sig-name"><code>IsActive</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+IsActive(self) -&gt; bool</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.PyApp-class.html#IsMainLoopRunning" class="summary-sig-name"><code>IsMainLoopRunning</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+IsMainLoopRunning() -&gt; bool    <i>(Static method)</i>
+</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.PyApp-class.html#Pending" class="summary-sig-name"><code>Pending</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+Pending(self) -&gt; bool</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.PyApp-class.html#ProcessIdle" class="summary-sig-name"><code>ProcessIdle</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+ProcessIdle(self) -&gt; bool</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.PyApp-class.html#ProcessPendingEvents" class="summary-sig-name"><code>ProcessPendingEvents</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+ProcessPendingEvents(self)</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.PyApp-class.html#SendIdleEvents" class="summary-sig-name"><code>SendIdleEvents</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+SendIdleEvents(self, Window win, IdleEvent event) -&gt; bool</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.PyApp-class.html#SetAppName" class="summary-sig-name"><code>SetAppName</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+SetAppName(self, String name)</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.PyApp-class.html#SetAssertMode" class="summary-sig-name"><code>SetAssertMode</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+SetAssertMode(self, int mode)</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.PyApp-class.html#SetClassName" class="summary-sig-name"><code>SetClassName</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+SetClassName(self, String name)</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.PyApp-class.html#SetExitOnFrameDelete" class="summary-sig-name"><code>SetExitOnFrameDelete</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+SetExitOnFrameDelete(self, bool flag)</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.PyApp-class.html#SetMacAboutMenuItemId" class="summary-sig-name"><code>SetMacAboutMenuItemId</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+SetMacAboutMenuItemId(long val)    <i>(Static method)</i>
+</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.PyApp-class.html#SetMacExitMenuItemId" class="summary-sig-name"><code>SetMacExitMenuItemId</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+SetMacExitMenuItemId(long val)    <i>(Static method)</i>
+</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.PyApp-class.html#SetMacHelpMenuTitleName" class="summary-sig-name"><code>SetMacHelpMenuTitleName</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+SetMacHelpMenuTitleName(String val)    <i>(Static method)</i>
+</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.PyApp-class.html#SetMacPreferencesMenuItemId" class="summary-sig-name"><code>SetMacPreferencesMenuItemId</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+SetMacPreferencesMenuItemId(long val)    <i>(Static method)</i>
+</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.PyApp-class.html#SetMacSupportPCMenuShortcuts" class="summary-sig-name"><code>SetMacSupportPCMenuShortcuts</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+SetMacSupportPCMenuShortcuts(bool val)    <i>(Static method)</i>
+</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.PyApp-class.html#SetPrintMode" class="summary-sig-name"><code>SetPrintMode</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+SetPrintMode(self, int mode)</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.PyApp-class.html#SetUseBestVisual" class="summary-sig-name"><code>SetUseBestVisual</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+SetUseBestVisual(self, bool flag)</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.PyApp-class.html#SetVendorName" class="summary-sig-name"><code>SetVendorName</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+SetVendorName(self, String name)</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.PyApp-class.html#WakeUpIdle" class="summary-sig-name"><code>WakeUpIdle</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+WakeUpIdle(self)</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.PyApp-class.html#Yield" class="summary-sig-name"><code>Yield</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+Yield(self, bool onlyIfNeeded=False) -&gt; bool
+
+Process all currently pending events right now, instead of waiting
+until return to the event loop.</td></tr>
+<tr bgcolor="#e8f0f8" class="group">
+  <th colspan="2">&nbsp;&nbsp;&nbsp;&nbsp;Inherited from EvtHandler</th></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.EvtHandler-class.html#_setOORInfo" class="summary-sig-name"><code>_setOORInfo</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+_setOORInfo(self, PyObject _self, bool incref=True)</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.EvtHandler-class.html#AddPendingEvent" class="summary-sig-name"><code>AddPendingEvent</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+AddPendingEvent(self, Event event)</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.EvtHandler-class.html#Bind" class="summary-sig-name"><code>Bind</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>event</span>,
+          <span class=summary-sig-arg>handler</span>,
+          <span class=summary-sig-arg>source</span>,
+          <span class=summary-sig-arg>id</span>,
+          <span class=summary-sig-arg>id2</span>)</span></code>
+<br />
+Bind an event to an event handler.</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.EvtHandler-class.html#Connect" class="summary-sig-name"><code>Connect</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+Connect(self, int id, int lastId, int eventType, PyObject func)</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.EvtHandler-class.html#Disconnect" class="summary-sig-name"><code>Disconnect</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+Disconnect(self, int id, int lastId=-1, wxEventType 
+eventType=wxEVT_NULL) -&gt; bool</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.EvtHandler-class.html#GetEvtHandlerEnabled" class="summary-sig-name"><code>GetEvtHandlerEnabled</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+GetEvtHandlerEnabled(self) -&gt; bool</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.EvtHandler-class.html#GetNextHandler" class="summary-sig-name"><code>GetNextHandler</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+GetNextHandler(self) -&gt; EvtHandler</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.EvtHandler-class.html#GetPreviousHandler" class="summary-sig-name"><code>GetPreviousHandler</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+GetPreviousHandler(self) -&gt; EvtHandler</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.EvtHandler-class.html#ProcessEvent" class="summary-sig-name"><code>ProcessEvent</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+ProcessEvent(self, Event event) -&gt; bool</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.EvtHandler-class.html#SetEvtHandlerEnabled" class="summary-sig-name"><code>SetEvtHandlerEnabled</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+SetEvtHandlerEnabled(self, bool enabled)</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.EvtHandler-class.html#SetNextHandler" class="summary-sig-name"><code>SetNextHandler</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+SetNextHandler(self, EvtHandler handler)</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.EvtHandler-class.html#SetPreviousHandler" class="summary-sig-name"><code>SetPreviousHandler</code></a>(<span class="summary-sig-vararg">*args</span>,
+          <span class="summary-sig-kwarg">**kwargs</span>)</span></code>
+<br />
+SetPreviousHandler(self, EvtHandler handler)</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="../private/wx._core.EvtHandler-class.html#Unbind" class="summary-sig-name"><code>Unbind</code></a>(<span class=summary-sig-arg>self</span>,
+          <span class=summary-sig-arg>event</span>,
+          <span class=summary-sig-arg>source</span>,
+          <span class=summary-sig-arg>id</span>,
+          <span class=summary-sig-arg>id2</span>)</span></code>
+<br />
+Disconencts the event handler binding for event from self.</td></tr>
+<tr bgcolor="#e8f0f8" class="group">
+  <th colspan="2">&nbsp;&nbsp;&nbsp;&nbsp;Inherited from object</th></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="__builtin__.object-class.html#__delattr__" class="summary-sig-name"><code>__delattr__</code></a>(<span class="summary-sig-vararg">...</span>)</span></code>
+<br />
+x.__delattr__('name') &lt;==&gt; del x.name</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="__builtin__.object-class.html#__getattribute__" class="summary-sig-name"><code>__getattribute__</code></a>(<span class="summary-sig-vararg">...</span>)</span></code>
+<br />
+x.__getattribute__('name') &lt;==&gt; x.name</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="__builtin__.object-class.html#__hash__" class="summary-sig-name"><code>__hash__</code></a>(<span class=summary-sig-arg>x</span>)</span></code>
+<br />
+x.__hash__() &lt;==&gt; hash(x)</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="__builtin__.object-class.html#__new__" class="summary-sig-name"><code>__new__</code></a>(<span class=summary-sig-arg>T</span>,
+          <span class=summary-sig-arg>S</span>,
+          <span class="summary-sig-vararg">...</span>)</span></code>
+<br />
+T.__new__(S, ...) -&gt; a new object with type S, a subtype of T</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="__builtin__.object-class.html#__reduce__" class="summary-sig-name"><code>__reduce__</code></a>(<span class="summary-sig-vararg">...</span>)</span></code>
+<br />
+helper for pickle</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="__builtin__.object-class.html#__reduce_ex__" class="summary-sig-name"><code>__reduce_ex__</code></a>(<span class="summary-sig-vararg">...</span>)</span></code>
+<br />
+helper for pickle</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="__builtin__.object-class.html#__setattr__" class="summary-sig-name"><code>__setattr__</code></a>(<span class="summary-sig-vararg">...</span>)</span></code>
+<br />
+x.__setattr__('name', value) &lt;==&gt; x.name = value</td></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1">&nbsp;</font></td>
+  <td><code><span class="summary-sig"><a href="__builtin__.object-class.html#__str__" class="summary-sig-name"><code>__str__</code></a>(<span class=summary-sig-arg>x</span>)</span></code>
+<br />
+x.__str__() &lt;==&gt; str(x)</td></tr>
+</table><br />
+
+
+<!-- =========== START OF CLASS VARIABLE SUMMARY =========== -->
+<table class="summary" border="1" cellpadding="3" cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="summary">
+  <th colspan="2">Class Variable Summary</th></tr>
+<tr><td align="right" valign="top" width="15%"><font size="-1"><code>classobj</code></font></td>
+  <td><a name="outputWindowClass"></a><b><code>outputWindowClass</code></b> = <a href="../private/wx._core.PyOnDemandOutputWindow-class.html"><code>wx._core.PyOnDemandOutputWindow</code></a></td></tr>
+</table><br />
+
+
+<!-- =========== START OF INSTANCE METHOD DETAILS =========== -->
+<table class="details" border="1" cellpadding="3" cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="details">
+  <th colspan="2">Instance Method Details</th></tr>
+</table>
+
+<a name="__init__"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">__init__</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>redirect</span>=<span class=sig-default>False</span>,
+          <span class=sig-arg>filename</span>=<span class=sig-default>None</span>,
+          <span class=sig-arg>useBestVisual</span>=<span class=sig-default>False</span>,
+          <span class=sig-arg>clearSigInt</span>=<span class=sig-default>True</span>)</span>
+    <br /><i>(Constructor)</i>
+  </h3>
+<pre class="literalblock">
+Construct a ``wx.App`` object.  
+
+:param redirect: Should ``sys.stdout`` and ``sys.stderr`` be
+    redirected?  Defaults to True on Windows and Mac, False
+    otherwise.  If `filename` is None then output will be
+    redirected to a window that pops up as needed.  (You can
+    control what kind of window is created for the output by
+    resetting the class variable ``outputWindowClass`` to a
+    class of your choosing.)
+
+:param filename: The name of a file to redirect output to, if
+    redirect is True.
+
+:param useBestVisual: Should the app try to use the best
+    available visual provided by the system (only relevant on
+    systems that have more than one visual.)  This parameter
+    must be used instead of calling `SetUseBestVisual` later
+    on because it must be set before the underlying GUI
+    toolkit is initialized.
+
+:param clearSigInt: Should SIGINT be cleared?  This allows the
+    app to terminate upon a Ctrl-C in the console like other
+    GUI apps will.
+
+:note: You should override OnInit to do applicaition
+    initialization to ensure that the system, toolkit and
+    wxWidgets are fully initialized.
+</pre>
+  <dl><dt></dt><dd>
+    <dl><dt><b>Overrides:</b></dt>
+      <dd><a href="../private/wx._core.PyApp-class.html#__init__"><code>wx._core.PyApp.__init__</code></a></dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="__del__"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">__del__</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>destroy</span>=<span class=sig-default>&lt;unbound&nbsp;method&nbsp;PyApp.__del__&gt;</span>)</span>
+    <br /><i>(Destructor)</i>
+  </h3>
+  __del__(self)
+  <dl><dt></dt><dd>
+    <dl><dt><b>Overrides:</b></dt>
+      <dd><a href="../private/wx._core.PyApp-class.html#__del__"><code>wx._core.PyApp.__del__</code></a> <i>(inherited documentation)</i>
+</dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="MainLoop"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">MainLoop</span>(<span class=sig-arg>self</span>)</span>
+  </h3>
+  Execute the main GUI event loop
+  <dl><dt></dt><dd>
+    <dl><dt><b>Overrides:</b></dt>
+      <dd><a href="../private/wx._core.PyApp-class.html#MainLoop"><code>wx._core.PyApp.MainLoop</code></a></dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+
+<a name="RedirectStdio"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">RedirectStdio</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>filename</span>=<span class=sig-default>None</span>)</span>
+  </h3>
+  Redirect sys.stdout and sys.stderr to a file or a popup window.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="SetOutputWindowAttributes"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">SetOutputWindowAttributes</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>title</span>=<span class=sig-default>None</span>,
+          <span class=sig-arg>pos</span>=<span class=sig-default>None</span>,
+          <span class=sig-arg>size</span>=<span class=sig-default>None</span>)</span>
+  </h3>
+  Set the title, position and/or size of the output window if the 
+  stdio has been redirected. This should be called before any output 
+  would cause the output window to be created.
+  <dl><dt></dt><dd>
+  </dd></dl>
+</td></tr></table>
+
+<a name="SetTopWindow"></a>
+<table width="100%" class="func-details" bgcolor="#e0e0e0"><tr><td>
+  <h3><span class="sig"><span class="sig-name">SetTopWindow</span>(<span class=sig-arg>self</span>,
+          <span class=sig-arg>frame</span>)</span>
+  </h3>
+  Set the &quot;main&quot; top level window
+  <dl><dt></dt><dd>
+    <dl><dt><b>Overrides:</b></dt>
+      <dd><a href="../private/wx._core.PyApp-class.html#SetTopWindow"><code>wx._core.PyApp.SetTopWindow</code></a></dd>
+    </dl>
+  </dd></dl>
+</td></tr></table>
+<br />
+
+
+<!-- =========== START OF NAVBAR =========== -->
+<table class="navbar" border="0" width="100%" cellpadding="0" bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="center">
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="aldrin-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="trees.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="indices.html">Index</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar">&nbsp;&nbsp;&nbsp;<a class="navbar" href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+    <th class="navbar" align="right" width="100%">
+      <table border="0" cellpadding="0" cellspacing="0">
+      <tr><th class="navbar" align="center">
+        <p class="nomargin">
+          Aldrin&nbsp;API
+      </p></th></tr></table>
+    </th>
+  </tr>
+</table>
+
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+  <tr>
+    <td align="left"><font size="-2">Generated by Epydoc 2.1 on Sun Feb  4 18:01:14 2007</font></td>
+    <td align="right"><a href="http://epydoc.sourceforge.net"
+                      ><font size="-2">http://epydoc.sf.net</font></a></td>
+  </tr>
+</table>
+</body>
+</html>

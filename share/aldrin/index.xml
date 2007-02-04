@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<pluginindex xmlns:xpix="http://www.zzub.org/aldrin/index">
+	<ref label="Audio Input" uri="@zzub.org/input"/>
+	<separator/>
+	<ref label="Matilde Tracker (Sampler)" uri="@rift.dk/generator/Matilde+Tracker;1.5"/>
+	<ref label="Makk M4wII (Synthesizer)" uri="@makk.org/M4wII;1"/>
+	<refs pattern="@trac.zeitherrschaft.org/aldrin/lunar/generator/*"/>
+	<separator/>
+	<ref label="Frequency UnKnown O-Delay (Delay)" uri="@frequencyunknown.org/o-delay;1"/>
+	<ref label="FireSledge ParamEQ (Equalizer)" uri="@FireSledge.org/ParamEQ;1"/>
+	<ref label="Graue SoftSat (Distortion)" uri="graue@oceanbase.org/effect/softsat;1"/>
+	<ref label="Joachims Multi (Mastering)" uri="@binarywerks.dk/multi-2;1"/>
+	<refs pattern="@trac.zeitherrschaft.org/aldrin/lunar/effect/*"/>
+</pluginindex>
