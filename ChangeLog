@@ -1,6 +1,10 @@
 Aldrin 0.10.1 (Venus)
 =====================
 
+Enhancements:
+
+XXX: --profile option.
+
 Bugs fixed:
 
 XXX: CPU spikes when in sequencer or pattern editor.
