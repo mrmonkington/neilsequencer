@@ -1035,6 +1035,7 @@ class RoutePanel(wx.Panel):
 	def Show(self, show):
 		wx.Panel.Show(self)
 		self.view.Show(show)
+		self.Layout()
 		
 	def reset(self):
 		"""

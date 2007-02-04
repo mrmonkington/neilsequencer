@@ -97,18 +97,7 @@ class CanvasBase:
 		if self.doublebuffered:
 			self.MakeNewBuffer()
 			self.DrawBuffer(*args,**kargs)
-		CanvasBase.Refresh(self)
-		
-	def Refresh(self):
-		dc = wx.ClientDC(self)
-		dc.BeginDrawing()
-		if self.doublebuffered:
-			self.Blit(dc)
-		else:
-			self.buffer = dc
-			self.DrawBuffer()
-		self.onPostPaint(dc)
-		dc.EndDrawing()
+		self.Refresh()
 		
 	def onPostPaint(self, dc):
 		pass

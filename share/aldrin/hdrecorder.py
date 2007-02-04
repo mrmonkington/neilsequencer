@@ -77,7 +77,7 @@ class HDRecorderDialog(wx.Dialog):
 		self.filename = ''
 		self.timer = wx.Timer(self, -1)
 		self.timer.Start(100)
-		wx.EVT_TIMER(self, -1, self.on_timer)
+		wx.EVT_TIMER(self, self.timer.GetId(), self.on_timer)
 		
 	def on_autostartstop(self, event):
 		"""

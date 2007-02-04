@@ -233,8 +233,8 @@ class SequencerView(Canvas):
 		self.dragging = False
 		Canvas.__init__(self, *args, **kwds)
 		self.timer = wx.Timer(self, -1)
-		self.timer.Start(1000/25)
-		wx.EVT_TIMER(self, -1, self.update_position)
+		self.timer.Start(100)
+		wx.EVT_TIMER(self, self.timer.GetId(), self.update_position)
 		wx.EVT_MOUSEWHEEL(self, self.on_mousewheel)
 		wx.EVT_LEFT_DOWN(self, self.on_left_down)
 		wx.EVT_MOTION(self, self.on_motion)

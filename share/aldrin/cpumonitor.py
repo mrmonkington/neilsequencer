@@ -59,7 +59,7 @@ class CPUMonitorDialog(wx.Dialog):
 		self.timer = wx.Timer(self, -1)
 		self.timer.Start(250)
 		wx.EVT_SIZE(self, self.on_size)
-		wx.EVT_TIMER(self, -1, self.on_timer)
+		wx.EVT_TIMER(self, self.timer.GetId(), self.on_timer)
 		
 	def on_size(self, event):
 		"""

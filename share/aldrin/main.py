@@ -1463,7 +1463,7 @@ class AmpView(Canvas):
 		Canvas.__init__(self, *args, **kwds)
 		self.timer = wx.Timer(self, -1)
 		self.timer.Start(1000 / 25)
-		wx.EVT_TIMER(self, -1, self.on_update)
+		wx.EVT_TIMER(self, self.timer.GetId(), self.on_update)
 		
 	def set_amp(self, amp, t):
 		self.amps.put(amp, t)
@@ -1663,7 +1663,7 @@ class TimePanel(wx.Panel):
 		self.Layout()
 		self.timer = wx.Timer(self, -1)
 		self.timer.Start(100)
-		wx.EVT_TIMER(self, -1, self.update_label)
+		wx.EVT_TIMER(self, self.timer.GetId(), self.update_label)
 		
 	def update_label(self, event = None):
 		"""
