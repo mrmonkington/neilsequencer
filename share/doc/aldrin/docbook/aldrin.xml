@@ -582,6 +582,301 @@ scons: done building targets.</screen>
 
       <para>These keyboard shortcuts can be triggered from all locations in
       the application.</para>
+
+	<variablelist>
+		<varlistentry>
+			<term>
+				<keycap>F2</keycap>
+			</term>
+			<listitem>
+				<para>Switch to <interface>Pattern View</interface>.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycap>F3</keycap>
+			</term>
+			<listitem>
+				<para>Switch to <interface>Router View</interface>.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycap>F4</keycap>
+			</term>
+			<listitem>
+				<para>Switch to <interface>Sequence View</interface>.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycap>F5</keycap>
+			</term>
+			<listitem>
+				<para>Play song from beginning of song or loop.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycap>F6</keycap>
+			</term>
+			<listitem>
+				<para>Play song from current cursor position in sequencer.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycap>F7</keycap>
+			</term>
+			<listitem>
+				<para>Enable/Disable automation.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycap>F8</keycap>
+			</term>
+			<listitem>
+				<para>Stop song and plugins.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycap>F9</keycap>
+			</term>
+			<listitem>
+				<para>Show <interface>Sound Library</interface>.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycap>F10</keycap>
+			</term>
+			<listitem>
+				<para>Show <interface>Info View</interface>.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycap>F12</keycap>
+			</term>
+			<listitem>
+				<para>Enable/disable audio driver.</para>
+			</listitem>
+		</varlistentry>
+	</variablelist> 
+
     </sect1>
+	
+    <sect1>
+      <title>Pattern View Shortcuts</title>
+
+      <para>These keyboard shortcuts can be triggered from within the Pattern view.</para>
+
+	<variablelist>
+		<varlistentry>
+			<term>
+				<keycap>A</keycap>-<keycap>Z</keycap>/<keycap>0</keycap>-<keycap>9</keycap>
+			</term>
+			<listitem>
+				<para>Insert note/value and advance one row.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycap>Arrow Keys</keycap>
+			</term>
+			<listitem>
+				<para>Change column/row.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycombo><keycap>Ctrl</keycap><keycap>Arrow Up</keycap></keycombo>/<keycombo><keycap>Ctrl</keycap><keycap>Arrow Down</keycap></keycombo>
+			</term>
+			<listitem>
+				<para>Switch to previous/next plugin.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycap>Page Up</keycap>/<keycap>Page Down</keycap>
+			</term>
+			<listitem>
+				<para>Move 16 rows back/forward.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycap>Home</keycap>
+			</term>
+			<listitem>
+				<para>Move to begin of track/tracks/global group/row.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycap>Insert</keycap>/<keycap>Delete</keycap>
+			</term>
+			<listitem>
+				<para>Insert/delete one row.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycap>Return</keycap>
+			</term>
+			<listitem>
+				<para>Switch to <interface>Sequence View</interface>.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycombo><keycap>Ctrl</keycap><keycap>Return</keycap></keycombo>
+			</term>
+			<listitem>
+				<para>Create new pattern.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycombo><keycap>Ctrl</keycap><keycap>Shift</keycap><keycap>Return</keycap></keycombo>
+			</term>
+			<listitem>
+				<para>Copy current pattern.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycap>Numpad +</keycap>/<keycap>Numpad -</keycap>
+			</term>
+			<listitem>
+				<para>Switch to next/previous pattern of plugin.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycombo><keycap>Shift</keycap><keycap>Numpad +</keycap></keycombo>/<keycombo><keycap>Shift</keycap><keycap>Numpad -</keycap></keycombo>
+			</term>
+			<listitem>
+				<para>Transpose selection up/down.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycombo><keycap>Ctrl</keycap><keycap>Numpad +</keycap></keycombo>/<keycombo><keycap>Ctrl</keycap><keycap>Numpad -</keycap></keycombo>
+			</term>
+			<listitem>
+				<para>Add new/delete last track.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycap>Numpad *</keycap>/<keycap>Numpad %</keycap>
+			</term>
+			<listitem>
+				<para>Increase/decrease current base octave.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycap>Tab</keycap>/<keycombo><keycap>Shift</keycap><keycap>Tab</keycap></keycombo>
+			</term>
+			<listitem>
+				<para>Move to next/previous track.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycombo><keycap>Ctrl</keycap><keycap>BackSpace</keycap></keycombo>
+			</term>
+			<listitem>
+				<para>Show <interface>Pattern Properties</interface> dialog.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycombo><keycap>Ctrl</keycap><keycap>Delete</keycap></keycombo>
+			</term>
+			<listitem>
+				<para>Delete current pattern.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycombo><keycap>Ctrl</keycap><keycap>1</keycap></keycombo>-<keycombo><keycap>Ctrl</keycap><keycap>9</keycap></keycombo>
+			</term>
+			<listitem>
+				<para>Change current stepsize to 1-9 steps.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycombo><keycap>Ctrl</keycap><keycap>B</keycap></keycombo>/<keycombo><keycap>Ctrl</keycap><keycap>E</keycap></keycombo>
+			</term>
+			<listitem>
+				<para>Mark begin/end of current column/track/group/all (press multiple to select).</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycombo><keycap>Ctrl</keycap><keycap>C</keycap></keycombo>
+			</term>
+			<listitem>
+				<para>Copy current selection to clipboard.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycombo><keycap>Ctrl</keycap><keycap>V</keycap></keycombo>
+			</term>
+			<listitem>
+				<para>Paste to cursor position from clipboard.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycombo><keycap>Ctrl</keycap><keycap>X</keycap></keycombo>
+			</term>
+			<listitem>
+				<para>Cut current selection and copy to clipboard.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycombo><keycap>Ctrl</keycap><keycap>R</keycap></keycombo>
+			</term>
+			<listitem>
+				<para>Randomize current selection.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycombo><keycap>Ctrl</keycap><keycap>I</keycap></keycombo>
+			</term>
+			<listitem>
+				<para>Interpolate current selection.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycombo><keycap>Ctrl</keycap><keycap>U</keycap></keycombo>
+			</term>
+			<listitem>
+				<para>Reset selection.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycombo><keycap>Ctrl</keycap><keycap>L</keycap></keycombo>
+			</term>
+			<listitem>
+				<para>Solo current plugin.</para>
+			</listitem>
+		</varlistentry>
+	</variablelist> 
+
+    </sect1>
+	
   </chapter>
 </book>

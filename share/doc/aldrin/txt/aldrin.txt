@@ -29,6 +29,7 @@ Leonard Ritter
    3. Keyboard Shortcuts Reference
 
         3.1. Universal Shortcuts
+        3.2. Pattern View Shortcuts
 
    List of Figures
    2-1. Aldrin main window after first start.
@@ -442,3 +443,115 @@ Chapter 3. Keyboard Shortcuts Reference
 
    These keyboard shortcuts can be triggered from all locations
    in the application.
+
+   F2
+          Switch to Pattern View.
+
+   F3
+          Switch to Router View.
+
+   F4
+          Switch to Sequence View.
+
+   F5
+          Play song from beginning of song or loop.
+
+   F6
+          Play song from current cursor position in sequencer.
+
+   F7
+          Enable/Disable automation.
+
+   F8
+          Stop song and plugins.
+
+   F9
+          Show Sound Library.
+
+   F10
+          Show Info View.
+
+   F12
+          Enable/disable audio driver.
+     _________________________________________________________
+
+3.2. Pattern View Shortcuts
+
+   These keyboard shortcuts can be triggered from within the
+   Pattern view.
+
+   A-Z/0-9
+          Insert note/value and advance one row.
+
+   Arrow Keys
+          Change column/row.
+
+   Ctrl-Arrow Up/Ctrl-Arrow Down
+          Switch to previous/next plugin.
+
+   Page Up/Page Down
+          Move 16 rows back/forward.
+
+   Home
+          Move to begin of track/tracks/global group/row.
+
+   Insert/Delete
+          Insert/delete one row.
+
+   Return
+          Switch to Sequence View.
+
+   Ctrl-Return
+          Create new pattern.
+
+   Ctrl-Shift-Return
+          Copy current pattern.
+
+   Numpad +/Numpad -
+          Switch to next/previous pattern of plugin.
+
+   Shift-Numpad +/Shift-Numpad -
+          Transpose selection up/down.
+
+   Ctrl-Numpad +/Ctrl-Numpad -
+          Add new/delete last track.
+
+   Numpad */Numpad %
+          Increase/decrease current base octave.
+
+   Tab/Shift-Tab
+          Move to next/previous track.
+
+   Ctrl-BackSpace
+          Show Pattern Properties dialog.
+
+   Ctrl-Delete
+          Delete current pattern.
+
+   Ctrl-1-Ctrl-9
+          Change current stepsize to 1-9 steps.
+
+   Ctrl-B/Ctrl-E
+          Mark begin/end of current column/track/group/all (press
+          multiple to select).
+
+   Ctrl-C
+          Copy current selection to clipboard.
+
+   Ctrl-V
+          Paste to cursor position from clipboard.
+
+   Ctrl-X
+          Cut current selection and copy to clipboard.
+
+   Ctrl-R
+          Randomize current selection.
+
+   Ctrl-I
+          Interpolate current selection.
+
+   Ctrl-U
+          Reset selection.
+
+   Ctrl-L
+          Solo current plugin.
