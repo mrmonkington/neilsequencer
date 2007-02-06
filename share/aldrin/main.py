@@ -177,8 +177,11 @@ class AldrinFrame(wx.Frame, IMainFrame):
 		Initializer.
 		"""
 		IMainFrame.__init__(self)
+		self._cbtime = time.time()
+		self._cbcalls = 0
+		self._hevcalls = 0
+		self._hevtimes = 0
 		global player, playstarttime
-		
 		player = Player()
 		player.set_callback(self.player_callback)
 		# load blacklist file and add blacklist entries
@@ -430,7 +433,7 @@ class AldrinFrame(wx.Frame, IMainFrame):
 		self.show_machines(None)
 		
 		self.timer = wx.Timer(self, -1)
-		self.timer.Start(100)
+		self.timer.Start(40, True)
 		wx.EVT_TIMER(self, self.timer.GetId(), self.on_handle_events)
 		
 		self.document_changed()
@@ -512,6 +515,7 @@ class AldrinFrame(wx.Frame, IMainFrame):
 				self.aldrinframe_toolbar.ToggleTool(self.PLAY, True)
 			else:
 				self.aldrinframe_toolbar.ToggleTool(self.PLAY, False)
+		self._cbcalls += 1
 		return result
 		
 	def get_active_view(self):
@@ -814,7 +818,18 @@ class AldrinFrame(wx.Frame, IMainFrame):
 		@param event: timer event
 		@type event: wx.TimerEvent
 		"""
+		t1 = time.time()
 		player.handle_events()
+		t2 = time.time() - t1
+		self._hevtimes = (self._hevtimes * 0.9) + (t2 * 0.1)
+		self.timer.Start(40, True)
+		self._hevcalls += 1
+		t = time.time()
+		if (t - self._cbtime) > 1:
+			#print self._hevcalls, self._cbcalls, "%.2fms" % (self._hevtimes*1000)
+			self._cbcalls = 0
+			self._hevcalls = 0
+			self._cbtime = t
 		
 	def on_help_contents(self, event):
 		"""
@@ -1731,8 +1746,8 @@ def run(argv):
 	global app_args
 	app_options, app_args = parser.parse_args(argv)
 	if app_options.profile:
-		import profile
-		profile.runctx('main()', globals(), locals(), app_options.profile)
+		import cProfile
+		cProfile.runctx('main()', globals(), locals(), app_options.profile)
 	else:
 		main()
 

@@ -443,7 +443,7 @@ class PresetDialog(wx.Dialog):
 		@type event: wx.Event
 		"""
 
-class ParameterDialog(wx.Frame):
+class ParameterDialog(wx.Dialog):
 	"""
 	Displays parameter sliders for a plugin in a new Dialog.
 	"""
@@ -462,8 +462,8 @@ class ParameterDialog(wx.Frame):
 		"""
 		self.rootwindow = rootwindow
 		self.parent = args[0]
-		kwds['style'] = wx.DEFAULT_FRAME_STYLE | wx.RESIZE_BORDER | wx.FRAME_TOOL_WINDOW
-		wx.Frame.__init__(self, *args, **kwds)
+		kwds['style'] = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER #| wx.FRAME_TOOL_WINDOW
+		wx.Dialog.__init__(self, *args, **kwds)
 		self.plugin = plugin
 		self.parent.plugin_dialogs[self.plugin] = self
 		name = prepstr(self.plugin.get_name())
@@ -566,7 +566,6 @@ class ParameterDialog(wx.Frame):
 		
 		scrollwindow.SetAutoLayout(True)
 		scrollwindow.SetSizer(rowgroup)
-		#scrollwindow.SetVirtualSizeHints(16,16)
 		scrollwindow.SetScrollRate(1,1)
 		
 		toplevelgroup.Add(scrollwindow, 1, wx.EXPAND|wx.ALIGN_TOP, 0)
@@ -590,7 +589,7 @@ class ParameterDialog(wx.Frame):
 	def Destroy(self):
 		self.rootwindow.event_handlers.remove(self.on_callback)
 		del self.parent.plugin_dialogs[self.plugin]
-		wx.Frame.Destroy(self)
+		wx.Dialog.Destroy(self)
 		
 	def on_unbind_all(self, event):
 		"""
@@ -1270,7 +1269,7 @@ class RouteView(Canvas):
 			wx.EVT_MENU(self, self.CMDBASEID+i, self.on_popup_command)
 		wx.EVT_SET_FOCUS(self, self.on_focus)
 		self.draw_led_timer = wx.Timer(self, -1)
-		self.draw_led_timer.Start(100)
+		self.draw_led_timer.Start(40, True)
 		wx.EVT_TIMER(self, self.draw_led_timer.GetId(), self.on_draw_led_timer)
 		
 	def update_colors(self):
@@ -1889,6 +1888,7 @@ class RouteView(Canvas):
 			pass
 		else:
 			self.ReDraw(leds_only = True)
+			self.draw_led_timer.Start(100, True)
 		
 	def draw_leds(self):
 		"""
@@ -1903,11 +1903,9 @@ class RouteView(Canvas):
 		textcolor = cfg.get_color("MV Machine Text")
 		pluginpen = cfg.get_pen("MV Machine Border")
 		font = wx.Font(8, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
-		PW, PH = PLUGINWIDTH / 2, PLUGINHEIGHT / 2
-		mplist = [(mp,get_pixelpos(*mp.get_position())) for mp in player.get_plugin_list()]
 		region = wx.Region(0,0,w,h)
 		PW, PH = PLUGINWIDTH / 2, PLUGINHEIGHT / 2
-		for mp,(rx,ry) in mplist:
+		for mp,(rx,ry) in ((mp,get_pixelpos(*mp.get_position())) for mp in player.get_plugin_list()):
 			rx,ry = rx - PW, ry - PH
 			pi = self.plugin_info.get(mp,None)
 			if not pi:
@@ -2018,5 +2016,5 @@ __all__ = [
 if __name__ == '__main__':
 	import sys, utils
 	from main import run
-	sys.argv.append(utils.filepath('demosongs/paniq-knark.ccm'))
+	#sys.argv.append(utils.filepath('demosongs/paniq-knark.ccm'))
 	run(sys.argv)
