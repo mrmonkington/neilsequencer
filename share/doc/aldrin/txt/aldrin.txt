@@ -30,6 +30,7 @@ Leonard Ritter
 
         3.1. Universal Shortcuts
         3.2. Pattern View Shortcuts
+        3.3. Sequence View Shortcuts
 
    List of Figures
    2-1. Aldrin main window after first start.
@@ -552,6 +553,79 @@ Chapter 3. Keyboard Shortcuts Reference
 
    Ctrl-U
           Reset selection.
+
+   Ctrl-L
+          Solo current plugin.
+     _________________________________________________________
+
+3.3. Sequence View Shortcuts
+
+   These keyboard shortcuts can be triggered from within the
+   Sequence View.
+
+   0-9/A-Z
+          Insert associated pattern and advance by pattern size.
+
+   Space
+          Insert currently highlighted pattern in pattern list at
+          cursor and advance by pattern size.
+
+   .
+          Clear pattern at cursor position.
+
+   -
+          Insert Mute command at cursor position and advance by
+          step size.
+
+   ,
+          Insert Break command at cursor position and advance by
+          step size.
+
+   Arrow Keys
+          Change plugin/time index.
+
+   Shift-Arrow Left/Shift-Arrow Right Shift-Numpad +/Shift-Numpad
+          -
+          Increase/decrease time step size.
+
+   Ctrl-Arrow Left/Ctrl-Arrow Right
+          Move cursor 16 steps back/forward.
+
+   Ctrl-Arrow Up/Ctrl-Arrow Down
+          Switch current track with previous/next track.
+
+   Ctrl-Page Up/Ctrl-Page Down
+          Select previous/next pattern in pattern list.
+
+   Insert/Delete
+          Insert/delete one time index step at the current cursor
+          position.
+
+   Ctrl-Delete
+          Delete current track.
+
+   Return
+          Switch to Pattern View and show the pattern under the
+          cursor.
+
+   Ctrl-Return
+          Open Parameter View for the current plugin.
+
+   Ctrl-B/Ctrl-E
+          Set begin/end of loop. Setting end of loop twice sets
+          end of song as well.
+
+   Ctrl-C
+          Copy current selection to clipboard.
+
+   Ctrl-V
+          Paste to cursor position from clipboard.
+
+   Ctrl-X
+          Cut current selection and copy to clipboard.
+
+   Ctrl-I
+          Insert new time index step on all tracks.
 
    Ctrl-L
           Solo current plugin.

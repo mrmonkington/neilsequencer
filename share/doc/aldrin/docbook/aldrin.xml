@@ -878,5 +878,176 @@ scons: done building targets.</screen>
 
     </sect1>
 	
+    <sect1>
+      <title>Sequence View Shortcuts</title>
+
+      <para>These keyboard shortcuts can be triggered from within the Sequence View.</para>
+
+	<variablelist>
+		<varlistentry>
+			<term>
+				<keycap>0</keycap>-<keycap>9</keycap>/<keycap>A</keycap>-<keycap>Z</keycap>
+			</term>
+			<listitem>
+				<para>Insert associated pattern and advance by pattern size.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycap>Space</keycap>
+			</term>
+			<listitem>
+				<para>Insert currently highlighted pattern in pattern list at cursor and advance by pattern size.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycap>.</keycap>
+			</term>
+			<listitem>
+				<para>Clear pattern at cursor position.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycap>-</keycap>
+			</term>
+			<listitem>
+				<para>Insert <command>Mute</command> command at cursor position and advance by step size.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycap>,</keycap>
+			</term>
+			<listitem>
+				<para>Insert <command>Break</command> command at cursor position and advance by step size.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycap>Arrow Keys</keycap>
+			</term>
+			<listitem>
+				<para>Change plugin/time index.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycombo><keycap>Shift</keycap><keycap>Arrow Left</keycap></keycombo>/<keycombo><keycap>Shift</keycap><keycap>Arrow Right</keycap></keycombo>
+				<keycombo><keycap>Shift</keycap><keycap>Numpad +</keycap></keycombo>/<keycombo><keycap>Shift</keycap><keycap>Numpad -</keycap></keycombo>
+			</term>
+			<listitem>
+				<para>Increase/decrease time step size.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycombo><keycap>Ctrl</keycap><keycap>Arrow Left</keycap></keycombo>/<keycombo><keycap>Ctrl</keycap><keycap>Arrow Right</keycap></keycombo>
+			</term>
+			<listitem>
+				<para>Move cursor 16 steps back/forward.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycombo><keycap>Ctrl</keycap><keycap>Arrow Up</keycap></keycombo>/<keycombo><keycap>Ctrl</keycap><keycap>Arrow Down</keycap></keycombo>
+			</term>
+			<listitem>
+				<para>Switch current track with previous/next track.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycombo><keycap>Ctrl</keycap><keycap>Page Up</keycap></keycombo>/<keycombo><keycap>Ctrl</keycap><keycap>Page Down</keycap></keycombo>
+			</term>
+			<listitem>
+				<para>Select previous/next pattern in pattern list.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycap>Insert</keycap>/<keycap>Delete</keycap>
+			</term>
+			<listitem>
+				<para>Insert/delete one time index step at the current cursor position.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycombo><keycap>Ctrl</keycap><keycap>Delete</keycap></keycombo>
+			</term>
+			<listitem>
+				<para>Delete current track.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycap>Return</keycap>
+			</term>
+			<listitem>
+				<para>Switch to <interface>Pattern View</interface> and show the pattern under the cursor.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycombo><keycap>Ctrl</keycap><keycap>Return</keycap></keycombo>
+			</term>
+			<listitem>
+				<para>Open <interface>Parameter View</interface> for the current plugin.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycombo><keycap>Ctrl</keycap><keycap>B</keycap></keycombo>/<keycombo><keycap>Ctrl</keycap><keycap>E</keycap></keycombo>
+			</term>
+			<listitem>
+				<para>Set begin/end of loop. Setting end of loop twice sets end of song as well.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycombo><keycap>Ctrl</keycap><keycap>C</keycap></keycombo>
+			</term>
+			<listitem>
+				<para>Copy current selection to clipboard.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycombo><keycap>Ctrl</keycap><keycap>V</keycap></keycombo>
+			</term>
+			<listitem>
+				<para>Paste to cursor position from clipboard.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycombo><keycap>Ctrl</keycap><keycap>X</keycap></keycombo>
+			</term>
+			<listitem>
+				<para>Cut current selection and copy to clipboard.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycombo><keycap>Ctrl</keycap><keycap>I</keycap></keycombo>
+			</term>
+			<listitem>
+				<para>Insert new time index step on all tracks.</para>
+			</listitem>
+		</varlistentry>
+		<varlistentry>
+			<term>
+				<keycombo><keycap>Ctrl</keycap><keycap>L</keycap></keycombo>
+			</term>
+			<listitem>
+				<para>Solo current plugin.</para>
+			</listitem>
+		</varlistentry>
+	</variablelist> 
+
+    </sect1>
+
   </chapter>
 </book>

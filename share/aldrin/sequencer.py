@@ -554,7 +554,7 @@ class SequencerView(Canvas):
 		seq = player.get_current_sequencer()
 		k = event.GetKeyCode()
 		arrow_down = k in [wx.WXK_LEFT, wx.WXK_RIGHT, wx.WXK_UP, wx.WXK_DOWN,
-			wx.WXK_NUMPAD_LEFT, wx.WXK_NUMPAD_RIGHT, wx.WXK_NUMPAD_UP, wx.WXK_NUMPAD_DOWN]	
+			wx.WXK_NUMPAD_LEFT, wx.WXK_NUMPAD_RIGHT, wx.WXK_NUMPAD_UP, wx.WXK_NUMPAD_DOWN]
 		is_selecting = arrow_down and event.ShiftDown()
 		if is_selecting:
 			# starts the selection if nothing selected
