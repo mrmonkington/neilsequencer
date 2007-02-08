@@ -1049,5 +1049,147 @@ scons: done building targets.</screen>
 
     </sect1>
 
+    <sect1>
+      <title>Sound Library Shortcuts</title>
+
+      <para>These keyboard shortcuts can be triggered from within the Sound Library section.</para>
+
+    <sect2>
+      <title>Instrument List Shortcuts</title>
+
+      <para>These keyboard shortcuts can be triggered from within the Instrument List in the Sound Library section.</para>
+		<variablelist> 
+			<varlistentry>
+				<term>
+					<keycap>Arrow Up</keycap>/<keycap>Arrow Down</keycap>
+				</term>
+				<listitem>
+					<para>Select previous/next entry.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term>
+					<keycap>Space</keycap>
+				</term>
+				<listitem>
+					<para>Preview instrument.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term>
+					<keycap>Return</keycap>
+				</term>
+				<listitem>
+					<para>Switch to <interface>Sample Browser</interface>.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term>
+					<keycombo><keycap>Shift</keycap><keycap>Return</keycap></keycombo>
+				</term>
+				<listitem>
+					<para>Switch to <interface>Freesound Browser</interface>.</para>
+				</listitem>
+			</varlistentry>
+		</variablelist> 
+    </sect2>
+
+    <sect2>
+      <title>Sample Browser Shortcuts</title>
+
+      <para>These keyboard shortcuts can be triggered from within the Sample Browser in the Sound Library section.</para>
+		<variablelist> 
+			<varlistentry>
+				<term>
+					<keycap>Arrow Up</keycap>/<keycap>Arrow Down</keycap>
+				</term>
+				<listitem>
+					<para>Select previous/next entry.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term>
+					<keycap>Space</keycap>/<keycap>Right Arrow</keycap>
+				</term>
+				<listitem>
+					<para>Preview sample or change folder.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term>
+					<keycap>Left Arrow</keycap>
+				</term>
+				<listitem>
+					<para>Jump to parent folder.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term>
+					<keycap>Return</keycap>/<keycap>Backspace</keycap>
+				</term>
+				<listitem>
+					<para>Load sample and switch back to <interface>Instrument List</interface> or change folder.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term>
+					<keycap>Escape</keycap>
+				</term>
+				<listitem>
+					<para>Switch back to <interface>Instrument List</interface>.</para>
+				</listitem>
+			</varlistentry>
+		</variablelist> 
+    </sect2>
+
+    <sect2>
+      <title>Freesound Browser Shortcuts</title>
+
+      <para>These keyboard shortcuts can be triggered from within the Freesound Browser in the Sound Library section.</para>
+		<variablelist> 
+			<varlistentry>
+				<term>
+					<keycap>Arrow Up</keycap>/<keycap>Arrow Down</keycap>
+				</term>
+				<listitem>
+					<para>Select previous/next entry.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term>
+					<keycap>Space</keycap>/<keycap>Right Arrow</keycap>
+				</term>
+				<listitem>
+					<para>Preview sample.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term>
+					<keycap>Left Arrow</keycap>
+				</term>
+				<listitem>
+					<para>Jump to search field.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term>
+					<keycap>Return</keycap>/<keycap>Backspace</keycap>
+				</term>
+				<listitem>
+					<para>Load sample and switch back to <interface>Instrument List</interface>.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term>
+					<keycap>Escape</keycap>
+				</term>
+				<listitem>
+					<para>Switch back to <interface>Instrument List</interface>.</para>
+				</listitem>
+			</varlistentry>
+		</variablelist> 
+    </sect2>
+	</sect1>
+
   </chapter>
 </book>

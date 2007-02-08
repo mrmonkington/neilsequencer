@@ -31,6 +31,11 @@ Leonard Ritter
         3.1. Universal Shortcuts
         3.2. Pattern View Shortcuts
         3.3. Sequence View Shortcuts
+        3.4. Sound Library Shortcuts
+
+              3.4.1. Instrument List Shortcuts
+              3.4.2. Sample Browser Shortcuts
+              3.4.3. Freesound Browser Shortcuts
 
    List of Figures
    2-1. Aldrin main window after first start.
@@ -629,3 +634,70 @@ Chapter 3. Keyboard Shortcuts Reference
 
    Ctrl-L
           Solo current plugin.
+     _________________________________________________________
+
+3.4. Sound Library Shortcuts
+
+   These keyboard shortcuts can be triggered from within the
+   Sound Library section.
+     _________________________________________________________
+
+3.4.1. Instrument List Shortcuts
+
+   These keyboard shortcuts can be triggered from within the
+   Instrument List in the Sound Library section.
+
+   Arrow Up/Arrow Down
+          Select previous/next entry.
+
+   Space
+          Preview instrument.
+
+   Return
+          Switch to Sample Browser.
+
+   Shift-Return
+          Switch to Freesound Browser.
+     _________________________________________________________
+
+3.4.2. Sample Browser Shortcuts
+
+   These keyboard shortcuts can be triggered from within the
+   Sample Browser in the Sound Library section.
+
+   Arrow Up/Arrow Down
+          Select previous/next entry.
+
+   Space/Right Arrow
+          Preview sample or change folder.
+
+   Left Arrow
+          Jump to parent folder.
+
+   Return/Backspace
+          Load sample and switch back to Instrument List or
+          change folder.
+
+   Escape
+          Switch back to Instrument List.
+     _________________________________________________________
+
+3.4.3. Freesound Browser Shortcuts
+
+   These keyboard shortcuts can be triggered from within the
+   Freesound Browser in the Sound Library section.
+
+   Arrow Up/Arrow Down
+          Select previous/next entry.
+
+   Space/Right Arrow
+          Preview sample.
+
+   Left Arrow
+          Jump to search field.
+
+   Return/Backspace
+          Load sample and switch back to Instrument List.
+
+   Escape
+          Switch back to Instrument List.
