@@ -552,8 +552,8 @@ class AldrinConfig(ConfigParser.ConfigParser):
 		self.delete_section('Layout/'+windowid)
 		self.set_section('Layout/'+windowid)
 		if isinstance(window, gtk.Window):
-			rect = window.get_allocation()
-			x,y,w,h = rect.x, rect.y, rect.width, rect.height
+			x,y = window.get_position()
+			w,h = window.get_size()
 			self.write_value("X", str(x))
 			self.write_value("Y", str(y))
 			self.write_value("W", str(w))
