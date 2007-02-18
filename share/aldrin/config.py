@@ -22,10 +22,11 @@
 Provides an object which eases access to the applications configuration.
 """
 
-from wximport import wx
+from gtkimport import gtk
 import os, glob, re
 
 from utils import filepath
+import ConfigParser
 
 # the key of this dictionary is the language code associated with the keyboard. the 
 # value is a series of keyboard characters associated with each note, in the order 
@@ -88,13 +89,13 @@ DEFAULT_THEME = {
 	'EE Line': 0x6060c0,
 	'EE Fill': 0xe0e0ff,
 	'EE Dot': 0x6060c0,
-	'EE Sustain': 0x6060c0,
+	'EE Sustain': 0xff6040,
 	'EE Dot Selected': 0x000000,
 	'EE BG': 0xffffff,
 	'EE Grid': 0xe0e0e0,
 }
 
-class AldrinConfig(wx.FileConfig):
+class AldrinConfig(ConfigParser.ConfigParser):
 	"""
 	Streamlines access to the applications configuration. You should
 	set all applications to and retrieve them from the config object.
@@ -109,8 +110,10 @@ class AldrinConfig(wx.FileConfig):
 		"""
 		Initializer.
 		"""		
-		settingspath = os.path.join(self.get_settings_folder(),'settings.cfg')
-		wx.FileConfig.__init__(self,appName="aldrin",vendorName="zzub",localFilename=settingspath)
+		ConfigParser.ConfigParser.__init__(self)
+		self.filename = os.path.join(self.get_settings_folder(),'settings.cfg')
+		self.read([self.filename])
+		self._section = ''
 		try:
 			self.select_theme(self.get_active_theme())
 		except:
@@ -118,12 +121,59 @@ class AldrinConfig(wx.FileConfig):
 			traceback.print_exc()
 			self.select_theme(None)
 			
+	def set_section(self, section):
+		self._section = section
+		
+	def delete_section(self, section):
+		if not self.has_section(section):
+			return
+		self.remove_section(section)
+		
+	def get_values(self):
+		assert self._section
+		if not self.has_section(self._section):
+			return []
+		return sorted(self.items(self._section), lambda a,b: cmp(a[0],b[0]))
+		
+	def read_int_value(self, name, default=0):
+		assert self._section
+		if not self.has_section(self._section):
+			return default
+		if not self.has_option(self._section, name):
+			return default
+		return self.getint(self._section, name)
+		
+	def read_value(self, name, default=None):
+		assert self._section
+		if not self.has_section(self._section):
+			return default
+		if not self.has_option(self._section, name):
+			return default
+		return self.get(self._section, name)
+		
+	def write_value(self, name, value):
+		assert self._section
+		if not self.has_section(self._section):
+			self.add_section(self._section)
+		self.set(self._section,name,value)
+		self.flush()
+		
+	def write_int_value(self, name, value):
+		assert self._section
+		if not self.has_section(self._section):
+			self.add_section(self._section)
+		self.set(self._section,name,str(value))
+		self.flush()
+		
+	def flush(self):
+		self.write(file(self.filename,'w'))
+			
 	def get_sample_preview_volume(self):
 		"""
 		Returns the volume with which samples shall be previewed.
 		"""
-		self.SetPath('/Global')
-		vol = float(self.Read('SamplePreviewVolume', '-12.0'))
+		self.set_section('Global')
+		vol = float(self.read_value('SamplePreviewVolume', '-12.0'))
 		return vol
 		
 	def get_freesound_samples_folder(self):
@@ -154,8 +204,8 @@ class AldrinConfig(wx.FileConfig):
 		@return: name of theme or None, if default
 		@rtype: str or None
 		"""
-		self.SetPath('/Global')
-		name = self.Read('Theme', '')
+		self.set_section('Global')
+		name = self.read_value('Theme', '')
 		if not name:
 			return None
 		return name
@@ -169,8 +219,8 @@ class AldrinConfig(wx.FileConfig):
 		"""
 		self.current_theme = dict(DEFAULT_THEME)		
 		if not name:
-			self.SetPath('/Global')
-			self.Write('Theme', '')
+			self.set_section('Global')
+			self.write_value('Theme', '')
 			return
 		re_theme_attrib = re.compile('^([\w\s]+\w)\s+(\w+)$')
 		for line in file(filepath('themes/'+name+'.col'),'r'):
@@ -182,8 +232,8 @@ class AldrinConfig(wx.FileConfig):
 				value = int(m.group(2),16)
 				assert key in self.current_theme.keys(), "no such key: %s" % key
 				self.current_theme[key] = value
-		self.SetPath('/Global')
-		self.Write('Theme', name)
+		self.set_section('Global')
+		self.write_value('Theme', name)
 			
 	def get_brush(self, name):
 		"""
@@ -209,12 +259,22 @@ class AldrinConfig(wx.FileConfig):
 
 	def get_float_color(self, name):
 		"""
-		Returns a certain theme color as float tuples
+		Returns a certain theme color as a float (r,g,b) tuple
 		"""
 		color = self.current_theme[name]
 		r = ((color>>16) & 0xff) / 255.0
 		g = ((color>>8) & 0xff) / 255.0
 		b = (color & 0xff) / 255.0
+		return r,g,b
+		
+	def get_color16(self, name):
+		"""
+		Returns a certain theme color as a 16-bit (r,g,b) tuple
+		"""
+		color = self.current_theme[name]
+		r = ((color>>16) & 0xff) * 257
+		g = ((color>>8) & 0xff)  * 257
+		b = (color & 0xff) * 257
 		return r,g,b
 
 	def get_color(self, name):
@@ -241,15 +301,15 @@ class AldrinConfig(wx.FileConfig):
 		"""
 		Returns the default value for a UI setting.
 		"""
-		self.SetPath('/Defaults')
-		return int(self.Read(key, str(defval)))
+		self.set_section('Defaults')
+		return int(self.read_value(key, str(defval)))
 		
 	def set_default_int(self, key, val):
 		"""
 		Stores a default value for an UI setting.
 		"""
-		self.SetPath('/Defaults')
-		self.Write(key, str(val))
+		self.set_section('Defaults')
+		self.write_value(key, str(val))
 		
 	def set_keymap_language(self, lang):
 		"""
@@ -258,16 +318,16 @@ class AldrinConfig(wx.FileConfig):
 		@param lang: Language ('en', 'de')
 		@type lang: str
 		"""
-		self.SetPath('/Global')
-		self.Write('KeymapLanguage', lang.lower())
-		self.Flush()
+		self.set_section('Global')
+		self.write_value('KeymapLanguage', lang.lower())
+		self.flush()
 		
 	def get_keymap_language(self):
 		"""
 		Returns the current keymap language
 		"""
-		self.SetPath('/Global')
-		return self.Read('KeymapLanguage', 'en').lower()
+		self.set_section('Global')
+		return self.read_value('KeymapLanguage', 'en').lower()
 		
 	def get_keymap(self):
 		"""
@@ -280,16 +340,16 @@ class AldrinConfig(wx.FileConfig):
 		"""
 		returns the credentials required for a service (username/password).
 		"""
-		self.SetPath('/Credentials/'+service)
-		return self.Read('Username'), self.Read('Password')
+		self.set_section('Credentials/'+service)
+		return self.read_value('Username'), self.read_value('Password')
 		
 	def set_credentials(self, service, username, password):
 		"""
 		stores the credentials required for a service (username/password).
 		"""
-		self.SetPath('/Credentials/'+service)
-		self.Write('Username',username)
-		self.Write('Password',password)
+		self.set_section('Credentials/'+service)
+		self.write_value('Username',username)
+		self.write_value('Password',password)
 		
 	def get_index_path(self):
 		"""
@@ -317,11 +377,10 @@ class AldrinConfig(wx.FileConfig):
 		@return: List of driver names.
 		@rtype: [str,...]
 		"""
-		self.SetPath('/MIDI/Inputs')
+		self.set_section('MIDI/Inputs')
 		inputlist = []
-		for i in range(config.GetNumberOfEntries(False)):
-			more, value, index = self.GetNextEntry(i)
-			inputlist.append(self.Read(value,""))
+		for i,(name,value) in enumerate(config.get_values()):
+			inputlist.append(value)
 		return inputlist
 		
 	def set_mididriver_inputs(self, inputlist):
@@ -331,11 +390,11 @@ class AldrinConfig(wx.FileConfig):
 		@param name: List of driver names.
 		@type name: [str,...]
 		"""
-		self.DeleteGroup('/MIDI/Inputs')
-		self.SetPath('/MIDI/Inputs')
+		self.delete_section('MIDI/Inputs')
+		self.set_section('MIDI/Inputs')
 		for i in range(len(inputlist)):
-			self.Write('Name%i' % i, inputlist[i])
-		self.Flush()
+			self.write_value('Name%i' % i, inputlist[i])
+		self.flush()
 		
 	def get_audiodriver_config(self):
 		"""
@@ -344,8 +403,8 @@ class AldrinConfig(wx.FileConfig):
 		@return: A tuple containing input driver name, output driver name, samplerate and buffer size.
 		@rtype: (str,str,int,int)
 		"""
-		self.SetPath('/AudioDevice')
-		return self.Read('InputName',''), self.Read('OutputName','') or self.Read('Name',''), self.ReadInt('SampleRate',44100), self.ReadInt('BufferSize',2048)
+		self.set_section('AudioDevice')
+		return self.read_value('InputName',''), self.read_value('OutputName','') or self.read_value('Name',''), self.read_int_value('SampleRate',44100), self.read_int_value('BufferSize',2048)
 		
 	def set_audiodriver_config(self, inputname, outputname, samplerate, buffersize):
 		"""
@@ -358,12 +417,12 @@ class AldrinConfig(wx.FileConfig):
 		@param buffersize: Buffer size in samples.
 		@type buffersize: int
 		"""
-		self.SetPath('/AudioDevice')
-		self.Write('InputName', inputname)
-		self.Write('OutputName', outputname)
-		self.WriteInt('SampleRate',samplerate)
-		self.WriteInt('BufferSize',buffersize)
-		self.Flush()
+		self.set_section('AudioDevice')
+		self.write_value('InputName', inputname)
+		self.write_value('OutputName', outputname)
+		self.write_int_value('SampleRate',samplerate)
+		self.write_int_value('BufferSize',buffersize)
+		self.flush()
 		
 	def get_mididriver_outputs(self):
 		"""
@@ -372,11 +431,10 @@ class AldrinConfig(wx.FileConfig):
 		@return: List of driver names.
 		@rtype: [str,...]
 		"""
-		self.SetPath('/MIDI/Outputs')
+		self.set_section('MIDI/Outputs')
 		outputlist = []
-		for i in range(config.GetNumberOfEntries(False)):
-			more, value, index = self.GetNextEntry(i)
-			outputlist.append(self.Read(value,""))
+		for i,(name,value) in enumerate(config.get_values()):
+			outputlist.append(value)
 		return outputlist
 		
 	def set_mididriver_outputs(self, outputlist):
@@ -386,11 +444,11 @@ class AldrinConfig(wx.FileConfig):
 		@param name: List of driver names.
 		@type name: [str,...]
 		"""
-		self.DeleteGroup('/MIDI/Outputs')
-		self.SetPath('/MIDI/Outputs')
+		self.delete_section('MIDI/Outputs')
+		self.set_section('MIDI/Outputs')
 		for i in range(len(outputlist)):
-			self.Write('Name%i' % i, outputlist[i])
-		self.Flush()
+			self.write_value('Name%i' % i, outputlist[i])
+		self.flush()
 		
 	def get_enabled_extensions(self):
 		"""
@@ -399,11 +457,10 @@ class AldrinConfig(wx.FileConfig):
 		@return: List of uris.
 		@rtype: [str,...]
 		"""
-		self.SetPath('/Extensions')
+		self.set_section('Extensions')
 		uris = []
-		for i in range(config.GetNumberOfEntries(False)):
-			more, value, index = self.GetNextEntry(i)
-			uris.append(self.Read(value,""))
+		for i,(name,value) in enumerate(config.get_values()):
+			uris.append(value)
 		return uris
 		
 	def set_enabled_extensions(self, uris):
@@ -413,11 +470,11 @@ class AldrinConfig(wx.FileConfig):
 		@param uris: List of uris
 		@type uris: [str,...]
 		"""
-		self.DeleteGroup('/Extensions')
-		self.SetPath('/Extensions')
+		self.delete_section('Extensions')
+		self.set_section('Extensions')
 		for i in range(len(uris)):
-			self.Write('URI%i' % i, uris[i])
-		self.Flush()
+			self.write_value('URI%i' % i, uris[i])
+		self.flush()
 		
 		
 	def set_wavetable_paths(self, pathlist):
@@ -427,11 +484,11 @@ class AldrinConfig(wx.FileConfig):
 		@param pathlist: List of paths to directories containing samples.
 		@type pathlist: [str,...]
 		"""
-		self.DeleteGroup('/WavetablePaths')
-		self.SetPath('/WavetablePaths')
+		self.delete_section('WavetablePaths')
+		self.set_section('WavetablePaths')
 		for i in range(len(pathlist)):
-			self.Write('Path%i' % i, pathlist[i])
-		self.Flush()
+			self.write_value('Path%i' % i, pathlist[i])
+		self.flush()
 		
 	def set_plugin_presets(self, pluginloader, presets):
 		"""
@@ -492,29 +549,30 @@ class AldrinConfig(wx.FileConfig):
 		@param window: The window whose properties to save.
 		@type window: wx.Window
 		"""
-		self.DeleteGroup('/Layout/'+windowid)
-		self.SetPath('/Layout/'+windowid)
-		if window.IsTopLevel():
-			x,y,w,h = window.GetRect()
-			self.Write("X", str(x))
-			self.Write("Y", str(y))
-			self.Write("W", str(w))
-			self.Write("H", str(h))
+		self.delete_section('Layout/'+windowid)
+		self.set_section('Layout/'+windowid)
+		if isinstance(window, gtk.Window):
+			rect = window.get_allocation()
+			x,y,w,h = rect.x, rect.y, rect.width, rect.height
+			self.write_value("X", str(x))
+			self.write_value("Y", str(y))
+			self.write_value("W", str(w))
+			self.write_value("H", str(h))
 			if hasattr(window, 'IsMaximized'):
 				if window.IsMaximized():
 					maximize = 'true'
 				else:
 					maximize = 'false'
-				self.Write("Maximize", maximize)
-		elif isinstance(window, wx.SplitterWindow):			
-			self.Write("SashPosition", str(window.GetSashPosition()))
+				self.write_value("Maximize", maximize)
+		elif isinstance(window, gtk.Paned):
+			self.write_value("SashPosition", str(window.get_position()))
 		else:
-			if window.IsShown():
+			if window.window and window.window.is_visible():
 				visible = 'true'
 			else:
 				visible = 'false'
-			self.Write("Visible", visible)
-		self.Flush()
+			self.write_value("Visible", visible)
+		self.flush()
 		
 	def load_window_pos(self, windowid, window):
 		"""
@@ -525,31 +583,32 @@ class AldrinConfig(wx.FileConfig):
 		@param window: The window whose properties to save.
 		@type window: wx.Window
 		"""
-		self.SetPath('/Layout/'+windowid)
-		if window.IsTopLevel():
+		self.set_section('Layout/'+windowid)
+		if isinstance(window, gtk.Window):
 			try:
-				x = int(self.Read('X'))
-				y = int(self.Read('Y'))
-				w = int(self.Read('W'))
-				h = int(self.Read('H'))
+				x = int(self.read_value('X'))
+				y = int(self.read_value('Y'))
+				w = int(self.read_value('W'))
+				h = int(self.read_value('H'))
 			except ValueError:
 				return
-			window.SetRect((x,y,w,h))
-			if hasattr(window, 'IsMaximized'):
-				if self.Read("Maximize") == 'true':
-					window.Maximize()
-		elif isinstance(window, wx.SplitterWindow):
+			window.move(x,y)
+			window.resize(w,h)
+			#~ if hasattr(window, 'IsMaximized'):
+				#~ if self.read_value("Maximize") == 'true':
+					#~ window.Maximize()
+		elif isinstance(window, gtk.Paned):
 			try:
-				window.SetSashPosition(int(self.Read("SashPosition")))
+				window.set_position(int(self.read_value("SashPosition")))
 			except ValueError:
 				pass
 		else:
-			visible = self.Read("Visible")
+			visible = self.read_value("Visible")
 			if visible:
 				if visible == 'true':
-					window.Show()
+					window.show()
 				else:
-					window.Hide()
+					window.hide()
 		
 	def get_wavetable_paths(self):
 		"""
@@ -557,11 +616,10 @@ class AldrinConfig(wx.FileConfig):
 		@return: List of paths to directories containing samples.
 		@rtype:[str,...]
 		"""
-		self.SetPath('/WavetablePaths')
+		self.set_section('WavetablePaths')
 		pathlist = []
-		for i in range(config.GetNumberOfEntries(False)):
-			more, value, index = self.GetNextEntry(i)
-			pathlist.append(self.Read(value,""))
+		for i,(name,value) in enumerate(config.get_values()):
+			pathlist.append(value)
 		return pathlist
 		
 	def set_midi_controllers(self, ctrllist):
@@ -571,12 +629,12 @@ class AldrinConfig(wx.FileConfig):
 		@param ctrllist: List of tuples containing name,channel and controller id
 		@type ctrllist: [(str,int,int),...]
 		"""
-		self.DeleteGroup('/MIDIControllers')
-		self.SetPath('/MIDIControllers')
+		self.delete_section('MIDIControllers')
+		self.set_section('MIDIControllers')
 		for i in range(len(ctrllist)):
 			name,channel,ctrlid = ctrllist[i]
-			self.Write('Controller%i' % i, "%s|%i|%i" % (name.replace('|',''),channel,ctrlid))
-		self.Flush()
+			self.write_value('Controller%i' % i, "%s|%i|%i" % (name.replace('|',''),channel,ctrlid))
+		self.flush()
 		
 	def get_midi_controllers(self):
 		"""
@@ -585,11 +643,10 @@ class AldrinConfig(wx.FileConfig):
 		@return: List of tuples containing name, channel and controller id
 		@rtype: [(str,int,int),...]
 		"""
-		self.SetPath('/MIDIControllers')
+		self.set_section('MIDIControllers')
 		ctrllist = []
-		for i in range(config.GetNumberOfEntries(False)):
-			more, value, index = self.GetNextEntry(i)
-			name,channel,ctrlid = self.Read(value, "").split('|')
+		for i,(name,value) in enumerate(self.get_values()):
+			name,channel,ctrlid = value.split('|')
 			ctrllist.append((name,int(channel),int(ctrlid)))
 		return ctrllist
 	
@@ -601,12 +658,10 @@ class AldrinConfig(wx.FileConfig):
 		@rtype: str list
 		"""
 		recent_files = []		
-		self.SetPath('/RecentFiles')
-		for i in range(config.GetNumberOfEntries(False)):
-			more, value, index = self.GetNextEntry(i)
-			path = self.Read(value, "")
-			if os.path.isfile(path):
-				recent_files.append(path)
+		self.set_section('RecentFiles')
+		for i,(name,value) in enumerate(self.get_values()):
+			if os.path.isfile(value):
+				recent_files.append(value)
 		return recent_files
 		
 	def add_recent_file_config(self, filename):
@@ -625,11 +680,11 @@ class AldrinConfig(wx.FileConfig):
 		while len(recent_files) >= 10:
 			recent_files.pop()
 		recent_files = [filename] + recent_files
-		self.DeleteGroup('/RecentFiles')
-		self.SetPath('/RecentFiles')
+		self.delete_section('RecentFiles')
+		self.set_section('RecentFiles')
 		for i in range(len(recent_files)):
-			self.Write("File%i" % i, recent_files[i])
-		self.Flush()
+			self.write_value("File%i" % i, recent_files[i])
+		self.flush()
 		
 config = None
 
@@ -681,9 +736,10 @@ __all__ = [
 ]
 
 if __name__ == '__main__':
-	from wximport import wx
-	app = wx.App()
 	cfg = get_config()
+	print cfg.get_sample_preview_volume()
+	print cfg.get_midi_controllers()
+	print cfg.get_audiodriver_config()
 	print "DEFAULT_THEME = {"
 	for k in sorted(DEFAULT_THEME.keys()):
 		v = DEFAULT_THEME[k]

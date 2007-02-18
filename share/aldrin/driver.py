@@ -23,6 +23,8 @@ Contains tool functions to deal with audio and midi drivers.
 """
 
 import config
+import common
+player = common.get_player()
 
 class AudioInitException(Exception):
 	pass

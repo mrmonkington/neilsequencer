@@ -23,63 +23,61 @@ Provides dialog class for hd recorder control.
 """
 
 
-from wximport import wx
+from gtkimport import gtk
+import gobject
 import utils, os, stat
+import common
+player = common.get_player()
 
-class HDRecorderDialog(wx.Dialog):
+class HDRecorderDialog(gtk.Dialog):
 	"""
 	This Dialog shows the HD recorder, which allows recording
 	the audio output to a wave file.
 	"""
-	SAVEAS = wx.NewId()
-	REC = wx.NewId()
-	STOP = wx.NewId()
-	AUTOSTARTSTOP = wx.NewId()
-	
-	WILDCARD = "PCM Waves (*.wav)|*.wav"
-	
-	def __init__(self, *args, **kwds):
+
+	def __init__(self, parent):
 		"""
 		Initializer.
 		"""
-		wx.Dialog.__init__(self, *args, **kwds)
+		gtk.Dialog.__init__(self, parent=parent.get_toplevel())
+		#self.set_size_request(250,-1)
+		self.set_resizable(False)
 		self.master = player.get_plugin(0)
-		self.SetTitle("Hard Disk Recorder")
-		btnsaveas = wx.Button(self, self.SAVEAS, "Save As...", style=wx.SUNKEN_BORDER)
-		textposition = wx.StaticText(self, -1, "")
-		btnrec = wx.Button(self, self.REC, "&Rec")
-		btnstop = wx.Button(self, self.STOP, "&Stop")
-		chkauto = wx.CheckBox(self, self.AUTOSTARTSTOP, "&Auto start/stop")
+		self.set_title("Hard Disk Recorder")
+		btnsaveas = gtk.Button(label="Save As...")
+		btnsaveas.connect("clicked", self.on_saveas)
+		textposition = gtk.Label("")
+		btnrec = gtk.Button("_Rec")
+		btnrec.connect("clicked", self.on_rec)
+		btnstop = gtk.Button("_Stop")
+		btnstop.connect("clicked", self.on_stop)
+		chkauto = gtk.CheckButton("_Auto start/stop")
+		chkauto.connect("toggled", self.on_autostartstop)
 		self.btnsaveas = btnsaveas
 		self.textposition = textposition
 		self.btnrec = btnrec
 		self.btnstop = btnstop
 		self.chkauto = chkauto
-		self.chkauto.SetValue(self.master.get_auto_write())
-		sizer = wx.BoxSizer(wx.VERTICAL)
-		
-		sizer.Add(btnsaveas, 0, wx.EXPAND | wx.TOP | wx.LEFT | wx.RIGHT, border=5)
-		sizer.Add(textposition, 0, wx.EXPAND | wx.TOP | wx.LEFT | wx.RIGHT, border=5)
-		sizer2 = wx.BoxSizer(wx.HORIZONTAL)
-		sizer2.Add(btnrec, 0, wx.ALIGN_LEFT)
-		sizer2.Add(btnstop, 0, wx.ALIGN_LEFT | wx.LEFT, border=5)
-		sizer2.Add(chkauto, 0, wx.ALIGN_LEFT | wx.LEFT, border=5)
-		sizer.Add(sizer2, 0, wx.ALIGN_LEFT | wx.ALL, border=5)
-		self.SetAutoLayout(True)
-		self.SetSizer(sizer)
-		self.Layout()
-		self.Fit()
-		self.Centre()
-		wx.EVT_BUTTON(self, self.SAVEAS, self.on_saveas)
-		wx.EVT_BUTTON(self, self.REC, self.on_rec)
-		wx.EVT_BUTTON(self, self.STOP, self.on_stop)
-		wx.EVT_CHECKBOX(self, self.AUTOSTARTSTOP, self.on_autostartstop)
+		self.chkauto.set_active(self.master.get_auto_write())
+		sizer = gtk.VBox()		
+		sizer.set_spacing(5)
+		sizer.pack_start(btnsaveas)
+		sizer.pack_start(textposition)
+		sizer2 = gtk.HBox()
+		sizer2.set_spacing(5)
+		sizer2.pack_start(btnrec)
+		sizer2.pack_start(btnstop)
+		sizer2.pack_start(chkauto)
+		sizer.pack_start(sizer2)
+		sh = gtk.VBox()
+		sh.pack_start(sizer, padding=5)
+		sv = gtk.HBox()
+		sv.pack_start(sh, padding=5)
+		self.vbox.add(sv)
 		self.filename = ''
-		self.timer = wx.Timer(self, -1)
-		self.timer.Start(100)
-		wx.EVT_TIMER(self, self.timer.GetId(), self.on_timer)
+		gobject.timeout_add(100, self.on_timer)
 		
-	def on_autostartstop(self, event):
+	def on_autostartstop(self, widget):
 		"""
 		Handles clicks on the auto start/stop checkbox. Updates the masters
 		auto_write property.
@@ -87,17 +85,14 @@ class HDRecorderDialog(wx.Dialog):
 		@param event: Command event.
 		@type event: wx.CommandEvent
 		"""
-		self.master.set_auto_write(event.IsChecked())
+		self.master.set_auto_write(widget.get_active())
 		
-	def on_timer(self, event):
+	def on_timer(self):
 		"""
 		Called by timer event. Updates controls according to current
 		state of recording.
-		
-		@param event: timer event
-		@type event: wx.TimerEvent
 		"""
-		if self.IsShown():
+		if self.window and self.window.is_visible():
 			bpm = self.master.get_parameter_value(1, 0, 1)
 			tpb = self.master.get_parameter_value(1, 0, 2)
 			rectime = utils.ticks_to_time(self.master.get_ticks_written(), bpm, tpb)
@@ -105,42 +100,41 @@ class HDRecorderDialog(wx.Dialog):
 				recsize = os.stat(self.filename)[stat.ST_SIZE]
 			else:
 				recsize = 0
-			self.textposition.SetLabel("Time:  %s     Size: %.2fM" % (utils.format_time(rectime), float(recsize)/(1<<20)))
+			self.textposition.set_label("Time:  %s     Size: %.2fM" % (utils.format_time(rectime), float(recsize)/(1<<20)))
+		return True
 		
-	def on_saveas(self, event):
+	def on_saveas(self, widget):
 		"""
 		Handler for the "Save As..." button.
-		
-		@param event: Command event.
-		@type event: wx.CommandEvent
 		"""
-		dlg = wx.FileDialog(
-			self, 
-			message="Save", 
-			defaultFile = self.filename,
-			wildcard = self.WILDCARD,
-			style=wx.SAVE | wx.OVERWRITE_PROMPT)
-		if dlg.ShowModal() == wx.ID_OK:
-			self.filename = dlg.GetPath()
-			self.btnsaveas.SetLabel(self.filename)
+		dlg = gtk.FileChooserDialog(title="Save", parent=self, action=gtk.FILE_CHOOSER_ACTION_SAVE,
+			buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_SAVE, gtk.RESPONSE_OK)
+		)
+		dlg.set_do_overwrite_confirmation(True)
+		ffwav = gtk.FileFilter()
+		ffwav.set_name("PCM Waves (*.wav)")
+		ffwav.add_pattern("*.wav")
+		dlg.set_filename(self.filename)
+		dlg.add_filter(ffwav)
+		result = dlg.run()
+		if result == gtk.RESPONSE_OK:
+			self.filename = dlg.get_filename()
+			if (dlg.get_filter() == ffwav) and not (self.filename.endswith('.wav')):
+				self.filename += '.wav'
+			self.btnsaveas.set_label(self.filename)
 			master = player.get_plugin(0)
 			master.set_wave_file_path(self.filename)
+		dlg.destroy()
 
-	def on_rec(self, event):
+	def on_rec(self, widget):
 		"""
 		Handler for the "Rec" button.
-		
-		@param event: Command event.
-		@type event: wx.CommandEvent
 		"""
 		self.master.set_write_wave(1)
 
-	def on_stop(self, event):
+	def on_stop(self, widget):
 		"""
 		Handler for the "Stop" button.
-		
-		@param event: Command event.
-		@type event: wx.CommandEvent
 		"""
 		self.master.set_write_wave(0)
 
@@ -149,7 +143,10 @@ __all__ = [
 ]
 
 if __name__ == '__main__':
-	import sys, utils
-	from main import run
-	sys.argv.append(utils.filepath('demosongs/test.bmx'))
-	run(sys.argv)
+	import testplayer, utils
+	player = testplayer.get_player()
+	player.load_ccm(utils.filepath('demosongs/paniq-knark.ccm'))
+	dlg = HDRecorderDialog()
+	dlg.connect('destroy', lambda widget: gtk.main_quit())
+	dlg.show_all()
+	gtk.main()

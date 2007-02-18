@@ -23,14 +23,18 @@ Contains all classes and functions needed to render the sequence
 editor and its associated components.
 """
 
-from wximport import wx
-from canvas import Canvas, BitmapBuffer
-from utils import prepstr, from_hsb, to_hsb
+from gtkimport import gtk
+import pango
+import gobject
+from utils import prepstr, from_hsb, to_hsb, get_item_count, get_clipboard_text, set_clipboard_text
 import random
 import ctypes
 import zzub
 import config
 import time
+import common
+player = common.get_player()
+from common import MARGIN, MARGIN2, MARGIN3
 
 SEQKEYS = '0123456789abcdefghijklmnopqrstuvwxyz'
 SEQKEYMAP = dict(zip(SEQKEYS,range(0x10,len(SEQKEYS)+0x10)))
@@ -44,32 +48,29 @@ class PatternNotFoundException(Exception):
 	pass
 
 
-class SequencerToolBar(wx.Panel):
+class SequencerToolBar(gtk.HBox):
 	"""
 	Sequencer Toolbar
 	
 	Allows to set the step size for the sequencer view.
 	"""
-	def __init__(self, *args, **kwds):
+	def __init__(self):
 		"""
 		Initialization.
 		"""
 		# begin wxGlade: SequencerFrame.__init__
 		# kwds['style'] = wx.TB_HORIZONTAL|wx.TB_FLAT
-		self.parent = args[0]
-		wx.Panel.__init__(self, *args, **kwds)
-		self.steplabel = wx.StaticText(self, -1, label="&Step")
-		self.stepselect = wx.Choice(self, -1)
+		gtk.HBox.__init__(self, False, MARGIN)
+		self.set_border_width(MARGIN)
+		self.steplabel = gtk.Label()
+		self.steplabel.set_text_with_mnemonic("_Step")
+		self.stepselect = gtk.combo_box_new_text()
 		self.steps = [1,2,4,8,12,16,20,24,28,32,36,40,44,48,52,56,60,64,96,128,192,256,512,1024]
-		wx.EVT_CHOICE(self, self.stepselect.GetId(), self.on_stepselect)
+		self.stepselect.connect('changed', self.on_stepselect)
+		self.steplabel.set_mnemonic_widget(self.stepselect)
 
-		sizer = wx.BoxSizer(wx.HORIZONTAL)
-		sizer.Add(self.steplabel, 0, wx.ALIGN_CENTER_VERTICAL|wx.LEFT|wx.TOP|wx.BOTTOM, 5)
-		sizer.Add(self.stepselect, 0, wx.ALIGN_CENTER_VERTICAL|wx.LEFT|wx.TOP|wx.BOTTOM, 5)
-		self.SetAutoLayout(True)
-		self.SetSizer(sizer)
-		self.Layout()
-		self.Fit()
+		self.pack_start(self.steplabel, expand=False)
+		self.pack_start(self.stepselect, expand=False)
 		
 	def increase_step(self):
 		if self.parent.view.step < 1024:
@@ -93,48 +94,73 @@ class SequencerToolBar(wx.Panel):
 		"""
 		Updates the step selection choice box.
 		"""
-		self.stepselect.Clear()
+		self.stepselect.get_model().clear()
 		for i in self.steps:
-			self.stepselect.Append("%i" % i)
-		try:
-			self.stepselect.SetSelection(self.steps.index(self.parent.view.step))
-		except:
-			self.stepselect.SetStringSelection("%i" % self.parent.view.step)
+			self.stepselect.append_text("%i" % i)
+		self.stepselect.set_active(self.steps.index(self.parent.view.step))
 		config.get_config().set_default_int('SequencerStep', self.parent.view.step)
 		
-	def on_stepselect(self, event):
+	def on_stepselect(self, widget):
 		"""
 		Handles events sent from the choice box when a step size is being selected.
 		"""
-		self.parent.view.step = self.steps[self.stepselect.GetSelection()]
+		if widget.get_active() == -1:
+			return
+		if self.parent.view.step == self.steps[widget.get_active()]:
+			return
+		self.parent.view.step = self.steps[widget.get_active()]
 		self.parent.update_all()
 
-class SequencerPanel(wx.Panel):
+class SequencerPanel(gtk.VBox):
 	"""
 	Sequencer pattern panel.
 	
 	Displays all the patterns available for the current track.
 	"""
-	def __init__(self, rootwindow, *args, **kwds):
+	def __init__(self, rootwindow):
 		"""
 		Initialization.
 		"""
-		# begin wxGlade: SequencerFrame.__init__
-		#kwds["style"] = wx.DEFAULT_PANEL_STYLE
 		self.rootwindow = rootwindow
-		wx.Panel.__init__(self, *args, **kwds)
-		self.splitter = wx.SplitterWindow(self, -1, style=wx.SP_LIVE_UPDATE|wx.SP_NOBORDER)
-		self.seqpatternlist = wx.ListBox(self.splitter, -1, style=wx.LB_SINGLE|wx.SUNKEN_BORDER)		
-		self.seqview = SequencerView(rootwindow, self.splitter, -1)		
+		gtk.VBox.__init__(self)
+		self.splitter = gtk.HPaned()
+		self.seqliststore = gtk.ListStore(str, str)
+		self.seqpatternlist = gtk.TreeView(self.seqliststore)
+		self.seqpatternlist.set_rules_hint(True)
+		tvkey = gtk.TreeViewColumn("Key")
+		tvkey.set_resizable(True)
+		tvpname = gtk.TreeViewColumn("Pattern Name")
+		tvpname.set_resizable(True)
+		cellkey = gtk.CellRendererText()
+		cellpname = gtk.CellRendererText()
+		tvkey.pack_start(cellkey)
+		tvpname.pack_start(cellpname)
+		tvkey.add_attribute(cellkey, 'text', 0)
+		tvpname.add_attribute(cellpname, 'text', 1)
+		self.seqpatternlist.append_column(tvkey)
+		self.seqpatternlist.append_column(tvpname)
+		self.seqpatternlist.set_search_column(0)
+		tvkey.set_sort_column_id(0)
+		tvpname.set_sort_column_id(1)
+
+		self.seqview = SequencerView(rootwindow, self)
+		self.splitter.add1(self.seqview)
+		scrollwin = gtk.ScrolledWindow()
+		scrollwin.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+		scrollwin.add(self.seqpatternlist)
+		self.splitter.add2(scrollwin)
 		self.view = self.seqview
-		self.toolbar = SequencerToolBar(self, -1)
-		self.statusbar = wx.StatusBar(self, style=0)
+		self.toolbar = SequencerToolBar()
+		self.statusbar = gtk.HBox(False, 5)
+		self.pack_start(self.toolbar, expand=False)
+		self.pack_start(self.splitter)
+		self.pack_end(self.statusbar, expand=False)
 		self.__set_properties()
 		self.__do_layout()
 		# end wxGlade
 		self.update_list()
 		self.toolbar.update_all()
-		wx.EVT_SPLITTER_SASH_POS_CHANGED(self, self.splitter.GetId(), self.on_sash_pos_changed)
+		self.splitter.connect('move-handle', self.on_sash_pos_changed)
 		
 	def update_all(self):
 		"""
@@ -150,53 +176,44 @@ class SequencerPanel(wx.Panel):
 		"""
 		Updates the panel to reflect a sequence view change.
 		"""
-		self.seqpatternlist.Clear()
-		self.seqpatternlist.Append('- Mute (X)')
-		self.seqpatternlist.Append(', Break (<)')
+		self.seqliststore.clear()
+		self.seqliststore.append(['-', 'Mute'])
+		self.seqliststore.append([',', 'Break'])
 		seq = player.get_current_sequencer()
 		if (self.seqview.track != -1) and (self.seqview.track < seq.get_track_count()):
 			track = seq.get_track(self.seqview.track)
 			for pattern, key in zip(track.get_plugin().get_pattern_list(), SEQKEYS):
-				name = "%s. %s" % (key, pattern.get_name())
-				self.seqpatternlist.Append(name)
+				self.seqliststore.append([key, pattern.get_name()])
 				
-	def on_sash_pos_changed(self, event):
+	def on_sash_pos_changed(self, widget, scrolltype):
 		"""
 		Sent when the sash position changes.
 		
 		@param event: Event.
 		@type event: wx.Event
 		"""
-		event.Skip()
 		config.get_config().save_window_pos("SequencerSplitter", self.splitter)
+		return True
 		
 	def __set_properties(self):
 		"""
 		Sets properties during initialization.
 		"""
 		# begin wxGlade: SequencerFrame.__set_properties
-		self.statusbar.SetFieldsCount(2)
-		self.statusbar.SetStatusWidths([-1, -10])
-		self.statusbar.SetSize((100, 20))
-		self.splitter.SetMinimumPaneSize(10)
+		self.statuslabels = []
+		for i in range(2):
+			label = gtk.Label()
+			self.statuslabels.append(label)
+			self.statusbar.pack_start(label, expand=False)
+			self.statusbar.pack_start(gtk.VSeparator(), expand=False)
 		# end wxGlade
 
 	def __do_layout(self):
 		"""
 		Arranges children components during initialization.
 		"""
-		# begin wxGlade: SequencerFrame.__do_layout
-		self.splitter.SplitVertically(self.seqview, self.seqpatternlist, -100)
-		#self.splitter.SetSashPosition(-100)
-		self.splitter.SetSashGravity(0.0)
+		self.splitter.set_position(100)
 		config.get_config().load_window_pos("SequencerSplitter", self.splitter)
-		sizer = wx.BoxSizer(wx.VERTICAL)
-		sizer.Add(self.toolbar, 0, wx.EXPAND, 0)
-		sizer.Add(self.splitter, 1, wx.EXPAND, 0)
-		sizer.Add(self.statusbar, 0, wx.EXPAND, 0)
-		self.SetAutoLayout(True)
-		self.SetSizer(sizer)
-		self.Layout()
 		# end wxGlade
 
 # end of class SequencerFrame
@@ -207,19 +224,19 @@ SEQLEFTMARGIN = 64
 SEQTOPMARGIN = SEQTRACKSIZE
 SEQROWSIZE = 24
 
-class SequencerView(Canvas):
+class SequencerView(gtk.DrawingArea):
 	"""
 	Sequence viewer class.
 	"""	
 	CLIPBOARD_SEQUENCER = "SEQUENCERDATA"
 	
-	def __init__(self, rootwindow, *args, **kwds):
+	def __init__(self, rootwindow, panel):
 		"""
 		Initialization.
 		"""
-		kwds['style'] = wx.SUNKEN_BORDER | wx.WANTS_CHARS
+		self.panel = panel
 		self.rootwindow = rootwindow
-		self.plugin_info = self.rootwindow.routeframe.view.plugin_info
+		self.plugin_info = common.get_plugin_infos()
 		self.playpos = player.get_position()
 		self.row = 0
 		self.track = 0
@@ -227,27 +244,37 @@ class SequencerView(Canvas):
 		self.starttrack = 0
 		self.step = config.get_config().get_default_int('SequencerStep', SEQSTEP)
 		player.set_loop_end(self.step)
-		self.parent = args[0].GetParent()
 		self.selection_start = None
 		self.selection_end = None
 		self.dragging = False
-		Canvas.__init__(self, *args, **kwds)
-		self.timer = wx.Timer(self, -1)
-		self.timer.Start(100)
-		wx.EVT_TIMER(self, self.timer.GetId(), self.update_position)
-		wx.EVT_MOUSEWHEEL(self, self.on_mousewheel)
-		wx.EVT_LEFT_DOWN(self, self.on_left_down)
-		wx.EVT_MOTION(self, self.on_motion)
-		wx.EVT_LEFT_UP(self, self.on_left_up)
-		wx.EVT_KEY_DOWN(self, self.on_key_down)
-		wx.EVT_CONTEXT_MENU(self, self.on_context_menu)
-		wx.EVT_SET_FOCUS(self, self.on_focus)
+		gtk.DrawingArea.__init__(self)
+		self.add_events(gtk.gdk.ALL_EVENTS_MASK)
+		self.set_property('can-focus', True)
+		self.connect("expose_event", self.expose)
+		self.connect('key-press-event', self.on_key_down)
+		self.connect('button-press-event', self.on_left_down)
+		self.connect('motion-notify-event', self.on_motion)
+		self.connect('button-release-event', self.on_left_up)
+		self.connect('scroll-event', self.on_mousewheel)
+		#gobject.timeout_add(100, self.update_position)
+		
+		#~ wx.EVT_MOUSEWHEEL(self, self.on_mousewheel)
+		#~ wx.EVT_LEFT_DOWN(self, self.on_left_down)
+		#~ wx.EVT_MOTION(self, self.on_motion)
+		#~ wx.EVT_LEFT_UP(self, self.on_left_up)
+		#~ wx.EVT_KEY_DOWN(self, self.on_key_down)
+		#~ wx.EVT_CONTEXT_MENU(self, self.on_context_menu)
+		
+		#~ wx.EVT_SET_FOCUS(self, self.on_focus)
+		#~ self.timer = wx.Timer(self, -1)
+		#~ self.timer.Start(100)
+		#~ wx.EVT_TIMER(self, self.timer.GetId(), self.update_position)
 		
 	def on_focus(self, event):		
 		seq = player.get_current_sequencer()
 		if seq.get_track_count() > 0:
 			self.set_cursor_pos(self.track, self.row)
-		self.parent.update_list()
+		self.panel.update_list()
 		self.ReDraw()
 		
 	def track_row_to_pos(self, (track,row)):
@@ -296,14 +323,14 @@ class SequencerView(Canvas):
 		"""
 		Get the last visible track.
 		"""
-		w,h = self.GetSize()
+		w,h = self.get_client_size()
 		return self.pos_to_track_row((0,h))[0]
 		
 	def get_endrow(self):
 		"""
 		Get the last visible row.
 		"""
-		w,h = self.GetSize()
+		w,h = self.get_client_size()
 		return self.pos_to_track_row((w,0))[1]
 		
 	def set_cursor_pos(self, track, row):
@@ -327,12 +354,12 @@ class SequencerView(Canvas):
 				while self.track >= endtrack:
 					self.starttrack += 1
 					endtrack = self.get_endtrack()
-				self.ReDraw()
+				self.redraw()
 			elif self.track < self.starttrack:
 				while self.track < self.starttrack:
 					self.starttrack -= 1
-				self.ReDraw()
-			self.parent.update_list()
+				self.redraw()
+			self.panel.update_list()
 		if self.row != row:
 			self.row = row
 			endrow = self.get_endrow()
@@ -340,16 +367,16 @@ class SequencerView(Canvas):
 				while self.row >= endrow:
 					self.startseqtime += self.step
 					endrow = self.get_endrow()
-				self.ReDraw()
+				self.redraw()
 			elif self.row < self.startseqtime:
 				while self.row < self.startseqtime:
 					self.startseqtime -= self.step
-				self.ReDraw()
+				self.redraw()
 		t = seq.get_track(self.track)		
 		plugin = t.get_plugin()
-		self.parent.statusbar.SetStatusText(prepstr('%s' % (self.row)), 0)
-		self.parent.statusbar.SetStatusText(prepstr('%s' % (plugin.get_name())), 1)		
-		self.Refresh()
+		self.panel.statuslabels[0].set_label(prepstr('%s' % (self.row)))
+		self.panel.statuslabels[1].set_label(prepstr('%s' % (plugin.get_name())))
+		self.redraw()
 
 	def insert_at_cursor(self, index = -1):
 		"""
@@ -362,7 +389,7 @@ class SequencerView(Canvas):
 			t.set_event(self.row, min(index, 0x10 + pcount-1))
 		else:
 			t.move_events(self.row, self.step)
-		self.ReDraw()
+		self.redraw()
 		
 	def delete_at_cursor(self):
 		"""
@@ -372,7 +399,7 @@ class SequencerView(Canvas):
 		t = seq.get_track(self.track)
 		t.remove_event_at(self.row)
 		t.move_events(self.row, -self.step)
-		self.ReDraw()
+		self.redraw()
 	
 	def selection_range(self):
 		seq = player.get_current_sequencer()		
@@ -414,10 +441,7 @@ class SequencerView(Canvas):
 		startrow = min(self.selection_start[1], self.selection_end[1])
 		for track,row,value in self.selection_range():
 			data += "%04x%08x%04x" % (track, row - startrow, value)
-		clipboard = wx.TheClipboard
-		if clipboard.Open():
-			clipboard.SetData(wx.TextDataObject(data))
-			clipboard.Close()
+		set_clipboard_text(data)
 		
 	def on_popup_cut(self, event=None):
 		self.on_popup_copy(event)
@@ -425,13 +449,7 @@ class SequencerView(Canvas):
 		
 	def on_popup_paste(self, event=None):	
 		seq = player.get_current_sequencer()
-		clipboard = wx.TheClipboard
-		data = ""
-		if clipboard.Open():
-			d = wx.TextDataObject()
-			clipboard.GetData(d)
-			data = d.GetText()
-			clipboard.Close()	
+		data = get_clipboard_text()
 		for track,row,value in self.unpack_clipboard_data(data.strip()):
 			t = seq.get_track(track)
 			if value == -1:
@@ -544,7 +562,7 @@ class SequencerView(Canvas):
 			self.ReDraw()
 		dlg.Destroy()
 		
-	def on_key_down(self, event):
+	def on_key_down(self, widget, event):
 		"""
 		Callback that responds to key stroke in sequence view.
 		
@@ -552,34 +570,36 @@ class SequencerView(Canvas):
 		@type event: wx.KeyEvent
 		"""
 		seq = player.get_current_sequencer()
-		k = event.GetKeyCode()
-		arrow_down = k in [wx.WXK_LEFT, wx.WXK_RIGHT, wx.WXK_UP, wx.WXK_DOWN,
-			wx.WXK_NUMPAD_LEFT, wx.WXK_NUMPAD_RIGHT, wx.WXK_NUMPAD_UP, wx.WXK_NUMPAD_DOWN]
-		is_selecting = arrow_down and event.ShiftDown()
+		mask = event.state
+		kv = event.keyval
+		k = gtk.gdk.keyval_name(event.keyval)
+		#~ print kv, k
+		arrow_down = k in ['Left', 'Right', 'Up', 'Down', 'KP_Left', 'KP_Right', 'KP_Up', 'KP_Down']
+		is_selecting = arrow_down and (mask & gtk.gdk.SHIFT_MASK)
 		if is_selecting:
 			# starts the selection if nothing selected
 			if self.selection_start == None:
 				self.selection_start = (self.track, self.row)				
 		elif arrow_down:
 			self.deselect()
-		if event.ShiftDown():
-			if k == wx.WXK_NUMPAD_ADD or k == wx.WXK_LEFT or k == wx.WXK_NUMPAD_LEFT:
-				self.parent.toolbar.increase_step()
+		if (mask & gtk.gdk.SHIFT_MASK):
+			if k == 'KP_Add' or k == 'Left' or k == 'KP_Left':
+				self.panel.toolbar.increase_step()
 				self.set_cursor_pos(self.track, self.row)
-			elif k == wx.WXK_NUMPAD_SUBTRACT or k == wx.WXK_RIGHT or k == wx.WXK_NUMPAD_RIGHT:
-				self.parent.toolbar.decrease_step()
+			elif k == 'KP_Substract' or k == 'Right' or k == 'KP_Right':
+				self.panel.toolbar.decrease_step()
 				self.set_cursor_pos(self.track, self.row)
-		elif event.ControlDown():
-			if k == wx.WXK_RETURN:
+		elif (mask & gtk.gdk.CONTROL_MASK):
+			if k == 'Return':
 				self.show_plugin_dialog()
-			elif k == wx.WXK_DELETE:
+			elif k == 'Delete':
 				self.on_popup_delete_track(event)
-			elif k == ord('B'):				
+			elif k == 'b':				
 				player.set_loop_start(self.row)
 				if player.get_loop_end() <= self.row:
 					player.set_loop_end(self.row + self.step)
-				self.ReDraw()
-			elif k == ord('E'):
+				self.redraw()
+			elif k == 'e':
 				pos = self.row# + self.step
 				if player.get_loop_end() != pos:
 					player.set_loop_end(pos)
@@ -589,47 +609,47 @@ class SequencerView(Canvas):
 						player.set_loop_start(0)
 				else:
 					player.set_song_end(pos)
-				self.ReDraw()
-			elif k == ord('L'):			
+				self.redraw()
+			elif k == 'l':			
 				mp = seq.get_track(self.track).get_plugin()
 				self.rootwindow.routeframe.view.solo(mp)
-				self.ReDraw()
-			elif k == ord('I'):
+				self.redraw()
+			elif k == 'i':
 				for track in seq.get_track_list():
 					track.move_events(self.row, self.step)
-				self.ReDraw()	
-			elif k == ord('C'):	
+				self.redraw()	
+			elif k == 'c':	
 				self.on_popup_copy()
-			elif k == ord('X'):	
+			elif k == 'x':	
 				self.on_popup_cut()
-			elif k == ord('V'):	
+			elif k == 'v':	
 				self.on_popup_paste()
-			elif k == wx.WXK_UP or k == wx.WXK_NUMPAD_UP:
+			elif k == 'Up' or k == 'KP_Up':
 				if self.track > 0:
 					seq.move_track(self.track, self.track-1)
 					self.track -= 1
 					self.ReDraw()	
-			elif k == wx.WXK_DOWN or k == wx.WXK_NUMPAD_DOWN:
+			elif k == 'Down' or k == 'KP_Down':
 				if self.track < (seq.get_track_count()-1):
 					seq.move_track(self.track, self.track+1)
 					self.track += 1
 					self.ReDraw()
-			elif k == wx.WXK_LEFT or k == wx.WXK_NUMPAD_LEFT:
+			elif k == 'Left' or k == 'KP_Left':
 				self.set_cursor_pos(self.track, self.row - (self.step*16))
-			elif k == wx.WXK_RIGHT or k == wx.WXK_NUMPAD_RIGHT:
+			elif k == 'Right' or k == 'KP_Right':
 				self.set_cursor_pos(self.track, self.row + (self.step*16))
 			else:
-				event.Skip()
-		elif k == wx.WXK_LEFT or k == wx.WXK_NUMPAD_LEFT:
+				return False
+		elif k == 'Left' or k == 'KP_Left':
 			self.set_cursor_pos(self.track, self.row - self.step)
-		elif k == wx.WXK_RIGHT or k == wx.WXK_NUMPAD_RIGHT:
+		elif k == 'Right' or k == 'KP_Right':
 			self.set_cursor_pos(self.track, self.row + self.step)
-		elif k == wx.WXK_UP or k == wx.WXK_NUMPAD_UP:
+		elif k == 'Up' or k == 'KP_Up':
 			self.set_cursor_pos(self.track-1, self.row)
-		elif k == wx.WXK_DOWN or k == wx.WXK_NUMPAD_DOWN:
+		elif k == 'Down' or k == 'KP_Down':
 			self.set_cursor_pos(self.track+1, self.row)
-		elif (k < 256) and (chr(k).lower() in SEQKEYMAP):
-			idx = SEQKEYMAP[chr(k).lower()]
+		elif (kv < 256) and (chr(kv).lower() in SEQKEYMAP):
+			idx = SEQKEYMAP[chr(kv).lower()]
 			mp = seq.get_track(self.track).get_plugin()
 			if (idx < 0x10) or ((idx-0x10) < mp.get_pattern_count()):
 				if (idx >= 0x10):
@@ -639,18 +659,20 @@ class SequencerView(Canvas):
 					newrow = self.row + self.step
 				self.insert_at_cursor(idx)
 				self.set_cursor_pos(self.track, newrow)
-		elif k == 32: # space
-			spl = self.parent.seqpatternlist
-			sel = min(max(spl.GetSelection(),0),spl.GetCount()-1)
+		elif k == 'space': # space
+			spl = self.panel.seqpatternlist
+			store, row = spl.get_selection().get_selected_rows()
+			row = (row and row[0][0]) or 0
+			sel = min(max(row,0),get_item_count(spl.get_model())-1)
 			if sel >= 2:
 				sel = sel - 2 + 0x10
 			self.insert_at_cursor(sel)
 			self.set_cursor_pos(self.track, self.row + self.step)
-		elif k == wx.WXK_DELETE:
+		elif k == 'Delete':
 			self.delete_at_cursor()
-		elif k == wx.WXK_INSERT:
+		elif k == 'Insert':
 			self.insert_at_cursor()
-		elif k == 46: # dot
+		elif k == 'period': # dot
 			m,pat,bp = self.get_pattern_at(self.track, self.row, includespecial=True)
 			if pat != None:
 				if pat >= 0x10:
@@ -665,16 +687,20 @@ class SequencerView(Canvas):
 				t = seq.get_track(self.track)
 				t.remove_event_at(bp)
 				self.set_cursor_pos(self.track, newrow - (newrow % self.step))
-				self.ReDraw()
-		elif k == wx.WXK_PRIOR or k == wx.WXK_NUMPAD_PRIOR:
-			spl = self.parent.seqpatternlist
-			sel = spl.GetSelection()
-			spl.SetSelection(min(max(sel-1,0),spl.GetCount()-1))
-		elif k == wx.WXK_NEXT or k == wx.WXK_NUMPAD_NEXT:
-			spl = self.parent.seqpatternlist
-			sel = spl.GetSelection()
-			spl.SetSelection(min(max(sel+1,0),spl.GetCount()-1))
-		elif k == wx.WXK_RETURN:
+				self.redraw()
+		elif k == 'Page_Up' or k == 'KP_Page_Up':
+			spl = self.panel.seqpatternlist
+			store, sel = spl.get_selection().get_selected_rows()
+			sel = (sel and sel[0][0]) or 0
+			sel = min(max(sel-1,0),get_item_count(spl.get_model())-1)
+			spl.get_selection().select_path((sel,))
+		elif k == 'Page_Down' or k == 'KP_Page_Down':
+			spl = self.panel.seqpatternlist
+			store, sel = spl.get_selection().get_selected_rows()
+			sel = (sel and sel[0][0]) or 0
+			sel = min(max(sel+1,0),get_item_count(spl.get_model())-1)
+			spl.get_selection().select_path((sel,))
+		elif k == 'Return':
 			m, index, bp = self.get_pattern_at(self.track, self.row)
 			if index == None:
 				track = seq.get_track(self.track)
@@ -682,12 +708,12 @@ class SequencerView(Canvas):
 				return
 			self.jump_to_pattern(m, index)
 		else:
-			event.Skip()
+			return False
 		# update selection after cursor movement
 		if is_selecting:
 			self.selection_end = (self.track, self.row)	
-			self.ReDraw()
-		
+			self.redraw()
+		return True
 			
 	def jump_to_pattern(self, plugin, index=0):
 		"""
@@ -698,7 +724,7 @@ class SequencerView(Canvas):
 		@param index: Pattern index.
 		@type index: int
 		"""
-		mainwindow = self.parent.rootwindow
+		mainwindow = self.panel.rootwindow
 		pf = mainwindow.patternframe
 		tb = pf.toolbar
 		tb.plugin = 0
@@ -746,7 +772,7 @@ class SequencerView(Canvas):
 			self.dragging = False
 			self.selection_end = None
 			self.selection_start = None
-			self.ReDraw()
+			self.redraw()
 	
 	def on_mousewheel(self, event):
 		"""
@@ -760,39 +786,43 @@ class SequencerView(Canvas):
 		else:
 			self.set_cursor_pos(self.track, self.row + self.step)
 	
-	def on_left_down(self, event):
+	def on_left_down(self, widget, event):
 		"""
 		Callback that responds to left click down in sequence view.
 		
 		@param event: Mouse event
 		@type event: wx.MouseEvent
-		"""		
-		self.SetFocus()
-		seq = player.get_current_sequencer()
-		track_count = seq.get_track_count()
-		track, row = self.pos_to_track_row(event.GetPosition())		
-		if track < track_count:
-			if track == -1:
-				player.set_position(max(row,0))
-			elif row == -1:
-				mp = seq.get_track(track).get_plugin()				
-				self.rootwindow.routeframe.view.toggle_mute(mp)
-				self.ReDraw()
-			else:
-				self.set_cursor_pos(track,row)
-				self.deselect()
-				self.dragging = True
-				self.CaptureMouse()
+		"""
+		self.grab_focus()
+		if event.button == 1:
+			seq = player.get_current_sequencer()
+			track_count = seq.get_track_count()
+			x, y = int(event.x), int(event.y)
+			track, row = self.pos_to_track_row((x,y))		
+			if track < track_count:
+				if track == -1:
+					player.set_position(max(row,0))
+				elif row == -1:
+					mp = seq.get_track(track).get_plugin()				
+					self.rootwindow.routeframe.view.toggle_mute(mp)
+					self.redraw()
+				else:
+					self.set_cursor_pos(track,row)
+					self.deselect()
+					self.dragging = True
+					self.grab_add()
 	
-	def on_motion(self, event):
+	def on_motion(self, widget, event):
 		"""
 		Callback that responds to mouse motion in sequence view.
 		
 		@param event: Mouse event
 		@type event: wx.MouseEvent
-		"""		
+		"""	
+		x,y,state = self.window.get_pointer()
+		x, y = int(x),int(y)
 		if self.dragging:
-			select_track, select_row = self.pos_to_track_row(event.GetPosition())			
+			select_track, select_row = self.pos_to_track_row((x,y))			
 			# start selection if nothing selected			
 			if self.selection_start == None:				
 				self.selection_start = (self.track, self.row)
@@ -801,30 +831,44 @@ class SequencerView(Canvas):
 				select_track = min(seq.get_track_count()-1, max(select_track, 0))
 				select_row = max(select_row, 0)
 				self.selection_end = (select_track, select_row)
-				self.ReDraw()
+				self.redraw()
+				
+	def get_client_size(self):
+		rect = self.get_allocation()
+		return rect.width, rect.height
 			
-	def on_left_up(self, event):
+	def expose(self, widget, event):
+		self.context = widget.window.cairo_create()
+		self.draw(self.context)
+		return False
+		
+	def redraw(self):
+		if self.window:
+			rect = self.get_allocation()
+			self.window.invalidate_rect((0,0,rect.width,rect.height), False)
+
+	def on_left_up(self, widget, event):
 		"""
 		Callback that responds to left click up in sequence view.
 		
 		@param event: Mouse event
 		@type event: wx.MouseEvent
 		"""
-		if self.dragging:
-			self.dragging = False
-			self.ReleaseMouse()
+		if event.button == 1:
+			if self.dragging:
+				self.dragging = False
+				self.grab_remove()
 
-	def update_position(self, event):
+	def update_position(self):
 		"""
 		Updates the position.
 		"""
-		if not self.parent.IsShown(): return 	# Only needed by OSX
 		playpos = player.get_position()
 		if self.playpos != playpos:
 			self.playpos = playpos
-			self.Refresh()
+			self.redraw()
 
-	def onPostPaint(self, dc):
+	def draw_xor(self):
 		"""
 		Overriding a L{Canvas} method that is called after painting is completed. 
 		Draws an XOR play cursor over the pattern view.
@@ -832,21 +876,25 @@ class SequencerView(Canvas):
 		@param dc: wx device context.
 		@type dc: wx.PaintDC
 		"""
-		w,h = self.GetSize()
-		bbrush = wx.Brush('#ffffff',wx.SOLID)		
-		dc.SetBrush(bbrush)
-		dc.SetPen(wx.TRANSPARENT_PEN)
-		dc.SetLogicalFunction(wx.XOR)
+		gc = self.window.new_gc()
+		cm = gc.get_colormap()
+		drawable = self.window
+		w,h = self.get_client_size()
+		bbrush = cm.alloc_color('#ffffff')
+		gc.set_function(gtk.gdk.XOR)
+		gc.set_foreground(bbrush)
+		gc.set_background(bbrush)
+
 		seq = player.get_current_sequencer()
 		track_count = seq.get_track_count()
 		# draw cursor
 		if track_count > 0:
 			x,y = self.track_row_to_pos((self.track,self.row))
-			dc.DrawRectangle(x,y+1,SEQROWSIZE-1,SEQTRACKSIZE-1)
+			drawable.draw_rectangle(gc,True,x,y+1,SEQROWSIZE-1,SEQTRACKSIZE-1)
 		if self.playpos >= self.startseqtime:
 			# draw play cursor
 			x = SEQLEFTMARGIN + int((float(self.playpos - self.startseqtime) / self.step) * SEQROWSIZE)
-			dc.DrawRectangle(x, 0, 2, h)
+			drawable.draw_rectangle(gc,True,x, 0, 2, h)
 			
 	def update(self):
 		"""
@@ -857,62 +905,77 @@ class SequencerView(Canvas):
 		self.selection_start = None
 		if self.row != -1:
 			self.row = self.row - (self.row % self.step)
-		self.ReDraw()
+		self.redraw()
 		
-	def DrawBuffer(self):
+	def draw(self, ctx):
 		"""
 		Overriding a L{Canvas} method that paints onto an offscreen buffer.
 		Draws the pattern view graphics.
 		"""	
 		st = time.time()
-		w,h = self.GetSize()
-		dc = self.buffer
+		w,h = self.get_client_size()
+		gc = self.window.new_gc()
+		cm = gc.get_colormap()
+		drawable = self.window
 		seq = player.get_current_sequencer()
 		cfg = config.get_config()
 		bghsb = to_hsb(*cfg.get_float_color('SE BG'))
 		bgb = max(bghsb[2],0.1)
-		font = wx.Font(7.5, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
+		#font = wx.Font(7.5, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
 		type2brush = {
-			zzub.zzub_plugin_type_effect : cfg.get_brush('MV Effect'),
-			zzub.zzub_plugin_type_generator : cfg.get_brush('MV Generator'),
-			zzub.zzub_plugin_type_master : cfg.get_brush('MV Master'),
+			zzub.zzub_plugin_type_effect : cm.alloc_color(cfg.get_color('MV Effect')),
+			zzub.zzub_plugin_type_generator : cm.alloc_color(cfg.get_color('MV Generator')),
+			zzub.zzub_plugin_type_master : cm.alloc_color(cfg.get_color('MV Master')),
 		}
-		bgbrush = cfg.get_brush('SE BG')
-		fbrush1 = cfg.get_brush('SE BG Very Dark')
-		fbrush2 = cfg.get_brush('SE BG Dark')
-		sbrushes = [cfg.get_brush('SE Mute'), cfg.get_brush('SE Break')]
-		select_brush = cfg.get_brush('SE Sel BG')
-		vlinepen = cfg.get_pen('SE BG Dark')
-		pen1 = cfg.get_pen('SE BG Very Dark')
-		pen2 = cfg.get_pen('SE BG Dark')
-		pen = cfg.get_pen('SE Line')
-		loop_pen = wx.Pen(cfg.get_color('SE Loop Line'), 1, wx.SHORT_DASH)
-		invbrush = wx.Brush('#ffffff',wx.SOLID)		
-		dc.SetFont(font)
-		dc.SetBackground(bgbrush)
-		dc.SetBrush(bgbrush)
-		dc.SetTextForeground(cfg.get_color('SE Text'))
-		dc.Clear()
+		bgbrush = cm.alloc_color(cfg.get_color('SE BG'))
+		fbrush1 = cm.alloc_color(cfg.get_color('SE BG Very Dark'))
+		fbrush2 = cm.alloc_color(cfg.get_color('SE BG Dark'))
+		sbrushes = [cm.alloc_color(cfg.get_color('SE Mute')), cm.alloc_color(cfg.get_color('SE Break'))]
+		select_brush = cm.alloc_color(cfg.get_color('SE Sel BG'))
+		vlinepen = cm.alloc_color(cfg.get_color('SE BG Dark'))
+		pen1 = cm.alloc_color(cfg.get_color('SE BG Very Dark'))
+		pen2 = cm.alloc_color(cfg.get_color('SE BG Dark'))
+		pen = cm.alloc_color(cfg.get_color('SE Line'))
+		loop_pen = cm.alloc_color(cfg.get_color('SE Loop Line'))
+		invbrush = cm.alloc_color('#ffffff')
+		textcolor = cm.alloc_color(cfg.get_color('SE Text'))
+
+		gc.set_foreground(bgbrush)
+		gc.set_background(bgbrush)
+		drawable.draw_rectangle(gc, True, 0, 0, w, h)
+		
+		layout = pango.Layout(self.get_pango_context())
+		#~ layout.set_font_description(self.fontdesc)
+		layout.set_width(-1)
+
 		# 14
 		x, y = SEQLEFTMARGIN, SEQTOPMARGIN
 		i = self.startseqtime
 		while x < w:
-			dc.SetPen(wx.TRANSPARENT_PEN)
 			if (i % (16*self.step)) == 0:
-				dc.SetPen(pen1)
-				dc.DrawLine(x-1, 0, x-1, h)
-				dc.DrawLabel("%s" % i, wx.Rect(x, 0, SEQROWSIZE, SEQTRACKSIZE), wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
+				gc.set_foreground(pen1)
+				drawable.draw_line(gc, x-1, 0, x-1, h)
+				gc.set_foreground(textcolor)
+				layout.set_text(str(i))
+				px,py = layout.get_pixel_size()
+				drawable.draw_layout(gc, x, SEQTRACKSIZE/2 - py/2, layout)
 			elif (i % (4*self.step)) == 0:
-				dc.SetPen(pen2)
-				dc.DrawLine(x-1, 0, x-1, h)
-				dc.DrawLabel("%s" % i, wx.Rect(x, 0, SEQROWSIZE, SEQTRACKSIZE), wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
+				gc.set_foreground(pen2)
+				drawable.draw_line(gc, x-1, 0, x-1, h)
+				gc.set_foreground(textcolor)
+				layout.set_text(str(i))
+				px,py = layout.get_pixel_size()
+				drawable.draw_layout(gc, x, SEQTRACKSIZE/2 - py/2, layout)
 			x += SEQROWSIZE
 			i += self.step
-		dc.SetPen(pen)
-		dc.DrawLine(0, y, w, y)
+		gc.set_foreground(pen)
+		drawable.draw_line(gc, 0, y, w, y)
 		endrow = self.startseqtime + (w / SEQROWSIZE) * self.step
 		tracklist = seq.get_track_list()
-		solo_plugin = self.rootwindow.routeframe.view.solo_plugin
+		if hasattr(self.rootwindow, 'routeframe'):
+			solo_plugin = self.rootwindow.routeframe.view.solo_plugin
+		else:
+			solo_plugin = None
 		sel = False
 		if self.selection_start != None and self.selection_end != None:
 			sel = True
@@ -931,10 +994,14 @@ class SequencerView(Canvas):
 				title = "[%s]" % title
 			elif self.plugin_info[m].muted:
 				title = "(%s)" % title
-			dc.SetPen(pen)
-			dc.SetBrush(type2brush[m.get_type()])
-			dc.DrawRectangle(0, y, SEQLEFTMARGIN, SEQTRACKSIZE+1)
-			dc.DrawLabel(title, wx.Rect(0, y, SEQLEFTMARGIN-4, SEQTRACKSIZE), wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL)
+			gc.set_foreground(type2brush[m.get_type()])
+			drawable.draw_rectangle(gc, True, 0, y, SEQLEFTMARGIN-1, SEQTRACKSIZE)
+			gc.set_foreground(pen)
+			drawable.draw_rectangle(gc, False, 0, y, SEQLEFTMARGIN-1, SEQTRACKSIZE)
+			gc.set_foreground(textcolor)
+			layout.set_text(title)
+			px,py = layout.get_pixel_size()
+			drawable.draw_layout(gc, SEQLEFTMARGIN-4 -px, y + SEQTRACKSIZE/2 - py/2, layout)
 			intrack = sel and ((track_index >= selstart[0]) and (track_index <= selend[0]))
 			# draw selected block if it falls within selection
 			if intrack:
@@ -942,9 +1009,8 @@ class SequencerView(Canvas):
 				i = self.startseqtime
 				while x < w:
 					if (i >= selstart[1]) and (i <= selend[1]):
-						dc.SetBrush(select_brush) 
-						dc.SetPen(wx.TRANSPARENT_PEN) 
-						dc.DrawRectangle(x,y+1,SEQROWSIZE-1,SEQTRACKSIZE-1)					
+						gc.foreground = select_brush
+						drawable.draw_rectangle(gc, True, x, y+1, SEQROWSIZE-2,SEQTRACKSIZE-2)
 					x += SEQROWSIZE
 					i += self.step
 			for pos, value in track.get_event_list():
@@ -963,54 +1029,58 @@ class SequencerView(Canvas):
 						print "unknown value:",value
 						name,length = "???",0
 					psize = max(int(((SEQROWSIZE * length) / self.step) + 0.5),2)
-					bb = BitmapBuffer(psize-1, SEQTRACKSIZE-1)
-					pgfx[value] = bb
-					bb.SetFont(font)
+					bb = gtk.gdk.Pixmap(self.window, psize-1, SEQTRACKSIZE-1, -1)
+					pgfx[value] = bb					
 					if value < 0x10:
-						bb.SetPen(wx.TRANSPARENT_PEN)
-						bb.SetBrush(sbrushes[value])
+						gc.set_foreground(sbrushes[value])
+						bb.draw_rectangle(gc, True, 0, 0, psize-1, SEQTRACKSIZE-1)
 					else:
 						random.seed(mname+name)
 						hue = random.random()
 						cb = 1.0
 						r,g,b = from_hsb(hue, 0.2, cb*bgb)
-						bb.SetBrush(wx.Brush(wx.Colour(int(r*255),int(g*255),int(b*255)),wx.SOLID))
+						gc.set_foreground(cm.alloc_color('#%02X%02X%02X' % (int(r*255),int(g*255),int(b*255))))
+						bb.draw_rectangle(gc, True, 0,0, psize-2, SEQTRACKSIZE-2)
 						r,g,b = from_hsb(hue, 1.0, cb*bgb*0.7)
-						bb.SetPen(wx.Pen(wx.Colour(int(r*255),int(g*255),int(b*255)), 1, wx.SOLID))
-					ofs = 0
-					bb.DrawRectangle(0, 0, psize-1, SEQTRACKSIZE-1)
-					bb.DrawLabel(name, wx.Rect(2, 0, psize-3, SEQTRACKSIZE), wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
-				bbw,bbh = bb.GetSize()
+						gc.set_foreground(cm.alloc_color('#%02X%02X%02X' % (int(r*255),int(g*255),int(b*255))))
+						bb.draw_rectangle(gc, False, 0, 0, psize-2, SEQTRACKSIZE-2)
+						ofs = 0
+						layout.set_text(name)
+						px,py = layout.get_pixel_size()
+						gc.set_foreground(textcolor)
+						bb.draw_layout(gc, 2, 0 + SEQTRACKSIZE/2 - py/2, layout)
+				bbw,bbh = bb.get_size()
 				x = SEQLEFTMARGIN + (((pos - self.startseqtime) * SEQROWSIZE) / self.step)
 				if ((x+bbw) >= SEQLEFTMARGIN) and (x < w):
 					ofs = max(SEQLEFTMARGIN - x,0)
-					dc.Blit(x+ofs, y+1, bbw-ofs, bbh, bb, ofs, 0)
+					drawable.draw_drawable(gc, bb, ofs, 0, x+ofs, y+1, bbw-ofs, bbh)
 					if intrack and (pos >= selstart[1]) and (pos <= selend[1]):
-						dc.SetBrush(invbrush)
-						dc.SetPen(wx.TRANSPARENT_PEN)
-						dc.SetLogicalFunction(wx.XOR)
-						dc.DrawRectangle(x+ofs, y+1, bbw-ofs, bbh)
-						#~ dc.SetLogicalFunction(wx.COPY)
-			dc.SetLogicalFunction(wx.COPY)
+						gc.set_foreground(invbrush)
+						gc.set_function(gtk.gdk.XOR)
+						drawable.draw_rectangle(gc, True, x+ofs, y+1, bbw-ofs, bbh)
+						gc.set_function(gtk.gdk.COPY)
 			y += SEQTRACKSIZE			
-			dc.SetPen(vlinepen)
-			dc.DrawLine(SEQLEFTMARGIN, y, w, y)
-		dc.SetPen(pen)
+			gc.set_foreground(vlinepen)
+			drawable.draw_line(gc, SEQLEFTMARGIN, y, w, y)
+		gc.set_foreground(pen)
 		x = SEQLEFTMARGIN-1
-		dc.DrawLine(x, 0, x, h)
+		drawable.draw_line(gc, x, 0, x, h)
 		se = player.get_song_end()
 		x,y = self.track_row_to_pos((0,se))
 		if (x >= SEQLEFTMARGIN):
-			dc.SetPen(pen)
-			dc.DrawLine(x-1, 0, x-1, h)
-		dc.SetPen(loop_pen)
+			gc.set_foreground(pen)
+			drawable.draw_line(gc, x-1, 0, x-1, h)
+		gc.set_foreground(loop_pen)
+		gc.line_style = gtk.gdk.LINE_ON_OFF_DASH
+		gc.set_dashes(0, (1,1))
 		lb,le = player.get_song_loop()
 		x,y = self.track_row_to_pos((0,lb))
 		if (x >= SEQLEFTMARGIN):
-			dc.DrawLine(x-1, 0, x-1, h)
+			drawable.draw_line(gc, x-1, 0, x-1, h)
 		x,y = self.track_row_to_pos((0,le))
 		if (x >= SEQLEFTMARGIN):
-			dc.DrawLine(x-1, 0, x-1, h)
+			drawable.draw_line(gc, x-1, 0, x-1, h)
+		self.draw_xor()
 		#print "%.2fms" % ((time.time() - st)*1000)
 
 __all__ = [
@@ -1021,7 +1091,10 @@ __all__ = [
 ]
 
 if __name__ == '__main__':
-	import sys, utils
-	from main import run
-	sys.argv.append(utils.filepath('demosongs/paniq-knark.ccm'))
-	run(sys.argv)
+	import testplayer, utils
+	player = testplayer.get_player()
+	player.load_ccm(utils.filepath('demosongs/paniq-knark.ccm'))
+	window = testplayer.TestWindow()
+	window.add(SequencerPanel(window))
+	window.show_all()
+	gtk.main()

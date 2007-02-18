@@ -26,7 +26,7 @@ which have no specific module or class they belong to.
 import time, sys, math, os, zzub, imp
 from string import ascii_letters, digits
 import struct
-from wximport import wx
+from gtkimport import gtk
 
 def is_debug():
 	if os.environ.get('ALDRIN_DEBUG'):
@@ -380,11 +380,144 @@ def to_hsb(r,g,b):
 		b = v
 	return h,s,b
 	
+def question(parent, msg, allowcancel = True):
+	"""
+	Shows a question dialog.
+	"""
+	dialog = gtk.MessageDialog(parent.get_toplevel(),
+		gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
+		gtk.MESSAGE_QUESTION , gtk.BUTTONS_NONE)
+	dialog.set_markup(msg)
+	dialog.add_buttons(
+		gtk.STOCK_YES, gtk.RESPONSE_YES,
+		gtk.STOCK_NO, gtk.RESPONSE_NO)
+	if allowcancel:
+		dialog.add_button(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL)
+	response = dialog.run()
+	dialog.destroy()
+	return response
+
 def error(parent, msg):
 	"""
 	Shows an error message dialog.
 	"""
-	wx.MessageDialog(parent, message=msg, caption = "Aldrin", style = wx.ICON_ERROR|wx.OK|wx.CENTER).ShowModal()
+	dialog = gtk.MessageDialog(parent.get_toplevel(),
+		gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
+		gtk.MESSAGE_ERROR , gtk.BUTTONS_NONE)
+	dialog.set_markup(msg)
+	dialog.add_buttons(gtk.STOCK_OK, gtk.RESPONSE_OK)
+	response = dialog.run()
+	dialog.destroy()
+	return response
+
+def new_listview(columns):
+	"""
+	Creates a gtk.TreeView for a list store with multiple columns.
+	"""
+	class ToggledHandler:
+		def fixed_toggled(self, cell, path, model):
+			iter = model.get_iter((int(path),))
+			checked = model.get_value(iter, self.column)
+			checked = not checked
+			model.set(iter, self.column, checked)
+	
+	liststore = gtk.ListStore(*[col[1] for col in columns])
+	treeview = gtk.TreeView(liststore)
+	treeview.set_rules_hint(True)
+	columncontrols = []
+	for i,(name,coltype) in enumerate(columns):
+		column = gtk.TreeViewColumn(name)
+		if coltype == str:
+			column.set_resizable(True)
+			cellrenderer = gtk.CellRendererText()
+			column.pack_start(cellrenderer)
+			column.add_attribute(cellrenderer, 'text', i)
+		elif coltype == bool:
+			th = ToggledHandler()
+			th.column = i
+			cellrenderer = gtk.CellRendererToggle()
+			cellrenderer.connect('toggled', th.fixed_toggled, liststore)
+			column.pack_start(cellrenderer)
+			column.add_attribute(cellrenderer, 'active', i)
+		treeview.append_column(column)
+		column.set_sort_column_id(i)
+		columncontrols.append(column)
+	treeview.set_search_column(0)
+	return treeview, liststore, columncontrols
+	
+def new_image_button(path, tooltip):
+	"""
+	Creates a button with a single image.
+	"""
+	image = gtk.Image()
+	image.set_from_pixbuf(gtk.gdk.pixbuf_new_from_file(path))
+	button = gtk.Button()
+	button.set_image(image)
+	return button
+
+def new_image_toggle_button(path, tooltip):
+	"""
+	Creates a toggle button with a single image.
+	"""
+	image = gtk.Image()
+	image.set_from_pixbuf(gtk.gdk.pixbuf_new_from_file(path))
+	button = gtk.ToggleButton()
+	button.set_image(image)
+	return button
+
+def get_item_count(model):
+	"""
+	Returns the number of items contained in a tree model.
+	"""
+	class Count:
+		value = 0
+	def inc_count(model, path, iter, data):
+		data.value += 1
+	count = Count()
+	model.foreach(inc_count,count)
+	return count.value
+	
+def add_scrollbars(view):
+	"""
+	adds scrollbars around a view
+	"""
+	scrollwin = gtk.ScrolledWindow()
+	scrollwin.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+	if isinstance(view, gtk.TreeView):
+		scrollwin.set_shadow_type(gtk.SHADOW_IN)
+		scrollwin.add(view)
+	else:
+		scrollwin.add_with_viewport(view)
+	return scrollwin
+
+def file_filter(name,*patterns):
+	ff = gtk.FileFilter()
+	ff.set_name(name)
+	for pattern in patterns:
+		ff.add_pattern(pattern)
+	return ff
+
+	
+def format_filesize(size):
+	if (size / (1<<40)):
+		return "%.2f TB" % (float(size) / (1<<40))
+	elif (size / (1<<30)):
+		return "%.2f GB" % (float(size) / (1<<30))
+	elif (size / (1<<20)):
+		return "%.2f MB" % (float(size) / (1<<20))
+	elif (size / (1<<10)):
+		return "%.2f KB" % (float(size) / (1<<10))
+	else:
+		return "%i bytes" % size
+		
+def set_clipboard_text(data):
+	clipboard = gtk.clipboard_get()
+	clipboard.set_text(data, len(data))
+	clipboard.store()
+	
+def get_clipboard_text():
+	clipboard = gtk.clipboard_get()
+	return clipboard.wait_for_text()
 
 __all__ = [
 'is_frozen',
@@ -411,8 +544,14 @@ __all__ = [
 'write_string',
 'from_hsb',
 'to_hsb',
+'question',
 'error',
+'new_listview',
+'new_image_button',
+'get_item_count',
+'add_scrollbars',
+'file_filter',
+'format_filesize',
+'set_clipboard_text',
+'get_clipboard_text',
 ]
-
-if __name__ == '__main__':
-	print db2linear(-48.0)

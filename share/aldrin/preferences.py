@@ -23,15 +23,17 @@ Contains panels and dialogs related to application preferences.
 """
 
 import sys, os
-from wximport import wx
+from gtkimport import gtk
 import zzub
 import extman
-import wx.html
 import webbrowser
 
-from utils import prepstr, buffersize_to_latency, filepath
+from utils import prepstr, buffersize_to_latency, filepath, error, add_scrollbars, new_listview
 import utils
 import config
+import common
+from common import MARGIN, MARGIN2, MARGIN3
+player = common.get_player()
 
 samplerates = [96000,48000,44100]
 buffersizes = [32768,16384,8192,4096,2048,1024,512,256,128,64,32,16]
@@ -42,52 +44,50 @@ class CancelException(Exception):
 	modal UI dialogs.
 	"""
 
-class DriverPanel(wx.Panel):
+class DriverPanel(gtk.VBox):
 	"""
 	Panel which allows to see and change audio driver settings.
 	"""
-	def __init__(self, *args, **kwds):
+	def __init__(self):
 		"""
 		Initializing.
 		"""
-		wx.Panel.__init__(self, *args, **kwds)
-		#~ self.cbinput = wx.Choice(self, -1)
-		self.cboutput = wx.Choice(self, -1)
-		cbw,cbh = self.cboutput.GetMinSize()
-		cbw = max(cbw,200)
-		self.cboutput.SetMinSize((cbw,cbh))
-		self.cbsamplerate = wx.Choice(self, -1)
-		self.cbsamplerate.SetMinSize((cbw,cbh))
-		self.cblatency = wx.Choice(self, -1)
-		self.cblatency.SetMinSize((cbw,cbh))
-		grid = wx.FlexGridSizer(3,2,5,5)
-		sizer1 = wx.StaticBoxSizer(wx.StaticBox(self, -1, "Audio Output"), wx.VERTICAL)
-		grid.Add(wx.StaticText(self, -1, "Driver:"),0, wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL | wx.LEFT, 5)
-		grid.Add(self.cboutput, 1 , wx.EXPAND | wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, 5)
-		grid.Add(wx.StaticText(self, -1, "Samplerate:"),0, wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL | wx.LEFT, 5)
-		grid.Add(self.cbsamplerate, 1 , wx.EXPAND | wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, 5)
-		grid.Add(wx.StaticText(self, -1, "Latency:"),0, wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL | wx.LEFT, 5)
-		grid.Add(self.cblatency, 1 , wx.EXPAND | wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, 5)
-		sizer1.Add(grid, 0, wx.EXPAND|wx.ALL, 5)
+		gtk.VBox.__init__(self)
+		self.set_border_width(MARGIN)
+		self.cboutput = gtk.combo_box_new_text()
+		self.cbsamplerate = gtk.combo_box_new_text()
+		self.cblatency = gtk.combo_box_new_text()
+		size_group = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
+		def add_row(c1, c2):
+			row = gtk.HBox(False, MARGIN)
+			size_group.add_widget(c1)
+			c1.set_alignment(1, 0.5)
+			row.pack_start(c1, expand=False)
+			row.pack_start(c2)
+			return row
+			
+		sizer1 = gtk.Frame("Audio Output")
+		vbox = gtk.VBox(False, MARGIN)
+		vbox.pack_start(add_row(gtk.Label("Driver"), self.cboutput), expand=False)
+		vbox.pack_start(add_row(gtk.Label("Samplerate"), self.cbsamplerate), expand=False)
+		vbox.pack_start(add_row(gtk.Label("Latency"), self.cblatency), expand=False)
+		vbox.set_border_width(MARGIN)
+		sizer1.add(vbox)
 		inputname, outputname, samplerate, buffersize = config.get_config().get_audiodriver_config()
 		if not outputname:
 			outputname = player.audiodriver_get_name(-1)
 		for i in range(player.audiodriver_get_count()):
 			name = prepstr(player.audiodriver_get_name(i))
-			self.cboutput.Append(name)
+			self.cboutput.append_text(name)
 			if player.audiodriver_get_name(i) == outputname:
-				self.cboutput.SetSelection(i)
+				self.cboutput.set_active(i)
 		for sr in samplerates:
-			self.cbsamplerate.Append("%iHz" % sr)
-		self.cbsamplerate.SetSelection(samplerates.index(samplerate))
+			self.cbsamplerate.append_text("%iHz" % sr)
+		self.cbsamplerate.set_active(samplerates.index(samplerate))
 		for bs in buffersizes:
-			self.cblatency.Append("%.1fms" % buffersize_to_latency(bs, 44100))
-		self.cblatency.SetSelection(buffersizes.index(buffersize))
-		vsizer = wx.BoxSizer(wx.VERTICAL)
-		vsizer.Add(sizer1, 0, wx.EXPAND|wx.ALL, 5)
-		self.SetAutoLayout(True)
-		self.SetSizerAndFit(vsizer)
-		self.Layout()
+			self.cblatency.append_text("%.1fms" % buffersize_to_latency(bs, 44100))
+		self.cblatency.set_active(buffersizes.index(buffersize))
+		self.add(sizer1)
 		
 	def apply(self):
 		"""
@@ -95,24 +95,19 @@ class DriverPanel(wx.Panel):
 		settings. If the reinitialization fails, the user is being
 		informed and asked to change the settings.
 		"""
-		sr = self.cbsamplerate.GetSelection()
+		sr = self.cbsamplerate.get_active()
 		if sr == -1:
-			wx.MessageDialog(self, message="You did not select a valid sample rate.", caption = "Aldrin", style = wx.ICON_ERROR|wx.OK|wx.CENTER).ShowModal()
+			error(self, "You did not pick a valid sample rate.")
 			raise CancelException
 		sr = samplerates[sr]
-		bs = self.cblatency.GetSelection()
+		bs = self.cblatency.get_active()
 		if bs == -1:
-			wx.MessageDialog(self, message="You did not select a valid buffer size.", caption = "Aldrin", style = wx.ICON_ERROR|wx.OK|wx.CENTER).ShowModal()
+			error(self, "You did not pick a valid latency.")
 			raise CancelException
 		bs = buffersizes[bs]
-		#~ i = self.cboutput.GetSelection()
-		#~ if i == -1:
-			#~ wx.MessageDialog(self, message="You did not select a valid output device.", caption = "Aldrin", style = wx.ICON_ERROR|wx.OK|wx.CENTER).ShowModal()
-			#~ raise CancelException
-		#~ iname = player.audiodriver_get_name(i)
-		o = self.cboutput.GetSelection()
+		o = self.cboutput.get_active()
 		if o == -1:
-			wx.MessageDialog(self, message="You did not select a valid input device.", caption = "Aldrin", style = wx.ICON_ERROR|wx.OK|wx.CENTER).ShowModal()
+			error(self, "You did not select a valid output device.")
 			raise CancelException
 		iname = ""
 		oname = player.audiodriver_get_name(o)
@@ -125,66 +120,86 @@ class DriverPanel(wx.Panel):
 			except driver.AudioInitException:
 				import traceback
 				traceback.print_exc()
-				wx.MessageDialog(self, message="There was an error initializing the audio driver. Change settings and try again.", caption = "Aldrin", style = wx.ICON_ERROR|wx.OK|wx.CENTER).ShowModal()
+				error(self, "<b><big>There was an error initializing the audio driver.</big></b>\n\nChange settings and try again.")
 				raise CancelException
 
-class WavetablePanel(wx.Panel):
+class WavetablePanel(gtk.HBox):
 	"""
 	Panel which allows to see and change paths to sample libraries.
 	"""
-	def __init__(self, *args, **kwds):
-		wx.Panel.__init__(self, *args, **kwds)
-		sizer = wx.BoxSizer(wx.HORIZONTAL)
-		vsizer = wx.StaticBoxSizer(wx.StaticBox(self, -1, "Sound Folders"), wx.VERTICAL)
-		#vsizer.Add(wx.StaticText(self, -1, "Sound Folders:"), 0, wx.ALIGN_LEFT|wx.ALL, 5)
-		self.pathlist = wx.ListBox(self, -1, style=wx.LB_SINGLE|wx.LB_HSCROLL)
-		vsizer.Add(self.pathlist, 1, wx.EXPAND|wx.LEFT|wx.BOTTOM|wx.RIGHT, 5)
-		self.btnadd = wx.Button(self, wx.ID_ADD, "A&dd..")
-		self.btnremove = wx.Button(self, wx.ID_REMOVE, "&Remove")
-		hsizer = wx.BoxSizer(wx.HORIZONTAL)
-		hsizer.Add(self.btnadd, 0, wx.ALIGN_LEFT, 0)
-		hsizer.Add(self.btnremove, 0, wx.ALIGN_LEFT|wx.LEFT, 5)
-		vsizer.Add(hsizer, 0, wx.LEFT|wx.BOTTOM|wx.RIGHT, 5)
-		fssizer = wx.StaticBoxSizer(wx.StaticBox(self, -1, "freesound"), wx.VERTICAL)
+	def __init__(self):
+		gtk.HBox.__init__(self, False, MARGIN)
+		self.set_border_width(MARGIN)
+		#~ frame1 = gtk.Frame("Sound Folders")
+		#~ vsizer = gtk.VBox(False, MARGIN)
+		#~ vsizer.set_border_width(MARGIN)
+		#~ frame1.add(vsizer)
+		#~ self.pathlist, self.pathstore, columns = new_listview([
+			#~ ('Path', str),
+		#~ ])
+		#~ vsizer.pack_start(add_scrollbars(self.pathlist))
+		#~ self.btnadd = gtk.Button(stock=gtk.STOCK_ADD)
+		#~ self.btnremove = gtk.Button(stock=gtk.STOCK_REMOVE)
+		#~ hsizer = gtk.HButtonBox()
+		#~ hsizer.set_spacing(MARGIN)
+		#~ hsizer.set_layout(gtk.BUTTONBOX_START)
+		#~ hsizer.pack_start(self.btnadd, expand=False)
+		#~ hsizer.pack_start(self.btnremove, expand=False)
+		#~ vsizer.pack_end(hsizer, expand=False)
+		frame2 = gtk.Frame("The Freesound Project")
+		fssizer = gtk.VBox(False, MARGIN)
+		fssizer.set_border_width(MARGIN)
+		frame2.add(fssizer)
 		uname, passwd = config.get_config().get_credentials("Freesound")
-		self.edusername = wx.TextCtrl(self, -1, uname)
-		self.edpassword = wx.TextCtrl(self, -1, passwd, style=wx.TE_PASSWORD)
-		logo = wx.StaticBitmap(self, -1, wx.Bitmap(filepath("res/fsbanner.png"), wx.BITMAP_TYPE_ANY))
-		logo.SetBackgroundColour('#ffffff')
-		fssizer.Add(logo, 0, wx.EXPAND)
-		fsintro = wx.StaticText(self, -1, "The Freesound Project is a public library of Creative Commons licensed sounds and samples.")
-		fsintro.Wrap(200)
-		fssizer.Add(fsintro, 0, wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT, 5)
-		hsizer = wx.FlexGridSizer(2, 2)
-		hsizer.AddGrowableCol(1)
-		hsizer.Add(wx.StaticText(self, -1, "Username:"), 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.ALIGN_RIGHT, 5)
-		hsizer.Add(self.edusername, 1, wx.EXPAND|wx.ALIGN_CENTER_VERTICAL|wx.TOP|wx.RIGHT|wx.BOTTOM, 5)
-		hsizer.Add(wx.StaticText(self, -1, "Password:"), 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.ALIGN_RIGHT, 5)
-		hsizer.Add(self.edpassword, 1, wx.EXPAND|wx.ALIGN_CENTER_VERTICAL|wx.TOP|wx.RIGHT|wx.BOTTOM, 5)
-		fssizer.Add(hsizer, 0, wx.EXPAND)
-		fspwddesc = wx.StaticText(self, -1, "You will need an username and a password in order to search and download freesound samples.")
-		fspwddesc.Wrap(200)
-		fssizer.Add(fspwddesc, 0, wx.EXPAND|wx.BOTTOM|wx.LEFT|wx.RIGHT, 5)
-		fsvisit = wx.Button(self, -1, "Visit website")
-		fssizer.Add(fsvisit, 0, wx.EXPAND|wx.BOTTOM|wx.LEFT|wx.RIGHT, 5)
-		sizer.Add(vsizer, 1, wx.EXPAND|wx.RIGHT|wx.TOP|wx.BOTTOM|wx.LEFT, 5)
-		sizer.Add(fssizer, 1, wx.EXPAND|wx.TOP|wx.RIGHT|wx.BOTTOM, 5)
-		self.SetAutoLayout(True)
-		self.SetSizerAndFit(sizer)
-		self.Layout()
-		wx.EVT_BUTTON(self, self.btnadd.GetId(), self.on_add_path)
-		wx.EVT_BUTTON(self, fsvisit.GetId(), lambda event: webbrowser.open("http://freesound.iua.upf.edu/"))
-		wx.EVT_BUTTON(self, self.btnremove.GetId(), self.on_remove_path)
-		for path in config.get_config().get_wavetable_paths():
-			self.pathlist.Append(path)
+		self.edusername = gtk.Entry()
+		self.edusername.set_text(uname)
+		self.edpassword = gtk.Entry()
+		self.edpassword.set_visibility(False)
+		self.edpassword.set_text(passwd)
+		logo = gtk.Image()
+		logo.set_from_file(filepath("res/fsbanner.png"))
+		lalign = gtk.HBox()
+		lalign.pack_start(logo, expand=False)
+		fssizer.pack_start(lalign, expand=False)
+		fsintro = gtk.Label("The Freesound Project is a public library of Creative Commons licensed sounds and samples.")
+		fsintro.set_alignment(0, 0)
+		fsintro.set_line_wrap(True)
+		fssizer.pack_start(fsintro, expand=False)
+		sg1 = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
+		sg2 = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
+		def add_row(c1, c2):
+			row = gtk.HBox(False, MARGIN)
+			c1.set_alignment(1, 0.5)
+			sg1.add_widget(c1)
+			sg2.add_widget(c2)
+			row.pack_start(c1, expand=False)
+			row.pack_end(c2)
+			fssizer.pack_start(row, expand=False)
+		add_row(gtk.Label("Username"), self.edusername)
+		add_row(gtk.Label("Password"), self.edpassword)
+		fspwddesc = gtk.Label("You will need an username and a password in order to search and download freesound samples.")
+		fspwddesc.set_alignment(0, 0)
+		fspwddesc.set_line_wrap(True)
+		fssizer.pack_start(fspwddesc, expand=False)
+		fsvisit = gtk.Button("Visit website")
+		lalign = gtk.HBox()
+		lalign.pack_start(fsvisit, expand=False)
+		fssizer.pack_start(lalign, expand=False)
+		#~ self.add(frame1)
+		self.add(frame2)
+		#~ self.btnadd.connect('clicked', self.on_add_path)
+		#~ self.btnremove.connect('clicked', self.on_remove_path)
+		fsvisit.connect('clicked', lambda widget: webbrowser.open("http://freesound.iua.upf.edu/"))
+		#~ for path in config.get_config().get_wavetable_paths():
+			#~ self.pathstore.append([path])
 
 	def apply(self):
 		"""
 		Stores list of paths back to config.
 		"""
 		olduname,oldpasswd = config.get_config().get_credentials("Freesound")
-		uname = self.edusername.GetValue()
-		passwd = self.edpassword.GetValue()
+		uname = self.edusername.get_text()
+		passwd = self.edpassword.get_text()
 		if (uname != olduname) or (oldpasswd != passwd):
 			import freesound
 			fs = freesound.Freesound()
@@ -195,86 +210,95 @@ class WavetablePanel(wx.Panel):
 			except:
 				import traceback
 				traceback.print_exc()
-				utils.error(self, "There was an error logging into freesound. Please make sure username and password are correct.")
+				utils.error(self, "<b><big>There was an error logging into freesound.</big></b>\n\nPlease make sure username and password are correct.")
 				raise CancelException
-		pathlist = []
-		for i in range(self.pathlist.GetCount()):
-			pathlist.append(self.pathlist.GetString(i))
-		config.get_config().set_wavetable_paths(pathlist)
+		#~ pathlist = []
+		#~ for row in self.pathstore:
+			#~ pathlist.append(row[0])
+		#~ config.get_config().set_wavetable_paths(pathlist)
 		
 	def on_add_path(self, event):
 		"""
 		Handles 'Add' button click. Opens a directory selection dialog.
-		
-		@param event: Command event.
-		@type event: wx.CommandEvent
 		"""
-		dlg = wx.DirDialog(self, message="Select a folder that you want to access in wavetable window. Subfolders will be included automatically.")
-		if dlg.ShowModal() == wx.ID_OK:
-			if self.pathlist.FindString(dlg.GetPath()) == wx.NOT_FOUND:
-				self.pathlist.Append(dlg.GetPath())
-		dlg.Destroy()
+		dlg = gtk.FileChooserDialog(
+			"Add Sound Folder", None,
+			gtk.FILE_CHOOSER_ACTION_SELECT_FOLDER,
+			(gtk.STOCK_OK, gtk.RESPONSE_OK, gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL))
+		response = dlg.run()
+		if response == gtk.RESPONSE_OK:
+			found = [row for row in self.pathstore if row[0] == dlg.get_filename()]
+			if not found:
+				self.pathstore.append([dlg.get_filename()])
+		dlg.destroy()
 		
 	def on_remove_path(self, event):
 		"""
 		Handles 'Remove' button click. Removes the selected path from list.
-		
-		@param event: Command event.
-		@type event: wx.CommandEvent
 		"""
-		sel = self.pathlist.GetSelection()
-		if sel != wx.NOT_FOUND:
-			self.pathlist.Delete(sel)
+		store, sel = self.pathlist.get_selection().get_selected_rows()
+		refs = [gtk.TreeRowReference(store, row) for row in sel]
+		for ref in refs:
+			store.remove(store.get_iter(ref.get_path()))
 
-class SelectControllerDialog(wx.Dialog):
+class SelectControllerDialog(gtk.Dialog):
 	"""
 	Dialog that records a controller from keyboard input.
 	"""
-	def __init__(self, rootwindow, *args, **kwds):
+	def __init__(self, rootwindow):
 		self.rootwindow = rootwindow
-		wx.Dialog.__init__(self, *args, **kwds)
-		vsizer = wx.BoxSizer(wx.VERTICAL)
-		hsizer = wx.BoxSizer(wx.HORIZONTAL)
-		lsizer = wx.BoxSizer(wx.VERTICAL)
-		lsizer.Add(wx.StaticText(self, -1, "Move a controller to select it"), 0, wx.ALIGN_LEFT|wx.BOTTOM, 10)
-		self.controllerlabel = wx.StaticText(self, -1, "Controller:    ")
-		self.channellabel = wx.StaticText(self, -1, "Channel:    ")
-		self.valuelabel = wx.StaticText(self, -1, "Value:    ")
-		lsizer.Add(self.controllerlabel, 0, wx.ALIGN_LEFT|wx.BOTTOM, 5)
-		lsizer.Add(self.channellabel, 0, wx.ALIGN_LEFT|wx.BOTTOM, 5)
-		lsizer.Add(self.valuelabel, 0, wx.ALIGN_LEFT, 0)
-		rsizer = wx.BoxSizer(wx.VERTICAL)
-		self.btnok = wx.Button(self, wx.ID_OK, "OK")
-		self.btncancel = wx.Button(self, wx.ID_CANCEL, "Cancel")
-		rsizer.Add(self.btnok, 0, wx.ALIGN_LEFT|wx.BOTTOM, 5)
-		rsizer.Add(self.btncancel, 0, wx.ALIGN_LEFT, 0)
-		hsizer.Add(lsizer, 0, wx.LEFT|wx.RIGHT, 5)
-		hsizer.Add(rsizer, 0, wx.RIGHT, 5)
-		vsizer.Add(hsizer, 0, wx.TOP|wx.BOTTOM, 5)
-		hsizer = wx.BoxSizer(wx.HORIZONTAL)
-		self.namelabel = wx.StaticText(self, -1, "Name:")
-		self.editname = wx.TextCtrl(self, -1)
-		hsizer.Add(self.namelabel, 0, wx.ALIGN_CENTER_VERTICAL|wx.LEFT|wx.RIGHT, 5)
-		hsizer.Add(self.editname, 1, wx.EXPAND|wx.RIGHT, 5)
-		vsizer.Add(hsizer, 1, wx.EXPAND|wx.BOTTOM, 5)
-		self.target = None
-		self.name = ''
-		self.SetAutoLayout(True)
-		self.SetSizerAndFit(vsizer)
-		self.Layout()
-		wx.EVT_CLOSE(self, self.on_close)
-		wx.EVT_TEXT(self, self.editname.GetId(), self.on_editname_text)
+		gtk.Dialog.__init__(self,
+			"Add Controller",
+			rootwindow,
+			gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
+			None
+		)
+		vbox = gtk.VBox()
+		lsizer = gtk.VBox(False, MARGIN)
+		vbox.set_border_width(MARGIN2)
+		vbox.set_spacing(MARGIN)
+		label = gtk.Label("Move a control on your MIDI device to pick it up.")
+		label.set_alignment(0, 0.5)
+		lsizer.pack_start(label, expand=False)
+		sg = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
+		def make_row(name):
+			row = gtk.HBox(False, MARGIN)
+			c1 = gtk.Label()
+			c1.set_markup('<b>%s</b>' % name)
+			c1.set_alignment(1, 0.5)
+			c2 = gtk.Label()
+			c2.set_alignment(0, 0.5)
+			sg.add_widget(c1)
+			row.pack_start(c1, expand=False)
+			row.pack_start(c2)
+			lsizer.pack_start(row, expand=False)
+			return c2
+		self.controllerlabel = make_row("Controller")
+		self.channellabel = make_row("Channel")
+		self.valuelabel = make_row("Value")
+		self.btnok = self.add_button(gtk.STOCK_OK, gtk.RESPONSE_OK)
+		self.btncancel = self.add_button(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL)
+		vbox.pack_start(lsizer, expand=False)
+		hsizer = gtk.HBox(False, MARGIN)
+		self.namelabel = gtk.Label("Name")
+		self.editname = gtk.Entry()
+		hsizer.pack_start(self.namelabel, expand=False)
+		hsizer.add(self.editname)
+		vbox.pack_end(hsizer)
+		self.vbox.add(vbox)
+		self._target = None
+		self._name = ''
+		self.connect('response', self.on_close)
+		self.editname.connect('changed', self.on_editname_text)
 		self.rootwindow.event_handlers.append(self.on_player_callback)
 		self.update()
+		self.show_all()
 		
-	def on_editname_text(self, event):
+	def on_editname_text(self, widget):
 		"""
 		Handler for name edit field input.
-		
-		@param event: Command event.
-		@type event: wx.CommandEvent
 		"""
-		self.name = event.GetString()
+		self._name = widget.get_text()
 		self.update()
 		
 	def update(self):
@@ -282,10 +306,10 @@ class SelectControllerDialog(wx.Dialog):
 		Decides whether the user can click OK or not. A controller value must
 		be recorded and a name must have been entered.
 		"""
-		if self.target and self.name:
-			self.btnok.Enable(True)
+		if self._target and self._name:
+			self.btnok.set_sensitive(True)
 		else:
-			self.btnok.Enable(False)
+			self.btnok.set_sensitive(False)
 		
 	def on_player_callback(self, player, plugin, data):
 		"""
@@ -305,126 +329,78 @@ class SelectControllerDialog(wx.Dialog):
 				channel = ctrl.status & 0xf
 				controller = ctrl.data1
 				value = ctrl.data2
-				self.controllerlabel.SetLabel(prepstr("Controller: %i" % controller))
-				self.channellabel.SetLabel(prepstr("Channel: %i" % channel))
-				self.valuelabel.SetLabel(prepstr("Value: %i" % value))
-				self.target = channel,controller
+				self.controllerlabel.set_label(prepstr("%i" % controller))
+				self.channellabel.set_label(prepstr("%i" % channel))
+				self.valuelabel.set_label(prepstr("%i" % value))
+				self._target = channel,controller
 				self.update()
 		
-	def on_close(self, event):
+	def on_close(self, widget, response):
 		"""
 		Called when the dialog is closed.
-		
-		@param event: Close Event.
-		@type event: wx.CloseEvent
 		"""
 		self.rootwindow.event_handlers.remove(self.on_player_callback)
-		event.Skip()
 
-class ControllerPanel(wx.Panel):
+class ControllerPanel(gtk.VBox):
 	"""
 	Panel which allows to set up midi controller mappings.
 	"""
-	def __init__(self, rootwindow, *args, **kwds):
+	def __init__(self, rootwindow):
 		self.rootwindow = rootwindow
 		self.sort_column = 0
-		wx.Panel.__init__(self, *args, **kwds)
-		vsizer = wx.BoxSizer(wx.VERTICAL)
-		sizer1 = wx.StaticBoxSizer(wx.StaticBox(self, -1, "Controllers"), wx.VERTICAL)
-		self.controllers = wx.ListCtrl(self, -1, style=wx.SUNKEN_BORDER | wx.LC_REPORT)
-		sizer1.Add(self.controllers, 1, wx.EXPAND|wx.ALL, 5)
-		self.btnadd = wx.Button(self, wx.ID_ADD, "A&dd..")
-		self.btnremove = wx.Button(self, wx.ID_REMOVE, "&Remove")
-		hsizer = wx.BoxSizer(wx.HORIZONTAL)
-		hsizer.Add(self.btnadd, 0, wx.ALIGN_LEFT, 0)
-		hsizer.Add(self.btnremove, 0, wx.ALIGN_LEFT|wx.LEFT, 5)
-		sizer1.Add(hsizer, 0, wx.LEFT|wx.BOTTOM|wx.RIGHT, 5)
-		vsizer.Add(sizer1, 1, wx.EXPAND|wx.ALL, 5)
-		self.SetAutoLayout(True)
-		self.SetSizerAndFit(vsizer)
-		self.Layout()
-		wx.EVT_BUTTON(self, self.btnadd.GetId(), self.on_add_controller)
-		wx.EVT_BUTTON(self, self.btnremove.GetId(), self.on_remove_controller)
-		wx.EVT_LIST_COL_CLICK(self, self.controllers.GetId(), self.on_controllers_column_click)
-		self.controllers.InsertColumn(0, "Name")
-		self.controllers.InsertColumn(1, "Channel")
-		self.controllers.InsertColumn(2, "Controller")
+		gtk.VBox.__init__(self)
+		self.set_border_width(MARGIN)
+		frame1 = gtk.Frame("Controllers")
+		sizer1 = gtk.VBox(False, MARGIN)
+		sizer1.set_border_width(MARGIN)
+		frame1.add(sizer1)
+		self.controllers, self.store, columns = new_listview([
+			('Name', str),
+			('Channel', str),
+			('Controller', str),
+		])
+		self.controllers.get_selection().set_mode(gtk.SELECTION_MULTIPLE)
+		sizer1.add(add_scrollbars(self.controllers))
+		self.btnadd = gtk.Button(stock=gtk.STOCK_ADD)
+		self.btnremove = gtk.Button(stock=gtk.STOCK_REMOVE)
+		hsizer = gtk.HButtonBox()
+		hsizer.set_spacing(MARGIN)
+		hsizer.set_layout(gtk.BUTTONBOX_START)
+		hsizer.pack_start(self.btnadd, expand=False)
+		hsizer.pack_start(self.btnremove, expand=False)
+		sizer1.pack_start(hsizer, expand=False)
+		self.add(frame1)
+		self.btnadd.connect('clicked', self.on_add_controller)
+		self.btnremove.connect('clicked', self.on_remove_controller)
 		self.update_controllers()		
-		
-	def make_key(self, data):
-		"""
-		Returns a new numeric key for a python object to be used as item data for list controls.
-		"""
-		self.keys.append(data)
-		return len(self.keys)-1
-		
-	def on_controllers_column_click(self, event):
-		"""
-		Handles clicks on the controller list column. Sorts the list.
-		
-		@param event: Command event.
-		@type event: wx.CommandEvent
-		"""
-		self.sort_column = event.m_col
-		self.sort_list()
-		
-	def sort_list(self):
-		self.controllers.SortItems(self.sort_cmp_func)
-	
-	def sort_cmp_func(self, a, b):
-		a = self.keys[a][self.sort_column]
-		b = self.keys[b][self.sort_column]
-		if type(a) in (str,unicode):
-			return cmp(a.lower(),b.lower())
-		return cmp(a,b)
 		
 	def update_controllers(self):
 		"""
 		Updates the controller list.
 		"""
-		self.controllers.DeleteAllItems()
-		self.keys = []
-		i = 0
-		for name,channel,ctrlid in config.get_config().get_midi_controllers():			
-			self.controllers.InsertStringItem(i, name)
-			self.controllers.SetStringItem(i, 1, "%i" % channel)
-			self.controllers.SetStringItem(i, 2, "%i" % ctrlid)
-			self.controllers.SetItemData(i, self.make_key((name,channel,ctrlid)))
-			i += 1
-		self.sort_list()
+		self.store.clear()
+		for name,channel,ctrlid in config.get_config().get_midi_controllers():
+			self.store.append([name, str(channel), str(ctrlid)])
 		
 	def on_add_controller(self, event):
 		"""
 		Handles 'Add' button click. Opens a popup that records controller events.
-		
-		@param event: Command event.
-		@type event: wx.CommandEvent
 		"""
-		dlg = SelectControllerDialog(self.rootwindow, self, -1)
-		if dlg.ShowModal() == wx.ID_OK:
-			i = self.controllers.GetItemCount()
-			self.controllers.InsertStringItem(i, dlg.name)
-			channel,ctrlid = dlg.target
-			self.controllers.SetStringItem(i, 1, "%i" % channel)
-			self.controllers.SetStringItem(i, 2, "%i" % ctrlid)
-			self.controllers.SetItemData(i, self.make_key((dlg.name,channel,ctrlid)))
-		dlg.Close()
-		dlg.Destroy()
-		self.sort_list()
+		dlg = SelectControllerDialog(self.rootwindow)
+		response = dlg.run()
+		dlg.destroy()
+		if response == gtk.RESPONSE_OK:
+			channel,ctrlid = dlg._target
+			self.store.append([dlg._name, str(channel), str(ctrlid)])
 		
 	def on_remove_controller(self, event):
 		"""
 		Handles 'Remove' button click. Removes the selected controller from list.
-		
-		@param event: Command event.
-		@type event: wx.CommandEvent
 		"""
-		item = -1
-		while True:
-			item = self.controllers.GetNextItem(item, wx.LIST_NEXT_ALL, wx.LIST_STATE_SELECTED)
-			if item == -1:
-				break
-			self.controllers.DeleteItem(item)
+		store, sel = self.controllers.get_selection().get_selected_rows()
+		refs = [gtk.TreeRowReference(store, row) for row in sel]
+		for ref in refs:
+			store.remove(store.get_iter(ref.get_path()))
 		
 	def apply(self):
 		"""
@@ -434,66 +410,74 @@ class ControllerPanel(wx.Panel):
 		"""
 		ctrllist = []
 		item = -1
-		while True:
-			item = self.controllers.GetNextItem(item, wx.LIST_NEXT_ALL, wx.LIST_STATE_DONTCARE)
-			if item == -1:
-				break
-			name = self.controllers.GetItem(item,0).GetText()
-			channel = int(self.controllers.GetItem(item,1).GetText())
-			ctrlid = int(self.controllers.GetItem(item,2).GetText())
+		for row in self.store:
+			name = row[0]
+			channel = int(row[1])
+			ctrlid = int(row[2])
 			ctrllist.append((name,channel,ctrlid))
 		config.get_config().set_midi_controllers(ctrllist)
 
-class MidiPanel(wx.Panel):
+class MidiPanel(gtk.VBox):
 	"""
 	Panel which allows to see and change a list of used MIDI output devices.
 	"""
-	def __init__(self, *args, **kwds):
-		wx.Panel.__init__(self, *args, **kwds)
-		vsizer = wx.BoxSizer(wx.VERTICAL)
-		vsizer.Add(wx.StaticText(self, -1, "Please tick the devices which you want to use."), 0, wx.ALL, 5)
-		sizer1 = wx.StaticBoxSizer(wx.StaticBox(self, -1, "MIDI Input"), wx.VERTICAL)
-		self.idevicelist = wx.CheckListBox(self, -1)
+	def __init__(self):
+		gtk.VBox.__init__(self, False, MARGIN)
+		self.set_border_width(MARGIN)
+		frame1 = gtk.Frame("MIDI Input Devices")
+		sizer1 = gtk.VBox()
+		sizer1.set_border_width(MARGIN)
+		frame1.add(sizer1)
+		self.idevicelist, self.istore, columns = new_listview([
+			("Use", bool),
+			("Device", str),
+		])
+		self.idevicelist.set_property('headers-visible', False)
 		inputlist = config.get_config().get_mididriver_inputs()
 		for i in range(player.mididriver_get_count()):
 			if player.mididriver_is_input(i):
 				name = prepstr(player.mididriver_get_name(i))
-				idx = self.idevicelist.Append(name)
-				if name in inputlist:
-					self.idevicelist.Check(idx, True)
-		sizer1.Add(self.idevicelist, 1, wx.EXPAND|wx.ALL, 5)
-		sizer2 = wx.StaticBoxSizer(wx.StaticBox(self, -1, "MIDI Output"), wx.VERTICAL)
-		self.odevicelist = wx.CheckListBox(self, -1)
+				use = name in inputlist
+				self.istore.append([use, name])
+		sizer1.add(add_scrollbars(self.idevicelist))
+		frame2 = gtk.Frame("MIDI Output Devices")
+		sizer2 = gtk.VBox()
+		sizer2.set_border_width(MARGIN)
+		frame2.add(sizer2)
+		self.odevicelist, self.ostore, columns = new_listview([
+			("Use", bool),
+			("Device", str),
+		])
+		self.odevicelist.set_property('headers-visible', False)
 		outputlist = config.get_config().get_mididriver_outputs()
 		for i in range(player.mididriver_get_count()):
 			if player.mididriver_is_output(i):
 				name = prepstr(player.mididriver_get_name(i))
-				idx = self.odevicelist.Append(name)
-				if name in outputlist:
-					self.odevicelist.Check(idx, True)
-		sizer2.Add(self.odevicelist, 1, wx.EXPAND|wx.ALL, 5)
-		vsizer.Add(sizer1, 1, wx.EXPAND|wx.LEFT|wx.BOTTOM|wx.RIGHT, 5)
-		vsizer.Add(sizer2, 1, wx.EXPAND|wx.LEFT|wx.BOTTOM|wx.RIGHT, 5)
-		self.SetAutoLayout(True)
-		self.SetSizerAndFit(vsizer)
-		self.Layout()
+				use = name in outputlist
+				self.ostore.append([use,name])
+		sizer2.add(add_scrollbars(self.odevicelist))
+		self.add(frame1)
+		self.add(frame2)
+		label = gtk.Label("Checked MIDI devices will be used the next time you start Aldrin.")
+		label.set_alignment(0, 0)
+		self.pack_start(label, expand=False)
 
 	def apply(self):
 		"""
 		Adds the currently selected drivers to the list.
 		"""
 		inputlist = []
-		for i in range(self.idevicelist.GetCount()):
-			if self.idevicelist.IsChecked(i):
-				inputlist.append(self.idevicelist.GetString(i))
+		for row in self.istore:
+			if row[0]:
+				inputlist.append(row[1])
 		config.get_config().set_mididriver_inputs(inputlist)
 		outputlist = []
-		for i in range(self.odevicelist.GetCount()):
-			if self.odevicelist.IsChecked(i):
-				outputlist.append(self.odevicelist.GetString(i))
+		for row in self.ostore:
+			if row[0]:
+				outputlist.append(row[1])
 		config.get_config().set_mididriver_outputs(outputlist)
 
-class KeyboardPanel(wx.Panel):
+class KeyboardPanel(gtk.VBox):
 	"""
 	Panel which allows to see and change the current keyboard configuration.
 	"""
@@ -504,34 +488,31 @@ class KeyboardPanel(wx.Panel):
 		('dv', 'Dvorak (\',.PYF)')
 	]
 	
-	def __init__(self, *args, **kwds):
-		wx.Panel.__init__(self, *args, **kwds)
-		vsizer = wx.BoxSizer(wx.VERTICAL)
-		hsizer = wx.BoxSizer(wx.HORIZONTAL)
-		hsizer.Add(wx.StaticText(self, -1, "Keyboard Map:"), 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, 5)
-		self.cblanguage = wx.Choice(self, -1)
+	def __init__(self):
+		gtk.VBox.__init__(self, False, MARGIN)
+		self.set_border_width(MARGIN)
+		hsizer = gtk.HBox(False, MARGIN)
+		hsizer.pack_start(gtk.Label("Keyboard Map"), expand=False)
+		self.cblanguage = gtk.combo_box_new_text()
 		sel = 0
 		lang = config.get_config().get_keymap_language()
 		index = 0
 		for kmid, name in self.KEYMAPS:
-			self.cblanguage.Append(name)
+			self.cblanguage.append_text(name)
 			if lang == kmid:
 				sel = index
 			index += 1
-		hsizer.Add(self.cblanguage, 1, wx.EXPAND)
-		vsizer.Add(hsizer, 0, wx.EXPAND|wx.ALL, 5)
-		self.SetAutoLayout(True)
-		self.SetSizerAndFit(vsizer)
-		self.Layout()
-		self.cblanguage.SetSelection(sel)
+		hsizer.add(self.cblanguage)
+		self.pack_start(hsizer, expand=False)
+		self.cblanguage.set_active(sel)
 
 	def apply(self):
 		"""
 		applies the keymap.
 		"""
-		config.get_config().set_keymap_language(self.KEYMAPS[self.cblanguage.GetSelection()][0])
+		config.get_config().set_keymap_language(self.KEYMAPS[self.cblanguage.get_active()][0])
 
-class ExtensionsPanel(wx.Panel):
+class ExtensionsPanel(gtk.Container):
 	"""
 	Panel which allows to enable and disable extensions.
 	"""
@@ -593,81 +574,77 @@ class ExtensionsPanel(wx.Panel):
 		config.get_config().set_enabled_extensions(exts)
 		
 
-class PreferencesDialog(wx.Dialog):
+class PreferencesDialog(gtk.Dialog):
 	"""
 	This Dialog aggregates the different panels and allows
 	the user to switch between them using a tab control.
 	"""
-	def __init__(self, rootwindow, *args, **kwds):
-		kwds['style'] = wx.RESIZE_BORDER | wx.DEFAULT_DIALOG_STYLE
-		wx.Dialog.__init__(self, *args, **kwds)
-		self.SetTitle("Preferences")
-		self.SetMinSize((500,400))
-		nb = wx.Notebook(self, -1, style = wx.NB_TOP)
-		self.driverpanel = DriverPanel(nb,-1)
-		self.wavetablepanel = WavetablePanel(nb,-1)
-		self.midipanel = MidiPanel(nb,-1)
-		self.controllerpanel = ControllerPanel(rootwindow,nb,-1)
-		self.keyboardpanel = KeyboardPanel(nb,-1)
-		self.extensionspanel = ExtensionsPanel(nb,-1)
-		nb.InsertPage(0, self.driverpanel, "Audio")
-		nb.InsertPage(1, self.midipanel, "MIDI")
-		nb.InsertPage(2, self.controllerpanel, "Controllers")
-		nb.InsertPage(3, self.keyboardpanel, "Keyboard")
-		nb.InsertPage(4, self.wavetablepanel, "Sound Library")
-		nb.InsertPage(5, self.extensionspanel, "Extensions")
-		btnok = wx.Button(self, wx.ID_OK, "OK")
-		btncancel = wx.Button(self, wx.ID_CANCEL, "Cancel")
-		btnapply = wx.Button(self, wx.ID_APPLY, "Apply")
-		buttonsizer = wx.BoxSizer(wx.HORIZONTAL)
-		buttonsizer.Add(btnok, 0, wx.EXPAND)
-		buttonsizer.Add(btncancel, 0, wx.EXPAND|wx.LEFT, 5)
-		buttonsizer.Add(btnapply, 0, wx.EXPAND|wx.LEFT, 5)		
-		sizer = wx.BoxSizer(wx.VERTICAL)
-		sizer.Add(nb, 1, wx.EXPAND|wx.ALL, 5)
-		sizer.Add(buttonsizer, 0, wx.ALIGN_RIGHT|wx.LEFT|wx.RIGHT|wx.BOTTOM, 5)
-		self.SetAutoLayout(True)
-		self.SetSizer(sizer)
-		self.Layout()
-		self.Centre()
-		self.Fit()
-		wx.EVT_BUTTON(self, wx.ID_OK, self.on_ok)
-		wx.EVT_BUTTON(self, wx.ID_APPLY, self.on_apply)
+	def __init__(self, rootwindow,parent):
+		gtk.Dialog.__init__(self,
+			"Preferences",
+			parent,
+			gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT)
+		#self.resize(500,400)
+		nb = gtk.Notebook()
+		nb.set_border_width(MARGIN)
+		self.driverpanel = DriverPanel()
+		self.wavetablepanel = WavetablePanel()
+		self.midipanel = MidiPanel()
+		self.controllerpanel = ControllerPanel(rootwindow)
+		self.keyboardpanel = KeyboardPanel()
+		#~ self.extensionspanel = ExtensionsPanel()
+		nb.append_page(self.driverpanel, gtk.Label("Audio"))
+		nb.append_page(self.midipanel, gtk.Label("MIDI"))
+		nb.append_page(self.controllerpanel, gtk.Label("Controllers"))
+		nb.append_page(self.keyboardpanel, gtk.Label("Keyboard"))
+		nb.append_page(self.wavetablepanel, gtk.Label("Sound Library"))
+		#~ nb.append_page(self.extensionspanel, gtk.Label("Extensions"))
+		self.vbox.add(nb)
+		
+		btnok = self.add_button(gtk.STOCK_OK, gtk.RESPONSE_OK)
+		self.add_button(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL)
+		btnapply = self.add_button(gtk.STOCK_APPLY, gtk.RESPONSE_APPLY)
+		btnok.grab_default()
+
+		self.connect('response', self.on_response)
+		self.show_all()
+		
+	def on_response(self, dialog, response):
+		if response == gtk.RESPONSE_OK:
+			self.on_ok()
+		elif response == gtk.RESPONSE_APPLY:
+			self.on_apply()
+		else:
+			self.destroy()
 		
 	def apply(self):
 		"""
 		Apply changes in settings without closing the dialog.
 		"""
 		self.wavetablepanel.apply()
-		self.extensionspanel.apply()
+		#~ self.extensionspanel.apply()
 		self.keyboardpanel.apply()
 		self.driverpanel.apply()
 		self.controllerpanel.apply()
 		self.midipanel.apply()
 		
-	def on_apply(self, event):
+	def on_apply(self):
 		"""
 		Event handler for apply button.
-		
-		@param event: Event forwarded by wxPython.
-		@type event: wx.Event
 		"""
 		try:
-			self.apply()		
+			self.apply()
 		except CancelException:
 			pass
 
-	def on_ok(self, event):
+	def on_ok(self):
 		"""
 		Event handler for OK button. Calls apply
 		and then closes the dialog.
-		
-		@param event: Event forwarded by wxPython.
-		@type event: wx.Event
 		"""
 		try:
 			self.apply()		
-			event.Skip()
+			self.destroy()
 		except CancelException:
 			pass
 
@@ -680,9 +657,7 @@ def show_preferences(rootwindow, parent):
 	@param parent: Parent window.
 	@type parent: wx.Window
 	"""
-	dlg = PreferencesDialog(rootwindow, parent, -1)
-	dlg.ShowModal()
-	dlg.Destroy()
+	dlg = PreferencesDialog(rootwindow, parent)
 
 __all__ = [
 'CancelException',
@@ -697,7 +672,9 @@ __all__ = [
 ]
 
 if __name__ == '__main__':
-	import sys, utils
-	from main import run
-	#sys.argv.append(utils.filepath('demosongs/test.bmx'))
-	run(sys.argv)
+	import testplayer, utils
+	player = testplayer.get_player()
+	window = testplayer.TestWindow()
+	window.show_all()
+	show_preferences(window, window)
+	gtk.main()

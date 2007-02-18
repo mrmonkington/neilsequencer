@@ -22,63 +22,61 @@
 Provides dialog class for cpu monitor.
 """
 
-from wximport import wx
+from gtkimport import gtk
+import gobject
 from utils import prepstr
 import utils, os, stat
+import common
+player = common.get_player()
 
-class CPUMonitorDialog(wx.Dialog):
+class CPUMonitorDialog(gtk.Dialog):
 	"""
 	This Dialog shows the CPU monitor, which allows monitoring
 	CPU usage and individual plugin CPU consumption.
 	"""
-	def __init__(self, *args, **kwds):
+	def __init__(self, parent):
 		"""
 		Initializer.
 		"""
-		kwds['style'] = wx.RESIZE_BORDER | wx.DEFAULT_DIALOG_STYLE
-		wx.Dialog.__init__(self, *args, **kwds)
-		self.SetMinSize((200,300))
-		self.SetTitle("CPU Monitor")
-		self.pluginlist = wx.ListCtrl(self, -1, style=wx.SUNKEN_BORDER | wx.LC_REPORT)
-		self.pluginlist.InsertColumn(0, "Plugin", wx.LIST_AUTOSIZE)
-		self.pluginlist.InsertColumn(1, "CPU Load", wx.LIST_AUTOSIZE)
-		self.labeltotal = wx.StaticText(self, -1, "100%")
-		self.gaugetotal = wx.Gauge(self, -1, style=wx.GA_SMOOTH|wx.GA_HORIZONTAL)
-		self.gaugetotal.SetRange(100)
-		sizer = wx.BoxSizer(wx.VERTICAL)
-		sizer.Add(self.pluginlist, 1, wx.EXPAND)
-		hsizer = wx.BoxSizer(wx.HORIZONTAL)
-		hsizer.Add(self.gaugetotal, 1, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, 10)
-		hsizer.Add(self.labeltotal, 0, wx.ALIGN_CENTER_VERTICAL)
-		sizer.Add(hsizer, 0, wx.EXPAND | wx.ALL, border=5)
-		self.SetAutoLayout(True)
-		self.SetSizer(sizer)
-		self.Layout()
-		self.Fit()
-		self.Centre()
-		self.timer = wx.Timer(self, -1)
-		self.timer.Start(250)
-		wx.EVT_SIZE(self, self.on_size)
-		wx.EVT_TIMER(self, self.timer.GetId(), self.on_timer)
-		
-	def on_size(self, event):
-		"""
-		Called when the panel is being resized.
-		"""
-		#event.Skip()
-		self.Layout()
-		x,y,w,h = self.pluginlist.GetClientRect()
-		self.pluginlist.SetColumnWidth(0, w/2)
-		self.pluginlist.SetColumnWidth(1, w/2)
+		gtk.Dialog.__init__(self, parent=parent.get_toplevel())
+		self.set_size_request(200,300)
+		self.set_title("CPU Monitor")
+		self.pluginlist = gtk.ListStore(str, str)
+		scrollwin = gtk.ScrolledWindow()
+		scrollwin.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+		self.pluginlistview = gtk.TreeView(self.pluginlist)
+		self.pluginlistview.set_rules_hint(True)
+		self.tvplugin = gtk.TreeViewColumn("Plugin")
+		self.tvplugin.set_resizable(True)
+		self.tvload = gtk.TreeViewColumn("CPU Load")
+		self.cellplugin = gtk.CellRendererText()
+		self.cellload = gtk.CellRendererText()
+		self.tvplugin.pack_start(self.cellplugin)
+		self.tvload.pack_start(self.cellload)
+		self.tvplugin.add_attribute(self.cellplugin, 'text', 0)
+		self.tvload.add_attribute(self.cellload, 'text', 1)
+		self.pluginlistview.append_column(self.tvplugin)
+		self.pluginlistview.append_column(self.tvload)
+		self.pluginlistview.set_search_column(0)
+		self.tvplugin.set_sort_column_id(0)
+		self.tvload.set_sort_column_id(1)
+		self.labeltotal = gtk.Label("100%")
+		self.gaugetotal = gtk.ProgressBar()
+		scrollwin.add(self.pluginlistview)
+		sizer = gtk.VBox()
+		sizer.pack_start(scrollwin)
+		hsizer = gtk.HBox()
+		hsizer.pack_start(self.gaugetotal, padding=5)
+		hsizer.pack_start(self.labeltotal, expand=False, padding=5)
+		sizer.pack_start(hsizer, expand=False, padding=5)
+		self.vbox.add(sizer)
+		gobject.timeout_add(1000, self.on_timer)
 
-	def on_timer(self, event):
+	def on_timer(self):
 		"""
 		Called by timer event. Updates CPU usage statistics.
-		
-		@param event: timer event
-		@type event: wx.TimerEvent
 		"""
-		if self.IsShown():
+		if self.window and self.window.is_visible():
 			player.lock_tick()
 			cpu = 0.0
 			cpu_loads = {}
@@ -90,45 +88,36 @@ class CPUMonitorDialog(wx.Dialog):
 				import traceback
 				traceback.print_exc()
 			player.unlock_tick()
-			total_workload = sum(cpu_loads.values())
-			self.gaugetotal.SetValue(int(cpu + 0.5))
-			self.labeltotal.SetLabel("%i%%" % int(cpu + 0.5))
-			item = -1
-			keys = []
-			while True:
-				item = self.pluginlist.GetNextItem(item, wx.LIST_NEXT_ALL, wx.LIST_STATE_DONTCARE)
-				if item == -1:
-					break
-				name = self.pluginlist.GetItem(item,0).GetText()
+			total_workload = max(sum(cpu_loads.values()),0.001)
+			self.gaugetotal.set_fraction(cpu / 100.0)
+			self.labeltotal.set_label("%i%%" % int(cpu + 0.5))
+			def update_node(store, level, item, udata):
+				name = self.pluginlist.get_value(item, 0)
 				if name in cpu_loads:
 					relperc = (cpu_loads[name] / total_workload) * cpu
-					self.pluginlist.SetStringItem(item, 1, "%.1f%%" % relperc, -1)
-					self.pluginlist.SetItemData(item, len(keys))
-					keys.append(name)
+					store.set_value(item, 1, "%.1f%%" % relperc)
 					del cpu_loads[name]
 				else:
-					self.pluginlist.DeleteItem(item)
+					store.remove(item)
+				
+			self.pluginlist.foreach(update_node, None)
+				
 			for k,v in cpu_loads.iteritems():
-				index = self.pluginlist.GetItemCount()
 				k = prepstr(k)
-				self.pluginlist.InsertStringItem(index, k)
 				relperc = (v / total_workload) * cpu
-				self.pluginlist.SetStringItem(index, 1, "%.1f%%" % relperc, -1)
-				self.pluginlist.SetItemData(index, len(keys))
-				keys.append(k)
-			if cpu_loads.keys():
-				def sort_cmp_func(a, b):
-					a = keys[a].lower()
-					b = keys[b].lower()
-					return cmp(a,b)
-				self.pluginlist.SortItems(sort_cmp_func)
+				self.pluginlist.append([k, "%.1f%%" % relperc])
+			self.pluginlistview.columns_autosize()
+		return True
 
 __all__ = [
 'CPUMonitorDialog',
 ]
 
 if __name__ == '__main__':
-	import sys, utils
-	from main import run
-	sys.argv.append(utils.filepath('demosongs/test.bmx'))
-	run(sys.argv)
+	import testplayer, utils
+	player = testplayer.get_player()
+	player.load_ccm(utils.filepath('demosongs/paniq-knark.ccm'))
+	dlg = CPUMonitorDialog()
+	dlg.connect('destroy', lambda widget: gtk.main_quit())
+	dlg.show_all()
+	gtk.main()

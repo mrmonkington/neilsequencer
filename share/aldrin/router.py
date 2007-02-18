@@ -22,9 +22,12 @@
 Provides dialogs and controls to render the plugin view/router and its associated components.
 """
 
-from wximport import wx
-from canvas import Canvas, BitmapBuffer
-from utils import prepstr, filepath, db2linear, linear2db, is_debug, filenameify
+from gtkimport import gtk
+import gobject
+import cairo
+import pangocairo
+from utils import prepstr, filepath, db2linear, linear2db, is_debug, filenameify, \
+	get_item_count, question, error, new_listview, add_scrollbars, get_clipboard_text, set_clipboard_text
 import config
 import zzub
 import sys,os
@@ -34,6 +37,9 @@ import ctypes
 import time
 import Queue
 from preset import PresetCollection, Preset
+import common
+player = common.get_player()
+from common import MARGIN, MARGIN2, MARGIN3
 
 PLUGINWIDTH = 100
 PLUGINHEIGHT = 50
@@ -48,7 +54,7 @@ AREA_ANY = 0
 AREA_PANNING = 1
 AREA_LED = 2
 
-class OscillatorView(Canvas):
+class OscillatorView(gtk.DrawingArea):
 	"""
 	Oscillator viewer.
 	
@@ -126,7 +132,7 @@ class OscillatorView(Canvas):
 			dc.DrawLine(x1, yr1, x1, yr1+1)
 			x += 1
 
-class SignalAnalysisDialog(wx.Dialog):
+class SignalAnalysisDialog(gtk.Dialog):
 	"""
 	Displays a visualization of plugin traffic.
 	"""
@@ -163,61 +169,67 @@ class SignalAnalysisDialog(wx.Dialog):
 		"""
 		self.oscview.ReDraw()
 		
-class AttributesDialog(wx.Dialog):
+class AttributesDialog(gtk.Dialog):
 	"""
 	Displays plugin atttributes and allows to edit them.
 	"""
 	
-	def __init__(self, plugin, *args, **kwds):
+	def __init__(self, plugin, parent):
 		"""
 		Initializer.
 		
 		@param plugin: Plugin object.
 		@type plugin: wx.Plugin
 		"""
-		wx.Dialog.__init__(self, *args, **kwds)
+		gtk.Dialog.__init__(self,
+			"Attributes",
+			parent.get_toplevel(),
+			gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
+			None
+		)		
+		vbox = gtk.VBox(False, MARGIN)
+		vbox.set_border_width(MARGIN)
 		self.plugin = plugin
 		self.pluginloader = plugin.get_pluginloader()
-		self.SetMinSize((300,200))
-		vsizer = wx.BoxSizer(wx.VERTICAL)
-		self.attriblist = wx.ListCtrl(self, -1, style=wx.SUNKEN_BORDER | wx.LC_REPORT | wx.LC_SINGLE_SEL)
-		vsizer.Add(self.attriblist, 1, wx.EXPAND|wx.ALL, 5)
-		hsizer = wx.BoxSizer(wx.HORIZONTAL)
-		self.edvalue = wx.TextCtrl(self, -1)
-		self.btnset = wx.Button(self, -1, "&Set")
-		self.btnok = wx.Button(self, wx.ID_OK)
-		self.btncancel = wx.Button(self, wx.ID_CANCEL)
-		hsizer.Add(self.edvalue, 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, 5)
-		hsizer.Add(self.btnset, 0, wx.ALIGN_CENTER_VERTICAL)
-		hsizer.Add((0,0), 1)
-		hsizer.Add(self.btnok, 0, wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, 5)
-		hsizer.Add(self.btncancel, 0, wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL)
-		vsizer.Add(hsizer, 0, wx.EXPAND|wx.LEFT|wx.RIGHT|wx.BOTTOM, 5)
-		self.attriblist.InsertColumn(0, "Attribute", wx.LIST_AUTOSIZE)
-		self.attriblist.InsertColumn(1, "Value", wx.LIST_AUTOSIZE)
-		self.attriblist.InsertColumn(2, "Min", wx.LIST_AUTOSIZE)
-		self.attriblist.InsertColumn(3, "Max", wx.LIST_AUTOSIZE)
-		self.attriblist.InsertColumn(4, "Default", wx.LIST_AUTOSIZE)
+		self.resize(300,200)
+		self.attriblist, self.attribstore, columns = new_listview([
+			('Attribute', str),
+			('Value', str),
+			('Min', str),
+			('Max', str),
+			('Default', str),
+		])
+		vbox.add(add_scrollbars(self.attriblist))
+		hsizer = gtk.HButtonBox()
+		hsizer.set_spacing(MARGIN)
+		hsizer.set_layout(gtk.BUTTONBOX_START)
+		self.edvalue = gtk.Entry()
+		self.edvalue.set_size_request(50,-1)
+		self.btnset = gtk.Button("_Set")
+		self.btnok = self.add_button(gtk.STOCK_OK, gtk.RESPONSE_OK)
+		self.btncancel = self.add_button(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL)
+		hsizer.pack_start(self.edvalue, expand=False)
+		hsizer.pack_start(self.btnset, expand=False)
+		vbox.pack_start(hsizer, expand=False)
 		self.attribs = []
 		for i in range(self.pluginloader.get_attribute_count()):
 			attrib = self.pluginloader.get_attribute(i)
 			self.attribs.append(self.plugin.get_attribute_value(i))
-			self.attriblist.InsertStringItem(i, prepstr(attrib.get_name()))
-			self.attriblist.SetStringItem(i, 1, "%i" % self.plugin.get_attribute_value(i), -1)
-			self.attriblist.SetStringItem(i, 2, "%i" % attrib.get_value_min(), -1)
-			self.attriblist.SetStringItem(i, 3, "%i" % attrib.get_value_max(), -1)
-			self.attriblist.SetStringItem(i, 4, "%i" % attrib.get_value_default(), -1)
-		wx.EVT_SIZE(self, self.on_size)
-		self.SetSizerAndFit(vsizer)
-		self.Layout()
-		self.Center()
-		wx.EVT_BUTTON(self, self.btnset.GetId(), self.on_set)
-		wx.EVT_BUTTON(self, wx.ID_OK, self.on_ok)
-		wx.EVT_LIST_ITEM_FOCUSED(self, self.attriblist.GetId(), self.on_attrib_item_focused)
+			self.attribstore.append([
+				prepstr(attrib.get_name()), 
+				"%i" % self.plugin.get_attribute_value(i),
+				"%i" % attrib.get_value_min(),
+				"%i" % attrib.get_value_max(),
+				"%i" % attrib.get_value_default(),
+			])
+		self.btnset.connect('clicked', self.on_set)
+		self.connect('response', self.on_ok)
+		self.attriblist.get_selection().connect('changed', self.on_attrib_item_focused)
 		if self.attribs:
-			self.attriblist.SetItemState(0, wx.LIST_STATE_FOCUSED|wx.LIST_STATE_SELECTED, wx.LIST_STATE_FOCUSED|wx.LIST_STATE_SELECTED)
-			self.attriblist.SetFocus()
-			self.on_attrib_item_focused(None)
+			self.attriblist.grab_focus()
+			self.attriblist.get_selection().select_path((0,))
+		self.vbox.add(vbox)
+		self.show_all()
 			
 	def get_focused_item(self):
 		"""
@@ -226,9 +238,10 @@ class AttributesDialog(wx.Dialog):
 		@return: Index of the attribute currently selected.
 		@rtype: int
 		"""
-		return self.attriblist.GetNextItem(-1, wx.LIST_NEXT_ALL, wx.LIST_STATE_FOCUSED)
+		store, rows = self.attriblist.get_selection().get_selected_rows()
+		return rows[0][0]
 		
-	def on_attrib_item_focused(self, event):
+	def on_attrib_item_focused(self, selection):
 		"""
 		Called when an attribute item is being focused.
 		
@@ -236,280 +249,100 @@ class AttributesDialog(wx.Dialog):
 		@type event: wx.Event
 		"""
 		v = self.attribs[self.get_focused_item()]
-		self.edvalue.SetValue("%i" % v)
+		self.edvalue.set_text("%i" % v)
 		
-	def on_set(self, event):
+	def on_set(self, widget):
 		"""
 		Called when the "set" button is being pressed.
-		
-		@param event: Event.
-		@type event: wx.Event
 		"""
 		i = self.get_focused_item()
 		attrib = self.pluginloader.get_attribute(i)
 		try:
-			v = int(self.edvalue.GetValue())
+			v = int(self.edvalue.get_text())
 			assert v >= attrib.get_value_min()
 			assert v <= attrib.get_value_max()
 		except:
+			error(self, "<b><big>The number you entered is invalid.</big></b>\n\nThe number must be in the proper range.")
 			return
 		self.attribs[i] = v
-		self.attriblist.SetStringItem(i, 1, "%i" % v, -1)
+		iter = self.attribstore.get_iter((i,))
+		self.attribstore.set_value(iter, 1, "%i" % v)
 			
-	def on_ok(self, event):
+	def on_ok(self, widget, response):
 		"""
-		Called when the "ok" button is being pressed.
-		
-		@param event: Event.
-		@type event: wx.Event
+		Called when the "ok" or "cancel" button is being pressed.
 		"""
-		for i in range(len(self.attribs)):
-			self.plugin.set_attribute_value(i, self.attribs[i])
-		event.Skip()		
-		
-	def on_size(self, event):
-		"""
-		Called when the dialog is being resized.
-		
-		@param event: Event.
-		@type event: wx.Event
-		"""
-		self.Layout()
-		x,y,w,h = self.attriblist.GetClientRect()
-		w -= 16
-		self.attriblist.SetColumnWidth(0, w/3)
-		self.attriblist.SetColumnWidth(1, w/6)
-		self.attriblist.SetColumnWidth(2, w/6)
-		self.attriblist.SetColumnWidth(3, w/6)
-		self.attriblist.SetColumnWidth(4, w/6)
+		if response == gtk.RESPONSE_OK:
+			for i in range(len(self.attribs)):
+				self.plugin.set_attribute_value(i, self.attribs[i])
 
-
-class PresetDialog(wx.Dialog):
-	"""
-	Displays presets and allows to edit them.
-	"""
-	
-	def __init__(self, plugin, *args, **kwds):
-		"""
-		Initializer.
-		
-		@param pluginloader: Pluginloader object.
-		@type pluginloader: wx.Pluginloader
-		"""
-		self.parent = args[0]
-		wx.Dialog.__init__(self, *args, **kwds)
-		self.plugin = plugin
-		self.pluginloader = plugin.get_pluginloader()
-		sizer = wx.FlexGridSizer(2,2,5,5)
-		self.presetlist = wx.ListBox(self, -1, style=wx.SUNKEN_BORDER)
-		self.presetlist.SetMinSize((100,150))
-		self.commentbox = wx.TextCtrl(self, -1, style=wx.SUNKEN_BORDER | wx.TE_MULTILINE | wx.TE_RICH2 | wx.TE_BESTWRAP)
-		self.edname = wx.TextCtrl(self, -1)
-		self.btnadd = wx.Button(self, -1, "&Add")
-		self.btndelete = wx.Button(self, -1, "&Delete")
-		self.btnimport = wx.Button(self, -1, "&Import...")
-		hsizer = wx.BoxSizer(wx.HORIZONTAL)
-		hsizer.Add(self.btnadd, 0, wx.RIGHT, 5)
-		hsizer.Add(self.btndelete, 0, wx.RIGHT, 5)
-		hsizer.Add(self.btnimport, 0)
-		sizer.Add(self.presetlist, 0, wx.LEFT|wx.TOP, 5)
-		sizer.Add(self.commentbox, 0, wx.EXPAND|wx.TOP|wx.RIGHT, 5)
-		sizer.Add(self.edname, 0, wx.EXPAND|wx.ALIGN_CENTER_VERTICAL|wx.LEFT|wx.BOTTOM, 5)
-		sizer.Add(hsizer, 0, wx.BOTTOM|wx.RIGHT, 5)
-		self.SetAutoLayout(True)
-		self.SetSizerAndFit(sizer)
-		self.Layout()
-		self.Center()
-		wx.EVT_LISTBOX(self, self.presetlist.GetId(), self.on_presetlist_select)
-		wx.EVT_LISTBOX_DCLICK(self, self.presetlist.GetId(), self.on_presetlist_dclick)
-		wx.EVT_BUTTON(self, self.btnadd.GetId(), self.on_button_add)
-		wx.EVT_BUTTON(self, self.btndelete.GetId(), self.on_button_delete)
-		wx.EVT_BUTTON(self, self.btnimport.GetId(), self.on_button_import)		
-		wx.EVT_TEXT(self, self.edname.GetId(), self.on_edit_name)
-		self.presets = config.get_config().get_plugin_presets(self.pluginloader)
-		self.update_presetlist()
-		self.update_addbutton()
-		
-	def update_presetlist(self):
-		"""
-		Updates the preset list.
-		"""
-		self.presetlist.Clear()
-		for preset in self.presets.presets:
-			self.presetlist.Append(prepstr(preset.name))
-		sel = self.presetlist.FindString(self.edname.GetValue())
-		if sel != wx.NOT_FOUND:
-			self.presetlist.SetSelection(sel)
-			self.presetlist.SetFirstItem(sel)
-		else:
-			self.edname.SetValue('')
-			self.update_addbutton()
-			
-	def update_addbutton(self):
-		"""
-		Updates the add button caption depending on whether
-		the editbox name is in the preset list or not.
-		"""
-		if not self.edname.GetValue():
-			self.btnadd.Enable(False)
-		else:
-			self.btnadd.Enable(True)
-		if self.presetlist.FindString(self.edname.GetValue()) == wx.NOT_FOUND:
-			self.btnadd.SetLabel("&Add")
-		else:
-			self.btnadd.SetLabel("&Update")
-			
-	def on_edit_name(self, event):
-		"""
-		Handler for changes in the edit box.
-		
-		@param event: Event
-		@type event: wx.Event
-		"""
-		self.update_addbutton()
-			
-	def on_presetlist_select(self, event):
-		"""
-		Handler for preset list selection changes.
-		
-		@param event: Event.
-		@type event: wx.Event
-		"""
-		sel = self.presetlist.GetSelection()
-		preset = self.presets.presets[sel]
-		self.edname.SetValue(prepstr(preset.name))
-		self.commentbox.SetValue(prepstr(preset.comment))
-		self.update_addbutton()
-
-	def on_presetlist_dclick(self, event):
-		"""
-		Handler for preset list double clicks.
-		
-		@param event: Event.
-		@type event: wx.Event
-		"""
-		sel = self.presetlist.GetSelection()
-		preset = self.presets.presets[sel]
-		self.parent.apply_preset(preset)
-
-	def on_button_add(self, event):
-		"""
-		Handler for clicks on the 'Add' button. Either
-		adds or updates a preset from current plugin settings.
-		
-		@param event: Button event.
-		@type event: wx.Event
-		"""
-		if self.presetlist.FindString(self.edname.GetValue()) == wx.NOT_FOUND:
-			preset = Preset()
-			self.presets.presets.append(preset)
-		else:
-			found = False
-			for preset in self.presets.presets:
-				if prepstr(preset.name) == self.edname.GetValue():
-					found = True
-					break
-			assert found
-		preset.name = self.edname.GetValue()
-		preset.comment = self.commentbox.GetValue()
-		preset.pickup(self.plugin)
-		self.presets.sort()
-		config.get_config().set_plugin_presets(self.pluginloader, self.presets)
-		self.update_presetlist()
-		self.update_addbutton()
-
-	def on_button_delete(self, event):
-		"""
-		Handler for clicks on the 'Delete' button. Deletes
-		the currently selected plugin from the list.
-		
-		@param event: Button event.
-		@type event: wx.Event
-		"""
-		sel = self.presetlist.GetSelection()
-		if sel == -1:
-			return
-		del self.presets.presets[sel]
-		config.get_config().set_plugin_presets(self.pluginloader, self.presets)
-		self.update_presetlist()
-		self.update_addbutton()
-
-	def on_button_import(self, event):
-		"""
-		Handler for clicks on the 'Import' button. Imports
-		a list of presets.
-		
-		@param event: Button event.
-		@type event: wx.Event
-		"""
-
-class ParameterDialog(wx.Dialog):
+class ParameterDialog(gtk.Dialog):
 	"""
 	Displays parameter sliders for a plugin in a new Dialog.
 	"""
 	
-	UNBIND_ALL = wx.NewId()
-	CONTROLLER = wx.NewId()
-	for i in range(256):
-		wx.RegisterId(CONTROLLER+i)
+	UNBIND_ALL = 'unbind-all'
+	CONTROLLER = 'controller'
 	
-	def __init__(self, rootwindow, plugin, *args, **kwds):
+	def __init__(self, rootwindow, plugin, parent):
 		"""
 		Initializer.
 		
 		@param plugin: The plugin object for which to display parameters.
 		@type plugin: zzub.Plugin
 		"""
-		self.rootwindow = rootwindow
-		self.parent = args[0]
-		kwds['style'] = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER #| wx.FRAME_TOOL_WINDOW
-		wx.Dialog.__init__(self, *args, **kwds)
+		gtk.Dialog.__init__(self, parent=parent.get_toplevel())
 		self.plugin = plugin
-		self.parent.plugin_dialogs[self.plugin] = self
+		self.view = parent
+		self.view.plugin_dialogs[self.plugin] = self
 		name = prepstr(self.plugin.get_name())
 		pl = self.plugin.get_pluginloader()
 		classname = prepstr(pl.get_name())
+		self.rootwindow = rootwindow
 		title = "%s - %s" % (name,classname)
 		oc = self.plugin.get_output_channels()
 		if oc  == 2:
 			title += " (Stereo Output)"
 		elif oc == 1:
 			title += " (Mono Output)"
-		self.SetTitle(title)
-		self.presetbox = wx.Choice(self, -1)
-
-		pw,ph = self.presetbox.GetBestSize()
-		self.btnedit = wx.Button(self, -1, "&Edit...")
-		w,h = self.btnedit.GetBestSize()
-		btnsize = 60,ph
-		self.btnedit.SetSize(btnsize)
-		self.btncopy = wx.Button(self, -1, "&Copy")
-		self.btncopy.SetSize(btnsize)
-		self.btnrandom = wx.Button(self, -1, "&Random")
-		self.btnrandom.SetSize(btnsize)
-		self.btnhelp = wx.Button(self, -1, "&Help")
-		self.btnhelp.SetSize(btnsize)
-		menugroup = wx.BoxSizer(wx.HORIZONTAL)
-		menugroup.Add(self.presetbox, 1, wx.EXPAND|wx.LEFT|wx.TOP|wx.BOTTOM, 5)
-		menugroup.Add(self.btnedit, 0, wx.ALIGN_CENTER_VERTICAL | wx.FIXED_MINSIZE|wx.LEFT|wx.TOP|wx.BOTTOM, 5)
-		menugroup.Add(self.btncopy, 0, wx.ALIGN_CENTER_VERTICAL | wx.FIXED_MINSIZE|wx.LEFT|wx.TOP|wx.BOTTOM, 5)
-		menugroup.Add(self.btnrandom, 0, wx.ALIGN_CENTER_VERTICAL | wx.FIXED_MINSIZE|wx.LEFT|wx.TOP|wx.BOTTOM, 5)
-		menugroup.Add(self.btnhelp, 0, wx.ALIGN_CENTER_VERTICAL | wx.FIXED_MINSIZE|wx.ALL, 5)
-		toplevelgroup = wx.BoxSizer(wx.VERTICAL)
-		toplevelgroup.Add(menugroup, 0, wx.EXPAND|wx.ALIGN_TOP, 0)
+		self.set_title(title)
+		self.presetbox = gtk.combo_box_entry_new_text()
+		self.presetbox.set_size_request(100,-1)
+		self.btnadd = gtk.Button(stock=gtk.STOCK_ADD)
+		self.btnremove = gtk.Button(stock=gtk.STOCK_REMOVE)
+		self.btncopy = gtk.Button("_Copy")
+		self.btnrandom = gtk.Button("_Random")
+		self.btnhelp = gtk.Button("_Help")
+		menugroup = gtk.HBox(False, MARGIN)
+		menugroup.pack_start(self.presetbox)
+		menugroup.pack_start(self.btnadd, expand=False)
+		menugroup.pack_start(self.btnremove, expand=False)
+		menugroup.pack_start(self.btncopy, expand=False)
+		menugroup.pack_start(self.btnrandom, expand=False)
+		menugroup.pack_start(self.btnhelp, expand=False)
+		toplevelgroup = gtk.VBox(False, MARGIN)
+		toplevelgroup.set_border_width(MARGIN)
+		toplevelgroup.pack_start(menugroup, expand=False)
 		
-		scrollwindow = wx.ScrolledWindow(self, -1, style=wx.SUNKEN_BORDER|wx.VSCROLL|wx.HSCROLL)
-
+		scrollwindow = gtk.ScrolledWindow()
+		scrollwindow.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+		
 		self.pluginloader = pl
 
+		self.presetbox_changed_id = None
 		self.update_presets()
-		self.presetbox.SetSelection(0)
-		wx.EVT_CHOICE(self, self.presetbox.GetId(), self.on_select_preset)
+		self.presetbox.set_active(0)
+		self.presetbox_changed_id = self.presetbox.connect('changed', self.on_select_preset)
 
-		rowgroup = wx.BoxSizer(wx.VERTICAL)
+		rowgroup = gtk.VBox()
+		rowgroup.set_border_width(MARGIN)
 		
 		self.id2pid = {}
 		self.pid2ctrls = {}
+		
+		snamegroup = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
+		sslidergroup = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
+		svaluegroup = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
 		
 		def add_slider(g,t,i):
 			p = pl.get_parameter(g,i)
@@ -519,33 +352,35 @@ class ParameterDialog(wx.Dialog):
 				name = prepstr(p.get_name())
 			else:
 				name = "%i-%s" % (t,prepstr(p.get_name()))
-			sliderid = wx.NewId()
-			namelabel = wx.StaticText(scrollwindow, -1, name)
-			w,h = namelabel.GetBestSize()
-			namelabel.SetSize((100,h))
-			slider = wx.Slider(scrollwindow, sliderid)
-			#slider.SetMinSize((50,22))			
-			slider.SetRange(p.get_value_min(),p.get_value_max())
+			namelabel = gtk.Label()
+			namelabel.set_markup("<b>%s</b>" % name)
+			slider = gtk.HScale()
+			slider.set_property('draw-value', False)
+			slider.set_range(p.get_value_min(),p.get_value_max())
 			v = plugin.get_parameter_value(g,t,i)
-			slider.SetValue(v)
-			valuelabel = wx.StaticText(scrollwindow, -1, "")
-			w,h = valuelabel.GetBestSize()
-			valuelabel.SetSize((100,h))
-			slidergroup = wx.BoxSizer(wx.HORIZONTAL)
-			slidergroup.Add(namelabel, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_LEFT | wx.FIXED_MINSIZE, 0)	
-			slidergroup.Add(slider, 1, wx.ALIGN_CENTER_VERTICAL | wx.EXPAND|wx.LEFT|wx.RIGHT, 5)	
-			slidergroup.Add(valuelabel, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT | wx.FIXED_MINSIZE, 0)	
-			rowgroup.Add(slidergroup, 1, wx.EXPAND|wx.ALIGN_TOP|wx.LEFT|wx.RIGHT, 5)
-			self.id2pid[sliderid] = (g,t,i)
-			self.id2pid[namelabel.GetId()] = (g,t,i)
-			self.id2pid[valuelabel.GetId()] = (g,t,i)
+			slider.set_value(v)
+			valuelabel = gtk.Label("")
+			valuelabel.set_alignment(0, 0.5)
+			
+			snamegroup.add_widget(namelabel)
+			namelabel.set_alignment(1, 0.5)
+			sslidergroup.add_widget(slider)
+			svaluegroup.add_widget(valuelabel)
+			
+			slidergroup = gtk.HBox(False, MARGIN)
+			slidergroup.pack_start(namelabel, expand=False)	
+			slidergroup.add(slider)	
+			slidergroup.pack_end(valuelabel, expand=False)	
+			rowgroup.pack_start(slidergroup, expand=False)
 			self.pid2ctrls[(g,t,i)] = [namelabel,slider,valuelabel]
-			wx.EVT_CONTEXT_MENU(slider, self.on_context_menu)
-			wx.EVT_CONTEXT_MENU(namelabel, self.on_context_menu)
-			wx.EVT_CONTEXT_MENU(valuelabel, self.on_context_menu)
-			wx.EVT_MOUSEWHEEL(slider, self.on_mousewheel)
-			wx.EVT_SCROLL(slider, self.on_scroll_changed)
-			wx.EVT_KEY_DOWN(slider, self.on_key_down)
+			slider.connect('button-press-event', self.on_context_menu, (g,t,i))
+			namelabel.add_events(gtk.gdk.ALL_EVENTS_MASK)
+			namelabel.connect('button-press-event', self.on_context_menu, (g,t,i))
+			valuelabel.add_events(gtk.gdk.ALL_EVENTS_MASK)
+			valuelabel.connect('button-press-event', self.on_context_menu, (g,t,i))
+			slider.connect('scroll-event', self.on_mousewheel, (g,t,i))
+			slider.connect('change-value', self.on_scroll_changed, (g,t,i))
+			slider.connect('key-press-event', self.on_key_down, (g,t,i))
 			self.update_valuelabel(g,t,i)
 			
 		for i in range(pl.get_parameter_count(1)): # globals
@@ -555,53 +390,44 @@ class ParameterDialog(wx.Dialog):
 			for i in range(pl.get_parameter_count(2)):
 				add_slider(2,t,i)
 				
-		wx.EVT_BUTTON(self, self.btnedit.GetId(), self.on_button_edit)
-		wx.EVT_BUTTON(self, self.btncopy.GetId(), self.on_button_copy)
-		wx.EVT_BUTTON(self, self.btnrandom.GetId(), self.on_button_random)
-		wx.EVT_BUTTON(self, self.btnhelp.GetId(), self.on_button_help)
-		wx.EVT_MENU_RANGE(self, self.CONTROLLER, self.CONTROLLER+255, self.on_bind_controller)
-		wx.EVT_MENU(self, self.UNBIND_ALL, self.on_unbind_all)
-		wx.EVT_WINDOW_DESTROY(self, self.on_destroy)
-		wx.EVT_CLOSE(self, self.on_close)	
+		self.btnadd.connect('clicked', self.on_button_add)
+		self.btnremove.connect('clicked', self.on_button_remove)
+		self.btncopy.connect('clicked', self.on_button_copy)
+		self.btnrandom.connect('clicked', self.on_button_random)
+		self.btnhelp.connect('clicked', self.on_button_help)
+		#~ wx.EVT_MENU_RANGE(self, self.CONTROLLER, self.CONTROLLER+255, self.on_bind_controller)
+		#~ wx.EVT_MENU(self, self.UNBIND_ALL, self.on_unbind_all)
+		self.connect('destroy', self.on_destroy)
+
+		scrollwindow.add_with_viewport(rowgroup)
+		#scrollwindow.SetScrollRate(1,1)
 		
-		scrollwindow.SetAutoLayout(True)
-		scrollwindow.SetSizer(rowgroup)
-		scrollwindow.SetScrollRate(1,1)
-		
-		toplevelgroup.Add(scrollwindow, 1, wx.EXPAND|wx.ALIGN_TOP, 0)
+		toplevelgroup.add(scrollwindow)
 
-		self.SetAutoLayout(True)
-		self.SetSizerAndFit(toplevelgroup)
-		self.Layout()
+		self.vbox.add(toplevelgroup)
 
-		cdx,cdy,cdw,cdh = wx.GetClientDisplayRect()
+		#~ cdx,cdy,cdw,cdh = wx.GetClientDisplayRect()
 
-		scrollwindow.Layout()
-		svx,svy = scrollwindow.GetVirtualSize()
-		swx,swy = scrollwindow.GetClientSize()
-		dwx,dwy = self.GetSize()
-		dwy = min(dwy - swy + svy, int(cdh * 0.9))
-		self.SetSize(wx.Size(dwx, dwy))
+		#~ scrollwindow.Layout()
+		#~ svx,svy = scrollwindow.GetVirtualSize()
+		#~ swx,swy = scrollwindow.GetClientSize()
+		#~ dwx,dwy = self.GetSize()
+		#~ dwy = min(dwy - swy + svy, int(cdh * 0.9))
+		#~ self.SetSize(wx.Size(dwx, dwy))
 		
 		self.rootwindow.event_handlers.append(self.on_callback)
-		self.Center()
+		self.update_preset_buttons()
 		
-	def Destroy(self):
-		self.rootwindow.event_handlers.remove(self.on_callback)
-		del self.parent.plugin_dialogs[self.plugin]
-		wx.Dialog.Destroy(self)
-		
-	def on_unbind_all(self, event):
+	def on_unbind_all(self, widget, (g,t,i)):
 		"""
 		Unbinds all controllers from the selected parameter.
 		
 		@param event: Event.
 		@type event: wx.Event
 		"""
-		g,t,i = self.current_param
 		player.remove_midimapping(self.plugin, g, t, i)
 
-	def on_bind_controller(self, event):
+	def on_bind_controller(self, widget, (g,t,i), (name,channel,ctrlid)):
 		"""
 		Handles clicks on controller names in the context menu. Associates
 		a controller with a plugin parameter.
@@ -609,32 +435,43 @@ class ParameterDialog(wx.Dialog):
 		@param event: Event.
 		@type event: wx.Event
 		"""
-		g,t,i = self.current_param
-		name,channel,ctrlid = config.get_config().get_midi_controllers()[event.GetId() - self.CONTROLLER]
-		print player.add_midimapping(self.plugin, g, t, i, channel, ctrlid)
+		player.add_midimapping(self.plugin, g, t, i, channel, ctrlid)
 		
-	def on_context_menu(self, event):
+	def on_context_menu(self, widget, event, (g,t,i)):
 		"""
 		Event handler for requests to show the context menu.
 		
 		@param event: event.
 		@type event: wx.Event
 		"""
-		g,t,i = self.id2pid[event.GetId()]
-		nl,s,vl = self.pid2ctrls[(g,t,i)]
-		mx,my = self.ScreenToClientXY(*event.GetPosition())
-		menu = wx.Menu()
-		submenu = wx.Menu()
-		index = 0
-		def cmp_nocase(a,b):
-			return cmp(a[0].lower(),b[0].lower())
-		for name,channel,ctrlid in sorted(config.get_config().get_midi_controllers(), cmp_nocase):
-			submenu.Append(self.CONTROLLER+index, prepstr(name), "", wx.ITEM_NORMAL)
-			index += 1
-		menu.AppendMenu(-1, "&Bind to MIDI Controller", submenu, "")
-		menu.Append(self.UNBIND_ALL, "&Unbind All", "", wx.ITEM_NORMAL)
-		self.current_param = (g,t,i)
-		self.PopupMenuXY(menu, mx, my)
+		if event.button == 1:
+			nl,s,vl = self.pid2ctrls[(g,t,i)]
+			s.grab_focus()
+		elif event.button == 3:
+			nl,s,vl = self.pid2ctrls[(g,t,i)]
+			menu = gtk.Menu()
+			submenu = gtk.Menu()
+			index = 0
+			def make_submenu_item(submenu, name):
+				item = gtk.MenuItem(label=name)
+				item.set_submenu(submenu)
+				return item
+			def make_menu_item(label, desc, func, *args):
+				item = gtk.MenuItem(label=label)
+				if func:
+					item.connect('activate', func, *args)
+				return item
+			def cmp_nocase(a,b):
+				return cmp(a[0].lower(),b[0].lower())
+			for name,channel,ctrlid in sorted(config.get_config().get_midi_controllers(), cmp_nocase):
+				submenu.append(make_menu_item(prepstr(name), "", self.on_bind_controller, (g,t,i), (name,channel,ctrlid)))
+				index += 1
+			menu.append(make_submenu_item(submenu, "_Bind to MIDI Controller"))
+			menu.append(make_menu_item("_Unbind All", "", self.on_unbind_all, (g,t,i)))
+			menu.show_all()
+			menu.attach_to_widget(self, None)
+			menu.popup(None, None, None, event.button, event.time)
+			return True
 		
 	def on_callback(self, player, plugin, data):
 		"""
@@ -655,7 +492,7 @@ class ParameterDialog(wx.Dialog):
 				if p.get_flags() & zzub.zzub_parameter_flag_state:
 					nl,s,vl = self.pid2ctrls[(g,t,i)]
 					v = self.plugin.get_parameter_value(g,t,i)
-					s.SetValue(v)
+					s.set_value(v)
 					self.update_valuelabel(g,t,i)
 					
 	def update_presets(self):
@@ -663,12 +500,12 @@ class ParameterDialog(wx.Dialog):
 		Updates the preset box.
 		"""
 		self.presets = config.get_config().get_plugin_presets(self.pluginloader)
-		s = self.presetbox.GetStringSelection()
-		self.presetbox.Clear()
-		self.presetbox.Append('<default>')
+		s = self.presetbox.child.get_text()
+		self.presetbox.get_model().clear()
+		self.presetbox.append_text('<default>')
 		for preset in self.presets.presets:
-			self.presetbox.Append(prepstr(preset.name))
-		self.presetbox.SetStringSelection(s)
+			self.presetbox.append_text(prepstr(preset.name))
+		self.presetbox.child.set_text(s)
 					
 	def apply_preset(self, preset=None):
 		if not preset:
@@ -680,11 +517,57 @@ class ParameterDialog(wx.Dialog):
 								self.plugin.set_parameter_value(g,t,i,p.get_value_default(),0)
 		else:			
 			preset.apply(self.plugin)
-			self.presetbox.SetStringSelection(prepstr(preset.name))
 		self.update_all_sliders()
+	
+	def on_button_add(self, widget):
+		"""
+		Handler for the Add preset button
+		"""
+		name = self.presetbox.child.get_text()
+		presets = [preset for preset in self.presets.presets if prepstr(preset.name) == name]
+		if presets:
+			preset = presets[0]
+		else:
+			preset = Preset()
+			self.presets.presets.append(preset)
+		preset.name = name
+		preset.comment = ''
+		preset.pickup(self.plugin)
+		self.presets.sort()
+		config.get_config().set_plugin_presets(self.pluginloader, self.presets)
+		self.update_presets()
+		self.update_preset_buttons()
+
+	def on_button_remove(self, widget):
+		"""
+		Handler for the Remove preset button
+		"""
+		name = self.presetbox.child.get_text()
+		presets = [preset for preset in self.presets.presets if prepstr(preset.name) == name]
+		if presets:
+			self.presets.presets.remove(presets[0])
+		config.get_config().set_plugin_presets(self.pluginloader, self.presets)
+		self.update_presets()
+		self.update_preset_buttons()
 		
-		
-	def on_select_preset(self, event):
+	def update_preset_buttons(self):
+		"""
+		Update presets.
+		"""
+		if self.presetbox.child.get_text() == "<default>":
+			self.btnadd.set_sensitive(False)
+			self.btnadd.set_label("Update")
+			self.btnremove.set_sensitive(False)
+		elif [preset for preset in self.presets.presets if prepstr(preset.name) == self.presetbox.child.get_text()]:
+			self.btnadd.set_sensitive(True)
+			self.btnadd.set_label("Update")
+			self.btnremove.set_sensitive(True)
+		else:
+			self.btnadd.set_sensitive(True)
+			self.btnadd.set_label("Add")
+			self.btnremove.set_sensitive(True)
+
+	def on_select_preset(self, widget):
 		"""
 		Handler for changes of the choice box. Changes the current parameters
 		according to preset.
@@ -692,11 +575,15 @@ class ParameterDialog(wx.Dialog):
 		@param event: Command event.
 		@type event: wx.CommandEvent
 		"""
-		sel = max(self.presetbox.GetSelection() - 1,-1)
-		if sel == -1:
-			self.apply_preset(None)
+		if widget.get_active() == -1:
+			pass
 		else:
-			self.apply_preset(self.presets.presets[sel])
+			sel = max(self.presetbox.get_active() - 1,-1)
+			if sel == -1:
+				self.apply_preset(None)
+			else:
+				self.apply_preset(self.presets.presets[sel])
+		self.update_preset_buttons()
 			
 	def update_all_sliders(self):
 		"""
@@ -710,7 +597,7 @@ class ParameterDialog(wx.Dialog):
 					if p.get_flags() & zzub.zzub_parameter_flag_state:
 						nl,s,vl = self.pid2ctrls[(g,t,i)]
 						v = self.plugin.get_parameter_value(g,t,i)						
-						s.SetValue(v)
+						s.set_value(v)
 						self.update_valuelabel(g,t,i)
 		
 	def on_button_edit(self, event):
@@ -718,9 +605,9 @@ class ParameterDialog(wx.Dialog):
 		Handler for clicks on the 'Edit' button. Opens the
 		preset dialog.
 		"""
-		dlg = PresetDialog(self.plugin, self, -1)
-		dlg.ShowModal()
-		dlg.Destroy()
+		dlg = PresetDialog(self.plugin, self)
+		dlg.run()
+		dlg.destroy()
 		self.update_presets()
 
 	def on_button_copy(self, event):
@@ -742,10 +629,7 @@ class ParameterDialog(wx.Dialog):
 					if p.get_flags() & zzub.zzub_parameter_flag_state:
 						v = self.plugin.get_parameter_value(g,t,i)
 						data += "%04x%01x%02x%02x%04x" % (0,g,t,i,v)
-		clipboard = wx.TheClipboard
-		if clipboard.Open():
-			clipboard.SetData(wx.TextDataObject(data))
-			clipboard.Close()
+		set_clipboard_text(data)
 		
 	def on_button_random(self, event):
 		"""
@@ -787,64 +671,57 @@ class ParameterDialog(wx.Dialog):
 				return
 		wx.MessageDialog(self, message="Sorry, there's no help for this plugin yet.", caption = "Help", style = wx.ICON_WARNING|wx.OK|wx.CENTER).ShowModal()
 		
-	def on_key_down(self, event):
+	def on_key_down(self, widget, event, (g,t,i)):
 		"""
 		Callback that responds to key stroke.
-		
-		@param event: Key event
-		@type event: wx.KeyEvent
 		"""		
-		key = event.GetKeyCode()		
+		print g,t,i
+		key = event.keyval
 		if (key >= ord('0')) and (key <= ord('9')):
-			g,t,i = self.id2pid[event.GetId()]
 			p = self.pluginloader.get_parameter(g,i)
 			minv = p.get_value_min()
 			maxv = p.get_value_max()
 			data_entry = DataEntry((minv,maxv,chr(key)), self)
-			position = self.GetPosition()
-			offset = event.GetEventObject().GetPosition()
-			data_entry.SetPosition((position[0] + offset[0], position[1] + offset[1]))
-			if data_entry.ShowModal() == wx.ID_OK:
+			x,y,state = self.window.get_toplevel().get_pointer()
+			px,py = self.get_toplevel().get_position()
+			data_entry.move(px+x, py+y)
+			if data_entry.run() == gtk.RESPONSE_OK:
 				try:
-					value = int(data_entry.edit.GetValue())
+					value = int(data_entry.edit.get_text())
 					nl,s,vl = self.pid2ctrls[(g,t,i)]
-					s.SetValue(value)
-					self.plugin.set_parameter_value(g,t,i,s.GetValue(),0)					
+					s.set_value(value)
+					self.plugin.set_parameter_value(g,t,i,int(s.get_value()),0)
 					self.update_valuelabel(g,t,i)
 				except:
 					import traceback
 					traceback.print_exc()
-			data_entry.Destroy()
-		event.Skip()
+			data_entry.destroy()
+			return True
+		return False
 	
-	def on_close(self, event):
-		"""
-		Handles close events.
-		"""
-		self.Destroy()
-		
 	def on_destroy(self, event):
 		"""
 		Handles destroy events.
 		"""
+		self.rootwindow.event_handlers.remove(self.on_callback)
+		del self.view.plugin_dialogs[self.plugin]
 		
-	def on_mousewheel(self, event):
+	def on_mousewheel(self, widget, event, (g,t,i)):
 		"""
 		Sent when the mousewheel is used on a slider.
 
 		@param event: A mouse event.
 		@type event: wx.MouseEvent
 		"""
-		g,t,i = self.id2pid[event.GetId()]
 		nl,s,vl = self.pid2ctrls[(g,t,i)]
 		v = self.plugin.get_parameter_value(g,t,i)
-		if event.m_wheelRotation > 0:
+		if event.direction == gtk.gdk.SCROLL_UP:
 			v += 1
-		else:
+		elif event.direction == gtk.gdk.SCROLL_DOWN:
 			v -= 1
 		self.plugin.set_parameter_value(g,t,i,v,1)
 		v = self.plugin.get_parameter_value(g,t,i)
-		s.SetValue(v)
+		s.set_value(v)
 		self.update_valuelabel(g,t,i)
 		
 	def update_valuelabel(self, g, t, i):
@@ -863,22 +740,21 @@ class ParameterDialog(wx.Dialog):
 		text = prepstr(self.plugin.describe_value(g,i,v))
 		if not text:
 			text = "%i" % v
-		vl.SetLabel(text)
+		vl.set_label(text)
 		
-	def on_scroll_changed(self, event):
+	def on_scroll_changed(self, widget, scroll, value, (g,t,i)):
 		"""
 		Event handler for changes in slider movements.
 		
 		@param event: A scroll event.
 		@type event: wx.ScrollEvent
 		"""
-		g,t,i = self.id2pid[event.GetId()]
 		nl,s,vl = self.pid2ctrls[(g,t,i)]
-		s.SetValue(s.GetValue()) # quantize slider position
-		self.plugin.set_parameter_value(g,t,i,s.GetValue(),1)
+		s.set_value(int(value+0.5)) # quantize slider position
+		self.plugin.set_parameter_value(g,t,i,int(value+0.5),1)
 		self.update_valuelabel(g,t,i)
 
-class PluginBrowserDialog(wx.Dialog):
+class PluginBrowserDialog(gtk.Dialog):
 	"""
 	Displays all available plugins and some meta information.
 	"""
@@ -1011,11 +887,11 @@ def show_plugin_browser_dialog(parent):
 		return dlg.pl
 	dlg.Destroy()
 		
-class RoutePanel(wx.Panel):
+class RoutePanel(gtk.VBox):
 	"""
 	Contains the view panel and manages parameter dialogs.
 	"""
-	def __init__(self, rootwindow, *args, **kwds):
+	def __init__(self, rootwindow):
 		"""
 		Initializer.
 		
@@ -1023,18 +899,11 @@ class RoutePanel(wx.Panel):
 		@type rootwindow: wx.Frame
 		"""
 		self.rootwindow = rootwindow
-		wx.Panel.__init__(self, *args, **kwds)
-		self.view = RouteView(rootwindow, self, -1)
-		sizer_2 = wx.BoxSizer(wx.HORIZONTAL)
-		sizer_2.Add(self.view, 1, wx.EXPAND, 0)
-		self.SetAutoLayout(True)
-		self.SetSizer(sizer_2)
-		self.Layout()
-		
-	def Show(self, show):
-		wx.Panel.Show(self)
-		self.view.Show(show)
-		self.Layout()
+		gtk.VBox.__init__(self)
+		self.view = RouteView(rootwindow, self)
+		sizer_2 = gtk.HBox()
+		sizer_2.add(self.view)
+		self.add(sizer_2)
 		
 	def reset(self):
 		"""
@@ -1044,75 +913,78 @@ class RoutePanel(wx.Panel):
 		self.view.reset()
 		
 	def update_all(self):		
-		self.view.update_info()
+		self.view.redraw()
 		
 		
-class DataEntry(wx.Dialog):
+class DataEntry(gtk.Dialog):
 	"""
 	A data entry control meant for numerical input of slider values.
 	"""
-	def __init__(self, (minval,maxval,v), *args, **kwds):
+	def __init__(self, (minval,maxval,v), parent):
 		"""
 		Initializer.
 		"""
-		kwds['style'] = wx.SIMPLE_BORDER
-		kwds['size'] = (200,50)
-		wx.Dialog.__init__(self, *args, **kwds)		
-		self.label = wx.StaticText(self, -1, label ="Enter Value:")
-		self.edit = wx.TextCtrl(self, -1, v, style=wx.TE_PROCESS_ENTER)		
-		label = wx.StaticText(self)
-		vsizer = wx.BoxSizer(wx.VERTICAL)
-		s = wx.BoxSizer(wx.HORIZONTAL)
-		s.Add(self.label, 0,  wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
-		s.Add(self.edit, 1, wx.ALIGN_CENTER_VERTICAL| wx.ALL, 5)
-		vsizer.Add(s, 0, wx.EXPAND)
-		vsizer.Add(wx.StaticText(self, -1, label = prepstr("%s - %s" % (minval,maxval))), wx.ALL, 5)
-		self.SetSizerAndFit(vsizer)
-		self.SetAutoLayout(True)
-		self.Layout()
-		wx.EVT_TEXT_ENTER(self, self.edit.GetId(), self.on_text_enter)
-		wx.EVT_KEY_DOWN(self.edit, self.on_key_down)		
-		wx.EVT_SET_FOCUS(self.edit, self.on_focus)		
+		gtk.Dialog.__init__(self,
+			"Edit Value",
+			parent.get_toplevel(),
+			gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
+			(gtk.STOCK_OK, gtk.RESPONSE_OK, gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL),
+		)	
+		self.label = gtk.Label("Enter Value:")
+		self.edit = gtk.Entry()
+		self.edit.set_text(v)
+		s = gtk.HBox()
+		s.pack_start(self.label, expand=False)
+		s.pack_start(self.edit)
+		self.vbox.pack_start(s, expand=False)
+		label = gtk.Label(prepstr("%s - %s" % (minval,maxval)))
+		label.set_alignment(0,0.5)
+		self.vbox.pack_start(label, expand=False)
+		self.edit.grab_focus()
+		self.edit.select_region(1,-1)
+		self.show_all()
+		self.edit.connect('activate', self.on_text_enter)
 	
-	def on_focus(self, event):	
-		pos = len(self.edit.GetValue())
-		self.edit.SetSelection(pos,pos)
+	def on_text_enter(self, widget):
+		self.response(gtk.RESPONSE_OK)
 
-	def on_text_enter(self, event):
-		self.EndModal(wx.ID_OK)
-	
-	def on_key_down(self, event):
-		
-		if event.KeyCode() == wx.WXK_ESCAPE:
-			self.EndModal(wx.ID_CANCEL)
-		event.Skip()		
-
-class VolumeSlider(wx.Panel):
+class VolumeSlider(gtk.Window):
 	"""
 	A temporary popup volume control for the router. Can
 	only be summoned parametrically and will vanish when the
 	left mouse button is being released.
 	"""
-	def __init__(self, *args, **kwds):
+	def __init__(self):
 		"""
 		Initializer.
 		"""
-		kwds['size'] = (VOLBARWIDTH,VOLBARHEIGHT)
 		self.conn = None
-		wx.Panel.__init__(self, *args, **kwds)
-		self.Show(False)
-		wx.EVT_MOTION(self, self.on_motion)
-		wx.EVT_LEFT_UP(self, self.on_left_up)
-		wx.EVT_PAINT(self, self.on_paint)
+		gtk.Window.__init__(self, gtk.WINDOW_POPUP)
+		self.drawingarea = gtk.DrawingArea()
+		self.add(self.drawingarea)
+		self.drawingarea.add_events(gtk.gdk.ALL_EVENTS_MASK)
+		self.drawingarea.set_property('can-focus', True)
+		self.resize(VOLBARWIDTH,VOLBARHEIGHT)
+		self.hide_all()
+		self.drawingarea.connect('motion-notify-event', self.on_motion)
+		self.drawingarea.connect('expose-event', self.expose)
+		self.drawingarea.connect('button-release-event', self.on_left_up)
 		
-	def on_motion(self, event):
+	def expose(self, widget, event):
+		self.draw()
+		return False
+		
+	def redraw(self):
+		if self.window:
+			rect = self.drawingarea.get_allocation()
+			self.drawingarea.window.invalidate_rect((0,0,rect.width, rect.height), False)
+
+	def on_motion(self, widget, event):
 		"""
 		Event handler for mouse movements.
-		
-		@param event: Mouse event.
-		@type event: wx.MouseEvent
 		"""
-		newpos = event.GetPosition()[1]
+		x,y,state = self.drawingarea.window.get_pointer()
+		newpos = int(y)
 		delta = newpos - self.y
 		if delta == 0:
 			return
@@ -1120,31 +992,34 @@ class VolumeSlider(wx.Panel):
 		self.amp = max(min(self.amp + (float(delta) / VOLBARHEIGHT), 1.0), 0.0)
 		amp = min(max(int(db2linear(self.amp * -48.0, -48.0) * 16384.0), 0), 16384)
 		self.conn.set_amplitude(amp)
-		self.Refresh()
+		self.redraw()
+		return True
 		
-	def on_paint(self, event):
+	def draw(self):
 		"""
 		Event handler for paint requests.
-		
-		@param event: Paint event.
-		@type event: wx.PaintEvent
 		"""
-		dc = wx.PaintDC(self)
-		dc.BeginDrawing()
-		w,h = self.GetClientSize()
-		cfg = config.get_config()		
-		whitebrush = cfg.get_brush('MV Amp BG')
-		blackbrush = cfg.get_brush('MV Amp Handle')
-		outlinepen = cfg.get_pen('MV Amp Border')
-		dc.SetPen(outlinepen)
-		dc.SetBrush(whitebrush)
-		dc.DrawRectangle(0, 0, w, h)
-		dc.SetPen(wx.TRANSPARENT_PEN)
-		dc.SetBrush(blackbrush)
+		gc = self.drawingarea.window.new_gc()
+		cm = gc.get_colormap()
+		drawable = self.drawingarea.window
+
+		rect = self.drawingarea.get_allocation()
+		w,h = rect.width, rect.height
+
+		cfg = config.get_config()
+		whitebrush = cm.alloc_color(cfg.get_color('MV Amp BG'))
+		blackbrush = cm.alloc_color(cfg.get_color('MV Amp Handle'))
+		outlinepen = cm.alloc_color(cfg.get_color('MV Amp Border'))
+		
+		gc.set_foreground(whitebrush)
+		drawable.draw_rectangle(gc, True, 0, 0, w, h)
+		gc.set_foreground(outlinepen)
+		drawable.draw_rectangle(gc, False, 0, 0, w-1, h-1)
+		
 		if self.conn:
+			gc.set_foreground(blackbrush)
 			pos = int(self.amp * (VOLBARHEIGHT - VOLKNOBHEIGHT))
-			dc.DrawRectangle(1, pos+1, VOLBARWIDTH-2, VOLKNOBHEIGHT-2)
-		dc.EndDrawing()
+			drawable.draw_rectangle(gc, True, 1, pos+1, VOLBARWIDTH-2, VOLKNOBHEIGHT-2)
 		
 	def display(self, (mx,my), conn):
 		"""
@@ -1160,11 +1035,11 @@ class VolumeSlider(wx.Panel):
 		self.y = VOLBARHEIGHT / 2
 		self.conn = conn
 		self.amp = (linear2db((self.conn.get_amplitude() / 16384.0), -48.0) / -48.0)
-		self.MoveXY(int(mx - VOLBARWIDTH*0.5), int(my - VOLBARHEIGHT*0.5))
-		self.Show(True)
-		self.CaptureMouse()
+		self.move(int(mx - VOLBARWIDTH*0.5), int(my - VOLBARHEIGHT*0.5))
+		self.show_all()
+		self.drawingarea.grab_add()
 		
-	def on_left_up(self, event):
+	def on_left_up(self, widget, event):
 		"""
 		Event handler for left mouse button releases. Will
 		hide control.
@@ -1172,26 +1047,10 @@ class VolumeSlider(wx.Panel):
 		@param event: Mouse event.
 		@type event: wx.MouseEvent
 		"""
-		self.Show(False)
-		self.ReleaseMouse()
+		self.hide_all()
+		self.drawingarea.grab_remove()
 
-class PluginInfo(object):
-	"""
-	Encapsulates data associated with a plugin.
-	"""
-	def __init__(self, plugin):
-		self.plugin = plugin
-		self.muted = False
-		self.pattern_position = (0, 0, 0, 0, 0)
-		self.plugingfx = None
-		self.patterngfx = {}
-		self.amp = -9999.0
-		
-	def reset_plugingfx(self):
-		self.plugingfx = None
-		self.amp = -9999.0
-		
-class RouteView(Canvas):
+class RouteView(gtk.DrawingArea):
 	"""
 	Allows to monitor and control plugins and their connections.
 	"""	
@@ -1203,74 +1062,35 @@ class RouteView(Canvas):
 	dragoffset = 0,0
 	contextmenupos = 0,0
 	
-	MUTE = wx.NewId()
-	SOLO = wx.NewId()
-	CENTERPAN = wx.NewId()
-	PARAMS = wx.NewId()
-	ATTRIBS = wx.NewId()
-	RENAME = wx.NewId()
-	DELETE = wx.NewId()
-	ABOUT = wx.NewId()
-	SIGNALANALYSIS = wx.NewId()
-	IMPORTSONG = wx.NewId()
-	UNMUTEALL = wx.NewId()
-	DISCONNECT = wx.NewId()
-	CMDBASEID = wx.NewId()
-	for i in range(256):
-		wx.RegisterId(CMDBASEID+i)
-	MAX_PLUGINS = 8192
-	NEWPLUGIN = wx.NewId()
-	for i in range(MAX_PLUGINS):
-		wx.RegisterId(NEWPLUGIN+i)
-		
-	def yield_newplugin_indices(self):
-		for i in range(self.MAX_PLUGINS):
-			yield self.NEWPLUGIN+i
+	DRAW_ALL = 1
+	DRAW_LEDS = 2
 	
-	def __init__(self, rootwindow, *args, **kwds):
+	drawrequest = 0
+	
+	def __init__(self, rootwindow, parent):
 		"""
 		Initializer.
 		
 		@param rootwindow: Main window.
-		@type rootwindow: wx.Frame
+		@type rootwindow: AldrinFrame
 		"""
-		kwds['style'] = wx.SUNKEN_BORDER		
 		self.plugin_dialogs = {}
-		self.parent = args[0]
+		self.panel = parent
 		self.rootwindow = rootwindow
 		self.rootwindow.event_handlers.append(self.on_player_callback)
 		self.solo_plugin = None
-		# storage of additional plugin data
-		self.plugin_info = {}
-		self.update_info()
 		self.update_colors()
-		Canvas.__init__(self, *args, **kwds)
-		self.volume_slider = VolumeSlider(self, -1)		
+		gtk.DrawingArea.__init__(self)
+		self.volume_slider = VolumeSlider()		
 		self.plugin_tree = indexer.parse_index(player, config.get_config().get_index_path())
+		self.add_events(gtk.gdk.ALL_EVENTS_MASK)
 		
-		for i in self.yield_newplugin_indices():
-			wx.EVT_MENU(self, i, self.on_popup_new_plugin)
-		wx.EVT_MIDDLE_DOWN(self, self.on_left_down)
-		wx.EVT_MIDDLE_UP(self, self.on_left_up)
-		wx.EVT_LEFT_DOWN(self, self.on_left_down)
-		wx.EVT_LEFT_UP(self, self.on_left_up)
-		wx.EVT_LEFT_DCLICK(self, self.on_left_dclick)
-		wx.EVT_CONTEXT_MENU(self, self.on_context_menu)
-		wx.EVT_MOTION(self, self.on_motion)
-		wx.EVT_MENU(self, self.PARAMS, self.on_popup_show_params)
-		wx.EVT_MENU(self, self.ATTRIBS, self.on_popup_show_attribs)
-		wx.EVT_MENU(self, self.DISCONNECT, self.on_popup_disconnect)
-		wx.EVT_MENU(self, self.DELETE, self.on_popup_delete)
-		wx.EVT_MENU(self, self.MUTE, self.on_popup_mute)
-		wx.EVT_MENU(self, self.SOLO, self.on_popup_solo)
-		wx.EVT_MENU(self, self.RENAME, self.on_popup_rename)
-		wx.EVT_MENU(self, self.SIGNALANALYSIS, self.on_popup_show_signalanalysis)
-		for i in range(256):
-			wx.EVT_MENU(self, self.CMDBASEID+i, self.on_popup_command)
-		wx.EVT_SET_FOCUS(self, self.on_focus)
-		self.draw_led_timer = wx.Timer(self, -1)
-		self.draw_led_timer.Start(40, True)
-		wx.EVT_TIMER(self, self.draw_led_timer.GetId(), self.on_draw_led_timer)
+		self.connect('button-press-event', self.on_left_down)
+		self.connect('button-release-event', self.on_left_up)
+		self.connect('motion-notify-event', self.on_motion)
+		self.connect("expose_event", self.expose)
+		gobject.timeout_add(100, self.on_draw_led_timer)
+		#~ wx.EVT_SET_FOCUS(self, self.on_focus)
 		
 	def update_colors(self):
 		"""
@@ -1279,40 +1099,39 @@ class RouteView(Canvas):
 		cfg = config.get_config()
 		self.type2brush = [
 			{
-				zzub.zzub_plugin_type_master : cfg.get_brush("MV Master"),
-				zzub.zzub_plugin_type_generator : cfg.get_brush("MV Generator"),
-				zzub.zzub_plugin_type_effect : cfg.get_brush("MV Effect"),
+				zzub.zzub_plugin_type_master : cfg.get_float_color("MV Master"),
+				zzub.zzub_plugin_type_generator : cfg.get_float_color("MV Generator"),
+				zzub.zzub_plugin_type_effect : cfg.get_float_color("MV Effect"),
 			},
 			{
-				zzub.zzub_plugin_type_master : cfg.get_brush("MV Master"),
-				zzub.zzub_plugin_type_generator : cfg.get_brush("MV Generator Mute"),
-				zzub.zzub_plugin_type_effect : cfg.get_brush("MV Effect Mute"),
+				zzub.zzub_plugin_type_master : cfg.get_float_color("MV Master"),
+				zzub.zzub_plugin_type_generator : cfg.get_float_color("MV Generator Mute"),
+				zzub.zzub_plugin_type_effect : cfg.get_float_color("MV Effect Mute"),
 			}
 		]
 		self.ledtype2brush = [
 			{
-				zzub.zzub_plugin_type_master : cfg.get_brush("MV Master LED Off"),
-				zzub.zzub_plugin_type_generator : cfg.get_brush("MV Generator LED Off"),
-				zzub.zzub_plugin_type_effect : cfg.get_brush("MV Effect LED Off"),
+				zzub.zzub_plugin_type_master : cfg.get_float_color("MV Master LED Off"),
+				zzub.zzub_plugin_type_generator : cfg.get_float_color("MV Generator LED Off"),
+				zzub.zzub_plugin_type_effect : cfg.get_float_color("MV Effect LED Off"),
 			},
 			{
-				zzub.zzub_plugin_type_master : cfg.get_brush("MV Master LED On"),
-				zzub.zzub_plugin_type_generator : cfg.get_brush("MV Generator LED On"),
-				zzub.zzub_plugin_type_effect : cfg.get_brush("MV Effect LED On"),
+				zzub.zzub_plugin_type_master : cfg.get_float_color("MV Master LED On"),
+				zzub.zzub_plugin_type_generator : cfg.get_float_color("MV Generator LED On"),
+				zzub.zzub_plugin_type_effect : cfg.get_float_color("MV Effect LED On"),
 			},
 			{
-				zzub.zzub_plugin_type_master : cfg.get_pen("MV Master LED Border"),
-				zzub.zzub_plugin_type_generator : cfg.get_pen("MV Generator LED Border"),
-				zzub.zzub_plugin_type_effect : cfg.get_pen("MV Effect LED Border"),
+				zzub.zzub_plugin_type_master : cfg.get_float_color("MV Master LED Border"),
+				zzub.zzub_plugin_type_generator : cfg.get_float_color("MV Generator LED Border"),
+				zzub.zzub_plugin_type_effect : cfg.get_float_color("MV Effect LED Border"),
 			},
 			{
-				zzub.zzub_plugin_type_master : cfg.get_brush("MV Machine LED Warning"),
-				zzub.zzub_plugin_type_generator : cfg.get_brush("MV Machine LED Warning"),
-				zzub.zzub_plugin_type_effect : cfg.get_brush("MV Machine LED Warning"),
+				zzub.zzub_plugin_type_master : cfg.get_float_color("MV Machine LED Warning"),
+				zzub.zzub_plugin_type_generator : cfg.get_float_color("MV Machine LED Warning"),
+				zzub.zzub_plugin_type_effect : cfg.get_float_color("MV Machine LED Warning"),
 			},			
 		]
-		for k,v in self.plugin_info.iteritems():
-			v.reset_plugingfx()
+		common.get_plugin_infos().reset_plugingfx()
 		
 	def on_player_callback(self, player, plugin, data):
 		"""
@@ -1337,27 +1156,18 @@ class RouteView(Canvas):
 		a new song is being loaded.
 		"""
 		for dlg in self.plugin_dialogs.values():
-			dlg.Destroy()
+			dlg.destroy()
 		self.plugin_dialogs = {}
-
-	def update_info(self):
-		previous = dict(self.plugin_info)
-		self.plugin_info.clear()
-		for mp in player.get_plugin_list():
-			if mp in previous:
-				self.plugin_info[mp] = previous[mp]
-			else:
-				self.plugin_info[mp] = PluginInfo(mp)
 			
 	def on_focus(self, event):
-		self.ReDraw()
+		self.redraw()
 	
 	def on_popup_rename(self, event):
 		dialog = wx.TextEntryDialog(self, "Rename plugin", caption = "Rename plugin",
 			defaultValue=self.context_plugin.get_name(), style = wx.OK | wx.CANCEL)
 		if dialog.ShowModal() == wx.ID_OK:
 			self.context_plugin.set_name(dialog.GetValue())
-			self.plugin_info[self.context_plugin].reset_plugingfx()
+			common.get_plugin_infos().plugin_info[self.context_plugin].reset_plugingfx()
 			self.ReDraw()
 		dialog.Destroy()
 	
@@ -1365,13 +1175,13 @@ class RouteView(Canvas):
 		if not plugin or plugin == self.solo_plugin:
 			# soloing deactived so apply muted states
 			self.solo_plugin = None			
-			for plugin, info in self.plugin_info.iteritems():
+			for plugin, info in common.get_plugin_infos().iteritems():
 				plugin.set_mute(info.muted)
 				info.reset_plugingfx()
 		elif plugin.get_type() == zzub.zzub_plugin_type_generator:
 			# mute all plugins except solo plugin
 			self.solo_plugin = plugin			
-			for plugin, info in self.plugin_info.iteritems():				
+			for plugin, info in common.get_plugin_infos().iteritems():				
 				if plugin != self.solo_plugin and plugin.get_type() == zzub.zzub_plugin_type_generator:					
 					plugin.set_mute(True)
 					info.reset_plugingfx()
@@ -1393,10 +1203,11 @@ class RouteView(Canvas):
 		self.ReDraw()
 	
 	def toggle_mute(self, plugin):
-		self.plugin_info[plugin].muted = not self.plugin_info[plugin].muted		
+		pi = common.get_plugin_infos()[plugin]
+		pi.muted = not pi.muted		
 		if not self.solo_plugin or self.context_plugin == self.solo_plugin:
-			plugin.set_mute(self.plugin_info[plugin].muted)
-		self.plugin_info[plugin].reset_plugingfx()
+			plugin.set_mute(pi.muted)
+		pi.reset_plugingfx()
 	
 	def on_popup_mute(self, event):
 		"""
@@ -1408,21 +1219,17 @@ class RouteView(Canvas):
 		self.toggle_mute(self.context_plugin)		
 		self.ReDraw()
 		
-	def on_popup_delete(self, event):
+	def on_popup_delete(self, widget, mp):
 		"""
 		Event handler for the "Delete" context menu option.
-		
-		@param event: Menu event.
-		@type event: wx.MenuEvent
 		"""
-		dlg = wx.MessageDialog(self, message="No undo!", caption = "Remove plugin?", style = wx.ICON_EXCLAMATION|wx.YES_NO|wx.CENTER)
-		res = dlg.ShowModal()
-		if res == wx.ID_YES:
+		res = question(self, "<b><big>Remove plugin?</big></b>\n\nThis action can not be reversed.", allowcancel = False)
+		if res == gtk.RESPONSE_YES:
 			inplugs = []
 			outplugs = []
 			# record all connections
 			while True:
-				conns = self.context_plugin.get_input_connection_list()
+				conns = mp.get_input_connection_list()
 				if not conns:
 					break
 				conn = conns.pop()
@@ -1430,9 +1237,9 @@ class RouteView(Canvas):
 				amp = conn.get_amplitude()
 				pan = conn.get_panning()
 				inplugs.append((input,amp,pan))
-				self.context_plugin.delete_input(input)
+				mp.delete_input(input)
 			while True:
-				conns = self.context_plugin.get_output_connection_list()
+				conns = mp.get_output_connection_list()
 				if not conns:
 					break
 				conn = conns.pop()
@@ -1440,27 +1247,26 @@ class RouteView(Canvas):
 				amp = conn.get_amplitude()
 				pan = conn.get_panning()
 				outplugs.append((output,amp,pan))
-				output.delete_input(self.context_plugin)
+				output.delete_input(mp)
 			# and now restore them
 			for inplug,iamp,ipan in inplugs:
 				for outplug,oamp,opan in outplugs:
 					newamp = (iamp*oamp)/16384
 					newpan = ipan
 					outplug.add_input(inplug, newamp, newpan)
-			del self.plugin_info[self.context_plugin]
-			self.context_plugin.destroy()
-			self.ReDraw()
-		dlg.Destroy()
+			del common.get_plugin_infos()[mp]
+			mp.destroy()
+			self.redraw()
 		
-	def on_popup_disconnect(self, event):
+	def on_popup_disconnect(self, widget, conn):
 		"""
 		Event handler for the "Disconnect" context menu option.
 		
 		@param event: Menu event.
 		@type event: wx.MenuEvent
 		"""
-		self.context_conn.get_output().delete_input(self.context_conn.get_input())
-		self.ReDraw()
+		conn.get_output().delete_input(conn.get_input())
+		self.redraw()
 		
 	def show_parameter_dialog(self, plugin):
 		"""
@@ -1472,50 +1278,42 @@ class RouteView(Canvas):
 		dlg = self.plugin_dialogs.get(plugin,None)
 		if not dlg:
 			dlg = ParameterDialog(self.rootwindow, plugin, self)
-		dlg.Show()
+		dlg.show_all()
 
-	def on_popup_show_signalanalysis(self, event):
+	def on_popup_show_signalanalysis(self, widget, conn):
 		"""
 		Event handler for the "Signal Analysis" context menu option.
 		"""
-		dlg = SignalAnalysisDialog(self.context_conn.get_input(), self, -1)
-		dlg.ShowModal()
-		dlg.Destroy()
+		dlg = SignalAnalysisDialog(conn.get_input(), self)
+		dlg.run()
+		dlg.destroy()
 		
-	def on_popup_show_attribs(self, event):
+	def on_popup_show_attribs(self, widget, mp):
 		"""
 		Event handler for the "Attributes..." context menu option.
 		
 		@param event: Menu event.
 		@type event: wx.MenuEvent
 		"""
-		dlg = AttributesDialog(self.context_plugin, self, -1)
-		dlg.ShowModal()
-		dlg.Destroy()
+		dlg = AttributesDialog(mp, self)
+		dlg.run()
+		dlg.destroy()
 		
-	def on_popup_show_params(self, event):
+	def on_popup_show_params(self, widget, mp):
 		"""
 		Event handler for the "Parameters..." context menu option.
 		
 		@param event: Menu event.
 		@type event: wx.MenuEvent
 		"""
-		self.show_parameter_dialog(self.context_plugin)
+		self.show_parameter_dialog(mp)
 		
-	def on_popup_new_plugin(self, event=None, pl = None):
+	def on_popup_new_plugin(self, widget, pluginloader, kargs={}):
 		"""
-		Event handler for "new plugin" context menu options. if pl is omitted,
-		the pluginloader is deduced from event.GetId().
-		
-		@param event: Menu event.
-		@type event: wx.MenuEvent
-		@param pl: Pluginloader
-		@type event: zzub.Pluginloader
+		Event handler for "new plugin" context menu options.
 		"""
-		if not pl:
-			pl = self.id2plugin[event.GetId() - self.NEWPLUGIN]
-		basename = pl.get_short_name()
-		name = pl.get_short_name()
+		basename = pluginloader.get_short_name()
+		name = pluginloader.get_short_name()
 		basenumber = 2
 		while True:
 			found = False
@@ -1528,21 +1326,22 @@ class RouteView(Canvas):
 			if not found:
 				break
 		print "create_plugin: ",name
-		mp = player.create_plugin(None, 0, name, pl)
+		mp = player.create_plugin(None, 0, name, pluginloader)
 		assert mp._handle
 		if mp.get_type() == zzub.zzub_plugin_type_generator and \
-			(pl.get_parameter_count(1) or pl.get_parameter_count(2)):
+			(pluginloader.get_parameter_count(1) or pluginloader.get_parameter_count(2)):
 			pattern = mp.create_pattern(16)
 			pattern.set_name('00')
 			seq = player.get_current_sequencer()
 			seq.create_track(mp)
 		mp.set_position(*self.pixel_to_float(self.contextmenupos))
 		# if we have a context plugin, prepend connections
-		if self.context_plugin:
+		if 'plugin' in kargs:
+			plugin = kargs['plugin']
 			inplugs = []
 			# record all connections
 			while True:
-				conns = self.context_plugin.get_input_connection_list()
+				conns = plugin.get_input_connection_list()
 				if not conns:
 					break
 				conn = conns.pop()
@@ -1550,26 +1349,27 @@ class RouteView(Canvas):
 				amp = conn.get_amplitude()
 				pan = conn.get_panning()
 				inplugs.append((input,amp,pan))
-				self.context_plugin.delete_input(input)
+				plugin.delete_input(input)
 			# restore
 			for inplug,amp,pan in inplugs:
 				mp.add_input(inplug, amp, pan)
-			self.context_plugin.add_input(mp, 16384, 16384)
+			plugin.add_input(mp, 16384, 16384)
 		# if we have a context connection, replace that one
-		elif self.context_conn:
-			amp = self.context_conn.get_amplitude()
-			pan = self.context_conn.get_panning()
-			minput = self.context_conn.get_input()
-			moutput = self.context_conn.get_output()
+		elif 'conn' in kargs:
+			conn = kargs['conn']
+			amp = conn.get_amplitude()
+			pan = conn.get_panning()
+			minput = conn.get_input()
+			moutput = conn.get_output()
 			moutput.delete_input(minput)
 			mp.add_input(minput, amp, pan)
 			moutput.add_input(mp, 16384, 16384)
 		self.rootwindow.document_changed()
 		# selects the plugin in the pattern view
 		plugintoolbar = self.rootwindow.patternframe.toolbar
-		plugintoolbar.select_plugin(plugintoolbar.pluginselect.GetCount()-1)
+		plugintoolbar.select_plugin(get_item_count(plugintoolbar.pluginselect.get_model())-1)
 		# add plugin information
-		self.plugin_info[mp] = PluginInfo(mp)
+		common.get_plugin_infos().add_plugin(mp)
 		# open parameter view if its an effect
 		if mp.get_type() == zzub.zzub_plugin_type_effect:
 			self.show_parameter_dialog(mp)
@@ -1585,24 +1385,33 @@ class RouteView(Canvas):
 		print (submenuindex<<8) | index
 		self.context_plugin.command((submenuindex<<8) | index)
 		
-	def get_plugin_menu(self, include_generators = True, include_effects = True):
+	def get_plugin_menu(self, include_generators = True, include_effects = True, **kargs):
 		"""
 		Generates and returns a new plugin menu.
 		
 		@return: A menu containing commands to instantiate new plugins.
 		@rtype: wx.Menu
 		"""
-		def fill_menu(menu,node,indexgen):
+		def make_submenu_item(submenu, name):
+			item = gtk.MenuItem(label=name)
+			item.set_submenu(submenu)
+			return item
+		def make_menu_item(label, desc, func, *args):
+			item = gtk.MenuItem(label=label)
+			if func:
+				item.connect('activate', func, *args)
+			return item
+		def fill_menu(menu,node):
 			add_separator = False
 			for child in node.children:
 				if isinstance(child, indexer.Directory) and not child.is_empty():
 					if add_separator:
 						add_separator = False
-						if menu.GetMenuItemCount():
-							menu.AppendSeparator()
-					submenu = wx.Menu()
-					menu.AppendMenu(-1, prepstr(child.name), submenu, "")
-					fill_menu(submenu, child, indexgen)
+						if menu.get_children():
+							menu.append(gtk.SeparatorMenuItem())
+					submenu = gtk.Menu()
+					fill_menu(submenu, child)
+					menu.append(make_submenu_item(submenu, prepstr(child.name)))
 				elif isinstance(child, indexer.Reference):
 					if child.pluginloader:
 						if not include_generators and (child.pluginloader.get_type() == zzub.zzub_plugin_type_generator):
@@ -1611,94 +1420,92 @@ class RouteView(Canvas):
 							continue
 					if add_separator:
 						add_separator = False
-						if menu.GetMenuItemCount():
-							menu.AppendSeparator()
-					menuid = indexgen.next()
-					self.id2plugin[menuid - self.NEWPLUGIN] = child.pluginloader
-					menu.Append(menuid, prepstr(child.name), "", wx.ITEM_NORMAL)
+						if menu.get_children():
+							menu.append(gtk.SeparatorMenuItem())
+					item = make_menu_item(prepstr(child.name), "", self.on_popup_new_plugin, child.pluginloader, kargs)
 					if not child.pluginloader:
-						menu.Enable(menuid, False)
+						item.set_sensitive(False)
+					menu.append(item)
 				elif isinstance(child, indexer.Separator):
-					add_separator = True					
-		plugin_menu = wx.Menu()
-		self.id2plugin = [None]*self.MAX_PLUGINS
-		fill_menu(plugin_menu, self.plugin_tree, self.yield_newplugin_indices())
+					add_separator = True
+		plugin_menu = gtk.Menu()
+		fill_menu(plugin_menu, self.plugin_tree)
 		return plugin_menu
 		
-	def on_context_menu(self, event):
+	def on_context_menu(self, widget, event):
 		"""
 		Event handler for requests to show the context menu.
 		
 		@param event: event.
 		@type event: wx.Event
 		"""
-		mx,my = self.ScreenToClientXY(*event.GetPosition())
+		mx,my = int(event.x), int(event.y)
 		self.contextmenupos = mx,my
-		menu = wx.Menu()
+		menu = gtk.Menu()
+		def make_submenu_item(submenu, name):
+			item = gtk.MenuItem(label=name)
+			item.set_submenu(submenu)
+			return item
+		def make_menu_item(label, desc, func, *args):
+			item = gtk.MenuItem(label=label)
+			if func:
+				item.connect('activate', func, *args)
+			return item
+		def make_check_item(label, desc, func, *args):
+			item = gtk.CheckMenuItem(label=label)
+			if func:
+				item.connect('toggled', func, *args)
+			return item
 		res = self.get_plugin_at((mx,my))
 		if res:
 			mp,(x,y),area = res
-			menu.Append(self.MUTE, "&Mute", "Toggle bypass", wx.ITEM_CHECK)
-			item = menu.FindItemById(self.MUTE)
-			if self.plugin_info[mp].muted:
-				item.Check()
+			item = make_check_item("_Mute", "Toggle Bypass", self.on_popup_mute, mp)
+			if common.get_plugin_infos()[mp].muted:
+				item.set_active(True)
+			menu.append(item)
 			if mp.get_type() == zzub.zzub_plugin_type_generator:
-				menu.Append(self.SOLO, "&Solo", "Toggle solo", wx.ITEM_CHECK)
-				item = menu.FindItemById(self.SOLO)			
+				item = make_check_item("_Solo", "Toggle Solo", self.on_popup_solo, mp)
 				if self.solo_plugin == mp:
-					item.Check()
-			#~ menu.Append(self.CENTERPAN, "Cen&ter Pan", "", wx.ITEM_NORMAL)
-			menu.AppendSeparator()
-			menu.Append(self.PARAMS, "&Parameters...", "View parameters", wx.ITEM_NORMAL)
-			menu.Append(self.ATTRIBS, "&Attributes...", "Show Attributes", wx.ITEM_NORMAL)
-			menu.AppendSeparator()
-			menu.Append(self.RENAME, "&Rename...", "", wx.ITEM_NORMAL)
+					item.set_active(True)
+			menu.append(gtk.SeparatorMenuItem())
+			menu.append(make_menu_item("_Parameters...", "View parameters", self.on_popup_show_params, mp))
+			menu.append(make_menu_item("_Attributes...", "Show Attributes", self.on_popup_show_attribs, mp))
+			menu.append(gtk.SeparatorMenuItem())
+			menu.append(make_menu_item("_Rename...", "", self.on_popup_rename, mp))
 			if mp.get_type() != zzub.zzub_plugin_type_master:
-				menu.Append(self.DELETE, "&Delete", "Delete plugin", wx.ITEM_NORMAL)
+				menu.append(make_menu_item("_Delete", "Delete plugin", self.on_popup_delete, mp))
 			if mp.get_type() in (zzub.zzub_plugin_type_effect,zzub.zzub_plugin_type_master):
-				menu.AppendSeparator()
-				menu.AppendMenu(-1, "&Prepend Effect", self.get_plugin_menu(include_generators=False), "Prepend a new effect plugin and reroute connections.")
-			self.cmdmap = {}
+				menu.append(gtk.SeparatorMenuItem())
+				menu.append(make_submenu_item(self.get_plugin_menu(include_generators=False, plugin=mp), "_Prepend Effect"))
 			commands = mp.get_commands()
 			if commands:
-				menu.AppendSeparator()
-				baseid = self.CMDBASEID
+				menu.append(gtk.SeparatorMenuItem())
 				submenuindex = 0
 				for index in range(len(commands)):
 					cmd = commands[index]
 					if cmd.startswith('/'):
-						submenu = wx.Menu()
+						submenu = gtk.Menu()
 						subcommands = mp.get_sub_commands(index)
 						submenuindex += 1
 						for subindex in range(len(subcommands)):
 							subcmd = subcommands[subindex]
-							cmdid = baseid
-							baseid += 1
-							self.cmdmap[cmdid] = submenuindex,subindex
-							submenu.Append(cmdid, prepstr(subcmd), "", wx.ITEM_NORMAL)
-						menu.AppendMenu(-1, prepstr(cmd), submenu, "")
+							submenu.append(make_menu_item(prepstr(subcmd), "", self.on_popup_command, mp, submenuindex, subindex))
+						menu.append(make_submenu_item(submenu, prepstr(cmd)))
 					else:
-						cmdid = baseid
-						baseid += 1
-						self.cmdmap[cmdid] = 0,index
-						menu.Append(cmdid, prepstr(cmd), "", wx.ITEM_NORMAL)
-			self.context_plugin = mp
+						menu.append(make_menu_item(prepstr(cmd), "", self.on_popup_command, mp, 0, index))
 		else:
-			self.context_plugin = None
 			conn = self.get_connection_at((mx,my))
 			if conn:
-				self.context_conn = conn
-				menu.Append(self.DISCONNECT, "&Disconnect plugins", "Disconnect plugins", wx.ITEM_NORMAL)
-				menu.AppendSeparator()
-				menu.AppendMenu(-1, "&Insert Effect", self.get_plugin_menu(include_generators=False), "Insert a new plugin and reroute connections.")
-				menu.AppendSeparator()
-				menu.Append(self.SIGNALANALYSIS, "&Signal Analysis", "Signal Analysis", wx.ITEM_NORMAL)
+				menu.append(make_menu_item("_Disconnect plugins", "Disconnect plugins", self.on_popup_disconnect, conn))
+				menu.append(gtk.SeparatorMenuItem())
+				menu.append(make_submenu_item(self.get_plugin_menu(include_generators=False,conn=conn), "_Insert Effect"))
+				menu.append(gtk.SeparatorMenuItem())
+				menu.append(make_menu_item("_Signal Analysis", "Signal Analysis", self.on_popup_show_signalanalysis, conn))
 			else:
-				self.context_conn = None
 				menu = self.get_plugin_menu()
-		self.PopupMenuXY(menu, mx, my)
-		self.context_conn = None
-		self.context_plugin = None
+		menu.show_all()
+		menu.attach_to_widget(self, None)
+		menu.popup(None, None, None, event.button, event.time)
 		
 	def float_to_pixel(self, (x, y)):
 		"""
@@ -1711,7 +1518,8 @@ class RouteView(Canvas):
 		@return: A tuple returning the pixel coordinate.
 		@rtype: (int,int)
 		"""
-		w,h = self.GetSize()
+		rect = self.get_allocation()
+		w,h = rect.width, rect.height
 		cx,cy = w*0.5, h * 0.5
 		return cx * (1 + x), cy * (1 + y)
 		
@@ -1726,7 +1534,8 @@ class RouteView(Canvas):
 		@return: A tuple returning the router coordinate.
 		@rtype: (float, float)
 		"""
-		w,h = self.GetSize()
+		rect = self.get_allocation()
+		w,h = rect.width, rect.height
 		cx,cy = w*0.5, h * 0.5		
 		return (x / cx) - 1, (y / cy) - 1
 		
@@ -1741,7 +1550,8 @@ class RouteView(Canvas):
 		@return: A connection item or None.
 		@rtype: zzub.Connection or None
 		"""
-		w,h = self.GetSize()
+		rect = self.get_allocation()
+		w,h = rect.width, rect.height
 		cx,cy = w*0.5, h * 0.5
 		def get_pixelpos(x,y):
 			return cx * (1+x), cy * (1+y)
@@ -1766,7 +1576,8 @@ class RouteView(Canvas):
 		@return: A connection item, exact pixel position and area (AREA_ANY, AREA_PANNING, AREA_LED) or None.
 		@rtype: (zzub.Plugin,(int,int),int) or None
 		"""
-		w,h = self.GetSize()
+		rect = self.get_allocation()
+		w,h = rect.width, rect.height
 		cx,cy = w*0.5, h * 0.5
 		mx, my = x,y
 		PW, PH = PLUGINWIDTH / 2, PLUGINHEIGHT / 2
@@ -1775,34 +1586,31 @@ class RouteView(Canvas):
 			x,y = mp.get_position()
 			x,y = int(cx * (1+x)), int(cy * (1+y))
 			if (mx >= (x - PW)) and (mx <= (x + PW)) and (my >= (y - PH)) and (my <= (y + PH)):
-				if wx.Rect(x-PW+LEDOFSX,y-PH+LEDOFSY,LEDWIDTH,LEDHEIGHT).Inside((mx,my)):
+				if sum(tuple(gtk.gdk.Rectangle(x-PW+LEDOFSX,y-PH+LEDOFSY,LEDWIDTH,LEDHEIGHT).intersect((mx,my,1,1)))):
 					area = AREA_LED
 				return mp,(x,y),area
 				
-	def on_left_dclick(self, event):
+	def on_left_dclick(self, widget, event):
 		"""
 		Event handler for left doubleclicks. If the doubleclick
 		hits a plugin, the parameter window is being shown.
-		
-		@param event: Mouse event.
-		@type event: wx.MouseEvent
 		"""
-		mx,my = event.GetPosition()
+		mx,my = int(event.x), int(event.y)
 		res = self.get_plugin_at((mx,my))
 		if not res:
 			pl = show_plugin_browser_dialog(self)
 			if pl:
 				self.contextmenupos = mx,my
-				self.on_popup_new_plugin(pl=pl)
+				self.on_popup_new_plugin(None, pl)
 			return
-		self.context_plugin,(x,y),area = res
+		mp,(x,y),area = res
 		if area == AREA_ANY:
 			data = zzub.zzub_event_data_t()
 			data.type = zzub.zzub_event_type_double_click;
-			if self.context_plugin.invoke_event(data, 1) != 0:
-				self.on_popup_show_params(event)
+			if mp.invoke_event(data, 1) != 0:
+				self.show_parameter_dialog(mp)
 		
-	def on_left_down(self, event):
+	def on_left_down(self, widget, event):
 		"""
 		Event handler for left mouse button presses. Initiates
 		plugin dragging or connection volume adjustments.
@@ -1810,198 +1618,242 @@ class RouteView(Canvas):
 		@param event: Mouse event.
 		@type event: wx.MouseEvent
 		"""
-		mx,my = event.GetPosition()
+		if (event.button == 3):
+			return self.on_context_menu(widget, event)
+		if not event.button in (1,2):
+			return
+		if (event.button == 1) and (event.type == gtk.gdk._2BUTTON_PRESS):
+			return self.on_left_dclick(widget, event)
+		mx,my = int(event.x), int(event.y)
 		res = self.get_plugin_at((mx,my))
 		if res:
 			self.current_plugin,(x,y),area = res
 			self.dragoffset = mx-x, my-y
 			if area == AREA_LED:
 				self.toggle_mute(self.current_plugin)		
-				self.ReDraw()
-			elif event.ShiftDown() or event.MiddleDown():
+				self.redraw()
+			elif (event.state & gtk.gdk.SHIFT_MASK) or (event.button == 2):
 				self.connecting = True
 			elif not self.connecting:
 				self.dragging = True
-				self.CaptureMouse()
+				self.grab_add()
 		else:
 			conn = self.get_connection_at((mx,my))
 			if conn:
-				self.volume_slider.display((mx,my), conn)
+				ox, oy = self.window.get_origin()
+				self.volume_slider.display((ox+mx,oy+my), conn)
 		
-	def on_motion(self, event):
+	def on_motion(self, widget, event):
 		"""
 		Event handler for mouse movements.
 		
 		@param event: Mouse event.
 		@type event: wx.MouseEvent
 		"""
+		x,y,state = self.window.get_pointer()
 		if self.dragging:
 			ox,oy = self.dragoffset
-			mx,my = event.GetPosition()
-			size = self.GetSize()
+			mx,my = int(x), int(y)
+			size = self.get_allocation()
 			x,y = max(0, min(mx - ox, size.width)), max(0, min(my - oy, size.height))
 			self.current_plugin.set_position(*self.pixel_to_float((x,y)))
-			self.ReDraw()
+			self.redraw()
 		elif self.connecting:
-			self.connectpos = event.GetPosition()
-			self.ReDraw()
+			self.connectpos = int(x), int(y)
+			self.redraw()
+		return True
 		
-	def on_left_up(self, event):
+	def on_left_up(self, widget, event):
 		"""
 		Event handler for left mouse button releases.
 		
 		@param event: Mouse event.
 		@type event: wx.MouseEvent
 		"""
+		mx,my = int(event.x), int(event.y)
 		if self.connecting:
-			res = self.get_plugin_at(event.GetPosition())
+			res = self.get_plugin_at((mx,my))
 			if res:
 				mp,(x,y),area = res
 				mp.add_input(self.current_plugin, 16384, 16384)
 		self.current_plugin = None
 		if self.dragging:
-			self.ReleaseMouse()
+			self.grab_remove()
 		self.dragging = False		
 		self.connecting = False
-		self.ReDraw()
+		self.redraw()
 		
 	def update_all(self):
-		self.plugin_info = {}
-		for mp in player.get_plugin_list():
-			self.plugin_info = PluginInfo(mp)
 		self.update_colors()
 		
-	def on_draw_led_timer(self, event):
+	def on_draw_led_timer(self):
 		"""
 		Timer event that only updates the plugin leds.
-		
-		@param event: Paint event.
-		@type event: wx.PaintEvent
 		"""
-		# need to paint to front buffer directly.
-		# if you get problems on your platform (OSX?)
-		# with this statement, add an exception
-		# for your platform. don't change this
-		# or you will break the other platforms.
-		if sys.platform == 'darwin':
-			# don't do anything at all
-			pass
-		else:
-			self.ReDraw(leds_only = True)
-			self.draw_led_timer.Start(100, True)
+		if self.window:
+			#~ self.drawrequest |= self.DRAW_LEDS
+			#~ rect = self.get_allocation()
+			#~ w,h = rect.width,rect.height
+			#~ cx,cy = w*0.5,h*0.5
+			#~ def get_pixelpos(x,y):
+				#~ return cx * (1+x), cy * (1+y)
+			#~ PW, PH = PLUGINWIDTH / 2, PLUGINHEIGHT / 2
+			#~ for mp,(rx,ry) in ((mp,get_pixelpos(*mp.get_position())) for mp in player.get_plugin_list()):
+				#~ rx,ry = rx - PW, ry - PH
+				#~ self.window.invalidate_rect((int(rx),int(ry),PLUGINWIDTH,PLUGINHEIGHT), False)
+			self.draw_leds()
+		return True
+			
+	def expose(self, widget, event):
+		self.context = widget.window.cairo_create()
+		self.draw(self.context)
+		return False
+		
+	def redraw(self):
+		if self.window:
+			self.drawrequest |= self.DRAW_ALL | self.DRAW_LEDS
+			rect = self.get_allocation()
+			self.window.invalidate_rect((0,0,rect.width,rect.height), False)
 		
 	def draw_leds(self):
 		"""
 		Draws only the leds into the offscreen buffer.
 		"""
+		gc = self.window.new_gc()
 		cfg = config.get_config()
-		w,h = self.GetSize()
+		rect = self.get_allocation()
+		w,h = rect.width,rect.height
 		cx,cy = w*0.5,h*0.5
 		def get_pixelpos(x,y):
 			return cx * (1+x), cy * (1+y)
-		dc = self.buffer
-		textcolor = cfg.get_color("MV Machine Text")
-		pluginpen = cfg.get_pen("MV Machine Border")
-		font = wx.Font(8, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
-		region = wx.Region(0,0,w,h)
+		textcolor = cfg.get_float_color("MV Machine Text")
+		pluginpen = cfg.get_float_color("MV Machine Border")
+		#font = wx.Font(8, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
 		PW, PH = PLUGINWIDTH / 2, PLUGINHEIGHT / 2
 		for mp,(rx,ry) in ((mp,get_pixelpos(*mp.get_position())) for mp in player.get_plugin_list()):
 			rx,ry = rx - PW, ry - PH
-			pi = self.plugin_info.get(mp,None)
+			pi = common.get_plugin_infos().get(mp)
 			if not pi:
 				continue
 			if not pi.plugingfx:
-				pi.plugingfx = BitmapBuffer(PLUGINWIDTH, PLUGINHEIGHT)
-				pidc = pi.plugingfx
-				pidc.SetPen(pluginpen)
-				pidc.SetTextForeground(textcolor)
-				pidc.SetFont(font)
+				pi.plugingfx = gtk.gdk.Pixmap(self.window, PLUGINWIDTH, PLUGINHEIGHT, -1)
+				pctx = pi.plugingfx.cairo_create()
+				pctx.save()
+				pctx.translate(0.5,0.5)
+				pctx.set_line_width(1)
 				# adjust colour for muted plugins
 				if pi.muted:
-					pidc.SetBrush(self.type2brush[1][mp.get_type()])
+					pctx.set_source_rgb(*self.type2brush[1][mp.get_type()])
 				else:
-					pidc.SetBrush(self.type2brush[0][mp.get_type()])			
-				pidc.DrawRectangle(0,0,PLUGINWIDTH,PLUGINHEIGHT)
+					pctx.set_source_rgb(*self.type2brush[0][mp.get_type()])			
+				pctx.rectangle(0,0,PLUGINWIDTH-1,PLUGINHEIGHT-1)
+				pctx.fill_preserve()
+				pctx.set_source_rgb(*pluginpen)
+				pctx.stroke()
 				if self.solo_plugin and self.solo_plugin != mp and mp.get_type() == zzub.zzub_plugin_type_generator:
 					title = prepstr('[' + mp.get_name() + ']')
-				elif self.plugin_info[mp].muted:
+				elif pi.muted:
 					title = prepstr('(' + mp.get_name() + ')')
 				else:
 					title = prepstr(mp.get_name())
-				pidc.DrawLabel(title, wx.Rect(0, 0, PLUGINWIDTH, PLUGINHEIGHT), wx.ALIGN_CENTER)
+				xb, yb, tw, th, xa, ya = pctx.text_extents(title)
+				pctx.restore()
+				pctx.select_font_face('Bitstream Vera Sans', cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
+				pctx.translate(int(PLUGINWIDTH/2 - tw/2), int(PLUGINHEIGHT/2 + th/2))
+				pctx.text_path(title)
+				pctx.set_source_rgb(*textcolor)
+				pctx.fill()
+				del pctx
 				
 			maxl, maxr = mp.get_last_peak()
 			amp = min(max(maxl,maxr),1.0)
 			if amp != pi.amp:
-				pidc = pi.plugingfx
-				pidc.SetPen(self.ledtype2brush[2][mp.get_type()])
+				pctx = pi.plugingfx.cairo_create()
+				pctx.translate(0.5,0.5)
+				pctx.set_line_width(1)
 				if amp >= 1:
-					pidc.SetBrush(self.ledtype2brush[3][mp.get_type()])
-					pidc.DrawRectangle(LEDOFSX, LEDOFSY, LEDWIDTH, LEDHEIGHT)
+					pctx.set_source_rgb(*self.ledtype2brush[3][mp.get_type()])
+					pctx.rectangle(LEDOFSX, LEDOFSY, LEDWIDTH-1, LEDHEIGHT-1)
+					pctx.fill_preserve()
+					pctx.set_source_rgb(*self.ledtype2brush[2][mp.get_type()])
+					pctx.stroke()
 				else:
-					pidc.SetBrush(self.ledtype2brush[0][mp.get_type()])
-					pidc.DrawRectangle(LEDOFSX, LEDOFSY, LEDWIDTH, LEDHEIGHT)
+					pctx.set_source_rgb(*self.ledtype2brush[0][mp.get_type()])
+					pctx.rectangle(LEDOFSX, LEDOFSY, LEDWIDTH-1, LEDHEIGHT-1)
+					pctx.fill_preserve()
+					pctx.set_source_rgb(*self.ledtype2brush[2][mp.get_type()])
+					pctx.stroke()
 					amp = 1.0 - (linear2db(amp,-76.0)/-76.0)
 					height = int(LEDHEIGHT*amp)-2
 					if (height > 0):
-						pidc.SetPen(wx.TRANSPARENT_PEN)
-						pidc.SetBrush(self.ledtype2brush[1][mp.get_type()])
-						pidc.DrawRectangle(LEDOFSX+1, LEDOFSY+LEDHEIGHT-height, LEDWIDTH-2, height-1)
+						pctx.set_source_rgb(*self.ledtype2brush[1][mp.get_type()])
+						pctx.rectangle(LEDOFSX+1, LEDOFSY+LEDHEIGHT-height, LEDWIDTH-3, height-2)
+						pctx.fill()
 				pi.amp = amp
-
-			dc.Blit(rx, ry, PLUGINWIDTH, PLUGINHEIGHT, pi.plugingfx, 0, 0)
+				del pctx
+			self.window.draw_drawable(gc, pi.plugingfx, 0, 0, int(rx), int(ry), -1, -1)
 		
-	def DrawBuffer(self, leds_only = False):
+	def draw(self, ctx):
 		"""
 		Draws plugins, connections and arrows to an offscreen buffer.
 		"""
-		if not self.IsShown():
-			return
-		if leds_only:
-			self.draw_leds()
-			return
 		cfg = config.get_config()
-		dc = self.buffer
-		w,h = self.GetSize()
-		arrowbrush = cfg.get_brush("MV Arrow")
-		bgbrush = cfg.get_brush("MV Background")
-		linepen = cfg.get_pen("MV Line")
-		dc.SetBackground(bgbrush)
-		dc.SetBrush(bgbrush)
-		dc.Clear()
+		rect = self.get_allocation()
+		w,h = rect.width,rect.height
+		arrowbrush = cfg.get_float_color("MV Arrow")
+		bgbrush = cfg.get_float_color("MV Background")
+		linepen = cfg.get_float_color("MV Line")
+		ctx.translate(0.5,0.5)
+		ctx.set_source_rgb(*bgbrush)
+		ctx.rectangle(0,0,w,h)
+		ctx.fill()
+		ctx.set_line_width(1)
+		
 		cx,cy = w*0.5,h*0.5
 		def get_pixelpos(x,y):
 			return cx * (1+x), cy * (1+y)
-		dc.SetBrush(arrowbrush)
-		dc.SetPen(linepen)
 		mplist = [(mp,get_pixelpos(*mp.get_position())) for mp in player.get_plugin_list()]
 		
 		def draw_line(crx,cry,rx,ry):
 			vx, vy = (rx-crx), (ry-cry)
 			length = (vx*vx+vy*vy)**0.5
 			vx, vy = vx/length, vy/length
-			dc.DrawLine(crx,cry,rx,ry)
+			ctx.move_to(crx,cry)
+			ctx.line_to(rx,ry)
+			ctx.set_source_rgb(*linepen)
+			ctx.stroke()
 		def draw_line_arrow(crx,cry,rx,ry):
 			vx, vy = (rx-crx), (ry-cry)
 			length = (vx*vx+vy*vy)**0.5
+			if not length:
+				return
 			vx, vy = vx/length, vy/length
-			dc.DrawLine(crx,cry,rx,ry)
+			ctx.move_to(crx,cry)
+			ctx.line_to(rx,ry)
+			ctx.set_source_rgb(*linepen)
+			ctx.stroke()
 			cpx,cpy = crx + vx * (length * 0.5), cry + vy * (length * 0.5)
-			t1 = wx.Point(cpx - vx * 10 + vy * 10, cpy - vy * 10 - vx * 10)
-			t2 = wx.Point(cpx + vx * 10, cpy + vy * 10)
-			t3 = wx.Point(cpx - vx * 10 - vy * 10, cpy - vy * 10 + vx * 10)
-			dc.DrawPolygon([t1,t2,t3])
+			t1 = (int(cpx - vx * 10 + vy * 10), int(cpy - vy * 10 - vx * 10))
+			t2 = (int(cpx + vx * 10), int(cpy + vy * 10))
+			t3 = (int(cpx - vx * 10 - vy * 10), int(cpy - vy * 10 + vx * 10))
+			ctx.move_to(*t1)
+			ctx.line_to(*t2)
+			ctx.line_to(*t3)
+			ctx.close_path()
+			ctx.set_source_rgb(*arrowbrush)
+			ctx.fill_preserve()
+			ctx.set_source_rgb(*linepen)
+			ctx.stroke()
 		
 		for mp,(rx,ry) in mplist:
 			for conn in mp.get_input_connection_list():
 				crx, cry = get_pixelpos(*conn.get_input().get_position())
-				draw_line_arrow(crx,cry,rx,ry)
+				draw_line_arrow(int(crx),int(cry),int(rx),int(ry))
 		self.draw_leds()
-		dc.SetPen(linepen)
 		if self.connecting:
 			crx, cry = get_pixelpos(*self.current_plugin.get_position())
 			rx,ry= self.connectpos
-			draw_line(crx,cry,rx,ry)
+			draw_line(int(crx),int(cry),int(rx),int(ry))
 
 __all__ = [
 'ParameterDialog',
@@ -2014,7 +1866,10 @@ __all__ = [
 ]
 
 if __name__ == '__main__':
-	import sys, utils
-	from main import run
-	#sys.argv.append(utils.filepath('demosongs/paniq-knark.ccm'))
-	run(sys.argv)
+	import testplayer, utils
+	player = testplayer.get_player()
+	player.load_ccm(utils.filepath('demosongs/paniq-knark.ccm'))
+	window = testplayer.TestWindow()
+	window.add(RoutePanel(window))
+	window.show_all()
+	gtk.main()

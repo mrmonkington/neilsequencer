@@ -23,7 +23,7 @@ Extension manager for aldrin. Manages extensions to functionality
 and the user interface.
 """
 
-from wximport import wx
+from gtkimport import gtk
 import interface
 from interface import UnknownServiceException
 import imp

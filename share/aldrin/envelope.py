@@ -22,13 +22,15 @@
 Provides dialogs, classes and controls to display/load/save envelopes
 """
 
-from wximport import wx
+from gtkimport import gtk
 import os, sys
 from utils import prepstr, db2linear, linear2db, note2str
 from utils import read_int, write_int
-from canvas import Canvas
 import zzub
 import config
+import common
+from common import MARGIN, MARGIN2, MARGIN3
+player = common.get_player()
 
 # size of border
 BORDER = 5
@@ -38,67 +40,80 @@ DOTSIZE = 8
 EXACT = 0
 NEXT = 1
 
-class EnvelopeView(Canvas):
+class EnvelopeView(gtk.DrawingArea):
 	"""
 	Envelope viewer.
 	
 	A drawing surface where you can specify how the volume of a sample changes over time.
 	"""
-	SUSTAIN = wx.NewId()
-	DELETE = wx.NewId()
-	RESET = wx.NewId()
-	LOAD = wx.NewId()
-	SAVE = wx.NewId()
 	
-	def __init__(self, wavetable, *args, **kwds):
+	def __init__(self, wavetable):
 		"""
 		Initialization.
 		"""
 		self.envelope = None
-		kwds['style'] = wx.SUNKEN_BORDER
-		self.parent = wavetable
+		self.wavetable = wavetable
 		self.currentpoint = None
 		self.dragging = False
 		self.showpoints = False
-		Canvas.__init__(self, *args, **kwds)
-		wx.EVT_LEFT_DOWN(self, self.on_left_down)
-		wx.EVT_LEFT_UP(self, self.on_left_up)
-		wx.EVT_CONTEXT_MENU(self, self.on_context_menu)
-		wx.EVT_MOTION(self, self.on_motion)
-		wx.EVT_MENU(self, self.SUSTAIN, self.on_set_sustain)
-		wx.EVT_MENU(self, self.DELETE, self.on_delete_point)
-		wx.EVT_MENU(self, self.RESET, self.on_reset)
-		wx.EVT_MENU(self, self.LOAD, self.on_load)
-		wx.EVT_MENU(self, self.SAVE, self.on_save)
-		wx.EVT_ENTER_WINDOW(self, self.on_enter)
-		wx.EVT_LEAVE_WINDOW(self, self.on_leave) 
-		WILDCARD = '|'.join([
-			"Buzz Envelope File (*.BEF)", "*.BEF",
-		])
-		self.open_dlg = wx.FileDialog(
-			self, 
-			message="Open", 
-			wildcard = WILDCARD,
-			style=wx.OPEN | wx.FILE_MUST_EXIST)
-		self.save_dlg = wx.FileDialog(
-			self, 
-			message="Save", 
-			wildcard = WILDCARD,
-			style=wx.SAVE | wx.OVERWRITE_PROMPT)
+		gtk.DrawingArea.__init__(self)
+		self.add_events(gtk.gdk.ALL_EVENTS_MASK)
+		self.connect('button-press-event', self.on_left_down)
+		self.connect('button-release-event', self.on_left_up)
+		self.connect('motion-notify-event', self.on_motion)
+		self.connect('enter-notify-event', self.on_enter)
+		self.connect('leave-notify-event', self.on_leave)
+		self.connect("expose_event", self.expose)
+		# XXX: TODO
+		#~ wx.EVT_CONTEXT_MENU(self, self.on_context_menu)
+		#~ wx.EVT_MENU(self, self.SUSTAIN, self.on_set_sustain)
+		#~ wx.EVT_MENU(self, self.DELETE, self.on_delete_point)
+		#~ wx.EVT_MENU(self, self.RESET, self.on_reset)
+		#~ wx.EVT_MENU(self, self.LOAD, self.on_load)
+		#~ wx.EVT_MENU(self, self.SAVE, self.on_save)
+		#~ wx.EVT_ENTER_WINDOW(self, self.on_enter)
+		#~ wx.EVT_LEAVE_WINDOW(self, self.on_leave) 
+		#~ WILDCARD = '|'.join([
+			#~ "Buzz Envelope File (*.BEF)", "*.BEF",
+		#~ ])
+		#~ self.open_dlg = wx.FileDialog(
+			#~ self, 
+			#~ message="Open", 
+			#~ wildcard = WILDCARD,
+			#~ style=wx.OPEN | wx.FILE_MUST_EXIST)
+		#~ self.save_dlg = wx.FileDialog(
+			#~ self, 
+			#~ message="Save", 
+			#~ wildcard = WILDCARD,
+			#~ style=wx.SAVE | wx.OVERWRITE_PROMPT)
 			
-	def on_enter(self, event):
+	def expose(self, widget, event):
+		self.context = widget.window.cairo_create()
+		self.draw(self.context)
+		return False
+
+	def get_client_size(self):
+		rect = self.get_allocation()
+		return rect.width, rect.height
+
+	def redraw(self):
+		if self.window:
+			w,h = self.get_client_size()
+			self.window.invalidate_rect((0,0,w,h), False)
+			
+	def on_enter(self, widget, event):
 		"""
 		Called when the mouse enters the envelope editor.
 		"""
 		self.showpoints = True
-		self.ReDraw()
+		self.redraw()
 		
-	def on_leave(self, event):
+	def on_leave(self, widget, event):
 		"""
 		Called when the mouse leaves the envelope editor.
 		"""
 		self.showpoints = False
-		self.ReDraw()
+		self.redraw()
 		
 	def get_point_at(self, position):
 		"""
@@ -118,64 +133,58 @@ class EnvelopeView(Canvas):
 			px,py,f = point
 			if (bestindex == None) and (px > x):
 				bestindex = i
-			rc = wx.Rect(px-ds,py-ds,DOTSIZE,DOTSIZE)
-			if rc.Inside((x,y)):
+			rc = gtk.gdk.Rectangle(px-ds,py-ds,DOTSIZE,DOTSIZE)
+			if sum(rc.intersect((x,y,1,1))):
 				return i,EXACT
 		return bestindex,NEXT
 		
-	def on_left_down(self, event):
+	def on_left_down(self, widget, event):
 		"""
 		Callback that responds to left mouse down over the envelope view.
-		
-		@param event: MouseEvent event
-		@type event: wx.MouseEvent
 		"""
-		i,location = self.get_point_at((event.m_x, event.m_y))
+		mx,my = int(event.x), int(event.y)
+		i,location = self.get_point_at((mx, my))
 		if i == None:
 			return
-		self.CaptureMouse()
+		self.grab_add()
 		self.currentpoint = i
 		self.dragging = True
 		if location == NEXT:
 			# no direct hit, create a new one
 			self.envelope.insert_point(self.currentpoint)
 			x,y,f = self.envelope.get_point(self.currentpoint)
-			x,y = self.pixel_to_env((event.m_x, event.m_y))
+			x,y = self.pixel_to_env((mx,my))
 			self.envelope.set_point(self.currentpoint, x, y, f)
-		self.ReDraw()
+		self.redraw()
 
-	def on_left_up(self, event):
+	def on_left_up(self, widget, event):
 		"""
 		Callback that responds to left mouse up over the envelope view.
-		
-		@param event: MouseEvent event
-		@type event: wx.MouseEvent
 		"""
 		if self.dragging:
-			self.ReleaseMouse()
+			self.grab_remove()
 			self.dragging = False
 			self.currentpoint = None
-			self.ReDraw()
+			self.redraw()
 
-	def on_motion(self, event):		
+	def on_motion(self, widget, event):		
 		"""
 		Callback that responds to mouse motion over the envelope view.
-		
-		@param event: MouseEvent event
-		@type event: wx.MouseEvent
 		"""
+		mx,my,state = self.window.get_pointer()
+		mx,my = int(mx),int(my)
 		if self.dragging:
 			x,y,f = self.envelope.get_point(self.currentpoint)
-			x,y = self.pixel_to_env((event.m_x, event.m_y))
+			x,y = self.pixel_to_env((mx,my))
 			self.envelope.set_point(self.currentpoint, x, y, f)
-			self.ReDraw()
+			self.redraw()
 		else:
-			i,location = self.get_point_at((event.m_x, event.m_y))
+			i,location = self.get_point_at((mx,my))
 			if location != EXACT:
 				i = None
 			if (self.currentpoint != i):
 				self.currentpoint = i
-				self.ReDraw()
+				self.redraw()
 
 	def on_context_menu(self, event):
 		"""
@@ -284,7 +293,7 @@ class EnvelopeView(Canvas):
 		"""
 		self.envelope.delete_point(self.currentpoint)
 		self.currentpoint = None
-		self.ReDraw()
+		self.redraw()
 
 	def update(self):
 		"""
@@ -293,15 +302,15 @@ class EnvelopeView(Canvas):
 		self.currentpoint = None
 		self.dragging = False
 		self.envelope = None
-		sel = self.parent.get_sample_selection()
+		sel = self.wavetable.get_sample_selection()
 		if sel:
 			w = player.get_wave(sel[0])
 			if w.get_envelope_count():
 				self.envelope = w.get_envelope(0)
-		self.ReDraw()
+		self.redraw()
 		
 	def env_to_pixel(self, x, y):
-		w,h = self.GetClientSize()
+		w,h = self.get_client_size()
 		xf = (w-(2*BORDER)-1) / 65535.0
 		yf = (h-(2*BORDER)-1) / 65535.0
 		return int(x*xf) + BORDER,int((65535 - y)*yf) + BORDER
@@ -316,7 +325,7 @@ class EnvelopeView(Canvas):
 		@rtype: (int, int)
 		"""
 		x,y = position
-		w,h = self.GetClientSize()
+		w,h = self.get_client_size()
 		xf = 65535.0 / (w-(2*BORDER)-1)
 		yf = 65535.0 / (h-(2*BORDER)-1)
 		return max(min(int((x-BORDER)*xf),65535),0),65535 - max(min(int((y-BORDER)*yf),65535),0)
@@ -330,77 +339,86 @@ class EnvelopeView(Canvas):
 		"""
 		return [self.env_to_pixel(x,y) + (f,) for x,y,f in self.envelope.get_point_list()]
 		
-	def Enable(self, enable):
-		if enable != self.IsEnabled():
-			Canvas.Enable(self, enable)
-		self.ReDraw()
+	def set_sensitive(self, enable):
+		gtk.DrawingArea.set_sensitive(self, enable)
+		self.redraw()
 
-	def DrawBuffer(self):
+	def draw(self, ctx):
 		"""
 		Overriding a L{Canvas} method that paints onto an offscreen buffer.
 		Draws the envelope view graphics.
 		"""	
-		dc = self.buffer
+		w,h = self.get_client_size()
 		cfg = config.get_config()
 		
-		bgbrush = cfg.get_brush('EE BG')
-		dotbrush = cfg.get_brush('EE Dot')
-		selectbrush = cfg.get_brush('EE Dot Selected')
-		pen = cfg.get_pen('EE Line')
-		brush = cfg.get_brush('EE Fill')
-		sustainpen = wx.Pen(cfg.get_color('EE Sustain'), 1, wx.SHORT_DASH)
-		gridpen = cfg.get_pen('EE Grid')
-		dc.SetBackground(bgbrush)
-		dc.Clear()
-		dc.SetBrush(dotbrush)		
+		bgbrush = cfg.get_float_color('EE BG')
+		dotbrush = cfg.get_float_color('EE Dot')
+		selectbrush = cfg.get_float_color('EE Dot Selected')
+		pen = cfg.get_float_color('EE Line')
+		brush = cfg.get_float_color('EE Fill')
+		sustainpen = cfg.get_float_color('EE Sustain')
+		gridpen = cfg.get_float_color('EE Grid')
+		
+		ctx.translate(0.5,0.5)
+		ctx.set_source_rgb(*bgbrush)
+		ctx.rectangle(0,0,w,h)
+		ctx.fill()
+		ctx.set_line_width(1)
+
 		if not self.envelope:
 			return
-		w,h = self.GetClientSize()
 		# 4096 (16)
 		# 8192 (8)
-		dc.SetPen(gridpen)
 		xlines = 16
 		ylines = 8
 		xf = 65535.0 / float(xlines)
 		yf = 65535.0 / float(ylines)
+		ctx.set_source_rgb(*gridpen)
 		for xg in range(xlines+1):
 			pt1 = self.env_to_pixel(xg*xf,0)
-			dc.DrawLine(pt1[0],0,pt1[0],h)
+			ctx.move_to(pt1[0],0)
+			ctx.line_to(pt1[0],h)
+			ctx.stroke()
 		for yg in range(ylines+1):
 			pt1 = self.env_to_pixel(0,yg*yf)
-			dc.DrawLine(0,pt1[1],w,pt1[1])
-		if not self.IsEnabled():
+			ctx.move_to(0,pt1[1])
+			ctx.line_to(w,pt1[1])
+			ctx.stroke()
+		if not self.get_property('sensitive'):
 			return
-		dc.SetPen(pen)
-		dc.SetBrush(brush)
 		points = self.get_translated_points()
-		ppoints = [None] * len(points)
 		envp = None
-		for i in range(len(points)):
+		ctx.move_to(*self.env_to_pixel(0,0))
+		for i in xrange(len(points)):
 			pt1 = points[max(i,0)]
-			#pt2 = points[min(i+1,len(points)-1)]
-			ppoints[i] = wx.Point(pt1[0],pt1[1])
-			#dc.DrawLine(pt1[0], pt1[1], pt2[0], pt2[1])
+			ctx.line_to(pt1[0],pt1[1])
 			if pt1[2] & zzub.zzub_envelope_flag_sustain:
 				envp = pt1
-		ppoints.append(wx.Point(*self.env_to_pixel(65535,0)))
-		ppoints.append(wx.Point(*self.env_to_pixel(0,0)))
-		dc.DrawPolygon(ppoints)
+		ctx.line_to(*self.env_to_pixel(65535,0))
+		ctx.set_source_rgba(*(brush + (0.6,)))
+		ctx.fill_preserve()
+		ctx.set_source_rgb(*pen)
+		ctx.stroke()
 		if envp:
-			dc.SetPen(sustainpen)
-			dc.DrawLine(envp[0],0,envp[0],h)
+			ctx.set_source_rgb(*sustainpen)
+			ctx.move_to(envp[0],0)
+			ctx.line_to(envp[0],h)
+			ctx.set_dash([4.0,2.0], 0.5)
+			ctx.stroke()
+			ctx.set_dash([], 0.0)
 		if self.showpoints:
-			dc.SetPen(wx.TRANSPARENT_PEN)
 			for i in reversed(range(len(points))):
 				pt1 = points[max(i,0)]
 				pt2 = points[min(i+1,len(points)-1)]
 				if i == self.currentpoint:
-					dc.SetBrush(selectbrush)
+					ctx.set_source_rgb(*selectbrush)
 				else:
-					dc.SetBrush(dotbrush)
-				dc.DrawCircle(pt1[0],pt1[1], int((DOTSIZE/2.0)+0.5))
+					ctx.set_source_rgb(*dotbrush)
+				import math
+				ctx.arc(pt1[0],pt1[1],int((DOTSIZE/2.0)+0.5),0.0,math.pi*2)
+				ctx.fill()
 		
-class ADSRPanel(wx.Panel):
+class ADSRPanel(gtk.VBox):
 	"""
 	ADSR Panel.
 	
@@ -411,68 +429,70 @@ class ADSRPanel(wx.Panel):
 	DECAY_MODES = ["Linear", "Logarithmic"]
 	RELEASE_MODES = ["Linear", "-48dB Logarithmic", "-64dB Logarithmic", "-96dB Logarithmic"]
 	
-	def __init__(self, wavetable, *args, **kwds):
+	def __init__(self, wavetable):
 		"""
 		Initialization.
 		"""
 		self.wavetable = wavetable
-		wx.Panel.__init__(self, *args, **kwds)
-		self.SetTitle("ADSR Envelope Editor")
-		topgrid = wx.FlexGridSizer(5,3,5,5)
-		self.attack = wx.Slider(self, -1)
-		w,h = self.attack.GetMinSize()
-		self.attack.SetMinSize((150,h))
-		self.cbattacktype = wx.Choice(self, -1)
-		self.decay = wx.Slider(self, -1)
-		self.cbdecaytype = wx.Choice(self, -1)
-		self.sustain = wx.Slider(self, -1)
-		self.chksustain = wx.CheckBox(self, -1, "Sustain")
-		self.release = wx.Slider(self, -1)
-		self.cbreleasetype = wx.Choice(self, -1)
-		#self.resolution = wx.Slider(self, -1)
-		self.attack.SetMin(0); self.attack.SetMax(16384)
-		self.decay.SetMin(0); self.decay.SetMax(16384)
-		self.sustain.SetMin(0); self.sustain.SetMax(16384)
-		self.release.SetMin(0); self.release.SetMax(16384)
-		#self.resolution.SetMin(1); self.resolution.SetMax(48)
+		gtk.VBox.__init__(self, False, MARGIN)
+		#self.set_title("ADSR Envelope Editor")
+		def new_scale():
+			scale = gtk.HScale()
+			scale.set_draw_value(False)
+			return scale
+		self.attack = new_scale()
+		self.cbattacktype = gtk.combo_box_new_text()
+		self.decay = new_scale()
+		self.cbdecaytype = gtk.combo_box_new_text()
+		self.sustain = new_scale()
+		self.chksustain = gtk.CheckButton("Sustain")
+		self.release = new_scale()
+		self.cbreleasetype = gtk.combo_box_new_text()
+		self.attack.set_range(0, 16384)
+		self.decay.set_range(0, 16384)
+		self.sustain.set_range(0, 16384)
+		self.release.set_range(0, 16384)
 		for mode in self.ATTACK_MODES:
-			self.cbattacktype.Append(mode)
+			self.cbattacktype.append_text(mode)
 		for mode in self.DECAY_MODES:
-			self.cbdecaytype.Append(mode)
+			self.cbdecaytype.append_text(mode)
 		for mode in self.RELEASE_MODES:
-			self.cbreleasetype.Append(mode)
-		self.attack.SetValue(0)
-		self.decay.SetValue(0)
-		self.sustain.SetValue(16384)
-		self.release.SetValue(16383)
-		#self.resolution.SetValue(8) # how much points between?
-		self.cbattacktype.SetSelection(0)
-		self.cbdecaytype.SetSelection(0)
-		self.cbreleasetype.SetSelection(0)
-		topgrid.AddGrowableCol(1)
-		topgrid.Add(wx.StaticText(self, -1, "Attack Time"), 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.LEFT|wx.TOP, 5)
-		topgrid.Add(self.attack, 1, wx.EXPAND | wx.ALIGN_CENTER_VERTICAL|wx.TOP, 5)
-		topgrid.Add(self.cbattacktype, 0, wx.EXPAND|wx.ALIGN_CENTER_VERTICAL|wx.TOP|wx.RIGHT, 5)
-		topgrid.Add(wx.StaticText(self, -1, "Decay Time"), 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.LEFT, 5)
-		topgrid.Add(self.decay, 1, wx.EXPAND | wx.ALIGN_CENTER_VERTICAL)
-		topgrid.Add(self.cbdecaytype, 0, wx.EXPAND|wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, 5)
-		topgrid.Add(wx.StaticText(self, -1, "Sustain Level"), 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.LEFT, 5)
-		topgrid.Add(self.sustain, 1, wx.EXPAND | wx.ALIGN_CENTER_VERTICAL)
-		topgrid.Add(self.chksustain, 0, wx.EXPAND|wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, 5)
-		topgrid.Add(wx.StaticText(self, -1, "Release Time"), 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.LEFT, 5)
-		topgrid.Add(self.release, 1, wx.EXPAND | wx.ALIGN_CENTER_VERTICAL)
-		topgrid.Add(self.cbreleasetype, 0, wx.EXPAND|wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, 5)
-		#topgrid.Add(wx.StaticText(self, -1, "Resolution"), 0, wx.ALIGN_CENTER_VERTICAL|wx.LEFT|wx.BOTTOM, 5)
-		#topgrid.Add(self.resolution, 1, wx.EXPAND | wx.ALIGN_CENTER_VERTICAL|wx.RIGHT|wx.BOTTOM, 5)
-		self.SetSizerAndFit(topgrid)
-		self.SetAutoLayout(True)
-		self.Layout()
-		wx.EVT_SCROLL_THUMBTRACK(self, self.update_envelope)
-		wx.EVT_SCROLL_CHANGED(self, self.update_envelope)
-		wx.EVT_CHOICE(self, self.cbattacktype.GetId(), self.update_envelope)
-		wx.EVT_CHOICE(self, self.cbdecaytype.GetId(), self.update_envelope)
-		wx.EVT_CHOICE(self, self.cbreleasetype.GetId(), self.update_envelope)
-		wx.EVT_CHECKBOX(self, self.chksustain.GetId(), self.update_envelope)
+			self.cbreleasetype.append_text(mode)
+		self.attack.set_value(0)
+		self.decay.set_value(0)
+		self.sustain.set_value(16384)
+		self.release.set_value(16383)
+		self.cbattacktype.set_active(0)
+		self.cbdecaytype.set_active(0)
+		self.cbreleasetype.set_active(0)
+		sg1 = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
+		sg2 = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
+		def add_row(c1, c2, c3):
+			row = gtk.HBox(False, MARGIN)
+			sg1.add_widget(c1)
+			sg2.add_widget(c3)
+			row.pack_start(c1, expand=False)
+			row.add(c2)
+			row.pack_end(c3, expand=False)
+			self.pack_start(row, expand=False)
+		def new_label(name):
+			label = gtk.Label()
+			label.set_alignment(1,0.5)
+			label.set_markup('<b>%s</b>' % name)
+			return label
+		add_row(new_label("Attack Time"), self.attack, self.cbattacktype)
+		add_row(new_label("Decay Time"), self.decay, self.cbdecaytype)
+		add_row(new_label("Sustain Level"), self.sustain, self.chksustain)
+		add_row(new_label("Release Time"), self.release, self.cbreleasetype)
+		
+		self.cbattacktype.connect('changed', self.update_envelope)
+		self.cbdecaytype.connect('changed', self.update_envelope)
+		self.cbreleasetype.connect('changed', self.update_envelope)
+		self.chksustain.connect('clicked', self.update_envelope)
+		self.attack.connect('change-value', self.update_envelope)
+		self.decay.connect('change-value', self.update_envelope)
+		self.sustain.connect('change-value', self.update_envelope)
+		self.release.connect('change-value', self.update_envelope)
 		
 	def update(self):
 		"""
@@ -486,41 +506,41 @@ class ADSRPanel(wx.Panel):
 			if w.get_envelope_count():
 				env = w.get_envelope(0)
 				iswave = env.is_enabled()
-				self.attack.SetValue(env.get_attack())
-				self.decay.SetValue(env.get_decay())
-				self.sustain.SetValue(env.get_sustain())
-				self.release.SetValue(env.get_release())
+				self.attack.set_value(env.get_attack())
+				self.decay.set_value(env.get_decay())
+				self.sustain.set_value(env.get_sustain())
+				self.release.set_value(env.get_release())
 			else:
 				iswave = False
-		self.attack.Enable(iswave)
-		self.decay.Enable(iswave)
-		self.sustain.Enable(iswave)
-		self.release.Enable(iswave)
-		self.chksustain.Enable(iswave)
-		self.cbattacktype.Enable(iswave)
-		self.cbdecaytype.Enable(iswave)
-		self.cbreleasetype.Enable(iswave)
+		self.attack.set_sensitive(iswave)
+		self.decay.set_sensitive(iswave)
+		self.sustain.set_sensitive(iswave)
+		self.release.set_sensitive(iswave)
+		self.chksustain.set_sensitive(iswave)
+		self.cbattacktype.set_sensitive(iswave)
+		self.cbdecaytype.set_sensitive(iswave)
+		self.cbreleasetype.set_sensitive(iswave)
 
-	def update_envelope(self, event=None):
+	def update_envelope(self, *args):
 		"""
 		Updates the envelope from current slider values.
 		"""
-		sel = self.wavetable.samplelist.GetSelections()
+		sel = self.wavetable.get_sample_selection()
 		if sel:
 			w = player.get_wave(sel[0])
 			if w.get_envelope_count():
 				env = w.get_envelope(0)
-				env.set_attack(self.attack.GetValue())
-				env.set_decay(self.decay.GetValue())
-				env.set_sustain(self.sustain.GetValue())
-				env.set_release(self.release.GetValue())
-				a = self.attack.GetValue()*65535 / 16384
-				d = max(self.decay.GetValue()*65535 / 16384, 1)
-				s = self.sustain.GetValue()*65535 / 16384
-				r = max(self.release.GetValue()*65535 / 16384, 1)
+				env.set_attack(int(self.attack.get_value()))
+				env.set_decay(int(self.decay.get_value()))
+				env.set_sustain(int(self.sustain.get_value()))
+				env.set_release(int(self.release.get_value()))
+				a = int(self.attack.get_value()*65535 / 16384)
+				d = int(max(self.decay.get_value()*65535 / 16384, 1))
+				s = int(self.sustain.get_value()*65535 / 16384)
+				r = int(max(self.release.get_value()*65535 / 16384, 1))
 				p = 9 #self.resolution.GetValue()+1
-				atype = self.cbattacktype.GetSelection()
-				rtype = self.cbreleasetype.GetSelection()
+				atype = self.cbattacktype.get_active()
+				rtype = self.cbreleasetype.get_active()
 				while env.get_point_count() > 2:
 					env.delete_point(1)
 				def add_point(x,y,f=0):
@@ -531,7 +551,7 @@ class ADSRPanel(wx.Panel):
 				x = 0
 				f = 0
 				i = 0
-				if self.chksustain.IsChecked():
+				if self.chksustain.get_active():
 					f = f | zzub.zzub_envelope_flag_sustain
 				if a > 0:
 					env.set_point(0, 0, 0, 0)

@@ -22,9 +22,12 @@
 Provides an info view which allows to enter text.
 """
 
-from wximport import wx
+from gtkimport import gtk
+import common
+player = common.get_player()
 
-class InfoPanel(wx.Panel):
+
+class InfoPanel(gtk.VBox):
 	"""
 	Contains the info view.
 	"""
@@ -36,13 +39,11 @@ class InfoPanel(wx.Panel):
 		@type rootwindow: wx.Frame
 		"""
 		self.rootwindow = rootwindow
-		wx.Panel.__init__(self, *args, **kwds)
-		self.view = InfoView(rootwindow, self, -1)
-		sizer_2 = wx.BoxSizer(wx.HORIZONTAL)
-		sizer_2.Add(self.view, 1, wx.EXPAND, 0)
-		self.SetAutoLayout(True)
-		self.SetSizer(sizer_2)
-		self.Layout()
+		gtk.VBox.__init__(self)
+		self.view = InfoView(rootwindow)
+		sizer_2 = gtk.HBox()
+		sizer_2.add(self.view)
+		self.add(sizer_2)
 		
 	def reset(self):
 		"""
@@ -54,21 +55,22 @@ class InfoPanel(wx.Panel):
 	def update_all(self):		
 		self.view.update()
 
-class InfoView(wx.TextCtrl):
+class InfoView(gtk.TextView):
 	"""
 	Allows to enter and view text saved with the module.
 	"""	
 	
-	def __init__(self, rootwindow, *args, **kwds):
+	def __init__(self, rootwindow):
 		"""
 		Initializer.
 		
 		@param rootwindow: Main window.
 		@type rootwindow: wx.Frame
 		"""
-		kwds['style'] = wx.SUNKEN_BORDER | wx.TE_MULTILINE | wx.TE_RICH2 | wx.TE_BESTWRAP
-		wx.TextCtrl.__init__(self, *args, **kwds)
-		wx.EVT_TEXT(args[0], self.GetId(), self.on_edit)
+		gtk.TextView.__init__(self)
+		self.set_wrap_mode(gtk.WRAP_WORD)
+		self.connect('insert-at-cursor', self.on_edit)
+		self.connect('delete-from-cursor', self.on_edit)
 		
 	def on_edit(self, event):
 		"""
@@ -77,13 +79,13 @@ class InfoView(wx.TextCtrl):
 		@param event: Event
 		@type event: wx.Event
 		"""
-		player.set_infotext(self.GetValue())
+		player.set_infotext(self.get_buffer().get_property('text'))
 		
 	def reset(self):
 		"""
 		Resets the view.
 		"""
-		self.Clear()
+		self.get_buffer().set_property('text', '')
 		
 	def update(self):
 		"""
@@ -92,7 +94,7 @@ class InfoView(wx.TextCtrl):
 		text = player.get_infotext()
 		#~ if not text:
 			#~ text = "Composed with Aldrin.\n\nThe revolution will not be televised."
-		self.SetValue(text)
+		self.get_buffer().set_property('text', text)
 
 
 _all__ = [

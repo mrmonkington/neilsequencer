@@ -24,12 +24,16 @@ editor and its associated dialogs.
 """
 
 import os, sys
-from wximport import wx
-from canvas import Canvas, ScrolledCanvas, BitmapBuffer
-from utils import prepstr, filepath
+from gtkimport import gtk
+import gobject
+import pango
+from utils import prepstr, filepath, get_item_count, get_clipboard_text, set_clipboard_text
 import pickle
 import zzub
 import time
+import common
+player = common.get_player()
+from common import MARGIN, MARGIN2, MARGIN3
 
 from utils import NOTES, roundint
 PATLEFTMARGIN = 48
@@ -41,48 +45,48 @@ patternsizes = [
 1,4,8,12,16,24,32,48,64,96,128,192,256,512
 ]
 
-class PatternDialog(wx.Dialog):
+class PatternDialog(gtk.Dialog):
 	"""
 	Pattern Dialog Box.
 	
 	This dialog is used to create a new pattern or a copy of a pattern, and to modify existent patterns.
 	"""
-	def __init__(self, *args, **kwds):
+	def __init__(self, parent):
 		"""
 		Initialization.
 		"""
-		wx.Dialog.__init__(self, *args, **kwds)
-		self.btnok = wx.Button(self, wx.ID_OK, "OK")
-		self.btncancel = wx.Button(self, wx.ID_CANCEL, "Cancel")
-		self.namelabel = wx.StaticText(self, -1, "Name")
-		self.edtname = wx.TextCtrl(self, -1, style=wx.TE_PROCESS_ENTER)
-		self.lengthlabel = wx.StaticText(self, -1, "Length")
-		self.lengthbox = wx.ComboBox(self, -1, style=wx.TE_PROCESS_ENTER)
+		gtk.Dialog.__init__(self,
+			"Pattern Properties",
+			parent.get_toplevel(),
+			gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
+			None
+		)		
+		self.btnok = self.add_button(gtk.STOCK_OK, gtk.RESPONSE_OK)
+		self.btncancel = self.add_button(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL)
+		self.namelabel = gtk.Label("Name")
+		self.edtname = gtk.Entry()
+		self.lengthlabel = gtk.Label("Length")
+		self.lengthbox = gtk.combo_box_entry_new_text()
 		for s in patternsizes:
-			self.lengthbox.Append(str(s))
-		self.rowslabel = wx.StaticText(self, -1, "rows")		
-		topgrid = wx.FlexGridSizer(2,3,5,5)
-		#~ topgrid.AddGrowableCol(0, 0)
-		#~ topgrid.AddGrowableCol(1, 0)
-		#~ topgrid.AddGrowableRow(0, 0)
-		#~ topgrid.AddGrowableRow(1, 0)
-		rowgroup = wx.BoxSizer(wx.HORIZONTAL)
-		rowgroup.Add(self.lengthbox, 1, wx.ALIGN_CENTER_VERTICAL | wx.ALL, 5)		
-		rowgroup.Add(self.rowslabel, 1, wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_LEFT | wx.ALL, 5)		
-		topgrid.Add(self.namelabel, 1, wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_RIGHT | wx.ALL, 5)		
-		topgrid.Add(self.edtname, 1, wx.ALIGN_CENTER_VERTICAL, 0)
-		topgrid.Add(self.btnok, 1, wx.ALL, 2)
-		topgrid.Add(self.lengthlabel, 1, wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_RIGHT, 5)		
-		topgrid.Add(rowgroup, 1, 0, 0)
-		topgrid.Add(self.btncancel, 1, wx.ALL, 2)
-		self.SetAutoLayout(True)
-		self.SetSizerAndFit(topgrid)
-		self.Layout()
-		wx.EVT_TEXT_ENTER(self, self.edtname.GetId(), self.on_enter)
-		wx.EVT_TEXT_ENTER(self, self.lengthbox.GetId(), self.on_enter)
-	def on_enter(self, event):
-		self.EndModal(wx.ID_OK)
+			self.lengthbox.append_text(str(s))
+		self.rowslabel = gtk.Label("Rows")
+		sgroup1 = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
+		sgroup2 = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
+		def add_row(c1, c2):
+			row = gtk.HBox()
+			row.pack_start(c1, expand=False)
+			row.pack_start(c2)
+			sgroup1.add_widget(c1)
+			sgroup2.add_widget(c2)
+			self.vbox.pack_start(row, expand=False)
+		add_row(self.namelabel, self.edtname)
+		add_row(self.rowslabel, self.lengthbox)
+		self.edtname.connect('activate', self.on_enter)
+		self.lengthbox.child.connect('activate', self.on_enter)
+		self.show_all()
 		
+	def on_enter(self, widget):
+		self.response(gtk.RESPONSE_OK)
 		
 # pattern dialog modes
 DLGMODE_NEW = 0
@@ -107,143 +111,153 @@ def show_pattern_dialog(parent, name, length, dlgmode):
 	dlg = PatternDialog(parent)
 	dlg.dlgmode = dlgmode
 	if dlgmode == DLGMODE_NEW:
-		dlg.SetTitle("New Pattern")
+		dlg.set_title("New Pattern")
 	elif dlgmode == DLGMODE_COPY:
-		dlg.SetTitle("Create copy of pattern")
-		dlg.lengthbox.Enable(False)
+		dlg.set_title("Create copy of pattern")
+		dlg.lengthbox.set_sensitive(False)
 	elif dlgmode == DLGMODE_CHANGE:
-		dlg.SetTitle("Pattern Properties")
-	dlg.edtname.SetValue(name)
-	dlg.lengthbox.SetValue(str(length))
-	dlg.edtname.SetSelection(-1,-1)
-	dlg.edtname.SetFocus()
-	if dlg.ShowModal() != wx.ID_OK:
-		return
-	dlg.Destroy()
-	return str(dlg.edtname.GetValue()), int(dlg.lengthbox.GetValue())
+		dlg.set_title("Pattern Properties")
+	dlg.edtname.set_text(name)
+	dlg.lengthbox.child.set_text(str(length))
+	dlg.edtname.select_region(0, -1)
+	dlg.edtname.grab_focus()
+	response = dlg.run()
+	dlg.hide_all()
+	result = None
+	if response == gtk.RESPONSE_OK:
+		result = str(dlg.edtname.get_text()), int(dlg.lengthbox.child.get_text())
+	dlg.destroy()
+	return result
 		
-class PatternToolBar(wx.Panel):
+class PatternToolBar(gtk.HBox):
 	"""
 	Pattern Toolbar
 	
 	Contains lists of the plugins, patterns, waves and octaves available.
 	"""
-	def __init__(self, *args, **kwds):
+	def __init__(self, view):
 		"""
 		Initialization.
 		"""
 		# begin wxGlade: SequencerFrame.__init__
-		self.parent = args[0]
-		wx.Panel.__init__(self, *args, **kwds)
-		self.pluginlabel = wx.StaticText(self, -1, label="&Plugin")
-		self.pluginselect = wx.Choice(self, -1)
-		self.patternlabel = wx.StaticText(self, -1, label="&Pattern")
-		self.patternselect = wx.Choice(self, -1)
-		self.wavelabel = wx.StaticText(self, -1, label="&Wave")
-		self.waveselect = wx.Choice(self, -1)
-		self.octavelabel = wx.StaticText(self, -1, label="&Base octave")
-		self.octaveselect = wx.Choice(self, -1)
-		self.playnotes = wx.CheckBox(self, -1, label="Play &notes")
+		self.view = view
+		gtk.HBox.__init__(self, False, MARGIN)
+		self.set_border_width(MARGIN)
+		self.pluginlabel = gtk.Label()
+		self.pluginlabel.set_text_with_mnemonic("_Plugin")
+		self.pluginselect = gtk.combo_box_new_text()
+		self.pluginselect.connect('changed', self.on_pluginselect)
+		self.pluginlabel.set_mnemonic_widget(self.pluginselect)
+		self.patternlabel = gtk.Label()
+		self.patternlabel.set_text_with_mnemonic("_Pattern")
+		self.patternselect = gtk.combo_box_new_text()
+		self.patternselect.connect('changed', self.on_patternselect)
+		self.patternlabel.set_mnemonic_widget(self.patternselect)
+		self.wavelabel = gtk.Label()
+		self.wavelabel.set_text_with_mnemonic("_Instrument")
+		self.waveselect = gtk.combo_box_new_text()
+		self.waveselect.connect('changed', self.on_waveselect)
+		self.wavelabel.set_mnemonic_widget(self.waveselect)
+		self.octavelabel = gtk.Label()
+		self.octavelabel.set_text_with_mnemonic("_Base octave")
+		self.octaveselect = gtk.combo_box_new_text()
+		self.octaveselect.connect('changed', self.on_octaveselect)
+		self.octavelabel.set_mnemonic_widget(self.octaveselect)
+		self.playnotes = gtk.CheckButton(label="Play _notes")
 
-		wx.EVT_CHOICE(self, self.pluginselect.GetId(), self.on_pluginselect)
-		wx.EVT_CHOICE(self, self.patternselect.GetId(), self.on_patternselect)
-		wx.EVT_CHOICE(self, self.waveselect.GetId(), self.on_waveselect)
-		wx.EVT_CHOICE(self, self.octaveselect.GetId(), self.on_octaveselect)
-
-		self.playnotes.SetValue(True)
+		self.playnotes.set_active(True)
 
 		self.plugin = 0
 		self.pattern = 0
 		self.wave = 0
 		self.cb2w = {} # combobox index to wave index
 		
-		mx,my = self.waveselect.GetMinSize()
-		self.waveselect.SetMinSize((150,my))
-		self.octaveselect.SetMinSize((50,my))
-		
-		sizer = wx.BoxSizer(wx.HORIZONTAL)
-		sizer.Add(self.pluginlabel, 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT | wx.TOP | wx.BOTTOM, 5)
-		sizer.Add(self.pluginselect, 0, wx.EXPAND | wx.LEFT | wx.TOP | wx.BOTTOM, 5)
-		sizer.Add(self.patternlabel, 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT | wx.TOP | wx.BOTTOM, 5)
-		sizer.Add(self.patternselect, 0, wx.EXPAND | wx.LEFT | wx.TOP | wx.BOTTOM, 5)
-		sizer.Add(self.wavelabel, 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT | wx.TOP | wx.BOTTOM, 5)
-		sizer.Add(self.waveselect, 0, wx.EXPAND | wx.LEFT | wx.TOP | wx.BOTTOM, 5)
-		sizer.Add(self.octavelabel, 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT | wx.TOP | wx.BOTTOM, 5)
-		sizer.Add(self.octaveselect, 0, wx.EXPAND | wx.LEFT | wx.TOP | wx.BOTTOM, 5)
-		sizer.Add(self.playnotes, 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT | wx.TOP | wx.BOTTOM, 5)
-		self.SetAutoLayout(True)
-		self.SetSizer(sizer)
-		self.Layout()
-		self.Fit()
+		self.pack_start(self.pluginlabel, expand=False)
+		self.pack_start(self.pluginselect, expand=False)
+		self.pack_start(self.patternlabel, expand=False)
+		self.pack_start(self.patternselect, expand=False)
+		self.pack_start(self.wavelabel, expand=False)
+		self.pack_start(self.waveselect, expand=False)
+		self.pack_start(self.octavelabel, expand=False)
+		self.pack_start(self.octaveselect, expand=False)
+		self.pack_start(self.playnotes, expand=False)
 	
 	def reset(self):
 		self.plugin = 0
 		self.pattern = 0
 		self.wave = 0
 		
-	def on_pluginselect(self, event):		
+	def on_pluginselect(self, widget):		
 		"""
 		Callback to handle selection of the pluginselect list.
 		
 		@param event: Selection event.
 		@type event: wx.CommandEvent
 		"""
-		self.select_plugin(event.GetSelection())
+		if widget.get_active() == -1:
+			return
+		if self.plugin == widget.get_active():
+			return
+		self.select_plugin(widget.get_active())
 		
-	def on_patternselect(self, event):
+	def on_patternselect(self, widget):
 		"""
 		Callback to handle selection of the patternselect list.
-		
-		@param event: Selection event.
-		@type event: wx.CommandEvent
 		"""
-		self.pattern = event.GetSelection()
-		self.parent.view.pattern_changed()
+		print "on_patternselect"
+		if widget.get_active() == -1:
+			return
+		if self.pattern == widget.get_active():
+			return
+		self.pattern = widget.get_active()
+		self.view.pattern_changed()
 		
-	def on_waveselect(self, event):
+	def on_waveselect(self, widget):
 		"""
 		Callback to handle selection of the waveselect list.
-		
-		@param event: Selection event.
-		@type event: wx.CommandEvent
 		"""
-		self.wave = self.cb2w[event.GetSelection()]
-		self.parent.view.SetFocus()
+		if widget.get_active() == -1:
+			return
+		if self.wave == self.cb2w[widget.get_active()]:
+			return
+		self.wave = self.cb2w[widget.get_active()]
+		self.view.grab_focus()
 		
-	def on_octaveselect(self, event):
+	def on_octaveselect(self, widget):
 		"""
 		Callback to handle selection of different octaves.
-		
-		@param event: Selection event.
-		@type event: wx.CommandEvent
 		"""
-		self.parent.view.octave = event.GetSelection()
-		self.parent.view.SetFocus()
+		if widget.get_active() == -1:
+			return
+		if self.view.octave == widget.get_active():
+			return
+		self.view.octave = widget.get_active()
+		self.view.grab_focus()
 		
 	def update_pluginselect(self):
 		"""
 		Updates the plugin selection box.
 		"""
 		self.plugin = min(max(self.plugin, 0), player.get_plugin_count()-1)
-		self.pluginselect.Clear()
+		self.pluginselect.get_model().clear()
 		for plugin in player.get_plugin_list():
-			self.pluginselect.Append(prepstr(plugin.get_name()))
+			self.pluginselect.append_text(prepstr(plugin.get_name()))
 		if self.plugin != -1:
-			self.pluginselect.SetSelection(self.plugin)
+			self.pluginselect.set_active(self.plugin)
 		
 	def next_wave(self):
 		"""
 		Selects the next wave.
 		"""
-		self.waveselect.SetSelection(min(self.waveselect.GetSelection()+1,self.waveselect.GetCount()-1))
-		self.wave = self.cb2w[self.waveselect.GetSelection()]
+		self.waveselect.set_active(min(self.waveselect.get_active()+1,get_item_count(self.waveselect.get_model())-1))
+		self.wave = self.cb2w[self.waveselect.get_active()]
 
 	def prev_wave(self):
 		"""
 		Selects the previous wave.
 		"""
-		self.waveselect.SetSelection(max(self.waveselect.GetSelection()-1,0))
-		self.wave = self.cb2w[self.waveselect.GetSelection()]
+		self.waveselect.set_active(max(self.waveselect.get_active()-1,0))
+		self.wave = self.cb2w[self.waveselect.get_active()]
 		
 	def select_plugin(self, i):
 		"""
@@ -252,12 +266,12 @@ class PatternToolBar(wx.Panel):
 		@param i: Plugin index.
 		@type i: int
 		"""
-		self.parent.view.selection = None
-		self.parent.view.start_col = 0
+		self.view.selection = None
+		self.view.start_col = 0
 		self.plugin = min(max(i, 0), player.get_plugin_count()-1)
 		self.update_pluginselect()
 		self.update_patternselect()
-		self.parent.view.pattern_changed()
+		self.view.pattern_changed()
 
 	def select_pattern(self, i):
 		"""
@@ -272,7 +286,7 @@ class PatternToolBar(wx.Panel):
 		else:
 			self.pattern = -1
 		self.update_patternselect()
-		self.parent.view.pattern_changed()
+		self.view.pattern_changed()
 		
 	def prev_pattern(self):
 		"""
@@ -290,43 +304,46 @@ class PatternToolBar(wx.Panel):
 		"""
 		Rebuilds and updates the patternselect list.
 		"""
-		self.patternselect.Clear()
+		print "update_patternselect"
+		self.patternselect.get_model().clear()
 		if self.plugin != -1:
 			mp = player.get_plugin(self.plugin)
 			for p in mp.get_pattern_list():
-				self.patternselect.Append(prepstr(p.get_name()))
+				self.patternselect.append_text(prepstr(p.get_name()))
 			self.pattern = min(max(self.pattern, 0),mp.get_pattern_count()-1)
 			if self.pattern != -1:
-				self.patternselect.SetSelection(self.pattern)
+				print "update_patternselect set_active"
+				self.patternselect.set_active(self.pattern)
+				print "update_patternselect set_active end"
 		
 	def update_waveselect(self):
 		"""
 		Rebuilds and updates the waveselect list.
 		"""
 		self.cb2w = {}
-		self.waveselect.Clear()
+		self.waveselect.get_model().clear()
 		count = 0
 		wi = 0
 		for i in range(player.get_wave_count()):
 			w = player.get_wave(i)
 			if w.get_level_count() >= 1:
-				self.waveselect.Append("%02X. %s" % (i+1, prepstr(w.get_name())))
+				self.waveselect.append_text("%02X. %s" % (i+1, prepstr(w.get_name())))
 				if i == self.wave:
 					wi = count
 				self.cb2w[count] = i
 				count += 1
 		if not wi:
 			self.wave = 0
-		self.waveselect.SetSelection(wi)
+		self.waveselect.set_active(wi)
 		
 	def update_octaves(self):
 		"""
 		Rebuilds and updates the octaveselect list.
 		"""
-		self.octaveselect.Clear()
+		self.octaveselect.get_model().clear()
 		for i in range(10):
-			self.octaveselect.Append("%i" % i)
-		self.octaveselect.SetSelection(self.parent.view.octave)
+			self.octaveselect.append_text("%i" % i)
+		self.octaveselect.set_active(self.view.octave)
 		
 	def update_all(self):
 		"""
@@ -337,11 +354,11 @@ class PatternToolBar(wx.Panel):
 		self.update_waveselect()
 		self.update_octaves()
 
-class PatternPanel(wx.Panel):
+class PatternPanel(gtk.VBox):
 	"""
 	Panel containing the pattern toolbar and pattern view.
 	"""
-	def __init__(self, rootwindow, *args, **kwds):
+	def __init__(self, rootwindow):
 		"""
 		Initialization.
 		
@@ -350,15 +367,21 @@ class PatternPanel(wx.Panel):
 		"""
 		# begin wxGlade: SequencerFrame.__init__
 		#kwds["style"] = wx.DEFAULT_PANEL_STYLE
-		wx.Panel.__init__(self, *args, **kwds)
+		gtk.VBox.__init__(self)
 		self.rootwindow = rootwindow
 		self.rootwindow.event_handlers.append(self.on_player_callback)
-		self.toolbar = PatternToolBar(self, -1)		
-		self.statusbar = wx.StatusBar(self, style=0)				 
-		self.view = PatternView(rootwindow, self, -1)
+		self.statusbar = gtk.HBox(False, MARGIN)
+		self.view = PatternView(rootwindow)
+		self.toolbar = PatternToolBar(self.view)
+		self.view.toolbar = self.toolbar
+		self.view.statusbar = self.statusbar
+		self.view.pattern_changed()
+		self.pack_start(self.toolbar, expand=False)
+		self.pack_start(self.view)
+		self.pack_end(self.statusbar, expand=False)
 		self.toolbar.update_all()
 		self.__set_properties()
-		self.__do_layout()
+		self.view.statuslabels = self.statuslabels
 		# end wxGlade
 
 	def on_player_callback(self, player, plugin, data):
@@ -395,23 +418,13 @@ class PatternPanel(wx.Panel):
 		Sets properties during initialization.
 		"""
 		# begin wxGlade: SequencerFrame.__set_properties
-		self.statusbar.SetFieldsCount(3)		
-		self.statusbar.SetStatusWidths([-1, -1, -6])
-		self.statusbar.SetSize((100, 20))
+		self.statuslabels = []
+		for i in range(3):
+			label = gtk.Label()
+			self.statuslabels.append(label)
+			self.statusbar.pack_start(label, expand=False)
+			self.statusbar.pack_start(gtk.VSeparator(), expand=False)
 		# end wxGlade
-
-	def __do_layout(self):
-		"""
-		Arranges children components during initialization.
-		"""
-		# begin wxGlade: SequencerFrame.__do_layout
-		sizer = wx.BoxSizer(wx.VERTICAL)
-		sizer.Add(self.toolbar, 0, wx.EXPAND, 0)
-		sizer.Add(self.view, 1, wx.EXPAND, 0)
-		sizer.Add(self.statusbar, 0,  wx.EXPAND, 0)
-		self.SetAutoLayout(True)
-		self.SetSizer(sizer)
-		self.Layout()
 
 from utils import fixbn, bn2mn, mn2bn, note2str, switch2str, byte2str, word2str
 
@@ -440,7 +453,7 @@ def key_to_note(k):
 	"""
 	keymap = config.get_config().get_keymap()
 	rows = keymap.split('|')
-	k = chr(k)
+	k = chr(k).upper()
 	for row,index in zip(rows,range(len(rows))):
 		if k in row:
 			note = row.index(k)
@@ -519,7 +532,7 @@ SEL_GROUP = 2
 SEL_ALL = 3
 SEL_COUNT = 4
 
-class PatternView(Canvas):
+class PatternView(gtk.DrawingArea):
 	"""
 	Pattern viewer class.
 	"""	
@@ -538,17 +551,17 @@ class PatternView(Canvas):
 		index = 0
 		mode = SEL_COLUMN
 	
-	def __init__(self, rootwindow, *args, **kwds):
+	def __init__(self, rootwindow):
 		"""
 		Initialization.
 		
 		@param rootwindow: Window that contains the component.
 		@type rootwindow: main.AldrinFrame
 		"""
-		kwds['style'] = wx.SUNKEN_BORDER | wx.WANTS_CHARS | wx.VSCROLL | wx.HSCROLL
 		self.rootwindow = rootwindow
+		self.toolbar = None
+		self.statusbar = None
 		self.patternsize = 16
-		self.parent = args[0]
 		self.pattern = None
 		self.plugin = None
 		self.row = 0
@@ -561,33 +574,40 @@ class PatternView(Canvas):
 		self.start_row = 0
 		self.selection = None
 		self.playpos = 0
-		self.plugin_info = self.rootwindow.routeframe.view.plugin_info
-		self.font = wx.Font(8, wx.FONTFAMILY_TELETYPE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
-		dc = wx.ScreenDC()
-		dc.SetFont(self.font)
-		fw, fh, fd, fel = dc.GetFullTextExtent("W")
+		self.plugin_info = common.get_plugin_infos()
+		gtk.DrawingArea.__init__(self)
+		#"Bitstream Vera Sans Mono"
+		pctx = self.get_pango_context()
+		desc = pctx.get_font_description()
+		desc.set_style(pango.STYLE_NORMAL)
+		desc.set_family('Monospace')
+		desc.set_weight(pango.WEIGHT_BOLD)
+		self.fontdesc = desc
+		self.font = pctx.load_font(desc)
+		metrics = self.font.get_metrics(None)
+		
+		
+		
+		fh = (metrics.get_ascent() + metrics.get_descent()) / pango.SCALE
+		fw = metrics.get_approximate_char_width() / pango.SCALE
 		self.row_height = fh # row height
 		self.top_margin = fh # top margin
 		self.column_width = fw # column width
 		# implements horizontal scrolling
 		self.start_col = 0
-		# prepare bitmap font
-		self.bmpfont = BitmapBuffer(self.column_width*128,self.row_height,'#ffffff')
-		self.bmpfont.SetFont(self.font)
-		for c in range(32,128):
-			self.bmpfont.DrawLabel(chr(c), wx.Rect(c*self.column_width, 0, self.column_width, self.row_height), 
-			wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
-		Canvas.__init__(self, *args, **kwds)
-		self.timer = wx.Timer(self, -1)
-		self.timer.Start(100)
-		wx.EVT_TIMER(self, self.timer.GetId(), self.update_position)
-		wx.EVT_MOUSEWHEEL(self, self.on_mousewheel)	
-		wx.EVT_LEFT_DOWN(self, self.on_left_down)	
-		wx.EVT_KEY_DOWN(self, self.on_key_down)	
-		wx.EVT_CHAR(self, self.on_char)
-		wx.EVT_CONTEXT_MENU(self, self.on_context_menu)
-		wx.EVT_SCROLLWIN(self, self.on_scroll_window)
-		self.pattern_changed()
+		self.add_events(gtk.gdk.ALL_EVENTS_MASK)
+		self.set_property('can-focus', True)
+		self.connect("expose_event", self.expose)
+		self.connect('key-press-event', self.on_key_down)
+		self.connect('button-press-event', self.on_left_down)
+		self.connect('scroll-event', self.on_mousewheel)
+		gobject.timeout_add(100, self.update_position)
+		#~ wx.EVT_MOUSEWHEEL(self, self.on_mousewheel)
+		#~ wx.EVT_LEFT_DOWN(self, self.on_left_down)	
+		#~ wx.EVT_KEY_DOWN(self, self.on_key_down)	
+		#~ wx.EVT_CHAR(self, self.on_char)
+		#~ wx.EVT_CONTEXT_MENU(self, self.on_context_menu)
+		#~ wx.EVT_SCROLLWIN(self, self.on_scroll_window)
 		
 	def on_copy(self, event):
 		"""
@@ -660,11 +680,10 @@ class PatternView(Canvas):
 		self.PopupMenu(menu)
 		menu.Destroy()
 	
-	def update_position(self, event):
+	def update_position(self):
 		"""
 		Updates the position.
 		"""
-		if not self.parent.IsShown(): return 	# Only needed by OSX
 		playpos = player.get_position()
 		if self.playpos != playpos:
 			self.playpos = playpos
@@ -711,8 +730,7 @@ class PatternView(Canvas):
 			# plugin loader, pattern data
 			self.plugin, self.pattern = datasource
 			plugin = self.get_plugin()			
-			if plugin in self.plugin_info:
-				self.row, self.group, self.track, self.index, self.subindex = self.plugin_info[plugin].pattern_position
+			self.row, self.group, self.track, self.index, self.subindex = self.plugin_info.get(plugin).pattern_position
 			self.input_connection_count = self.get_plugin().get_input_connection_count()
 			# track count
 			track_count = self.get_plugin().get_track_count()
@@ -762,11 +780,15 @@ class PatternView(Canvas):
 		self.set_subindex(self.subindex)
 		self.refresh_view()
 		
+	def get_client_size(self):
+		rect = self.get_allocation()
+		return rect.width, rect.height
+		
 	def adjust_scrollbars(self):
-		w,h = self.GetClientSize()
+		w,h = self.get_client_size()
 		vw,vh = self.get_virtual_size()
-		self.SetScrollbar(wx.HORIZONTAL, self.start_col, int((w - PATLEFTMARGIN) / float(self.column_width) + 0.5), vw)
-		self.SetScrollbar(wx.VERTICAL, self.start_row, int((h - self.row_height) / float(self.row_height) + 0.5), vh)
+		#~ self.SetScrollbar(wx.HORIZONTAL, self.start_col, int((w - PATLEFTMARGIN) / float(self.column_width) + 0.5), vw)
+		#~ self.SetScrollbar(wx.VERTICAL, self.start_row, int((h - self.row_height) / float(self.row_height) + 0.5), vh)
 		
 	def set_octave(self, o):
 		"""
@@ -827,14 +849,14 @@ class PatternView(Canvas):
 		"""
 		self.row = min(max(r,0), self.row_count - 1)
 		if self.row >= 0:
-			w,h = self.GetClientSize()
+			w,h = self.get_client_size()
 			endrow = (((h - self.top_margin) / self.row_height) + self.start_row) - 1
 			if (self.row < self.start_row):
 				self.start_row = self.row
-				self.ReDraw()
+				self.redraw()
 			elif (self.row >= endrow):
 				self.start_row = self.row - (endrow - self.start_row)
-				self.ReDraw()
+				self.redraw()
 		
 	def set_subindex(self, si):
 		"""
@@ -848,16 +870,26 @@ class PatternView(Canvas):
 			return
 		self.subindex = min(max(si,0), self.subindex_count[self.group][self.index] - 1)
 		
+	def expose(self, widget, event):
+		self.context = widget.window.cairo_create()
+		self.draw(self.context)
+		return False
+		
+	def redraw(self,row=None,rows=None,fulldraw=True):
+		if self.window:
+			w,h = self.get_client_size()
+			self.window.invalidate_rect((0,0,w,h), False)
+		
 	def pattern_changed(self):
 		"""
 		Loads and redraws the pattern view after the pattern has been changed.
 		"""		
 		self.init_values()
-		self.ReDraw()
-		self.SetFocus()
+		self.redraw()
+		self.grab_focus()
 		plugin = self.get_plugin()
 		if plugin:
-			self.plugin_info[plugin].patterngfx = {}
+			self.plugin_info[plugin].reset_patterngfx()
 
 	def move_up(self, step = 1):
 		"""
@@ -959,7 +991,7 @@ class PatternView(Canvas):
 		x,y = self.pattern_to_charpos(self.row, self.group, self.track, self.index, self.subindex)
 		if x < self.start_col:
 			self.start_col = max(x - (w / 3), 0)
-			self.ReDraw()
+			self.redraw()
 
 	def show_cursor_right(self):
 		"""
@@ -970,7 +1002,7 @@ class PatternView(Canvas):
 		x,y = self.pattern_to_charpos(self.row, self.group, self.track, self.index, self.subindex)
 		if x > w:
 			self.start_col = min(self.start_col + x - w + (w / 3), vw - w + self.start_col)
-			self.ReDraw()
+			self.redraw()
 
 	def move_left(self):
 		"""
@@ -1124,10 +1156,7 @@ class PatternView(Canvas):
 		data += "%01x" % self.selection.mode		
 		for r,g,t,i in self.selection_range():
 			data += "%04x%01x%02x%02x%04x" % (r - self.selection.begin,g,t,i,self.pattern.get_value(r,g,t,i))
-		clipboard = wx.TheClipboard
-		if clipboard.Open():
-			clipboard.SetData(wx.TextDataObject(data))
-			clipboard.Close()
+		set_clipboard_text(data)
 			
 	def unpack_clipboard_data(self, d):
 		"""
@@ -1161,13 +1190,7 @@ class PatternView(Canvas):
 		we still try to make some sense out of what we get.
 		"""
 		
-		clipboard = wx.TheClipboard
-		data = ""
-		if clipboard.Open():
-			d = wx.TextDataObject()
-			clipboard.GetData(d)
-			data = d.GetText()
-			clipboard.Close()
+		data = get_clipboard_text()
 		try:
 			gen = self.unpack_clipboard_data(data.strip())
 			mode = gen.next()
@@ -1205,35 +1228,33 @@ class PatternView(Canvas):
 		except:
 			import traceback
 			traceback.print_exc()
-			wx.MessageDialog(self, message="Couldn't paste.", caption = "Clipboard Error", style = wx.ICON_ERROR|wx.OK|wx.CENTER).ShowModal()
+			error(self, "Couldn't paste.")
 	
-	def on_mousewheel(self, event):
+	def on_mousewheel(self, widget, event):
 		"""
 		Callback that responds to mousewheeling in pattern view.
-		
-		@param event: Mouse event
-		@type event: wx.MouseEvent
 		"""		
-		if event.GetWheelRotation() > 0:
+		if event.direction == gtk.gdk.SCROLL_UP:
 			self.move_up()
-		else:
+		elif event.direction == gtk.gdk.SCROLL_DOWN:
 			self.move_down()
 	
-	def on_left_down(self, event):		
+	def on_left_down(self, widget, event):		
 		"""
 		Callback that responds to left click in pattern view.
-		
-		@param event: Mouse event
-		@type event: wx.MouseEvent
 		"""
-		self.SetFocus()
-		row, group, track, index, subindex = self.pos_to_pattern(event.GetPosition())		
-		self.set_row(row)
-		self.set_group(group)
-		self.set_track(track)
-		self.set_index(index)
-		self.set_subindex(subindex)
-		self.refresh_view()
+		if not self.pattern:
+			return
+		self.grab_focus()
+		if event.button == 1:
+			x,y = int(event.x), int(event.y)
+			row, group, track, index, subindex = self.pos_to_pattern((x,y))
+			self.set_row(row)
+			self.set_group(group)
+			self.set_track(track)
+			self.set_index(index)
+			self.set_subindex(subindex)
+			self.refresh_view()
 	
 	def on_popup_remove_pattern(self, event=None):
 		"""
@@ -1245,7 +1266,7 @@ class PatternView(Canvas):
 			m = self.get_plugin()			
 			if self.pattern:
 				m.remove_pattern(self.pattern)
-			self.parent.toolbar.select_pattern(0)		
+			self.toolbar.select_pattern(0)		
 			
 	def on_popup_create_pattern(self, event=None):
 		"""
@@ -1261,7 +1282,7 @@ class PatternView(Canvas):
 		p.set_name(name)	
 		for i in range(m.get_pattern_count()):
 			if m.get_pattern(i) == p:
-				self.parent.toolbar.select_pattern(i)
+				self.toolbar.select_pattern(i)
 				break
 	
 	def on_popup_create_copy(self, event=None):
@@ -1280,7 +1301,7 @@ class PatternView(Canvas):
 			p.set_value(r,g,t,i,self.pattern.get_value(r,g,t,i))
 		for i in range(m.get_pattern_count()):
 			if m.get_pattern(i) == p:
-				self.parent.toolbar.select_pattern(i)
+				self.toolbar.select_pattern(i)
 				break
 	
 	def on_popup_solo(self, event=None):
@@ -1303,7 +1324,7 @@ class PatternView(Canvas):
 			self.pattern.set_name(name)
 		if self.pattern.get_row_count() != rc:
 			self.pattern.set_row_count(rc)
-		self.parent.toolbar.update_all()
+		self.toolbar.update_all()
 		self.pattern_changed()
 		
 	def on_popup_add_track(self, event=None):
@@ -1326,21 +1347,27 @@ class PatternView(Canvas):
 			m.set_track_count(m.get_track_count()-1)
 			self.pattern_changed()	
 	
-	def on_key_down(self, event):
+	def on_key_down(self, widget, event):
 		"""
 		Callback that responds to key stroke in pattern view.
 		
 		@param event: Key event
 		@type event: wx.KeyEvent
-		"""		
-		k = event.GetKeyCode()
-		if event.ShiftDown() and event.ControlDown():
-			if k == wx.WXK_RETURN:
+		"""
+		mask = event.state
+		k = gtk.gdk.keyval_name(event.keyval)
+		kv = event.keyval
+		if k == 'less':
+			self.toolbar.prev_wave()
+		elif k == 'greater':
+			self.toolbar.next_wave()
+		elif (mask & gtk.gdk.CONTROL_MASK) and (mask & gtk.gdk.SHIFT_MASK):
+			if k == 'Return':
 				self.on_popup_create_copy()
 			else:
-				event.Skip()
-		elif k == wx.WXK_TAB:
-			if event.ShiftDown():
+				return False
+		elif k == 'Tab':
+			if (mask & gtk.gdk.SHIFT_MASK):
 				# move to previous track
 				if self.move_track_left():
 					self.set_index(0)
@@ -1354,23 +1381,23 @@ class PatternView(Canvas):
 					self.set_subindex(0)
 					self.show_cursor_right()
 					self.refresh_view()
-		elif event.ShiftDown():			
-			if k == wx.WXK_NUMPAD_ADD:
+		elif (mask & gtk.gdk.SHIFT_MASK):			
+			if k == 'KP_Add':
 				self.transpose_selection(1)
-			elif k == wx.WXK_NUMPAD_SUBTRACT:
+			elif k == 'KP_Substract':
 				self.transpose_selection(-1)
 			else:
-				event.Skip()
-		elif event.ControlDown():
-			if k == wx.WXK_RETURN:
+				return False
+		elif (mask & gtk.gdk.CONTROL_MASK):
+			if k == 'Return':
 				self.on_popup_create_pattern()				
-			elif k == wx.WXK_BACK:	
+			elif k == 'BackSpace':	
 				self.on_popup_properties()
-			elif k == wx.WXK_DELETE:
+			elif k == 'Delete':
 				self.on_popup_remove_pattern()
 			elif k >= ord('1') and k <= ord('9'):
 				self.row_step = k - ord('1') + 1
-			elif k == ord('B'):
+			elif k == 'b':
 				if not self.selection:
 					self.selection = self.Selection()
 				else:
@@ -1379,8 +1406,8 @@ class PatternView(Canvas):
 				self.selection.begin = self.row
 				self.selection.end = max(self.row+1,self.selection.end)				
 				self.adjust_selection()
-				self.ReDraw()
-			elif k == ord('E'):
+				self.redraw()
+			elif k == 'e':
 				if not self.selection:
 					self.selection = self.Selection()
 				else:
@@ -1389,45 +1416,45 @@ class PatternView(Canvas):
 				self.selection.end = self.row+1
 				self.selection.begin = max(min(self.selection.end-1,self.selection.begin),0)
 				self.adjust_selection()
-				self.ReDraw()
-			elif k == ord('C'):
+				self.redraw()
+			elif k == 'c':
 				self.copy()
-			elif k == ord('V'):
+			elif k == 'v':
 				self.paste()
-			elif k == ord('X'):
+			elif k == 'x':
 				self.cut()
-			elif k == ord('R'):
+			elif k == 'r':
 				self.randomize_selection()
-			elif k == ord('I'):
+			elif k == 'i':
 				self.interpolate_selection()
-			elif k == ord('U'):
+			elif k == 'u':
 				self.selection = None
-				self.ReDraw()
-			elif k == ord('L'):
+				self.redraw()
+			elif k == 'l':
 				self.on_popup_solo()
-			elif k == wx.WXK_NUMPAD_ADD:
+			elif k == 'KP_Add':
 				self.on_popup_add_track()
-			elif k == wx.WXK_NUMPAD_SUBTRACT:
+			elif k == 'KP_Substract':
 				self.on_popup_delete_track()
-			elif k == wx.WXK_UP:
-				self.parent.toolbar.select_plugin(self.parent.toolbar.plugin-1)
-			elif k == wx.WXK_DOWN:
-				self.parent.toolbar.select_plugin(self.parent.toolbar.plugin+1)
+			elif k == 'Up':
+				self.toolbar.select_plugin(self.toolbar.plugin-1)
+			elif k == 'Down':
+				self.toolbar.select_plugin(self.toolbar.plugin+1)
 			else:
-				event.Skip()
-		elif k == wx.WXK_LEFT or k == wx.WXK_NUMPAD_LEFT:
+				return False
+		elif k == 'Left' or k == 'KP_Left':
 			self.move_left()
-		elif k == wx.WXK_RIGHT or k == wx.WXK_NUMPAD_RIGHT:
+		elif k == 'Right' or k == 'KP_Right':
 			self.move_right()
-		elif k == wx.WXK_UP or k == wx.WXK_NUMPAD_UP:
+		elif k == 'Up' or k == 'KP_Up':
 			self.move_up()
-		elif k == wx.WXK_DOWN or k == wx.WXK_NUMPAD_DOWN:
+		elif k == 'Down' or k == 'KP_Down':
 			self.move_down()
-		elif k == wx.WXK_PRIOR or k == wx.WXK_NUMPAD_PRIOR:
+		elif k == 'Page_Up' or k == 'KP_Page_Up':
 			self.move_up(16)
-		elif k == wx.WXK_NEXT or k == wx.WXK_NUMPAD_NEXT:
+		elif k == 'Page_Down' or k == 'KP_Page_Down':
 			self.move_down(16)
-		elif k == wx.WXK_HOME:
+		elif k == 'Home':
 			# 1st: move to begin of track
 			# 2nd: move to begin of group
 			# 3rd: move to first group
@@ -1443,30 +1470,30 @@ class PatternView(Canvas):
 				self.set_row(0)
 			self.show_cursor_left()
 			self.refresh_view()
-		elif k == wx.WXK_INSERT:
+		elif k == 'Insert':
 			self.pattern.insert_row(self.group, self.track, -1, self.row)
 			self.pattern_changed()
-		elif k == wx.WXK_DELETE:
+		elif k == 'Delete':
 			self.pattern.delete_row(self.group, self.track, -1, self.row)
 			self.pattern_changed()
-		elif k == wx.WXK_RETURN:
-			mainwindow = self.parent.rootwindow
+		elif k == 'Return':
+			mainwindow = self.rootwindow
 			mainwindow.select_page(mainwindow.PAGE_SEQUENCER)
-		elif k == wx.WXK_NUMPAD_ADD:			
-			self.parent.toolbar.next_pattern()
-		elif k == wx.WXK_NUMPAD_SUBTRACT:
-			self.parent.toolbar.prev_pattern()
-		elif k == wx.WXK_NUMPAD_MULTIPLY:
+		elif k == 'KP_Add':			
+			self.toolbar.next_pattern()
+		elif k == 'KP_Substract':
+			self.toolbar.prev_pattern()
+		elif k == 'KP_Multiply':
 			self.set_octave(self.octave+1)
-			self.parent.toolbar.update_octaves()
-		elif k == wx.WXK_NUMPAD_DIVIDE:
+			self.toolbar.update_octaves()
+		elif k == 'KP_Divide':
 			self.set_octave(self.octave-1)
-			self.parent.toolbar.update_octaves()
-		elif self.plugin:		
+			self.toolbar.update_octaves()
+		elif self.plugin and (kv < 256):
 			p = self.plugin.get_parameter(self.group,self.index)
 			param_type = p.get_type()
 			playtrack = False
-			if param_type == 0 and k in range(256): # note
+			if (param_type == 0): # note
 				# is there a wavetable param?
 				wi = None
 				wp = None
@@ -1478,53 +1505,49 @@ class PatternView(Canvas):
 						wi = i
 						break
 				if self.subindex == 0:
-					on = key_to_note(k)
+					on = key_to_note(kv)
 					if on:
 						o,n = on
 						data = (min(self.octave+o,9)<<4) | (n+1)
 						if wp != None:
-							wdata = self.parent.toolbar.wave+1
+							wdata = self.toolbar.wave+1
 						playtrack = True
-					elif k == ord('.'):
+					elif k == 'period':
 						data = p.get_value_none()
 						if wp != None:
 							wdata = wp.get_value_none()
-					elif k == ord('1'):
+					elif k == '1':
 						data = zzub.zzub_note_value_off
 						if wp != None:
 							wdata = wp.get_value_none()
 						playtrack = True
 					else:
-						event.Skip()
-						return
+						return False
 					if wdata != None:
 						self.pattern.set_value(self.row, self.group, self.track, wi, wdata)
-				elif (self.subindex == 1) and (k >= ord('1')) and (k <= ord('9')):
-						o = k-ord('1')+1
+				elif (self.subindex == 1) and (k >= '1') and (k <= '9'):
+						o = ord(k)-ord('1')+1
 						data = (self.pattern.get_value(self.row, self.group, self.track, self.index) & 0xf) | (o << 4)
 				else:
-					event.Skip()
-					return
+					return False
 			elif param_type == 1: # switch
-				if k == ord('1') or k == ord('0'):
-					data = {ord('1'):p.get_value_max(), ord('0'):p.get_value_min()}[k]
-				elif k == ord('.'):
+				if k == '1' or k == '0':
+					data = {'1':p.get_value_max(), '0':p.get_value_min()}[k]
+				elif k == 'period':
 					data = p.get_value_none()
 				else:
-					event.Skip()
-					return
+					return False
 			elif param_type in (2,3): # byte or word
 				pw = self.parameter_width[self.group][self.index]
-				if k >= ord('0') and k <= ord('9'):
-					o = k-ord('0')
-				elif k >= ord('A') and k <= ord('F'):
-					o = 10 + k-ord('A')
-				elif k == ord('.'):
+				if k >= '0' and k <= '9':
+					o = ord(k)-ord('0')
+				elif kv >= ord('a') and kv <= ord('f'):
+					o = 10 + kv-ord('f')
+				elif k == 'period':
 					o = None
 					data = p.get_value_none()
 				else:
-					event.Skip()
-					return
+					return False
 				if o != None:
 					bofs = (pw - self.subindex - 1)*4
 					data = self.pattern.get_value(self.row, self.group, self.track, self.index)
@@ -1533,13 +1556,12 @@ class PatternView(Canvas):
 					data = (data ^ (data & (0xf << bofs))) | (o << bofs) # mask out old nibble, put in new nibble
 					data = min(p.get_value_max(),max(p.get_value_min(), data))
 					if p.get_flags() & zzub.zzub_parameter_flag_wavetable_index:
-						self.parent.toolbar.wave = data - 1
-						self.parent.toolbar.update_waveselect()
+						self.toolbar.wave = data - 1
+						self.toolbar.update_waveselect()
 			else:
-				event.Skip()
-				return
+				return False
 			self.pattern.set_value(self.row, self.group, self.track, self.index, data)
-			if playtrack and self.parent.toolbar.playnotes.GetValue():
+			if playtrack and self.toolbar.playnotes.get_active():
 				m = self.get_plugin()
 				player.lock_tick()
 				try:
@@ -1554,10 +1576,11 @@ class PatternView(Canvas):
 					traceback.print_exc()
 				player.unlock_tick()
 			self.update_line(self.row)
-			self.ReDraw(self.row,self.row+1,False)
+			self.redraw(self.row,self.row+1,False)
 			self.move_down(self.row_step)
 		else:
-			event.Skip()
+			return False
+		return True
 	
 	def on_char(self, event):
 		"""
@@ -1569,9 +1592,9 @@ class PatternView(Canvas):
 		event.Skip()
 		k = event.GetKeyCode()		
 		if k == ord('<'):
-			self.parent.toolbar.prev_wave()
+			self.toolbar.prev_wave()
 		elif k == ord('>'):
-			self.parent.toolbar.next_wave()
+			self.toolbar.next_wave()
 
 	def pattern_to_charpos(self, row, group, track=0, index=0, subindex=0):
 		"""
@@ -1674,7 +1697,7 @@ class PatternView(Canvas):
 		"""
 		Returns the outermost coordinates in characters.
 		"""
-		w,h = self.GetClientSize()
+		w,h = self.get_client_size()
 		w -= PATLEFTMARGIN + 4
 		h -= self.top_margin
 		return self.start_col + (w / self.column_width) - 1, self.start_row + (h / self.row_height) - 1
@@ -1706,21 +1729,21 @@ class PatternView(Canvas):
 		if self.plugin:
 			if self.parameter_count[self.group] and self.group_track_count[self.group]:
 				# change status bar
-				self.parent.statusbar.SetStatusText('Row %s, Track %s' % (self.row,self.track), 0)
+				self.statuslabels[0].set_label('Row %s, Track %s' % (self.row,self.track))
 				parameter_list = self.plugin.get_parameter_list(self.group)
-				self.parent.statusbar.SetStatusText(prepstr(parameter_list[self.index].get_description() or ""), 2)
+				self.statuslabels[2].set_label(prepstr(parameter_list[self.index].get_description() or ""))
 				p = self.plugin.get_parameter(self.group,self.index)
 				v = self.pattern.get_value(self.row, self.group, self.track, self.index)
 				if v != p.get_value_none():
 					text = prepstr(self.get_plugin().describe_value(self.group,self.index,v))
 					s = get_str_from_param(p,self.pattern.get_value(self.row, self.group, self.track, self.index))
-					self.parent.statusbar.SetStatusText("%s (%i) %s" % (s,v,text), 1)
+					self.statuslabels[1].set_label("%s (%i) %s" % (s,v,text))
 				else:
-					self.parent.statusbar.SetStatusText("", 1)
-		self.Refresh()
+					self.statuslabels[1].set_label("")
+		self.redraw()
 		self.adjust_scrollbars()
 	
-	def onPostPaint(self, dc):
+	def draw_xor(self):
 		"""
 		Overriding a L{Canvas} method that is called after painting is completed. 
 		Draws an XOR play cursor over the pattern view.
@@ -1730,18 +1753,21 @@ class PatternView(Canvas):
 		"""
 		if not self.pattern:
 			return
-		w,h = self.GetClientSize()
-		bbrush = wx.Brush('#ffffff',wx.SOLID)		
-		dc.SetBrush(bbrush)
-		dc.SetPen(wx.TRANSPARENT_PEN)
-		dc.SetLogicalFunction(wx.XOR)
-		dc.SetFont(self.font)
+		gc = self.window.new_gc()
+		cm = gc.get_colormap()
+		drawable = self.window
+		w,h = self.get_client_size()
+		bbrush = cm.alloc_color('#ffffff')
+		gc.set_function(gtk.gdk.XOR)
+		gc.set_foreground(bbrush)
+		gc.set_background(bbrush)
+		
 		PATROWHEIGHT = self.row_height
 		PATTOPMARGIN = self.top_margin
 		PATCOLWIDTH = self.column_width	
 		cx,cy = self.pattern_to_pos(self.row, self.group, self.track, self.index, self.subindex)
 		if (cx >= (PATLEFTMARGIN+4)) and (cy >= self.top_margin):
-			dc.DrawRectangle(cx,cy,self.column_width,self.row_height)
+			drawable.draw_rectangle(gc, True,cx,cy,self.column_width,self.row_height)
 		# draw play cursor
 		current_position = player.get_position()
 		seq = player.get_current_sequencer()
@@ -1755,7 +1781,7 @@ class PatternView(Canvas):
 				for i, pair in enumerate(events):
 					pos, value = pair
 					# make sure event is a pattern
-					if value >= 0x10:						
+					if value >= 0x10:
 						pattern = plugin.get_pattern(value-0x10)
 					else:
 						continue
@@ -1765,9 +1791,10 @@ class PatternView(Canvas):
 					if self.pattern == pattern and pos < current_position \
 					and current_position < pos + row_count:						
 						y = self.top_margin + (current_position - pos - self.start_row)*self.row_height						 						
-						w,h = self.GetSize()						
-						dc.DrawRectangle(0, y, w, 2)
-						return						
+						w,h = self.get_client_size()						
+						drawable.draw_rectangle(gc, True,0, y, w, 2)
+						return
+	
 	def get_plugin(self):
 		"""
 		Returns the plugin of the pattern in the pattern view.
@@ -1775,7 +1802,7 @@ class PatternView(Canvas):
 		@return: zzub plugin plugin.
 		@rtype: zzub.Plugin
 		"""	
-		toolbar = self.parent.toolbar
+		toolbar = self.toolbar
 		mi = min(toolbar.plugin, player.get_plugin_count()-1)
 		if mi == -1:
 			return
@@ -1788,7 +1815,7 @@ class PatternView(Canvas):
 		@return: A tuple holding the plugin and the current pattern
 		@rtype: (zzub.Plugin, zzub.Pattern)
 		"""	
-		tb = self.parent.toolbar
+		tb = self.toolbar
 		plugin = self.get_plugin()
 		pl = plugin.get_pluginloader()
 		if not pl._handle:
@@ -1830,38 +1857,50 @@ class PatternView(Canvas):
 				self.lines[row][g] = [None]*tc
 			self.update_line(row)
 
-	def DrawBuffer(self,row=None,rows=None,fulldraw=True):	
+	def draw(self,ctx):	
 		"""
 		Overriding a L{Canvas} method that paints onto an offscreen buffer.
 		Draws the pattern view graphics.
 		"""	
 		st = time.time()
 
+		row=None
+		rows=None
+		fulldraw=True
 		if row == None:
 			row = self.start_row
 		cfg = config.get_config()
-		dc = self.buffer		
-		w,h = self.GetSize()
-		dc.SetFont(self.font)
+		w,h = self.get_client_size()
 		PATROWHEIGHT = self.row_height
 		PATTOPMARGIN = self.top_margin
 		PATCOLWIDTH = self.column_width
-		bgbrush = cfg.get_brush('PE BG')
-		fbrush1 = cfg.get_brush('PE BG Very Dark')
-		fbrush2 = cfg.get_brush('PE BG Dark')
-		selbrush = cfg.get_brush('PE Sel BG')
 		
-		pen = cfg.get_pen('PE Text')
-		dc.SetBackgroundMode(wx.SOLID)
-		dc.SetBackground(bgbrush)
-		dc.SetBrush(bgbrush)
-		dc.SetTextBackground(cfg.get_color('PE BG'))
-		dc.SetTextForeground(cfg.get_color('PE Text'))
+		gc = self.window.new_gc()
+		cm = gc.get_colormap()
+		drawable = self.window
+
+		bgbrush = cm.alloc_color(cfg.get_color('PE BG'))
+		fbrush1 = cm.alloc_color(cfg.get_color('PE BG Very Dark'))
+		fbrush2 = cm.alloc_color(cfg.get_color('PE BG Dark'))
+		selbrush = cm.alloc_color(cfg.get_color('PE Sel BG'))
+		pen = cm.alloc_color(cfg.get_color('PE Text'))
+		
+		gc.set_foreground(bgbrush)
+		gc.set_background(bgbrush)
+		gc.set_fill(gtk.gdk.SOLID)
+		
+		layout = pango.Layout(self.get_pango_context())
+		layout.set_font_description(self.fontdesc)
+		layout.set_width(-1)
+		
 		# clear the view if no current pattern
 		if not self.pattern:
-			dc.Clear()
+			drawable.draw_rectangle(gc, True, 0, 0, w, h)
 			return
-			
+
+		#~ dc.SetTextBackground(cfg.get_color16('PE BG'))
+		#~ dc.SetTextForeground(cfg.get_color16('PE Text'))
+
 		if not rows:
 			rows = self.row_count		
 		clipy1 = PATROWHEIGHT + ((row - self.start_row) * self.row_height)
@@ -1871,56 +1910,61 @@ class PatternView(Canvas):
 		
 		# full draw clears everything and draws all the line numbers and lines
 		if fulldraw:
-			dc.Clear()
-			# 14
+			drawable.draw_rectangle(gc, True, 0, 0, w, h)
 			x, y = PATLEFTMARGIN, PATROWHEIGHT
 			i = row
 			y = clipy1
-			dc.SetPen(wx.TRANSPARENT_PEN)
-			#dc.SetTextBackground('#dad6c9')
+			gc.set_foreground(pen)
 			while (i < rows) and (y < h):
-				dc.DrawLabel("%s" % i, wx.Rect(0, y, x-5, PATROWHEIGHT), wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL)
+				layout.set_text(str(i))
+				px,py = layout.get_pixel_size()
+				drawable.draw_layout(gc, x-5 - px, y + PATROWHEIGHT/2 - (py/2), layout)
 				y += PATROWHEIGHT
 				i += 1
-			dc.SetPen(pen)
-			dc.DrawLine(x, 0, x, h)
+			drawable.draw_line(gc, x, 0, x, h)
 			y = PATROWHEIGHT-1
-			dc.DrawLine(0, y, w, y)
+			drawable.draw_line(gc, 0, y, w, y)
 		startx = PATLEFTMARGIN + 4
 		i = row
 		y = clipy1
-		dc.SetClippingRegion(startx, 0, w - startx, h)
+		gc.set_clip_rectangle(gtk.gdk.Rectangle(startx, 0, w - startx, h))
 		if self.lines:
 			tc = self.group_track_count
-			def draw_parameters(row, dc, group, track=0):
+			def draw_parameters(row, group, track=0):
 				"""Draw the parameter values"""
 				xs,y = self.pattern_to_pos(row, group, track, 0)
 				x = xs
 				s = self.lines[row][group][track]
 				w = PATCOLWIDTH * len(s)
-				dc.DrawLabel(s, wx.Rect(x,y,w,PATROWHEIGHT), wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
+				layout.set_text(s)
+				px,py = layout.get_pixel_size()
+				drawable.draw_layout(gc, x,y + PATROWHEIGHT/2 - (py/2), layout)
 			# draw track background
-			dc.SetBackgroundMode(wx.SOLID)
-			dc.SetPen(wx.TRANSPARENT_PEN)
+			#~ dc.SetBackgroundMode(wx.SOLID)
+			#~ dc.SetPen(wx.TRANSPARENT_PEN)
 			while (i < rows) and (y < h):
 				# darker colour lines each 4 and 16 lines
 				if (i % 16) == 0:
-					dc.SetBrush(fbrush1)
+					gc.set_foreground(fbrush1)
+					gc.set_background(fbrush1)
 				elif (i % 4) == 0:
-					dc.SetBrush(fbrush2)
+					gc.set_foreground(fbrush2)
+					gc.set_background(fbrush2)
 				else:
-					dc.SetBrush(bgbrush)
+					gc.set_foreground(bgbrush)
+					gc.set_background(bgbrush)
 				for g in CONN,GLOBAL,TRACK:
 					if self.track_width[g]:
 						for t in range(self.group_track_count[g]):
 							if ((g == start_group) and (t >= start_track)) or (g > start_group):
 								xs,fy = self.pattern_to_pos(row, g, t, 0)
-								dc.DrawRectangle(xs,y,(self.track_width[g]-1)*self.column_width,self.row_height)
+								drawable.draw_rectangle(gc,True,xs,y,(self.track_width[g]-1)*self.column_width,self.row_height)
 				i += 1
 				y += PATROWHEIGHT
 			# draw selection
 			if self.selection:
-				dc.SetBrush(selbrush)
+				gc.set_foreground(selbrush)
+				gc.set_background(selbrush)
 				x,y1 = self.pattern_to_pos(self.selection.begin, 
 					self.selection.group, self.selection.track, self.selection.index)
 				x,y2 = self.pattern_to_pos(self.selection.end, 
@@ -1930,41 +1974,45 @@ class PatternView(Canvas):
 				if y2 > y1:
 					if self.selection.mode == SEL_COLUMN:
 						x2 = self.parameter_width[self.selection.group][self.selection.index]*self.column_width
-						dc.DrawRectangle(x,y1,x2,y2-y1)
+						drawable.draw_rectangle(gc,True,x,y1,x2,y2-y1)
 					elif self.selection.mode == SEL_TRACK:
 						x2 = (self.track_width[self.selection.group]-1)*self.column_width
-						dc.DrawRectangle(x,y1,x2,y2-y1)
+						drawable.draw_rectangle(gc,True,x,y1,x2,y2-y1)
 					elif self.selection.mode == SEL_GROUP:
 						for t in range(tc[self.selection.group]):
 							x2 = (self.track_width[self.selection.group]-1)*self.column_width
-							dc.DrawRectangle(x,y1,x2,y2-y1)
+							drawable.draw_rectangle(gc,True,x,y1,x2,y2-y1)
 							x += self.track_width[self.selection.group] * self.column_width
 					elif self.selection.mode == SEL_ALL:
 						for g in range(3):
 							if self.track_width[g]:
 								for t in range(tc[g]):
-									dc.DrawRectangle(x,y1,(self.track_width[g]-1)*self.column_width,y2-y1)
+									drawable.draw_rectangle(gc,True,x,y1,(self.track_width[g]-1)*self.column_width,y2-y1)
 									x += self.track_width[g] * self.column_width
 			# draw the parameter values
 			i = row
 			y = clipy1
-			dc.SetBackgroundMode(wx.TRANSPARENT)
+			#dc.SetBackgroundMode(wx.TRANSPARENT)
+			gc.set_foreground(pen)
 			for track in range(self.group_track_count[TRACK]):
 				x, y = self.pattern_to_pos(row, TRACK, track, 0)								
 				s = str(track)
 				w = self.track_width[TRACK]*self.column_width
-				dc.DrawLabel(s, wx.Rect(x,0,w,PATROWHEIGHT), wx.ALIGN_CENTER | wx.ALIGN_CENTER_VERTICAL)
+				layout.set_text(s)
+				px,py = layout.get_pixel_size()
+				drawable.draw_layout(gc, x + w/2 - px/2, PATROWHEIGHT/2 - (py/2), layout)
 			while (i < rows) and (y < h):
 				x = PATLEFTMARGIN + 5
 				for t in range(self.group_track_count[CONN]):
-					draw_parameters(i, dc, CONN, t)
-				draw_parameters(i, dc, GLOBAL, 0)
+					draw_parameters(i, CONN, t)
+				draw_parameters(i, GLOBAL, 0)
 				for t in range(self.group_track_count[TRACK]):
-					draw_parameters(i, dc, TRACK, t)
+					draw_parameters(i, TRACK, t)
 				i += 1
 				y += PATROWHEIGHT
 		#~ print "%ims" % ((time.time() - st)*1000)
-		dc.DestroyClippingRegion()
+		#~ dc.DestroyClippingRegion()
+		self.draw_xor()
 
 __all__ = [
 'PatternDialog',
@@ -1979,7 +2027,10 @@ __all__ = [
 ]
 
 if __name__ == '__main__':
-	import sys, utils
-	from main import run
-	sys.argv.append('/home/paniq/stuff.ccm')
-	run(sys.argv)
+	import testplayer, utils
+	player = testplayer.get_player()
+	player.load_ccm(utils.filepath('demosongs/paniq-knark.ccm'))
+	window = testplayer.TestWindow()
+	window.add(PatternPanel(window))
+	window.show_all()
+	gtk.main()

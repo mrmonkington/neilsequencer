@@ -22,7 +22,7 @@
 Interfaces, classes and constants for contracted communication with UI extensions.
 """
 
-from wximport import wx
+from gtkimport import gtk
 import inspect, new
 
 #
@@ -199,7 +199,7 @@ class IMainFrame(Interface):
 		@rtype: wx.Window
 		"""
 		
-	def add_menuitem(self, label, description = "", kind = wx.ITEM_NORMAL):
+	def add_menuitem(self, label, description = "", kind = 'normal'):
 		"""
 		Adds a new menuitem to the tools menu and returns the identifier.
 		
@@ -207,7 +207,7 @@ class IMainFrame(Interface):
 		@type label: str
 		@param description: Description for Status bar.
 		@type description: str
-		@param kind: One of wx.ITEM_NORMAL, wx.ITEM_CHECK or wx.ITEM_RADIO
+		@param kind: One of 'normal', 'check', 'radio'
 		@type kind: int
 		@return: Identifier of the menuitem.
 		@rtype: int
@@ -227,17 +227,17 @@ class IMainFrame(Interface):
 		@rtype: int
 		"""
 
-	def add_tool_button(self, label, bitmap1, bitmap2 = wx.NullBitmap, kind = wx.ITEM_NORMAL, tooltip = "", description = ""):
+	def add_tool_button(self, label, bitmap1, bitmap2 = None, kind = 'normal', tooltip = "", description = ""):
 		"""
 		Adds a new tool to the toolbar and returns the identifier.
 		
 		@param label: Label of the button. Will not be visible on all systems.
 		@type label: str
 		@param bitmap1: Bitmap for the button.
-		@type bitmap1: wx.Bitmap
+		@type bitmap1: gtk.Image
 		@param bitmap2: Bitmap for disabled button.
-		@type bitmap2: wx.Bitmap
-		@param kind: One of wx.ITEM_NORMAL, wx.ITEM_CHECK or wx.ITEM_RADIO
+		@type bitmap2: gtk.Image
+		@param kind: One of 'normal', 'check', 'radio'
 		@type kind: int
 		@param tooltip: Tooltip Text
 		@type tooltip: str
