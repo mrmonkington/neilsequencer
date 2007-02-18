@@ -23,8 +23,10 @@ Contains all classes and functions needed to render the freesound panel.
 """
 
 from gtkimport import gtk
+import gobject
 import os, sys, stat
-from utils import prepstr, db2linear, linear2db, note2str, format_filesize, filepath, new_listview, new_image_button, add_scrollbars
+from utils import prepstr, db2linear, linear2db, note2str, format_filesize, \
+	filepath, new_listview, new_image_button, add_scrollbars, error, question
 import utils
 import zzub
 import config
@@ -81,9 +83,8 @@ class FreesoundPanel(gtk.HBox):
 		vdetails = gtk.VBox()
 		vdetails.set_border_width(MARGIN)
 		fsearch.add(vsearch)
-		fdetails.add(vdetails)
 		vdetailgrid = gtk.VBox()
-		self.detailsitems = [vdetails]
+		self.detailsitems = [fdetails]
 		sg = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
 		def add_detail(title, value=None):
 			label = gtk.Label()
@@ -93,6 +94,10 @@ class FreesoundPanel(gtk.HBox):
 			if not value:
 				value = gtk.Label()
 				value.set_alignment(0, 0)
+				value.set_line_wrap(True)
+				value.set_size_request(150,-1)
+				value.set_justify(gtk.JUSTIFY_FILL)
+				value.set_selectable(True)
 			self.detailsitems.append(label)
 			self.detailsitems.append(value)
 			row = gtk.HBox(False, MARGIN)
@@ -152,24 +157,23 @@ class FreesoundPanel(gtk.HBox):
 		lbox.pack_start(logo, expand=False)
 		vsizer.pack_start(lbox, expand=False)
 		vsizer.pack_start(fsearch, expand=False)
-		vsizer.pack_start(fdetails, expand=False)
-		self.splitter.add1(self.leftpanel)
+		scrollwin = add_scrollbars(vdetails)
+		scrollwin.set_border_width(MARGIN)
+		fdetails.add(scrollwin)
+		vsizer.pack_start(fdetails)
+		self.splitter.pack1(self.leftpanel, False, False)
 		scrollwin = add_scrollbars(self.resultlist)
-		self.splitter.add2(scrollwin)
+		self.splitter.pack2(scrollwin, True, False)
 		self.add(self.splitter)
-		self.progress.hide()
-		self.btncancel.hide()
 		self.cmds = []
 		self.cancel = False
-		# XXX: TODO
-		#~ self.populatetimer = wx.Timer(self, -1)
-		#~ self.populatetimer.Start(100)
-		#~ wx.EVT_TIMER(self, self.populatetimer.GetId(), self.on_populate)
-		#~ wx.EVT_BUTTON(self, self.btncancel.GetId(), self.on_cancel)
-		#~ wx.EVT_TEXT_ENTER(self, self.edsearch.GetId(), self.on_search)
-		#~ wx.EVT_LIST_ITEM_SELECTED(self, self.resultlist.GetId(), self.on_select)
-		#~ wx.EVT_LEFT_DCLICK(self.resultlist, self.on_resultlist_dclick)
-		#~ wx.EVT_KEY_DOWN(self.resultlist, self.on_resultlist_key_down)
+		
+		gobject.timeout_add(100, self.on_populate)
+		self.btncancel.connect('clicked', self.on_cancel)
+		self.edsearch.connect('activate', self.on_search)
+		self.resultlist.get_selection().connect('changed', self.on_select)
+		self.resultlist.connect('button-press-event', self.on_resultlist_dclick)
+		self.resultlist.connect('key-press-event', self.on_resultlist_key_down)
 		self.client = None
 		self.results = {}
 		self.imgcache = {}
@@ -177,52 +181,39 @@ class FreesoundPanel(gtk.HBox):
 		self.show_details()
 		import thread
 		thread.start_new_thread(self.preload_freesound, ())
+		self.connect('realize', self.on_realize)
 		
-	def get_selection(self):
-		"""
-		Returns a list of selected indices.
-		"""
-		index = self.resultlist.GetFirstSelected()
-		if index == -1:
-			return []
-		results = [index]
-		while True:
-			index = self.resultlist.GetNextSelected(index)
-			if index == -1:
-				break
-			results.append(index)
-		return results
+	def on_realize(self, widget):
+		self.progress.hide()
+		self.btncancel.hide()
+		self.show_details()
 		
-	def on_resultlist_key_down(self, event):
+	def on_resultlist_key_down(self, widget, event):
 		"""
 		Called when the key is pressed in the result list.
 		"""
-		k = event.GetKeyCode()
-		sellist = self.get_selection()
-		sel = sellist and sellist[0] or 0
-		if k in (wx.WXK_RIGHT,wx.WXK_NUMPAD_RIGHT):
+		k = gtk.gdk.keyval_name(event.keyval)
+		mask = event.state
+		kv = event.keyval
+		if k in ('Right', 'KP_Right'):
 			self.preview_current()
-		elif k == wx.WXK_SPACE:
+		elif kv == 32:
 			self.preview_current()
-			for s in sellist:
-				self.resultlist.Select(s, False)
-			sel = min(max(sel+1, 0), self.resultlist.GetItemCount()-1)
-			self.resultlist.Focus(sel)
-			self.resultlist.Select(sel, True)
-			self.resultlist.EnsureVisible(sel)
-		elif k in (wx.WXK_BACK, wx.WXK_RETURN):
+			path, col = self.resultlist.get_cursor()
+			self.resultlist.set_cursor((path[0]+1,))
+		elif k in ('BackSpace', 'Return'):
 			self.on_load_sample(None)
-		elif k == wx.WXK_ESCAPE:
-			self.wavetable.notebook.SetSelection(0)
-			self.wavetable.samplelist.SetFocus()
-		elif k in (wx.WXK_LEFT,wx.WXK_NUMPAD_LEFT):
-			self.edsearch.SetSelection(-1,-1)
-			self.edsearch.SetFocus()
+		elif k == 'Escape':
+			self.wavetable.set_current_page(0)
+			self.wavetable.samplelist.grab_focus()
+		elif k in ('Left', 'KP_Left'):
+			self.edsearch.select_region(0,-1)
+			self.edsearch.grab_focus()
 		else:
-			event.Skip()
-			return
+			return False
+		return True
 			
-	def on_load_sample(self, event):
+	def on_load_sample(self, *args):
 		"""
 		Called to load samples based on the current file list selection.
 		
@@ -231,8 +222,12 @@ class FreesoundPanel(gtk.HBox):
 		"""
 		import thread
 		files = []
-		for index in self.get_selection():
-			sampleid = self.resultlist.GetItemData(index)
+		store, rows = self.resultstore.get_selection().get_selected_rows()
+		for row in rows:
+			sampleid = row[4]
+			if not sampleid:
+				continue
+			sampleid = int(sampleid)
 			if sampleid > 0:
 				sample = self.results[sampleid]
 				orgfilename = extract_text(get_node(sample,'originalFilename'))
@@ -285,25 +280,28 @@ class FreesoundPanel(gtk.HBox):
 		Preview currently focused item.
 		"""
 		import thread
-		index = self.resultlist.GetFocusedItem()
-		if index > -1:
-			sampleid = self.resultlist.GetItemData(index)
-			if sampleid > 0:
+		path, col = self.resultlist.get_cursor()
+		if path:
+			sampleid = self.resultstore.get_value(self.resultstore.get_iter(path), 4)
+			if sampleid:
+				sampleid = int(sampleid)
 				sample = self.results[sampleid]
 				thread.start_new_thread(self.load_preview_wave, (extract_text(get_node(sample,'preview')),))
 
 		
-	def on_resultlist_dclick(self, event):
+	def on_resultlist_dclick(self, widget, event):
 		"""
 		Called when a list entry is doubleclicked.
 		"""
-		self.preview_current()
+		if (event.button == 1) and (event.type == gtk.gdk._2BUTTON_PRESS):
+			# double click
+			self.preview_current()
 		
 	def preload_freesound(self):
 		"""
 		Loads freesound service and logs in.
 		"""
-		self.cmds.append((self.resultstore.append,(["Logging in..."])))
+		self.cmds.append((self.resultstore.append,(["Logging in...",'','','',''],)))
 		self.cmds.append((self.edsearch.set_property, ("editable", False)))
 		self.get_freesound()
 		self.cmds.append((self.edsearch.set_property, ("editable", True)))
@@ -334,31 +332,32 @@ class FreesoundPanel(gtk.HBox):
 	def apply_image(self, url):
 		if self.active_url != url:
 			return
-		bmp = wx.BitmapFromImage(self.imgcache[url])
-		self.imgwave.SetBitmap(bmp)
-		self.imgwave.Show()
-		self.Layout()
+		self.imgwave.set_from_pixbuf(self.imgcache[url])
+		self.imgwave.show()
 		
 	def load_wave_image(self, url):
 		self.active_url = url
 		if not url in self.imgcache:
 			import StringIO
 			bmpdata = self.get_freesound(warn=True).get(url)
-			img = wx.ImageFromStream(StringIO.StringIO(bmpdata), wx.BITMAP_TYPE_PNG)
-			img.Rescale(200, 48)
+			loader = gtk.gdk.PixbufLoader()
+			loader.write(bmpdata)
+			loader.close()
+			img = loader.get_pixbuf()
+			img = img.scale_simple(200, 48, gtk.gdk.INTERP_BILINEAR)
 			self.imgcache[url] = img
 		self.cmds.append((self.apply_image, (url,)))
 		
 	def show_details(self, sample=None):
 		if sample:
-			self.imgwave.SetBitmap(wx.NullBitmap)
+			self.imgwave.clear()
 			import thread
 			thread.start_new_thread(self.load_wave_image, (extract_text(get_node(sample,'image')),))
 			
-			self.dtname.SetLabel(extract_text(get_node(sample,'originalFilename')))
-			self.dtuser.SetLabel(extract_text(get_node(sample,'user/name')))
-			self.dtdownloads.SetLabel(extract_text(get_node(sample,'statistics/downloads')))
-			self.dtrating.SetLabel(extract_text(get_node(sample,'statistics/rating')))
+			self.dtname.set_label(extract_text(get_node(sample,'originalFilename')))
+			self.dtuser.set_label(extract_text(get_node(sample,'user/name')))
+			self.dtdownloads.set_label(extract_text(get_node(sample,'statistics/downloads')))
+			self.dtrating.set_label(extract_text(get_node(sample,'statistics/rating')))
 			ext = extract_text(get_node(sample,'extension'))
 			sr = extract_text(get_node(sample,'samplerate'))
 			if sr:
@@ -370,25 +369,25 @@ class FreesoundPanel(gtk.HBox):
 			if bd:
 				bd += ' bits'
 			chans = {'':'Mono','1':'Mono','2':'Stereo'}[extract_text(get_node(sample,'channels'))]
-			self.dttype.SetLabel(', '.join([x for x in [ext,sr,br,bd,chans] if x]))
+			self.dttype.set_label(', '.join([x for x in [ext,sr,br,bd,chans] if x]))
 			length = extract_text(get_node(sample,'duration'))
 			if length:
 				length = format_duration(float(length))
-			self.dtlength.SetLabel(length)
+			self.dtlength.set_label(length)
 			filesize = extract_text(get_node(sample,'filesize'))
 			if filesize:
 				filesize = format_filesize(int(filesize))
-			self.dtsize.SetLabel(filesize)
+			self.dtsize.set_label(filesize)
 			tags = []
 			if get_node(sample,'tags'):
 				for tag in get_node(sample,'tags').childNodes:
 					if (tag.nodeType == tag.ELEMENT_NODE) and (tag.nodeName == 'tag'):
 						tags.append(extract_text(tag))
-			self.dttags.SetLabel(', '.join(tags))
-			self.dtdesc.SetLabel(extract_text(get_node(sample,'descriptions/description/text')))
+			self.dttags.set_label(', '.join(tags))
+			self.dtdesc.set_label(extract_text(get_node(sample,'descriptions/description/text')))
 			for item in self.detailsitems:
 				if item != self.imgwave:
-					item.Show()
+					item.show()
 		else:
 			for item in self.detailsitems:
 				item.hide()
@@ -405,25 +404,29 @@ class FreesoundPanel(gtk.HBox):
 		filesize = extract_text(get_node(sample,'filesize'))
 		if filesize:
 			filesize = format_filesize(int(filesize))
-		index = self.resultlist.GetItemCount()
-		self.resultlist.InsertStringItem(index, prepstr(originalFilename))
-		self.resultlist.SetStringItem(index, self.COL_DURATION, duration)
-		self.resultlist.SetStringItem(index, self.COL_FILESIZE, filesize)
-		self.resultlist.SetStringItem(index, self.COL_ADDEDBY, addedby)
-		self.resultlist.SetStringItem(index, self.COL_ID, itemid)
-		self.resultlist.SetItemData(index, int(itemid))
-		self.resultlist.SetItemImage(index, self.IMG_WAVE)
+		data = [
+			prepstr(originalFilename),
+			duration,
+			filesize,
+			addedby,
+			itemid
+		]
+		self.resultstore.append(data)
+		#~ self.resultlist.SetItemData(index, int(itemid))
+		#~ self.resultlist.SetItemImage(index, self.IMG_WAVE)
 			
-	def on_select(self, event):
+	def on_select(self, selection):
 		"""
 		Called when the user selects an entry.
 		"""
-		index = self.resultlist.GetFocusedItem()
-		if index > -1:
-			sampleid = self.resultlist.GetItemData(index)
-			if sampleid > 0:
-				self.show_details(self.results[sampleid])
-				return
+		store, rows = selection.get_selected_rows()
+		if rows:
+			sampleid = store.get_value(store.get_iter(rows[0]), 4)
+			if sampleid:
+				sampleid = int(sampleid)
+				if sampleid > 0:
+					self.show_details(self.results[sampleid])
+					return
 		self.show_details()
 		
 	def get_freesound(self, warn=False):
@@ -448,7 +451,7 @@ class FreesoundPanel(gtk.HBox):
 			print "logged in."
 		return self.client
 		
-	def on_populate(self, event):
+	def on_populate(self):
 		"""
 		Populates the list control from results.
 		"""
@@ -456,26 +459,25 @@ class FreesoundPanel(gtk.HBox):
 			cmd,args = self.cmds[0]
 			self.cmds = self.cmds[1:]
 			try:
+				print cmd,args
 				cmd(*args)
 			except:
 				import traceback
 				traceback.print_exc()
+		return True
 				
 	def show_error(self, message):
-		msgdlg = wx.MessageDialog(self, message=message, caption = "Aldrin", style = wx.ICON_ERROR|wx.OK|wx.CENTER)
-		self.cmds.append((msgdlg.ShowModal,()))
+		self.cmds.append((error,(self,message)))
 		
 	def cancel_search(self):
-		self.cmds.append((self.progress.Hide,()))
-		self.cmds.append((self.btncancel.Hide,()))
-		self.cmds.append((self.Layout,()))
+		self.cmds.append((self.progress.hide,()))
+		self.cmds.append((self.btncancel.hide,()))
 		
 	def search_thread(self, args):
 		self.cancel = False
-		self.cmds.append((self.progress.SetValue,(0,)))
-		self.cmds.append((self.progress.Show,()))
-		self.cmds.append((self.btncancel.Show,()))
-		self.cmds.append((self.Layout,()))
+		self.cmds.append((self.progress.set_fraction,(0.0,)))
+		self.cmds.append((self.progress.show,()))
+		self.cmds.append((self.btncancel.show,()))
 		try:
 			fs = self.get_freesound(warn=True)
 			assert fs
@@ -484,26 +486,26 @@ class FreesoundPanel(gtk.HBox):
 			else:
 				self.result = fs.search(**args)
 				items = [item.getAttribute("id") for item in self.result.childNodes if item.nodeType == item.ELEMENT_NODE and item.nodeName == 'sample']
-			self.cmds.append((self.resultlist.DeleteAllItems,()))
+			self.cmds.append((self.resultstore.clear,()))
 			self.results = {}
 			if len(items) > 1000:
-				self.cmds.append((self.resultlist.InsertStringItem,(0, "Too many hits (max. 1000). Please refine your search.")))
+				self.cmds.append((self.resultstore.append,(["Too many hits (max. 1000). Please refine your search.",'','','',''],)))
 				self.cancel_search()
 				return
 			elif not items:
-				self.cmds.append((self.resultlist.InsertStringItem,(0, "No results matching your search terms.")))
+				self.cmds.append((self.resultstore.append,(["No results matching your search terms.",'','','',''],)))
 			else:
-				self.cmds.append((self.resultlist.InsertStringItem,(0, "Querying %s result(s)..." % len(items))))
+				self.cmds.append((self.resultstore.append,(["Querying %s result(s)..." % len(items),'','','',''],)))
 			for index, itemid in enumerate(items):
 				if self.cancel:
 					break
-				self.cmds.append((self.progress.SetValue,(int(100.0/len(items) * index + 0.5),)))
+				self.cmds.append((self.progress.set_fraction,(1.0/len(items) * index,)))
 				#itemid = item.getAttribute("id")
 				for i in range(3):
 					try:
 						sampleitem = fs.get_sample_info(itemid)
 						if index == 0:
-							self.cmds.append((self.resultlist.DeleteAllItems,()))
+							self.cmds.append((self.resultstore.clear,()))
 						sample = sampleitem.getElementsByTagName('sample')[0]
 						self.results[int(itemid)] = sample
 						self.cmds.append((self.insert_item, (itemid, sample)))
@@ -514,22 +516,27 @@ class FreesoundPanel(gtk.HBox):
 		except:
 			import traceback
 			traceback.print_exc()
-			self.cmds.append((self.resultlist.DeleteAllItems,()))
+			self.cmds.append((self.resultstore.clear,()))
 		self.cancel_search()
 		
 	def on_search(self, event):
 		"""
 		Called when user hits return in search field.
 		"""
-		self.resultlist.DeleteAllItems()
-		self.resultlist.InsertStringItem(0, "Searching...")
+		self.resultstore.clear()
+		self.resultstore.append(["Searching...",'','','',''])
 		args = dict(
-			search=self.edsearch.GetValue(),
-			searchDescriptions=int(self.btnsearchdesc.GetValue()),
-			searchTags=int(self.btnsearchtags.GetValue()),
-			searchFilenames=int(self.btnsearchfiles.GetValue()),
-			searchUsernames=int(self.btnsearchusers.GetValue())
+			search=self.edsearch.get_text(),
+			searchDescriptions=int(self.btnsearchdesc.get_active()),
+			searchTags=int(self.btnsearchtags.get_active()),
+			searchFilenames=int(self.btnsearchfiles.get_active()),
+			searchUsernames=int(self.btnsearchusers.get_active())
 		)
 		import thread
 		thread.start_new_thread(self.search_thread, (args,))
-		self.resultlist.SetFocus()
+		self.resultlist.grab_focus()
+
+if __name__ == '__main__':
+	import sys, utils
+	from main import run
+	run(sys.argv + [utils.filepath('demosongs/paniq-knark.ccm')])

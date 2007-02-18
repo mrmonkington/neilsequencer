@@ -26,7 +26,7 @@ editor and its associated components.
 from gtkimport import gtk
 import pango
 import gobject
-from utils import prepstr, from_hsb, to_hsb, get_item_count, get_clipboard_text, set_clipboard_text
+from utils import prepstr, from_hsb, to_hsb, get_item_count, get_clipboard_text, set_clipboard_text, add_scrollbars
 import random
 import ctypes
 import zzub
@@ -124,6 +124,7 @@ class SequencerPanel(gtk.VBox):
 		self.rootwindow = rootwindow
 		gtk.VBox.__init__(self)
 		self.splitter = gtk.HPaned()
+		
 		self.seqliststore = gtk.ListStore(str, str)
 		self.seqpatternlist = gtk.TreeView(self.seqliststore)
 		self.seqpatternlist.set_rules_hint(True)
@@ -144,11 +145,8 @@ class SequencerPanel(gtk.VBox):
 		tvpname.set_sort_column_id(1)
 
 		self.seqview = SequencerView(rootwindow, self)
-		self.splitter.add1(self.seqview)
-		scrollwin = gtk.ScrolledWindow()
-		scrollwin.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-		scrollwin.add(self.seqpatternlist)
-		self.splitter.add2(scrollwin)
+		self.splitter.pack1(self.seqview, True, True)
+		self.splitter.pack2(add_scrollbars(self.seqpatternlist), False, False)
 		self.view = self.seqview
 		self.toolbar = SequencerToolBar()
 		self.statusbar = gtk.HBox(False, 5)
@@ -160,7 +158,7 @@ class SequencerPanel(gtk.VBox):
 		# end wxGlade
 		self.update_list()
 		self.toolbar.update_all()
-		self.splitter.connect('move-handle', self.on_sash_pos_changed)
+		self.seqview.connect('size-allocate', self.on_sash_pos_changed)
 		
 	def update_all(self):
 		"""
@@ -185,15 +183,18 @@ class SequencerPanel(gtk.VBox):
 			for pattern, key in zip(track.get_plugin().get_pattern_list(), SEQKEYS):
 				self.seqliststore.append([key, pattern.get_name()])
 				
-	def on_sash_pos_changed(self, widget, scrolltype):
+	def on_sash_pos_changed(self, widget, *args):
 		"""
 		Sent when the sash position changes.
 		
 		@param event: Event.
 		@type event: wx.Event
 		"""
+		if not self.splitter.window:
+			return
+		if not self.splitter.window.is_visible():
+			return
 		config.get_config().save_window_pos("SequencerSplitter", self.splitter)
-		return True
 		
 	def __set_properties(self):
 		"""
@@ -212,7 +213,7 @@ class SequencerPanel(gtk.VBox):
 		"""
 		Arranges children components during initialization.
 		"""
-		self.splitter.set_position(100)
+		self.show_all()
 		config.get_config().load_window_pos("SequencerSplitter", self.splitter)
 		# end wxGlade
 
@@ -256,7 +257,7 @@ class SequencerView(gtk.DrawingArea):
 		self.connect('motion-notify-event', self.on_motion)
 		self.connect('button-release-event', self.on_left_up)
 		self.connect('scroll-event', self.on_mousewheel)
-		#gobject.timeout_add(100, self.update_position)
+		gobject.timeout_add(100, self.update_position)
 		
 		#~ wx.EVT_MOUSEWHEEL(self, self.on_mousewheel)
 		#~ wx.EVT_LEFT_DOWN(self, self.on_left_down)
@@ -264,11 +265,6 @@ class SequencerView(gtk.DrawingArea):
 		#~ wx.EVT_LEFT_UP(self, self.on_left_up)
 		#~ wx.EVT_KEY_DOWN(self, self.on_key_down)
 		#~ wx.EVT_CONTEXT_MENU(self, self.on_context_menu)
-		
-		#~ wx.EVT_SET_FOCUS(self, self.on_focus)
-		#~ self.timer = wx.Timer(self, -1)
-		#~ self.timer.Start(100)
-		#~ wx.EVT_TIMER(self, self.timer.GetId(), self.update_position)
 		
 	def on_focus(self, event):		
 		seq = player.get_current_sequencer()
@@ -867,6 +863,7 @@ class SequencerView(gtk.DrawingArea):
 		if self.playpos != playpos:
 			self.playpos = playpos
 			self.redraw()
+		return True
 
 	def draw_xor(self):
 		"""

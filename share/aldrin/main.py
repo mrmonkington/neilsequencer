@@ -1238,6 +1238,7 @@ class AldrinFrame(gtk.Window, IMainFrame):
 		self.save_view()
 		try:
 			self.save_changes()
+			self.hide_all()
 			return False
 		except CancelException:
 			return True
