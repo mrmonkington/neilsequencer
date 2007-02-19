@@ -28,8 +28,8 @@ from utils import prepstr
 NAME = "Aldrin"
 VERSION = "0.11 (Terra)"
 COPYRIGHT = "Copyright (C) 2006, 2007 The Aldrin Development Team"
-COMMENTS = """A big thank you to all users and testers of Aldrin. That means you!
-"""
+COMMENTS = '"no insult, but i think you\'re too weird to really make the best music app ever created." -- rpfr'
+
 LICENSE = """This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.

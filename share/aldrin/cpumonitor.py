@@ -24,7 +24,7 @@ Provides dialog class for cpu monitor.
 
 from gtkimport import gtk
 import gobject
-from utils import prepstr
+from utils import prepstr, add_scrollbars
 import utils, os, stat
 import common
 player = common.get_player()
@@ -62,9 +62,8 @@ class CPUMonitorDialog(gtk.Dialog):
 		self.tvload.set_sort_column_id(1)
 		self.labeltotal = gtk.Label("100%")
 		self.gaugetotal = gtk.ProgressBar()
-		scrollwin.add(self.pluginlistview)
 		sizer = gtk.VBox()
-		sizer.pack_start(scrollwin)
+		sizer.pack_start(add_scrollbars(self.pluginlistview))
 		hsizer = gtk.HBox()
 		hsizer.pack_start(self.gaugetotal, padding=5)
 		hsizer.pack_start(self.labeltotal, expand=False, padding=5)
@@ -91,6 +90,7 @@ class CPUMonitorDialog(gtk.Dialog):
 			total_workload = max(sum(cpu_loads.values()),0.001)
 			self.gaugetotal.set_fraction(cpu / 100.0)
 			self.labeltotal.set_label("%i%%" % int(cpu + 0.5))
+			
 			def update_node(store, level, item, udata):
 				name = self.pluginlist.get_value(item, 0)
 				if name in cpu_loads:
@@ -117,7 +117,9 @@ if __name__ == '__main__':
 	import testplayer, utils
 	player = testplayer.get_player()
 	player.load_ccm(utils.filepath('demosongs/paniq-knark.ccm'))
-	dlg = CPUMonitorDialog()
+	window = testplayer.TestWindow()
+	window.show_all()
+	dlg = CPUMonitorDialog(window)
 	dlg.connect('destroy', lambda widget: gtk.main_quit())
 	dlg.show_all()
 	gtk.main()

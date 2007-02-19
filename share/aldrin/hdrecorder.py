@@ -146,7 +146,9 @@ if __name__ == '__main__':
 	import testplayer, utils
 	player = testplayer.get_player()
 	player.load_ccm(utils.filepath('demosongs/paniq-knark.ccm'))
-	dlg = HDRecorderDialog()
+	window = testplayer.TestWindow()
+	window.show_all()
+	dlg = HDRecorderDialog(window)
 	dlg.connect('destroy', lambda widget: gtk.main_quit())
 	dlg.show_all()
 	gtk.main()
