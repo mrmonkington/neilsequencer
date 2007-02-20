@@ -33,7 +33,7 @@ import zzub
 import time
 import common
 player = common.get_player()
-from common import MARGIN, MARGIN2, MARGIN3
+from common import MARGIN, MARGIN2, MARGIN3, MARGIN0
 
 from utils import NOTES, roundint
 PATLEFTMARGIN = 48
@@ -371,6 +371,7 @@ class PatternPanel(gtk.VBox):
 		self.rootwindow = rootwindow
 		self.rootwindow.event_handlers.append(self.on_player_callback)
 		self.statusbar = gtk.HBox(False, MARGIN)
+		self.statusbar.set_border_width(MARGIN0)
 		self.view = PatternView(rootwindow)
 		self.toolbar = PatternToolBar(self.view)
 		self.view.toolbar = self.toolbar

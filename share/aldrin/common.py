@@ -24,6 +24,7 @@ Provides information used by all ui sections.
 
 import zzub
 
+MARGIN0 = 3
 MARGIN = 6
 MARGIN2 = 12
 MARGIN3 = 18

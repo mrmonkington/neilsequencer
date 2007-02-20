@@ -27,6 +27,7 @@ from gtkimport import gtk
 import gobject
 import utils, os, stat
 import common
+from common import MARGIN, MARGIN2, MARGIN3
 player = common.get_player()
 
 class HDRecorderDialog(gtk.Dialog):
@@ -39,17 +40,19 @@ class HDRecorderDialog(gtk.Dialog):
 		"""
 		Initializer.
 		"""
-		gtk.Dialog.__init__(self, parent=parent.get_toplevel())
+		gtk.Dialog.__init__(self, 
+			"Hard Disk Recorder",
+			parent.get_toplevel())
+		#self.add_button(gtk.STOCK_CLOSE, gtk.RESPONSE_CLOSE)
 		#self.set_size_request(250,-1)
 		self.set_resizable(False)
 		self.master = player.get_plugin(0)
-		self.set_title("Hard Disk Recorder")
-		btnsaveas = gtk.Button(label="Save As...")
+		btnsaveas = gtk.Button(stock=gtk.STOCK_SAVE_AS)
 		btnsaveas.connect("clicked", self.on_saveas)
 		textposition = gtk.Label("")
-		btnrec = gtk.Button("_Rec")
+		btnrec = gtk.Button(stock=gtk.STOCK_MEDIA_RECORD)
 		btnrec.connect("clicked", self.on_rec)
-		btnstop = gtk.Button("_Stop")
+		btnstop = gtk.Button(stock=gtk.STOCK_MEDIA_STOP)
 		btnstop.connect("clicked", self.on_stop)
 		chkauto = gtk.CheckButton("_Auto start/stop")
 		chkauto.connect("toggled", self.on_autostartstop)
@@ -59,21 +62,20 @@ class HDRecorderDialog(gtk.Dialog):
 		self.btnstop = btnstop
 		self.chkauto = chkauto
 		self.chkauto.set_active(self.master.get_auto_write())
-		sizer = gtk.VBox()		
-		sizer.set_spacing(5)
-		sizer.pack_start(btnsaveas)
-		sizer.pack_start(textposition)
-		sizer2 = gtk.HBox()
-		sizer2.set_spacing(5)
-		sizer2.pack_start(btnrec)
-		sizer2.pack_start(btnstop)
-		sizer2.pack_start(chkauto)
+		sizer = gtk.VBox(False, MARGIN)		
+		sizer.pack_start(btnsaveas, expand=False)
+		sizer.pack_start(textposition, expand=False)
+		sizer2 = gtk.HBox(False,MARGIN)
+		sizer3 = gtk.HButtonBox()
+		sizer3.set_spacing(MARGIN)
+		sizer3.set_layout(gtk.BUTTONBOX_START)
+		sizer3.pack_start(btnrec, expand=False)
+		sizer3.pack_start(btnstop, expand=False)
+		sizer2.pack_start(sizer3, expand=False)
+		sizer2.pack_start(chkauto, expand=False)
 		sizer.pack_start(sizer2)
-		sh = gtk.VBox()
-		sh.pack_start(sizer, padding=5)
-		sv = gtk.HBox()
-		sv.pack_start(sh, padding=5)
-		self.vbox.add(sv)
+		sizer.set_border_width(MARGIN)
+		self.vbox.add(sizer)
 		self.filename = ''
 		gobject.timeout_add(100, self.on_timer)
 		
@@ -100,7 +102,7 @@ class HDRecorderDialog(gtk.Dialog):
 				recsize = os.stat(self.filename)[stat.ST_SIZE]
 			else:
 				recsize = 0
-			self.textposition.set_label("Time:  %s     Size: %.2fM" % (utils.format_time(rectime), float(recsize)/(1<<20)))
+			self.textposition.set_markup("<b>Time</b> %s     <b>Size</b> %.2fM" % (utils.format_time(rectime), float(recsize)/(1<<20)))
 		return True
 		
 	def on_saveas(self, widget):

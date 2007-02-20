@@ -27,6 +27,7 @@ import gobject
 from utils import prepstr, add_scrollbars
 import utils, os, stat
 import common
+from common import MARGIN, MARGIN2, MARGIN3
 player = common.get_player()
 
 class CPUMonitorDialog(gtk.Dialog):
@@ -62,12 +63,13 @@ class CPUMonitorDialog(gtk.Dialog):
 		self.tvload.set_sort_column_id(1)
 		self.labeltotal = gtk.Label("100%")
 		self.gaugetotal = gtk.ProgressBar()
-		sizer = gtk.VBox()
+		sizer = gtk.VBox(False, MARGIN)
+		sizer.set_border_width(MARGIN)
 		sizer.pack_start(add_scrollbars(self.pluginlistview))
-		hsizer = gtk.HBox()
-		hsizer.pack_start(self.gaugetotal, padding=5)
-		hsizer.pack_start(self.labeltotal, expand=False, padding=5)
-		sizer.pack_start(hsizer, expand=False, padding=5)
+		hsizer = gtk.HBox(False, MARGIN)
+		hsizer.pack_start(self.gaugetotal)
+		hsizer.pack_start(self.labeltotal, expand=False)
+		sizer.pack_start(hsizer, expand=False)
 		self.vbox.add(sizer)
 		gobject.timeout_add(1000, self.on_timer)
 
@@ -91,16 +93,30 @@ class CPUMonitorDialog(gtk.Dialog):
 			self.gaugetotal.set_fraction(cpu / 100.0)
 			self.labeltotal.set_label("%i%%" % int(cpu + 0.5))
 			
+			class UpdateNode:
+				newvalues = {}
+				to_delete = []
+			
 			def update_node(store, level, item, udata):
+				ref = gtk.TreeRowReference(store, store.get_path(item))
 				name = self.pluginlist.get_value(item, 0)
 				if name in cpu_loads:
 					relperc = (cpu_loads[name] / total_workload) * cpu
-					store.set_value(item, 1, "%.1f%%" % relperc)
+					un.newvalues[ref] = "%.1f%%" % relperc
 					del cpu_loads[name]
 				else:
-					store.remove(item)
+					un.to_delete.append(ref)
 				
-			self.pluginlist.foreach(update_node, None)
+			un = UpdateNode()
+			self.pluginlist.foreach(update_node, un)
+			for ref in un.to_delete:
+				if ref.valid():
+					path = ref.get_path()
+					self.pluginlist.remove(self.pluginlist.get_iter(path))
+			for ref,value in un.newvalues.iteritems():
+				if ref.valid():
+					path = ref.get_path()
+					self.pluginlist.set_value(self.pluginlist.get_iter(path), 1, value)
 				
 			for k,v in cpu_loads.iteritems():
 				k = prepstr(k)

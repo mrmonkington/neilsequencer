@@ -34,7 +34,7 @@ import config
 import time
 import common
 player = common.get_player()
-from common import MARGIN, MARGIN2, MARGIN3
+from common import MARGIN, MARGIN2, MARGIN3, MARGIN0
 
 SEQKEYS = '0123456789abcdefghijklmnopqrstuvwxyz'
 SEQKEYMAP = dict(zip(SEQKEYS,range(0x10,len(SEQKEYS)+0x10)))
@@ -149,7 +149,8 @@ class SequencerPanel(gtk.VBox):
 		self.splitter.pack2(add_scrollbars(self.seqpatternlist), False, False)
 		self.view = self.seqview
 		self.toolbar = SequencerToolBar()
-		self.statusbar = gtk.HBox(False, 5)
+		self.statusbar = gtk.HBox(False, MARGIN)
+		self.statusbar.set_border_width(MARGIN0)
 		self.pack_start(self.toolbar, expand=False)
 		self.pack_start(self.splitter)
 		self.pack_end(self.statusbar, expand=False)

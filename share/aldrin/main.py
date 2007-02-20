@@ -50,7 +50,7 @@ import about
 import extman
 import envelope
 import driver
-from common import MARGIN, MARGIN2, MARGIN3
+from common import MARGIN, MARGIN2, MARGIN3, MARGIN0
 
 import interface
 from interface import IMainFrame, \
@@ -1607,7 +1607,7 @@ class TimePanel(gtk.VBox):
 		self.starttime = time.time()
 		self.update_label()		
 		self.pack_start(self.timelabel)
-		self.set_border_width(MARGIN)
+		self.set_border_width(MARGIN0)
 		gobject.timeout_add(100, self.update_label)
 		
 	def update_label(self):
