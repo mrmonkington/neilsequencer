@@ -484,9 +484,9 @@ class AldrinFrame(gtk.Window, IMainFrame):
 		self.load_view()
 		
 		#~ self.toolsmenu.hide()
-		em = extman.get_extension_manager()
-		em.register_service(MAINFRAME_SERVICE, self, interface.IMainFrame)
-		em.realize_extensions(self)
+		#~ em = extman.get_extension_manager()
+		#~ em.register_service(MAINFRAME_SERVICE, self, interface.IMainFrame)
+		#~ em.realize_extensions(self)
 
 		import sys
 		if len(app_args) > 1:
