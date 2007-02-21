@@ -143,7 +143,7 @@ class AldrinConfig(ConfigParser.ConfigParser):
 			return default
 		return self.getint(self._section, name)
 		
-	def read_value(self, name, default=None):
+	def read_value(self, name, default=''):
 		assert self._section
 		if not self.has_section(self._section):
 			return default
