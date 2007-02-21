@@ -24,8 +24,42 @@ Provides an info view which allows to enter text.
 
 from gtkimport import gtk
 import common
+from utils import add_scrollbars
+from common import MARGIN, MARGIN0, MARGIN2, MARGIN3
 player = common.get_player()
 
+LICENSES = [
+	dict(
+			group = 'Creative Commons',
+			title = 'Attribution',
+			url = 'http://creativecommons.org/licenses/by/2.5/',
+		),
+	dict(
+			group = 'Creative Commons',
+			title = 'Attribution-NoDerivs',
+			url = 'http://creativecommons.org/licenses/by-nd/2.5/',
+		),
+	dict(
+			group = 'Creative Commons',
+			title = 'Attribution-NonCommercial-NoDerivs',
+			url = 'http://creativecommons.org/licenses/by-nc-nd/2.5/',
+		),
+	dict(
+			group = 'Creative Commons',
+			title = 'Attribution-NonCommercial',
+			url = 'http://creativecommons.org/licenses/by-nc/2.5/',
+		),
+	dict(
+			group = 'Creative Commons',
+			title = 'Attribution-NonCommercial-ShareAlike',
+			url = 'http://creativecommons.org/licenses/by-nc-sa/2.5/',
+		),
+	dict(
+			group = 'Creative Commons',
+			title = 'Attribution-ShareAlike',
+			url = 'http://creativecommons.org/licenses/by-sa/2.5/',
+		),
+]
 
 class InfoPanel(gtk.VBox):
 	"""
@@ -39,11 +73,21 @@ class InfoPanel(gtk.VBox):
 		@type rootwindow: wx.Frame
 		"""
 		self.rootwindow = rootwindow
-		gtk.VBox.__init__(self)
+		gtk.VBox.__init__(self, False, MARGIN)
+		self.set_border_width(MARGIN)
+		hbox = gtk.HBox(False, MARGIN)
+		hbox.pack_start(gtk.Label('License'), expand=False)
+		self.cblicense = gtk.combo_box_new_text()
+		for license in LICENSES:
+			if license.get('group',None):
+				text = "%s: %s" % (license['group'],license['title'])
+			else:
+				text = "%s" % (license['title'])
+			self.cblicense.append_text(text)
+		hbox.pack_start(self.cblicense, expand=False)
 		self.view = InfoView(rootwindow)
-		sizer_2 = gtk.HBox()
-		sizer_2.add(self.view)
-		self.add(sizer_2)
+		self.pack_start(hbox, expand=False)
+		self.pack_start(add_scrollbars(self.view))
 		
 	def reset(self):
 		"""
