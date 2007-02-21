@@ -590,6 +590,8 @@ class AldrinConfig(ConfigParser.ConfigParser):
 				y = int(self.read_value('Y'))
 				w = int(self.read_value('W'))
 				h = int(self.read_value('H'))
+			except TypeError:
+				return
 			except ValueError:
 				return
 			window.move(x,y)
@@ -600,7 +602,9 @@ class AldrinConfig(ConfigParser.ConfigParser):
 		elif isinstance(window, gtk.Paned):
 			try:
 				window.set_position(int(self.read_value("SashPosition")))
-			except:
+			except TypeError:
+				pass
+			except ValueError:
 				pass
 		else:
 			visible = self.read_value("Visible")
