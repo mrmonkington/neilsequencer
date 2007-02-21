@@ -600,6 +600,8 @@ class AldrinConfig(ConfigParser.ConfigParser):
 		elif isinstance(window, gtk.Paned):
 			try:
 				window.set_position(int(self.read_value("SashPosition")))
+			except TypeError:
+				pass
 			except ValueError:
 				pass
 		else:
