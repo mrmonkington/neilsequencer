@@ -128,22 +128,6 @@ class WavetablePanel(gtk.Notebook):
 		self.cbenvelope = gtk.combo_box_new_text()
 		self.chkenable = gtk.CheckButton("Use Envelope")
 		self.envelope = EnvelopeView(self)
-		#~ self.filelist, self.filestore, columns = new_listview([
-			#~ ('Name', str),
-			#~ ('Filesize', str),
-			#~ ('Type', str),
-		#~ ])
-		# XXX: TODO
-		#~ imglist = wx.ImageList(16,16)
-		#~ self.IMG_FOLDER = imglist.Add(wx.Bitmap(filepath("res/folder.png"), wx.BITMAP_TYPE_ANY))
-		#~ self.IMG_WAVE = imglist.Add(wx.Bitmap(filepath("res/wave.png"), wx.BITMAP_TYPE_ANY))
-		#~ self.filelist.AssignImageList(imglist, wx.IMAGE_LIST_SMALL)
-
-		#~ self.btnloadsample = new_image_button(filepath("res/loadsample.png"), "Add/Insert Instrument")
-		#~ self.btnrefresh = new_image_button(filepath("res/arrow_refresh.png"), "Refresh Browser")
-		#~ self.btnparent = new_image_button(filepath("res/parent.png"), "Go to Parent Folder")
-		#~ self.stworkpath = gtk.Label("")
-		#~ self.stworkpath.set_alignment(0, 0.5)
 
 		samplebuttons = gtk.HBox(False, MARGIN)
 		samplebuttons.pack_start(self.btnstoresample, expand=False)
@@ -172,32 +156,25 @@ class WavetablePanel(gtk.Notebook):
 		sampleprops.pack_start(sampleplayer, expand=False)
 		sampleprops.pack_start(self.volumeslider, expand=False)
 		sampleprops.pack_start(loopprops, expand=False)
-		sampleprops.pack_start(envprops, expand=False)
-		sampleprops.pack_start(self.adsrpanel, expand=False)
+		nbsampleprops = gtk.Notebook()
+		envsection = gtk.VBox(False, MARGIN)
+		envsection.set_border_width(MARGIN)
+		envsection.pack_start(envprops, expand=False)
+		envsection.pack_start(self.adsrpanel, expand=False)
 		self.envscrollwin = add_scrollbars(self.envelope)
-		sampleprops.pack_start(self.envscrollwin)
+		envsection.pack_start(self.envscrollwin)
+		#~ wavsection = gtk.VBox(False, MARGIN)
+		nbsampleprops.append_page(envsection, gtk.Label("Envelopes"))
+		#~ nbsampleprops.append_page(wavsection, gtk.Label("Sample Editor"))
+		sampleprops.pack_start(nbsampleprops)
 		self.instrpanel.add1(samplesel)
 		self.instrpanel.add2(sampleprops)
 		self.instrpanel.set_position(250)
-		#~ librarybuttons = gtk.HBox()
-		#~ librarybuttons.pack_start(self.btnparent, expand=False)
-		#~ librarybuttons.pack_start(self.btnrefresh, expand=False)
-		#~ librarybuttons.pack_start(self.stworkpath)
-		#~ librarybuttons.pack_end(self.btnloadsample, expand=False)
-		#~ librarysection = self.libpanel
-		#~ librarysection.pack_start(librarybuttons, expand=False)
-		#~ librarysection.add(self.filelist)
 		self.update_all()
 		
-		#self.samplelist.add_events(gtk.gdk.BUTTON_PRESS_MASK)
 		self.samplelist.get_selection().connect('changed', self.on_samplelist_select)
 		self.samplelist.connect('button-press-event', self.on_samplelist_dclick)
 		self.samplelist.connect('key-press-event', self.on_samplelist_key_down)
-
-		#~ wx.EVT_LEFT_DCLICK(self.filelist, self.on_filelist_dclick)
-		#~ wx.EVT_BUTTON(self, self.btnparent.GetId(), self.on_parent_click)
-		#~ wx.EVT_BUTTON(self, self.btnloadsample.GetId(), self.on_load_sample)
-		#~ wx.EVT_BUTTON(self, self.btnrefresh.GetId(), self.on_refresh)
 		
 		self.btnstoresample.connect('clicked', self.on_save_sample)
 		self.btnplay.connect('clicked', self.on_play_wave)
@@ -217,8 +194,6 @@ class WavetablePanel(gtk.Notebook):
 		self.edloopend.connect('activate', self.on_loop_end_apply)
 		self.edsamplerate.connect('focus-out-event', self.on_samplerate_apply)
 		self.edsamplerate.connect('activate', self.on_samplerate_apply)
-		#~ wx.EVT_KEY_DOWN(self.filelist, self.on_filelist_key_down)
-		#~ wx.EVT_CHAR(self.filelist, self.on_filelist_char)
 		
 		self.libpanel.connect('key-press-event', self.on_filelist_key_down)
 		self.libpanel.connect('file-activated', self.on_load_sample)
