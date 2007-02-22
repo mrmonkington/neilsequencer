@@ -1422,6 +1422,7 @@ class MasterPanel(gtk.HBox):
 		self.masterslider.set_draw_value(False)
 		self.masterslider.set_range(0,16384)
 		self.masterslider.set_size_request(-1,200)
+		self.masterslider.set_inverted(True)
 		self.masterslider.connect('scroll-event', self.on_mousewheel)
 		self.masterslider.connect('change-value', self.on_scroll_changed)
 		self.ampl = AmpView()
@@ -1459,7 +1460,7 @@ class MasterPanel(gtk.HBox):
 		"""
 		vol = self.masterslider.get_value()
 		master = player.get_plugin(0)
-		master.set_parameter_value(1, 0, 0, int(vol), 1)
+		master.set_parameter_value(1, 0, 0, 16384 - int(vol), 1)
 
 	def on_mousewheel(self, widget, event):
 		"""
@@ -1475,7 +1476,7 @@ class MasterPanel(gtk.HBox):
 		elif event.direction == gtk.gdk.SCROLL_DOWN:
 			vol += step
 		vol = min(max(0,vol), 16384)
-		self.masterslider.set_value(vol)
+		self.masterslider.set_value(16384 - vol)
 		self.on_scroll_changed()
 		
 	def update_all(self):
@@ -1484,7 +1485,7 @@ class MasterPanel(gtk.HBox):
 		"""
 		master = player.get_plugin(0)
 		vol = master.get_parameter_value(1, 0, 0)
-		self.masterslider.set_value(vol)
+		self.masterslider.set_value(16384 - vol)
 		self.latency = driver.get_audiodriver().get_latency()
 		self.ampl.amps.reset()
 		self.ampr.amps.reset()
