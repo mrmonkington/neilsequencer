@@ -61,6 +61,8 @@ class PatternDialog(gtk.Dialog):
 			gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
 			None
 		)		
+		vbox = gtk.VBox(False, MARGIN)
+		vbox.set_border_width(MARGIN)
 		self.btnok = self.add_button(gtk.STOCK_OK, gtk.RESPONSE_OK)
 		self.btncancel = self.add_button(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL)
 		self.namelabel = gtk.Label("Name")
@@ -73,16 +75,18 @@ class PatternDialog(gtk.Dialog):
 		sgroup1 = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
 		sgroup2 = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
 		def add_row(c1, c2):
-			row = gtk.HBox()
+			row = gtk.HBox(False, MARGIN)
+			c1.set_alignment(1, 0.5)
 			row.pack_start(c1, expand=False)
 			row.pack_start(c2)
 			sgroup1.add_widget(c1)
 			sgroup2.add_widget(c2)
-			self.vbox.pack_start(row, expand=False)
+			vbox.pack_start(row, expand=False)
 		add_row(self.namelabel, self.edtname)
 		add_row(self.rowslabel, self.lengthbox)
 		self.edtname.connect('activate', self.on_enter)
 		self.lengthbox.child.connect('activate', self.on_enter)
+		self.vbox.add(vbox)
 		self.show_all()
 		
 	def on_enter(self, widget):
