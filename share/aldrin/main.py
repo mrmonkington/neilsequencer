@@ -262,8 +262,6 @@ class AldrinFrame(gtk.Window):
 		# load aliases file and add aliases
 		for name,uri in get_plugin_aliases():
 			player.add_plugin_alias(name, uri)
-		#~ pluginpath = filepath('../../lib/zzub') + os.sep
-		#~ print "pluginpath = '%s'" % pluginpath
 		pluginpath = os.environ.get('ALDRIN_PLUGIN_PATH',None)
 		if pluginpath:
 			pluginpaths = pluginpath.split(os.pathsep)
@@ -353,6 +351,8 @@ class AldrinFrame(gtk.Window):
 		wxglade_tmp_menu.append(self.item_hdrec)
 		self.item_master = make_check_item("_Master", "Show or hide Master", self.on_toggle_mastertoolbar)
 		wxglade_tmp_menu.append(self.item_master)
+		self.item_transport = make_check_item("_Transport", "Show or hide transport bar", self.on_toggle_transport)
+		wxglade_tmp_menu.append(self.item_transport)
 		self.item_statusbar = make_check_item("_Status Bar", "Show or hide the status bar", self.on_toggle_statusbar)
 		wxglade_tmp_menu.append(self.item_statusbar)
 		wxglade_tmp_menu.append(make_check_item("S_kins", "Show or hide custom machine skins", None))
@@ -645,11 +645,12 @@ class AldrinFrame(gtk.Window):
 		"""
 		Called to update all viewstates.
 		"""
-		self.item_hdrec.set_active(self.hdrecorder.window.is_visible())
-		self.item_cpumon.set_active(self.cpumonitor.window.is_visible())
-		self.item_master.set_active(self.mastertoolbar.window.is_visible())
-		self.item_statusbar.set_active(self.aldrinframe_statusbar.window.is_visible())
-		self.item_standard.set_active(self.aldrinframe_toolbar.window.is_visible())
+		self.item_hdrec.set_active(self.hdrecorder.get_property('visible'))
+		self.item_cpumon.set_active(self.cpumonitor.get_property('visible'))
+		self.item_master.set_active(self.mastertoolbar.get_property('visible'))
+		self.item_statusbar.set_active(self.aldrinframe_statusbar.get_property('visible'))
+		self.item_standard.set_active(self.aldrinframe_toolbar.get_property('visible'))
+		self.item_transport.set_active(self.transport.get_property('visible'))
 		self.save_view()
 		
 	def on_close_cpumonitor(self, widget, event):
@@ -748,6 +749,20 @@ class AldrinFrame(gtk.Window):
 			self.mastertoolbar.show_all()
 		else:
 			self.mastertoolbar.hide_all()
+		self.update_view()
+		
+	def on_toggle_transport(self, widget):
+		"""
+		Handler triggered by the "Toggle Master Toolbar" menu option.
+		Shows and hides the master toolbar.
+		
+		@param event: command event.
+		@type event: wx.CommandEvent
+		"""
+		if widget.get_active():
+			self.transport.show_all()
+		else:
+			self.transport.hide_all()
 		self.update_view()
 
 	def on_toggle_mastertoolbar(self, widget):
