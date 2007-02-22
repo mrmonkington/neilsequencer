@@ -517,6 +517,26 @@ def new_image_button(path, tooltip):
 	button = gtk.Button()
 	button.set_image(image)
 	return button
+	
+def new_stock_image_button(stockid):
+	"""
+	Creates a button with a stock image.
+	"""
+	image = gtk.Image()
+	image.set_from_stock(stockid, gtk.ICON_SIZE_BUTTON)
+	button = gtk.Button()
+	button.set_image(image)
+	return button
+
+def new_stock_image_toggle_button(stockid):
+	"""
+	Creates a toggle button with a stock image.
+	"""
+	image = gtk.Image()
+	image.set_from_stock(stockid, gtk.ICON_SIZE_BUTTON)
+	button = gtk.ToggleButton()
+	button.set_image(image)
+	return button
 
 def new_image_toggle_button(path, tooltip):
 	"""

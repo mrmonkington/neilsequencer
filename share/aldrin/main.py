@@ -29,7 +29,9 @@ import gobject
 
 import time
 
-from utils import format_time, ticks_to_time, prepstr, linear2db, filepath, is_debug, question, error, add_scrollbars, file_filter
+from utils import format_time, ticks_to_time, prepstr, linear2db, filepath, \
+	is_debug, question, error, add_scrollbars, file_filter, new_stock_image_toggle_button, \
+	new_stock_image_button
 import utils
 
 from zzub import Player
@@ -163,6 +165,15 @@ def make_radio_item(label, desc, func, *args):
 		item.connect('toggled', func, *args)
 	return item
 
+	
+STOCK_PATTERNS = "aldrin-patterns"
+STOCK_ROUTER = "aldrin-router"
+STOCK_SEQUENCER = "aldrin-sequencer"
+STOCK_LOOP = "aldrin-loop"
+STOCK_SOUNDLIB = "aldrin-soundlib"
+STOCK_INFO = "aldrin-info"
+STOCK_PANIC = "aldrin-panic"
+
 class AldrinFrame(gtk.Window):
 	"""
 	The application main window class.
@@ -186,14 +197,6 @@ class AldrinFrame(gtk.Window):
 	PAGE_SEQUENCER = 2
 	PAGE_WAVETABLE = 3
 	PAGE_INFO = 4
-	
-	STOCK_PATTERNS = "aldrin-patterns"
-	STOCK_ROUTER = "aldrin-router"
-	STOCK_SEQUENCER = "aldrin-sequencer"
-	STOCK_LOOP = "aldrin-loop"
-	STOCK_SOUNDLIB = "aldrin-soundlib"
-	STOCK_INFO = "aldrin-info"
-	STOCK_PANIC = "aldrin-panic"
 	
 	style_rc = """
 	#gtk-button-images=0
@@ -352,8 +355,6 @@ class AldrinFrame(gtk.Window):
 		wxglade_tmp_menu.append(self.item_master)
 		self.item_statusbar = make_check_item("_Status Bar", "Show or hide the status bar", self.on_toggle_statusbar)
 		wxglade_tmp_menu.append(self.item_statusbar)
-		self.item_time = make_check_item("T_ime", "Show or hide Time", self.on_toggle_timetoolbar)
-		wxglade_tmp_menu.append(self.item_time)
 		wxglade_tmp_menu.append(make_check_item("S_kins", "Show or hide custom machine skins", None))
 		self.item_standard = make_check_item("_Standard", "Show or hide the standard toolbar", self.on_toggle_toolbar)
 		wxglade_tmp_menu.append(self.item_standard)
@@ -405,23 +406,23 @@ class AldrinFrame(gtk.Window):
 		self.pages = {
 			self.PAGE_PATTERN : (
 				self.patternframe,
-				make_stock_radio_item(self.STOCK_PATTERNS,None),
+				make_stock_radio_item(STOCK_PATTERNS,None),
 			),
 			self.PAGE_ROUTE : (
 				self.routeframe,
-				make_stock_radio_item(self.STOCK_ROUTER,None),
+				make_stock_radio_item(STOCK_ROUTER,None),
 			),
 			self.PAGE_SEQUENCER : (
 				self.seqframe,
-				make_stock_radio_item(self.STOCK_SEQUENCER,None),
+				make_stock_radio_item(STOCK_SEQUENCER,None),
 			),
 			self.PAGE_WAVETABLE : (
 				self.wavetableframe,
-				make_stock_radio_item(self.STOCK_SOUNDLIB,None),
+				make_stock_radio_item(STOCK_SOUNDLIB,None),
 			),
 			self.PAGE_INFO : (
 				self.infoframe,
-				make_stock_radio_item(self.STOCK_INFO,None),
+				make_stock_radio_item(STOCK_INFO,None),
 			),
 		}
 		self.aldrinframe_toolbar.insert(make_stock_tool_item(gtk.STOCK_NEW, self.new),-1)
@@ -432,19 +433,10 @@ class AldrinFrame(gtk.Window):
 		self.aldrinframe_toolbar.insert(self.pages[self.PAGE_ROUTE][1],-1)
 		self.aldrinframe_toolbar.insert(self.pages[self.PAGE_SEQUENCER][1],-1)
 		self.aldrinframe_toolbar.insert(gtk.SeparatorToolItem(),-1)
-		self.btnplay = make_stock_toggle_item(gtk.STOCK_MEDIA_PLAY, self.play)
-		self.aldrinframe_toolbar.insert(self.btnplay,-1)
-		self.btnrecord = make_stock_toggle_item(gtk.STOCK_MEDIA_RECORD, self.on_toggle_automation)
-		self.aldrinframe_toolbar.insert(self.btnrecord,-1)
-		self.btnstop = make_stock_tool_item(gtk.STOCK_MEDIA_STOP, self.stop)
-		self.aldrinframe_toolbar.insert(self.btnstop,-1)
-		self.btnloop = make_stock_toggle_item(self.STOCK_LOOP, self.on_toggle_loop)
-		self.aldrinframe_toolbar.insert(self.btnloop,-1)
-		self.aldrinframe_toolbar.insert(gtk.SeparatorToolItem(),-1)
 		self.aldrinframe_toolbar.insert(self.pages[self.PAGE_WAVETABLE][1],-1)
 		self.aldrinframe_toolbar.insert(self.pages[self.PAGE_INFO][1],-1)
 		self.aldrinframe_toolbar.insert(gtk.SeparatorToolItem(),-1)
-		self.aldrinframe_toolbar.insert(make_stock_tool_item(self.STOCK_PANIC, self.on_toggle_panic),-1)
+		self.aldrinframe_toolbar.insert(make_stock_tool_item(STOCK_PANIC, self.on_toggle_panic),-1)
 		extrasep = gtk.SeparatorToolItem()
 		self.aldrinframe_toolbar.insert(extrasep,-1)
 		added = False
@@ -455,9 +447,15 @@ class AldrinFrame(gtk.Window):
 
 		self.mastertoolbar = MasterPanel(self)
 		self.transport = TransportPanel(self)
-
-		self.timetoolbar = TimePanel()
 		
+		for name in ('btnplay','btnrecord','btnstop','btnloop'):
+			setattr(self, name, getattr(self.transport, name))
+			
+		self.btnplay.connect('clicked', self.play)
+		self.btnrecord.connect('clicked', self.on_toggle_automation)
+		self.btnstop.connect('clicked', self.stop)
+		self.btnloop.connect('clicked', self.on_toggle_loop)
+
 		self.framepanel = gtk.Notebook()
 		self.framepanel.set_show_border(False)
 		self.framepanel.set_show_tabs(False)
@@ -477,7 +475,6 @@ class AldrinFrame(gtk.Window):
 
 		self.aldrinframe_statusbar = gtk.Statusbar()
 		
-		vbox.pack_start(self.timetoolbar, expand=False)
 		vbox.pack_start(self.transport, expand=False)
 		vbox.pack_end(self.aldrinframe_statusbar, expand=False)
 
@@ -630,7 +627,6 @@ class AldrinFrame(gtk.Window):
 		cfg.load_window_pos("Toolbar", self.aldrinframe_toolbar)
 		cfg.load_window_pos("MasterToolbar", self.mastertoolbar)
 		cfg.load_window_pos("Transport", self.transport)
-		cfg.load_window_pos("TimeToolbar", self.timetoolbar)
 		cfg.load_window_pos("StatusBar", self.aldrinframe_statusbar)
 		self.update_view()
 		
@@ -643,7 +639,6 @@ class AldrinFrame(gtk.Window):
 		cfg.save_window_pos("Toolbar", self.aldrinframe_toolbar)
 		cfg.save_window_pos("MasterToolbar", self.mastertoolbar)
 		cfg.save_window_pos("Transport", self.transport)
-		cfg.save_window_pos("TimeToolbar", self.timetoolbar)
 		cfg.save_window_pos("StatusBar", self.aldrinframe_statusbar)
 		
 	def update_view(self):
@@ -653,8 +648,7 @@ class AldrinFrame(gtk.Window):
 		self.item_hdrec.set_active(self.hdrecorder.window.is_visible())
 		self.item_cpumon.set_active(self.cpumonitor.window.is_visible())
 		self.item_master.set_active(self.mastertoolbar.window.is_visible())
-		self.item_statusbar.set_active(self.timetoolbar.window.is_visible())
-		self.item_time.set_active(self.aldrinframe_statusbar.window.is_visible())
+		self.item_statusbar.set_active(self.aldrinframe_statusbar.window.is_visible())
 		self.item_standard.set_active(self.aldrinframe_toolbar.window.is_visible())
 		self.save_view()
 		
@@ -742,29 +736,6 @@ class AldrinFrame(gtk.Window):
 		@type event: wx.CommandEvent
 		"""
 		self.show_statusbar(widget.get_active())
-
-	def show_timetoolbar(self, enable):
-		"""
-		Shows or hides the timetoolbar.
-		
-		@param enable: If True, toolbar will be shown.
-		@type enable: bool
-		"""
-		if enable:
-			self.timetoolbar.show_all()
-		else:
-			self.timetoolbar.hide_all()
-		self.update_view()
-		
-	def on_toggle_timetoolbar(self, widget):
-		"""
-		Handler triggered by the "Toggle Time Toolbar" menu option.
-		Shows and hides the time toolbar.
-		
-		@param event: command event.
-		@type event: wx.CommandEvent
-		"""
-		self.show_timetoolbar(widget.get_active())
 
 	def show_mastertoolbar(self, enable):
 		"""
@@ -1490,7 +1461,7 @@ class MasterPanel(gtk.HBox):
 		self.ampl.amps.reset()
 		self.ampr.amps.reset()
 
-class TransportPanel(gtk.VBox):
+class TransportPanel(gtk.HBox):
 	"""
 	A panel containing the BPM/TPB spin controls.
 	"""
@@ -1498,7 +1469,7 @@ class TransportPanel(gtk.VBox):
 		"""
 		Initializer.
 		"""		
-		gtk.VBox.__init__(self)
+		gtk.HBox.__init__(self)
 		self.rootwindow = rootwindow
 		self.rootwindow.event_handlers.append(self.on_player_callback)
 		self.bpmlabel = gtk.Label("BPM")
@@ -1511,18 +1482,93 @@ class TransportPanel(gtk.VBox):
 		self.tpb.set_range(1,32)
 		self.tpb.set_value(4)
 		self.tpb.set_increments(1, 2)
+		self.btnplay = new_stock_image_toggle_button(gtk.STOCK_MEDIA_PLAY)
+		self.btnrecord = new_stock_image_toggle_button(gtk.STOCK_MEDIA_RECORD)
+		self.btnstop = new_stock_image_button(gtk.STOCK_MEDIA_STOP)
+		self.btnloop = new_stock_image_toggle_button(STOCK_LOOP)
+		
+		vbox = gtk.VBox(False, 0)
+		sg1 = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
+		sg2 = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
+		def add_row(name):
+			c1 = gtk.Label()
+			c1.set_markup("<b>%s</b>" % name)
+			c1.set_alignment(1, 0.5)
+			c2 = gtk.Label()
+			c2.set_alignment(1, 0.5)
+			hbox = gtk.HBox(False, MARGIN)
+			hbox.pack_start(c1, expand=False)
+			hbox.pack_start(c2, expand=False)
+			sg1.add_widget(c1)
+			sg2.add_widget(c2)
+			vbox.add(hbox)
+			return c2
+		self.elapsed = add_row("Elapsed")
+		self.current = add_row("Current")
+		self.loop = add_row("Loop")
+		self.starttime = time.time()
+		self.update_label()		
+
+
 		combosizer = gtk.HBox(False, MARGIN)
+		combosizer.pack_start(vbox, expand=False)
+		combosizer.pack_start(gtk.VSeparator(), expand=False)
+
+		hbox = gtk.HBox(False, MARGIN0)
+		hbox.pack_start(self.btnplay,expand=False)
+		hbox.pack_start(self.btnrecord,expand=False)
+		hbox.pack_start(self.btnstop,expand=False)
+		hbox.pack_start(self.btnloop,expand=False)
+		self.transport_buttons = hbox.get_children()
+		def on_realize(self):
+			for e in self.transport_buttons:
+				rc = e.get_allocation()
+				w = max(rc.width, rc.height)
+				print w
+				e.set_size_request(w,w)
+		self.connect('realize', on_realize)
+		
+		
+		combosizer.pack_start(hbox, expand=False)
+		combosizer.pack_start(gtk.VSeparator(), expand=False)
+		
 		combosizer.pack_start(self.bpmlabel,expand=False)
 		combosizer.pack_start(self.bpm,expand=False)
 		combosizer.pack_start(self.tpblabel,expand=False)
 		combosizer.pack_start(self.tpb,expand=False)
-		self.add(combosizer)
+
+		
+		self.pack_start(gtk.HBox())
+		self.pack_start(combosizer, expand=False)
+		self.pack_end(gtk.HBox())
 		self.set_border_width(MARGIN)
 		player.get_plugin(0).set_parameter_value(1, 0, 1, config.get_config().get_default_int('BPM', 126), 1)
 		player.get_plugin(0).set_parameter_value(1, 0, 2, config.get_config().get_default_int('TPB', 4), 1)
 		self.update_all()
 		self.bpm.connect('value-changed', self.on_bpm)
 		self.tpb.connect('value-changed', self.on_tpb)
+		gobject.timeout_add(100, self.update_label)
+		
+	def update_label(self):
+		"""
+		Event handler triggered by a 10fps timer event.
+		"""
+		p = player.get_position()
+		m = player.get_plugin(0)
+		bpm = m.get_parameter_value(1, 0, 1)
+		tpb = m.get_parameter_value(1, 0, 2)
+		time.time() - self.starttime
+		if player.get_state() == 0: # playing
+			e = format_time(time.time() - playstarttime)
+		else:
+			e = format_time(0.0)
+		c = format_time(ticks_to_time(p,bpm,tpb))
+		lb,le = player.get_song_loop()		
+		l = format_time(ticks_to_time(le-lb,bpm,tpb))
+		for text,control in [(e,self.elapsed),(c,self.current),(l,self.loop)]:
+			if text != control.get_text():
+				control.set_text(text)
+		return True
 
 	def on_player_callback(self, player, plugin, data):
 		"""
@@ -1568,46 +1614,6 @@ class TransportPanel(gtk.VBox):
 		tpb = master.get_parameter_value(1, 0, 2)
 		self.bpm.set_value(bpm)
 		self.tpb.set_value(tpb)
-
-class TimePanel(gtk.VBox):
-	"""
-	A toolbar displaying elapsed, current and loop time values.
-	"""
-	def __init__(self):
-		"""
-		Initializer.
-		"""
-		# begin wxGlade: SequencerFrame.__init__
-		gtk.VBox.__init__(self)
-		self.timelabel = gtk.Label()
-		self.timelabel.set_alignment(0, 0.5)
-		self.starttime = time.time()
-		self.update_label()		
-		self.pack_start(self.timelabel)
-		self.set_border_width(MARGIN0)
-		gobject.timeout_add(100, self.update_label)
-		
-	def update_label(self):
-		"""
-		Event handler triggered by a 10fps timer event.
-		"""
-		p = player.get_position()
-		m = player.get_plugin(0)
-		bpm = m.get_parameter_value(1, 0, 1)
-		tpb = m.get_parameter_value(1, 0, 2)
-		time.time() - self.starttime
-		if player.get_state() == 0: # playing
-			e = format_time(time.time() - playstarttime)
-		else:
-			e = format_time(0.0)
-		c = format_time(ticks_to_time(p,bpm,tpb))
-		lb,le = player.get_song_loop()		
-		l = format_time(ticks_to_time(le-lb,bpm,tpb))
-		text = 'Elapsed %s   Current %s   Loop %s' % (e,c,l)
-		if text != self.timelabel.get_label():
-			self.timelabel.set_label(text)
-		return True
-
 
 class AldrinApplication:
 	"""
