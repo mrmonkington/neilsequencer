@@ -362,6 +362,7 @@ class ParameterDialog(gtk.Dialog):
 			slider.set_value(v)
 			valuelabel = gtk.Label("")
 			valuelabel.set_alignment(0, 0.5)
+			valuelabel.set_size_request(80, -1)
 			
 			snamegroup.add_widget(namelabel)
 			namelabel.set_alignment(1, 0.5)
