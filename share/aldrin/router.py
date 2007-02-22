@@ -27,7 +27,8 @@ import gobject
 import cairo
 import pangocairo
 from utils import prepstr, filepath, db2linear, linear2db, is_debug, filenameify, \
-	get_item_count, question, error, new_listview, add_scrollbars, get_clipboard_text, set_clipboard_text
+	get_item_count, question, error, new_listview, add_scrollbars, get_clipboard_text, set_clipboard_text, \
+	gettext
 import config
 import zzub
 import sys,os
@@ -1055,8 +1056,6 @@ class RouteView(gtk.DrawingArea):
 	Allows to monitor and control plugins and their connections.
 	"""	
 	current_plugin = None
-	context_plugin = None
-	context_conn = None
 	connecting = False
 	dragging = False
 	dragoffset = 0,0
@@ -1162,14 +1161,12 @@ class RouteView(gtk.DrawingArea):
 	def on_focus(self, event):
 		self.redraw()
 	
-	def on_popup_rename(self, event):
-		dialog = wx.TextEntryDialog(self, "Rename plugin", caption = "Rename plugin",
-			defaultValue=self.context_plugin.get_name(), style = wx.OK | wx.CANCEL)
-		if dialog.ShowModal() == wx.ID_OK:
-			self.context_plugin.set_name(dialog.GetValue())
-			common.get_plugin_infos().plugin_info[self.context_plugin].reset_plugingfx()
-			self.ReDraw()
-		dialog.Destroy()
+	def on_popup_rename(self, widget, mp):
+		text = gettext(self, "Enter new plugin name:", prepstr(mp.get_name()))
+		if text:
+			mp.set_name(text)
+			common.get_plugin_infos().plugin_info[mp].reset_plugingfx()
+			self.redraw()
 	
 	def solo(self, plugin):		
 		if not plugin or plugin == self.solo_plugin:
@@ -1189,35 +1186,35 @@ class RouteView(gtk.DrawingArea):
 					plugin.set_mute(info.muted)
 					info.reset_plugingfx()
 	
-	def on_popup_solo(self, event):
+	def on_popup_solo(self, widget, mp):
 		"""
 		Event handler for the "Mute" context menu option.
 		
 		@param event: Menu event.
 		@type event: wx.MenuEvent
 		"""		
-		if self.solo_plugin != self.context_plugin:
-			self.solo(self.context_plugin)
+		if self.solo_plugin != mp:
+			self.solo(mp)
 		else:
 			self.solo(None)		
-		self.ReDraw()
+		self.redraw()
 	
 	def toggle_mute(self, plugin):
 		pi = common.get_plugin_infos()[plugin]
 		pi.muted = not pi.muted		
-		if not self.solo_plugin or self.context_plugin == self.solo_plugin:
+		if not self.solo_plugin or plugin == self.solo_plugin:
 			plugin.set_mute(pi.muted)
 		pi.reset_plugingfx()
 	
-	def on_popup_mute(self, event):
+	def on_popup_mute(self, widget, mp):
 		"""
 		Event handler for the "Mute" context menu option.
 		
 		@param event: Menu event.
 		@type event: wx.MenuEvent
 		"""
-		self.toggle_mute(self.context_plugin)		
-		self.ReDraw()
+		self.toggle_mute(mp)		
+		self.redraw()
 		
 	def on_popup_delete(self, widget, mp):
 		"""
@@ -1374,17 +1371,6 @@ class RouteView(gtk.DrawingArea):
 		if mp.get_type() == zzub.zzub_plugin_type_effect:
 			self.show_parameter_dialog(mp)
 		
-	def on_popup_command(self, event):
-		"""
-		Event handler for requests to show the context menu.
-		
-		@param event: event.
-		@type event: wx.Event
-		"""
-		submenuindex,index = self.cmdmap[event.GetId()]
-		print (submenuindex<<8) | index
-		self.context_plugin.command((submenuindex<<8) | index)
-		
 	def get_plugin_menu(self, include_generators = True, include_effects = True, **kargs):
 		"""
 		Generates and returns a new plugin menu.
@@ -1451,22 +1437,18 @@ class RouteView(gtk.DrawingArea):
 			if func:
 				item.connect('activate', func, *args)
 			return item
-		def make_check_item(label, desc, func, *args):
+		def make_check_item(toggled, label, desc, func, *args):
 			item = gtk.CheckMenuItem(label=label)
+			item.set_active(toggled)
 			if func:
 				item.connect('toggled', func, *args)
 			return item
 		res = self.get_plugin_at((mx,my))
 		if res:
 			mp,(x,y),area = res
-			item = make_check_item("_Mute", "Toggle Bypass", self.on_popup_mute, mp)
-			if common.get_plugin_infos()[mp].muted:
-				item.set_active(True)
-			menu.append(item)
+			menu.append(make_check_item(common.get_plugin_infos()[mp].muted, "_Mute", "Toggle Bypass", self.on_popup_mute, mp))
 			if mp.get_type() == zzub.zzub_plugin_type_generator:
-				item = make_check_item("_Solo", "Toggle Solo", self.on_popup_solo, mp)
-				if self.solo_plugin == mp:
-					item.set_active(True)
+				menu.append(make_check_item(self.solo_plugin == mp, "_Solo", "Toggle Solo", self.on_popup_solo, mp))
 			menu.append(gtk.SeparatorMenuItem())
 			menu.append(make_menu_item("_Parameters...", "View parameters", self.on_popup_show_params, mp))
 			menu.append(make_menu_item("_Attributes...", "Show Attributes", self.on_popup_show_attribs, mp))

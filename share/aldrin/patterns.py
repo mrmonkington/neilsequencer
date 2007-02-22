@@ -27,7 +27,7 @@ import os, sys
 from gtkimport import gtk
 import gobject
 import pango
-from utils import prepstr, filepath, get_item_count, get_clipboard_text, set_clipboard_text
+from utils import prepstr, filepath, get_item_count, get_clipboard_text, set_clipboard_text, question
 import pickle
 import zzub
 import time
@@ -101,7 +101,7 @@ def show_pattern_dialog(parent, name, length, dlgmode):
 	Shows the pattern creation/modification dialog.
 	
 	@param parent: Parent container
-	@type parent: wx.Window
+	@type parent: gtk.Widget
 	@param name: Pattern name
 	@type name: string
 	@param length: Pattern name
@@ -194,9 +194,6 @@ class PatternToolBar(gtk.HBox):
 	def on_pluginselect(self, widget):		
 		"""
 		Callback to handle selection of the pluginselect list.
-		
-		@param event: Selection event.
-		@type event: wx.CommandEvent
 		"""
 		if widget.get_active() == -1:
 			return
@@ -369,8 +366,6 @@ class PatternPanel(gtk.VBox):
 		@param rootwindow: Window that contains the component.
 		@type rootwindow: main.AldrinFrame
 		"""
-		# begin wxGlade: SequencerFrame.__init__
-		#kwds["style"] = wx.DEFAULT_PANEL_STYLE
 		gtk.VBox.__init__(self)
 		self.rootwindow = rootwindow
 		self.rootwindow.event_handlers.append(self.on_player_callback)
@@ -607,84 +602,62 @@ class PatternView(gtk.DrawingArea):
 		self.connect('button-press-event', self.on_left_down)
 		self.connect('scroll-event', self.on_mousewheel)
 		gobject.timeout_add(100, self.update_position)
-		#~ wx.EVT_MOUSEWHEEL(self, self.on_mousewheel)
-		#~ wx.EVT_LEFT_DOWN(self, self.on_left_down)	
-		#~ wx.EVT_KEY_DOWN(self, self.on_key_down)	
-		#~ wx.EVT_CHAR(self, self.on_char)
-		#~ wx.EVT_CONTEXT_MENU(self, self.on_context_menu)
-		#~ wx.EVT_SCROLLWIN(self, self.on_scroll_window)
 		
-	def on_copy(self, event):
+	def on_copy(self, widget):
 		"""
 		Sent when the copy function is selected from the menu.
-		
-		@param event: Menu event.
-		@type event: wx.MenuEvent
 		"""
 		self.copy()
 
-	def on_cut(self, event):
+	def on_cut(self, widget):
 		"""
 		Sent when the cut function is selected from the menu.
-		
-		@param event: Menu event.
-		@type event: wx.MenuEvent
 		"""
 		self.cut()
 
-	def on_paste(self, event):
+	def on_paste(self, widget):
 		"""
 		Sent when the paste function is selected from the menu.
-		
-		@param event: Menu event.
-		@type event: wx.MenuEvent
 		"""
 		self.paste()
 
 	def on_context_menu(self, event):
 		"""
 		Callback that constructs and displays the popup menu
-		
-		@param event: Menu event.
-		@type event: wx.CommandEvent
 		"""
-		# create main items only once
-		if not hasattr(self, "popup_add_track"):
-			self.popup_add_track = wx.NewId()
-			self.popup_delete_track = wx.NewId()
-			self.popup_create_pattern = wx.NewId()
-			self.popup_pattern_properties = wx.NewId()
-			self.popup_remove_pattern = wx.NewId()
-			self.popup_create_copy = wx.NewId()
-			self.popup_solo = wx.NewId()
-
-		self.Bind(wx.EVT_MENU, self.on_popup_add_track, id=self.popup_add_track)
-		self.Bind(wx.EVT_MENU, self.on_popup_delete_track, id=self.popup_delete_track)
-		self.Bind(wx.EVT_MENU, self.on_popup_create_pattern, id=self.popup_create_pattern)
-		self.Bind(wx.EVT_MENU, self.on_popup_properties, id=self.popup_pattern_properties)
-		self.Bind(wx.EVT_MENU, self.on_popup_remove_pattern, id=self.popup_remove_pattern)
-		self.Bind(wx.EVT_MENU, self.on_popup_create_copy, id=self.popup_create_copy)
-		self.Bind(wx.EVT_MENU, self.on_popup_solo, id=self.popup_solo)
+		def make_submenu_item(submenu, name):
+			item = gtk.MenuItem(label=name)
+			item.set_submenu(submenu)
+			return item
+		def make_menu_item(label, desc, func, *args):
+			item = gtk.MenuItem(label=label)
+			if func:
+				item.connect('activate', func, *args)
+			return item
+		def make_check_item(toggled, label, desc, func, *args):
+			item = gtk.CheckMenuItem(label=label)
+			item.set_active(toggled)
+			if func:
+				item.connect('toggled', func, *args)
+			return item
 			
-		menu = wx.Menu()			
-		menu.Append(self.popup_add_track, "Add track\tCtrl +")
-		menu.Append(self.popup_delete_track, "Delete last track\tCtrl -")
-		menu.AppendSeparator()
-		menu.Append(self.popup_create_pattern, "New pattern...\tCtrl+Return")
-		menu.Append(self.popup_pattern_properties, "Pattern properties...\tCtrl+Backspace")
-		menu.Append(self.popup_remove_pattern, "Remove pattern...\tCtrl+Del")
-		menu.Append(self.popup_create_copy, "Create copy...\tCtrl+Shift+Return")
-		menu.AppendSeparator()
-		menu.Append(self.popup_solo, "Solo Plugin\tCtrl+L", "Toggle solo", wx.ITEM_CHECK)
-		item = menu.FindItemById(self.popup_solo)
-		if self.rootwindow.routeframe.view.solo_plugin == self.get_plugin():
-			item.Check()
+		menu = gtk.Menu()
+		mx,my = int(event.x), int(event.y)
+		menu.append(make_menu_item("Add track", "", self.on_popup_add_track))
+		menu.append(make_menu_item("Delete last track", "", self.on_popup_delete_track))
+		menu.append(gtk.SeparatorMenuItem())
+		menu.append(make_menu_item("New pattern...", "", self.on_popup_create_pattern))
+		menu.append(make_menu_item("Pattern properties...", "", self.on_popup_properties))
+		menu.append(make_menu_item("Remove pattern...","", self.on_popup_remove_pattern))
+		menu.append(make_menu_item("Create copy...", "", self.on_popup_create_copy))
+		menu.append(gtk.SeparatorMenuItem())
+		issolo = self.rootwindow.routeframe.view.solo_plugin == self.get_plugin()
+		menu.append(make_check_item(issolo, "Solo Plugin", "Toggle solo", self.on_popup_solo))
 
-		# Popup the menu.  If an item is selected then its handler
-		# will be called before PopupMenu returns.
-		self.PopupMenu(menu)
-		menu.Destroy()
-	
+		menu.show_all()
+		menu.attach_to_widget(self, None)
+		menu.popup(None, None, None, event.button, event.time)
+		
 	def update_position(self):
 		"""
 		Updates the position.
@@ -1248,9 +1221,11 @@ class PatternView(gtk.DrawingArea):
 		"""
 		Callback that responds to left click in pattern view.
 		"""
+		self.grab_focus()
+		if event.button == 3:
+			self.on_context_menu(event)
 		if not self.pattern:
 			return
-		self.grab_focus()
 		if event.button == 1:
 			x,y = int(event.x), int(event.y)
 			row, group, track, index, subindex = self.pos_to_pattern((x,y))
@@ -1265,9 +1240,8 @@ class PatternView(gtk.DrawingArea):
 		"""
 		Callback that removes the current pattern.
 		"""		
-		dlg = wx.MessageDialog(self, message="sure?", caption = "Remove pattern", style = wx.ICON_EXCLAMATION|wx.YES_NO|wx.CENTER)
-		result = dlg.ShowModal()
-		if result == wx.ID_YES:
+		response = question(self, "<b><big>Do you really want to remove this pattern?</big></b>\n\nYou cannot reverse this action.", False)
+		if response == gtk.RESPONSE_YES:
 			m = self.get_plugin()			
 			if self.pattern:
 				m.remove_pattern(self.pattern)
@@ -1345,9 +1319,7 @@ class PatternView(gtk.DrawingArea):
 		"""
 		Callback that deletes last track.
 		"""		
-		dlg = wx.MessageDialog(self, message="sure?", caption = "Delete last track", style = wx.ICON_EXCLAMATION|wx.YES_NO|wx.CENTER)
-		result = dlg.ShowModal()
-		if result == wx.ID_YES:
+		if question(self, "<b><big>Really delete last track?</big></b>\n\nThis action can not be undone.", False) == gtk.RESPONSE_YES:
 			m = self.get_plugin()
 			m.set_track_count(m.get_track_count()-1)
 			self.pattern_changed()	

@@ -380,6 +380,32 @@ def to_hsb(r,g,b):
 		b = v
 	return h,s,b
 	
+def gettext(parent, msg, text=''):
+	"""
+	Shows a dialog to get some text.
+	"""
+	dialog = gtk.Dialog(
+		'',
+		parent and parent.get_toplevel(),
+		gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
+		(gtk.STOCK_OK, gtk.RESPONSE_OK, gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL))
+	label = gtk.Label()
+	label.set_markup(msg)
+	label.set_alignment(0,0.5)
+	entry = gtk.Entry()
+	entry.set_text(text)
+	entry.connect('activate', lambda x: dialog.response(gtk.RESPONSE_OK))
+	vbox = gtk.VBox(False, 6)
+	vbox.set_border_width(6)
+	vbox.pack_start(label)
+	vbox.pack_end(entry, expand=False)
+	dialog.vbox.add(vbox)
+	dialog.show_all()
+	response = dialog.run()
+	dialog.destroy()
+	if response == gtk.RESPONSE_OK:
+		return entry.get_text()
+		
 def question(parent, msg, allowcancel = True):
 	"""
 	Shows a question dialog.
@@ -593,4 +619,8 @@ __all__ = [
 'format_filesize',
 'set_clipboard_text',
 'get_clipboard_text',
+'gettext',
 ]
+
+if __name__ == '__main__':
+	print gettext(None, '<b>wurst?</b>', 'kaese')
