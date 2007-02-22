@@ -895,13 +895,15 @@ class AldrinFrame(gtk.Window, IMainFrame):
 		@type index: int
 		"""
 		panel, menuitem = self.pages[index]
-		if hasattr(panel,'view'):
-			panel.view.grab_focus()
-		else:
-			panel.grab_focus()
 		if not menuitem.get_active():
 			menuitem.set_active(True)
 		self.framepanel.set_current_page(index)
+		if hasattr(panel,'view'):
+			print "grab focus",panel.view
+			panel.view.grab_focus()
+		else:
+			print "not grab focus"
+			panel.grab_focus()
 			
 	def on_preferences(self, event):
 		"""

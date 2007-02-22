@@ -100,6 +100,7 @@ class WavetablePanel(gtk.Notebook):
 			('#', str),
 			('Name', str),
 		])
+		self.view = self.samplelist
 		# XXX: TODO
 		#~ imglist = wx.ImageList(16,16)
 		#~ self.IMG_SAMPLE_WAVE = imglist.Add(wx.Bitmap(filepath("res/wave.png"), wx.BITMAP_TYPE_ANY))
