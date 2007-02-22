@@ -771,16 +771,16 @@ class SequencerView(gtk.DrawingArea):
 			self.selection_start = None
 			self.redraw()
 	
-	def on_mousewheel(self, event):
+	def on_mousewheel(self, widget, event):
 		"""
 		Callback that responds to mousewheeling in sequencer.
 		
 		@param event: Mouse event
 		@type event: wx.MouseEvent
 		"""		
-		if event.GetWheelRotation() > 0:
+		if event.direction == gtk.gdk.SCROLL_UP:
 			self.set_cursor_pos(self.track, self.row - self.step)
-		else:
+		elif event.direction == gtk.gdk.SCROLL_DOWN:
 			self.set_cursor_pos(self.track, self.row + self.step)
 	
 	def on_left_down(self, widget, event):
