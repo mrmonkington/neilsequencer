@@ -202,6 +202,17 @@ class IExtensionHost(Interface):
 		@return: Absolute path to file or dir.
 		@rtype: str
 		"""
+		
+	def get_player(self):
+		"""
+		Returns the zzub.Player object allowing
+		access to all song data. Please see
+		the pyzzub documentation.
+		
+		@return: The global player object.
+		@rtype: zzub.Player
+		"""
+		
 
 class IExtensionManager(Interface):
 	"""

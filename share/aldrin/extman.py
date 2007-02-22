@@ -79,6 +79,18 @@ class ExtensionHost(interface.IExtensionHost):
 		"""
 		return get_extension_manager()
 		
+	def get_player(self):
+		"""
+		Returns the zzub.Player object allowing
+		access to all song data. Please see
+		the pyzzub documentation.
+		
+		@return: The global player object.
+		@rtype: zzub.Player
+		"""
+		import common
+		return common.get_player()
+		
 	def resolve_path(self, path):
 		"""
 		Resolves a relative path to an absolute
