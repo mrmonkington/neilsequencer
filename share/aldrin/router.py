@@ -1084,7 +1084,7 @@ class RouteView(gtk.DrawingArea):
 		self.volume_slider = VolumeSlider()		
 		self.plugin_tree = indexer.parse_index(player, config.get_config().get_index_path())
 		self.add_events(gtk.gdk.ALL_EVENTS_MASK)
-		
+		self.set_property('can-focus', True)
 		self.connect('button-press-event', self.on_left_down)
 		self.connect('button-release-event', self.on_left_up)
 		self.connect('motion-notify-event', self.on_motion)

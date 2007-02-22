@@ -143,10 +143,9 @@ class SequencerPanel(gtk.VBox):
 		self.seqpatternlist.set_search_column(0)
 		tvkey.set_sort_column_id(0)
 		tvpname.set_sort_column_id(1)
-
 		self.seqview = SequencerView(rootwindow, self)
-		self.splitter.pack1(self.seqview, True, True)
-		self.splitter.pack2(add_scrollbars(self.seqpatternlist), False, False)
+		self.splitter.pack1(add_scrollbars(self.seqpatternlist), False, False)
+		self.splitter.pack2(self.seqview, True, True)
 		self.view = self.seqview
 		self.toolbar = SequencerToolBar()
 		self.statusbar = gtk.HBox(False, MARGIN)
@@ -259,14 +258,7 @@ class SequencerView(gtk.DrawingArea):
 		self.connect('button-release-event', self.on_left_up)
 		self.connect('scroll-event', self.on_mousewheel)
 		gobject.timeout_add(100, self.update_position)
-		
-		#~ wx.EVT_MOUSEWHEEL(self, self.on_mousewheel)
-		#~ wx.EVT_LEFT_DOWN(self, self.on_left_down)
-		#~ wx.EVT_MOTION(self, self.on_motion)
-		#~ wx.EVT_LEFT_UP(self, self.on_left_up)
-		#~ wx.EVT_KEY_DOWN(self, self.on_key_down)
-		#~ wx.EVT_CONTEXT_MENU(self, self.on_context_menu)
-		
+
 	def on_focus(self, event):		
 		seq = player.get_current_sequencer()
 		if seq.get_track_count() > 0:
@@ -764,7 +756,7 @@ class SequencerView(gtk.DrawingArea):
 	def deselect(self):
 		"""
 		Deselects the current selection.
-		"""		
+		"""
 		if self.selection_end != None:
 			self.dragging = False
 			self.selection_end = None

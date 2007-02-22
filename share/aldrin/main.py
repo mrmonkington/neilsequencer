@@ -50,6 +50,7 @@ import about
 import extman
 import envelope
 import driver
+import cairo
 from common import MARGIN, MARGIN2, MARGIN3, MARGIN0
 
 import interface
@@ -449,6 +450,7 @@ class AldrinFrame(gtk.Window):
 			extrasep.destroy()
 
 		self.mastertoolbar = MasterPanel(self)
+		self.transport = TransportPanel(self)
 
 		self.timetoolbar = TimePanel()
 		
@@ -463,12 +465,16 @@ class AldrinFrame(gtk.Window):
 			if k != self.PAGE_PATTERN:
 				menuitem.set_group(group)
 			menuitem.connect('clicked', self.on_activate_page, k)
-		vbox.add(self.framepanel)
+			
+		hbox = gtk.HBox()
+		hbox.add(self.framepanel)
+		hbox.pack_end(self.mastertoolbar, expand=False)
+		vbox.add(hbox)
 
 		self.aldrinframe_statusbar = gtk.Statusbar()
 		
 		vbox.pack_start(self.timetoolbar, expand=False)
-		vbox.pack_start(self.mastertoolbar, expand=False)
+		vbox.pack_start(self.transport, expand=False)
 		vbox.pack_end(self.aldrinframe_statusbar, expand=False)
 
 		self.__set_properties()
@@ -619,6 +625,7 @@ class AldrinFrame(gtk.Window):
 		cfg.load_window_pos("MainFrameWindow", self)
 		cfg.load_window_pos("Toolbar", self.aldrinframe_toolbar)
 		cfg.load_window_pos("MasterToolbar", self.mastertoolbar)
+		cfg.load_window_pos("Transport", self.transport)
 		cfg.load_window_pos("TimeToolbar", self.timetoolbar)
 		cfg.load_window_pos("StatusBar", self.aldrinframe_statusbar)
 		self.update_view()
@@ -631,6 +638,7 @@ class AldrinFrame(gtk.Window):
 		cfg.save_window_pos("MainFrameWindow", self)
 		cfg.save_window_pos("Toolbar", self.aldrinframe_toolbar)
 		cfg.save_window_pos("MasterToolbar", self.mastertoolbar)
+		cfg.save_window_pos("Transport", self.transport)
 		cfg.save_window_pos("TimeToolbar", self.timetoolbar)
 		cfg.save_window_pos("StatusBar", self.aldrinframe_statusbar)
 		
@@ -985,6 +993,7 @@ class AldrinFrame(gtk.Window):
 		self.patternframe.update_all()
 		self.wavetableframe.update_all()
 		self.mastertoolbar.update_all()
+		self.transport.update_all()
 		self.btnloop.set_active(player.get_loop_enabled())
 		self.btnrecord.set_active(player.get_automation())
 		
@@ -1345,12 +1354,10 @@ class AmpView(gtk.DrawingArea):
 		self.range = 76
 		self.amp = 0.0
 		self.amps = EventPlayer()
-		self.rl = 6.0 / self.range
-		self.yl = 6.0 / self.range
-		self.gl = (self.range - 12.0) / self.range
+		self.stops = (0.0, 6.0 / self.range, 12.0 / self.range) # red, yellow, green
 		self.index = 0
 		gtk.DrawingArea.__init__(self)
-		self.set_size_request(100,MARGIN)
+		self.set_size_request(MARGIN,100)
 		self.connect("expose_event", self.expose)
 		gobject.timeout_add(1000/25, self.on_update)
 		
@@ -1379,21 +1386,17 @@ class AmpView(gtk.DrawingArea):
 			ctx.rectangle(0,0,w,h)
 			ctx.fill()
 		else:
-			x = 0
-			ctx.set_source_rgb(0,1,0)
-			ctx.rectangle(x, 0, int(self.gl * w), h)
+			y = 0
+			p = cairo.LinearGradient(0.0, 0.0, 0, h)
+			p.add_color_stop_rgb(self.stops[0],1,0,0)
+			p.add_color_stop_rgb(self.stops[1],1,1,0)
+			p.add_color_stop_rgb(self.stops[2],0,1,0)
+			ctx.set_source(p)
+			ctx.rectangle(0, 0, w, h)
 			ctx.fill()
-			x += int(self.gl * w)
-			ctx.set_source_rgb(1,1,0)
-			ctx.rectangle(x, 0, int(self.yl * w), h)
-			ctx.fill()
-			x += int(self.yl * w)
-			ctx.set_source_rgb(1,0,0)
-			ctx.rectangle(x, 0, int(self.rl * w), h)
-			ctx.fill()
-			bw = int((w * (linear2db(self.amp,limit=-self.range) + self.range)) / self.range)
+			bh = int((h * (linear2db(self.amp,limit=-self.range) + self.range)) / self.range)
 			ctx.set_source_rgb(0,0,0)
-			ctx.rectangle(bw, 0, w - bw, h)
+			ctx.rectangle(0, 0, w, h - bh)
 			ctx.fill()
 
 	def expose(self, widget, event):
@@ -1401,55 +1404,28 @@ class AmpView(gtk.DrawingArea):
 		self.draw(self.context)
 		return False
 
-class MasterPanel(gtk.VBox):
+class MasterPanel(gtk.HBox):
 	"""
-	A panel containing the master slider and BPM/TPB spin controls.
+	A panel containing the master machine controls.
 	"""
 	def __init__(self, rootwindow):
-		"""
-		Initializer.
-		"""		
-		gtk.VBox.__init__(self)
+		gtk.HBox.__init__(self)
+		self.set_border_width(MARGIN)
 		self.latency = 0
 		self.rootwindow = rootwindow
 		self.rootwindow.event_handlers.append(self.on_player_callback)
-		self.bpmlabel = gtk.Label("BPM")
-		self.bpm = gtk.SpinButton(climb_rate=1, digits=0)
-		self.bpm.set_range(16,500)
-		self.bpm.set_value(126)
-		self.tpblabel = gtk.Label("TPB")
-		self.tpb = gtk.SpinButton(climb_rate=1, digits=0)
-		self.tpb.set_range(1,32)
-		self.tpb.set_value(4)
-		self.masterslider = gtk.HScale()
+		self.masterslider = gtk.VScale()
 		self.masterslider.set_draw_value(False)
 		self.masterslider.set_range(0,16384)
-		self.masterslider.set_size_request(200,-1)
+		self.masterslider.set_size_request(-1,200)
+		self.masterslider.connect('scroll-event', self.on_mousewheel)
+		self.masterslider.connect('change-value', self.on_scroll_changed)
 		self.ampl = AmpView()
 		self.ampr = AmpView()
-		masterslider = gtk.VBox()
-		masterslider.add(self.ampl)
-		masterslider.add(self.masterslider)
-		masterslider.add(self.ampr)
-		combosizer = gtk.HBox(False, MARGIN)
-		combosizer.pack_start(self.bpmlabel,expand=False)
-		combosizer.pack_start(self.bpm,expand=False)
-		combosizer.pack_start(self.tpblabel,expand=False)
-		combosizer.pack_start(self.tpb,expand=False)
-		sizer = gtk.HBox(False, MARGIN)
-		sizer.pack_start(masterslider, expand=False)
-		sizer.add(combosizer)
-		self.add(sizer)
-		self.set_border_width(MARGIN)
-		player.get_plugin(0).set_parameter_value(1, 0, 1, config.get_config().get_default_int('BPM', 126), 1)
-		player.get_plugin(0).set_parameter_value(1, 0, 2, config.get_config().get_default_int('TPB', 4), 1)
-		#~ self.update_all()
-		self.bpm.connect('value-changed', self.on_bpm)
-		self.tpb.connect('value-changed', self.on_tpb)
-		#~ wx.EVT_SCROLL(self.masterslider, self.on_scroll_changed)
-		#~ wx.EVT_MOUSEWHEEL(self.masterslider, self.on_mousewheel)
-		#~ wx.EVT_SPINCTRL(self, self.bpm.GetId(), self.on_bpm)
-		#~ wx.EVT_SPINCTRL(self, self.tpb.GetId(), self.on_tpb)
+		self.add(self.ampl)
+		self.add(self.masterslider)
+		self.add(self.ampr)
+		self.update_all()
 
 	def on_player_callback(self, player, plugin, data):
 		"""
@@ -1469,6 +1445,92 @@ class MasterPanel(gtk.VBox):
 				vu = getattr(data,'').vu
 				self.ampl.set_amp(vu.left_amp, vu.time)
 				self.ampr.set_amp(vu.right_amp, vu.time)
+
+	def on_scroll_changed(self, *args):
+		"""
+		Event handler triggered when the master slider has been dragged.
+		
+		@param event: event.
+		@type event: wx.Event
+		"""
+		vol = self.masterslider.get_value()
+		master = player.get_plugin(0)
+		master.set_parameter_value(1, 0, 0, int(vol), 1)
+
+	def on_mousewheel(self, widget, event):
+		"""
+		Sent when the mousewheel is used on the master slider.
+
+		@param event: A mouse event.
+		@type event: wx.MouseEvent
+		"""
+		vol = self.masterslider.get_value()
+		step = 16384 / 48
+		if event.direction == gtk.gdk.SCROLL_UP:
+			vol -= step
+		elif event.direction == gtk.gdk.SCROLL_DOWN:
+			vol += step
+		vol = min(max(0,vol), 16384)
+		self.masterslider.set_value(vol)
+		self.on_scroll_changed()
+		
+	def update_all(self):
+		"""
+		Updates all controls.
+		"""
+		master = player.get_plugin(0)
+		vol = master.get_parameter_value(1, 0, 0)
+		self.masterslider.set_value(vol)
+		self.latency = driver.get_audiodriver().get_latency()
+		self.ampl.amps.reset()
+		self.ampr.amps.reset()
+
+class TransportPanel(gtk.VBox):
+	"""
+	A panel containing the BPM/TPB spin controls.
+	"""
+	def __init__(self, rootwindow):
+		"""
+		Initializer.
+		"""		
+		gtk.VBox.__init__(self)
+		self.rootwindow = rootwindow
+		self.rootwindow.event_handlers.append(self.on_player_callback)
+		self.bpmlabel = gtk.Label("BPM")
+		self.bpm = gtk.SpinButton(climb_rate=1, digits=0)
+		self.bpm.set_range(16,500)
+		self.bpm.set_value(126)
+		self.tpblabel = gtk.Label("TPB")
+		self.tpb = gtk.SpinButton(climb_rate=1, digits=0)
+		self.tpb.set_range(1,32)
+		self.tpb.set_value(4)
+		combosizer = gtk.HBox(False, MARGIN)
+		combosizer.pack_start(self.bpmlabel,expand=False)
+		combosizer.pack_start(self.bpm,expand=False)
+		combosizer.pack_start(self.tpblabel,expand=False)
+		combosizer.pack_start(self.tpb,expand=False)
+		self.add(combosizer)
+		self.set_border_width(MARGIN)
+		player.get_plugin(0).set_parameter_value(1, 0, 1, config.get_config().get_default_int('BPM', 126), 1)
+		player.get_plugin(0).set_parameter_value(1, 0, 2, config.get_config().get_default_int('TPB', 4), 1)
+		self.update_all()
+		self.bpm.connect('value-changed', self.on_bpm)
+		self.tpb.connect('value-changed', self.on_tpb)
+
+	def on_player_callback(self, player, plugin, data):
+		"""
+		callback for ui events sent by zzub.
+		
+		@param player: player instance.
+		@type player: zzub.Player
+		@param plugin: plugin instance
+		@type plugin: zzub.Plugin
+		@param data: event data.
+		@type data: zzub_event_data_t
+		"""
+		if plugin == player.get_plugin(0):
+			if data.type == zzub.zzub_event_type_parameter_changed:
+				self.update_all()
 		
 	def on_bpm(self, widget):
 		"""
@@ -1490,48 +1552,15 @@ class MasterPanel(gtk.VBox):
 		player.get_plugin(0).set_parameter_value(1, 0, 2, int(self.tpb.get_value()), 1)
 		config.get_config().set_default_int('TPB', int(self.tpb.get_value()))
 
-	def on_scroll_changed(self, event):
-		"""
-		Event handler triggered when the master slider has been dragged.
-		
-		@param event: event.
-		@type event: wx.Event
-		"""
-		vol = self.masterslider.get_value()
-		master = player.get_plugin(0)
-		master.set_parameter_value(1, 0, 0, 16384 - vol, 1)
-
-	def on_mousewheel(self, event):
-		"""
-		Sent when the mousewheel is used on the master slider.
-
-		@param event: A mouse event.
-		@type event: wx.MouseEvent
-		"""
-		vol = self.masterslider.GetValue()
-		step = 16384 / 48
-		if event.m_wheelRotation > 0:
-			vol += step
-		else:
-			vol -= step
-		vol = min(max(self.masterslider.GetMin(),vol), self.masterslider.GetMax())
-		self.masterslider.SetValue(vol)
-		self.on_scroll_changed(event)
-		
 	def update_all(self):
 		"""
 		Updates all controls.
 		"""
 		master = player.get_plugin(0)
-		vol = master.get_parameter_value(1, 0, 0)
 		bpm = master.get_parameter_value(1, 0, 1)
 		tpb = master.get_parameter_value(1, 0, 2)
 		self.bpm.set_value(bpm)
 		self.tpb.set_value(tpb)
-		self.masterslider.set_value(16384 - vol)
-		self.latency = driver.get_audiodriver().get_latency()
-		self.ampl.amps.reset()
-		self.ampr.amps.reset()
 
 class TimePanel(gtk.VBox):
 	"""
