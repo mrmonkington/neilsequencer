@@ -1472,11 +1472,11 @@ class MasterPanel(gtk.HBox):
 		vol = self.masterslider.get_value()
 		step = 16384 / 48
 		if event.direction == gtk.gdk.SCROLL_UP:
-			vol -= step
-		elif event.direction == gtk.gdk.SCROLL_DOWN:
 			vol += step
+		elif event.direction == gtk.gdk.SCROLL_DOWN:
+			vol -= step
 		vol = min(max(0,vol), 16384)
-		self.masterslider.set_value(16384 - vol)
+		self.masterslider.set_value(vol)
 		self.on_scroll_changed()
 		
 	def update_all(self):
