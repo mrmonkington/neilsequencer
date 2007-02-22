@@ -859,6 +859,8 @@ class SequencerView(gtk.DrawingArea):
 		@param dc: wx device context.
 		@type dc: wx.PaintDC
 		"""
+		if not self.window:
+			return
 		gc = self.window.new_gc()
 		cm = gc.get_colormap()
 		drawable = self.window
