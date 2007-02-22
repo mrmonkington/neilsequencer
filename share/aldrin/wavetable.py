@@ -173,6 +173,12 @@ class WavetablePanel(gtk.Notebook):
 		self.instrpanel.set_position(250)
 		self.update_all()
 		
+		self.filetreeview = None
+		try:
+			self.filetreeview = self.libpanel.get_children()[0].get_children()[0].get_children()[2].get_child2().get_children()[0].get_children()[0].get_child()
+		except:
+			print "unable to get filetreeview."
+		
 		self.samplelist.get_selection().connect('changed', self.on_samplelist_select)
 		self.samplelist.connect('button-press-event', self.on_samplelist_dclick)
 		self.samplelist.connect('key-press-event', self.on_samplelist_key_down)
@@ -200,10 +206,19 @@ class WavetablePanel(gtk.Notebook):
 		self.libpanel.connect('file-activated', self.on_load_sample)
 		self.libpanel.connect('selection-changed', self.on_libpanel_selection_changed)
 		
+		
+		currentpath = config.get_config().get_default('SampleBrowserPath')
+		if currentpath:
+			try:
+				self.libpanel.set_current_folder(currentpath)
+			except:
+				print "couldn't set current sample browser path: '%s'." % currentpath
+		
 	def on_libpanel_selection_changed(self, widget):
 		"""
 		Called when the current file browser selection changes.
 		"""
+		config.get_config().set_default('SampleBrowserPath', self.libpanel.get_current_folder())
 		filename = self.libpanel.get_preview_filename()
 		if filename and os.path.isfile(filename):
 			self.previewpath = filename
@@ -645,8 +660,9 @@ class WavetablePanel(gtk.Notebook):
 				self.fspanel.edsearch.grab_focus()
 			else:
 				self.set_current_page(1)
-				# XXX: todo
-				#self.filelist.grab_focus()
+				self.libpanel.grab_focus()
+				if self.filetreeview:
+					self.filetreeview.grab_focus()
 		else:
 			return False
 		return True

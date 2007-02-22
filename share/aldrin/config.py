@@ -310,7 +310,21 @@ class AldrinConfig(ConfigParser.ConfigParser):
 		"""
 		self.set_section('Defaults')
 		self.write_value(key, str(val))
+
+	def get_default(self, key, s=''):
+		"""
+		Returns the default value for a UI setting.
+		"""
+		self.set_section('Defaults')
+		return self.read_value(key, s)
 		
+	def set_default(self, key, val):
+		"""
+		Stores a default value for an UI setting.
+		"""
+		self.set_section('Defaults')
+		self.write_value(key, val)
+
 	def set_keymap_language(self, lang):
 		"""
 		Sets the current keymap language
