@@ -3,6 +3,7 @@
 	<extension
 		uri="@zzub.org/extension/testbutton;1"
 		name="Test Button"
+		version="0.1"
 		description="A simple Aldrin UI extension example. Adds a new toolbar button which displays a message when clicked."
 		author="Leonard Ritter"
 		email="contact@leonard-ritter.com"

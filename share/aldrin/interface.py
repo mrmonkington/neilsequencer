@@ -23,17 +23,33 @@ Interfaces, classes and constants for contracted communication with UI extension
 """
 
 from gtkimport import gtk
-import inspect, new
+import inspect, new, traceback
+
+#
+# Class URIs
+# ############
+
+# implement IUIBuilder for the following categories
+CLASS_UI_BUILDER = "@zzub.org/class/ui_builder"
+
+#
+# UI object URIs
+# ############
+
+UIOBJECT_MAIN_TOOLBAR = "@aldrin.org/uiobject/main/toolbar"
+UIOBJECT_MAIN_MENUBAR = "@aldrin.org/uiobject/main/menubar"
+UIOBJECT_MAIN_MENU_TOOLS = "@aldrin.org/uiobject/main/menu/tools"
 
 #
 # Service URIs
-####
+# ############
 
-MAINFRAME_SERVICE = "@zzub.org/ui/mainframe" # IMainFrame
+# returns a IUIMessage object
+SERVICE_MESSAGE = "@aldrin.org/service/message"
 
 #
 # Interfaces
-####
+# ############
 
 class Interface(object):
 	"""
@@ -92,6 +108,23 @@ class Interface(object):
 				if not name.startswith('_') and inspect.ismethod(element):
 					setattr(obj, name, element)
 		return obj
+		
+	def call_safe(self, name, defaultret, *args, **kargs):
+		"""
+		Makes a safe call that does only output a traceback, but
+		does not terminate the entire callstack. If the call fails,
+		defaultret is being returned.
+		
+		@param name: name of interface function to call.
+		@type name: str
+		@param defaultret: Default return value.
+		@type defaultret: any
+		"""
+		try:
+			return getattr(self, name)(*args, **kargs)
+		except:
+			traceback.print_exc()
+			return defaultret
 		
 	def get_interfaces(self):
 		"""
@@ -186,77 +219,152 @@ class IExtensionManager(Interface):
 		@type uri: str
 		"""
 		
-class IMainFrame(Interface):
+	def add_service_class(self, classuri, uri):
+		"""
+		Registers a service uri to be listed in a class of services.
+		
+		The enumerate_services function returns a list of
+		services for a class URI registered with this function.
+		
+		@param classui: class uri which is to be associated with the service.
+		@type classui: str
+		@param uri: uri of the service to be associated with the class.
+		@type uri: str
+		"""
+		
+	def enumerate_services(self, classuri):
+		"""
+		Returns a list of services registered for a specific class.
+		
+		@param classui: class uri
+		@type classui: str
+		@return: list of service objects.
+		@rtype: object list
+		"""
+		
+	def register_service(self, uri, instance, iface = None):
+		"""
+		Registers a service for public access.
+		
+		Instead of the real instance, a proxy object will
+		be saved which exposes only interface methods.
+		
+		@param uri: uri by which the object can be retrieved.
+		@type uri: str
+		@param instance: The object to provide on request. The object must
+		implement at least one interface.
+		@type instance: any
+		@param iface: Interface which exposes the methods required or None for all.
+		@type iface: class
+		"""
+
+class IUIMessage(Interface):
 	"""
-	Base interface for the mainframe window.
+	Interface for displaying info or error messages or asking questions.
 	"""
-	
-	def get_window(self):
+	def error(self, message):
 		"""
-		Returns the window object associated with the mainframe.
+		Displays a modal messagebox configured to show an error message.
 		
-		@return: Window object.
-		@rtype: wx.Window
-		"""
-		
-	def add_menuitem(self, label, description = "", kind = 'normal'):
-		"""
-		Adds a new menuitem to the tools menu and returns the identifier.
-		
-		@param label: Label of the item.
-		@type label: str
-		@param description: Description for Status bar.
-		@type description: str
-		@param kind: One of 'normal', 'check', 'radio'
-		@type kind: int
-		@return: Identifier of the menuitem.
-		@rtype: int
+		@param message: The message to display (you can use markup).
+		@type message: str
 		"""
 		
-	def add_submenu(self, label, submenu, description = ""):
+	def message(self, message):
 		"""
-		Adds a new submenu to the tools menu and returns the identifier.
+		Displays a modal messagebox configured to show an informative message.
 		
-		@param label: Label of the item.
-		@type label: str
-		@param submenu: The submenu which to add.
-		@type submenu: wx.Menu
-		@param description: Description for Status bar.
-		@type description: str
-		@return: Identifier of the menuitem.
+		@param message: The message to display (you can use markup).
+		@type message: str
+		"""
+
+	def warning(self, message):
+		"""
+		Displays a modal messagebox configured to show a warning message.
+		
+		@param message: The message to display (you can use markup).
+		@type message: str
+		"""
+
+	def question(self, message):
+		"""
+		Displays a modal messagebox configured to show a question.
+		
+		@param message: The message to display (you can use markup).
+		@type message: str
+		@return: either gtk.RESPONSE_YES or gtk.RESPONSE_NO
 		@rtype: int
 		"""
 
-	def add_tool_button(self, label, bitmap1, bitmap2 = None, kind = 'normal', tooltip = "", description = ""):
+	def choice(self, message):
 		"""
-		Adds a new tool to the toolbar and returns the identifier.
+		Displays a modal messagebox configured to show a choice. It
+		is similar to question, except that it also allows to cancel.
 		
-		@param label: Label of the button. Will not be visible on all systems.
-		@type label: str
-		@param bitmap1: Bitmap for the button.
-		@type bitmap1: gtk.Image
-		@param bitmap2: Bitmap for disabled button.
-		@type bitmap2: gtk.Image
-		@param kind: One of 'normal', 'check', 'radio'
-		@type kind: int
-		@param tooltip: Tooltip Text
-		@type tooltip: str
-		@param description: Description for Status bar.
-		@type description: str
-		@return: Identifier of the toolbar button.
+		@param message: The message to display (you can use markup).
+		@type message: str
+		@return: either gtk.RESPONSE_YES, gtk.RESPONSE_NO or gtk.RESPONSE_CANCEL
 		@rtype: int
 		"""
-		
-	def add_click_handler(self, toolid, func):
+
+class IUIBuilder(Interface):
+	"""
+	Interface for extensions which need to add new menuitems
+	or toolitems to any dialogue. Implement each function
+	as you require.
+	"""
+	
+	def extend_menubar(self, menuuri, menubar):
 		"""
-		Adds a handler for when a tool is being clicked by the user.
+		Called when a menu bar is being set up. Use this function
+		to add new menuitems and submenus.
 		
-		@param toolid: Id of the tool as returned by add_tool()
-		@type toolid: int
-		@param func: Function to call. The function should take
-					an additional event parameter.
-		@type func: callable
-		"""		
+		@param menuuri: uri of the menu bar to be extended.
+		@type menuuri: str
+		@param menu: GTK+ menubar object.
+		@type menu: gtk.MenuBar
+		@return: return True if new items have been added.
+		@rtype: bool
+		"""
+
+	def extend_menu(self, menuuri, menu):
+		"""
+		Called when a popup menu is being set up. Use this function
+		to add new menuitems and submenus to a popup menu.
+		
+		@param menuuri: uri of the menu to be extended.
+		@type menuuri: str
+		@param menu: GTK+ menu object.
+		@type menu: gtk.Menu
+		@return: return True if new items have been added.
+		@rtype: bool
+		"""
+
+	def extend_toolbar(self, toolbaruri, toolbar):
+		"""
+		Called when a tool bar is being set up. Use this function
+		to add new buttons.
+		
+		@param toolbaruri: uri of the toolbar to be extended.
+		@type toolbaruri: str
+		@param toolbar: GTK+ toolbar object.
+		@type toolbar: gtk.Toolbar
+		@return: return True if new items have been added.
+		@rtype: bool
+		"""
+
+	def extend_box(boxuri, box):
+		"""
+		Called when a box is being set up. Use this function
+		to add new controls and items to the box.
+		
+		@param boxuri: uri of the box to be extended.
+		@type boxuri: str
+		@param box: GTK+ box object.
+		@type box: gtk.Box
+		@return: return True if new items have been added.
+		@rtype: bool
+		"""
 
 class UnknownServiceException(Exception):
 	pass

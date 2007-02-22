@@ -512,34 +512,36 @@ class KeyboardPanel(gtk.VBox):
 		"""
 		config.get_config().set_keymap_language(self.KEYMAPS[self.cblanguage.get_active()][0])
 
-class ExtensionsPanel(gtk.Container):
+class ExtensionsPanel(gtk.VBox):
 	"""
 	Panel which allows to enable and disable extensions.
 	"""
 	
-	def __init__(self, *args, **kwds):
-		wx.Panel.__init__(self, *args, **kwds)
-		vsizer = wx.BoxSizer(wx.VERTICAL)
+	def __init__(self):
+		gtk.VBox.__init__(self, False, MARGIN)
+		self.set_border_width(MARGIN)
 		#~ self.extlist = ExtensionListBox(self, -1, style=wx.SUNKEN_BORDER)
 		self.extman = extman.get_extension_manager()
 		self.cfg = config.get_config()
-		self.extlist = wx.CheckListBox(self, -1)
+		self.extlist, self.extstore, columns = new_listview([
+			("Use", bool),
+			("Name", str, dict(markup=True,wrap=True)),
+		])
+		self.extlist.set_property('headers-visible', False)
 		exts = config.get_config().get_enabled_extensions()
 		for ext in self.extman.extensions:
 			name = prepstr(ext.name)
-			idx = self.extlist.Append(name)
-			if ext.uri in exts:
-				self.extlist.Check(idx, True)
-		self.htmldesc = wx.html.HtmlWindow(self, -1)
-		hsizer = wx.BoxSizer(wx.HORIZONTAL)		
-		hsizer.Add(self.extlist, 1, wx.EXPAND|wx.RIGHT, 5)
-		hsizer.Add(self.htmldesc, 1, wx.EXPAND)
-		vsizer.Add(hsizer, 1, wx.EXPAND|wx.ALL, 5)
-		vsizer.Add(wx.StaticText(self, -1, "Click OK and restart Aldrin to apply changes."), 0, wx.LEFT|wx.BOTTOM|wx.RIGHT, 5)
-		self.SetAutoLayout(True)
-		self.SetSizerAndFit(vsizer)
-		self.Layout()
-		wx.EVT_LISTBOX(self, self.extlist.GetId(), self.on_extlist_select)
+			checked = ext.uri in exts
+			markup = ''
+			markup += '<b><big>%s</big></b>\n' % ext.name
+			markup += '<i>Version %s, by %s</i>\n' % (ext.version, ext.author)
+			markup += '\n'
+			markup += '%s\n' % ext.description
+			self.extstore.append([checked,markup])
+		self.pack_start(add_scrollbars(self.extlist))
+		label = gtk.Label("Click OK and restart Aldrin to apply changes.")
+		label.set_alignment(0, 0.5)
+		self.pack_start(label, expand=False)
 		
 	def on_extlist_select(self, event):
 		"""
@@ -556,9 +558,6 @@ class ExtensionsPanel(gtk.Container):
 		}
 		</style>
 		<body><font size="-4">"""
-		out += '<b>%s</b><br><br>' % ext.name
-		out += '%s<br><br>' % ext.description
-		out += 'Author: %s' % ext.author
 		out += "</font></body></html>"
 		self.htmldesc.SetPage(out)
 		
@@ -567,12 +566,11 @@ class ExtensionsPanel(gtk.Container):
 		Updates the config object with the currently selected extensions.
 		"""
 		exts = []
-		for i in range(len(self.extman.extensions)):
-			ext = self.extman.extensions[i]
-			if self.extlist.IsChecked(i):
+		for i,row in enumerate(self.extstore):
+			if row[0]:
+				ext = self.extman.extensions[i]
 				exts.append(ext.uri)
 		config.get_config().set_enabled_extensions(exts)
-		
 
 class PreferencesDialog(gtk.Dialog):
 	"""
@@ -584,7 +582,6 @@ class PreferencesDialog(gtk.Dialog):
 			"Preferences",
 			parent,
 			gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT)
-		#self.resize(500,400)
 		nb = gtk.Notebook()
 		nb.set_border_width(MARGIN)
 		self.driverpanel = DriverPanel()
@@ -592,13 +589,13 @@ class PreferencesDialog(gtk.Dialog):
 		self.midipanel = MidiPanel()
 		self.controllerpanel = ControllerPanel(rootwindow)
 		self.keyboardpanel = KeyboardPanel()
-		#~ self.extensionspanel = ExtensionsPanel()
+		self.extensionspanel = ExtensionsPanel()
 		nb.append_page(self.driverpanel, gtk.Label("Audio"))
 		nb.append_page(self.midipanel, gtk.Label("MIDI"))
 		nb.append_page(self.controllerpanel, gtk.Label("Controllers"))
 		nb.append_page(self.keyboardpanel, gtk.Label("Keyboard"))
 		nb.append_page(self.wavetablepanel, gtk.Label("Sound Library"))
-		#~ nb.append_page(self.extensionspanel, gtk.Label("Extensions"))
+		nb.append_page(self.extensionspanel, gtk.Label("Extensions"))
 		self.vbox.add(nb)
 		
 		btnok = self.add_button(gtk.STOCK_OK, gtk.RESPONSE_OK)
@@ -622,7 +619,7 @@ class PreferencesDialog(gtk.Dialog):
 		Apply changes in settings without closing the dialog.
 		"""
 		self.wavetablepanel.apply()
-		#~ self.extensionspanel.apply()
+		self.extensionspanel.apply()
 		self.keyboardpanel.apply()
 		self.driverpanel.apply()
 		self.controllerpanel.apply()

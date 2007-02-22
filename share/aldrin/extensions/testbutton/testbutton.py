@@ -22,48 +22,51 @@
 Example script to demonstrate UI extensions for Aldrin.
 """
 
-from aldrin.interface import IExtension, \
-						MAINFRAME_SERVICE
+import aldrin.interface
+from aldrin.interface import IExtension, IUIBuilder
 
-import wx
+import gtk
 import os
 
-class Extension(IExtension):
+class Extension(IExtension, IUIBuilder):
 	__uri__ = '@zzub.org/extension/testbutton;1'
+	SERVICE_URI = '@zzub.org/extension/testbutton/uibuilder'
 	
+	# IUIBuilder.extend_toolbar
+	def extend_toolbar(self, toolbaruri, toolbar):
+		if toolbaruri == aldrin.interface.UIOBJECT_MAIN_TOOLBAR:
+			# get our toolbar image location
+			imagepath = self.exthost.resolve_path('demo.png')
+			# check it exists
+			assert os.path.isfile(imagepath), "%s not found." % imagepath
+			# load an image
+			image = gtk.Image()
+			image.set_from_file(imagepath)
+			# create new tool button with image
+			item = gtk.ToolButton(image)
+			# append tool button to toolbar
+			toolbar.insert(item, -1)
+			# connect our handler
+			item.connect('clicked', self.on_toolbutton_clicked)
+			return True
+	
+	# IExtension.realize
 	def realize(self, extensionhost):
 		# store the host reference
 		self.exthost = extensionhost
 		# get the extension manager
 		extman = extensionhost.get_extension_manager()
-		# get the mainframe
-		mainframe = extman.get_service(MAINFRAME_SERVICE)		
-		# get our toolbar image location
-		imagepath = extensionhost.resolve_path('demo.png')
-		# check it exists
-		assert os.path.isfile(imagepath), "%s not found." % imagepath
-		# add a new button to the toolbar
-		toolid = mainframe.add_tool_button(
-			"Demo", 	# label
-			wx.Bitmap(imagepath, wx.BITMAP_TYPE_ANY),	# image
-			wx.NullBitmap, 	# disabled image
-			wx.ITEM_NORMAL, # style
-			"Demo Button", 	# tooltip
-			"This is a button added by an extension.") # description
-		# associate a handler
-		mainframe.add_click_handler(toolid, self.on_button_click)
+		# register our service
+		extman.register_service(self.SERVICE_URI, self)
+		# add our service to the ui builder class list
+		extman.add_service_class(aldrin.interface.CLASS_UI_BUILDER, self.SERVICE_URI)
+		# store the message service for later
+		self.msgsvc = extman.get_service(aldrin.interface.SERVICE_MESSAGE)
 		
-	def on_button_click(self, event):
-		# get the extension manager
-		extman = self.exthost.get_extension_manager()
-		# get the mainframe service
-		mainframe = extman.get_service(MAINFRAME_SERVICE)
-		# get the mainframe window
-		parent = mainframe.get_window()
-		wx.MessageDialog(parent,
-						message="You clicked the demo button.",
-						caption = "Demo Button", style = wx.OK|wx.CENTER).ShowModal()
+	def on_toolbutton_clicked(self, widget):
+		self.msgsvc.message("You clicked the demo button.")
 	
+	# IExtension.finalize
 	def finalize(self):
 		# get rid of the host reference
 		del self.exthost

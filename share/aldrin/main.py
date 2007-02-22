@@ -53,8 +53,6 @@ import driver
 from common import MARGIN, MARGIN2, MARGIN3, MARGIN0
 
 import interface
-from interface import IMainFrame, \
-					MAINFRAME_SERVICE
 
 import os, sys
 
@@ -164,7 +162,7 @@ def make_radio_item(label, desc, func, *args):
 		item.connect('toggled', func, *args)
 	return item
 
-class AldrinFrame(gtk.Window, IMainFrame):
+class AldrinFrame(gtk.Window):
 	"""
 	The application main window class.
 	"""
@@ -245,7 +243,8 @@ class AldrinFrame(gtk.Window, IMainFrame):
 		"""
 		Initializer.
 		"""
-		IMainFrame.__init__(self)
+		
+		
 		self._cbtime = time.time()
 		self._cbcalls = 0
 		self._hevcalls = 0
@@ -279,6 +278,10 @@ class AldrinFrame(gtk.Window, IMainFrame):
 
 		# begin wxGlade: AldrinFrame.__init__
 		gtk.Window.__init__(self, gtk.WINDOW_TOPLEVEL)
+		#~ self.toolsmenu.hide()
+		em = extman.get_extension_manager()
+		em.realize_extensions(self)
+
 		self.set_size_request(500,400)
 		audiotrouble = False
 		try:
@@ -368,8 +371,14 @@ class AldrinFrame(gtk.Window, IMainFrame):
 		wxglade_tmp_menu.append(gtk.SeparatorMenuItem())
 		wxglade_tmp_menu.append(make_stock_menu_item(gtk.STOCK_PREFERENCES, self.on_preferences))
 		self.aldrinframe_menubar.append(make_submenu_item(wxglade_tmp_menu, "_View"))
-		#~ self.toolsmenu = gtk.Menu()
-		#~ self.aldrinframe_menubar.append(make_submenu_item(self.toolsmenu, "_Tools"))
+		self.toolsmenu = gtk.Menu()
+		item = make_submenu_item(self.toolsmenu, "_Tools")
+		self.aldrinframe_menubar.append(item)
+		added = False
+		for svc in em.enumerate_services(interface.CLASS_UI_BUILDER):
+			added = svc.call_safe('extend_menu', False, interface.UIOBJECT_MAIN_MENU_TOOLS, self.toolsmenu) or added
+		if not added:
+			item.destroy()
 		wxglade_tmp_menu = gtk.Menu()
 		wxglade_tmp_menu.append(make_stock_menu_item(gtk.STOCK_HELP, self.on_help_contents))
 		wxglade_tmp_menu.append(gtk.SeparatorMenuItem())
@@ -431,6 +440,13 @@ class AldrinFrame(gtk.Window, IMainFrame):
 		self.aldrinframe_toolbar.insert(self.pages[self.PAGE_INFO][1],-1)
 		self.aldrinframe_toolbar.insert(gtk.SeparatorToolItem(),-1)
 		self.aldrinframe_toolbar.insert(make_stock_tool_item(self.STOCK_PANIC, self.on_toggle_panic),-1)
+		extrasep = gtk.SeparatorToolItem()
+		self.aldrinframe_toolbar.insert(extrasep,-1)
+		added = False
+		for svc in em.enumerate_services(interface.CLASS_UI_BUILDER):
+			added = svc.call_safe('extend_toolbar', False, interface.UIOBJECT_MAIN_TOOLBAR, self.aldrinframe_toolbar) or added
+		if not added:
+			extrasep.destroy()
 
 		self.mastertoolbar = MasterPanel(self)
 
@@ -482,11 +498,6 @@ class AldrinFrame(gtk.Window, IMainFrame):
 		self.document_changed()
 		self.show_all()
 		self.load_view()
-		
-		#~ self.toolsmenu.hide()
-		#~ em = extman.get_extension_manager()
-		#~ em.register_service(MAINFRAME_SERVICE, self, interface.IMainFrame)
-		#~ em.realize_extensions(self)
 
 		import sys
 		if len(app_args) > 1:
@@ -1278,79 +1289,7 @@ class AldrinFrame(gtk.Window, IMainFrame):
 		@return: Window object.
 		@rtype: wx.Window
 		"""
-		return wx.Window(self)
-
-	def add_menuitem(self, label, description = "", kind = 'normal'):
-		"""
-		Adds a new menuitem to the tools menu and returns the identifier.
-		
-		@param label: Label of the item.
-		@type label: str
-		@param description: Description for Status bar.
-		@type description: str
-		@param kind: One of 'normal', 'check', 'radio'
-		@type kind: int
-		@return: Identifier of the menuitem.
-		@rtype: int
-		"""
-		menuid = self.nextmenuitemid
-		self.nextmenuitemid += 1
-		self.toolsmenu.Append(menuid, label, description, kind)
-		return menuid
-		
-	def add_submenu(self, label, submenu, description = ""):
-		"""
-		Adds a new submenu to the tools menu and returns the identifier.
-		
-		@param label: Label of the item.
-		@type label: str
-		@param submenu: The submenu which to add.
-		@type submenu: wx.Menu
-		@param description: Description for Status bar.
-		@type description: str
-		@return: Identifier of the menuitem.
-		@rtype: int
-		"""
-		menuid = self.nextmenuitemid
-		self.nextmenuitemid += 1
-		self.toolsmenu.AppendMenu(menuid, label, submenu, description)
-		return menuid
-
-	def add_tool_button(self, label, bitmap1, bitmap2 = None, kind = 'normal', tooltip = "", description = ""):
-		"""
-		Adds a new tool to the toolbar.
-		
-		@param label: Label of the button. Will not be visible on all systems.
-		@type label: str
-		@param bitmap1: Bitmap for the button.
-		@type bitmap1: gtk.Image
-		@param bitmap2: Bitmap for disabled button.
-		@type bitmap2: gtk.Image
-		@param kind: One of 'normal', 'check', 'radio'
-		@type kind: int
-		@param tooltip: Tooltip Text
-		@type tooltip: str
-		@param description: Description for Status bar.
-		@type description: str
-		"""
-		if self.nexttoolid == self.TOOLBASE:
-			self.aldrinframe_toolbar.AddSeparator()
-		toolid = self.nexttoolid
-		self.nexttoolid += 1
-		self.aldrinframe_toolbar.AddLabelTool(toolid,label,bitmap1,bitmap2,kind,tooltip,description)
-		return toolid
-		
-	def add_click_handler(self, toolid, func):
-		"""
-		Adds a handler for when a tool is being clicked by the user.
-		
-		@param toolid: Id of the tool as returned by add_tool()
-		@type toolid: int
-		@param func: Function to call. The function should take
-					an additional event parameter.
-		@type func: callable
-		"""		
-		wx.EVT_MENU(self, toolid, func)
+		return self
 
 # end of class AldrinFrame
 import random

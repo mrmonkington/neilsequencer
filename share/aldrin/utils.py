@@ -410,6 +410,32 @@ def error(parent, msg):
 	dialog.destroy()
 	return response
 
+def message(parent, msg):
+	"""
+	Shows an info message dialog.
+	"""
+	dialog = gtk.MessageDialog(parent.get_toplevel(),
+		gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
+		gtk.MESSAGE_INFO , gtk.BUTTONS_NONE)
+	dialog.set_markup(msg)
+	dialog.add_buttons(gtk.STOCK_OK, gtk.RESPONSE_OK)
+	response = dialog.run()
+	dialog.destroy()
+	return response
+
+def warning(parent, msg):
+	"""
+	Shows an warning message dialog.
+	"""
+	dialog = gtk.MessageDialog(parent.get_toplevel(),
+		gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
+		gtk.MESSAGE_WARNING, gtk.BUTTONS_NONE)
+	dialog.set_markup(msg)
+	dialog.add_buttons(gtk.STOCK_OK, gtk.RESPONSE_OK)
+	response = dialog.run()
+	dialog.destroy()
+	return response
+
 def new_listview(columns):
 	"""
 	Creates a gtk.TreeView for a list store with multiple columns.
@@ -425,13 +451,24 @@ def new_listview(columns):
 	treeview = gtk.TreeView(liststore)
 	treeview.set_rules_hint(True)
 	columncontrols = []
-	for i,(name,coltype) in enumerate(columns):
+	for i,args in enumerate(columns):
+		assert len(args) >= 2
+		options = {}
+		if len(args) == 2:
+			name,coltype = args
+		else:
+			name,coltype,options = args
 		column = gtk.TreeViewColumn(name)
 		if coltype == str:
 			column.set_resizable(True)
 			cellrenderer = gtk.CellRendererText()
 			column.pack_start(cellrenderer)
-			column.add_attribute(cellrenderer, 'text', i)
+			if options.get('markup',False):
+				column.add_attribute(cellrenderer, 'markup', i)
+			else:
+				column.add_attribute(cellrenderer, 'text', i)
+			if options.get('wrap',False):
+				cellrenderer.set_property('wrap-width', 250)
 		elif coltype == bool:
 			th = ToggledHandler()
 			th.column = i
@@ -546,6 +583,8 @@ __all__ = [
 'to_hsb',
 'question',
 'error',
+'message',
+'warning',
 'new_listview',
 'new_image_button',
 'get_item_count',

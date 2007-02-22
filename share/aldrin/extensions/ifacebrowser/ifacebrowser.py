@@ -29,54 +29,71 @@ if __name__ == '__main__':
 	sys.path.append('../..')
 	import interface
 else:
-	from aldrin.interface import IExtension, \
-							MAINFRAME_SERVICE
+	import aldrin.interface
+	from aldrin.interface import IExtension, IUIBuilder
 	from aldrin import interface
 	
 
-import wx
+import gtk
+import gobject
 import os
 import inspect
 
-class InterfaceBrowser(wx.Dialog):
-	def __init__(self, exthost, *args, **kargs):
-		kargs['style'] = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER
-		wx.Dialog.__init__(self, *args, **kargs)
-		self.SetMinSize((500,400))
-		self.SetTitle("Extension Interface Browser")
-		self.ifacelist = wx.TreeCtrl(self, -1, style=wx.SUNKEN_BORDER | wx.TR_NO_LINES | wx.TR_HIDE_ROOT | wx.TR_HAS_BUTTONS)
-		self.imglist = wx.ImageList(16,16)
+MARGIN = 6
+
+class InterfaceBrowser(gtk.Dialog):
+	def __init__(self, exthost):
+		gtk.Dialog.__init__(self,
+			"Extension Interface Browser")
+		self.resize(500,400)
+		self.ifacestore = gtk.TreeStore(gtk.gdk.Pixbuf, str, gobject.TYPE_PYOBJECT)
+		self.ifacelist = gtk.TreeView(self.ifacestore)
+		self.ifacelist.set_property('headers-visible', False)
+		column = gtk.TreeViewColumn("Item")
+		cell = gtk.CellRendererPixbuf()
+		column.pack_start(cell, False)
+		column.set_attributes(cell, pixbuf=0)
+		cell = gtk.CellRendererText()
+		column.pack_start(cell, True)
+		column.set_attributes(cell, markup=1)
+		self.ifacelist.append_column(column)
+		
 		def resolve_path(path):
 			if exthost:
 				return exthost.resolve_path(path)
 			else:
 				return path
-		idx_iface = self.imglist.Add(wx.Bitmap(resolve_path('interface.png'), wx.BITMAP_TYPE_ANY))
-		idx_method = self.imglist.Add(wx.Bitmap(resolve_path('method.png'), wx.BITMAP_TYPE_ANY))
-		idx_class = self.imglist.Add(wx.Bitmap(resolve_path('class.png'), wx.BITMAP_TYPE_ANY))
-		self.ifacelist.AssignImageList(self.imglist)
-		self.desc = wx.TextCtrl(self, -1, style=wx.SUNKEN_BORDER | wx.TE_READONLY | wx.TE_MULTILINE | wx.TE_RICH2 | wx.TE_BESTWRAP)
-		rootnode = self.ifacelist.AddRoot("Interfaces")
+		icon_iface = gtk.gdk.pixbuf_new_from_file(resolve_path('interface.png'))
+		icon_method = gtk.gdk.pixbuf_new_from_file(resolve_path('method.png'))
+		icon_class = gtk.gdk.pixbuf_new_from_file(resolve_path('class.png'))
+		self.desc = gtk.Label()
+		self.desc.set_line_wrap(True)
+		#~ self.desc.set_size_request(150,-1)
+		self.desc.set_justify(gtk.JUSTIFY_FILL)
+		self.desc.set_selectable(True)
+		self.desc.set_alignment(0,0)
+
+		rootnode = self.ifacestore.append(None, [None,"<b>Interfaces</b>",None])
 		for name in dir(interface):
 			element = getattr(interface,name)
 			if inspect.isclass(element) and issubclass(element,interface.Interface):
 				classname = element.__name__
-				ifacenode = self.ifacelist.AppendItem(rootnode, classname)
-				self.ifacelist.SetItemImage(ifacenode, idx_iface)
-				self.ifacelist.SetPyData(ifacenode, element)
+				ifacenode = self.ifacestore.append(rootnode, [icon_iface, "<i>%s</i>" % classname, element])
 				for ename in dir(element):
 					eelement = getattr(element,ename)
 					if not ename.startswith('_') and inspect.ismethod(eelement):
-						methodnode = self.ifacelist.AppendItem(ifacenode, ename)
-						self.ifacelist.SetItemImage(methodnode, idx_method)
-						self.ifacelist.SetPyData(methodnode, eelement)
-		vsizer = wx.BoxSizer(wx.HORIZONTAL)
-		vsizer.Add(self.ifacelist, 1, wx.EXPAND|wx.ALL, 5)
-		vsizer.Add(self.desc, 1, wx.EXPAND|wx.RIGHT|wx.TOP|wx.BOTTOM, 5)
-		self.SetAutoLayout(True)
-		self.SetSizerAndFit(vsizer)
-		self.Layout()
-		wx.EVT_TREE_SEL_CHANGED(self, self.ifacelist.GetId(), self.on_ifacelist_sel_changed)
+						methodnode = self.ifacestore.append(ifacenode, [icon_method, ename, eelement])
+		hsizer = gtk.HPaned()
+		hsizer.set_border_width(MARGIN)
+		scrollwin = gtk.ScrolledWindow()
+		scrollwin.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+		scrollwin.set_shadow_type(gtk.SHADOW_IN)
+		scrollwin.add(self.ifacelist)
+		hsizer.pack1(scrollwin)
+		hsizer.pack2(self.desc)
+		hsizer.set_position(150)
+		self.vbox.add(hsizer)
+		self.ifacelist.get_selection().connect('changed', self.on_ifacelist_sel_changed)
 		
 	def cleanup_docstr(self, docstr):
 		"""
@@ -133,108 +150,101 @@ class InterfaceBrowser(wx.Dialog):
 				params[(m.group(1),m.group(2))] = pdesc
 		return desc,params
 		
-	def on_ifacelist_sel_changed(self, event):
+	def on_ifacelist_sel_changed(self, selection):
 		"""
 		Handles changes in the treeview. Updates meta information.
-		
-		@param event: Tree event.
-		@type event: wx.TreeEvent
 		"""
-		obj = self.ifacelist.GetPyData(event.GetItem())
+		self.desc.set_markup('<i>Select an interface or a method in the treeview to see a description.</i>')
+		store, rows = selection.get_selected()
+		if not rows:
+			return
+		obj = store.get(rows, 2)[0]
 		if not obj:
 			return
-		self.desc.Clear()
-		regular = wx.TextAttr('#000000')
-		keyw = wx.TextAttr('#000080')
-		paramc = wx.TextAttr('#800000')
-		funcc = wx.TextAttr('#008080')
-		defvc = wx.TextAttr('#808080')
+		markup = ''
+		keyw = 'weight="bold"'
+		paramc = 'style="italic"'
+		funcc = 'underline="single"'
+		defvc = 'style="italic"'
 		if inspect.ismethod(obj):
 			docstr = ""
 			if hasattr(obj, '__doc__'):
 				docstr = obj.__doc__
-			self.desc.SetDefaultStyle(keyw)
-			self.desc.AppendText('def ')
-			self.desc.SetDefaultStyle(funcc)
+			markup += '<span %s>def</span> ' % keyw
 			args,varargs,varkw,defaults = inspect.getargspec(obj)
 			if not defaults:
 				defaults = []
 			if len(defaults) < args:
 				defaults = [None]*(len(args)-len(defaults)) + list(defaults)
-			self.desc.AppendText(obj.im_func.func_name)
-			self.desc.SetDefaultStyle(regular)
-			self.desc.AppendText("(")
+			markup += '<span %s>%s</span>(' % (funcc, obj.im_func.func_name)
 			index = 0
 			for arg,df in zip(args,defaults):
-				self.desc.SetDefaultStyle(regular)
 				if index:
-					self.desc.AppendText(", ")
-				self.desc.AppendText(arg)
+					markup += ', '
+				markup += arg
 				if df != None:
-					self.desc.SetDefaultStyle(defvc)
-					self.desc.AppendText('=%r' % df)
+					markup += '<span %s>=%r</span>' % (defvc, df)
 				index += 1
-			self.desc.SetDefaultStyle(regular)
-			self.desc.AppendText(")\n\n")
+			markup += ')\n\n'
 		elif inspect.isclass(obj) and issubclass(obj, interface.Interface):
 			docstr = ""
 			if hasattr(obj, '__doc__'):
 				docstr = obj.__doc__
-			self.desc.SetDefaultStyle(keyw)
-			self.desc.AppendText('interface ')
-			self.desc.SetDefaultStyle(regular)
-			self.desc.AppendText(obj.__name__ + ':\n\n')			
+			markup += '<span %s>interface</span> %s:\n\n' % (keyw, obj.__name__)
 		else:
 			return
 		desc,params = self.cleanup_docstr(docstr)
 		if desc:
-			self.desc.SetDefaultStyle(regular)
-			self.desc.AppendText(desc)
-			self.desc.AppendText("\n\n")
+			markup += '%s\n\n' % desc
 		if params:
-			self.desc.SetDefaultStyle(regular)
 			args,varargs,varkw,defaults = inspect.getargspec(obj)
 			for arg in args[1:]:
 				desc = params.get(('param',arg),'No description.')
 				typedesc = params.get(('type',arg),'Unknown')
-				self.desc.SetDefaultStyle(paramc)
-				self.desc.AppendText("%s (%s):\t" % (arg,typedesc))
-				self.desc.SetDefaultStyle(regular)
-				self.desc.AppendText("%s\n" % desc)
+				markup += '<span %s>%s (%s):</span>\t%s\n' % (paramc, arg, typedesc, desc)
 			desc = params.get('return','No description.')
 			typedesc = params.get('rtype','Unknown')
-			self.desc.SetDefaultStyle(paramc)
-			self.desc.AppendText("returns (%s):\t" % (typedesc))
-			self.desc.SetDefaultStyle(regular)
-			self.desc.AppendText("%s\n" % desc)
+			markup += '<span %s>returns (%s):</span>\t%s\n' % (paramc, typedesc, desc)
+		self.desc.set_markup(markup)
 
 if __name__ != '__main__': # extension mode
-	class Extension(IExtension):
+	class Extension(IExtension, IUIBuilder):
 		__uri__ = '@zzub.org/extension/ifacebrowser;1'
+		SERVICE_URI = '@zzub.org/extension/ifacebrowser/uibuilder'
 		
 		def realize(self, extensionhost):
 			# store the host reference
 			self.exthost = extensionhost
 			# get the extension manager
 			extman = extensionhost.get_extension_manager()
-			# get the mainframe
-			mainframe = extman.get_service(MAINFRAME_SERVICE)
-			parent = mainframe.get_window()
-			self.browser = InterfaceBrowser(extensionhost, parent, -1)
-			# add a new button to the toolbar
-			toolid = mainframe.add_menuitem(
-				"Show Interface Browser", 	# label
-				"Shows a window which allows to browse interfaces available to extensions.") # description
-			# associate a handler
-			mainframe.add_click_handler(toolid, self.on_button_click)
-			
-		def on_button_click(self, event):
-			self.browser.Show()
+			# register our service
+			extman.register_service(self.SERVICE_URI, self)
+			# add our service to the ui builder class list
+			extman.add_service_class(aldrin.interface.CLASS_UI_BUILDER, self.SERVICE_URI)
+			# create browser
+			self.browser = InterfaceBrowser(self.exthost)
+			self.browser.connect('delete-event', self.browser.hide_on_delete)
+
+		# IUIBuilder.extend_menu
+		def extend_menu(self, menuuri, menu):
+			if menuuri == aldrin.interface.UIOBJECT_MAIN_MENU_TOOLS:
+				# create a menu item
+				item = gtk.MenuItem(label="Show _Interface Browser")
+				# connect the menu item to our handler
+				item.connect('activate', self.on_menuitem_activate)
+				# append the item to the menu
+				menu.append(item)
+				return True
+				
+		def on_menuitem_activate(self, widget):
+			self.browser.show_all()
 		
 		def finalize(self):
 			# get rid of the host reference
 			del self.exthost
+			
 else: # running standalone
-	app = wx.App()
-	browser = InterfaceBrowser(None, None, -1)
-	browser.ShowModal()
+	browser = InterfaceBrowser(None)
+	browser.connect('destroy', lambda widget: gtk.main_quit())
+	browser.show_all()
+	gtk.main()

@@ -29,7 +29,7 @@ from interface import UnknownServiceException
 import imp
 import inspect
 import utils
-from utils import prepstr
+from utils import prepstr, error
 import sys
 import config
 import os
@@ -58,10 +58,11 @@ class ExtensionHost(interface.IExtensionHost):
 		self.basepath = basepath
 		self.module = None
 		self.instance = None
-		for attrname in ('uri','name','description','author','minversion','maxversion'):
+		for attrname in ('uri','name','description','author','minversion','maxversion','version'):
 			setattr(self, attrname, str(element.getAttribute(attrname)))
 		assert self.uri, "uri attribute is empty."
 		assert self.name, "name attribute is empty."
+		assert self.version, "version attribute is empty."
 		modules = element.getElementsByTagName("module")
 		assert len(modules) == 1, "Need exactly one module element to load extension."
 		if modules[0].hasAttribute("language"):
@@ -125,6 +126,60 @@ class ExtensionHost(interface.IExtensionHost):
 		assert self.instance, "Extension class for %s not found." % self.uri
 		return self.instance
 
+class UIMessage(interface.IUIMessage):
+	"""
+	Interface for displaying info or error messages or asking questions.
+	"""
+	def error(self, message):
+		"""
+		Displays a modal messagebox configured to show an error message.
+		
+		@param message: The message to display (you can use markup).
+		@type message: str
+		"""
+		return utils.error(self.parent.get_toplevel(), message)
+		
+	def message(self, message):
+		"""
+		Displays a modal messagebox configured to show an informative message.
+		
+		@param message: The message to display (you can use markup).
+		@type message: str
+		"""
+		return utils.message(self.parent.get_toplevel(), message)
+
+	def warning(self, message):
+		"""
+		Displays a modal messagebox configured to show a warning message.
+		
+		@param message: The message to display (you can use markup).
+		@type message: str
+		"""
+		return utils.warning(self.parent.get_toplevel(), message)
+
+	def question(self, message):
+		"""
+		Displays a modal messagebox configured to show a question.
+		
+		@param message: The message to display (you can use markup).
+		@type message: str
+		@return: either gtk.RESPONSE_YES or gtk.RESPONSE_NO
+		@rtype: int
+		"""
+		return utils.question(self.parent.get_toplevel(), message, False)
+
+	def choice(self, message):
+		"""
+		Displays a modal messagebox configured to show a choice. It
+		is similar to question, except that it also allows to cancel.
+		
+		@param message: The message to display (you can use markup).
+		@type message: str
+		@return: either gtk.RESPONSE_YES, gtk.RESPONSE_NO or gtk.RESPONSE_CANCEL
+		@rtype: int
+		"""
+		return utils.question(self.parent.get_toplevel(), message, True)
+
 class ExtensionManager(interface.IExtensionManager):
 	"""
 	UI extension manager. Enumerates extensions, creates 
@@ -133,6 +188,7 @@ class ExtensionManager(interface.IExtensionManager):
 	def __init__(self):
 		self.extensions = []
 		self.services = {}
+		self.classes = {}
 		if not 'aldrin' in sys.modules:
 			m = imp.new_module("aldrin")
 			m.interface = interface
@@ -197,6 +253,34 @@ class ExtensionManager(interface.IExtensionManager):
 			ifaces = [iface]
 		self.services[uri] = instance.create_protected_proxy(ifaces)
 		
+	def add_service_class(self, classuri, uri):
+		"""
+		Registers a service uri to be listed in a class of services.
+		
+		The enumerate_services function returns a list of
+		services for a class URI registered with this function.
+		
+		@param classui: class uri which is to be associated with the service.
+		@type classui: str
+		@param uri: uri of the service to be associated with the class.
+		@type uri: str
+		"""
+		cats = self.classes.get(classuri,[])
+		if not uri in cats:
+			cats.append(uri)
+		self.classes[classuri] = cats
+		
+	def enumerate_services(self, classuri):
+		"""
+		Returns a list of services registered for a specific class.
+		
+		@param classui: class uri
+		@type classui: str
+		@return: list of service objects.
+		@rtype: object list
+		"""
+		return [self.get_service(uri) for uri in self.classes.get(classuri,[])]
+		
 	def realize_extensions(self, parent):
 		"""
 		Instantiates and realizes all enabled extensions.
@@ -204,6 +288,9 @@ class ExtensionManager(interface.IExtensionManager):
 		@param parent: Parent window.
 		@type parent: wx.Window
 		"""
+		self.uimessage = UIMessage()
+		self.uimessage.parent = parent
+		self.register_service(interface.SERVICE_MESSAGE, self.uimessage)
 		uris = config.get_config().get_enabled_extensions()
 		for ext in self.extensions:
 			if ext.uri in uris:
@@ -213,9 +300,7 @@ class ExtensionManager(interface.IExtensionManager):
 				except:
 					import traceback
 					traceback.print_exc()
-					wx.MessageDialog(parent,
-						message='An error occurred while loading extension "%s".' % prepstr(ext.name),
-						caption = "Aldrin", style = wx.ICON_ERROR|wx.OK|wx.CENTER).ShowModal()
+					error(parent, 'An error occurred while loading extension "%s".' % prepstr(ext.name))
 
 extman = None
 

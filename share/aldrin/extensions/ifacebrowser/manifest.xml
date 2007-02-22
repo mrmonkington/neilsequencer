@@ -3,6 +3,7 @@
 	<extension
 		uri="@zzub.org/extension/ifacebrowser;1"
 		name="Interface Browser"
+		version="0.1"
 		description="A view that allows browsing available extension interfaces and documentation."
 		author="Leonard Ritter"
 		email="contact@leonard-ritter.com"
