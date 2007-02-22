@@ -261,12 +261,16 @@ class AldrinFrame(gtk.Window):
 			player.add_plugin_alias(name, uri)
 		#~ pluginpath = filepath('../../lib/zzub') + os.sep
 		#~ print "pluginpath = '%s'" % pluginpath
-		pluginpaths = [
-			'/usr/local/lib64/zzub',
-			'/usr/local/lib/zzub',
-			'/usr/lib64/zzub',
-			'/usr/lib/zzub',
-		]
+		pluginpath = os.environ.get('ALDRIN_PLUGIN_PATH',None)
+		if pluginpath:
+			pluginpaths = pluginpath.split(os.pathsep)
+		else:
+			pluginpaths = [
+				'/usr/local/lib64/zzub',
+				'/usr/local/lib/zzub',
+				'/usr/lib64/zzub',
+				'/usr/lib/zzub',
+			]
 		for pluginpath in pluginpaths:
 			player.add_plugin_path(pluginpath + '/')
 		inputname, outputname, samplerate, buffersize = config.get_config().get_audiodriver_config()
