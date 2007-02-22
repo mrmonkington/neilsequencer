@@ -446,7 +446,7 @@ class SequencerView(gtk.DrawingArea):
 			else:
 				t.set_event(self.row + row, value)
 			
-		self.ReDraw()
+		self.redraw()
 		
 	def on_popup_delete(self, event):
 		seq = player.get_current_sequencer()
@@ -458,7 +458,7 @@ class SequencerView(gtk.DrawingArea):
 			t = seq.get_track(track)
 			for row in range(start[1], end[1]+1):
 				t.remove_event_at(row)
-		self.ReDraw()
+		self.redraw()
 		
 	def on_popup_delete_track(self, event):
 		"""
@@ -473,9 +473,9 @@ class SequencerView(gtk.DrawingArea):
 		# moves cursor if beyond existing tracks
 		if self.track > track_count-1:			
 			self.set_cursor_pos(track_count-1, self.row)
-		self.ReDraw()
+		self.redraw()
 		
-	def on_popup_add_track(self, event):
+	def on_popup_add_track(self, widget, plugin):
 		"""
 		Callback that handles track addition via the popup menu
 		
@@ -483,8 +483,8 @@ class SequencerView(gtk.DrawingArea):
 		@type event: wx.CommandEvent
 		"""
 		seq = player.get_current_sequencer()
-		seq.create_track(self.popup_plugins[event.GetId()])
-		self.ReDraw()		
+		seq.create_track(plugin)
+		self.redraw()		
 
 	def on_context_menu(self, event):
 		"""
@@ -493,43 +493,33 @@ class SequencerView(gtk.DrawingArea):
 		@param event: Menu event.
 		@type event: wx.CommandEvent
 		"""
-		# create main items only once
-		if not hasattr(self, "popup_add_track"):
-			self.popup_add_track = wx.NewId()
-			self.popup_delete_track = wx.NewId()
-			self.popup_cut = wx.NewId()
-			self.popup_copy = wx.NewId()
-			self.popup_paste = wx.NewId()
-			self.popup_delete = wx.NewId()
-
-		# refresh the add plugin listing
-		self.popup_plugins = {}
-		for plugin in player.get_plugin_list():			
-			self.popup_plugins[wx.NewId()] = plugin		
-		
-		self.Bind(wx.EVT_MENU, self.on_popup_delete_track, id=self.popup_delete_track)
-		for plugin_id in self.popup_plugins.keys():
-			self.Bind(wx.EVT_MENU, self.on_popup_add_track, id=plugin_id)
+		#~ self.Bind(wx.EVT_MENU, self.on_popup_delete_track, id=self.popup_delete_track)
+		#~ for plugin_id in self.popup_plugins.keys():
+			#~ self.Bind(wx.EVT_MENU, self.on_popup_add_track, id=plugin_id)
+		def make_submenu_item(submenu, name):
+			item = gtk.MenuItem(label=name)
+			item.set_submenu(submenu)
+			return item
+		def make_menu_item(label, desc, func, *args):
+			item = gtk.MenuItem(label=label)
+			if func:
+				item.connect('activate', func, *args)
+			return item
 			
-		menu = wx.Menu()		
-		sm = wx.Menu()
-		for id, plugin in self.popup_plugins.iteritems():
-			sm.Append(id, prepstr(plugin.get_name()))		
-		menu.AppendMenu(self.popup_add_track, "Add Track\tCtrl+Enter", sm)
-		menu.Append(self.popup_delete_track, "Delete track\tCtrl+Del")
-		menu.AppendSeparator()
-		menu.Append(self.popup_cut, "Cut")
-		menu.Append(self.popup_copy, "Copy")
-		menu.Append(self.popup_paste, "Paste")
-		menu.Append(self.popup_delete, "Delete")
-		self.Bind(wx.EVT_MENU, self.on_popup_copy, id=self.popup_copy)
-		self.Bind(wx.EVT_MENU, self.on_popup_paste, id=self.popup_paste)
-		self.Bind(wx.EVT_MENU, self.on_popup_cut, id=self.popup_cut)
-		self.Bind(wx.EVT_MENU, self.on_popup_delete, id=self.popup_delete)
-		# Popup the menu.  If an item is selected then its handler
-		# will be called before PopupMenu returns.
-		self.PopupMenu(menu)
-		menu.Destroy()
+		menu = gtk.Menu()
+		pmenu = gtk.Menu()
+		for plugin in sorted(player.get_plugin_list(), lambda a,b: cmp(a.get_name().lower(),b.get_name().lower())):
+			pmenu.append(make_menu_item(prepstr(plugin.get_name()), "", self.on_popup_add_track, plugin))
+		menu.append(make_submenu_item(pmenu, "Add track"))
+		menu.append(make_menu_item("Delete track", "", self.on_popup_delete_track))
+		menu.append(gtk.SeparatorMenuItem())
+		menu.append(make_menu_item("Cut", "", self.on_popup_cut))
+		menu.append(make_menu_item("Copy", "", self.on_popup_copy))
+		menu.append(make_menu_item("Paste", "", self.on_popup_paste))
+		menu.append(make_menu_item("Delete", "", self.on_popup_delete))
+		menu.show_all()
+		menu.attach_to_widget(self, None)
+		menu.popup(None, None, None, event.button, event.time)
 		
 	def show_plugin_dialog(self):		
 		choices = []
@@ -800,6 +790,8 @@ class SequencerView(gtk.DrawingArea):
 					self.deselect()
 					self.dragging = True
 					self.grab_add()
+		elif event.button == 3:
+			self.on_context_menu(event)
 	
 	def on_motion(self, widget, event):
 		"""
