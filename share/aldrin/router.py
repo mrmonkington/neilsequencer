@@ -36,6 +36,7 @@ import indexer
 import fnmatch
 import ctypes
 import time
+import extman, interface
 import Queue
 from preset import PresetCollection, Preset
 import common
@@ -1476,6 +1477,7 @@ class RouteView(gtk.DrawingArea):
 						menu.append(make_submenu_item(submenu, prepstr(cmd)))
 					else:
 						menu.append(make_menu_item(prepstr(cmd), "", self.on_popup_command, mp, 0, index))
+			extman.get_extension_manager().extend_menu(interface.UIOBJECT_ROUTE_MENU_PLUGIN, menu, plugin=mp)
 		else:
 			conn = self.get_connection_at((mx,my))
 			if conn:
@@ -1484,8 +1486,11 @@ class RouteView(gtk.DrawingArea):
 				menu.append(make_submenu_item(self.get_plugin_menu(include_generators=False,conn=conn), "_Insert Effect"))
 				menu.append(gtk.SeparatorMenuItem())
 				menu.append(make_menu_item("_Signal Analysis", "Signal Analysis", self.on_popup_show_signalanalysis, conn))
+				extman.get_extension_manager().extend_menu(interface.UIOBJECT_ROUTE_MENU_CONNECTION, menu, connection=conn)
 			else:
 				menu = self.get_plugin_menu()
+				extman.get_extension_manager().extend_menu(interface.UIOBJECT_ROUTE_MENU, menu)
+		
 		menu.show_all()
 		menu.attach_to_widget(self, None)
 		menu.popup(None, None, None, event.button, event.time)

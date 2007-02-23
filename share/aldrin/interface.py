@@ -39,6 +39,9 @@ CLASS_UI_BUILDER = "@zzub.org/class/ui_builder"
 UIOBJECT_MAIN_TOOLBAR = "@aldrin.org/uiobject/main/toolbar"
 UIOBJECT_MAIN_MENUBAR = "@aldrin.org/uiobject/main/menubar"
 UIOBJECT_MAIN_MENU_TOOLS = "@aldrin.org/uiobject/main/menu/tools"
+UIOBJECT_ROUTE_MENU_PLUGIN = "@aldrin.org/uiobject/route/menu/plugin"
+UIOBJECT_ROUTE_MENU_CONNECTION = "@aldrin.org/uiobject/route/menu/connection"
+UIOBJECT_ROUTE_MENU = "@aldrin.org/uiobject/route/menu"
 
 #
 # Service URIs
@@ -325,7 +328,7 @@ class IUIBuilder(Interface):
 	as you require.
 	"""
 	
-	def extend_menubar(self, menuuri, menubar):
+	def extend_menubar(self, menuuri, menubar, **kargs):
 		"""
 		Called when a menu bar is being set up. Use this function
 		to add new menuitems and submenus.
@@ -338,7 +341,7 @@ class IUIBuilder(Interface):
 		@rtype: bool
 		"""
 
-	def extend_menu(self, menuuri, menu):
+	def extend_menu(self, menuuri, menu, **kargs):
 		"""
 		Called when a popup menu is being set up. Use this function
 		to add new menuitems and submenus to a popup menu.
@@ -351,7 +354,7 @@ class IUIBuilder(Interface):
 		@rtype: bool
 		"""
 
-	def extend_toolbar(self, toolbaruri, toolbar):
+	def extend_toolbar(self, toolbaruri, toolbar, **kargs):
 		"""
 		Called when a tool bar is being set up. Use this function
 		to add new buttons.
@@ -364,7 +367,7 @@ class IUIBuilder(Interface):
 		@rtype: bool
 		"""
 
-	def extend_box(boxuri, box):
+	def extend_box(boxuri, box, **kargs):
 		"""
 		Called when a box is being set up. Use this function
 		to add new controls and items to the box.

@@ -226,7 +226,7 @@ if __name__ != '__main__': # extension mode
 			self.browser.connect('delete-event', self.browser.hide_on_delete)
 
 		# IUIBuilder.extend_menu
-		def extend_menu(self, menuuri, menu):
+		def extend_menu(self, menuuri, menu, **kargs):
 			if menuuri == aldrin.interface.UIOBJECT_MAIN_MENU_TOOLS:
 				# create a menu item
 				item = gtk.MenuItem(label="Show _Interface Browser")

@@ -33,7 +33,7 @@ class Extension(IExtension, IUIBuilder):
 	SERVICE_URI = '@zzub.org/extension/testbutton/uibuilder'
 	
 	# IUIBuilder.extend_toolbar
-	def extend_toolbar(self, toolbaruri, toolbar):
+	def extend_toolbar(self, toolbaruri, toolbar, **kargs):
 		if toolbaruri == aldrin.interface.UIOBJECT_MAIN_TOOLBAR:
 			# get our toolbar image location
 			imagepath = self.exthost.resolve_path('demo.png')

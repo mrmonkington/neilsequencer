@@ -230,6 +230,15 @@ class ExtensionManager(interface.IExtensionManager):
 									host = ExtensionHost(fullpath, extension)
 									self.extensions.append(host)
 									
+	def extend_menu(self, menuid, menu, **kargs):
+		sep = gtk.SeparatorMenuItem()
+		added = False
+		for svc in self.enumerate_services(interface.CLASS_UI_BUILDER):
+			added = svc.call_safe('extend_menu', False, menuid, menu, **kargs) or added
+		if not added:
+			sep.destroy()
+		return added
+									
 	def get_service(self, uri):
 		"""
 		returns an object providing the service
