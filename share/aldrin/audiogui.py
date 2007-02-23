@@ -55,7 +55,6 @@ def get_peaks(f, tolerance=0.01, maxd=0.01, mapfunc=map_coords_linear):
 	x0,y0 = 0.0,0.0
 	t0 = -9999.0
 	i0 = 0
-	s = 0.0
 	for i in xrange(int(corners)):
 		p = i*yc
 		a = f(p)
@@ -63,21 +62,21 @@ def get_peaks(f, tolerance=0.01, maxd=0.01, mapfunc=map_coords_linear):
 		if i == 0:
 			x0,y0 = x,y
 		t = math.atan2((y0 - y), (x0 - x)) / (2*math.pi)
-		s += (((x0 - x)**2) + ((y0 - y)**2))**0.5
 		td = t - t0
 		if (abs(td) >= tolerance):
 			t0 = t
 			peaks.append((x,y))
-			s = 0.0
 		x0,y0 = x,y
 	return peaks
 
-def make_knobshape(gaps=6, gapdepth=0.1):
+def make_knobshape(gaps, gapdepth):
 	def knobshape_func(x):
-		r = math.sin(x * 2 * math.pi * (gaps/2.0))
-		r = (r ** 36)
-		return 0.5 - r * gapdepth
-	return get_peaks(knobshape_func, 0.1, 0.05, map_coords_spheric)
+		x = (x*gaps)%1.0
+		if (x >= 0.25) and (x < 0.75):
+			return 0.5
+		else:
+			return 0.5 - gapdepth*0.5
+	return get_peaks(knobshape_func, 0.03, 0.05, map_coords_spheric)
 
 class Knob(gtk.DrawingArea):
 	def __init__(self):
@@ -92,7 +91,7 @@ class Knob(gtk.DrawingArea):
 		self.sat = 0.0
 		self.dragging = False
 		self.start = 0.0
-		self.angle = (5.0/6.0) * 2 * math.pi
+		self.angle = (3.0/4.0) * 2 * math.pi
 		self.knobshape = None
 		self.add_events(gtk.gdk.ALL_EVENTS_MASK)
 		self.connect('button-press-event', self.on_left_down)
@@ -157,8 +156,8 @@ class Knob(gtk.DrawingArea):
 			self.grab_remove()
 
 	def on_motion(self, widget, event):
-		x,y,state = self.window.get_pointer()
 		if self.dragging:
+			x,y,state = self.window.get_pointer()
 			rc = self.get_allocation()
 			range = self.max_value - self.min_value
 			value = self.startvalue - ((y - self.start)*range)/rc.height
@@ -237,7 +236,12 @@ class Knob(gtk.DrawingArea):
 		self.context = widget.window.cairo_create()
 		self.draw(self.context)
 		return False
-
+		
+def render_stuff(self, widget):
+	ctx = widget.window.cairo_create()
+	ctx.set_source_rgb(1.0,0.0,0.0)
+	ctx.paint()
+	
 if __name__ == '__main__':
 	window = gtk.Window()
 	window.connect('destroy', lambda widget: gtk.main_quit())
@@ -256,16 +260,16 @@ if __name__ == '__main__':
 		vbox.pack_start(gtk.VBox())
 		hbox.pack_start(vbox, expand=False)
 	s = 0.3
-	add_knob(64, 0.0, 0.0, s, 12, 0.05)
 	add_knob(64, 0.0, 0.1, s, 12, 0.05)
-	add_knob(48, 0.0, 0.2, s, 9, 0.067)
+	add_knob(64, 0.0, 0.1, s, 12, 0.05)
 	add_knob(48, 0.0, 0.3, s, 9, 0.067)
-	add_knob(48, 0.0, 0.4, s, 9, 0.067)
-	add_knob(48, 0.5, 0.5, s, 9, 0.067)
+	add_knob(48, 0.0, 0.3, s, 9, 0.067)
+	add_knob(48, 0.0, 0.3, s, 9, 0.067)
+	add_knob(48, 0.5, 0.3, s, 9, 0.067)
 	add_knob(32, 0.0, 0.6, s, 6, 0.1)
-	add_knob(32, 0.0, 0.7, s, 6, 0.1)
-	add_knob(32, 0.0, 0.8, s, 6, 0.1)
-	add_knob(32, 1.0, 0.9, s, 6, 0.1)
+	add_knob(32, 0.0, 0.6, s, 6, 0.1)
+	add_knob(32, 0.0, 0.6, s, 6, 0.1)
+	add_knob(32, 1.0, 0.6, s, 6, 0.1)
 	vbox.pack_start(hbox, expand=False)
 	window.add(vbox)
 	window.show_all()
