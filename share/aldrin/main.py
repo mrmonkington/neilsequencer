@@ -406,37 +406,28 @@ class AldrinFrame(gtk.Window):
 		self.pages = {
 			self.PAGE_PATTERN : (
 				self.patternframe,
-				make_stock_radio_item(STOCK_PATTERNS,None),
+				STOCK_PATTERNS,
 			),
 			self.PAGE_ROUTE : (
 				self.routeframe,
-				make_stock_radio_item(STOCK_ROUTER,None),
+				STOCK_ROUTER,
 			),
 			self.PAGE_SEQUENCER : (
 				self.seqframe,
-				make_stock_radio_item(STOCK_SEQUENCER,None),
+				STOCK_SEQUENCER,
 			),
 			self.PAGE_WAVETABLE : (
 				self.wavetableframe,
-				make_stock_radio_item(STOCK_SOUNDLIB,None),
+				STOCK_SOUNDLIB,
 			),
 			self.PAGE_INFO : (
 				self.infoframe,
-				make_stock_radio_item(STOCK_INFO,None),
+				STOCK_INFO,
 			),
 		}
 		self.aldrinframe_toolbar.insert(make_stock_tool_item(gtk.STOCK_NEW, self.new),-1)
 		self.aldrinframe_toolbar.insert(make_stock_tool_item(gtk.STOCK_OPEN, self.on_open),-1)
 		self.aldrinframe_toolbar.insert(make_stock_tool_item(gtk.STOCK_SAVE, self.on_save),-1)
-		self.aldrinframe_toolbar.insert(gtk.SeparatorToolItem(),-1)
-		self.aldrinframe_toolbar.insert(self.pages[self.PAGE_PATTERN][1],-1)
-		self.aldrinframe_toolbar.insert(self.pages[self.PAGE_ROUTE][1],-1)
-		self.aldrinframe_toolbar.insert(self.pages[self.PAGE_SEQUENCER][1],-1)
-		self.aldrinframe_toolbar.insert(gtk.SeparatorToolItem(),-1)
-		self.aldrinframe_toolbar.insert(self.pages[self.PAGE_WAVETABLE][1],-1)
-		self.aldrinframe_toolbar.insert(self.pages[self.PAGE_INFO][1],-1)
-		self.aldrinframe_toolbar.insert(gtk.SeparatorToolItem(),-1)
-		self.aldrinframe_toolbar.insert(make_stock_tool_item(STOCK_PANIC, self.on_toggle_panic),-1)
 		extrasep = gtk.SeparatorToolItem()
 		self.aldrinframe_toolbar.insert(extrasep,-1)
 		added = False
@@ -448,25 +439,24 @@ class AldrinFrame(gtk.Window):
 		self.mastertoolbar = MasterPanel(self)
 		self.transport = TransportPanel(self)
 		
-		for name in ('btnplay','btnrecord','btnstop','btnloop'):
+		for name in ('btnplay','btnrecord','btnstop','btnloop','btnpanic'):
 			setattr(self, name, getattr(self.transport, name))
 			
 		self.btnplay.connect('clicked', self.play)
 		self.btnrecord.connect('clicked', self.on_toggle_automation)
 		self.btnstop.connect('clicked', self.stop)
 		self.btnloop.connect('clicked', self.on_toggle_loop)
+		self.btnpanic.connect('clicked', self.on_toggle_panic)
 
 		self.framepanel = gtk.Notebook()
+		self.framepanel.set_tab_pos(gtk.POS_LEFT)
 		self.framepanel.set_show_border(False)
-		self.framepanel.set_show_tabs(False)
-		group = self.pages[self.PAGE_PATTERN][1]
+		#self.framepanel.set_show_tabs(False)
 		for k in sorted(self.pages):
-			panel,menuitem = self.pages[k]
+			panel,stockid = self.pages[k]
 			panel.show_all()
-			self.framepanel.append_page(panel)
-			if k != self.PAGE_PATTERN:
-				menuitem.set_group(group)
-			menuitem.connect('clicked', self.on_activate_page, k)
+			self.framepanel.append_page(panel, gtk.image_new_from_stock(stockid, gtk.ICON_SIZE_SMALL_TOOLBAR))
+		self.framepanel.connect('switch-page', self.on_activate_page)
 			
 		hbox = gtk.HBox()
 		hbox.add(self.framepanel)
@@ -498,7 +488,7 @@ class AldrinFrame(gtk.Window):
 			#~ (wx.ACCEL_NORMAL,  wx.WXK_F12, self.PANIC_ACCEL),
 		#~ ])
 		#~ self.SetAcceleratorTable(aTable)
-		self.pages[self.PAGE_ROUTE][1].set_active(True)
+		self.framepanel.set_current_page(self.PAGE_ROUTE)
 		
 		gobject.timeout_add(1000/25, self.on_handle_events)
 		
@@ -903,10 +893,9 @@ class AldrinFrame(gtk.Window):
 		@param index: Index of the panel (use one of the self.PAGE_* constants)
 		@type index: int
 		"""
-		panel, menuitem = self.pages[index]
-		if not menuitem.get_active():
-			menuitem.set_active(True)
-		self.framepanel.set_current_page(index)
+		panel, stockid = self.pages[index]
+		if self.framepanel.get_current_page() != index:
+			self.framepanel.set_current_page(index)
 		if hasattr(panel,'view'):
 			print "grab focus",panel.view
 			panel.view.grab_focus()
@@ -953,9 +942,8 @@ class AldrinFrame(gtk.Window):
 			return False
 		return True
 			
-	def on_activate_page(self, widget, page):
-		if widget.get_active():
-			self.select_page(page)
+	def on_activate_page(self, notebook, page, page_num):
+		gobject.timeout_add(10, self.select_page, page_num)
 
 	def open_recent_file(self, widget, filename):
 		"""
@@ -1501,6 +1489,7 @@ class TransportPanel(gtk.HBox):
 		self.btnrecord = new_stock_image_toggle_button(gtk.STOCK_MEDIA_RECORD)
 		self.btnstop = new_stock_image_button(gtk.STOCK_MEDIA_STOP)
 		self.btnloop = new_stock_image_toggle_button(STOCK_LOOP)
+		self.btnpanic = new_stock_image_toggle_button(STOCK_PANIC)
 		
 		vbox = gtk.VBox(False, 0)
 		sg1 = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
@@ -1534,7 +1523,7 @@ class TransportPanel(gtk.HBox):
 		hbox.pack_start(self.btnrecord,expand=False)
 		hbox.pack_start(self.btnstop,expand=False)
 		hbox.pack_start(self.btnloop,expand=False)
-		self.transport_buttons = hbox.get_children()
+		self.transport_buttons = hbox.get_children() + [self.btnpanic]
 		def on_realize(self):
 			for e in self.transport_buttons:
 				rc = e.get_allocation()
@@ -1552,6 +1541,8 @@ class TransportPanel(gtk.HBox):
 		combosizer.pack_start(self.tpblabel,expand=False)
 		combosizer.pack_start(self.tpb,expand=False)
 
+		combosizer.pack_start(gtk.VSeparator(), expand=False)
+		combosizer.pack_start(self.btnpanic, expand=False)
 		
 		self.pack_start(gtk.HBox())
 		self.pack_start(combosizer, expand=False)

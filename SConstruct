@@ -165,6 +165,8 @@ for f in glob.glob('share/aldrin/res/*.png'):
 	install(aldrinrespath, f)
 for f in glob.glob('share/aldrin/res/*.ico'):
 	install(aldrinrespath, f)
+for f in glob.glob('share/aldrin/res/*.svg'):
+	install(aldrinrespath, f)
 
 ################################################
 #

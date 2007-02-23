@@ -607,12 +607,12 @@ class SequencerView(gtk.DrawingArea):
 				if self.track > 0:
 					seq.move_track(self.track, self.track-1)
 					self.track -= 1
-					self.ReDraw()	
+					self.redraw()	
 			elif k == 'Down' or k == 'KP_Down':
 				if self.track < (seq.get_track_count()-1):
 					seq.move_track(self.track, self.track+1)
 					self.track += 1
-					self.ReDraw()
+					self.redraw()
 			elif k == 'Left' or k == 'KP_Left':
 				self.set_cursor_pos(self.track, self.row - (self.step*16))
 			elif k == 'Right' or k == 'KP_Right':
