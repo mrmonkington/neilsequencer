@@ -22,7 +22,7 @@
 provides controls usually found on front panels of audio hardware.
 """
 
-from gtkimport import gtk
+import gtk
 import pango
 import gobject
 import cairo
@@ -77,34 +77,108 @@ def make_knobshape(gaps=6, gapdepth=0.1):
 		r = math.sin(x * 2 * math.pi * (gaps/2.0))
 		r = (r ** 36)
 		return 0.5 - r * gapdepth
-	return get_peaks(knobshape_func, 0.03, 0.05, map_coords_spheric)
+	return get_peaks(knobshape_func, 0.1, 0.05, map_coords_spheric)
 
 class Knob(gtk.DrawingArea):
-	def __init__(self, value=0.0, hue=0.0, sat=0.6, gaps=6, gapdepth=0.1):
+	def __init__(self):
 		gtk.DrawingArea.__init__(self)
 		self.connect('expose-event', self.on_expose)
-		self.hue = hue
-		self.gapdepth = gapdepth
-		self.value = value
-		self.sat = sat
-		self.knobshape = make_knobshape(gaps, gapdepth)
-		gobject.timeout_add(40, self.refresh)
+		self.hue = 0.0
+		self.gapdepth = 0.1
+		self.gaps = 6
+		self.value = 0.0
+		self.min_value = 0.0
+		self.max_value = 1.0
+		self.sat = 0.0
+		self.dragging = False
+		self.start = 0.0
+		self.angle = (5.0/6.0) * 2 * math.pi
+		self.knobshape = None
+		self.add_events(gtk.gdk.ALL_EVENTS_MASK)
+		self.connect('button-press-event', self.on_left_down)
+		self.connect('button-release-event', self.on_left_up)
+		self.connect('motion-notify-event', self.on_motion)
+		self.connect('realize', self.on_realize)
 		
+	def on_realize(self, widget):
+		self.knobshape = make_knobshape(self.gaps, self.gapdepth)
+		
+	def update_knobshape(self):
+		self.knobshape = make_knobshape(self.gaps, self.gapdepth)
+		
+	def set_value(self, value):
+		self.value = value
+		self.refresh()
+		
+	def get_value(self):
+		return self.value
+		
+	def set_color(self, hue, saturation):
+		self.hue = hue
+		self.sat = saturation
+		self.refresh()
+		
+	def get_color(self):
+		return self.hue, self.sat
+		
+	def set_gaps(self, gaps):
+		self.gaps = gaps
+		self.knobshape = None
+		self.refresh()
+		
+	def get_gaps(self):
+		return self.gaps
+		
+	def set_gap_depth(self, gapdepth):
+		self.gapdepth = gapdepth
+		self.knobshape = None
+		self.refresh()
+		
+	def get_gap_depth(self):
+		return self.gapdepth
+		
+	def set_angle(self, angle):
+		self.angle = angle
+		self.refresh()
+		
+	def get_angle(self):
+		return self.angle
+		
+	def on_left_down(self, widget, event):
+		if event.button == 1:
+			self.startvalue = self.value
+			self.start = event.y
+			self.dragging = True
+			self.grab_add()
+
+	def on_left_up(self, widget, event):
+		if event.button == 1:
+			self.dragging = False
+			self.grab_remove()
+
+	def on_motion(self, widget, event):
+		x,y,state = self.window.get_pointer()
+		if self.dragging:
+			rc = self.get_allocation()
+			range = self.max_value - self.min_value
+			value = self.startvalue - ((y - self.start)*range)/rc.height
+			self.value = min(max(value, self.min_value), self.max_value)
+			self.refresh()
+
 	def draw_points(self, ctx, peaks):
 		ctx.move_to(*peaks[0])
 		for peak in peaks[1:]:
 			ctx.line_to(*peak)
 		
 	def draw(self, ctx):
-		import time
-		angle = (self.value + ((time.time()%10.0)/10.0))*2*math.pi
+		if not self.knobshape:
+			self.knobshape = make_knobshape(self.gaps, self.gapdepth)
+		angle = self.value*self.angle + math.pi*1.5 - self.angle*0.5
 		rc = self.get_allocation()
 		size = min(rc.width, rc.height)
 		kh = 4 # knob height
 		ps = 1.0/size # pixel size
 		ss = ps * kh # shadow size
-		#~ ctx.set_source_rgba(1,1,1,0.1)
-		#~ ctx.paint()
 		# draw spherical
 		ctx.translate(0.5,0.5)
 		ctx.translate(size*0.5, size*0.5)
@@ -117,10 +191,13 @@ class Knob(gtk.DrawingArea):
 		ctx.restore()
 		ctx.set_source_rgba(0,0,0,0.3)
 		ctx.fill()
+		pat = cairo.LinearGradient(-0.5, -0.5, 0.5, 0.5)
+		pat.add_color_stop_rgb(1.0, 0.2,0.2,0.2)
+		pat.add_color_stop_rgb(0.0, 0.3,0.3,0.3)
+		ctx.set_source(pat)
 		ctx.rotate(angle)
 		self.draw_points(ctx, self.knobshape)
 		ctx.close_path()
-		ctx.set_source_rgba(0.3,0.3,0.3,1)
 		ctx.fill_preserve()
 		ctx.set_source_rgba(0.1,0.1,0.1,1)
 		ctx.save()
@@ -137,21 +214,23 @@ class Knob(gtk.DrawingArea):
 		ctx.arc(0.0, 0.0, 0.5-self.gapdepth-(2*ps), 0.0, math.pi*2.0)
 		ctx.set_source_rgb(*hls_to_rgb(self.hue, 0.6, self.sat))
 		ctx.fill()
-		ctx.move_to(0.0, 0.0)
-		ctx.line_to(0.5-self.gapdepth-2*ps, 0.0)
+		ctx.move_to(0.1, 0.0)
+		ctx.line_to(0.5-self.gapdepth-ps, 0.0)
 		ctx.save()
 		ctx.identity_matrix()
-		ctx.set_line_width(4)
+		ctx.translate(0.5,0.5)
+		ctx.set_line_width(5)
 		ctx.set_source_rgb(*hls_to_rgb(self.hue, 0.7, self.sat))
 		ctx.stroke_preserve()
-		ctx.set_line_width(2)
-		ctx.set_source_rgba(0.1,0.1,0.1,1)
+		ctx.set_line_width(3)
+		ctx.set_source_rgb(*hls_to_rgb(self.hue, 0.3, self.sat))
 		ctx.stroke()
 		ctx.restore()
 		
 	def refresh(self):
 		rect = self.get_allocation()
-		self.window.invalidate_rect((0,0,rect.width,rect.height), False)
+		if self.window:
+			self.window.invalidate_rect((0,0,rect.width,rect.height), False)
 		return True
 		
 	def on_expose(self, widget, event):
@@ -160,28 +239,33 @@ class Knob(gtk.DrawingArea):
 		return False
 
 if __name__ == '__main__':
-	import testplayer, utils
-	window = testplayer.TestWindow()
+	window = gtk.Window()
+	window.connect('destroy', lambda widget: gtk.main_quit())
 	vbox = gtk.VBox()
 	hbox = gtk.HBox(False)
-	def add_knob(size, *args):
-		knob = Knob(*args)
+	def add_knob(size, value, hue, sat, gaps, gapdepth):
+		knob = Knob()
+		knob.set_value(value)
+		knob.set_color(hue, sat)
+		knob.set_gaps(gaps)
+		knob.set_gap_depth(gapdepth)
 		knob.set_size_request(size,size)
 		vbox = gtk.VBox()
 		vbox.pack_start(gtk.VBox())
 		vbox.pack_start(knob, expand=False)
 		vbox.pack_start(gtk.VBox())
 		hbox.pack_start(vbox, expand=False)
-	add_knob(64, 0.0, 0.0, 0.3, 12, 0.05)
-	add_knob(64, 0.1, 0.1, 0.3, 12, 0.05)
-	add_knob(48, 0.2, 0.2, 0.3, 9, 0.067)
-	add_knob(48, 0.3, 0.3, 0.3, 9, 0.067)
-	add_knob(48, 0.4, 0.4, 0.3, 9, 0.067)
-	add_knob(48, 0.5, 0.5, 0.3, 9, 0.067)
-	add_knob(32, 0.6, 0.6, 0.3, 6, 0.1)
-	add_knob(32, 0.7, 0.7, 0.3, 6, 0.1)
-	add_knob(32, 0.8, 0.8, 0.3, 6, 0.1)
-	add_knob(32, 0.9, 0.9, 0.3, 6, 0.1)
+	s = 0.3
+	add_knob(64, 0.0, 0.0, s, 12, 0.05)
+	add_knob(64, 0.0, 0.1, s, 12, 0.05)
+	add_knob(48, 0.0, 0.2, s, 9, 0.067)
+	add_knob(48, 0.0, 0.3, s, 9, 0.067)
+	add_knob(48, 0.0, 0.4, s, 9, 0.067)
+	add_knob(48, 0.5, 0.5, s, 9, 0.067)
+	add_knob(32, 0.0, 0.6, s, 6, 0.1)
+	add_knob(32, 0.0, 0.7, s, 6, 0.1)
+	add_knob(32, 0.0, 0.8, s, 6, 0.1)
+	add_knob(32, 1.0, 0.9, s, 6, 0.1)
 	vbox.pack_start(hbox, expand=False)
 	window.add(vbox)
 	window.show_all()
