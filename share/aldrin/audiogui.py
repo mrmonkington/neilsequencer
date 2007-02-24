@@ -50,17 +50,31 @@ def supershape(m, n1, n2, n3, phi):
 	r = 1.0/r
 	return r
 
-def draw_round_rectangle(ctx, x, y, w, h, arc, ratio):
-	arch = arc*ratio # arc handle length
-	ctx.move_to(x+arc, y)
-	ctx.line_to(x+w-arc, y)
-	ctx.curve_to(x+w-arch, y, x+w, y+arch, x+w, y+arc)
-	ctx.line_to(x+w, y+h-arc)
-	ctx.curve_to(x+w, y+h-arch, x+w-arch, y+h, x+w-arc, y+h)
-	ctx.line_to(x+arc, y+h)
-	ctx.curve_to(x+arch, y+h, x, y+h-arch, x, y+h-arc)
-	ctx.line_to(x, y+arc)
-	ctx.curve_to(x, y+arch, x+arch, y, x+arc, y)
+def draw_round_rectangle(ctx, x, y, w, h, arc1, arc2=None, arc3=None, arc4=None, ratio=0.618, tabwidth=0, tabheight=0):
+	if arc2 == None:
+		arc2 = arc1
+	if arc3 == None:
+		arc3 = arc1
+	if arc4 == None:
+		arc4 = arc1
+	arch1 = arc1*ratio # arc handle length
+	arch2 = arc2*ratio # arc handle length
+	arch3 = arc3*ratio # arc handle length
+	arch4 = arc4*ratio # arc handle length
+	ctx.move_to(x+arc1, y)
+	if tabwidth and tabheight:
+		curvewidth = tabheight*2
+		ctx.line_to(x+tabwidth, y)
+		arch = curvewidth*0.5
+		ctx.curve_to(x+tabwidth+arch, y, x+tabwidth+arch, y+tabheight, x+tabwidth+curvewidth, y+tabheight)
+	ctx.line_to(x+w-arc2, y+tabheight)
+	ctx.curve_to(x+w-arch2, y+tabheight, x+w, y+tabheight+arch2, x+w, y+tabheight+arc2)
+	ctx.line_to(x+w, y+h-arc3)
+	ctx.curve_to(x+w, y+h-arch3, x+w-arch3, y+h, x+w-arc3, y+h)
+	ctx.line_to(x+arc4, y+h)
+	ctx.curve_to(x+arch4, y+h, x, y+h-arch4, x, y+h-arc4)
+	ctx.line_to(x, y+arc1)
+	ctx.curve_to(x, y+arch1, x+arch1, y, x+arc1, y)
 	ctx.close_path()
 
 def get_peaks(f, tolerance=0.01, maxd=0.01, mapfunc=map_coords_linear):
@@ -98,26 +112,37 @@ def make_knobshape(gaps, gapdepth):
 			return 0.5 - gapdepth * (1-x) * 0.9
 		else:
 			return 0.5
-	return get_peaks(knobshape_func, 0.01, 0.05, map_coords_spheric)
+	return get_peaks(knobshape_func, 0.03, 0.05, map_coords_spheric)
 	
 def hls_to_color(h,l,s):
 	r,g,b = hls_to_rgb(h,l,s)
 	return gtk.gdk.color_parse('#%04X%04X%04X' % (int(r*65535),int(g*65535),int(b*65535)))
+	
+LEGEND_NONE = ''
+LEGEND_DOTS = 'dots'
+LEGEND_LINES = 'lines'
+LEGEND_RULER = 'ruler'
 
 class Knob(gtk.VBox):
 	def __init__(self):
 		gtk.VBox.__init__(self)
-		self.gapdepth = 0.1
+		self.gapdepth = 6
 		self.gaps = 6
 		self.value = 0.0
 		self.min_value = 0.0
 		self.max_value = 127.0
 		self.fg_hls = 0.0, 0.5, 0.0
+		self.legend_hls = 0.0, 1.0, 0.0
 		self.dragging = False
 		self.start = 0.0
 		self.digits = 0
+		self.segments = 13
+		self.label = ''
 		self.angle = (3.0/4.0) * 2 * math.pi
 		self.knobshape = None
+		self.legend = LEGEND_NONE
+		self.lsize = 2
+		self.lscale = False
 		self.set_double_buffered(True)
 		self.connect('realize', self.on_realize)
 		self.connect('expose-event', self.on_expose)
@@ -132,7 +157,24 @@ class Knob(gtk.VBox):
 		self.update_knobshape()
 		
 	def update_knobshape(self):
-		self.knobshape = make_knobshape(self.gaps, self.gapdepth)
+		rc = self.get_allocation()
+		b = self.get_border_width()
+		size = min(rc.width, rc.height) - 2*b
+		gd = float(self.gapdepth*0.5) / size
+		self.gd = gd
+		self.knobshape = make_knobshape(self.gaps, gd)
+		
+	def set_legend_scale(self, scale):
+		self.lscale = scale
+		self.refresh()
+		
+	def set_legend_line_width(self, width):
+		self.lsize = width
+		self.refresh()
+		
+	def set_segments(self, segments):
+		self.segments = segments
+		self.refresh()
 	
 	def set_range(self, minvalue, maxvalue):
 		self.min_value = minvalue
@@ -155,6 +197,10 @@ class Knob(gtk.VBox):
 		
 	def set_top_color(self, h, l, s):
 		self.fg_hls = h,l,s
+		self.refresh()
+		
+	def set_legend_color(self, h, l, s):
+		self.legend_hls = h,l,s
 		self.refresh()
 		
 	def get_top_color(self):
@@ -182,6 +228,13 @@ class Knob(gtk.VBox):
 		
 	def get_angle(self):
 		return self.angle
+		
+	def set_legend(self, legend):
+		self.legend = legend
+		self.refresh()
+		
+	def get_legend(self):
+		return self.legend
 		
 	def on_left_down(self, widget, event):
 		if not sum(self.get_allocation().intersect((int(event.x), int(event.y), 1, 1))):
@@ -238,17 +291,62 @@ class Knob(gtk.VBox):
 	def draw(self, ctx):
 		if not self.knobshape:
 			self.update_knobshape()
-		angle = (self.value/(self.max_value - self.min_value))*self.angle + math.pi*1.5 - self.angle*0.5
+		startangle = math.pi*1.5 - self.angle*0.5
+		angle = (self.value/(self.max_value - self.min_value))*self.angle + startangle
 		rc = self.get_allocation()
 		size = min(rc.width, rc.height)
 		kh = self.get_border_width() # knob height
 		ps = 1.0/size # pixel size
+		ps2 = 1.0 / (size-(2*kh)-1) # pixel size inside knob
 		ss = ps * kh # shadow size
+		lsize = ps2 * self.lsize # legend line width
 		# draw spherical
 		ctx.translate(rc.x, rc.y)
 		ctx.translate(0.5,0.5)
 		ctx.translate(size*0.5, size*0.5)
 		ctx.scale(size-(2*kh)-1, size-(2*kh)-1)
+		if self.legend == LEGEND_DOTS:
+			ctx.save()
+			ctx.set_source_rgb(*hls_to_rgb(*self.legend_hls))
+			dots = self.segments
+			for i in xrange(dots):
+				s = float(i)/(dots-1)
+				a = startangle + self.angle*s
+				ctx.save()
+				ctx.rotate(a)
+				r = lsize*0.5
+				if self.lscale:
+					r = max(r*s,ps2)
+				ctx.arc(0.5+lsize, 0.0, r, 0.0, 2*math.pi)
+				ctx.fill()
+				ctx.restore()
+			ctx.restore()
+		if self.legend in (LEGEND_LINES, LEGEND_RULER):
+			ctx.save()
+			ctx.set_source_rgb(*hls_to_rgb(*self.legend_hls))
+			dots = self.segments
+			n = ps2*(kh-1)
+			for i in xrange(dots):
+				s = float(i)/(dots-1)
+				a = startangle + self.angle*s
+				ctx.save()
+				ctx.rotate(a)
+				r = n*0.9
+				if self.lscale:
+					r = max(r*s,ps2)
+				ctx.move_to(0.5+ps2+n*0.1, 0.0)
+				ctx.line_to(0.5+ps2+n*0.1+r, 0.0)
+				ctx.set_line_width(lsize)
+				ctx.stroke()
+				ctx.restore()
+			ctx.restore()
+		if self.legend == LEGEND_RULER:
+			ctx.save()
+			ctx.set_source_rgb(*hls_to_rgb(*self.legend_hls))
+			ctx.set_line_width(lsize)
+			ctx.arc(0.0, 0.0, 0.5+lsize, self.angle, 0.0)
+			ctx.stroke()
+			ctx.restore()
 		if kh:
 			ctx.save()
 			ctx.translate(ss, ss)
@@ -273,17 +371,17 @@ class Knob(gtk.VBox):
 		ctx.stroke()
 		ctx.restore()
 		
-		ctx.arc(0.0, 0.0, 0.5-self.gapdepth, 0.0, math.pi*2.0)
+		ctx.arc(0.0, 0.0, 0.5-self.gd, 0.0, math.pi*2.0)
 		ctx.set_source_rgb(*hls_to_rgb(self.fg_hls[0], max(self.fg_hls[1]*0.4,0.0), self.fg_hls[2]))
 		ctx.fill()
-		ctx.arc(0.0, 0.0, 0.5-self.gapdepth-ps, 0.0, math.pi*2.0)
+		ctx.arc(0.0, 0.0, 0.5-self.gd-ps, 0.0, math.pi*2.0)
 		ctx.set_source_rgb(*hls_to_rgb(self.fg_hls[0], min(self.fg_hls[1]*1.2,1.0), self.fg_hls[2]))
 		ctx.fill()
-		ctx.arc(0.0, 0.0, 0.5-self.gapdepth-(2*ps), 0.0, math.pi*2.0)
+		ctx.arc(0.0, 0.0, 0.5-self.gd-(2*ps), 0.0, math.pi*2.0)
 		ctx.set_source_rgb(*hls_to_rgb(*self.fg_hls))
 		ctx.fill()
-		ctx.move_to(0.1, 0.0)
-		ctx.line_to(0.5-self.gapdepth-ps, 0.0)
+		ctx.move_to(0.5-0.3-self.gd-ps, 0.0)
+		ctx.line_to(0.5-self.gd-ps, 0.0)
 		ctx.save()
 		ctx.identity_matrix()
 		ctx.translate(0.5,0.5)
@@ -309,17 +407,39 @@ class Knob(gtk.VBox):
 class DecoBox(gtk.VBox):
 	def __init__(self):
 		gtk.VBox.__init__(self)
-		self.arc = 6.0
+		self.arc1 = 0.0
+		self.arc2 = None
+		self.arc3 = None
+		self.arc4 = None
 		self.fg_hls = 0.0, 1.0, 0.0
 		self.bg_hls = 0.0, 0.3, 0.618
+		self.text_hls = 0.0, 1.0, 1.0
 		self.filled = False
+		self.tabwidth = 0
+		self.tabheight = 0
 		self.thickness = 0.0
 		self.ratio = 0.382
+		self.alpha = 1.0
 		self.set_app_paintable(True)
 		self.connect('expose-event', self.on_expose)
-		
+		self.vbox = gtk.VBox()
+		hbox = gtk.HBox()
+		self.pack_start(hbox, expand=False)
+		self.pack_start(self.vbox)
+		self.tabbox = hbox
+
+	def set_label(self, text):
+		self.label = text
+		self.refresh()
+
 	def set_thickness(self, thickness):
 		self.thickness = thickness
+		self.refresh()
+		
+	def set_tab_size(self, width, height):
+		self.tabwidth = width
+		self.tabheight = height
+		self.tabbox.set_size_request(-1, self.tabheight+5)
 		self.refresh()
 	
 	def get_thickness(self):
@@ -332,12 +452,19 @@ class DecoBox(gtk.VBox):
 	def get_roundness_ratio(self):
 		return self.ratio
 		
-	def set_roundness(self, roundness):
-		self.arc = roundness
+	def set_roundness(self, topleft, topright=None, bottomleft=None, bottomright=None):
+		self.arc1 = topleft
+		self.arc2 = topright
+		self.arc3 = bottomleft
+		self.arc4 = bottomright
+		self.refresh()
+
+	def set_alpha(self, alpha):
+		self.alpha = alpha
 		self.refresh()
 		
-	def set_roundness(self):
-		return self.arc
+	def get_alpha(self):
+		return self.alpha
 
 	def set_fg_color(self, h, l, s):
 		self.fg_hls = h,l,s
@@ -353,11 +480,30 @@ class DecoBox(gtk.VBox):
 	def get_bg_color():
 		return self.bg_hsl
 
+	def set_label_color(self, h, l, s):
+		self.text_hls = h,l,s
+		self.refresh()
+
+	def get_label_color():
+		return self.text_hsl
+		
 	def refresh(self):
-		rect = self.get_allocation()
+		rc = self.get_allocation()
 		if self.window:
-			self.window.invalidate_rect((rc.x, rc.y,rect.width,rect.height), False)
+			self.window.invalidate_rect(rc, False)
 		return True
+		
+	def configure_font(self, ctx):
+		ctx.select_font_face(
+			"Bitstream Sans Vera", 
+			cairo.FONT_SLANT_NORMAL,
+			cairo.FONT_WEIGHT_BOLD)
+		ctx.set_font_size(9)
+		fo = cairo.FontOptions()
+		fo.set_antialias(cairo.ANTIALIAS_GRAY)
+		fo.set_hint_style(cairo.HINT_STYLE_NONE)
+		fo.set_hint_metrics(cairo.HINT_METRICS_DEFAULT)
+		ctx.set_font_options(fo)
 
 	def draw(self, ctx):
 		rc = self.get_allocation()
@@ -367,15 +513,38 @@ class DecoBox(gtk.VBox):
 		y += bw
 		w -= bw*2
 		h -= bw*2
+		
+		label = self.label.upper()
+		ctx.push_group()
+		self.configure_font(ctx)
+		xb, yb, fw, fh, xa, ya = ctx.text_extents(label)
+		
+		tw = max(self.tabwidth,xa+self.arc1+self.tabheight)
+
 		ctx.set_source_rgb(*hls_to_rgb(*self.bg_hls))
-		draw_round_rectangle(ctx, x, y, w, h, self.arc, self.ratio)
+		draw_round_rectangle(ctx, x, y, w, h, 
+			arc1=self.arc1, arc2=self.arc2, arc3=self.arc3, arc4=self.arc4, 
+			ratio=self.ratio, tabwidth=tw, tabheight=self.tabheight)
+
 		ctx.fill()
 		if self.thickness:
 			ctx.set_source_rgb(*hls_to_rgb(*self.fg_hls))
 			th = self.thickness*0.5
-			draw_round_rectangle(ctx, x+th, y+th, w-self.thickness, h-self.thickness, self.arc, self.ratio)
+			draw_round_rectangle(ctx, x+th, y+th, w-self.thickness, h-self.thickness, 
+				arc1=self.arc1, arc2=self.arc2, arc3=self.arc3, arc4=self.arc4, 
+				ratio=self.ratio, tabwidth=tw, tabheight=self.tabheight)
 			ctx.set_line_width(self.thickness)
 			ctx.stroke()
+			
+		if label:
+			ctx.set_source_rgb(*hls_to_rgb(*self.text_hls))
+			ctx.translate(x+self.arc1*0.5,y+self.tabheight*0.5-yb)
+			if self.thickness:
+				ctx.translate(self.thickness+1, self.thickness+1)
+			ctx.show_text(label)
+			ctx.fill()
+		ctx.pop_group_to_source()
+		ctx.paint_with_alpha(self.alpha)
 
 	def on_expose(self, widget, event):
 		self.context = widget.window.cairo_create()
@@ -390,43 +559,79 @@ def render_stuff(self, widget):
 if __name__ == '__main__':
 	window = gtk.Window()
 	window.connect('destroy', lambda widget: gtk.main_quit())
-	s = 0.618
-	def new_vbox():
+	s = 0.9
+	def new_vbox(text):
 		vbox = DecoBox()
+		vbox.set_label(text)
+		vbox.add(gtk.HBox())
 		hbox = gtk.HBox()
-		vbox.add(hbox)
+		vbox.pack_start(hbox, expand=False)
 		return vbox, hbox
-	def new_knob(size, value, hue, sat, gaps, gapdepth):
+	def new_knob(size, value, hue, sat, gaps):
 		knob = Knob()
+		knob.set_gaps(gaps)
 		knob.set_border_width(6)
 		knob.set_value(value)
-		knob.set_top_color(hue, 0.7, sat)
-		knob.set_gaps(gaps)
-		knob.set_gap_depth(gapdepth)
+		knob.set_top_color(hue, 0.8, sat)
 		knob.set_size_request(size,size)
+		if size == 32:
+			knob.set_legend(LEGEND_DOTS)
+		if size == 64:
+			knob.set_legend_scale(True)
+			knob.set_legend(LEGEND_LINES)
+			knob.set_legend_color(0.0, 0.0, 0.0)
+			knob.set_gap_depth(0)
+			knob.set_segments(36)
 		return knob
-	window.modify_bg(gtk.STATE_NORMAL, hls_to_color(0.0, 0.2, s))
+	window.modify_bg(gtk.STATE_NORMAL, hls_to_color(0.0, 0.4, s))
 	hbox = gtk.HBox(False, 6)
 	hbox.set_border_width(6)
-	vb, hb = new_vbox()
+	vb, hb = new_vbox("LFO 1")
+	vb.set_roundness(6, 6, 6, 6)
+	vb.set_tab_size(16,6)
+	vb.set_label_color(0.0, 0.0, 0.0)
+	vb.set_thickness(1)
+	vb.set_bg_color(0.0, 0.9, 0.0)
+	vb.set_fg_color(0.0, 1.0, 0.0)
+	vb.set_alpha(0.8)
 	hbox.pack_start(vb, expand=False)
-	hb.pack_start(new_knob(64, 0.0, 0.0, 0.1, 12, 0.05), expand=False)
-	hb.pack_start(new_knob(64, 0.0, 0.0, 0.1, 12, 0.05), expand=False)
-	vb, hb = new_vbox()
-	vb.set_thickness(3)
-	vb.set_fg_color(0.0, 0.4, s)
+	def wrap_border(knob):
+		hbox = gtk.HBox()
+		hbox.pack_start(knob, expand=False)
+		hbox.set_border_width(3)
+		return hbox
+	knob = new_knob(64, 0.0, 0.0, 0.1, 9)
+	knob.set_legend_scale(False)
+	hb.pack_start(wrap_border(knob), expand=False)
+	hb.pack_start(wrap_border(new_knob(64, 0.0, 0.0, 0.1, 9)), expand=False)
+	titles = ["LOL", "ZX", "YZ", "XY"]
+	for i in (0.1, 0.2, 0.4, 0.6):
+		vb, hb = new_vbox(titles.pop())
+		vb.set_thickness(3)
+		r = 26
+		vb.set_roundness(0, r, r, r)
+		vb.set_bg_color(0.0, 0.4, s)
+		vb.set_fg_color(0.0, 1.0, 1.0)
+		vb.set_alpha(0.9)
+		hbox.pack_start(vb, expand=False)
+		knob = new_knob(48, 0.1, i, 1.0, 6)
+		knob.set_border_width(9)
+		knob.set_angle(math.pi)
+		knob.set_legend(LEGEND_RULER)
+		knob.set_segments(7)
+		knob.set_legend_line_width(2)
+		hb.pack_start(wrap_border(knob), expand=False)
+	vb, hb = new_vbox("Internet")
+	vb.set_roundness(6, 6, 6, 6)
+	vb.set_tab_size(16,6)
+	vb.set_thickness(1)
+	vb.set_bg_color(0.0, 0.3, s)
+	vb.set_fg_color(0.0, 0.28, s)
 	hbox.pack_start(vb, expand=False)
-	hb.pack_start(new_knob(48, 0.0, 0.0, s, 9, 0.067), expand=False)
-	hb.pack_start(new_knob(48, 0.0, 0.0, s, 9, 0.067), expand=False)
-	hb.pack_start(new_knob(48, 0.0, 0.0, s, 9, 0.067), expand=False)
-	hb.pack_start(new_knob(48, 0.5, 0.0, s, 9, 0.067), expand=False)
-	vb, hb = new_vbox()
-	vb.set_bg_color(0.0, 0.4, s)
-	hbox.pack_start(vb, expand=False)
-	hb.pack_start(new_knob(32, 0.0, 0.6, 0.1, 6, 0.1), expand=False)
-	hb.pack_start(new_knob(32, 0.0, 0.6, 0.1, 6, 0.1), expand=False)
-	hb.pack_start(new_knob(32, 0.0, 0.6, 0.1, 6, 0.1), expand=False)
-	hb.pack_start(new_knob(32, 1.0, 0.6, 0.1, 6, 0.1), expand=False)
+	hb.pack_start(new_knob(32, 0.0, 0.6, 0.1, 3), expand=False)
+	hb.pack_start(new_knob(32, 0.0, 0.6, 0.1, 3), expand=False)
+	hb.pack_start(new_knob(32, 0.0, 0.6, 0.1, 3), expand=False)
+	hb.pack_start(new_knob(32, 1.0, 0.6, 0.1, 3), expand=False)
 	window.add(hbox)
 	window.show_all()
 	gtk.main()
