@@ -176,19 +176,26 @@ def render_string(text, font=charset_5x7, char='#', nochar=' ', blank=' '):
 		n += '\n'
 	return n
 	
-def yield_char_points(char, font=charset_5x7):
-	c = font[ord(char)]
+def yield_string_bits(text, font=charset_5x7):
+	s = [font[ord(c)] for c in text]
 	for y in xrange(7):
-		for x in xrange(5):
-			if c & (BITMASK>>(y + (8*x))):
-				yield (x,y)
+		for c in s:
+			for x in xrange(0,40,8):
+				yield c & (BITMASK>>(y + x))
 
 if __name__ == '__main__':
 	print render_string("hello world!")
 	print render_string("hello mum!", charset_5x7_2)
 	print render_string("31337", charset_5x7_2, '|', '-', ' ')
-	s = [[' ' for i in range(5)] for j in range(7)]
-	for x,y in yield_char_points('Y'):
-		s[y][x] = 'Y'
-	for n in s:
-		print ''.join(n)
+	gen = yield_string_bits('Yes.')
+	s = ''
+	for y in range(7):
+		for c in range(4):
+			for x in range(5):
+				if gen.next():
+					s += 'Y'
+				else:
+					s += ' '
+			s += ' '
+		s += '\n'
+	print s
