@@ -28,7 +28,7 @@ import cairo
 import pangocairo
 from utils import prepstr, filepath, db2linear, linear2db, is_debug, filenameify, \
 	get_item_count, question, error, new_listview, add_scrollbars, get_clipboard_text, set_clipboard_text, \
-	gettext
+	gettext, new_stock_image_button
 import config
 import zzub
 import sys,os
@@ -310,11 +310,11 @@ class ParameterDialog(gtk.Dialog):
 		self.set_title(title)
 		self.presetbox = gtk.combo_box_entry_new_text()
 		self.presetbox.set_size_request(100,-1)
-		self.btnadd = gtk.Button(stock=gtk.STOCK_ADD)
-		self.btnremove = gtk.Button(stock=gtk.STOCK_REMOVE)
-		self.btncopy = gtk.Button("_Copy")
+		self.btnadd = new_stock_image_button(gtk.STOCK_ADD)
+		self.btnremove = new_stock_image_button(gtk.STOCK_REMOVE)
+		self.btncopy = new_stock_image_button(gtk.STOCK_COPY)
 		self.btnrandom = gtk.Button("_Random")
-		self.btnhelp = gtk.Button("_Help")
+		self.btnhelp = new_stock_image_button(gtk.STOCK_HELP)
 		menugroup = gtk.HBox(False, MARGIN)
 		menugroup.pack_start(self.presetbox)
 		menugroup.pack_start(self.btnadd, expand=False)
@@ -559,15 +559,12 @@ class ParameterDialog(gtk.Dialog):
 		"""
 		if self.presetbox.child.get_text() == "<default>":
 			self.btnadd.set_sensitive(False)
-			self.btnadd.set_label("Update")
 			self.btnremove.set_sensitive(False)
 		elif [preset for preset in self.presets.presets if prepstr(preset.name) == self.presetbox.child.get_text()]:
 			self.btnadd.set_sensitive(True)
-			self.btnadd.set_label("Update")
 			self.btnremove.set_sensitive(True)
 		else:
 			self.btnadd.set_sensitive(True)
-			self.btnadd.set_label("Add")
 			self.btnremove.set_sensitive(True)
 
 	def on_select_preset(self, widget):

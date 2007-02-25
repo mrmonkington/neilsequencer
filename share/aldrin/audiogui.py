@@ -1,7 +1,7 @@
 #encoding: latin-1
 
-# Aldrin
-# Modular Sequencer
+# AudioGUI
+# Provides GTK+ controls usually found on front panels of audio hardware.
 # Copyright (C) 2006 Leonard Ritter <contact@leonard-ritter.com>
 #
 # This program is free software; you can redistribute it and/or
@@ -119,9 +119,12 @@ def hls_to_color(h,l,s):
 	return gtk.gdk.color_parse('#%04X%04X%04X' % (int(r*65535),int(g*65535),int(b*65535)))
 	
 LEGEND_NONE = ''
-LEGEND_DOTS = 'dots'
-LEGEND_LINES = 'lines'
-LEGEND_RULER = 'ruler'
+LEGEND_DOTS = 'dots' # painted dots
+LEGEND_LINES = 'lines' # painted ray-like lines
+LEGEND_RULER = 'ruler' # painted ray-like lines + a circular one
+LEGEND_RULER_INWARDS = 'ruler-inwards' # same as ruler, but the circle is on the outside
+LEGEND_LED_SCALE = 'led-scale' # an LCD scale
+LEGEND_LED_DOTS = 'led-dots' # leds around the knob
 
 class Knob(gtk.VBox):
 	def __init__(self):
@@ -321,7 +324,7 @@ class Knob(gtk.VBox):
 				ctx.fill()
 				ctx.restore()
 			ctx.restore()
-		if self.legend in (LEGEND_LINES, LEGEND_RULER):
+		elif self.legend in (LEGEND_LINES, LEGEND_RULER, LEGEND_RULER_INWARDS):
 			ctx.save()
 			ctx.set_source_rgb(*hls_to_rgb(*self.legend_hls))
 			dots = self.segments
@@ -340,13 +343,19 @@ class Knob(gtk.VBox):
 				ctx.stroke()
 				ctx.restore()
 			ctx.restore()
-		if self.legend == LEGEND_RULER:
-			ctx.save()
-			ctx.set_source_rgb(*hls_to_rgb(*self.legend_hls))
-			ctx.set_line_width(lsize)
-			ctx.arc(0.0, 0.0, 0.5+lsize, self.angle, 0.0)
-			ctx.stroke()
-			ctx.restore()
+			if self.legend == LEGEND_RULER:
+				ctx.save()
+				ctx.set_source_rgb(*hls_to_rgb(*self.legend_hls))
+				ctx.set_line_width(lsize)
+				ctx.arc(0.0, 0.0, 0.5+ps2+n*0.1, startangle, startangle+self.angle)
+				ctx.stroke()
+				ctx.restore()
+			elif self.legend == LEGEND_RULER_INWARDS:
+				ctx.save()
+				ctx.set_source_rgb(*hls_to_rgb(*self.legend_hls))
+				ctx.set_line_width(lsize)
+				ctx.arc(0.0, 0.0, 0.5+ps2+n, startangle, startangle+self.angle)
+				ctx.stroke()
 		if kh:
 			ctx.save()
 			ctx.translate(ss, ss)
@@ -356,6 +365,37 @@ class Knob(gtk.VBox):
 			ctx.restore()
 			ctx.set_source_rgba(0,0,0,0.3)
 			ctx.fill()
+		if self.legend in (LEGEND_LED_SCALE, LEGEND_LED_DOTS):
+			ch,cl,cs = self.legend_hls
+			n = ps2*(kh-1)
+			ctx.save()
+			ctx.set_line_cap(cairo.LINE_CAP_ROUND)
+			ctx.set_source_rgb(*hls_to_rgb(ch,cl*0.2,cs))
+			ctx.set_line_width(lsize)
+			ctx.arc(0.0, 0.0, 0.5+ps2+n*0.5, startangle, startangle+self.angle)
+			ctx.stroke()
+			ctx.set_source_rgb(*hls_to_rgb(ch,cl,cs))
+			if self.legend == LEGEND_LED_SCALE:
+				ctx.set_line_width(lsize-ps2*2)
+				ctx.arc(0.0, 0.0, 0.5+ps2+n*0.5, startangle, angle)
+				ctx.stroke()
+			elif self.legend == LEGEND_LED_DOTS:
+				dots = self.segments
+				dsize = lsize-ps2*2
+				endangle = startangle + self.angle
+				for i in xrange(dots):
+					s = float(i)/(dots-1)
+					a = startangle + self.angle*s
+					if (a < angle) or (angle == endangle):
+						ctx.save()
+						ctx.rotate(a)
+						r = dsize*0.5
+						if self.lscale:
+							r = max(r*s,ps2)
+						ctx.arc(0.5+ps2+n*0.5, 0.0, r, 0.0, 2*math.pi)
+						ctx.fill()
+						ctx.restore()
+			ctx.restore()
 		pat = cairo.LinearGradient(-0.5, -0.5, 0.5, 0.5)
 		pat.add_color_stop_rgb(1.0, 0.2,0.2,0.2)
 		pat.add_color_stop_rgb(0.0, 0.3,0.3,0.3)
@@ -380,6 +420,12 @@ class Knob(gtk.VBox):
 		ctx.arc(0.0, 0.0, 0.5-self.gd-(2*ps), 0.0, math.pi*2.0)
 		ctx.set_source_rgb(*hls_to_rgb(*self.fg_hls))
 		ctx.fill()
+		
+		#~ ctx.set_line_cap(cairo.LINE_CAP_ROUND)
+		#~ ctx.move_to(0.5-0.3-self.gd-ps, 0.0)
+		#~ ctx.line_to(0.5-self.gd-ps*5, 0.0)
+		
+		ctx.set_line_cap(cairo.LINE_CAP_BUTT)
 		ctx.move_to(0.5-0.3-self.gd-ps, 0.0)
 		ctx.line_to(0.5-self.gd-ps, 0.0)
 		ctx.save()
@@ -427,9 +473,13 @@ class DecoBox(gtk.VBox):
 		self.pack_start(hbox, expand=False)
 		self.pack_start(self.vbox)
 		self.tabbox = hbox
+		
+	def update_tabbox_size(self):
+		self.tabbox.set_size_request(-1, self.tabheight+10)
 
 	def set_label(self, text):
 		self.label = text
+		self.update_tabbox_size()
 		self.refresh()
 
 	def set_thickness(self, thickness):
@@ -439,7 +489,7 @@ class DecoBox(gtk.VBox):
 	def set_tab_size(self, width, height):
 		self.tabwidth = width
 		self.tabheight = height
-		self.tabbox.set_size_request(-1, self.tabheight+5)
+		self.update_tabbox_size()
 		self.refresh()
 	
 	def get_thickness(self):
@@ -563,9 +613,8 @@ if __name__ == '__main__':
 	def new_vbox(text):
 		vbox = DecoBox()
 		vbox.set_label(text)
-		vbox.add(gtk.HBox())
 		hbox = gtk.HBox()
-		vbox.pack_start(hbox, expand=False)
+		vbox.vbox.pack_start(hbox, expand=False)
 		return vbox, hbox
 	def new_knob(size, value, hue, sat, gaps):
 		knob = Knob()
@@ -586,7 +635,7 @@ if __name__ == '__main__':
 	window.modify_bg(gtk.STATE_NORMAL, hls_to_color(0.0, 0.4, s))
 	hbox = gtk.HBox(False, 6)
 	hbox.set_border_width(6)
-	vb, hb = new_vbox("LFO 1")
+	vb, hb = new_vbox("LMAO")
 	vb.set_roundness(6, 6, 6, 6)
 	vb.set_tab_size(16,6)
 	vb.set_label_color(0.0, 0.0, 0.0)
@@ -594,40 +643,74 @@ if __name__ == '__main__':
 	vb.set_bg_color(0.0, 0.9, 0.0)
 	vb.set_fg_color(0.0, 1.0, 0.0)
 	vb.set_alpha(0.8)
-	hbox.pack_start(vb, expand=False)
+	def wrap_vb(vb):
+		vbox = gtk.VBox()
+		vbox.pack_start(vb, expand=False)
+		return vbox
+	hbox.pack_start(wrap_vb(vb), expand=False)
 	def wrap_border(knob):
 		hbox = gtk.HBox()
 		hbox.pack_start(knob, expand=False)
-		hbox.set_border_width(3)
+		hbox.set_border_width(6)
 		return hbox
 	knob = new_knob(64, 0.0, 0.0, 0.1, 9)
 	knob.set_legend_scale(False)
 	hb.pack_start(wrap_border(knob), expand=False)
 	hb.pack_start(wrap_border(new_knob(64, 0.0, 0.0, 0.1, 9)), expand=False)
-	titles = ["LOL", "ZX", "YZ", "XY"]
-	for i in (0.1, 0.2, 0.4, 0.6):
-		vb, hb = new_vbox(titles.pop())
+	titles = ["LOL", "ROFL", "WTF", "YBG"]
+	for x,i in enumerate((0.1, 0.2, 0.4, 0.6)):
+		title = titles.pop()
+		vb, hb = new_vbox(title)
 		vb.set_thickness(3)
-		r = 26
-		vb.set_roundness(0, r, r, r)
+		r = 12
+		if x != 3:
+			vb.set_roundness(0, r, 0, r)
 		vb.set_bg_color(0.0, 0.4, s)
 		vb.set_fg_color(0.0, 1.0, 1.0)
 		vb.set_alpha(0.9)
-		hbox.pack_start(vb, expand=False)
+		hbox.pack_start(wrap_vb(vb), expand=False)
 		knob = new_knob(48, 0.1, i, 1.0, 6)
 		knob.set_border_width(9)
 		knob.set_angle(math.pi)
-		knob.set_legend(LEGEND_RULER)
-		knob.set_segments(7)
-		knob.set_legend_line_width(2)
+		if x == 0:
+			knob.set_angle(1.5*math.pi)
+			knob.set_legend(LEGEND_RULER_INWARDS)
+			knob.set_legend_line_width(2)
+			knob.set_segments(7)
+		elif x == 1:
+			vb.set_alpha(1.0)
+			vb.set_fg_color(0.0, 0.4, 0.0)
+			vb.set_bg_color(0.0, 0.2, 0.0)
+			knob.set_angle(1.5*math.pi)
+			knob.set_legend(LEGEND_LED_SCALE)
+			knob.set_legend_color(0.6, 0.5, 1.0)
+			knob.set_legend_line_width(6)
+			knob.set_top_color(0.0, 0.8, 0.0)
+			knob.set_gap_depth(1)
+		elif x == 2:
+			vb.set_alpha(1.0)
+			vb.set_fg_color(0.0, 0.4, 0.0)
+			vb.set_bg_color(0.0, 0.2, 0.0)
+			knob.set_angle(1.5*math.pi)
+			knob.set_legend(LEGEND_LED_DOTS)
+			knob.set_legend_color(0.01, 0.5, 1.0)
+			knob.set_legend_line_width(6)
+			knob.set_top_color(0.0, 0.8, 0.0)
+			knob.set_gap_depth(1)
+			knob.set_segments(13)
+		else:
+			knob.set_angle(math.pi)
+			knob.set_legend(LEGEND_RULER)
+			knob.set_legend_line_width(2)
+			knob.set_segments(7)
 		hb.pack_start(wrap_border(knob), expand=False)
-	vb, hb = new_vbox("Internet")
+	vb, hb = new_vbox("BRB")
 	vb.set_roundness(6, 6, 6, 6)
 	vb.set_tab_size(16,6)
 	vb.set_thickness(1)
 	vb.set_bg_color(0.0, 0.3, s)
 	vb.set_fg_color(0.0, 0.28, s)
-	hbox.pack_start(vb, expand=False)
+	hbox.pack_start(wrap_vb(vb), expand=False)
 	hb.pack_start(new_knob(32, 0.0, 0.6, 0.1, 3), expand=False)
 	hb.pack_start(new_knob(32, 0.0, 0.6, 0.1, 3), expand=False)
 	hb.pack_start(new_knob(32, 0.0, 0.6, 0.1, 3), expand=False)
