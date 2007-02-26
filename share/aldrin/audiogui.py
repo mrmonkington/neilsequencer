@@ -118,6 +118,11 @@ def hls_to_color(h,l,s):
 	r,g,b = hls_to_rgb(h,l,s)
 	return gtk.gdk.color_parse('#%04X%04X%04X' % (int(r*65535),int(g*65535),int(b*65535)))
 	
+MARKER_NONE = ''
+MARKER_LINE = 'line'
+MARKER_ARROW = 'arrow'
+MARKER_DOT = 'dot'
+	
 LEGEND_NONE = ''
 LEGEND_DOTS = 'dots' # painted dots
 LEGEND_LINES = 'lines' # painted ray-like lines
@@ -195,6 +200,7 @@ class Knob(gtk.VBox):
 		self.digits = 0
 		self.segments = 13
 		self.label = ''
+		self.marker = MARKER_LINE
 		self.angle = (3.0/4.0) * 2 * math.pi
 		self.knobshape = None
 		self.legend = LEGEND_NONE
@@ -237,6 +243,10 @@ class Knob(gtk.VBox):
 		
 	def set_segments(self, segments):
 		self.segments = segments
+		self.refresh()
+		
+	def set_marker(self, marker):
+		self.marker = marker
 		self.refresh()
 	
 	def set_range(self, minvalue, maxvalue):
@@ -490,19 +500,44 @@ class Knob(gtk.VBox):
 		#~ ctx.move_to(0.5-0.3-self.gd-ps, 0.0)
 		#~ ctx.line_to(0.5-self.gd-ps*5, 0.0)
 		
-		ctx.set_line_cap(cairo.LINE_CAP_BUTT)
-		ctx.move_to(0.5-0.3-self.gd-ps, 0.0)
-		ctx.line_to(0.5-self.gd-ps, 0.0)
-		ctx.save()
-		ctx.identity_matrix()
-		ctx.translate(0.5,0.5)
-		ctx.set_line_width(5)
-		ctx.set_source_rgb(*hls_to_rgb(self.fg_hls[0], min(self.fg_hls[1]*1.2,1.0), self.fg_hls[2]))
-		ctx.stroke_preserve()
-		ctx.set_line_width(3)
-		ctx.set_source_rgb(*hls_to_rgb(self.fg_hls[0], max(self.fg_hls[1]*0.4,0.0), self.fg_hls[2]))
-		ctx.stroke()
-		ctx.restore()
+		if self.marker == MARKER_LINE:
+			ctx.set_line_cap(cairo.LINE_CAP_BUTT)
+			ctx.move_to(0.5-0.3-self.gd-ps, 0.0)
+			ctx.line_to(0.5-self.gd-ps, 0.0)
+			ctx.save()
+			ctx.identity_matrix()
+			ctx.translate(0.5,0.5)
+			ctx.set_line_width(5)
+			ctx.set_source_rgb(*hls_to_rgb(self.fg_hls[0], min(self.fg_hls[1]*1.2,1.0), self.fg_hls[2]))
+			ctx.stroke_preserve()
+			ctx.set_line_width(3)
+			ctx.set_source_rgb(*hls_to_rgb(self.fg_hls[0], max(self.fg_hls[1]*0.4,0.0), self.fg_hls[2]))
+			ctx.stroke()
+			ctx.restore()
+		elif self.marker == MARKER_DOT:
+			ctx.arc(0.5-0.05-self.gd-ps*5, 0.0, 0.05, 0.0, 2*math.pi)
+			ctx.save()
+			ctx.identity_matrix()
+			ctx.set_source_rgb(*hls_to_rgb(self.fg_hls[0], min(self.fg_hls[1]*1.2,1.0), self.fg_hls[2]))
+			ctx.stroke_preserve()
+			ctx.set_line_width(1)
+			ctx.set_source_rgb(*hls_to_rgb(self.fg_hls[0], max(self.fg_hls[1]*0.4,0.0), self.fg_hls[2]))
+			ctx.fill()
+			ctx.restore()
+		elif self.marker == MARKER_ARROW:
+			ctx.set_line_cap(cairo.LINE_CAP_BUTT)
+			ctx.move_to(0.5-0.3-self.gd-ps, 0.1)
+			ctx.line_to(0.5-0.1-self.gd-ps, 0.0)
+			ctx.line_to(0.5-0.3-self.gd-ps, -0.1)
+			ctx.close_path()
+			ctx.save()
+			ctx.identity_matrix()
+			#~ ctx.set_source_rgb(*hls_to_rgb(self.fg_hls[0], min(self.fg_hls[1]*1.2,1.0), self.fg_hls[2]))
+			#~ ctx.stroke_preserve()
+			ctx.set_line_width(1)
+			ctx.set_source_rgb(*hls_to_rgb(self.fg_hls[0], max(self.fg_hls[1]*0.4,0.0), self.fg_hls[2]))
+			ctx.fill()
+			ctx.restore()
 		
 	def refresh(self):
 		rect = self.get_allocation()
@@ -681,25 +716,68 @@ class LCD(gtk.DrawingArea):
 		self.brightness = 0.8
 		self.rows = 2
 		self.columns = 16
-		self.buffer = [[' ' for x in xrange(self.columns)] for y in xrange(self.rows)]
 		self.border = 6
-		self.tilewidth = 1 # character tile width in pixels
-		self.tilespacingx = 0 # x-spacing between tiles in pixels
-		self.tileheight = 1 # character tile height in pixels
-		self.tilespacingy = 0 # y-spacing between tiles in pixels
-		self.charspacingx = 1 # spacing between characters in pixels
-		self.charspacingy = 1 # spacing between characters in pixels
 		self.calc_size()
 		self.connect('expose-event', self.on_expose)
+		self.connect('realize', self.on_realize)
 		
 	def calc_size(self):
-		self.charwidth = LCD_CHARWIDTH*(self.tilewidth+self.tilespacingx)-self.tilespacingx
-		self.charheight = LCD_CHARHEIGHT*(self.tileheight+self.tilespacingy)-self.tilespacingy
-		self.panelwidth = self.columns*(self.charwidth+self.charspacingx)-self.charspacingx
-		self.panelheight = self.rows*(self.charheight+self.charspacingy)-self.charspacingy
+		self.clear_text()
+		self.charwidth = LCD_CHARWIDTH
+		self.charheight = LCD_CHARHEIGHT
+		self.panelwidth = self.columns*(self.charwidth+1)-1
+		self.panelheight = self.rows*(self.charheight+1)-1
 		self.set_size_request(
 			int(self.border*2+self.panelwidth+0.5), 
 			int(self.border*2+self.panelheight+0.5))
+		self.chars = None
+		
+	def on_realize(self, widget):
+		self.get_characters() # to initialize
+			
+	def get_characters(self):
+		if self.chars:
+			return self.chars
+		# make tiles
+		self.chars = []
+		BITMASK = lcdfont.BITMASK
+		for i in xrange(256):
+			pm = gtk.gdk.Pixmap(self.window, self.charwidth, self.charheight, -1)
+			self.chars.append(pm)
+			ctx = pm.cairo_create()
+			x,y,w,h = 0, 0, self.charwidth, self.charheight
+			ctx.set_source_rgb(*hls_to_rgb(*self.bg_hls))
+			ctx.paint()
+			tbgcolor = hls_to_rgb(*self.fg_hls) + (self.contrast,)
+			tcolor = hls_to_rgb(*self.fg_hls) + (1.0 -self.contrast,)
+			ctx.push_group()
+			ctx.save()
+			for cy in xrange(LCD_CHARHEIGHT):
+				ctx.save()
+				bm = self.font[i]
+				for cx in xrange(LCD_CHARWIDTH):
+					if bm & (BITMASK>>(cy+(8*cx))):
+						ctx.set_source_rgba(*tcolor)
+					else:
+						ctx.set_source_rgba(*tbgcolor)
+					ctx.rectangle(0,0,1,1)
+					ctx.fill()
+					ctx.translate(1,0)
+				ctx.restore()
+				ctx.translate(0,1)
+			ctx.restore()
+			ctx.pop_group_to_source()
+			ctx.paint_with_alpha(self.brightness)
+		return self.chars
+			
+	def get_dimensions(self):
+		return self.columns, self.rows
+			
+	def set_dimensions(self, columns, rows=1):
+		self.columns = columns
+		self.rows = rows
+		self.calc_size()
+		self.refresh()
 			
 	def set_brightness(self, brightness):
 		self.brightness = brightness
@@ -709,24 +787,6 @@ class LCD(gtk.DrawingArea):
 		self.contrast = contrast
 		self.refresh()
 		
-	def set_tile_size(self, width, height):
-		self.tilewidth = width
-		self.tileheight = height
-		self.calc_size()
-		self.refresh()
-		
-	def set_tile_spacing(self, xspacing, yspacing):
-		self.tilespacingx = xspacing
-		self.tilespacingy = yspacing
-		self.calc_size()
-		self.refresh()
-		
-	def set_char_spacing(self, xspacing, yspacing):
-		self.charspacingx = xspacing
-		self.charspacingy = yspacing
-		self.calc_size()
-		self.refresh()
-
 	def on_expose(self, widget, event):
 		self.context = widget.window.cairo_create()
 		self.draw(self.context)
@@ -739,6 +799,9 @@ class LCD(gtk.DrawingArea):
 	def set_bg_color(self, h,l,s):
 		self.bg_hls = h,l,s
 		self.refresh()
+		
+	def clear_text(self):
+		self.buffer = [[' ' for x in xrange(self.columns)] for y in xrange(self.rows)]
 
 	def set_text(self, text, x=0, y=0):
 		for c in text:
@@ -746,44 +809,27 @@ class LCD(gtk.DrawingArea):
 				x = 0
 				y += 1
 			else:
-				self.buffer[y][x] = c
+				if (x >= 0) and (x < self.columns) and (y >= 0) and (y < self.rows):
+					self.buffer[y][x] = c
 				x += 1
 		self.refresh()
 
 	def draw(self, ctx):
+		gc = self.window.new_gc()
+		chars = self.get_characters()
 		rc = self.get_allocation()
 		x,y,w,h = 0, 0, rc.width, rc.height
 		ctx.set_source_rgb(*hls_to_rgb(*self.bg_hls))
 		ctx.paint()
 		x = int(w/2 + 0.5) - int(self.panelwidth/2 + 0.5)
 		y = int(h/2 + 0.5) - int(self.panelheight/2 + 0.5)
-		tbgcolor = hls_to_rgb(*self.fg_hls) + (self.contrast,)
-		tcolor = hls_to_rgb(*self.fg_hls) + (1.0 -self.contrast,)
-		ctx.translate(x,y)
-		ctx.push_group()
-		ctx.save()
-		BITMASK = lcdfont.BITMASK
+		rx,ry = x,y
 		for row in self.buffer:
-			text = ''.join(row)
-			for cy in xrange(LCD_CHARHEIGHT):
-				ctx.save()
-				for c in row:
-					bm = self.font[ord(c)]
-					for cx in xrange(LCD_CHARWIDTH):
-						if bm & (BITMASK>>(cy+(8*cx))):
-							ctx.set_source_rgba(*tcolor)
-						else:
-							ctx.set_source_rgba(*tbgcolor)
-						ctx.rectangle(0,0,self.tilewidth,self.tileheight)
-						ctx.fill()
-						ctx.translate(self.tilewidth+self.tilespacingx,0)
-					ctx.translate(self.charspacingx-self.tilespacingx,0)
-				ctx.restore()
-				ctx.translate(0,self.tileheight+self.tilespacingy)
-			ctx.translate(0,self.charspacingy-self.tilespacingy)
-		ctx.restore()
-		ctx.pop_group_to_source()
-		ctx.paint_with_alpha(self.brightness)
+			rx = x
+			for c in row:
+				self.window.draw_drawable(gc, chars[ord(c)], 0, 0, int(rx), int(ry), -1, -1)
+				rx += self.charwidth+1
+			ry += self.charheight+1
 
 	def refresh(self):
 		rc = self.get_allocation()
@@ -792,10 +838,39 @@ class LCD(gtk.DrawingArea):
 		return True
 
 if __name__ == '__main__':
-	tooltips = gtk.Tooltips()
 	window = gtk.Window()
 	window.connect('destroy', lambda widget: gtk.main_quit())
 	s = 0.9
+	
+	
+	class scrollinfo1:
+		text = "This LCD screen works pretty much like a real one, " \
+		"except that it's made out pixmaps. It also doesn't display " \
+		"those little lines between the tiles, because it is " \
+		"so tiny. You can adjust contrast and brightness and " \
+		"place text anywhere on the screen."
+		x = 0
+		y = 0
+
+	class scrollinfo2:
+		text = "Dies ist ein deutscher Text, der präsentieren soll, " \
+		"dass dank dem ASCII-Zeichensatz auch Umlaute unterstützt werden. " \
+		"Ausserdem scrollt er ein wenig schneller, um zu demonstrieren, " \
+		"dass Zeilen auch unabhängig voneinander aktualisiert werden können."
+		x = 0
+		y = 1
+		
+	class scrollinfo3:
+		text = "This line serves no particular purpose."
+		x = 0
+		y = 2
+
+	def scroller(lcd, si):
+		lcd.set_text(' '*19, 0, si.y)
+		lcd.set_text(si.text,19 - si.x, si.y)
+		si.x = (si.x+1) % (len(si.text)+19)
+		return True
+	
 	def new_vbox(text):
 		vbox = DecoBox()
 		vbox.set_label(text)
@@ -841,6 +916,7 @@ if __name__ == '__main__':
 		return hbox
 	knob = new_knob(64, 0.0, 0.0, 0.1, 9)
 	knob.set_legend_scale(False)
+	knob.set_marker(MARKER_DOT)
 	hb.pack_start(wrap_border(knob), expand=False)
 	hb.pack_start(wrap_border(new_knob(64, 0.0, 0.0, 0.1, 9)), expand=False)
 	titles = ["LOL", "ROFL", "WTF", "YBG"]
@@ -873,6 +949,7 @@ if __name__ == '__main__':
 			knob.set_legend_line_width(6)
 			knob.set_top_color(0.0, 0.8, 0.0)
 			knob.set_gap_depth(1)
+			knob.set_marker(MARKER_NONE)
 		elif x == 2:
 			vb.set_alpha(1.0)
 			vb.set_fg_color(0.0, 0.4, 0.0)
@@ -884,6 +961,7 @@ if __name__ == '__main__':
 			knob.set_top_color(0.0, 0.8, 0.0)
 			knob.set_gap_depth(1)
 			knob.set_segments(13)
+			knob.set_marker(MARKER_ARROW)
 		else:
 			knob.set_angle(math.pi)
 			knob.set_legend(LEGEND_RULER)
@@ -899,14 +977,15 @@ if __name__ == '__main__':
 	vbox = gtk.VBox(False, 6)
 	vbox.pack_start(vb, expand=False)
 	lcd = LCD()
-	lcd.set_fg_color(0.0, 0.0, 0.0)
-	lcd.set_bg_color(0.25, 0.6, 0.4)
-	lcd.set_brightness(1)
-	lcd.set_tile_size(1,1)
-	lcd.set_text("Slider 3\n 23 CC13  1  U12")
-	vbox.pack_start(lcd, expand=False)
-	lcd = LCD()
 	lcd.set_contrast(0.1)
+	lcd.set_dimensions(19,3)
+	vbox.pack_start(lcd, expand=False)
+	lcd1 = lcd
+	lcd = LCD()
+	lcd.set_fg_color(0.4, 0.5, 1.0)
+	lcd.set_bg_color(0.4, 0.05, 1.0)
+	lcd.set_contrast(0.05)
+	lcd.set_brightness(0.8)
 	lcd.set_text("Slider 2\n 41 CC12  1  U12")
 	vbox.pack_start(lcd, expand=False)
 	hbox.pack_start(vbox, expand=False)
@@ -916,5 +995,7 @@ if __name__ == '__main__':
 	hb.pack_start(new_knob(32, 1.0, 0.6, 0.1, 3), expand=False)
 	window.add(hbox)
 	window.show_all()
-	tooltips.set_tip(lcd, "LCD Stuff")
+	gobject.timeout_add(150, scroller, lcd1, scrollinfo1())
+	gobject.timeout_add(100, scroller, lcd1, scrollinfo2())
+	gobject.timeout_add(40, scroller, lcd1, scrollinfo3())
 	gtk.main()
