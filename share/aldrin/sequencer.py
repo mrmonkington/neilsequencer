@@ -219,9 +219,9 @@ class SequencerPanel(gtk.VBox):
 
 # end of class SequencerFrame
 
-SEQTRACKSIZE = 16
+SEQTRACKSIZE = 22
 SEQSTEP = 16
-SEQLEFTMARGIN = 64
+SEQLEFTMARGIN = 96
 SEQTOPMARGIN = SEQTRACKSIZE
 SEQROWSIZE = 24
 
@@ -484,7 +484,10 @@ class SequencerView(gtk.DrawingArea):
 		"""
 		seq = player.get_current_sequencer()
 		seq.create_track(plugin)
-		self.redraw()		
+		self.redraw()
+		
+	def on_popup_record_to_wave(self, widget, index):
+		print index
 
 	def on_context_menu(self, event):
 		"""
@@ -493,9 +496,11 @@ class SequencerView(gtk.DrawingArea):
 		@param event: Menu event.
 		@type event: wx.CommandEvent
 		"""
-		#~ self.Bind(wx.EVT_MENU, self.on_popup_delete_track, id=self.popup_delete_track)
-		#~ for plugin_id in self.popup_plugins.keys():
-			#~ self.Bind(wx.EVT_MENU, self.on_popup_add_track, id=plugin_id)
+		seq = player.get_current_sequencer()
+		x, y = int(event.x), int(event.y)
+		track, row = self.pos_to_track_row((x,y))
+		self.set_cursor_pos(max(min(track,seq.get_track_count()),0),self.row)
+		
 		def make_submenu_item(submenu, name):
 			item = gtk.MenuItem(label=name)
 			item.set_submenu(submenu)
@@ -506,12 +511,20 @@ class SequencerView(gtk.DrawingArea):
 				item.connect('activate', func, *args)
 			return item
 			
+		wavemenu = gtk.Menu()
+		for i in xrange(player.get_wave_count()):
+			w = player.get_wave(i)
+			name = "%02X. %s" % ((i+1), prepstr(w.get_name()))
+			wavemenu.append(make_menu_item(name, "", self.on_popup_record_to_wave, i))
+			
 		menu = gtk.Menu()
 		pmenu = gtk.Menu()
 		for plugin in sorted(player.get_plugin_list(), lambda a,b: cmp(a.get_name().lower(),b.get_name().lower())):
 			pmenu.append(make_menu_item(prepstr(plugin.get_name()), "", self.on_popup_add_track, plugin))
 		menu.append(make_submenu_item(pmenu, "Add track"))
 		menu.append(make_menu_item("Delete track", "", self.on_popup_delete_track))
+		menu.append(gtk.SeparatorMenuItem())
+		menu.append(make_submenu_item(wavemenu, "Record to Instrument"))
 		menu.append(gtk.SeparatorMenuItem())
 		menu.append(make_menu_item("Cut", "", self.on_popup_cut))
 		menu.append(make_menu_item("Copy", "", self.on_popup_copy))

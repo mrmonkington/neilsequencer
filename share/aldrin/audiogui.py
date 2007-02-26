@@ -146,9 +146,54 @@ class Knob(gtk.VBox):
 		self.legend = LEGEND_NONE
 		self.lsize = 2
 		self.lscale = False
+		self.tooltip_window = gtk.Window(gtk.WINDOW_POPUP)
+		self.tooltip = gtk.Label()
+		self.tooltip.modify_fg(gtk.STATE_NORMAL, hls_to_color(0.0, 1.0, 0.0))
+		self.tooltip_timeout = None
+		vbox = gtk.VBox()
+		vbox2 = gtk.VBox()
+		vbox2.add(self.tooltip)
+		vbox2.set_border_width(2)
+		vbox.add(vbox2)
+		self.tooltip_window.add(vbox)
 		self.set_double_buffered(True)
+		vbox.connect('expose-event', self.on_tooltip_expose)
 		self.connect('realize', self.on_realize)
 		self.connect('expose-event', self.on_expose)
+		
+	def on_tooltip_expose(self, widget, event):
+		ctx = widget.window.cairo_create()
+		rc = widget.get_allocation()
+		ctx.set_source_rgb(*hls_to_rgb(0.0, 0.5, 1.0))
+		ctx.paint()
+		ctx.set_source_rgb(*hls_to_rgb(0.0, 1.0, 0.0))
+		ctx.translate(0.5, 0.5)
+		ctx.set_line_width(1)
+		ctx.rectangle(rc.x, rc.y,rc.width-1,rc.height-1)
+		ctx.stroke()
+		return False
+
+	def format_value(self, value):
+		return ("%%.%if" % self.digits) % value
+
+	def show_tooltip(self):
+		text = self.format_value(self.value)
+		self.tooltip.set_text(self.format_value(self.max_value))
+		rc = self.get_allocation()
+		x,y = self.window.get_origin()
+		self.tooltip_window.show_all()
+		w,h = self.tooltip_window.get_size()
+		wx,wy = x+rc.x-w, y+rc.y+rc.height/2-h/2
+		self.tooltip_window.move(wx,wy)
+		rc = self.tooltip_window.get_allocation()
+		self.tooltip_window.window.invalidate_rect((0,0,rc.width,rc.height), False)
+		self.tooltip.set_text(text)
+		if self.tooltip_timeout:
+			gobject.source_remove(self.tooltip_timeout)
+		self.tooltip_timeout = gobject.timeout_add(1000, self.hide_tooltip)
+			
+	def hide_tooltip(self):
+		self.tooltip_window.hide_all()
 		
 	def on_realize(self, widget):
 		self.root = self.get_toplevel()
@@ -157,6 +202,7 @@ class Knob(gtk.VBox):
 		self.root.connect('button-press-event', self.on_left_down)
 		self.root.connect('button-release-event', self.on_left_up)
 		self.root.connect('motion-notify-event', self.on_motion)
+		self.tooltip_window.realize()
 		self.update_knobshape()
 		
 	def update_knobshape(self):
@@ -246,6 +292,7 @@ class Knob(gtk.VBox):
 			self.startvalue = self.value
 			self.start = event.y
 			self.dragging = True
+			self.show_tooltip()
 			self.grab_add()
 
 	def on_left_up(self, widget, event):
@@ -253,6 +300,7 @@ class Knob(gtk.VBox):
 			return
 		if event.button == 1:
 			self.dragging = False
+			self.hide_tooltip()
 			self.grab_remove()
 
 	def on_motion(self, widget, event):
@@ -266,6 +314,7 @@ class Knob(gtk.VBox):
 			value = self.startvalue - ((y - self.start)*range)/scale
 			oldval = self.value
 			self.set_value(value)
+			self.show_tooltip()
 			if oldval != self.value:
 				self.start = y
 				self.startvalue = self.value
@@ -285,6 +334,7 @@ class Knob(gtk.VBox):
 		elif event.direction == gtk.gdk.SCROLL_DOWN:
 			value -= step
 		self.set_value(value)
+		self.show_tooltip()
 
 	def draw_points(self, ctx, peaks):
 		ctx.move_to(*peaks[0])
@@ -727,6 +777,7 @@ class LCD(gtk.DrawingArea):
 		return True
 
 if __name__ == '__main__':
+	tooltips = gtk.Tooltips()
 	window = gtk.Window()
 	window.connect('destroy', lambda widget: gtk.main_quit())
 	s = 0.9
@@ -850,4 +901,5 @@ if __name__ == '__main__':
 	hb.pack_start(new_knob(32, 1.0, 0.6, 0.1, 3), expand=False)
 	window.add(hbox)
 	window.show_all()
+	tooltips.set_tip(lcd, "LCD Stuff")
 	gtk.main()

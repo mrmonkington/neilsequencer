@@ -11,4 +11,6 @@
 	<ref label="Graue SoftSat (Distortion)" uri="graue@oceanbase.org/effect/softsat;1"/>
 	<ref label="Joachims Multi (Mastering)" uri="@binarywerks.dk/multi-2;1"/>
 	<refs pattern="@trac.zeitherrschaft.org/aldrin/lunar/effect/*"/>
+	<separator/>
+	<ref label="Instrument Recorder" uri="@zzub.org/recorder/wavetable"/>
 </pluginindex>
