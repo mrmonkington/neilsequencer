@@ -126,6 +126,60 @@ LEGEND_RULER_INWARDS = 'ruler-inwards' # same as ruler, but the circle is on the
 LEGEND_LED_SCALE = 'led-scale' # an LCD scale
 LEGEND_LED_DOTS = 'led-dots' # leds around the knob
 
+class KnobTooltip:
+	def __init__(self):
+		self.tooltip_window = gtk.Window(gtk.WINDOW_POPUP)
+		self.tooltip = gtk.Label()
+		self.tooltip.modify_fg(gtk.STATE_NORMAL, hls_to_color(0.0, 1.0, 0.0))
+		self.tooltip_timeout = None
+		vbox = gtk.VBox()
+		vbox2 = gtk.VBox()
+		vbox2.add(self.tooltip)
+		vbox2.set_border_width(2)
+		vbox.add(vbox2)
+		self.tooltip_window.add(vbox)
+		vbox.connect('expose-event', self.on_tooltip_expose)
+
+	def show_tooltip(self, knob):
+		text = knob.format_value(knob.value)
+		self.tooltip.set_text(knob.format_value(knob.max_value))
+		rc = knob.get_allocation()
+		x,y = knob.window.get_origin()
+		self.tooltip_window.show_all()
+		w,h = self.tooltip_window.get_size()
+		wx,wy = x+rc.x-w, y+rc.y+rc.height/2-h/2
+		self.tooltip_window.move(wx,wy)
+		rc = self.tooltip_window.get_allocation()
+		self.tooltip_window.window.invalidate_rect((0,0,rc.width,rc.height), False)
+		self.tooltip.set_text(text)
+		if self.tooltip_timeout:
+			gobject.source_remove(self.tooltip_timeout)
+		self.tooltip_timeout = gobject.timeout_add(500, self.hide_tooltip)
+			
+	def hide_tooltip(self):
+		self.tooltip_window.hide_all()
+		
+	def on_tooltip_expose(self, widget, event):
+		ctx = widget.window.cairo_create()
+		rc = widget.get_allocation()
+		ctx.set_source_rgb(*hls_to_rgb(0.0, 0.5, 1.0))
+		ctx.paint()
+		ctx.set_source_rgb(*hls_to_rgb(0.0, 1.0, 0.0))
+		ctx.translate(0.5, 0.5)
+		ctx.set_line_width(1)
+		ctx.rectangle(rc.x, rc.y,rc.width-1,rc.height-1)
+		ctx.stroke()
+		return False
+
+
+
+knob_tooltip = None
+def get_knob_tooltip():
+	global knob_tooltip
+	if not knob_tooltip:
+		knob_tooltip = KnobTooltip()
+	return knob_tooltip
+
 class Knob(gtk.VBox):
 	def __init__(self):
 		gtk.VBox.__init__(self)
@@ -146,54 +200,15 @@ class Knob(gtk.VBox):
 		self.legend = LEGEND_NONE
 		self.lsize = 2
 		self.lscale = False
-		self.tooltip_window = gtk.Window(gtk.WINDOW_POPUP)
-		self.tooltip = gtk.Label()
-		self.tooltip.modify_fg(gtk.STATE_NORMAL, hls_to_color(0.0, 1.0, 0.0))
-		self.tooltip_timeout = None
-		vbox = gtk.VBox()
-		vbox2 = gtk.VBox()
-		vbox2.add(self.tooltip)
-		vbox2.set_border_width(2)
-		vbox.add(vbox2)
-		self.tooltip_window.add(vbox)
 		self.set_double_buffered(True)
-		vbox.connect('expose-event', self.on_tooltip_expose)
 		self.connect('realize', self.on_realize)
 		self.connect('expose-event', self.on_expose)
 		
-	def on_tooltip_expose(self, widget, event):
-		ctx = widget.window.cairo_create()
-		rc = widget.get_allocation()
-		ctx.set_source_rgb(*hls_to_rgb(0.0, 0.5, 1.0))
-		ctx.paint()
-		ctx.set_source_rgb(*hls_to_rgb(0.0, 1.0, 0.0))
-		ctx.translate(0.5, 0.5)
-		ctx.set_line_width(1)
-		ctx.rectangle(rc.x, rc.y,rc.width-1,rc.height-1)
-		ctx.stroke()
-		return False
-
 	def format_value(self, value):
 		return ("%%.%if" % self.digits) % value
 
 	def show_tooltip(self):
-		text = self.format_value(self.value)
-		self.tooltip.set_text(self.format_value(self.max_value))
-		rc = self.get_allocation()
-		x,y = self.window.get_origin()
-		self.tooltip_window.show_all()
-		w,h = self.tooltip_window.get_size()
-		wx,wy = x+rc.x-w, y+rc.y+rc.height/2-h/2
-		self.tooltip_window.move(wx,wy)
-		rc = self.tooltip_window.get_allocation()
-		self.tooltip_window.window.invalidate_rect((0,0,rc.width,rc.height), False)
-		self.tooltip.set_text(text)
-		if self.tooltip_timeout:
-			gobject.source_remove(self.tooltip_timeout)
-		self.tooltip_timeout = gobject.timeout_add(1000, self.hide_tooltip)
-			
-	def hide_tooltip(self):
-		self.tooltip_window.hide_all()
+		get_knob_tooltip().show_tooltip(self)
 		
 	def on_realize(self, widget):
 		self.root = self.get_toplevel()
@@ -202,7 +217,6 @@ class Knob(gtk.VBox):
 		self.root.connect('button-press-event', self.on_left_down)
 		self.root.connect('button-release-event', self.on_left_up)
 		self.root.connect('motion-notify-event', self.on_motion)
-		self.tooltip_window.realize()
 		self.update_knobshape()
 		
 	def update_knobshape(self):
@@ -300,7 +314,6 @@ class Knob(gtk.VBox):
 			return
 		if event.button == 1:
 			self.dragging = False
-			self.hide_tooltip()
 			self.grab_remove()
 
 	def on_motion(self, widget, event):
@@ -308,7 +321,7 @@ class Knob(gtk.VBox):
 			x,y,state = self.window.get_pointer()
 			rc = self.get_allocation()
 			range = self.max_value - self.min_value
-			scale = rc.height*2
+			scale = rc.height
 			if event.state & gtk.gdk.SHIFT_MASK:
 				scale = rc.height*8
 			value = self.startvalue - ((y - self.start)*range)/scale
@@ -324,7 +337,7 @@ class Knob(gtk.VBox):
 			return
 		range = self.max_value - self.min_value
 		minstep = 1.0 / (10**self.digits)
-		if event.state & gtk.gdk.SHIFT_MASK:
+		if event.state & (gtk.gdk.SHIFT_MASK | gtk.gdk.BUTTON1_MASK):
 			step = minstep
 		else:
 			step = max(self.quantize_value(range/25.0), minstep)
@@ -432,19 +445,21 @@ class Knob(gtk.VBox):
 			elif self.legend == LEGEND_LED_DOTS:
 				dots = self.segments
 				dsize = lsize-ps2*2
+				seg = self.angle/dots
 				endangle = startangle + self.angle
 				for i in xrange(dots):
 					s = float(i)/(dots-1)
 					a = startangle + self.angle*s
-					if (a < angle) or (angle == endangle):
-						ctx.save()
-						ctx.rotate(a)
-						r = dsize*0.5
-						if self.lscale:
-							r = max(r*s,ps2)
-						ctx.arc(0.5+ps2+n*0.5, 0.0, r, 0.0, 2*math.pi)
-						ctx.fill()
-						ctx.restore()
+					if ((a-seg*0.5) > angle) or (angle == startangle):
+						break
+					ctx.save()
+					ctx.rotate(a)
+					r = dsize*0.5
+					if self.lscale:
+						r = max(r*s,ps2)
+					ctx.arc(0.5+ps2+n*0.5, 0.0, r, 0.0, 2*math.pi)
+					ctx.fill()
+					ctx.restore()
 			ctx.restore()
 		pat = cairo.LinearGradient(-0.5, -0.5, 0.5, 0.5)
 		pat.add_color_stop_rgb(1.0, 0.2,0.2,0.2)
