@@ -1519,7 +1519,7 @@ class PatternView(gtk.DrawingArea):
 				if k >= '0' and k <= '9':
 					o = ord(k)-ord('0')
 				elif kv >= ord('a') and kv <= ord('f'):
-					o = 10 + kv-ord('f')
+					o = 10 + kv-ord('a')
 				elif k == 'period':
 					o = None
 					data = p.get_value_none()
