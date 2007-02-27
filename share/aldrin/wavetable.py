@@ -263,7 +263,7 @@ class WavetablePanel(gtk.Notebook):
 		model, rows = self.samplelist.get_selection().get_selected_rows()
 		return [row[0] for row in rows]
 		
-	def on_samplerate_apply(self, event):
+	def on_samplerate_apply(self, widget, *args):
 		"""
 		Callback that responds to changes in the sample rate edit field.
 		
@@ -271,7 +271,7 @@ class WavetablePanel(gtk.Notebook):
 		@type event: wx.CommandEvent
 		"""
 		try:
-			v = min(max(int(self.edsamplerate.GetValue()),50),200000)
+			v = min(max(int(self.edsamplerate.get_text()),50),200000)
 		except ValueError:
 			return
 		for i in self.get_sample_selection():
@@ -301,7 +301,7 @@ class WavetablePanel(gtk.Notebook):
 		self.update_sampleprops()
 		#~ self.update_subsamplelist()
 
-	def on_loop_end_apply(self, event):
+	def on_loop_end_apply(self, widget, *args):
 		"""
 		Callback that responds to changes in the loop-end edit field.
 		
@@ -309,7 +309,7 @@ class WavetablePanel(gtk.Notebook):
 		@type event: wx.CommandEvent
 		"""
 		try:
-			v = int(self.edloopend.GetValue())
+			v = int(self.edloopend.get_text())
 		except ValueError:
 			print "invalid value."
 			return
