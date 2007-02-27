@@ -1372,8 +1372,8 @@ class PatternView(gtk.DrawingArea):
 				self.on_popup_properties()
 			elif k == 'Delete':
 				self.on_popup_remove_pattern()
-			elif k >= ord('1') and k <= ord('9'):
-				self.row_step = k - ord('1') + 1
+			elif kv >= ord('1') and kv <= ord('9'):
+				self.row_step = kv - ord('1') + 1
 			elif k == 'b':
 				if not self.selection:
 					self.selection = self.Selection()
