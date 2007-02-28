@@ -1361,7 +1361,7 @@ class PatternView(gtk.DrawingArea):
 		elif (mask & gtk.gdk.SHIFT_MASK):			
 			if k == 'KP_Add':
 				self.transpose_selection(1)
-			elif k == 'KP_Substract':
+			elif k == 'KP_Subtract':
 				self.transpose_selection(-1)
 			else:
 				return False
@@ -1411,7 +1411,7 @@ class PatternView(gtk.DrawingArea):
 				self.on_popup_solo()
 			elif k == 'KP_Add':
 				self.on_popup_add_track()
-			elif k == 'KP_Substract':
+			elif k == 'KP_Subtract':
 				self.on_popup_delete_track()
 			elif k == 'Up':
 				self.toolbar.select_plugin(self.toolbar.plugin-1)
@@ -1458,7 +1458,7 @@ class PatternView(gtk.DrawingArea):
 			mainwindow.select_page(mainwindow.PAGE_SEQUENCER)
 		elif k == 'KP_Add':			
 			self.toolbar.next_pattern()
-		elif k == 'KP_Substract':
+		elif k == 'KP_Subtract':
 			self.toolbar.prev_pattern()
 		elif k == 'KP_Multiply':
 			self.set_octave(self.octave+1)

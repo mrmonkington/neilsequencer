@@ -578,7 +578,7 @@ class SequencerView(gtk.DrawingArea):
 			if k == 'KP_Add' or k == 'Left' or k == 'KP_Left':
 				self.panel.toolbar.increase_step()
 				self.set_cursor_pos(self.track, self.row)
-			elif k == 'KP_Substract' or k == 'Right' or k == 'KP_Right':
+			elif k == 'KP_Subtract' or k == 'Right' or k == 'KP_Right':
 				self.panel.toolbar.decrease_step()
 				self.set_cursor_pos(self.track, self.row)
 		elif (mask & gtk.gdk.CONTROL_MASK):
