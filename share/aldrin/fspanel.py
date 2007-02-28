@@ -26,7 +26,8 @@ from gtkimport import gtk
 import gobject
 import os, sys, stat
 from utils import prepstr, db2linear, linear2db, note2str, format_filesize, \
-	filepath, new_listview, new_image_button, add_scrollbars, error, question
+	filepath, new_listview, new_image_button, add_scrollbars, error, question, \
+	run_function_with_progress
 import utils
 import zzub
 import config
@@ -222,9 +223,10 @@ class FreesoundPanel(gtk.HBox):
 		"""
 		import thread
 		files = []
-		store, rows = self.resultstore.get_selection().get_selected_rows()
+		store, rows = self.resultlist.get_selection().get_selected_rows()
 		for row in rows:
-			sampleid = row[4]
+			iter = store.get_iter(row)
+			sampleid = store.get_value(iter, 4)
 			if not sampleid:
 				continue
 			sampleid = int(sampleid)
@@ -236,12 +238,7 @@ class FreesoundPanel(gtk.HBox):
 				fullpath = os.path.join(config.get_config().get_freesound_samples_folder(), filename)
 				files.append((sampleid, fullpath))
 		if files:
-			progress = wx.ProgressDialog(
-				"Downloading Samples...", 
-				"Downloading samples from freesound...", 
-				parent=self, 
-				style=wx.PD_AUTO_HIDE | wx.PD_APP_MODAL | wx.PD_REMAINING_TIME)
-			thread.start_new_thread(self.download_samples, (progress, files,))
+			run_function_with_progress(self, "Downloading samples from freesound...", True, self.download_samples, files)
 			
 	def import_samples(self, filenames):
 		"""
@@ -249,7 +246,7 @@ class FreesoundPanel(gtk.HBox):
 		"""
 		self.wavetable.load_samples(filenames)
 	
-	def download_samples(self, progress, files):
+	def download_samples(self, dialog, files):
 		outfiles = []
 		import re
 		rx = re.compile(r'inline[;]\s*filename[=]["]([^"]*)["]')
@@ -258,8 +255,11 @@ class FreesoundPanel(gtk.HBox):
 			assert fs
 			filecount = len(files)
 			for index, (sampleid, path) in enumerate(files):
-				value = (float(index) / filecount) * 100.0
-				self.cmds.append((progress.Update, (value, "Downloading sample #%s (%s of %s)..." % (sampleid,index+1,filecount))))
+				if dialog._response:
+					break
+				value = (float(index) / filecount)
+				dialog.fraction = value
+				dialog.markup = "Downloading sample #%s (%s of %s)..." % (sampleid,index+1,filecount)
 				fname, headers = fs.download(sampleid, path)
 				if headers['content-type'] == 'application/octet-stream':
 					basedir = os.path.dirname(fname)
@@ -272,8 +272,8 @@ class FreesoundPanel(gtk.HBox):
 		except:
 			import traceback
 			traceback.print_exc()
-		self.cmds.append((progress.Destroy,()))
 		self.cmds.append((self.import_samples,(outfiles,)))
+		return True
 				
 	def preview_current(self):
 		"""

@@ -27,6 +27,7 @@ import time, sys, math, os, zzub, imp
 from string import ascii_letters, digits
 import struct
 from gtkimport import gtk
+import gobject
 
 def is_debug():
 	if os.environ.get('ALDRIN_DEBUG'):
@@ -380,6 +381,54 @@ def to_hsb(r,g,b):
 		b = v
 	return h,s,b
 	
+def run_function_with_progress(parent, msg, allow_cancel, func, *args):
+	"""
+	Shows a progress dialog.
+	"""
+	buttons = []
+	if allow_cancel:
+		buttons = (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL)
+	else:
+		buttons = None
+	dialog = gtk.Dialog(
+		'',
+		parent and parent.get_toplevel(),
+		gtk.DIALOG_DESTROY_WITH_PARENT,
+		buttons)
+	label = gtk.Label()
+	label.set_markup(msg)
+	label.set_alignment(0,0.5)
+	progress = gtk.ProgressBar()
+	vbox = gtk.VBox(False, 6)
+	vbox.set_border_width(6)
+	vbox.pack_start(label)
+	vbox.pack_start(progress)
+	dialog._label = label
+	dialog._progress = progress
+	dialog.markup = msg
+	dialog._response = None
+	dialog.fraction = 0.0
+	dialog.vbox.add(vbox)
+	dialog.show_all()
+	def update_progress(dlg):
+		dlg._progress.set_fraction(dlg.fraction)
+		dlg._label.set_markup(dlg.markup)
+		import time
+		time.sleep(0.01)
+		return True
+	def on_response(dialog, response):
+		dialog._response = response
+	dialog.connect('response', on_response)
+	def run_function(dlg, func, args):
+		if func(dlg, *args) and dlg._response == None:
+			dlg.response(gtk.RESPONSE_OK)
+	gobject.timeout_add(50, update_progress, dialog)
+	import thread
+	thread.start_new_thread(run_function, (dialog,func,args))
+	response = dialog.run()
+	dialog.destroy()
+	return response
+	
 def gettext(parent, msg, text=''):
 	"""
 	Shows a dialog to get some text.
@@ -605,6 +654,7 @@ def get_clipboard_text():
 __all__ = [
 'is_frozen',
 'get_root_folder_path',
+'run_function_with_progress',
 'filepath',
 'db2linear',
 'linear2db',
@@ -643,4 +693,19 @@ __all__ = [
 ]
 
 if __name__ == '__main__':
-	print gettext(None, '<b>wurst?</b>', 'kaese')
+	import time
+	def testfunc(dlg):
+		print "starting"
+		for i in range(100):
+			if dlg._response:
+				return
+			print "."
+			time.sleep(0.1)
+			dlg.fraction = i/100.0
+		print "done"
+		return True
+	win = gtk.Window()
+	win.show_all()	
+	win.connect('destroy', lambda x: gtk.main_quit())
+	dlg = run_function_with_progress(win, "Vorsicht, wurst.", False, testfunc)
+	gtk.main()
