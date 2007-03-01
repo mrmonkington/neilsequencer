@@ -177,9 +177,8 @@ class SequencerPanel(gtk.VBox):
 		self.seqliststore.clear()
 		self.seqliststore.append(['-', 'Mute'])
 		self.seqliststore.append([',', 'Break'])
-		seq = player.get_current_sequencer()
-		if (self.seqview.track != -1) and (self.seqview.track < seq.get_track_count()):
-			track = seq.get_track(self.seqview.track)
+		track = self.seqview.get_track()
+		if track:
 			for pattern, key in zip(track.get_plugin().get_pattern_list(), SEQKEYS):
 				self.seqliststore.append([key, pattern.get_name()])
 				
@@ -361,18 +360,29 @@ class SequencerView(gtk.DrawingArea):
 				while self.row < self.startseqtime:
 					self.startseqtime -= self.step
 				self.redraw()
-		t = seq.get_track(self.track)		
-		plugin = t.get_plugin()
 		self.panel.statuslabels[0].set_label(prepstr('%s' % (self.row)))
-		self.panel.statuslabels[1].set_label(prepstr('%s' % (plugin.get_name())))
+		t = self.get_track()
+		if t:
+			plugin = t.get_plugin()
+			self.panel.statuslabels[1].set_label(prepstr('%s' % (plugin.get_name())))
+		else:
+			self.panel.statuslabels[1].set_label("")
 		self.redraw()
+		
+	def get_track(self):
+		seq = player.get_current_sequencer()
+		if (self.track != -1) and (self.track < seq.get_track_count()):
+			return seq.get_track(self.track)
+		return None
 
 	def insert_at_cursor(self, index = -1):
 		"""
 		Inserts a space at cursor.
 		"""
 		seq = player.get_current_sequencer()
-		t = seq.get_track(self.track)
+		t = self.get_track()
+		if not t:
+			return
 		if index != -1:
 			pcount = t.get_plugin().get_pattern_count()
 			t.set_event(self.row, min(index, 0x10 + pcount-1))
@@ -603,9 +613,11 @@ class SequencerView(gtk.DrawingArea):
 					player.set_song_end(pos)
 				self.redraw()
 			elif k == 'l':			
-				mp = seq.get_track(self.track).get_plugin()
-				self.rootwindow.routeframe.view.solo(mp)
-				self.redraw()
+				t = self.get_track()
+				if t:
+					mp = t.get_plugin()
+					self.rootwindow.routeframe.view.solo(mp)
+					self.redraw()
 			elif k == 'i':
 				for track in seq.get_track_list():
 					track.move_events(self.row, self.step)
@@ -642,15 +654,17 @@ class SequencerView(gtk.DrawingArea):
 			self.set_cursor_pos(self.track+1, self.row)
 		elif (kv < 256) and (chr(kv).lower() in SEQKEYMAP):
 			idx = SEQKEYMAP[chr(kv).lower()]
-			mp = seq.get_track(self.track).get_plugin()
-			if (idx < 0x10) or ((idx-0x10) < mp.get_pattern_count()):
-				if (idx >= 0x10):
-					newrow = self.row + mp.get_pattern(idx-0x10).get_row_count()
-					newrow = newrow - (newrow % self.step)
-				else:
-					newrow = self.row + self.step
-				self.insert_at_cursor(idx)
-				self.set_cursor_pos(self.track, newrow)
+			t = self.get_track()
+			if t:
+				mp = t.get_plugin()
+				if (idx < 0x10) or ((idx-0x10) < mp.get_pattern_count()):
+					if (idx >= 0x10):
+						newrow = self.row + mp.get_pattern(idx-0x10).get_row_count()
+						newrow = newrow - (newrow % self.step)
+					else:
+						newrow = self.row + self.step
+					self.insert_at_cursor(idx)
+					self.set_cursor_pos(self.track, newrow)
 		elif k == 'space': # space
 			spl = self.panel.seqpatternlist
 			store, row = spl.get_selection().get_selected_rows()
@@ -695,8 +709,9 @@ class SequencerView(gtk.DrawingArea):
 		elif k == 'Return':
 			m, index, bp = self.get_pattern_at(self.track, self.row)
 			if index == None:
-				track = seq.get_track(self.track)
-				self.jump_to_pattern(track.get_plugin())
+				track = self.get_track()
+				if track:
+					self.jump_to_pattern(track.get_plugin())
 				return
 			self.jump_to_pattern(m, index)
 		else:
@@ -741,7 +756,9 @@ class SequencerView(gtk.DrawingArea):
 		@rtype: (zzub.Plugin, int)		
 		"""		
 		seq = player.get_current_sequencer()
-		track = seq.get_track(track)
+		track = self.get_track()
+		if not track:
+			return None, None, -1
 		plugin = track.get_plugin()
 		bestmatch = None
 		bestpos = row
@@ -791,7 +808,7 @@ class SequencerView(gtk.DrawingArea):
 			track_count = seq.get_track_count()
 			x, y = int(event.x), int(event.y)
 			track, row = self.pos_to_track_row((x,y))		
-			if track < track_count:
+			if (track != -1) and (track < track_count):
 				if track == -1:
 					player.set_position(max(row,0))
 				elif row == -1:
