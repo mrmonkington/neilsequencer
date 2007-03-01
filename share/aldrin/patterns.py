@@ -1334,6 +1334,7 @@ class PatternView(gtk.DrawingArea):
 		mask = event.state
 		k = gtk.gdk.keyval_name(event.keyval)
 		kv = event.keyval
+		print mask,k,kv
 		if k == 'less':
 			self.toolbar.prev_wave()
 		elif k == 'greater':
@@ -1343,7 +1344,7 @@ class PatternView(gtk.DrawingArea):
 				self.on_popup_create_copy()
 			else:
 				return False
-		elif k == 'Tab':
+		elif k in ('Tab', 'ISO_Left_Tab'):
 			if (mask & gtk.gdk.SHIFT_MASK):
 				# move to previous track
 				if self.move_track_left():
