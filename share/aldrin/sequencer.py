@@ -622,6 +622,12 @@ class SequencerView(gtk.DrawingArea):
 				for track in seq.get_track_list():
 					track.move_events(self.row, self.step)
 				self.redraw()	
+			elif k == 'd':
+				for track in seq.get_track_list():
+					for row in range(self.row, self.row+self.step):
+						track.remove_event_at(row)
+					track.move_events(self.row, -self.step)
+				self.redraw()	
 			elif k == 'c':	
 				self.on_popup_copy()
 			elif k == 'x':	
