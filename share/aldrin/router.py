@@ -647,7 +647,7 @@ class ParameterDialog(gtk.Dialog):
 						nl,s,vl = self.pid2ctrls[(g,t,i)]
 						v = random.randint(p.get_value_min(), p.get_value_max())
 						self.plugin.set_parameter_value(g,t,i,v,0)
-						s.SetValue(v)
+						s.set_value(v)
 						self.update_valuelabel(g,t,i)
 	
 	def on_button_help(self, event):
