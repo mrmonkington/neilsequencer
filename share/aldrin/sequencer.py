@@ -1007,7 +1007,7 @@ class SequencerView(gtk.DrawingArea):
 		for track_index in range(self.starttrack, len(tracklist)):
 			track = tracklist[track_index]
 			m = track.get_plugin()
-			pi = self.plugin_info[m]
+			pi = self.plugin_info.get(m)
 			pgfx = pi.patterngfx
 			mname = m.get_name()
 			title = prepstr(mname)

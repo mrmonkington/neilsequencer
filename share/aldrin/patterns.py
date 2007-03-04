@@ -986,6 +986,8 @@ class PatternView(gtk.DrawingArea):
 		"""
 		Moves the cursor left.
 		"""	
+		if not self.pattern:
+			return
 		self.move_subindex_left()
 		self.show_cursor_left()
 		self.refresh_view()
@@ -994,6 +996,8 @@ class PatternView(gtk.DrawingArea):
 		"""
 		Moves the cursor right.
 		"""	
+		if not self.pattern:
+			return
 		self.move_subindex_right()
 		self.show_cursor_right()
 		self.refresh_view()
