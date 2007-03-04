@@ -1713,9 +1713,11 @@ class PatternView(gtk.DrawingArea):
 		maxv = adj.get_property('upper')
 		pagesize = adj.get_property('page-size')
 		value = int(max(min(value, maxv - pagesize), minv) + 0.5)
+		widget.set_value(value)
 		if self.start_row != value:
 			self.start_row = value
 			self.redraw()
+		return True
 
 	def on_hscroll_window(self, widget, scroll, value):
 		"""
@@ -1726,6 +1728,7 @@ class PatternView(gtk.DrawingArea):
 		maxv = adj.get_property('upper')
 		pagesize = adj.get_property('page-size')
 		value = int(max(min(value, maxv - pagesize), minv) + 0.5)
+		widget.set_value(value)
 		if self.start_col != value:
 			self.start_col = value
 			self.redraw()
