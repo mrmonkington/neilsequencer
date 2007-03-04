@@ -505,7 +505,8 @@ class ParameterDialog(gtk.Dialog):
 					controllers +=1
 			if controllers:
 				menu.append(gtk.SeparatorMenuItem())
-			menu.append(make_submenu_item(submenu, "_Bind to MIDI Controller"))
+			if index:
+				menu.append(make_submenu_item(submenu, "_Bind to MIDI Controller"))
 			menu.append(make_menu_item("_Learn MIDI Controller", "", self.on_learn_controller, (g,t,i)))
 			if controllers:
 				menu.append(gtk.SeparatorMenuItem())
