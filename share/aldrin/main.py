@@ -296,18 +296,13 @@ class AldrinFrame(gtk.Window):
 			import traceback
 			traceback.print_exc()
 			audiotrouble = True
-		midiinputs = config.get_config().get_mididriver_inputs()
 		miditrouble = False
-		# disable it, if it crashes, we're not using it again
-		config.get_config().set_mididriver_inputs([])
-		for i in range(player.mididriver_get_count()):
-			if player.mididriver_is_input(i):
-				drivername = player.mididriver_get_name(i)
-				if drivername in midiinputs:
-					print "Opening MIDI device '%s'..." % drivername
-					if player.mididriver_open(i) != 0:
-						miditrouble = True
-		config.get_config().set_mididriver_inputs(midiinputs)
+		try:
+			driver.get_mididriver().init()
+		except driver.MidiInitException:
+			import traceback
+			traceback.print_exc()
+			miditrouble = True
 		
 		self.cpumonitor = cpumonitor.CPUMonitorDialog(self)
 		self.cpumonitor.connect('delete-event', self.on_close_cpumonitor)
@@ -1645,9 +1640,7 @@ def main():
 	app = AldrinApplication()
 	app.main()
 	if player:
-		import sys
-		print >> sys.stderr, "uninitializing midi driver..."
-		player.mididriver_close_all()
+		driver.get_mididriver().destroy()
 		driver.get_audiodriver().destroy()
 
 def run(argv):

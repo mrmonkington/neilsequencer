@@ -29,6 +29,33 @@ player = common.get_player()
 class AudioInitException(Exception):
 	pass
 
+class MidiInitException(Exception):
+	pass
+	
+class MidiDriver:
+	def __init__(self):
+		self.enabled = False
+		
+	def destroy(self):
+		if not self.enabled:
+			return
+		print "uninitializing midi driver..."
+		player.mididriver_close_all()
+		self.enabled = False
+		
+	def init(self):
+		if self.enabled:
+			self.destroy()
+		midiinputs = config.get_config().get_mididriver_inputs()
+		for i in range(player.mididriver_get_count()):
+			if player.mididriver_is_input(i):
+				drivername = player.mididriver_get_name(i)
+				if drivername in midiinputs:
+					print "Opening MIDI device '%s'..." % drivername
+					if player.mididriver_open(i) != 0:
+						raise MidiInitException
+		self.enabled = True
+
 class AudioDriver:
 	def __init__(self):
 		self.enabled = False
@@ -81,7 +108,7 @@ class AudioDriver:
 		self.enabled = True
 		
 audiodriver = AudioDriver()
-mididriver = None
+mididriver = MidiDriver()
 
 def get_audiodriver():
 	return audiodriver

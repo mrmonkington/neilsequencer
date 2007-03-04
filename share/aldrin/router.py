@@ -355,7 +355,7 @@ class ParameterDialog(gtk.Dialog):
 			else:
 				name = "%i-%s" % (t,prepstr(p.get_name()))
 			namelabel = gtk.Label()
-			namelabel.set_markup("<b>%s</b>" % name)
+			namelabel._default_name = name
 			slider = gtk.HScale()
 			slider.set_property('draw-value', False)
 			slider.set_range(p.get_value_min(),p.get_value_max())
@@ -385,6 +385,7 @@ class ParameterDialog(gtk.Dialog):
 			slider.connect('change-value', self.on_scroll_changed, (g,t,i))
 			slider.connect('key-press-event', self.on_key_down, (g,t,i))
 			self.update_valuelabel(g,t,i)
+			self.update_namelabel(g,t,i)
 			
 		for i in range(pl.get_parameter_count(1)): # globals
 			add_slider(1,0,i)
@@ -421,7 +422,7 @@ class ParameterDialog(gtk.Dialog):
 		self.rootwindow.event_handlers.append(self.on_callback)
 		self.update_preset_buttons()
 		
-	def on_unbind_all(self, widget, (g,t,i)):
+	def on_unbind(self, widget, (g,t,i)):
 		"""
 		Unbinds all controllers from the selected parameter.
 		
@@ -429,6 +430,19 @@ class ParameterDialog(gtk.Dialog):
 		@type event: wx.Event
 		"""
 		player.remove_midimapping(self.plugin, g, t, i)
+		self.update_namelabel(g,t,i)
+		
+	def on_learn_controller(self, widget, (g,t,i)):
+		"""
+		Handles the learn entry from the context menu. Associates
+		a controller with a plugin parameter.
+		"""
+		import controller
+		res = controller.learn_controller(self, self.rootwindow)
+		if res:
+			name, channel, ctrlid = res
+			player.add_midimapping(self.plugin, g, t, i, channel, ctrlid)
+		self.update_namelabel(g,t,i)
 
 	def on_bind_controller(self, widget, (g,t,i), (name,channel,ctrlid)):
 		"""
@@ -439,6 +453,17 @@ class ParameterDialog(gtk.Dialog):
 		@type event: wx.Event
 		"""
 		player.add_midimapping(self.plugin, g, t, i, channel, ctrlid)
+		self.update_namelabel(g,t,i)
+		
+	def update_namelabel(self, g,t,i):
+		nl,s,vl = self.pid2ctrls[(g,t,i)]
+		markup = "<b>%s</b>" % nl._default_name
+		for mm in player.get_midimapping_list():
+			mp,mg,mt,mi = mm.get_plugin(), mm.get_group(), mm.get_track(), mm.get_column()
+			if (mp == self.plugin) and ((mg,mt,mi) == (g,t,i)):
+				markup = "<u>%s</u>" % markup
+				break
+		nl.set_markup(markup)
 		
 	def on_context_menu(self, widget, event, (g,t,i)):
 		"""
@@ -469,8 +494,22 @@ class ParameterDialog(gtk.Dialog):
 			for name,channel,ctrlid in sorted(config.get_config().get_midi_controllers(), cmp_nocase):
 				submenu.append(make_menu_item(prepstr(name), "", self.on_bind_controller, (g,t,i), (name,channel,ctrlid)))
 				index += 1
+			controllers = 0
+			for mm in player.get_midimapping_list():
+				mp,mg,mt,mi = mm.get_plugin(), mm.get_group(), mm.get_track(), mm.get_column()
+				if (mp == self.plugin) and ((mg,mt,mi) == (g,t,i)):
+					label = "Bound to CC #%03i (CH%02i)" % (mm.get_controller(), mm.get_channel()+1)
+					item = gtk.MenuItem(label=label)
+					item.set_sensitive(False)
+					menu.append(item)
+					controllers +=1
+			if controllers:
+				menu.append(gtk.SeparatorMenuItem())
 			menu.append(make_submenu_item(submenu, "_Bind to MIDI Controller"))
-			menu.append(make_menu_item("_Unbind All", "", self.on_unbind_all, (g,t,i)))
+			menu.append(make_menu_item("_Learn MIDI Controller", "", self.on_learn_controller, (g,t,i)))
+			if controllers:
+				menu.append(gtk.SeparatorMenuItem())
+				menu.append(make_menu_item("_Unbind Parameter", "", self.on_unbind, (g,t,i)))
 			menu.show_all()
 			menu.attach_to_widget(self, None)
 			menu.popup(None, None, None, event.button, event.time)

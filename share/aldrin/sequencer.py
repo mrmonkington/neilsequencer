@@ -1112,9 +1112,10 @@ __all__ = [
 ]
 
 if __name__ == '__main__':
-	import testplayer, utils
+	import testplayer, utils, zzub
 	player = testplayer.get_player()
 	player.load_ccm(utils.filepath('demosongs/paniq-knark.ccm'))
+	player.set_state(zzub.zzub_player_state_playing)
 	window = testplayer.TestWindow()
 	window.add(SequencerPanel(window))
 	window.show_all()

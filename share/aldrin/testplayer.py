@@ -23,21 +23,41 @@ Provides a test player for testcases.
 """
 
 from gtkimport import gtk
+import gobject
 import config
 from config import get_plugin_aliases, get_plugin_blacklist
 import common
 
+_player = None
+
+event_handlers = []
+
+def player_callback(player, plugin, data):
+	"""
+	Default callback for ui events sent by zzub.
+	"""
+	result = False
+	for handler in event_handlers:
+		result = handler(player,plugin,data) or result
+	return result
+
 class TestWindow(gtk.Window):
 	def __init__(self):
 		gtk.Window.__init__(self)
-		self.event_handlers = []
+		self.event_handlers = event_handlers
 		self.resize(640,480)
 		self.connect('destroy', lambda widget: gtk.main_quit())
 		self.show_all()
+		get_player()
 
 def get_player():
-	import zzub
+	global _player
+	if _player:
+		return _player
+	import zzub, driver
 	player = common.get_player()
+	_player = player
+	player.set_callback(player_callback)
 	# load blacklist file and add blacklist entries
 	for name in get_plugin_blacklist():
 		player.blacklist_plugin(name)
@@ -54,6 +74,12 @@ def get_player():
 		player.add_plugin_path(pluginpath + '/')
 	inputname, outputname, samplerate, buffersize = config.get_config().get_audiodriver_config()
 	player.initialize(samplerate)
+	driver.get_audiodriver().init()
+	driver.get_mididriver().init()
+	def handle_events(player):
+		player.handle_events()
+		return True
+	gobject.timeout_add(1000/25, handle_events, player)
 	return player
 
 if __name__ == '__main__':
