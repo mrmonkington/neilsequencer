@@ -1,3 +1,23 @@
+Aldrin 0.11 (Terra)
+===================
+
+Enhancements:
+
+#334: port aldrin from wxpython to pygtk
+#332: MIDI Learn function
+#188: Rearrange toolbar position
+#340: Ctrl-D in sequence view
+#90: Display current directory in sample browser
+
+Bugs fixed:
+
+#333: Parameter windows disappear with non-standard window manager
+#336: Right click + Unbind All does not work as expected
+#339: Crash in sequence view
+#343: lunar synths don't stop with F8
+#344: Crash when copy-pasting
+
+
 Aldrin 0.10.1 (Venus)
 =====================
 
