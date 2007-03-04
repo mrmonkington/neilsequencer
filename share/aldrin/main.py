@@ -1584,7 +1584,13 @@ class TransportPanel(gtk.HBox):
 		"""
 		if plugin == player.get_plugin(0):
 			if data.type == zzub.zzub_event_type_parameter_changed:
-				self.update_all()
+				data = getattr(data,'').change_parameter
+				g,t,i,v = data.group, data.track, data.param, data.value
+				if (g,t) == (1,0):
+					if i == 1:
+						self.update_bpm()
+					elif i == 2:
+						self.update_tpb()
 		
 	def on_bpm(self, widget):
 		"""
@@ -1605,16 +1611,23 @@ class TransportPanel(gtk.HBox):
 		"""
 		player.get_plugin(0).set_parameter_value(1, 0, 2, int(self.tpb.get_value()), 1)
 		config.get_config().set_default_int('TPB', int(self.tpb.get_value()))
+		
+	def update_bpm(self):
+		master = player.get_plugin(0)
+		bpm = master.get_parameter_value(1, 0, 1)
+		self.bpm.set_value(bpm)
+		
+	def update_tpb(self):
+		master = player.get_plugin(0)
+		tpb = master.get_parameter_value(1, 0, 2)
+		self.tpb.set_value(tpb)
 
 	def update_all(self):
 		"""
 		Updates all controls.
 		"""
-		master = player.get_plugin(0)
-		bpm = master.get_parameter_value(1, 0, 1)
-		tpb = master.get_parameter_value(1, 0, 2)
-		self.bpm.set_value(bpm)
-		self.tpb.set_value(tpb)
+		self.update_bpm()
+		self.update_tpb()
 
 class AldrinApplication:
 	"""
