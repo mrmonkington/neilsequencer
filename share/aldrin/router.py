@@ -399,28 +399,26 @@ class ParameterDialog(gtk.Dialog):
 		self.btncopy.connect('clicked', self.on_button_copy)
 		self.btnrandom.connect('clicked', self.on_button_random)
 		self.btnhelp.connect('clicked', self.on_button_help)
-		#~ wx.EVT_MENU_RANGE(self, self.CONTROLLER, self.CONTROLLER+255, self.on_bind_controller)
-		#~ wx.EVT_MENU(self, self.UNBIND_ALL, self.on_unbind_all)
 		self.connect('destroy', self.on_destroy)
 
 		scrollwindow.add_with_viewport(rowgroup)
-		#scrollwindow.SetScrollRate(1,1)
-		
 		toplevelgroup.add(scrollwindow)
 
 		self.vbox.add(toplevelgroup)
 
-		#~ cdx,cdy,cdw,cdh = wx.GetClientDisplayRect()
-
-		#~ scrollwindow.Layout()
-		#~ svx,svy = scrollwindow.GetVirtualSize()
-		#~ swx,swy = scrollwindow.GetClientSize()
-		#~ dwx,dwy = self.GetSize()
-		#~ dwy = min(dwy - swy + svy, int(cdh * 0.9))
-		#~ self.SetSize(wx.Size(dwx, dwy))
+		def on_realize(self):
+			rc = self.get_allocation()
+			cdx,cdy,cdw,cdh = rc.x, rc.y, rc.width, rc.height
+			rc = rowgroup.get_allocation()
+			svx, svy = rc.width, rc.height
+			rc = scrollwindow.get_allocation()
+			swx,swy = rc.width, rc.height
+			ofsy = cdh - swy # size without scrollwindow
+			self.set_default_size(max(swx,300), svy+6+ofsy)
 		
 		self.rootwindow.event_handlers.append(self.on_callback)
 		self.update_preset_buttons()
+		self.connect('realize', on_realize)
 		
 	def on_unbind(self, widget, (g,t,i)):
 		"""
