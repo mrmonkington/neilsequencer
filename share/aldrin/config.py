@@ -581,7 +581,7 @@ class AldrinConfig(ConfigParser.ConfigParser):
 		elif isinstance(window, gtk.Paned):
 			self.write_value("SashPosition", str(window.get_position()))
 		else:
-			if window.window and window.window.is_visible():
+			if window.window and window.get_property('visible'):
 				visible = 'true'
 			else:
 				visible = 'false'

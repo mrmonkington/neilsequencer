@@ -459,7 +459,7 @@ class FreesoundPanel(gtk.HBox):
 			cmd,args = self.cmds[0]
 			self.cmds = self.cmds[1:]
 			try:
-				print cmd,args
+				#print cmd,args
 				cmd(*args)
 			except:
 				import traceback

@@ -305,7 +305,6 @@ class PatternToolBar(gtk.HBox):
 		"""
 		Rebuilds and updates the patternselect list.
 		"""
-		print "update_patternselect"
 		self.patternselect.get_model().clear()
 		if self.plugin != -1:
 			mp = player.get_plugin(self.plugin)
@@ -313,9 +312,7 @@ class PatternToolBar(gtk.HBox):
 				self.patternselect.append_text(prepstr(p.get_name()))
 			self.pattern = min(max(self.pattern, 0),mp.get_pattern_count()-1)
 			if self.pattern != -1:
-				print "update_patternselect set_active"
 				self.patternselect.set_active(self.pattern)
-				print "update_patternselect set_active end"
 		
 	def update_waveselect(self):
 		"""

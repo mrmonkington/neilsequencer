@@ -1545,10 +1545,10 @@ class TransportPanel(gtk.HBox):
 		self.set_border_width(MARGIN)
 		player.get_plugin(0).set_parameter_value(1, 0, 1, config.get_config().get_default_int('BPM', 126), 1)
 		player.get_plugin(0).set_parameter_value(1, 0, 2, config.get_config().get_default_int('TPB', 4), 1)
-		self.update_all()
-		self.bpm.connect('value-changed', self.on_bpm)
-		self.tpb.connect('value-changed', self.on_tpb)
+		self.bpm_value_changed = self.bpm.connect('value-changed', self.on_bpm)
+		self.tpb_value_changed = self.tpb.connect('value-changed', self.on_tpb)
 		gobject.timeout_add(100, self.update_label)
+		self.update_all()
 		
 	def update_label(self):
 		"""
@@ -1599,6 +1599,7 @@ class TransportPanel(gtk.HBox):
 		@param event: event.
 		@type event: wx.Event
 		"""
+		print "on_bpm"
 		player.get_plugin(0).set_parameter_value(1, 0, 1, int(self.bpm.get_value()), 1)
 		config.get_config().set_default_int('BPM', int(self.bpm.get_value()))
 
@@ -1609,18 +1610,23 @@ class TransportPanel(gtk.HBox):
 		@param event: event.
 		@type event: wx.Event
 		"""
+		print "on_tpb"
 		player.get_plugin(0).set_parameter_value(1, 0, 2, int(self.tpb.get_value()), 1)
 		config.get_config().set_default_int('TPB', int(self.tpb.get_value()))
 		
 	def update_bpm(self):
+		self.bpm.handler_block(self.bpm_value_changed)
 		master = player.get_plugin(0)
 		bpm = master.get_parameter_value(1, 0, 1)
 		self.bpm.set_value(bpm)
+		self.bpm.handler_unblock(self.bpm_value_changed)
 		
 	def update_tpb(self):
+		self.tpb.handler_block(self.tpb_value_changed)
 		master = player.get_plugin(0)
 		tpb = master.get_parameter_value(1, 0, 2)
 		self.tpb.set_value(tpb)
+		self.tpb.handler_unblock(self.tpb_value_changed)
 
 	def update_all(self):
 		"""
@@ -1638,7 +1644,6 @@ class AldrinApplication:
 		Called when the main loop initializes.
 		"""
 		self.frame = AldrinFrame()
-		self.frame.show_all()
 		gtk.main()
 		return 1
 

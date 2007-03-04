@@ -1204,7 +1204,7 @@ class RouteView(gtk.DrawingArea):
 		text = gettext(self, "Enter new plugin name:", prepstr(mp.get_name()))
 		if text:
 			mp.set_name(text)
-			common.get_plugin_infos().plugin_info[mp].reset_plugingfx()
+			common.get_plugin_infos().get(mp).reset_plugingfx()
 			self.redraw()
 	
 	def solo(self, plugin):		
@@ -1239,7 +1239,7 @@ class RouteView(gtk.DrawingArea):
 		self.redraw()
 	
 	def toggle_mute(self, plugin):
-		pi = common.get_plugin_infos()[plugin]
+		pi = common.get_plugin_infos().get(plugin)
 		pi.muted = not pi.muted		
 		if not self.solo_plugin or plugin == self.solo_plugin:
 			plugin.set_mute(pi.muted)
@@ -1485,7 +1485,7 @@ class RouteView(gtk.DrawingArea):
 		res = self.get_plugin_at((mx,my))
 		if res:
 			mp,(x,y),area = res
-			menu.append(make_check_item(common.get_plugin_infos()[mp].muted, "_Mute", "Toggle Bypass", self.on_popup_mute, mp))
+			menu.append(make_check_item(common.get_plugin_infos().get(mp).muted, "_Mute", "Toggle Bypass", self.on_popup_mute, mp))
 			if mp.get_type() == zzub.zzub_plugin_type_generator:
 				menu.append(make_check_item(self.solo_plugin == mp, "_Solo", "Toggle Solo", self.on_popup_solo, mp))
 			menu.append(gtk.SeparatorMenuItem())
