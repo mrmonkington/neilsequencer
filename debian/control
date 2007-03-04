@@ -7,6 +7,6 @@ Standards-Version: 3.7.2
 
 Package: aldrin
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, python (>= 2.4), python-ctypes (>= 1.0), libzzub0 (>= 0.2.2), python-zzub (>= 0.2.2), python-wxgtk2.6 (>= 2.6.3)
+Depends: ${shlibs:Depends}, ${misc:Depends}, python (>= 2.4), python-ctypes (>= 1.0), libzzub0 (>= 0.2.3), python-zzub (>= 0.2.3), python-gtk2 (>= 2.8)
 Description: Aldrin Modular Sequencer
  Aldrin is an open source modular music sequencer/tracker for the GNU/Linux operating system. Aldrin is currently in beta stage and fully functional. Feel free to try and use it.
