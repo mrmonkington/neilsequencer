@@ -790,9 +790,14 @@ class ParameterDialog(gtk.Dialog):
 		@type event: wx.ScrollEvent
 		"""
 		nl,s,vl = self.pid2ctrls[(g,t,i)]
-		s.set_value(int(value+0.5)) # quantize slider position
-		self.plugin.set_parameter_value(g,t,i,int(value+0.5),1)
+		p = self.pluginloader.get_parameter(g,i)
+		minv = p.get_value_min()
+		maxv = p.get_value_max()
+		value = int(max(min(value, maxv), minv) + 0.5)
+		s.set_value(value) # quantize slider position
+		self.plugin.set_parameter_value(g,t,i,value,1)
 		self.update_valuelabel(g,t,i)
+		return True
 
 class PluginBrowserDialog(gtk.Dialog):
 	"""

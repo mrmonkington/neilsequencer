@@ -1420,16 +1420,18 @@ class MasterPanel(gtk.HBox):
 				self.ampl.set_amp(vu.left_amp, vu.time)
 				self.ampr.set_amp(vu.right_amp, vu.time)
 
-	def on_scroll_changed(self, *args):
+	def on_scroll_changed(self, widget, scroll, value):
 		"""
 		Event handler triggered when the master slider has been dragged.
 		
 		@param event: event.
 		@type event: wx.Event
 		"""
-		vol = self.masterslider.get_value()
+		vol = int(min(max(value,0), 16384) + 0.5)
 		master = player.get_plugin(0)
-		master.set_parameter_value(1, 0, 0, 16384 - int(vol), 1)
+		master.set_parameter_value(1, 0, 0, 16384 - vol, 1)
+		self.masterslider.set_value(vol)
+		return True
 
 	def on_mousewheel(self, widget, event):
 		"""
@@ -1599,7 +1601,6 @@ class TransportPanel(gtk.HBox):
 		@param event: event.
 		@type event: wx.Event
 		"""
-		print "on_bpm"
 		player.get_plugin(0).set_parameter_value(1, 0, 1, int(self.bpm.get_value()), 1)
 		config.get_config().set_default_int('BPM', int(self.bpm.get_value()))
 
@@ -1610,7 +1611,6 @@ class TransportPanel(gtk.HBox):
 		@param event: event.
 		@type event: wx.Event
 		"""
-		print "on_tpb"
 		player.get_plugin(0).set_parameter_value(1, 0, 2, int(self.tpb.get_value()), 1)
 		config.get_config().set_default_int('TPB', int(self.tpb.get_value()))
 		
