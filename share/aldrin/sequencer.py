@@ -814,7 +814,7 @@ class SequencerView(gtk.DrawingArea):
 			track_count = seq.get_track_count()
 			x, y = int(event.x), int(event.y)
 			track, row = self.pos_to_track_row((x,y))		
-			if (track != -1) and (track < track_count):
+			if track < track_count:
 				if track == -1:
 					player.set_position(max(row,0))
 				elif row == -1:

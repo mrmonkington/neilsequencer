@@ -867,7 +867,7 @@ class PatternView(gtk.DrawingArea):
 		self.grab_focus()
 		plugin = self.get_plugin()
 		if plugin:
-			self.plugin_info[plugin].reset_patterngfx()
+			self.plugin_info.get(plugin).reset_patterngfx()
 
 	def move_up(self, step = 1):
 		"""
@@ -1706,8 +1706,9 @@ class PatternView(gtk.DrawingArea):
 			return
 		# store current position
 		plugin = self.get_plugin()
+		pi = self.plugin_info.get(plugin)
 		#~ self.plugin_info = self.rootwindow.routeframe.view.plugin_info
-		self.plugin_info[plugin].pattern_position = (self.row, self.group, self.track, self.index, self.subindex)		
+		pi.pattern_position = (self.row, self.group, self.track, self.index, self.subindex)		
 		if self.plugin:
 			if self.parameter_count[self.group] and self.group_track_count[self.group]:
 				# change status bar
