@@ -368,18 +368,28 @@ class PatternPanel(gtk.VBox):
 		self.rootwindow.event_handlers.append(self.on_player_callback)
 		self.statusbar = gtk.HBox(False, MARGIN)
 		self.statusbar.set_border_width(MARGIN0)
-		self.view = PatternView(rootwindow)
+		vscroll = gtk.VScrollbar()
+		hscroll = gtk.HScrollbar()
+		self.view = PatternView(rootwindow, hscroll, vscroll)
 		self.toolbar = PatternToolBar(self.view)
 		self.view.toolbar = self.toolbar
 		self.view.statusbar = self.statusbar
 		self.view.pattern_changed()
 		self.pack_start(self.toolbar, expand=False)
-		self.pack_start(self.view)
+		scrollwin = gtk.Table(2,2)
+		scrollwin.attach(self.view, 0, 1, 0, 1, gtk.FILL|gtk.EXPAND, gtk.FILL|gtk.EXPAND)
+		scrollwin.attach(vscroll, 1, 2, 0, 1, 0, gtk.FILL)
+		scrollwin.attach(hscroll, 0, 1, 1, 2, gtk.FILL, 0)
+		self.pack_start(scrollwin)
 		self.pack_end(self.statusbar, expand=False)
 		self.toolbar.update_all()
-		self.__set_properties()
+		self.statuslabels = []
+		for i in range(3):
+			label = gtk.Label()
+			self.statuslabels.append(label)
+			self.statusbar.pack_start(label, expand=False)
+			self.statusbar.pack_start(gtk.VSeparator(), expand=False)
 		self.view.statuslabels = self.statuslabels
-		# end wxGlade
 
 	def on_player_callback(self, player, plugin, data):
 		"""
@@ -409,19 +419,6 @@ class PatternPanel(gtk.VBox):
 		"""
 		self.toolbar.update_all()
 		self.view.pattern_changed()
-
-	def __set_properties(self):
-		"""
-		Sets properties during initialization.
-		"""
-		# begin wxGlade: SequencerFrame.__set_properties
-		self.statuslabels = []
-		for i in range(3):
-			label = gtk.Label()
-			self.statuslabels.append(label)
-			self.statusbar.pack_start(label, expand=False)
-			self.statusbar.pack_start(gtk.VSeparator(), expand=False)
-		# end wxGlade
 
 from utils import fixbn, bn2mn, mn2bn, note2str, switch2str, byte2str, word2str
 
@@ -548,7 +545,7 @@ class PatternView(gtk.DrawingArea):
 		index = 0
 		mode = SEL_COLUMN
 	
-	def __init__(self, rootwindow):
+	def __init__(self, rootwindow, hscroll, vscroll):
 		"""
 		Initialization.
 		
@@ -556,6 +553,8 @@ class PatternView(gtk.DrawingArea):
 		@type rootwindow: main.AldrinFrame
 		"""
 		self.rootwindow = rootwindow
+		self.hscroll = hscroll
+		self.vscroll = vscroll
 		self.toolbar = None
 		self.statusbar = None
 		self.patternsize = 16
@@ -582,9 +581,6 @@ class PatternView(gtk.DrawingArea):
 		self.fontdesc = desc
 		self.font = pctx.load_font(desc)
 		metrics = self.font.get_metrics(None)
-		
-		
-		
 		fh = (metrics.get_ascent() + metrics.get_descent()) / pango.SCALE
 		fw = metrics.get_approximate_char_width() / pango.SCALE
 		self.row_height = fh # row height
@@ -599,6 +595,8 @@ class PatternView(gtk.DrawingArea):
 		self.connect('button-press-event', self.on_left_down)
 		self.connect('scroll-event', self.on_mousewheel)
 		gobject.timeout_add(100, self.update_position)
+		self.hscroll.connect('change-value', self.on_hscroll_window)
+		self.vscroll.connect('change-value', self.on_vscroll_window)
 		
 	def on_copy(self, widget):
 		"""
@@ -764,8 +762,21 @@ class PatternView(gtk.DrawingArea):
 	def adjust_scrollbars(self):
 		w,h = self.get_client_size()
 		vw,vh = self.get_virtual_size()
-		#~ self.SetScrollbar(wx.HORIZONTAL, self.start_col, int((w - PATLEFTMARGIN) / float(self.column_width) + 0.5), vw)
-		#~ self.SetScrollbar(wx.VERTICAL, self.start_row, int((h - self.row_height) / float(self.row_height) + 0.5), vh)
+		pw, ph = int((w - PATLEFTMARGIN) / float(self.column_width) + 0.5), int((h - self.row_height) / float(self.row_height) + 0.5)
+		hrange = vw - pw
+		vrange = vh - ph
+		if hrange <= 0:
+			self.hscroll.hide()
+		else:
+			self.hscroll.show()
+		if vrange <= 0:
+			self.vscroll.hide()
+		else:
+			self.vscroll.show()
+		adj = self.hscroll.get_adjustment()
+		adj.set_all(self.start_col, 0, vw, 1, 1, pw)
+		adj = self.vscroll.get_adjustment()
+		adj.set_all(self.start_row, 0, vh, 1, 1, ph)
 		
 	def set_octave(self, o):
 		"""
@@ -1337,7 +1348,7 @@ class PatternView(gtk.DrawingArea):
 		mask = event.state
 		k = gtk.gdk.keyval_name(event.keyval)
 		kv = event.keyval
-		print mask,k,kv
+		#~ print mask,k,kv
 		if k == 'less':
 			self.toolbar.prev_wave()
 		elif k == 'greater':
@@ -1692,13 +1703,32 @@ class PatternView(gtk.DrawingArea):
 		for g in CONN,GLOBAL,TRACK:
 			w += self.track_width[g] * self.group_track_count[g]
 		return w,h
-		
-	def on_scroll_window(self, event):
+
+	def on_vscroll_window(self, widget, scroll, value):
 		"""
-		Handles window scrolling.
+		Handles vertical window scrolling.
 		"""
-		self.start_col, self.start_row = self.GetScrollPos(wx.HORIZONTAL), self.GetScrollPos(wx.VERTICAL)
-		self.ReDraw()
+		adj = widget.get_adjustment()
+		minv = adj.get_property('lower')
+		maxv = adj.get_property('upper')
+		pagesize = adj.get_property('page-size')
+		value = int(max(min(value, maxv - pagesize), minv) + 0.5)
+		if self.start_row != value:
+			self.start_row = value
+			self.redraw()
+
+	def on_hscroll_window(self, widget, scroll, value):
+		"""
+		Handles horizontal window scrolling.
+		"""
+		adj = widget.get_adjustment()
+		minv = adj.get_property('lower')
+		maxv = adj.get_property('upper')
+		pagesize = adj.get_property('page-size')
+		value = int(max(min(value, maxv - pagesize), minv) + 0.5)
+		if self.start_col != value:
+			self.start_col = value
+			self.redraw()
 	
 	def refresh_view(self):
 		if not self.plugin:
