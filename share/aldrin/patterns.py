@@ -664,8 +664,10 @@ class PatternView(gtk.DrawingArea):
 		"""
 		playpos = player.get_position()
 		if self.playpos != playpos:
+			self.draw_xor()
 			self.playpos = playpos
-			self.Refresh()
+			self.draw_xor()
+		return True
 			
 	def get_new_pattern_name(self):
 		"""
@@ -1736,6 +1738,8 @@ class PatternView(gtk.DrawingArea):
 		"""
 		if not self.pattern:
 			return
+		if not self.window:
+			return
 		gc = self.window.new_gc()
 		cm = gc.get_colormap()
 		drawable = self.window
@@ -1752,7 +1756,7 @@ class PatternView(gtk.DrawingArea):
 		if (cx >= (PATLEFTMARGIN+4)) and (cy >= self.top_margin):
 			drawable.draw_rectangle(gc, True,cx,cy,self.column_width,self.row_height)
 		# draw play cursor
-		current_position = player.get_position()
+		current_position = self.playpos
 		seq = player.get_current_sequencer()
 		for i in range(seq.get_track_count()):
 			track = seq.get_track(i)
