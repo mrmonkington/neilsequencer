@@ -1186,7 +1186,7 @@ class RouteView(gtk.DrawingArea):
 			plugin = zzub.Plugin(getattr(data,'').delete_plugin.plugin)
 			dlg = self.plugin_dialogs.get(plugin,None)
 			if dlg:
-				dlg.Destroy()
+				dlg.destroy()
 
 	def reset(self):
 		"""

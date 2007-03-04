@@ -588,7 +588,7 @@ class WavetablePanel(gtk.Notebook):
 			traceback.print_exc()
 		player.unlock()
 		if res != 0:
-			error(self, message="<b><big>Unable to preview <i>%s</i>.</big></b>\n\nThe file may be corrupt or the file type is not supported." % path)
+			error(self, "<b><big>Unable to preview <i>%s</i>.</big></b>\n\nThe file may be corrupt or the file type is not supported." % path)
 		else:
 			self.update_wave_amp()
 			player.play_wave(w, 0, (4 << 4) + 1)
