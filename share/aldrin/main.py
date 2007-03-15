@@ -39,11 +39,12 @@ import zzub
 player = None
 playstarttime = None
 
-import sequencer, router, patterns, wavetable, preferences, hdrecorder, cpumonitor, info, common
+import sequencer, router, patterns, wavetable, preferences, hdrecorder, cpumonitor, info, common, rack
 from sequencer import SequencerPanel
 from router import RoutePanel
 from patterns import PatternPanel
 from wavetable import WavetablePanel
+from rack import RackPanel
 from info import InfoPanel
 from preferences import show_preferences
 import config
@@ -172,6 +173,7 @@ STOCK_SEQUENCER = "aldrin-sequencer"
 STOCK_LOOP = "aldrin-loop"
 STOCK_SOUNDLIB = "aldrin-soundlib"
 STOCK_INFO = "aldrin-info"
+STOCK_RACK = "aldrin-rack"
 STOCK_PANIC = "aldrin-panic"
 
 class AldrinFrame(gtk.Window):
@@ -197,6 +199,7 @@ class AldrinFrame(gtk.Window):
 	PAGE_SEQUENCER = 2
 	PAGE_WAVETABLE = 3
 	PAGE_INFO = 4
+	PAGE_RACK = 5
 	
 	style_rc = """
 	#gtk-button-images=0
@@ -227,6 +230,7 @@ class AldrinFrame(gtk.Window):
 	iconfactory.add(STOCK_SOUNDLIB, make_iconset(filepath('res/wavetable.png')))
 	iconfactory.add(STOCK_INFO, make_iconset(filepath('res/text-x-generic.png')))
 	iconfactory.add(STOCK_PANIC, make_iconset(filepath('res/process-stop.png')))
+	iconfactory.add(STOCK_RACK, make_iconset(filepath('res/rack.png')))
 	
 	gtk.stock_add((
 		(STOCK_PATTERNS, "Pattern", 0, gtk.gdk.keyval_from_name('F2'), 'aldrin'),
@@ -235,6 +239,7 @@ class AldrinFrame(gtk.Window):
 		(STOCK_LOOP, "Loop", 0, gtk.gdk.keyval_from_name('F8'), 'aldrin'),
 		(STOCK_SOUNDLIB, "Sound Library", 0, gtk.gdk.keyval_from_name('F9'), 'aldrin'),
 		(STOCK_INFO, "Info", 0, gtk.gdk.keyval_from_name('F10'), 'aldrin'),
+		(STOCK_RACK, "Rack", 0, gtk.gdk.keyval_from_name('F11'), 'aldrin'),
 		(STOCK_PANIC, "Panic", 0, gtk.gdk.keyval_from_name('F12'), 'aldrin'),
 	))
 	
@@ -398,6 +403,7 @@ class AldrinFrame(gtk.Window):
 		self.patternframe = PatternPanel(self)
 		self.wavetableframe = WavetablePanel(self)
 		self.infoframe = InfoPanel(self)
+		self.rackframe = RackPanel(self)
 		self.pages = {
 			self.PAGE_PATTERN : (
 				self.patternframe,
@@ -418,6 +424,10 @@ class AldrinFrame(gtk.Window):
 			self.PAGE_INFO : (
 				self.infoframe,
 				STOCK_INFO,
+			),
+			self.PAGE_RACK : (
+				self.rackframe,
+				STOCK_RACK,
 			),
 		}
 		self.aldrinframe_toolbar.insert(make_stock_tool_item(gtk.STOCK_NEW, self.new),-1)
@@ -931,6 +941,8 @@ class AldrinFrame(gtk.Window):
 			self.select_page(self.PAGE_WAVETABLE)
 		elif k == 'F10':
 			self.select_page(self.PAGE_INFO)
+		elif k == 'F11':
+			self.select_page(self.PAGE_RACK)
 		elif k == 'F12':
 			self.btnpanic.set_active(not self.btnpanic.get_active())
 		else:
@@ -1020,25 +1032,31 @@ class AldrinFrame(gtk.Window):
 		@param filename: Path to song.
 		@type filename: str
 		"""
-		if not os.path.splitext(filename)[1]:
-			filename += self.DEFAULT_EXTENSION
-		self.filename = filename
-		if os.path.isfile(filename):
-			# rename incremental
-			path,basename = os.path.split(filename)
-			basename,ext = os.path.splitext(basename)
-			i = 0
-			while True:
-				newpath = os.path.join(path,"%s%s.%03i.bak" % (basename,ext,i))
-				if not os.path.isfile(newpath):
-					break
-				i += 1
-			#print '%s => %s' % (filename, newpath)
-			os.rename(filename, newpath)
-		base,ext = os.path.splitext(self.filename)
-		#~ progress = wx.ProgressDialog("Aldrin", "Saving '%s'..." % prepstr(self.filename))
-		#~ wx.Yield()
-		player.save_ccm(self.filename)
+		try:
+			if not os.path.splitext(filename)[1]:
+				filename += self.DEFAULT_EXTENSION
+			self.filename = filename
+			if os.path.isfile(filename):
+				# rename incremental
+				path,basename = os.path.split(filename)
+				basename,ext = os.path.splitext(basename)
+				i = 0
+				while True:
+					newpath = os.path.join(path,"%s%s.%03i.bak" % (basename,ext,i))
+					if not os.path.isfile(newpath):
+						break
+					i += 1
+				#print '%s => %s' % (filename, newpath)
+				os.rename(filename, newpath)
+			base,ext = os.path.splitext(self.filename)
+			#~ progress = wx.ProgressDialog("Aldrin", "Saving '%s'..." % prepstr(self.filename))
+			#~ wx.Yield()
+			assert player.save_ccm(self.filename) == 0
+		except:
+			import traceback
+			text = traceback.format_exc()
+			traceback.print_exc()
+			error(self, "<b><big>Error saving file:</big></b>\n\n%s" % text)
 		#~ progress.Update(100)
 		self.update_title()
 		config.get_config().add_recent_file_config(self.filename)
