@@ -57,6 +57,7 @@ import cairo
 from common import MARGIN, MARGIN2, MARGIN3, MARGIN0
 
 import interface
+from interface import IRootWindow
 
 import os, sys
 
@@ -176,7 +177,7 @@ STOCK_INFO = "aldrin-info"
 STOCK_RACK = "aldrin-rack"
 STOCK_PANIC = "aldrin-panic"
 
-class AldrinFrame(gtk.Window):
+class AldrinFrame(gtk.Window, IRootWindow):
 	"""
 	The application main window class.
 	"""
@@ -248,11 +249,22 @@ class AldrinFrame(gtk.Window):
 
 	event_to_name = dict([(getattr(zzub,x),x) for x in dir(zzub) if x.startswith('zzub_event_type_')])
 	
+	# IRootWindow.refresh_view
+	def refresh_view(self, target):
+		"""
+		Refreshes a view.
+		
+		@param target: The uri of the target.
+		@type target: str
+		"""
+		if target == interface.UIVIEW_ALL:
+			self.document_changed()
+
 	def __init__(self):
 		"""
 		Initializer.
 		"""
-		
+		IRootWindow.__init__(self)
 		
 		self._cbtime = time.time()
 		self._cbcalls = 0
@@ -291,6 +303,7 @@ class AldrinFrame(gtk.Window):
 		gtk.Window.__init__(self, gtk.WINDOW_TOPLEVEL)
 		#~ self.toolsmenu.hide()
 		em = extman.get_extension_manager()
+		em.register_service(interface.SERVICE_ROOTWINDOW, self, interface.IRootWindow)
 		em.realize_extensions(self)
 
 		self.set_size_request(500,400)

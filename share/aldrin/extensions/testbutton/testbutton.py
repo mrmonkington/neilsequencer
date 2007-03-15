@@ -62,8 +62,13 @@ class Extension(IExtension, IUIBuilder):
 		extman.add_service_class(aldrin.interface.CLASS_UI_BUILDER, self.SERVICE_URI)
 		# store the message service for later
 		self.msgsvc = extman.get_service(aldrin.interface.SERVICE_MESSAGE)
+		# store the rootwindow service for later
+		self.rootwindow = extman.get_service(aldrin.interface.SERVICE_ROOTWINDOW)
 		
 	def on_toolbutton_clicked(self, widget):
+		# refresh view
+		self.rootwindow.refresh_view(aldrin.interface.UIVIEW_ALL)
+		# show message
 		self.msgsvc.message("You clicked the demo button.")
 	
 	# IExtension.finalize

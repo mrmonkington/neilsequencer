@@ -15,7 +15,10 @@
 	<ref label="Graue SoftSat (Distortion)" uri="graue@oceanbase.org/effect/softsat;1"/>
 	<ref label="Joachims Multi (Mastering)" uri="@binarywerks.dk/multi-2;1"/>
 	<group label="LADSPA Plugins">
-		<refs pattern="@zzub.org/ladspadapter/*"/>
+		<group label="Unsorted">
+			<refs pattern="@zzub.org/ladspadapter/*"/>
+		</group>
+		<!-- <refs pattern="@zzub.org/ladspadapter/*"/> -->
 	</group>
 	<separator/>
 	<ref label="Instrument Recorder" uri="@zzub.org/recorder/wavetable"/>

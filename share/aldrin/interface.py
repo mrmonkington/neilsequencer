@@ -44,11 +44,19 @@ UIOBJECT_ROUTE_MENU_CONNECTION = "@aldrin.org/uiobject/route/menu/connection"
 UIOBJECT_ROUTE_MENU = "@aldrin.org/uiobject/route/menu"
 
 #
+# UI view URIs
+# ############
+
+UIVIEW_ALL = "@aldrin.org/uiview/all"
+
+#
 # Service URIs
 # ############
 
 # returns a IUIMessage object
 SERVICE_MESSAGE = "@aldrin.org/service/message"
+# return a IRootWindow object
+SERVICE_ROOTWINDOW = "@aldrin.org/service/rootwindow"
 
 #
 # Interfaces
@@ -270,6 +278,18 @@ class IExtensionManager(Interface):
 		@type instance: any
 		@param iface: Interface which exposes the methods required or None for all.
 		@type iface: class
+		"""
+		
+class IRootWindow(Interface):
+	"""
+	Interface for the root window.
+	"""
+	def refresh_view(self, target):
+		"""
+		Refreshes a view.
+		
+		@param target: The uri of the target.
+		@type target: str
 		"""
 
 class IUIMessage(Interface):
