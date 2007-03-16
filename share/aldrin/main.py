@@ -984,6 +984,7 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		common.get_plugin_infos().update()
 		self.routeframe.update_all()
 		self.infoframe.update_all()
+		self.rackframe.update_all()
 		self.routeframe.view.update_colors()
 		self.routeframe.view.redraw()
 		self.seqframe.seqview.redraw()
@@ -1478,8 +1479,7 @@ class MasterPanel(gtk.HBox):
 		elif event.direction == gtk.gdk.SCROLL_DOWN:
 			vol -= step
 		vol = min(max(0,vol), 16384)
-		self.masterslider.set_value(vol)
-		self.on_scroll_changed()
+		self.on_scroll_changed(None, None, vol)
 		
 	def update_all(self):
 		"""

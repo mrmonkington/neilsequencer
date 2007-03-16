@@ -28,7 +28,7 @@ import cairo
 import pangocairo
 from utils import prepstr, filepath, db2linear, linear2db, is_debug, filenameify, \
 	get_item_count, question, error, new_listview, add_scrollbars, get_clipboard_text, set_clipboard_text, \
-	gettext, new_stock_image_button
+	gettext, new_stock_image_button, diff
 import config
 import zzub
 import sys,os
@@ -606,14 +606,60 @@ class RackPanel(gtk.VBox):
 		"""
 		Initialization.
 		"""
-		self.rootwindow = rootwindow
 		gtk.VBox.__init__(self)
+		self.rootwindow = rootwindow
+		self.panels = {}
+		scrollwindow = gtk.ScrolledWindow()
+		scrollwindow.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+		rowgroup = gtk.VBox()
+		scrollwindow.add_with_viewport(rowgroup)
+		self.scrollwindow = scrollwindow
+		self.rowgroup = rowgroup
+		self.connect('realize', self.on_realize)
+		self.add(self.scrollwindow)
+		self.rootwindow.event_handlers.append(self.on_player_callback)
+
+	def on_player_callback(self, player, plugin, data):
+		"""
+		callback for ui events sent by zzub.
+		
+		@param player: player instance.
+		@type player: zzub.Player
+		@param plugin: plugin instance
+		@type plugin: zzub.Plugin
+		@param data: event data.
+		@type data: zzub_event_data_t
+		"""
+		if data.type == zzub.zzub_event_type_delete_plugin:
+			self.update_all()
+
+	def on_realize(self, widget):
+		self.update_all()
+
+	def update_all(self):
+		"""
+		Updates the full view.
+		"""
+		print "rack:update_all"
+		addlist, rmlist = diff(self.panels.keys(), common.get_plugin_infos().keys())
+		print addlist, rmlist
+		for plugin in rmlist:
+			self.panels[plugin].destroy()
+			del self.panels[plugin]
+		for plugin in addlist:
+			view = ParameterView(self.rootwindow, plugin)
+			view.show_all()
+			self.panels[plugin] = view
+			self.rowgroup.pack_start(view, expand=False)
+			#~ view.set_size_request(*view.get_best_size())
 
 if __name__ == '__main__':
 	import testplayer, utils
 	player = testplayer.get_player()
 	player.load_ccm(utils.filepath('demosongs/paniq-knark.ccm'))
 	window = testplayer.TestWindow()
-	window.add(RackPanel(window))
+	rack = RackPanel(window)
+	window.add(rack)
 	window.show_all()
+	
 	gtk.main()

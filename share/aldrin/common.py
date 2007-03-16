@@ -57,13 +57,16 @@ class PluginInfoCollection:
 		self.update()
 		
 	def reset(self):
-		self.plugin_dialogs = {}
+		self.plugin_info = {}
 		
 	def __getitem__(self, k):
 		return self.plugin_info.__getitem__(k)
 		
 	def __delitem__(self, k):
 		return self.plugin_info.__delitem__(k)
+		
+	def keys(self):
+		return self.plugin_info.keys()
 		
 	def get(self, k):
 		if not k in self.plugin_info:

@@ -651,6 +651,14 @@ def get_clipboard_text():
 	clipboard = gtk.clipboard_get()
 	return clipboard.wait_for_text()
 
+def diff(oldlist, newlist):
+	"""
+	Compares two lists and returns a list of elements that were
+	added, and a list of elements that were removed.
+	"""
+	return [x for x in newlist if x not in oldlist],[x for x in oldlist if x not in newlist] # add, remove
+
+
 __all__ = [
 'is_frozen',
 'get_root_folder_path',
@@ -690,6 +698,7 @@ __all__ = [
 'set_clipboard_text',
 'get_clipboard_text',
 'gettext',
+'diff',
 ]
 
 if __name__ == '__main__':
