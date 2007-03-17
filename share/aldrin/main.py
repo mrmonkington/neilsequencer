@@ -416,7 +416,7 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		self.patternframe = PatternPanel(self)
 		self.wavetableframe = WavetablePanel(self)
 		self.infoframe = InfoPanel(self)
-		self.rackframe = RackPanel(self)
+		#~ self.rackframe = RackPanel(self)
 		self.pages = {
 			self.PAGE_PATTERN : (
 				self.patternframe,
@@ -438,10 +438,10 @@ class AldrinFrame(gtk.Window, IRootWindow):
 				self.infoframe,
 				STOCK_INFO,
 			),
-			self.PAGE_RACK : (
-				self.rackframe,
-				STOCK_RACK,
-			),
+			#~ self.PAGE_RACK : (
+				#~ self.rackframe,
+				#~ STOCK_RACK,
+			#~ ),
 		}
 		self.aldrinframe_toolbar.insert(make_stock_tool_item(gtk.STOCK_NEW, self.new),-1)
 		self.aldrinframe_toolbar.insert(make_stock_tool_item(gtk.STOCK_OPEN, self.on_open),-1)
@@ -954,8 +954,8 @@ class AldrinFrame(gtk.Window, IRootWindow):
 			self.select_page(self.PAGE_WAVETABLE)
 		elif k == 'F10':
 			self.select_page(self.PAGE_INFO)
-		elif k == 'F11':
-			self.select_page(self.PAGE_RACK)
+		#~ elif k == 'F11':
+			#~ self.select_page(self.PAGE_RACK)
 		elif k == 'F12':
 			self.btnpanic.set_active(not self.btnpanic.get_active())
 		else:
@@ -984,7 +984,7 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		common.get_plugin_infos().update()
 		self.routeframe.update_all()
 		self.infoframe.update_all()
-		self.rackframe.update_all()
+		#~ self.rackframe.update_all()
 		self.routeframe.view.update_colors()
 		self.routeframe.view.redraw()
 		self.seqframe.seqview.redraw()
