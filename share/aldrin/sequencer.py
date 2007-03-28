@@ -700,6 +700,10 @@ class SequencerView(gtk.DrawingArea):
 				t.remove_event_at(bp)
 				self.set_cursor_pos(self.track, newrow - (newrow % self.step))
 				self.redraw()
+		elif k == 'Home' or k == 'KP_Home':
+			self.set_cursor_pos(self.track, 0)
+		elif k == 'End' or k == 'KP_End':
+			self.set_cursor_pos(self.track, player.get_song_end() - self.step)
 		elif k == 'Page_Up' or k == 'KP_Page_Up':
 			spl = self.panel.seqpatternlist
 			store, sel = spl.get_selection().get_selected_rows()
