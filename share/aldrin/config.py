@@ -176,6 +176,15 @@ class AldrinConfig(ConfigParser.ConfigParser):
 		vol = float(self.read_value('SamplePreviewVolume', '-12.0'))
 		return vol
 		
+	def get_plugin_icon_path(self, name):
+		"""
+		Returns the plugin icon path for a specific icon name.
+		"""
+		path = os.path.join(filepath('icons'), name + '.svg')
+		if not os.path.isfile(path):
+			return ""
+		return path
+		
 	def get_freesound_samples_folder(self):
 		"""
 		Returns the samples folder designated for samples downloaded from freesound.
@@ -755,6 +764,7 @@ __all__ = [
 
 if __name__ == '__main__':
 	cfg = get_config()
+	print cfg.get_plugin_icon_path("matilde")
 	print cfg.get_sample_preview_volume()
 	print cfg.get_midi_controllers()
 	print cfg.get_audiodriver_config()

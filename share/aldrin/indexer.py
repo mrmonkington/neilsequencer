@@ -40,6 +40,7 @@ class Reference:
 	"""
 	name = ""
 	uri = ""
+	icon = ""
 	pluginloader = None
 	def get_xml(self):
 		return '<Reference name="%s" uri="%s"/>\n' % (self.name, self.uri)
@@ -103,6 +104,7 @@ def parse_index(player, filepath):
 			elif item.tagName == "ref":
 				label = item.getAttribute("label")
 				uri = item.getAttribute("uri")
+				icon = item.getAttribute("icon")
 				if uri in uri2plugin:
 					if label:
 						menuname = label
@@ -111,12 +113,14 @@ def parse_index(player, filepath):
 					ref = Reference()
 					ref.pluginloader = uri2plugin[uri]
 					ref.name = menuname
+					ref.icon = icon
 					ref.uri = ref.pluginloader.get_uri()
 					node.children.append(ref)
 					uriused.append(ref.uri)
 				elif label:
 					ref = Reference()
 					ref.name = label
+					ref.icon = icon
 					ref.uri = uri
 					node.children.append(ref)
 	name2uri = {}
