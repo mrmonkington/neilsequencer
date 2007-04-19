@@ -149,6 +149,9 @@ install(apppath, 'share/applications/aldrin.desktop')
 # demo songs
 install(aldrinpath + "/demosongs", glob.glob("share/aldrin/demosongs/*.ccm"))
 
+# icons
+install(aldrinpath + "/icons", glob.glob("share/aldrin/icons/*.svg"), 0644)
+
 # themes
 install(aldrinpath + "/themes", glob.glob("share/aldrin/themes/*.col"), 0644)
 
