@@ -257,13 +257,6 @@ class SequencerView(gtk.DrawingArea):
 		self.connect('button-release-event', self.on_left_up)
 		self.connect('scroll-event', self.on_mousewheel)
 		gobject.timeout_add(100, self.update_position)
-
-	def on_focus(self, event):		
-		seq = player.get_current_sequencer()
-		if seq.get_track_count() > 0:
-			self.set_cursor_pos(self.track, self.row)
-		self.panel.update_list()
-		self.ReDraw()
 		
 	def track_row_to_pos(self, (track,row)):
 		"""
@@ -573,11 +566,14 @@ class SequencerView(gtk.DrawingArea):
 		"""
 		seq = player.get_current_sequencer()
 		mask = event.state
-		kv = event.keyval
+		kv = event.keyval		
+		# convert keypad numbers
+		if gtk.gdk.keyval_from_name('KP_0') <= kv <= gtk.gdk.keyval_from_name('KP_9'):
+			kv = kv - gtk.gdk.keyval_from_name('KP_0')  + gtk.gdk.keyval_from_name('0') 
 		k = gtk.gdk.keyval_name(event.keyval)
 		#~ print kv, k
-		arrow_down = k in ['Left', 'Right', 'Up', 'Down', 'KP_Left', 'KP_Right', 'KP_Up', 'KP_Down']
-		is_selecting = arrow_down and (mask & gtk.gdk.SHIFT_MASK)
+		arrow_down = k in ['Left', 'Right', 'Up', 'Down', 'KP_Left', 'KP_Right', 'KP_Up', 'KP_Down']	
+		is_selecting = arrow_down and (mask & gtk.gdk.SHIFT_MASK)		
 		if is_selecting:
 			# starts the selection if nothing selected
 			if self.selection_start == None:
@@ -843,7 +839,7 @@ class SequencerView(gtk.DrawingArea):
 		x,y,state = self.window.get_pointer()
 		x, y = int(x),int(y)
 		if self.dragging:
-			select_track, select_row = self.pos_to_track_row((x,y))			
+			select_track, select_row = self.pos_to_track_row((x,y))
 			# start selection if nothing selected			
 			if self.selection_start == None:				
 				self.selection_start = (self.track, self.row)
@@ -861,6 +857,7 @@ class SequencerView(gtk.DrawingArea):
 	def expose(self, widget, event):
 		self.context = widget.window.cairo_create()
 		self.draw(self.context)
+		self.panel.update_list()
 		return False
 		
 	def redraw(self):

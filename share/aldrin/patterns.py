@@ -1346,8 +1346,11 @@ class PatternView(gtk.DrawingArea):
 		@type event: wx.KeyEvent
 		"""
 		mask = event.state
-		k = gtk.gdk.keyval_name(event.keyval)
 		kv = event.keyval
+		# convert keypad numbers	
+		if gtk.gdk.keyval_from_name('KP_0') <= kv <= gtk.gdk.keyval_from_name('KP_9'):
+			kv = kv - gtk.gdk.keyval_from_name('KP_0')  + gtk.gdk.keyval_from_name('0') 
+		k = gtk.gdk.keyval_name(kv)
 		#~ print mask,k,kv
 		if k == 'less':
 			self.toolbar.prev_wave()
