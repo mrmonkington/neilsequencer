@@ -1423,6 +1423,7 @@ class MasterPanel(gtk.HBox):
 		self.masterslider.set_draw_value(False)
 		self.masterslider.set_range(0,16384)
 		self.masterslider.set_size_request(-1,200)
+		self.masterslider.set_increments(500, 500)
 		self.masterslider.set_inverted(True)
 		self.masterslider.connect('scroll-event', self.on_mousewheel)
 		self.masterslider.connect('change-value', self.on_scroll_changed)
