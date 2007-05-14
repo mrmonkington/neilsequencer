@@ -886,8 +886,10 @@ class PatternView(gtk.DrawingArea):
 		@param step: Amount the cursor is moved up.
 		@type step: int
 		"""	
+		self.draw_xor()
 		self.set_row(self.row - step)
-		self.refresh_view()
+		self.draw_xor()
+		#~ self.refresh_view()
 		
 	def move_down(self, step = 1):
 		"""
@@ -896,8 +898,10 @@ class PatternView(gtk.DrawingArea):
 		@param step: Amount the cursor is moved down.
 		@type step: int
 		"""	
+		self.draw_xor()
 		self.set_row(self.row + step)
-		self.refresh_view()
+		self.draw_xor()
+		#~ self.refresh_view()
 		
 	def move_track_left(self):
 		"""
@@ -998,9 +1002,11 @@ class PatternView(gtk.DrawingArea):
 		"""	
 		if not self.pattern:
 			return
+		self.draw_xor()
 		self.move_subindex_left()
 		self.show_cursor_left()
-		self.refresh_view()
+		self.draw_xor()
+		#~ self.refresh_view()		
 		
 	def move_right(self):
 		"""
@@ -1008,9 +1014,11 @@ class PatternView(gtk.DrawingArea):
 		"""	
 		if not self.pattern:
 			return
+		self.draw_xor()
 		self.move_subindex_right()
 		self.show_cursor_right()
-		self.refresh_view()
+		self.draw_xor()
+		#~ self.refresh_view()
 		
 	def adjust_selection(self):
 		"""
@@ -1241,6 +1249,7 @@ class PatternView(gtk.DrawingArea):
 		if not self.pattern:
 			return
 		if event.button == 1:
+			self.draw_xor()
 			x,y = int(event.x), int(event.y)
 			row, group, track, index, subindex = self.pos_to_pattern((x,y))
 			self.set_row(row)
@@ -1248,7 +1257,8 @@ class PatternView(gtk.DrawingArea):
 			self.set_track(track)
 			self.set_index(index)
 			self.set_subindex(subindex)
-			self.refresh_view()
+			self.draw_xor()
+			#~ self.refresh_view()
 	
 	def on_popup_remove_pattern(self, event=None):
 		"""
