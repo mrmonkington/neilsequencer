@@ -22,6 +22,62 @@
 	<ref label="Graue SoftSat (Distortion)" uri="graue@oceanbase.org/effect/softsat;1"/>
 	<ref label="Joachims Multi (Mastering)" uri="@binarywerks.dk/multi-2;1"/>
 	<group label="LADSPA Plugins">
+		<group label="CAPS">
+			<ref label="CAPS: AmpIII - Tube amp emulation" uri="@zzub.org/ladspadapter/AmpIII"/>
+			<ref label="CAPS: AmpIV - Tube amp emulation + tone controls" uri="@zzub.org/ladspadapter/AmpIV"/>
+			<ref label="CAPS: AmpV - Refined tube amp emulation" uri="@zzub.org/ladspadapter/AmpV"/>
+			<ref label="CAPS: CabinetI - Loudspeaker cabinet emulation" uri="@zzub.org/ladspadapter/CabinetI"/>
+			<ref label="CAPS: CabinetII - Refined loudspeaker cabinet emulation" uri="@zzub.org/ladspadapter/CabinetII"/>
+			<ref label="CAPS: CEO - Chief Executive Oscillator" uri="@zzub.org/ladspadapter/CEO"/>
+			<ref label="CAPS: ChorusI - Mono chorus/flanger" uri="@zzub.org/ladspadapter/ChorusI"/>
+			<ref label="CAPS: ChorusII - Mono chorus/flanger modulated by a fractal" uri="@zzub.org/ladspadapter/ChorusII"/>
+			<ref label="CAPS: Click - Metronome" uri="@zzub.org/ladspadapter/Click"/>
+			<ref label="CAPS: Clip - Hard clipper, 8x oversampled" uri="@zzub.org/ladspadapter/Clip"/>
+			<ref label="CAPS: Compress - Mono compressor" uri="@zzub.org/ladspadapter/Compress"/>
+			<ref label="CAPS: Dirac - One-sample impulse generator" uri="@zzub.org/ladspadapter/Dirac"/>
+			<ref label="CAPS: Eq - 10-band 'analogue' equalizer" uri="@zzub.org/ladspadapter/Eq"/>
+			<ref label="CAPS: HRTF - Head-related transfer function at elevation 0" uri="@zzub.org/ladspadapter/HRTF"/>
+			<ref label="CAPS: JVRev - Stanford-style reverb from STK" uri="@zzub.org/ladspadapter/JVRev"/>
+			<ref label="CAPS: Lorenz - The sound of a Lorenz attractor" uri="@zzub.org/ladspadapter/Lorenz"/>
+			<ref label="CAPS: Pan - Pan and width" uri="@zzub.org/ladspadapter/Pan"/>
+			<ref label="CAPS: PhaserI - Mono phaser" uri="@zzub.org/ladspadapter/PhaserI"/>
+			<ref label="CAPS: PhaserII - Mono phaser modulated by a Lorenz fractal" uri="@zzub.org/ladspadapter/PhaserII"/>
+			<ref label="CAPS: Plate - Versatile plate reverb" uri="@zzub.org/ladspadapter/Plate"/>
+			<ref label="CAPS: Plate2x2 - Versatile plate reverb, stereo inputs" uri="@zzub.org/ladspadapter/Plate2x2"/>
+			<ref label="CAPS: PreampIII - Tube preamp emulation" uri="@zzub.org/ladspadapter/PreampIII"/>
+			<ref label="CAPS: PreampIV - Tube preamp emulation + tone controls" uri="@zzub.org/ladspadapter/PreampIV"/>
+			<ref label="CAPS: Roessler - The sound of a Roessler attractor" uri="@zzub.org/ladspadapter/Roessler"/>
+			<ref label="CAPS: Scape - Stereo delay + Filters" uri="@zzub.org/ladspadapter/Scape"/>
+			<ref label="CAPS: Sin - Sine wave generator" uri="@zzub.org/ladspadapter/Sin"/>
+			<ref label="CAPS: StereoChorusI - Stereo chorus/flanger" uri="@zzub.org/ladspadapter/StereoChorusI"/>
+			<ref label="CAPS: StereoChorusII - Stereo chorus/flanger modulated by a fractal" uri="@zzub.org/ladspadapter/StereoChorusII"/>
+			<ref label="CAPS: SweepVFI - Resonant filter, f swept by a Lorenz fractal" uri="@zzub.org/ladspadapter/SweepVFI"/>
+			<ref label="CAPS: SweepVFII - Resonant filter, f and Q swept by a Lorenz fractal" uri="@zzub.org/ladspadapter/SweepVFII"/>
+			<ref label="CAPS: VCOd - Double VCO with detune and hard sync options" uri="@zzub.org/ladspadapter/VCOd"/>
+			<ref label="CAPS: VCOs - Virtual 'analogue' oscillator" uri="@zzub.org/ladspadapter/VCOs"/>
+			<ref label="CAPS: White - White noise generator" uri="@zzub.org/ladspadapter/White"/>
+		</group>		
+		<group label="TAP">
+			<ref label="TAP AutoPanner" uri="@zzub.org/ladspadapter/tap_autopan"/>
+			<ref label="TAP Chorus/Flanger" uri="@zzub.org/ladspadapter/tap_chorusflanger"/>
+			<ref label="TAP DeEsser" uri="@zzub.org/ladspadapter/tap_deesser"/>
+			<ref label="TAP Dynamics (M)" uri="@zzub.org/ladspadapter/tap_dynamics_m"/>
+			<ref label="TAP Dynamics (St)" uri="@zzub.org/ladspadapter/tap_dynamics_st"/>
+			<ref label="TAP Equalizer" uri="@zzub.org/ladspadapter/tap_equalizer"/>
+			<ref label="TAP Equalizer/BW" uri="@zzub.org/ladspadapter/tap_equalizer_bw"/>
+			<ref label="TAP Fractal Doubler" uri="@zzub.org/ladspadapter/tap_doubler"/>
+			<ref label="TAP Pink/Fractal Noise" uri="@zzub.org/ladspadapter/tap_pinknoise"/>
+			<ref label="TAP Pitch Shifter" uri="@zzub.org/ladspadapter/tap_pitch"/>
+			<ref label="TAP Reflector" uri="@zzub.org/ladspadapter/tap_reflector"/>
+			<ref label="TAP Reverberator" uri="@zzub.org/ladspadapter/tap_reverb"/>
+			<ref label="TAP Rotary Speaker" uri="@zzub.org/ladspadapter/tap_rotspeak"/>
+			<ref label="TAP Scaling Limiter" uri="@zzub.org/ladspadapter/tap_limiter"/>
+			<ref label="TAP Sigmoid Booster" uri="@zzub.org/ladspadapter/tap_sigmoid"/>
+			<ref label="TAP Stereo Echo" uri="@zzub.org/ladspadapter/tap_stereo_echo"/>
+			<ref label="TAP Tremolo" uri="@zzub.org/ladspadapter/tap_tremolo"/>
+			<ref label="TAP TubeWarmth" uri="@zzub.org/ladspadapter/tap_tubewarmth"/>
+			<ref label="TAP Vibrato" uri="@zzub.org/ladspadapter/tap_vibrato"/>
+		</group>	
 		<group label="Unsorted">
 			<refs pattern="@zzub.org/ladspadapter/*"/>
 		</group>
