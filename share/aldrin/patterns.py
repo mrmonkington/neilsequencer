@@ -889,6 +889,7 @@ class PatternView(gtk.DrawingArea):
 		self.draw_xor()
 		self.set_row(self.row - step)
 		self.draw_xor()
+		self.update_statusbar()
 		#~ self.refresh_view()
 		
 	def move_down(self, step = 1):
@@ -901,6 +902,7 @@ class PatternView(gtk.DrawingArea):
 		self.draw_xor()
 		self.set_row(self.row + step)
 		self.draw_xor()
+		self.update_statusbar()
 		#~ self.refresh_view()
 		
 	def move_track_left(self):
@@ -995,7 +997,7 @@ class PatternView(gtk.DrawingArea):
 		if x > w:
 			self.start_col = min(self.start_col + x - w + (w / 3), vw - w + self.start_col)
 			self.redraw()
-
+		
 	def move_left(self):
 		"""
 		Moves the cursor left.
@@ -1006,6 +1008,7 @@ class PatternView(gtk.DrawingArea):
 		self.move_subindex_left()
 		self.show_cursor_left()
 		self.draw_xor()
+		self.update_statusbar()
 		#~ self.refresh_view()		
 		
 	def move_right(self):
@@ -1018,6 +1021,7 @@ class PatternView(gtk.DrawingArea):
 		self.move_subindex_right()
 		self.show_cursor_right()
 		self.draw_xor()
+		self.update_statusbar()
 		#~ self.refresh_view()
 		
 	def adjust_selection(self):
@@ -1258,7 +1262,9 @@ class PatternView(gtk.DrawingArea):
 			self.set_index(index)
 			self.set_subindex(subindex)
 			self.draw_xor()
+			self.update_statusbar()
 			#~ self.refresh_view()
+			
 	
 	def on_popup_remove_pattern(self, event=None):
 		"""
@@ -1745,10 +1751,8 @@ class PatternView(gtk.DrawingArea):
 		if self.start_col != value:
 			self.start_col = value
 			self.redraw()
-	
-	def refresh_view(self):
-		if not self.plugin:
-			return
+			
+	def update_statusbar(self):
 		# store current position
 		plugin = self.get_plugin()
 		pi = self.plugin_info.get(plugin)
@@ -1767,7 +1771,12 @@ class PatternView(gtk.DrawingArea):
 					s = get_str_from_param(p,self.pattern.get_value(self.row, self.group, self.track, self.index))
 					self.statuslabels[1].set_label("%s (%i) %s" % (s,v,text))
 				else:
-					self.statuslabels[1].set_label("")
+					self.statuslabels[1].set_label("")		
+					
+	def refresh_view(self):
+		if not self.plugin:
+			return
+		self.update_statusbar()
 		self.redraw()
 		self.adjust_scrollbars()
 	
