@@ -39,6 +39,7 @@ import time
 import extman, interface
 import Queue
 from preset import PresetCollection, Preset
+from patterns import key_to_note
 import common
 player = common.get_player()
 from common import MARGIN, MARGIN2, MARGIN3, MARGIN0
@@ -59,6 +60,7 @@ class ParameterView(gtk.VBox):
 		@type plugin: zzub.Plugin
 		"""
 		gtk.VBox.__init__(self)
+		self.set_flags(gtk.CAN_FOCUS)
 		self.plugin = plugin
 		name = prepstr(self.plugin.get_name())
 		pl = self.plugin.get_pluginloader()
@@ -166,16 +168,67 @@ class ParameterView(gtk.VBox):
 		self.btnrandom.connect('clicked', self.on_button_random)
 		self.btnhelp.connect('clicked', self.on_button_help)
 		self.connect('destroy', self.on_destroy)
-
+		self.connect('key-press-event', self.on_key_jazz)
+		self.connect('button-press-event', self.on_left_down)
+		
 		scrollwindow.add_with_viewport(rowgroup)
 		self.scrollwindow = scrollwindow
 		self.rowgroup = rowgroup
 		toplevelgroup.add(scrollwindow)
 
-		self.add(toplevelgroup)
-		
+		self.add(toplevelgroup)		
 		self.rootwindow.event_handlers.append(self.on_callback)
 		self.update_preset_buttons()
+		self.octave = 3
+		
+	def play_note(self, note, octave=3):
+		m = self.plugin
+		plugin = m.get_pluginloader()
+		pattern = self.plugin.create_pattern(1)
+		row = 0
+		group = 2
+		track = 0
+		index = 0
+		parameter_list = [parameter.get_name() for parameter in plugin.get_parameter_list(group)]		
+		try:
+			index = parameter_list.index("Note")
+		except:
+			return
+		if note !=  zzub.zzub_note_value_off:
+			o, n = note
+			data = (min(octave+o,9)<<4) | (n+1)
+		else:
+			data =  zzub.zzub_note_value_off
+		pattern.set_value(row, group, track, index, data)
+		player.lock_tick()			
+		try:	
+			v = pattern.get_value(row, group, track, index)				
+			m.set_parameter_value(group, track, index, v, 0)			
+			m.tick()
+		except:
+			import traceback
+			traceback.print_exc()
+		
+		player.unlock_tick()		
+		self.plugin.remove_pattern(pattern)
+	
+	def on_left_down(self, widget, event, data=None):
+		self.grab_focus()
+
+	def on_key_jazz(self, widget, event, data=None):
+		kv = event.keyval
+		k = gtk.gdk.keyval_name(kv)
+		note = None
+		if k == "1":
+			note = zzub.zzub_note_value_off
+		elif  k == 'KP_Multiply':			
+			self.octave = min(max(self.octave+1,0), 9)
+		elif k ==  'KP_Divide':
+			self.octave = min(max(self.octave-1,0), 9)
+		elif kv < 256:
+			note = key_to_note(kv)			
+		if note:
+			self.play_note(note, octave=self.octave)
 		
 	def get_best_size(self):
 		rc = self.get_allocation()
