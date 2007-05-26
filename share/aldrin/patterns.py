@@ -27,7 +27,7 @@ import os, sys
 from gtkimport import gtk
 import gobject
 import pango
-from utils import prepstr, filepath, get_item_count, get_clipboard_text, set_clipboard_text, question
+from utils import prepstr, filepath, get_item_count, get_clipboard_text, set_clipboard_text, question, error
 import pickle
 import zzub
 import time
@@ -706,6 +706,7 @@ class PatternView(gtk.DrawingArea):
 			self.plugin, self.pattern = datasource
 			plugin = self.get_plugin()			
 			self.row, self.group, self.track, self.index, self.subindex = self.plugin_info.get(plugin).pattern_position
+			self.selection = self.plugin_info.get(plugin).selection
 			self.input_connection_count = self.get_plugin().get_input_connection_count()
 			# track count
 			track_count = self.get_plugin().get_track_count()
@@ -1417,6 +1418,7 @@ class PatternView(gtk.DrawingArea):
 				self.selection.begin = self.row
 				self.selection.end = max(self.row+1,self.selection.end)				
 				self.adjust_selection()
+				self.update_plugin_info()				
 				self.redraw()
 			elif k == 'e':
 				if not self.selection:
@@ -1440,6 +1442,7 @@ class PatternView(gtk.DrawingArea):
 				self.interpolate_selection()
 			elif k == 'u':
 				self.selection = None
+				self.update_plugin_info()
 				self.redraw()
 			elif k == 'l':
 				self.on_popup_solo()
@@ -1752,12 +1755,16 @@ class PatternView(gtk.DrawingArea):
 			self.start_col = value
 			self.redraw()
 			
-	def update_statusbar(self):
-		# store current position
+	def update_plugin_info(self):				
 		plugin = self.get_plugin()
 		pi = self.plugin_info.get(plugin)
-		#~ self.plugin_info = self.rootwindow.routeframe.view.plugin_info
-		pi.pattern_position = (self.row, self.group, self.track, self.index, self.subindex)		
+		# store current position
+		pi.pattern_position = (self.row, self.group, self.track, self.index, self.subindex)
+		pi.selection = self.selection
+		
+	def update_statusbar(self):
+		# update plugin info
+		self.update_plugin_info();		
 		if self.plugin:
 			if self.parameter_count[self.group] and self.group_track_count[self.group]:
 				# change status bar

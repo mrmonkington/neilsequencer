@@ -37,6 +37,7 @@ class PluginInfo(object):
 		self.plugin = plugin
 		self.muted = False
 		self.pattern_position = (0, 0, 0, 0, 0)
+		self.selection = None
 		self.plugingfx = None
 		self.patterngfx = {}
 		self.amp = -9999.0
