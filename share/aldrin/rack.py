@@ -75,6 +75,7 @@ class ParameterView(gtk.VBox):
 		self._title = title
 		self.presetbox = gtk.combo_box_entry_new_text()
 		self.presetbox.set_size_request(100,-1)
+		self.presetbox.set_wrap_width(4)
 		self.btnadd = new_stock_image_button(gtk.STOCK_ADD)
 		self.btnremove = new_stock_image_button(gtk.STOCK_REMOVE)
 		self.btncopy = new_stock_image_button(gtk.STOCK_COPY)
