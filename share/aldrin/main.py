@@ -31,7 +31,7 @@ import time
 
 from utils import format_time, ticks_to_time, prepstr, linear2db, filepath, \
 	is_debug, question, error, add_scrollbars, file_filter, new_stock_image_toggle_button, \
-	new_stock_image_button
+	new_stock_image_button, message
 import utils
 
 from zzub import Player
@@ -125,8 +125,11 @@ def make_submenu_item(submenu, name):
 	item.set_submenu(submenu)
 	return item
 
-def make_stock_menu_item(stockid, func, *args):
+def make_stock_menu_item(stockid, func, frame=None, shortcut=None, *args):
 	item = gtk.ImageMenuItem(stockid)
+	if frame and shortcut:
+		key, modifier = gtk.accelerator_parse(shortcut)
+		item.add_accelerator("activate", frame.accelerators,  key,  modifier, gtk.ACCEL_VISIBLE)	
 	if func:
 		item.connect('activate', func, *args)
 	return item
@@ -260,6 +263,7 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		if target == interface.UIVIEW_ALL:
 			self.document_changed()
 
+		
 	def __init__(self):
 		"""
 		Initializer.
@@ -345,6 +349,10 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		vbox = gtk.VBox()
 		self.add(vbox)
 
+
+		self.accelerators = gtk.AccelGroup()
+		self.add_accel_group(self.accelerators)		
+		
 		# Menu Bar
 		self.aldrinframe_menubar = gtk.MenuBar()
 		vbox.pack_start(self.aldrinframe_menubar, expand=False)
@@ -403,8 +411,8 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		wxglade_tmp_menu.append(gtk.SeparatorMenuItem())
 		wxglade_tmp_menu.append(make_stock_menu_item(gtk.STOCK_ABOUT, self.on_about))
 		self.aldrinframe_menubar.append(make_submenu_item(wxglade_tmp_menu, "_Help"))
-		# Menu Bar end
-		
+		#~ # Menu Bar end
+
 		# Tool Bar
 		def def_bmp(i):
 			return get_stock_bmp(i)
@@ -531,7 +539,7 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		if not pc._handle:
 			print >> sys.stderr, "not supporting lunar."
 			return
-		
+
 		from xml.dom.minidom import parse
 		userlunarpath = os.path.join(config.get_config().get_settings_folder(),'lunar')
 		if not os.path.isdir(userlunarpath):
@@ -549,9 +557,9 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		for item in self.filemenu:
 			print item
 			item.destroy()
-		self.filemenu.append(make_stock_menu_item(gtk.STOCK_NEW, self.new))
-		self.filemenu.append(make_stock_menu_item(gtk.STOCK_OPEN, self.on_open))
-		self.filemenu.append(make_stock_menu_item(gtk.STOCK_SAVE, self.on_save))
+		self.filemenu.append(make_stock_menu_item(gtk.STOCK_NEW, self.new, frame=self, shortcut="<Control>N"))
+		self.filemenu.append(make_stock_menu_item(gtk.STOCK_OPEN, self.on_open, frame=self, shortcut="<Control>O"))
+		self.filemenu.append(make_stock_menu_item(gtk.STOCK_SAVE, self.on_save, frame=self, shortcut="<Control>S"))
 		self.filemenu.append(make_stock_menu_item(gtk.STOCK_SAVE_AS, self.on_save_as))
 		recent_files = config.get_config().get_recent_files_config()
 		if recent_files:
@@ -1017,22 +1025,40 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		self.filename = filename
 		base,ext = os.path.splitext(self.filename)
 		if ext.lower() in ('.bmx','.bmw'):
-			progress = wx.ProgressDialog("Aldrin", "Loading BMX Song...")
-			wx.Yield()
-			player.load_bmx(self.filename)
-			wx.Yield()
-			progress.Update(100)
-		elif ext.lower() in ('.ccm'):
-			# XXX: TODO
-			#~ progress = wx.ProgressDialog("Aldrin", "Loading CCM Song...")
+			#~ progress = wx.ProgressDialog("Aldrin", "Loading BMX Song...")
 			#~ wx.Yield()
-			player.load_ccm(self.filename)
+			player.load_bmx(self.filename)
 			#~ wx.Yield()
 			#~ progress.Update(100)
+		elif ext.lower() in ('.ccm'):
+			# XXX: TODO
+			dlg = gtk.Dialog('Aldrin', flags=gtk.DIALOG_MODAL)
+			progBar = gtk.ProgressBar()
+			progBar.set_text('Loading CCM Song...')
+			progBar.set_size_request(300, 40)
+			progBar.set_fraction(0)
+			progBar.show()
+			dlg.vbox.pack_start(progBar)			
+			dlg.show()
+			while gtk.events_pending():
+				gtk.main_iteration()
+			def progress_callback():	
+				print 'loading'
+				progBar.pulse()
+				while gtk.events_pending():
+					gtk.main_iteration()
+				return  progBar.get_fraction() == 1.0
+			progBar.pulse()
+			while gtk.events_pending():
+				gtk.main_iteration()
+			gobject.timeout_add(1000/25, progress_callback)
+			progBar.pulse()
+			player.load_ccm(self.filename)
+			progBar.set_fraction(1.0)
+			dlg.destroy()
 		else:
-			wx.MessageDialog(self, message="'%s' is not a supported file format." % ext, caption = "Aldrin", style = wx.ICON_ERROR|wx.OK|wx.CENTER).ShowModal()
+			message(self, "'%s' is not a supported file format." % ext)
 			return
-		
 		self.update_title()
 		config.get_config().add_recent_file_config(self.filename)
 		self.update_filemenu()
@@ -1222,10 +1248,10 @@ class AldrinFrame(gtk.Window, IRootWindow):
 			text = "<big><b>Save changes to <i>%s</i>?</b></big>" % os.path.basename(self.filename)
 		else:
 			text = "<big><b>Save changes?</b></big>"
-		response = question(self, text)
-		if response == gtk.RESPONSE_CANCEL:
+		response = question(self, text)		
+		if response == int(gtk.RESPONSE_CANCEL):
 			raise CancelException
-		elif response == gtk.RESPONSE_YES:
+		elif response == int(gtk.RESPONSE_YES):
 			self.save()
 
 	def new(self, event):

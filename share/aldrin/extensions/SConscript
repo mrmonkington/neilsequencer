@@ -39,7 +39,7 @@ def install_extension(source):
 
 for filename in os.listdir('.'):
 	extension_dir_path = os.path.abspath(filename)
-	if os.path.isfile(os.path.join(extension_dir_path,'SConscript')):
+	if os.path.isfile(os.path.join(extension_dir_path,'SConscript')):    
 		extbasename = filename
 		extenv = env.Copy()
 		Export('extension_dir_path','extenv','install_extension')
