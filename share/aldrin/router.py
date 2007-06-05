@@ -717,8 +717,9 @@ class RouteView(gtk.DrawingArea):
 	
 	def toggle_mute(self, plugin):
 		pi = common.get_plugin_infos().get(plugin)
-		pi.muted = not pi.muted		
-		if not self.solo_plugin or plugin == self.solo_plugin:
+		pi.muted = not pi.muted
+		# make sure a machine muted by solo is not unmuted manually
+		if not self.solo_plugin or plugin == self.solo_plugin or plugin.get_type() == zzub.zzub_plugin_type_effect:
 			plugin.set_mute(pi.muted)
 		pi.reset_plugingfx()
 	
