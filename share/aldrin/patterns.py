@@ -582,7 +582,7 @@ class PatternView(gtk.DrawingArea):
 		self.font = pctx.load_font(desc)
 		metrics = self.font.get_metrics(None)
 		fh = (metrics.get_ascent() + metrics.get_descent()) / pango.SCALE
-		fw = metrics.get_approximate_char_width() / pango.SCALE
+		fw = metrics.get_approximate_digit_width() / pango.SCALE
 		self.row_height = fh # row height
 		self.top_margin = fh # top margin
 		self.column_width = fw # column width
