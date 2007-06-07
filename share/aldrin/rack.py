@@ -127,7 +127,7 @@ class ParameterView(gtk.VBox):
 			slider.set_range(p.get_value_min(),p.get_value_max())
 			# set increment size for left and right arrow and mouse clicks
 			increment = (p.get_value_max() - p.get_value_min()) / 10
-			slider.set_increments(increment, increment)
+			slider.set_increments(1, increment)
 			v = plugin.get_parameter_value(g,t,i)
 			slider.set_value(v)
 			valuelabel = gtk.Label("")
