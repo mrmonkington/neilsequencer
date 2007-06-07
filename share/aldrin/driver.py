@@ -50,7 +50,7 @@ class MidiDriver:
 		for i in range(player.mididriver_get_count()):
 			if player.mididriver_is_input(i):
 				drivername = player.mididriver_get_name(i)
-				if drivername in midiinputs:
+				if drivername.strip() in midiinputs:
 					print "Opening MIDI device '%s'..." % drivername
 					if player.mididriver_open(i) != 0:
 						raise MidiInitException

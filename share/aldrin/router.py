@@ -672,6 +672,7 @@ class RouteView(gtk.DrawingArea):
 		"""
 		for dlg in self.plugin_dialogs.values():
 			dlg.destroy()
+		self.solo_plugin = None
 		self.plugin_dialogs = {}
 			
 	def on_focus(self, event):
