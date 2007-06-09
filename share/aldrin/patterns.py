@@ -1129,7 +1129,7 @@ class PatternView(gtk.DrawingArea):
 			v1 = self.pattern.get_value(self.selection.begin,g,t,i)
 			v2 = self.pattern.get_value(self.selection.end-1,g,t,i)
 			if (v1 != p.get_value_none()) and (v2 != p.get_value_none()):
-				f = float(r - self.selection.begin) / float(self.selection.end - self.selection.begin)
+				f = float(r - self.selection.begin) / float(self.selection.end - self.selection.begin - 1)
 				if (p.get_type() == 0):
 					v1 = bn2mn(v1)
 					v2 = bn2mn(v2)
