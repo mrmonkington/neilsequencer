@@ -406,6 +406,9 @@ class PatternPanel(gtk.VBox):
 			self.update_all()
 		elif data.type == zzub.zzub_event_type_new_plugin:
 			self.update_all()
+		# XXX: TODO, for updating during recording automation. make it fast
+		#~ elif data.type == zzub.zzub_event_type_parameter_changed and player.get_automation():
+			#~ self.update_all()
 
 	def reset(self):
 		"""
