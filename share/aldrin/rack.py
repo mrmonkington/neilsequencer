@@ -230,7 +230,7 @@ class ParameterView(gtk.VBox):
 			note = key_to_note(kv)			
 		if note:
 			self.play_note(note, octave=self.octave)
-		
+			
 	def get_best_size(self):
 		rc = self.get_allocation()
 		cdx,cdy,cdw,cdh = rc.x, rc.y, rc.width, rc.height
@@ -359,7 +359,23 @@ class ParameterView(gtk.VBox):
 					v = self.plugin.get_parameter_value(g,t,i)
 					s.set_value(v)
 					self.update_valuelabel(g,t,i)
-					
+			elif data.type ==  zzub.zzub_event_type_midi_control:
+				ctrl = getattr(data,'').midi_message
+				cmd = ctrl.status >> 4
+				if cmd == 0x8:
+					note = zzub.zzub_note_value_off
+					self.play_note(note)
+				if cmd == 0x9:
+					midinote=ctrl.data1
+					velocity=ctrl.data2
+					octave=midinote/12
+					note=midinote%12
+					if velocity==0:
+						note = zzub.zzub_note_value_off
+						self.play_note(note)
+						return
+					self.play_note((octave,note),)
+
 	def update_presets(self):
 		"""
 		Updates the preset box.
