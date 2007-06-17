@@ -337,7 +337,7 @@ class MidiPanel(gtk.VBox):
 		for i in range(player.mididriver_get_count()):
 			if player.mididriver_is_input(i):
 				name = prepstr(player.mididriver_get_name(i))
-				use = name in inputlist
+				use = name.strip() in inputlist
 				self.istore.append([use, name])
 		sizer1.add(add_scrollbars(self.idevicelist))
 		frame2 = gtk.Frame("MIDI Output Devices")
