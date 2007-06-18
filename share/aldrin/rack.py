@@ -239,7 +239,7 @@ class ParameterView(gtk.VBox):
 		rc = self.scrollwindow.get_allocation()
 		swx,swy = rc.width, rc.height
 		ofsy = cdh - swy # size without scrollwindow
-		return max(swx,400), svy+6+ofsy
+		return  max(swx,400), min((svy+20+ofsy),(3*gtk.gdk.screen_height())/4)
 		
 	def get_title(self):
 		return self._title
