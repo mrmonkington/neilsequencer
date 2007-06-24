@@ -390,6 +390,13 @@ class PatternPanel(gtk.VBox):
 			self.statusbar.pack_start(label, expand=False)
 			self.statusbar.pack_start(gtk.VSeparator(), expand=False)
 		self.view.statuslabels = self.statuslabels
+	
+	def update_values(self):
+		"""
+		Updates the values on external parameter change
+		"""
+		self.view.prepare_textbuffer()
+		self.view.redraw()
 
 	def on_player_callback(self, player, plugin, data):
 		"""
@@ -406,6 +413,9 @@ class PatternPanel(gtk.VBox):
 			self.update_all()
 		elif data.type == zzub.zzub_event_type_new_plugin:
 			self.update_all()
+		elif data.type == zzub.zzub_event_type_midi_control and player.get_automation():
+			self.update_values()
+
 		# XXX: TODO, for updating during recording automation. make it fast
 		#~ elif data.type == zzub.zzub_event_type_parameter_changed and player.get_automation():
 			#~ self.update_all()
@@ -573,6 +583,13 @@ class PatternView(gtk.DrawingArea):
 		self.start_row = 0
 		self.selection = None
 		self.playpos = 0
+		self.keystartselect = None
+		self.keyendselect = None
+		self.selection_start = None
+		self.dragging = False
+		self.shiftselect = None
+		self.clickpos = None
+		self.track_width=[0,0,0]
 		self.plugin_info = common.get_plugin_infos()
 		gtk.DrawingArea.__init__(self)
 		#"Bitstream Vera Sans Mono"
@@ -595,7 +612,10 @@ class PatternView(gtk.DrawingArea):
 		self.set_property('can-focus', True)
 		self.connect("expose_event", self.expose)
 		self.connect('key-press-event', self.on_key_down)
-		self.connect('button-press-event', self.on_left_down)
+		self.connect('key-release-event', self.on_key_up)
+		self.connect('button-press-event', self.on_button_down)
+		self.connect('button-release-event', self.on_button_up)
+		self.connect('motion-notify-event', self.on_motion)
 		self.connect('scroll-event', self.on_mousewheel)
 		gobject.timeout_add(100, self.update_position)
 		self.hscroll.connect('change-value', self.on_hscroll_window)
@@ -651,6 +671,11 @@ class PatternView(gtk.DrawingArea):
 		menu.append(gtk.SeparatorMenuItem())
 		issolo = self.rootwindow.routeframe.view.solo_plugin == self.get_plugin()
 		menu.append(make_check_item(issolo, "Solo Plugin", "Toggle solo", self.on_popup_solo))
+		menu.append(gtk.SeparatorMenuItem())
+		menu.append(make_menu_item("Cut", "", self.on_popup_cut))
+		menu.append(make_menu_item("Copy", "", self.on_popup_copy))
+		menu.append(make_menu_item("Paste", "", self.on_popup_paste))
+		menu.append(make_menu_item("Delete", "", self.on_popup_delete))
 
 		menu.show_all()
 		menu.attach_to_widget(self, None)
@@ -875,7 +900,7 @@ class PatternView(gtk.DrawingArea):
 	def pattern_changed(self):
 		"""
 		Loads and redraws the pattern view after the pattern has been changed.
-		"""		
+		"""
 		self.init_values()
 		self.redraw()
 		self.grab_focus()
@@ -1150,6 +1175,10 @@ class PatternView(gtk.DrawingArea):
 			return
 		self.copy()
 		for r,g,t,i in self.selection_range():
+			if r<0:
+				continue
+			if r>self.row_count-1:
+				break
 			p = self.plugin.get_parameter(g,i)
 			self.pattern.set_value(r,g,t,i,p.get_value_none())
 		self.pattern_changed()
@@ -1165,6 +1194,19 @@ class PatternView(gtk.DrawingArea):
 		for r,g,t,i in self.selection_range():
 			data += "%04x%01x%02x%02x%04x" % (r - self.selection.begin,g,t,i,self.pattern.get_value(r,g,t,i))
 		set_clipboard_text(data)
+		
+	def delete(self):
+		"""
+		Deletes the current selection
+		"""
+		for r,g,t,i in self.selection_range():
+			if r<0:
+				continue
+			if r>self.row_count-1:
+				break
+			p = self.plugin.get_parameter(g,i)
+			self.pattern.set_value(r,g,t,i,p.get_value_none())
+		self.pattern_changed()
 			
 	def unpack_clipboard_data(self, d):
 		"""
@@ -1232,6 +1274,8 @@ class PatternView(gtk.DrawingArea):
 						v = v & 0xFF # mask out first 8 bytes
 						v = min(max(v, p.get_value_min()),p.get_value_max()) # make sure it is properly clamped
 				self.pattern.set_value(r,g,t,i,v) # finally set it
+			self.set_row(r+1)
+			self.update_statusbar()	
 			self.pattern_changed()
 		except:
 			import traceback
@@ -1247,10 +1291,12 @@ class PatternView(gtk.DrawingArea):
 		elif event.direction == gtk.gdk.SCROLL_DOWN:
 			self.move_down()
 	
-	def on_left_down(self, widget, event):		
+	def on_button_down(self, widget, event):		
 		"""
-		Callback that responds to left click in pattern view.
+		Callback that responds to mouse click in pattern view.
 		"""
+		if not self.selection:
+			self.selection = self.Selection()
 		self.grab_focus()
 		if event.button == 3:
 			self.on_context_menu(event)
@@ -1267,9 +1313,50 @@ class PatternView(gtk.DrawingArea):
 			self.set_subindex(subindex)
 			self.draw_xor()
 			self.update_statusbar()
-			#~ self.refresh_view()
-			
+			self.dragging = True
+			self.selection.begin = row
+			self.selection.end = row
+			self.clickpos = self.pos_to_pattern((x,y))
+			self.adjust_selection()
+			self.redraw()
 	
+	def on_motion(self, widget, event):
+		"""
+		Callback that responds to mouse motion in sequence view.
+		
+		@param event: Mouse event
+		@type event: wx.MouseEvent
+		"""
+		x,y,state = self.window.get_pointer()
+		x, y = int(x),int(y)
+		row, group, track, index, subindex = self.pos_to_pattern((x,y))
+		if self.dragging:
+			row, group, track, index, subindex = self.pos_to_pattern((x,y))
+			if group != self.clickpos[1]:
+				self.selection.mode=SEL_ALL
+			elif track != self.clickpos[2]:
+				self.selection.mode=SEL_GROUP
+			elif index != self.clickpos[3]:
+				self.selection.mode=SEL_TRACK
+			else:
+				self.selection.mode=SEL_COLUMN
+			if row<self.clickpos[0]:
+				self.selection.end=self.clickpos[0]+1
+				self.selection.begin=row
+			else:
+				self.selection.begin=self.clickpos[0]
+				self.selection.end = row+1
+			self.adjust_selection()
+			self.redraw()
+				
+	def on_button_up(self, widget, event):
+		"""
+		Callback that responds to mouse button release event in pattern view.
+		"""
+		
+		if event.button == 1:
+			self.dragging = False
+
 	def on_popup_remove_pattern(self, event=None):
 		"""
 		Callback that removes the current pattern.
@@ -1356,7 +1443,31 @@ class PatternView(gtk.DrawingArea):
 		if question(self, "<b><big>Really delete last track?</big></b>\n\nThis action can not be undone.", False) == gtk.RESPONSE_YES:
 			m = self.get_plugin()
 			m.set_track_count(m.get_track_count()-1)
-			self.pattern_changed()	
+			self.pattern_changed()
+	
+	def on_popup_cut(self, event=None):
+		"""
+		Callback that cuts selection
+		"""
+		self.cut()
+	
+	def on_popup_copy(self, event=None):
+		"""
+		Callback that copies selection
+		"""
+		self.copy()
+		
+	def on_popup_paste(self, event=None):
+		"""
+		Callback that pastes selection
+		"""
+		self.paste()
+	
+	def on_popup_delete(self, event=None):
+		"""
+		Callback that deletes selection
+		"""
+		self.delete()
 	
 	def on_key_down(self, widget, event):
 		"""
@@ -1401,6 +1512,44 @@ class PatternView(gtk.DrawingArea):
 				self.transpose_selection(1)
 			elif k == 'KP_Subtract':
 				self.transpose_selection(-1)
+			elif k == 'Down':
+				if not self.selection:
+					self.selection = self.Selection()
+				if self.shiftselect==None:
+					self.shiftselect=self.row
+				self.move_down()
+				if self.row<self.shiftselect:
+					self.selection.end=self.shiftselect+1
+					self.selection.begin=self.row
+				else:
+					self.selection.begin=self.shiftselect
+					self.selection.end = self.row+1
+				self.adjust_selection()
+				self.redraw()
+			elif k == 'Up':
+				if not self.selection:
+					self.selection = self.Selection()
+				if self.shiftselect==None:
+					self.shiftselect=self.row
+				self.move_up()
+				if self.row<self.shiftselect:
+					self.selection.end=self.shiftselect+1
+					self.selection.begin=self.row
+				else:
+					self.selection.begin=self.shiftselect
+					self.selection.end = self.row+1
+				self.adjust_selection()
+				self.redraw()
+			elif k == 'Right' or k == 'Left':
+				if not self.selection:
+					self.selection = self.Selection()
+				if self.shiftselect==None:
+					self.shiftselect=self.row
+					self.selection.begin=self.shiftselect
+					self.selection.end = self.row+1
+				self.selection.mode = (self.selection.mode + 1) % 4
+				self.adjust_selection()
+				self.redraw()
 			else:
 				return False
 		elif (mask & gtk.gdk.CONTROL_MASK):
@@ -1415,10 +1564,14 @@ class PatternView(gtk.DrawingArea):
 			elif k == 'b':
 				if not self.selection:
 					self.selection = self.Selection()
-				else:
-					if self.selection.begin == self.row:
+				if self.keystartselect:
+					self.selection.begin=self.keystartselect
+				if self.keyendselect:
+					self.selection.end=self.keyendselect
+				if self.selection.begin == self.row:
 						self.selection.mode = (self.selection.mode + 1) % 4
 				self.selection.begin = self.row
+				self.keystartselect = self.row
 				self.selection.end = max(self.row+1,self.selection.end)				
 				self.adjust_selection()
 				self.update_plugin_info()				
@@ -1426,10 +1579,14 @@ class PatternView(gtk.DrawingArea):
 			elif k == 'e':
 				if not self.selection:
 					self.selection = self.Selection()
-				else:
-					if self.selection.end == self.row+1:
-						self.selection.mode = (self.selection.mode + 1) % 4
+				if self.keystartselect:
+					self.selection.begin=self.keystartselect
+				if self.keyendselect:
+					self.selection.end=self.keyendselect
+				if self.selection.end == self.row+1:
+					self.selection.mode = (self.selection.mode + 1) % 4
 				self.selection.end = self.row+1
+				self.keyendselect=self.row+1
 				self.selection.begin = max(min(self.selection.end-1,self.selection.begin),0)
 				self.adjust_selection()
 				self.redraw()
@@ -1491,7 +1648,13 @@ class PatternView(gtk.DrawingArea):
 			self.pattern.insert_row(self.group, self.track, -1, self.row)
 			self.pattern_changed()
 		elif k == 'Delete':
-			self.pattern.delete_row(self.group, self.track, -1, self.row)
+			if self.selection!=None:
+				if self.row>=self.selection.begin and self.row<self.selection.end:
+					self.delete()
+				else:
+					self.pattern.delete_row(self.group, self.track, -1, self.row)
+			else:
+				self.pattern.delete_row(self.group, self.track, -1, self.row)
 			self.pattern_changed()
 		elif k == 'Return':
 			mainwindow = self.rootwindow
@@ -1506,6 +1669,11 @@ class PatternView(gtk.DrawingArea):
 		elif k == 'KP_Divide':
 			self.set_octave(self.octave-1)
 			self.toolbar.update_octaves()
+		elif k == 'Escape':
+			self.selection = None
+			self.shiftselect = None
+			self.update_plugin_info()
+			self.redraw()
 		elif self.plugin and (kv < 256):
 			p = self.plugin.get_parameter(self.group,self.index)
 			param_type = p.get_type()
@@ -1598,6 +1766,15 @@ class PatternView(gtk.DrawingArea):
 		else:
 			return False
 		return True
+	
+	def on_key_up(self, widget, event):
+		"""
+		Callback that responds to key release
+		"""
+		kv = event.keyval
+		k = gtk.gdk.keyval_name(kv)
+		if (k == 'Shift_L' or k=='Shift_R'):
+			self.shiftselect = None
 	
 	def on_char(self, event):
 		"""

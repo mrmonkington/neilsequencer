@@ -204,7 +204,7 @@ class ParameterView(gtk.VBox):
 		player.lock_tick()			
 		try:	
 			v = pattern.get_value(row, group, track, index)				
-			m.set_parameter_value(group, track, index, v, 0)			
+			m.set_parameter_value(group, track, index, v, player.get_automation())			
 			m.tick()
 		except:
 			import traceback
@@ -228,9 +228,11 @@ class ParameterView(gtk.VBox):
 			self.octave = min(max(self.octave-1,0), 9)
 		elif kv < 256:
 			note = key_to_note(kv)			
-		if note:
-			self.play_note(note, octave=self.octave)
-			
+		if note:	
+			self.play_note(note, self.octave)
+			if player.get_automation():
+				self.rootwindow.patternframe.update_values()
+		
 	def get_best_size(self):
 		rc = self.get_allocation()
 		cdx,cdy,cdw,cdh = rc.x, rc.y, rc.width, rc.height
@@ -239,7 +241,7 @@ class ParameterView(gtk.VBox):
 		rc = self.scrollwindow.get_allocation()
 		swx,swy = rc.width, rc.height
 		ofsy = cdh - swy # size without scrollwindow
-		return  max(swx,400), min((svy+20+ofsy),(3*gtk.gdk.screen_height())/4)
+		return max(swx,400), min((svy+20+ofsy),(3*gtk.gdk.screen_height())/4)
 		
 	def get_title(self):
 		return self._title
@@ -359,7 +361,8 @@ class ParameterView(gtk.VBox):
 					v = self.plugin.get_parameter_value(g,t,i)
 					s.set_value(v)
 					self.update_valuelabel(g,t,i)
-		elif data.type ==  zzub.zzub_event_type_midi_control:
+					
+		elif data.type == zzub.zzub_event_type_midi_control:
 			ctrl = getattr(data,'').midi_message
 			cmd = ctrl.status >> 4
 			if cmd == 0x8:
@@ -373,9 +376,9 @@ class ParameterView(gtk.VBox):
 				if velocity==0:
 					note = zzub.zzub_note_value_off
 					self.play_note(note)
-					return
+					return					
 				self.play_note((octave,note), 0)
-
+					
 	def update_presets(self):
 		"""
 		Updates the preset box.
@@ -635,6 +638,8 @@ class ParameterView(gtk.VBox):
 		s.set_value(value) # quantize slider position
 		self.plugin.set_parameter_value(g,t,i,value,1)
 		self.update_valuelabel(g,t,i)
+		if player.get_automation():
+				self.rootwindow.patternframe.update_values()
 		return True
 
 class DataEntry(gtk.Dialog):
