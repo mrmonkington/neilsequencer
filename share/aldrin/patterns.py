@@ -460,7 +460,10 @@ def key_to_note(k):
 	"""
 	keymap = config.get_config().get_keymap()
 	rows = keymap.split('|')
-	k = chr(k).upper()
+	if k<128:
+		k = chr(k).lower().upper()
+	else:
+		k = chr(k)
 	for row,index in zip(rows,range(len(rows))):
 		if k in row:
 			note = row.index(k)
@@ -1507,51 +1510,48 @@ class PatternView(gtk.DrawingArea):
 					self.set_subindex(0)
 					self.show_cursor_right()
 					self.refresh_view()
-		elif (mask & gtk.gdk.SHIFT_MASK):			
-			if k == 'KP_Add':
-				self.transpose_selection(1)
-			elif k == 'KP_Subtract':
-				self.transpose_selection(-1)
-			elif k == 'Down':
-				if not self.selection:
-					self.selection = self.Selection()
-				if self.shiftselect==None:
-					self.shiftselect=self.row
-				self.move_down()
-				if self.row<self.shiftselect:
-					self.selection.end=self.shiftselect+1
-					self.selection.begin=self.row
-				else:
-					self.selection.begin=self.shiftselect
-					self.selection.end = self.row+1
-				self.adjust_selection()
-				self.redraw()
-			elif k == 'Up':
-				if not self.selection:
-					self.selection = self.Selection()
-				if self.shiftselect==None:
-					self.shiftselect=self.row
-				self.move_up()
-				if self.row<self.shiftselect:
-					self.selection.end=self.shiftselect+1
-					self.selection.begin=self.row
-				else:
-					self.selection.begin=self.shiftselect
-					self.selection.end = self.row+1
-				self.adjust_selection()
-				self.redraw()
-			elif k == 'Right' or k == 'Left':
-				if not self.selection:
-					self.selection = self.Selection()
-				if self.shiftselect==None:
-					self.shiftselect=self.row
-					self.selection.begin=self.shiftselect
-					self.selection.end = self.row+1
-				self.selection.mode = (self.selection.mode + 1) % 4
-				self.adjust_selection()
-				self.redraw()
+		elif mask & gtk.gdk.SHIFT_MASK and k == 'KP_Add':
+			self.transpose_selection(1)
+		elif mask & gtk.gdk.SHIFT_MASK and k == 'KP_Subtract':
+			self.transpose_selection(-1)
+		elif mask & gtk.gdk.SHIFT_MASK and k == 'Down':
+			if not self.selection:
+				self.selection = self.Selection()
+			if self.shiftselect==None:
+				self.shiftselect=self.row
+			self.move_down()
+			if self.row<self.shiftselect:
+				self.selection.end=self.shiftselect+1
+				self.selection.begin=self.row
 			else:
-				return False
+				self.selection.begin=self.shiftselect
+				self.selection.end = self.row+1
+			self.adjust_selection()
+			self.redraw()
+		elif mask & gtk.gdk.SHIFT_MASK and k == 'Up':
+			if not self.selection:
+				self.selection = self.Selection()
+			if self.shiftselect==None:
+				self.shiftselect=self.row
+			self.move_up()
+			if self.row<self.shiftselect:
+				self.selection.end=self.shiftselect+1
+				self.selection.begin=self.row
+			else:
+				self.selection.begin=self.shiftselect
+				self.selection.end = self.row+1
+			self.adjust_selection()
+			self.redraw()
+		elif mask & gtk.gdk.SHIFT_MASK and (k == 'Right' or k == 'Left'):
+			if not self.selection:
+				self.selection = self.Selection()
+			if self.shiftselect==None:
+				self.shiftselect=self.row
+				self.selection.begin=self.shiftselect
+				self.selection.end = self.row+1
+			self.selection.mode = (self.selection.mode + 1) % 4
+			self.adjust_selection()
+			self.redraw()
 		elif (mask & gtk.gdk.CONTROL_MASK):
 			if k == 'Return':
 				self.on_popup_create_pattern()				

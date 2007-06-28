@@ -385,7 +385,8 @@ class KeyboardPanel(gtk.VBox):
 	KEYMAPS = [
 		('en', 'English (QWERTY)'),
 		('de', 'Deutsch (QWERTZ)'),
-		('dv', 'Dvorak (\',.PYF)')
+		('dv', 'Dvorak (\',.PYF)'),
+		('fr', 'French (AZERTY)')
 	]
 	
 	def __init__(self):

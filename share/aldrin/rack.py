@@ -73,6 +73,7 @@ class ParameterView(gtk.VBox):
 		elif oc == 1:
 			title += " (Mono Output)"
 		self._title = title
+		self.lastmidinote=None
 		self.presetbox = gtk.combo_box_entry_new_text()
 		self.presetbox.set_size_request(100,-1)
 		self.presetbox.set_wrap_width(4)
@@ -203,7 +204,7 @@ class ParameterView(gtk.VBox):
 		pattern.set_value(row, group, track, index, data)
 		player.lock_tick()			
 		try:	
-			v = pattern.get_value(row, group, track, index)				
+			v = pattern.get_value(row, group, track, index)
 			m.set_parameter_value(group, track, index, v, player.get_automation())			
 			m.tick()
 		except:
@@ -227,7 +228,7 @@ class ParameterView(gtk.VBox):
 		elif k ==  'KP_Divide':
 			self.octave = min(max(self.octave-1,0), 9)
 		elif kv < 256:
-			note = key_to_note(kv)			
+			note = key_to_note(kv)
 		if note:	
 			self.play_note(note, self.octave)
 			if player.get_automation():
@@ -365,7 +366,7 @@ class ParameterView(gtk.VBox):
 		elif data.type == zzub.zzub_event_type_midi_control:
 			ctrl = getattr(data,'').midi_message
 			cmd = ctrl.status >> 4
-			if cmd == 0x8:
+			if cmd == 0x8 and midinote == self.lastmidinote:
 				note = zzub.zzub_note_value_off
 				self.play_note(note)
 			if cmd == 0x9:
@@ -374,9 +375,11 @@ class ParameterView(gtk.VBox):
 				octave=midinote/12
 				note=midinote%12
 				if velocity==0:
-					note = zzub.zzub_note_value_off
-					self.play_note(note)
-					return					
+					if midinote==self.lastmidinote:
+						note = zzub.zzub_note_value_off
+						self.play_note(note)
+					return
+				self.lastmidinote=midinote
 				self.play_note((octave,note), 0)
 					
 	def update_presets(self):
