@@ -848,7 +848,9 @@ class RouteView(gtk.DrawingArea):
 			pattern = mp.create_pattern(16)
 			pattern.set_name('00')
 			seq = player.get_current_sequencer()
-			seq.create_track(mp)
+			t=seq.create_track(mp)
+			t.set_event(0,16)
+			player.get_plugin_list()[0].add_input(mp, 16384, 16384)
 		mp.set_position(*self.pixel_to_float(self.contextmenupos))
 		# if we have a context plugin, prepend connections
 		if 'plugin' in kargs:
