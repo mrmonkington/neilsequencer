@@ -413,8 +413,45 @@ class PatternPanel(gtk.VBox):
 			self.update_all()
 		elif data.type == zzub.zzub_event_type_new_plugin:
 			self.update_all()
-		elif data.type == zzub.zzub_event_type_midi_control and player.get_automation():
-			self.update_values()
+		elif data.type == zzub.zzub_event_type_midi_control :
+			ctrl = getattr(data,'').midi_message
+			cmd = ctrl.status >> 4
+			if cmd == 0x9:
+				midinote=ctrl.data1
+				velocity=ctrl.data2
+				octave=midinote/12
+				note=midinote%12
+				if velocity>0:
+					data = (octave)<<4 | (note+1)
+					wi = None
+					wp = None
+					wdata = None
+					for i in range(self.view.parameter_count[self.view.group]):
+						pwp = self.view.plugin.get_parameter(self.view.group,i)
+						if pwp.get_flags() & zzub.zzub_parameter_flag_wavetable_index:
+							wp = pwp
+							wi = i
+							break
+					if wp != None:
+							wdata = self.toolbar.wave+1
+					if wdata!=None:
+						self.view.pattern.set_value(self.view.row, self.view.group, self.view.track, wi, wdata)
+					self.view.pattern.set_value(self.view.row, self.view.group, self.view.track, self.view.index, data)
+					self.view.play_note(1)
+				else:
+						m = self.view.get_plugin()
+						try:
+							for index in range(self.view.parameter_count[self.view.group]):
+								v = self.view.pattern.get_value(self.view.row, self.view.group, self.view.track, index)
+								p = self.view.plugin.get_parameter(self.view.group, index)
+								if index==self.view.index:
+									v=zzub.zzub_note_value_off
+								m.set_parameter_value(self.view.group, self.view.track, index, v, 0)
+						except:
+							import traceback
+							traceback.print_exc()
+			if player.get_automation():
+				self.update_values()
 
 		# XXX: TODO, for updating during recording automation. make it fast
 		#~ elif data.type == zzub.zzub_event_type_parameter_changed and player.get_automation():
@@ -1746,26 +1783,32 @@ class PatternView(gtk.DrawingArea):
 			else:
 				return False
 			self.pattern.set_value(self.row, self.group, self.track, self.index, data)
-			if playtrack and self.toolbar.playnotes.get_active():
-				m = self.get_plugin()
-				player.lock_tick()
-				try:
-					for index in range(self.parameter_count[self.group]):
-						v = self.pattern.get_value(self.row, self.group, self.track, index)
-						p = self.plugin.get_parameter(self.group, index)
-						if v != p.get_value_none():
-							m.set_parameter_value(self.group, self.track, index, v, 0)
-					m.tick()
-				except:
-					import traceback
-					traceback.print_exc()
-				player.unlock_tick()
-			self.update_line(self.row)
-			self.redraw(self.row,self.row+1,False)
-			self.move_down(self.row_step)
+			self.play_note(playtrack)
 		else:
 			return False
 		return True
+		
+	def play_note(self, playtrack):
+		"""
+		Plays entered note
+		"""
+		if playtrack and self.toolbar.playnotes.get_active():
+			m = self.get_plugin()
+			player.lock_tick()
+			try:
+				for index in range(self.parameter_count[self.group]):
+					v = self.pattern.get_value(self.row, self.group, self.track, index)
+					p = self.plugin.get_parameter(self.group, index)
+					if v != p.get_value_none():
+						m.set_parameter_value(self.group, self.track, index, v, 0)
+				m.tick()
+			except:
+				import traceback
+				traceback.print_exc()
+			player.unlock_tick()
+		self.update_line(self.row)
+		self.redraw(self.row,self.row+1,False)
+		self.move_down(self.row_step)
 	
 	def on_key_up(self, widget, event):
 		"""
