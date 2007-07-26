@@ -143,16 +143,30 @@ class SequencerPanel(gtk.VBox):
 		self.seqpatternlist.set_search_column(0)
 		tvkey.set_sort_column_id(0)
 		tvpname.set_sort_column_id(1)
-		self.seqview = SequencerView(rootwindow, self)
+				
+		vscroll = gtk.VScrollbar()
+		hscroll = gtk.HScrollbar()
+		
+		self.seqview = SequencerView(rootwindow, self, hscroll, vscroll)
+		scrollwin = gtk.Table(2,2)
+		scrollwin.attach(self.seqview, 0, 1, 0, 1, gtk.FILL|gtk.EXPAND, gtk.FILL|gtk.EXPAND)
+		scrollwin.attach(vscroll, 1, 2, 0, 1, 0, gtk.FILL)
+		scrollwin.attach(hscroll, 0, 1, 1, 2, gtk.FILL, 0)
+		
+		
+		
 		self.splitter.pack1(add_scrollbars(self.seqpatternlist), False, False)
-		self.splitter.pack2(self.seqview, True, True)
+		self.splitter.pack2(scrollwin, True, True)
 		self.view = self.seqview
 		self.toolbar = SequencerToolBar()
+
 		self.statusbar = gtk.HBox(False, MARGIN)
 		self.statusbar.set_border_width(MARGIN0)
+
 		self.pack_start(self.toolbar, expand=False)
 		self.pack_start(self.splitter)
 		self.pack_end(self.statusbar, expand=False)
+		
 		self.__set_properties()
 		self.__do_layout()
 		# end wxGlade
@@ -195,6 +209,9 @@ class SequencerPanel(gtk.VBox):
 			return
 		config.get_config().save_window_pos("SequencerSplitter", self.splitter)
 		
+	def adjust_seqscrollbars(self):
+		self.seqview.adjust_scrollbars()
+		
 	def __set_properties(self):
 		"""
 		Sets properties during initialization.
@@ -230,11 +247,14 @@ class SequencerView(gtk.DrawingArea):
 	"""	
 	CLIPBOARD_SEQUENCER = "SEQUENCERDATA"
 	
-	def __init__(self, rootwindow, panel):
+	def __init__(self, rootwindow, panel, hscroll, vscroll):
 		"""
 		Initialization.
 		"""
 		self.panel = panel
+		self.hscroll = hscroll
+		self.vscroll = vscroll
+
 		self.rootwindow = rootwindow
 		self.plugin_info = common.get_plugin_infos()
 		self.playpos = player.get_position()
@@ -243,6 +263,7 @@ class SequencerView(gtk.DrawingArea):
 		self.startseqtime = 0
 		self.starttrack = 0
 		self.step = config.get_config().get_default_int('SequencerStep', SEQSTEP)
+		self.wmax=0
 		player.set_loop_end(self.step)
 		self.selection_start = None
 		self.selection_end = None
@@ -256,6 +277,8 @@ class SequencerView(gtk.DrawingArea):
 		self.connect('motion-notify-event', self.on_motion)
 		self.connect('button-release-event', self.on_left_up)
 		self.connect('scroll-event', self.on_mousewheel)
+		self.hscroll.connect('change-value', self.on_hscroll_window)
+		self.vscroll.connect('change-value', self.on_vscroll_window)
 		gobject.timeout_add(100, self.update_position)
 		
 	def track_row_to_pos(self, (track,row)):
@@ -476,6 +499,7 @@ class SequencerView(gtk.DrawingArea):
 		# moves cursor if beyond existing tracks
 		if self.track > track_count-1:			
 			self.set_cursor_pos(track_count-1, self.row)
+		self.adjust_scrollbars()
 		self.redraw()
 		
 	def on_popup_add_track(self, widget, plugin):
@@ -487,6 +511,7 @@ class SequencerView(gtk.DrawingArea):
 		"""
 		seq = player.get_current_sequencer()
 		seq.create_track(plugin)
+		self.adjust_scrollbars()
 		self.redraw()
 		
 	def on_popup_record_to_wave(self, widget, index):
@@ -591,6 +616,7 @@ class SequencerView(gtk.DrawingArea):
 				self.show_plugin_dialog()
 			elif k == 'Delete':
 				self.on_popup_delete_track(event)
+				self.adjust_scrollbars()
 			elif k == 'b':				
 				player.set_loop_start(self.row)
 				if player.get_loop_end() <= self.row:
@@ -647,12 +673,19 @@ class SequencerView(gtk.DrawingArea):
 				return False
 		elif k == 'Left' or k == 'KP_Left':
 			self.set_cursor_pos(self.track, self.row - self.step)
+			self.adjust_scrollbars()
 		elif k == 'Right' or k == 'KP_Right':
 			self.set_cursor_pos(self.track, self.row + self.step)
+			w=self.get_allocation().width
+			if self.row>(self.wmax+int((w-SEQLEFTMARGIN)/float(SEQROWSIZE)-2)*self.step):
+				self.set_cursor_pos(self.track, self.wmax+int((w-SEQLEFTMARGIN)/float(SEQROWSIZE)-2)*self.step)
+			self.adjust_scrollbars()
 		elif k == 'Up' or k == 'KP_Up':
 			self.set_cursor_pos(self.track-1, self.row)
+			self.adjust_scrollbars()
 		elif k == 'Down' or k == 'KP_Down':
 			self.set_cursor_pos(self.track+1, self.row)
+			self.adjust_scrollbars()
 		elif (kv < 256) and (chr(kv).lower() in SEQKEYMAP):
 			idx = SEQKEYMAP[chr(kv).lower()]
 			t = self.get_track()
@@ -666,6 +699,7 @@ class SequencerView(gtk.DrawingArea):
 						newrow = self.row + self.step
 					self.insert_at_cursor(idx)
 					self.set_cursor_pos(self.track, newrow)
+					self.adjust_scrollbars()
 		elif k == 'space': # space
 			spl = self.panel.seqpatternlist
 			store, row = spl.get_selection().get_selected_rows()
@@ -677,8 +711,10 @@ class SequencerView(gtk.DrawingArea):
 			self.set_cursor_pos(self.track, self.row + self.step)
 		elif k == 'Delete':
 			self.delete_at_cursor()
+			self.adjust_scrollbars()
 		elif k == 'Insert':
 			self.insert_at_cursor()
+			self.adjust_scrollbars()
 		elif k == 'period': # dot
 			m,pat,bp = self.get_pattern_at(self.track, self.row, includespecial=True)
 			if pat != None:
@@ -854,6 +890,7 @@ class SequencerView(gtk.DrawingArea):
 		return rect.width, rect.height
 			
 	def expose(self, widget, event):
+		#self.adjust_scrollbars()
 		self.context = widget.window.cairo_create()
 		self.draw(self.context)
 		self.panel.update_list()
@@ -886,6 +923,87 @@ class SequencerView(gtk.DrawingArea):
 			self.playpos = playpos
 			self.draw_xor()
 		return True
+	
+	def on_vscroll_window(self, widget, scroll, value):
+		"""
+		Handles vertical window scrolling.
+		"""
+		endtrack = self.get_endtrack()
+		adj = widget.get_adjustment()
+		minv = adj.get_property('lower')
+		maxv = adj.get_property('upper')
+		pagesize = adj.get_property('page-size')
+		value = int(max(min(value, maxv - pagesize), minv) + 0.5)
+		widget.set_value(value)
+		self.redraw()
+		if self.starttrack != value:
+			self.starttrack = value
+			if self.track < self.starttrack:
+				while self.track < self.starttrack:
+					self.track += 1
+			self.redraw()
+		return True
+
+	def on_hscroll_window(self, widget, scroll, value):
+		"""
+		Handles horizontal window scrolling.
+		"""
+		adj = widget.get_adjustment()
+		minv = adj.get_property('lower')
+		maxv = adj.get_property('upper')
+		pagesize = adj.get_property('page-size')
+		value = int(max(min(value, maxv - pagesize), minv) + 0.5)
+		widget.set_value(value)
+		if self.startseqtime!=value*self.step:
+			self.startseqtime=value*self.step
+			if self.startseqtime>self.row:
+				while self.row < self.startseqtime:
+					self.row += self.step
+			self.redraw()
+		return True
+			
+	def adjust_scrollbars(self):
+		w,h = self.get_client_size()
+		vw,vh = self.get_virtual_size()
+		pw,ph= int((w-SEQLEFTMARGIN)/float(SEQROWSIZE)+0.5), int((h-SEQTOPMARGIN)/float(SEQTRACKSIZE)+0.5)
+		hrange = vw - pw
+		vrange = vh - ph
+		if hrange <= 0:
+			self.hscroll.hide()
+		else:
+			self.hscroll.show()
+		if vrange <= 0:
+			self.vscroll.hide()
+		else:
+			self.vscroll.show()
+		adj = self.hscroll.get_adjustment()
+		adj.set_all(self.startseqtime/self.step, 0, int(vw+(w-SEQLEFTMARGIN)/float(SEQROWSIZE)-2), 1, 1, pw)
+		adj = self.vscroll.get_adjustment()
+		adj.set_all(self.starttrack, 0, vh, 1, 1, ph)
+		self.redraw()
+	
+	def get_virtual_size(self):
+		"""
+		Returns the size in characters of the virtual view area.
+		"""
+		seq = player.get_current_sequencer()
+		h = seq.get_track_count()
+		#Note: this way of discovering the last event in the sequence is relatively expensive.
+		#It would be better to call this once on song change, and update the value if an event is added with 
+		#a higher index.
+		self.wmax=0
+		w=1
+		for i in range(h):
+			track=seq.get_track(i)
+			if track.get_event_count():
+				w=track.get_event(track.get_event_count()-1)[0]
+			if w<self.wmax:
+				w=self.wmax
+			else:
+				self.wmax=w
+		w=self.wmax/self.step+3
+		return w,h
+
 
 	def draw_xor(self):
 		"""

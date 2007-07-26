@@ -644,6 +644,7 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		cfg.load_window_pos("MasterToolbar", self.mastertoolbar)
 		cfg.load_window_pos("Transport", self.transport)
 		cfg.load_window_pos("StatusBar", self.aldrinframe_statusbar)
+		
 		self.update_view()
 		
 	def save_view(self):
@@ -1003,6 +1004,7 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		self.transport.update_all()
 		self.btnloop.set_active(player.get_loop_enabled())
 		self.btnrecord.set_active(player.get_automation())
+		self.seqframe.adjust_seqscrollbars()
 		
 	def update_title(self):
 		"""
