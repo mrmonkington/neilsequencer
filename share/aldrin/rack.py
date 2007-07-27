@@ -198,7 +198,7 @@ class ParameterView(gtk.VBox):
 	def play_note(self, note, octave, oldnote):
 		m = self.plugin
 		plugin = m.get_pluginloader()
-		pattern = self.plugin.create_pattern(1)
+		#pattern = self.plugin.create_pattern(1)
 		row = 0
 		group = 2
 		track = 0
@@ -224,17 +224,17 @@ class ParameterView(gtk.VBox):
 			data =  zzub.zzub_note_value_off
 			track=self.chordnotes[notefound].track
 			self.chordnotes.pop(notefound)
-		pattern.set_value(row, group, track, index, data)
+		#pattern.set_value(row, group, track, index, data)
 		player.lock_tick()			
 		try:	
-			v = pattern.get_value(row, group, track, index)
-			m.set_parameter_value(group, track, index, v, player.get_automation())			
+			#v = pattern.get_value(row, group, track, index)
+			m.set_parameter_value(group, track, index, data, player.get_automation())			
 			m.tick()
 		except:
 			import traceback
 			traceback.print_exc()
 		player.unlock_tick()		
-		self.plugin.remove_pattern(pattern)
+		#self.plugin.remove_pattern(pattern)
 	
 	def on_left_down(self, widget, event, data=None):
 		self.grab_focus()
@@ -256,8 +256,8 @@ class ParameterView(gtk.VBox):
 			note=o,n
 		if note:	
 			self.play_note(note, self.octave, -2)
-			if player.get_automation():
-				self.rootwindow.patternframe.update_values()
+			#if player.get_automation():
+			#	self.rootwindow.patternframe.update_values()
 	
 	def get_best_size(self):
 		rc = self.get_allocation()
@@ -664,8 +664,8 @@ class ParameterView(gtk.VBox):
 		s.set_value(value) # quantize slider position
 		self.plugin.set_parameter_value(g,t,i,value,1)
 		self.update_valuelabel(g,t,i)
-		if player.get_automation():
-				self.rootwindow.patternframe.update_values()
+		#if player.get_automation():
+		#		self.rootwindow.patternframe.update_values()
 		return True
 
 class DataEntry(gtk.Dialog):
