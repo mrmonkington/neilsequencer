@@ -44,6 +44,16 @@ import common
 player = common.get_player()
 from common import MARGIN, MARGIN2, MARGIN3, MARGIN0
 
+class ChordPlaying:
+	"""
+	Stores info about currently playing keyjazz notes
+	"""
+	def __init__(self, group=0, track=0, timestamp=0, note=0):
+		self.group=group
+		self.track=track
+		self.timestamp=timestamp
+		self.note=note
+
 class ParameterView(gtk.VBox):
 	"""
 	Displays parameter sliders for a plugin in a new Dialog.
@@ -73,7 +83,7 @@ class ParameterView(gtk.VBox):
 		elif oc == 1:
 			title += " (Mono Output)"
 		self._title = title
-		self.lastmidinote=None
+
 		self.presetbox = gtk.combo_box_entry_new_text()
 		self.presetbox.set_size_request(100,-1)
 		self.presetbox.set_wrap_width(4)
@@ -173,6 +183,8 @@ class ParameterView(gtk.VBox):
 		self.connect('key-press-event', self.on_key_jazz)
 		self.connect('button-press-event', self.on_left_down)
 		
+		self.chordnotes=[]
+		
 		scrollwindow.add_with_viewport(rowgroup)
 		self.scrollwindow = scrollwindow
 		self.rowgroup = rowgroup
@@ -181,9 +193,9 @@ class ParameterView(gtk.VBox):
 		self.add(toplevelgroup)		
 		self.rootwindow.event_handlers.append(self.on_callback)
 		self.update_preset_buttons()
-		self.octave = 3
+		self.octave=3
 		
-	def play_note(self, note, octave=3):
+	def play_note(self, note, octave, oldnote):
 		m = self.plugin
 		plugin = m.get_pluginloader()
 		pattern = self.plugin.create_pattern(1)
@@ -191,16 +203,27 @@ class ParameterView(gtk.VBox):
 		group = 2
 		track = 0
 		index = 0
+		notefound=-1
+		i=0
 		parameter_list = [parameter.get_name() for parameter in plugin.get_parameter_list(group)]		
 		try:
 			index = parameter_list.index("Note")
 		except:
 			return
+		for chordnote in self.chordnotes:
+				if chordnote.note==note:
+					notefound=i
+				i+=1
 		if note !=  zzub.zzub_note_value_off:
+			if notefound==-1 and oldnote==-1: #only add midi notes to stored chord (not keypresses)
+				track=i
+				self.chordnotes.append(ChordPlaying(group,track,0,note ))
 			o, n = note
 			data = (min(octave+o,9)<<4) | (n+1)
 		else:
 			data =  zzub.zzub_note_value_off
+			track=self.chordnotes[notefound].track
+			self.chordnotes.pop(notefound)
 		pattern.set_value(row, group, track, index, data)
 		player.lock_tick()			
 		try:	
@@ -210,7 +233,6 @@ class ParameterView(gtk.VBox):
 		except:
 			import traceback
 			traceback.print_exc()
-		
 		player.unlock_tick()		
 		self.plugin.remove_pattern(pattern)
 	
@@ -222,18 +244,21 @@ class ParameterView(gtk.VBox):
 		k = gtk.gdk.keyval_name(kv)
 		note = None
 		if k == "1":
-			note = zzub.zzub_note_value_off
-		elif  k == 'KP_Multiply':			
+			note=zzub.zzub_note_value_off
+		if  k == 'KP_Multiply':			
 			self.octave = min(max(self.octave+1,0), 9)
 		elif k ==  'KP_Divide':
 			self.octave = min(max(self.octave-1,0), 9)
 		elif kv < 256:
 			note = key_to_note(kv)
+			o,n=note
+			o=min((o+self.octave),9)
+			note=o,n
 		if note:	
-			self.play_note(note, self.octave)
+			self.play_note(note, self.octave, -2)
 			if player.get_automation():
 				self.rootwindow.patternframe.update_values()
-		
+	
 	def get_best_size(self):
 		rc = self.get_allocation()
 		cdx,cdy,cdw,cdh = rc.x, rc.y, rc.width, rc.height
@@ -366,21 +391,19 @@ class ParameterView(gtk.VBox):
 		elif data.type == zzub.zzub_event_type_midi_control:
 			ctrl = getattr(data,'').midi_message
 			cmd = ctrl.status >> 4
-			if cmd == 0x8 and midinote == self.lastmidinote:
-				note = zzub.zzub_note_value_off
-				self.play_note(note)
-			if cmd == 0x9:
-				midinote=ctrl.data1
-				velocity=ctrl.data2
-				octave=midinote/12
-				note=midinote%12
-				if velocity==0:
-					if midinote==self.lastmidinote:
-						note = zzub.zzub_note_value_off
-						self.play_note(note)
-					return
-				self.lastmidinote=midinote
-				self.play_note((octave,note), 0)
+			midinote=ctrl.data1
+			velocity=ctrl.data2
+			o=midinote/12
+			n=midinote%12
+			note=(o,n)
+			if cmd == 0x8 or cmd == 0x9 and velocity==0:
+				self.play_note(zzub.zzub_note_value_off,0,note)
+				#if player.get_automation():
+				#	self.rootwindow.patternframe.update_values()
+			if cmd == 0x9 and velocity!=0:
+				self.play_note(note,0,-1)
+				#if player.get_automation():
+				#	self.rootwindow.patternframe.update_values()
 					
 	def update_presets(self):
 		"""
