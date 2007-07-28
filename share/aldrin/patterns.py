@@ -1316,7 +1316,8 @@ class PatternView(gtk.DrawingArea):
 						v = v & 0xFF # mask out first 8 bytes
 						v = min(max(v, p.get_value_min()),p.get_value_max()) # make sure it is properly clamped
 				self.pattern.set_value(r,g,t,i,v) # finally set it
-			self.set_row(r+1)
+			#Non Buzz-like behaviour (naughty naughty!) ;)  :
+			#self.set_row(r+1)
 			self.update_statusbar()	
 			self.pattern_changed()
 		except:
@@ -1687,13 +1688,13 @@ class PatternView(gtk.DrawingArea):
 			self.pattern.insert_row(self.group, self.track, -1, self.row)
 			self.pattern_changed()
 		elif k == 'Delete':
-			if self.selection!=None:
-				if self.row>=self.selection.begin and self.row<self.selection.end:
-					self.delete()
-				else:
-					self.pattern.delete_row(self.group, self.track, -1, self.row)
-			else:
-				self.pattern.delete_row(self.group, self.track, -1, self.row)
+			#if self.selection!=None:
+			#	if self.row>=self.selection.begin and self.row<self.selection.end:
+			#		self.delete()
+			#	else:
+			#		self.pattern.delete_row(self.group, self.track, -1, self.row)
+			#else:
+			self.pattern.delete_row(self.group, self.track, -1, self.row)
 			self.pattern_changed()
 		elif k == 'Return':
 			mainwindow = self.rootwindow
