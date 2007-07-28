@@ -222,8 +222,9 @@ class ParameterView(gtk.VBox):
 			data = (min(octave+o,9)<<4) | (n+1)
 		else:
 			data =  zzub.zzub_note_value_off
-			track=self.chordnotes[notefound].track
-			self.chordnotes.pop(notefound)
+			if notefound != -1:
+				track=self.chordnotes[notefound].track
+				self.chordnotes.pop(notefound)
 		#pattern.set_value(row, group, track, index, data)
 		player.lock_tick()			
 		try:	
@@ -245,7 +246,7 @@ class ParameterView(gtk.VBox):
 		note = None
 		if k == "1":
 			note=zzub.zzub_note_value_off
-		if  k == 'KP_Multiply':			
+		elif  k == 'KP_Multiply':			
 			self.octave = min(max(self.octave+1,0), 9)
 		elif k ==  'KP_Divide':
 			self.octave = min(max(self.octave-1,0), 9)
