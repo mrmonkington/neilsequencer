@@ -925,6 +925,9 @@ class AldrinFrame(gtk.Window, IRootWindow):
 			self.framepanel.set_current_page(index)
 		if hasattr(panel,'view'):
 			print "grab focus",panel.view
+			print index
+			if index==self.PAGE_PATTERN:
+				self.patternframe.update_values()
 			panel.view.grab_focus()
 		else:
 			print "not grab focus"
