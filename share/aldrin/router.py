@@ -43,6 +43,7 @@ import common
 player = common.get_player()
 from common import MARGIN, MARGIN2, MARGIN3
 from rack import ParameterView
+from presetbrowser import PresetView
 
 PLUGINWIDTH = 100
 PLUGINHEIGHT = 50
@@ -302,6 +303,24 @@ class ParameterDialog(gtk.Dialog):
 		Handles destroy events.
 		"""
 		del self.view.plugin_dialogs[self.plugin]
+		
+		
+class PresetDialog(gtk.Dialog):
+	"""
+	Displays parameter sliders for a plugin in a new Dialog.
+	"""
+	def __init__(self, rootwindow, plugin, parent):
+		gtk.Dialog.__init__(self, parent=parent.get_toplevel())
+		self.view = parent
+		self.plugin = plugin		
+		self.presetview = PresetView(rootwindow, plugin, rootwindow)
+		self.set_title(self.presetview.get_title())
+		self.vbox.add(self.presetview)		
+		self.connect('realize', self.on_realize)
+		
+	def on_realize(self, widget):
+		self.set_default_size(300,500)
+		
 	
 class PluginBrowserDialog(gtk.Dialog):
 	"""
@@ -589,7 +608,7 @@ class RouteView(gtk.DrawingArea):
 		@param rootwindow: Main window.
 		@type rootwindow: AldrinFrame
 		"""
-		self.plugin_dialogs = {}
+		self.plugin_dialogs = {}		
 		self.panel = parent
 		self.rootwindow = rootwindow
 		self.rootwindow.event_handlers.append(self.on_player_callback)
@@ -814,6 +833,17 @@ class RouteView(gtk.DrawingArea):
 		dlg.run()
 		dlg.destroy()
 		
+		
+	def on_popup_show_presets(self, widget, plugin):
+		"""
+		Event handler for the "Presets..." context menu option.
+		
+		@param event: Menu event.
+		@type event: wx.MenuEvent
+		"""		
+		dlg = PresetDialog(self.rootwindow, plugin, self)
+		dlg.show_all()
+		
 	def on_popup_show_params(self, widget, mp):
 		"""
 		Event handler for the "Parameters..." context menu option.
@@ -979,6 +1009,7 @@ class RouteView(gtk.DrawingArea):
 			menu.append(gtk.SeparatorMenuItem())
 			menu.append(make_menu_item("_Parameters...", "View parameters", self.on_popup_show_params, mp))
 			menu.append(make_menu_item("_Attributes...", "Show Attributes", self.on_popup_show_attribs, mp))
+			menu.append(make_menu_item("P_resets...", "Manage presets", self.on_popup_show_presets, mp))
 			menu.append(gtk.SeparatorMenuItem())
 			menu.append(make_menu_item("_Rename...", "", self.on_popup_rename, mp))
 			if mp.get_type() != zzub.zzub_plugin_type_master:
