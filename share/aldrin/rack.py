@@ -269,18 +269,14 @@ class ParameterView(gtk.VBox):
 			note=o,n
 		if note:	
 			self.play_note(note, self.octave, -1)
-			#if player.get_automation():
-			#	self.rootwindow.patternframe.update_values()
-	
+
 	def on_key_jazz_release(self, widget, event):
 		kv = event.keyval
 		k = gtk.gdk.keyval_name(kv)
 		if kv<256:
 			note = key_to_note(kv)
 			self.play_note(zzub.zzub_note_value_off, self.octave, note)
-			#if player.get_automation():
-			#	self.rootwindow.patternframe.update_values()
-	
+
 	def get_best_size(self):
 		rc = self.get_allocation()
 		cdx,cdy,cdw,cdh = rc.x, rc.y, rc.width, rc.height
@@ -420,12 +416,8 @@ class ParameterView(gtk.VBox):
 			note=(o,n)
 			if cmd == 0x8 or cmd == 0x9 and velocity==0:
 				self.play_note(zzub.zzub_note_value_off,0,note)
-				#if player.get_automation():
-				#	self.rootwindow.patternframe.update_values()
 			if cmd == 0x9 and velocity!=0:
 				self.play_note(note,0,-1)
-				#if player.get_automation():
-				#	self.rootwindow.patternframe.update_values()
 					
 	def update_presets(self):
 		"""
@@ -686,8 +678,6 @@ class ParameterView(gtk.VBox):
 		s.set_value(value) # quantize slider position
 		self.plugin.set_parameter_value(g,t,i,value,1)
 		self.update_valuelabel(g,t,i)
-		#if player.get_automation():
-		#		self.rootwindow.patternframe.update_values()
 		return True
 
 class DataEntry(gtk.Dialog):

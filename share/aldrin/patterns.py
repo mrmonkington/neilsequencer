@@ -393,13 +393,6 @@ class PatternPanel(gtk.VBox):
 			self.statusbar.pack_start(label, expand=False)
 			self.statusbar.pack_start(gtk.VSeparator(), expand=False)
 		self.view.statuslabels = self.statuslabels
-	
-	def update_values(self):
-		"""
-		Updates the values on external parameter change
-		"""
-		self.view.prepare_textbuffer()
-		self.view.redraw()
 
 	def on_player_callback(self, player, plugin, data):
 		"""
@@ -453,9 +446,9 @@ class PatternPanel(gtk.VBox):
 						except:
 							import traceback
 							traceback.print_exc()
-			#if player.get_automation():
-			#	self.update_values()
-			
+		elif data.type == zzub.zzub_event_type_parameter_changed and player.get_automation():
+			self.view.update_line(player.get_position())
+			self.view.redraw()
 
 		# XXX: TODO, for updating during recording automation. make it fast
 		#~ elif data.type == zzub.zzub_event_type_parameter_changed and player.get_automation():
@@ -662,9 +655,19 @@ class PatternView(gtk.DrawingArea):
 		self.connect('motion-notify-event', self.on_motion)
 		self.connect('scroll-event', self.on_mousewheel)
 		gobject.timeout_add(100, self.update_position)
+		#gobject.timeout_add(1000, self.update_values)
 		self.hscroll.connect('change-value', self.on_hscroll_window)
 		self.vscroll.connect('change-value', self.on_vscroll_window)
 		
+	def update_values(self):
+		"""
+		Updates the values on external parameter change. Called once per second.
+		"""
+		if player.get_automation():
+			self.prepare_textbuffer()
+			self.redraw()
+		return True
+	
 	def on_copy(self, widget):
 		"""
 		Sent when the copy function is selected from the menu.
