@@ -655,18 +655,8 @@ class PatternView(gtk.DrawingArea):
 		self.connect('motion-notify-event', self.on_motion)
 		self.connect('scroll-event', self.on_mousewheel)
 		gobject.timeout_add(100, self.update_position)
-		#gobject.timeout_add(1000, self.update_values)
 		self.hscroll.connect('change-value', self.on_hscroll_window)
 		self.vscroll.connect('change-value', self.on_vscroll_window)
-		
-	def update_values(self):
-		"""
-		Updates the values on external parameter change. Called once per second.
-		"""
-		if player.get_automation():
-			self.prepare_textbuffer()
-			self.redraw()
-		return True
 	
 	def on_copy(self, widget):
 		"""
