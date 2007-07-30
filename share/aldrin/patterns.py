@@ -1327,8 +1327,10 @@ class PatternView(gtk.DrawingArea):
 		"""		
 		if event.direction == gtk.gdk.SCROLL_UP:
 			self.move_up()
+			self.adjust_scrollbars()
 		elif event.direction == gtk.gdk.SCROLL_DOWN:
 			self.move_down()
+			self.adjust_scrollbars()
 	
 	def on_button_down(self, widget, event):		
 		"""
@@ -1412,7 +1414,7 @@ class PatternView(gtk.DrawingArea):
 		Callback that creates a pattern.
 		"""
 		name = self.get_new_pattern_name(m)
-		result = show_pattern_dialog(self,name,self.patternsize,DLGMODE_NEW)
+		result = show_pattern_dialog(self,name,self.patternsize,DLGODE_NEW)
 		if not result:
 			return
 		name, self.patternsize = result
@@ -1655,16 +1657,22 @@ class PatternView(gtk.DrawingArea):
 				return False
 		elif k == 'Left' or k == 'KP_Left':
 			self.move_left()
+			self.adjust_scrollbars()
 		elif k == 'Right' or k == 'KP_Right':
 			self.move_right()
+			self.adjust_scrollbars()
 		elif k == 'Up' or k == 'KP_Up':
 			self.move_up()
+			self.adjust_scrollbars()
 		elif k == 'Down' or k == 'KP_Down':
 			self.move_down()
+			self.adjust_scrollbars()
 		elif k == 'Page_Up' or k == 'KP_Page_Up':
 			self.move_up(16)
+			self.adjust_scrollbars()
 		elif k == 'Page_Down' or k == 'KP_Page_Down':
 			self.move_down(16)
+			self.adjust_scrollbars()
 		elif k == 'Home':
 			# 1st: move to begin of track
 			# 2nd: move to begin of group
@@ -1680,6 +1688,7 @@ class PatternView(gtk.DrawingArea):
 			elif not self.set_group(1):
 				self.set_row(0)
 			self.show_cursor_left()
+			self.adjust_scrollbars()
 			self.refresh_view()
 		elif k == 'Insert':
 			self.pattern.insert_row(self.group, self.track, -1, self.row)
