@@ -729,11 +729,12 @@ class PatternView(gtk.DrawingArea):
 			self.draw_xor()
 		return True
 			
-	def get_new_pattern_name(self):
+	def get_new_pattern_name(self, m=None):
 		"""
 		Finds an unused pattern name.
 		"""
-		m = self.get_plugin()
+		if not m:
+			m = self.get_plugin()
 		if not m:
 			return
 		patternid = 0
@@ -1406,16 +1407,17 @@ class PatternView(gtk.DrawingArea):
 				m.remove_pattern(self.pattern)
 			self.toolbar.select_pattern(0)		
 			
-	def on_popup_create_pattern(self, event=None):
+	def on_popup_create_pattern(self, event=None, m=None):
 		"""
 		Callback that creates a pattern.
 		"""
-		name = self.get_new_pattern_name()
+		name = self.get_new_pattern_name(m)
 		result = show_pattern_dialog(self,name,self.patternsize,DLGMODE_NEW)
 		if not result:
 			return
 		name, self.patternsize = result
-		m = self.get_plugin()
+		if not m:
+			m = self.get_plugin()
 		p = m.create_pattern(self.patternsize)
 		p.set_name(name)	
 		for i in range(m.get_pattern_count()):

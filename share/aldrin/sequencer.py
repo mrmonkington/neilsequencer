@@ -552,6 +552,8 @@ class SequencerView(gtk.DrawingArea):
 		menu.append(make_submenu_item(pmenu, "Add track"))
 		menu.append(make_menu_item("Delete track", "", self.on_popup_delete_track))
 		menu.append(gtk.SeparatorMenuItem())
+		menu.append(make_menu_item("Add pattern", "", self.rootwindow.patternframe.view.on_popup_create_pattern, self.get_track().get_plugin()))
+		menu.append(gtk.SeparatorMenuItem())
 		menu.append(make_submenu_item(wavemenu, "Record to Instrument"))
 		menu.append(gtk.SeparatorMenuItem())
 		menu.append(make_menu_item("Cut", "", self.on_popup_cut))
