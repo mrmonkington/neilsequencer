@@ -1414,7 +1414,7 @@ class PatternView(gtk.DrawingArea):
 		Callback that creates a pattern.
 		"""
 		name = self.get_new_pattern_name(m)
-		result = show_pattern_dialog(self,name,self.patternsize,DLGODE_NEW)
+		result = show_pattern_dialog(self,name,self.patternsize,DLGMODE_NEW)
 		if not result:
 			return
 		name, self.patternsize = result
