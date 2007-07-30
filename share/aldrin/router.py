@@ -44,6 +44,7 @@ player = common.get_player()
 from common import MARGIN, MARGIN2, MARGIN3
 from rack import ParameterView
 from presetbrowser import PresetView
+from patterns import key_to_note
 
 PLUGINWIDTH = 100
 PLUGINHEIGHT = 50
@@ -57,6 +58,16 @@ VOLKNOBHEIGHT = 16
 AREA_ANY = 0
 AREA_PANNING = 1
 AREA_LED = 2
+
+class ChordPlaying:
+	"""
+	Stores info about currently playing keyjazz notes
+	"""
+	def __init__(self, group=0, track=0, timestamp=0, note=0):
+		self.group=group
+		self.track=track
+		self.timestamp=timestamp
+		self.note=note
 
 class OscillatorView(gtk.DrawingArea):
 	"""
@@ -613,6 +624,8 @@ class RouteView(gtk.DrawingArea):
 		self.rootwindow = rootwindow
 		self.rootwindow.event_handlers.append(self.on_player_callback)
 		self.solo_plugin = None
+		self.selected_plugin = None
+		self.chordnotes=[]
 		self.update_colors()
 		gtk.DrawingArea.__init__(self)
 		self.volume_slider = VolumeSlider()		
@@ -623,6 +636,8 @@ class RouteView(gtk.DrawingArea):
 		self.connect('button-release-event', self.on_left_up)
 		self.connect('motion-notify-event', self.on_motion)
 		self.connect("expose_event", self.expose)
+		self.connect('key-press-event', self.on_key_jazz, None)	
+		self.connect('key-release-event', self.on_key_jazz_release, None)		
 		gobject.timeout_add(100, self.on_draw_led_timer)
 		#~ wx.EVT_SET_FOCUS(self, self.on_focus)
 		
@@ -692,6 +707,7 @@ class RouteView(gtk.DrawingArea):
 		for dlg in self.plugin_dialogs.values():
 			dlg.destroy()
 		self.solo_plugin = None
+		self.selected_plugin = None
 		self.plugin_dialogs = {}
 			
 	def on_focus(self, event):
@@ -1181,11 +1197,21 @@ class RouteView(gtk.DrawingArea):
 			elif not self.connecting:
 				self.dragging = True
 				self.grab_add()
+			last = self.selected_plugin
+			self.selected_plugin = self.current_plugin
+			common.get_plugin_infos().get(self.selected_plugin).reset_plugingfx()									
+			if last:
+				common.get_plugin_infos().get(last).reset_plugingfx()		
 		else:
 			conn = self.get_connection_at((mx,my))
 			if conn:
 				ox, oy = self.window.get_origin()
 				self.volume_slider.display((ox+mx,oy+my), conn)
+			else:
+				if self.selected_plugin:
+					last = self.selected_plugin
+					self.selected_plugin = None					
+					common.get_plugin_infos().get(last).reset_plugingfx()
 		
 	def on_motion(self, widget, event):
 		"""
@@ -1289,8 +1315,12 @@ class RouteView(gtk.DrawingArea):
 				if pi.muted:
 					pctx.set_source_rgb(*self.type2brush[1][mp.get_type()])
 				else:
-					pctx.set_source_rgb(*self.type2brush[0][mp.get_type()])			
-				pctx.rectangle(0,0,PLUGINWIDTH-1,PLUGINHEIGHT-1)
+					pctx.set_source_rgb(*self.type2brush[0][mp.get_type()])
+				if mp == self.selected_plugin:
+					pctx.set_line_width(4)
+				else:
+					pctx.set_line_width(1)
+				pctx.rectangle(0,0,PLUGINWIDTH-1,PLUGINHEIGHT-1)				
 				pctx.fill_preserve()
 				pctx.set_source_rgb(*pluginpen)
 				pctx.stroke()
@@ -1398,6 +1428,92 @@ class RouteView(gtk.DrawingArea):
 			crx, cry = get_pixelpos(*self.current_plugin.get_position())
 			rx,ry= self.connectpos
 			draw_line(int(crx),int(cry),int(rx),int(ry))
+			
+	def play_note(self, plugin, note, octave, oldnote):
+		m = plugin
+		plugin = m.get_pluginloader()
+		#pattern = self.plugin.create_pattern(1)
+		row = 0
+		group = 2
+		track = 0
+		index = 0
+		notefound=-1
+		i=0
+		parameter_list = [parameter.get_name() for parameter in plugin.get_parameter_list(group)]		
+		try:
+			index = parameter_list.index("Note")
+		except:
+			return
+		for chordnote in self.chordnotes:
+				if chordnote.note==note:
+					notefound=i
+				i+=1
+		if note !=  zzub.zzub_note_value_off:
+			if notefound==-1 and oldnote==-1: #only add midi notes to stored chord (not keypresses)
+				track=i
+				self.chordnotes.append(ChordPlaying(group,track,0,note ))
+			o, n = note
+			data = (min(octave+o,9)<<4) | (n+1)
+		else:
+			data =  zzub.zzub_note_value_off
+			try:
+				track=self.chordnotes[notefound].track
+				self.chordnotes.pop(notefound)
+			except: 
+				pass
+		#pattern.set_value(row, group, track, index, data)
+		player.lock_tick()			
+		try:	
+			#v = pattern.get_value(row, group, track, index)
+			m.set_parameter_value(group, track, index, data, player.get_automation())			
+			m.tick()
+		except:
+			import traceback
+			traceback.print_exc()
+		player.unlock_tick()		
+		#self.plugin.remove_pattern(pattern)
+		
+	
+	def on_key_jazz(self, widget, event, plugin):
+		if not plugin:			
+			if self.selected_plugin:
+				plugin = self.selected_plugin
+			else:
+				return
+		kv = event.keyval
+		k = gtk.gdk.keyval_name(kv)
+		note = None
+		info = common.get_plugin_infos().get(plugin)
+		if k == "1":
+			note=zzub.zzub_note_value_off
+		elif  k == 'KP_Multiply':			
+			info.octave = min(max(info.octave+1,0), 9)
+		elif k ==  'KP_Divide':
+			info.octave = min(max(info.octave-1,0), 9)
+		elif kv < 256:
+			note = key_to_note(kv)
+			if note:
+				o,n=note
+				o=min((o+info.octave),9)
+				note=o,n
+			else:
+				return
+		if note:	
+			self.play_note(plugin, note, info.octave, -1)
+
+	def on_key_jazz_release(self, widget, event, plugin):
+		if not plugin:			
+			if self.selected_plugin:
+				plugin = self.selected_plugin
+			else:
+				return
+		kv = event.keyval
+		k = gtk.gdk.keyval_name(kv)
+		info = common.get_plugin_infos().get(plugin)
+		if kv<256:
+			note = key_to_note(kv)
+			self.play_note(plugin, zzub.zzub_note_value_off, info.octave, note)
+
 
 __all__ = [
 'ParameterDialog',

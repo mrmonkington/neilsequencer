@@ -501,20 +501,9 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		self.connect('destroy', self.on_destroy)
 		self.connect('delete-event', self.on_close)
 
-		#~ aTable = wx.AcceleratorTable([
-			#~ (wx.ACCEL_NORMAL,  wx.WXK_F2, self.PATTERNS),
-			#~ (wx.ACCEL_NORMAL,  wx.WXK_F3, self.MACHINES),
-			#~ (wx.ACCEL_NORMAL,  wx.WXK_F4, self.SEQUENCER),
-			#~ (wx.ACCEL_NORMAL,  wx.WXK_F5, self.PLAY),
-			#~ (wx.ACCEL_NORMAL,  wx.WXK_F6, self.PLAY_FROM_CURSOR),
-			#~ (wx.ACCEL_NORMAL,  wx.WXK_F7, self.RECORD_ACCEL),
-			#~ (wx.ACCEL_NORMAL,  wx.WXK_F8, self.STOP),
-			#~ (wx.ACCEL_NORMAL,  wx.WXK_F9, self.WAVETABLE),
-			#~ (wx.ACCEL_NORMAL,  wx.WXK_F10, self.INFO),
-			#~ (wx.ACCEL_NORMAL,  wx.WXK_F12, self.PANIC_ACCEL),
-		#~ ])
-		#~ self.SetAcceleratorTable(aTable)
 		self.framepanel.set_current_page(self.PAGE_ROUTE)
+		# compensate for focus problem at start
+		gobject.timeout_add(1000, self.select_page, self.PAGE_ROUTE)
 		
 		gobject.timeout_add(1000/25, self.on_handle_events)
 		
@@ -528,7 +517,7 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		if audiotrouble:
 			error(self, "<b><big>Aldrin tried to guess an audio driver but that didn't work.</big></b>\n\nYou need to select your own. Hit OK to show the preferences dialog.")
 			show_preferences(self,self)
-			
+
 	def init_lunar(self):
 		"""
 		Initializes the lunar dsp scripting system

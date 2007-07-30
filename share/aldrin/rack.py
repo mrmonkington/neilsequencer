@@ -52,6 +52,7 @@ class ChordPlaying:
 		self.track=track
 		self.note=note
 
+
 class ParameterView(gtk.VBox):
 	"""
 	Displays parameter sliders for a plugin in a new Dialog.
@@ -178,11 +179,11 @@ class ParameterView(gtk.VBox):
 		self.btnrandom.connect('clicked', self.on_button_random)
 		self.btnhelp.connect('clicked', self.on_button_help)
 		self.connect('destroy', self.on_destroy)
-		self.connect('key-press-event', self.on_key_jazz)
-		self.connect('key-release-event', self.on_key_jazz_release)
+		if rootwindow.routeframe:
+			routeview = rootwindow.routeframe.view
+			self.connect('key-press-event', routeview.on_key_jazz, self.plugin)		
+			self.connect('key-release-event', routeview.on_key_jazz_release, self.plugin)
 		self.connect('button-press-event', self.on_left_down)
-		
-		self.chordnotes=[]
 		
 		scrollwindow.add_with_viewport(rowgroup)
 		self.scrollwindow = scrollwindow
@@ -192,90 +193,9 @@ class ParameterView(gtk.VBox):
 		self.add(toplevelgroup)		
 		self.rootwindow.event_handlers.append(self.on_callback)
 		self.update_preset_buttons()
-		self.octave=3
-		
-	def play_note(self, note, octave, oldnote):
-		m = self.plugin
-		plugin = m.get_pluginloader()
-		#pattern = self.plugin.create_pattern(1)
-		row = 0
-		group = 2
-		track = 0
-		index = 0
-		notefound=-1
-		i=0
-		usedtracks=[]
-		parameter_list = [parameter.get_name() for parameter in plugin.get_parameter_list(group)]		
-		try:
-			index = parameter_list.index("Note")
-		except:
-			return
-		if oldnote>-1: #note off - need to know which one!
-			notetest=oldnote
-		else:
-			notetest=note
-		for chordnote in self.chordnotes:
-				if chordnote.note==notetest:
-					notefound=i
-				usedtracks.append(chordnote.track)
-				i+=1
-		if note !=  zzub.zzub_note_value_off:
-			if notefound==-1 and oldnote==-1: #only add midi notes to stored chord (not keypresses)
-				for number in range(i+1):
-					track=number
-					if number in usedtracks:
-						continue
-					else:
-						break
-				self.chordnotes.append(ChordPlaying(track,note ))
-			o, n = note
-			data = (min(octave+o,9)<<4) | (n+1)
-		else:
-			data =  zzub.zzub_note_value_off
-			try:
-				track=self.chordnotes[notefound].track
-				self.chordnotes.pop(notefound)
-			except: 
-				pass
-		#pattern.set_value(row, group, track, index, data)
-		player.lock_tick()			
-		try:	
-			#v = pattern.get_value(row, group, track, index)
-			m.set_parameter_value(group, track, index, data, player.get_automation())			
-			m.tick()
-		except:
-			import traceback
-			traceback.print_exc()
-		player.unlock_tick()		
-		#self.plugin.remove_pattern(pattern)
 	
 	def on_left_down(self, widget, event, data=None):
 		self.grab_focus()
-
-	def on_key_jazz(self, widget, event, data=None):
-		kv = event.keyval
-		k = gtk.gdk.keyval_name(kv)
-		note = None
-		if k == "1":
-			note=zzub.zzub_note_value_off
-		elif  k == 'KP_Multiply':			
-			self.octave = min(max(self.octave+1,0), 9)
-		elif k ==  'KP_Divide':
-			self.octave = min(max(self.octave-1,0), 9)
-		elif kv < 256:
-			note = key_to_note(kv)
-			o,n=note
-			o=min((o+self.octave),9)
-			note=o,n
-		if note:	
-			self.play_note(note, self.octave, -1)
-
-	def on_key_jazz_release(self, widget, event):
-		kv = event.keyval
-		k = gtk.gdk.keyval_name(kv)
-		if kv<256:
-			note = key_to_note(kv)
-			self.play_note(zzub.zzub_note_value_off, self.octave, note)
 
 	def get_best_size(self):
 		rc = self.get_allocation()
@@ -414,10 +334,11 @@ class ParameterView(gtk.VBox):
 			o=midinote/12
 			n=midinote%12
 			note=(o,n)
+			routeview = self.rootwindow.routeframe.view
 			if cmd == 0x8 or cmd == 0x9 and velocity==0:
-				self.play_note(zzub.zzub_note_value_off,0,note)
+				routeview.play_note(self.plugin, zzub.zzub_note_value_off,0,note)
 			if cmd == 0x9 and velocity!=0:
-				self.play_note(note,0,-1)
+				routeview.play_note(self.plugin, note,0,-1)
 					
 	def update_presets(self):
 		"""

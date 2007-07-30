@@ -39,8 +39,9 @@ class PluginInfo(object):
 		self.pattern_position = (0, 0, 0, 0, 0)
 		self.selection = None
 		self.plugingfx = None
-		self.patterngfx = {}
+		self.patterngfx = {}		
 		self.amp = -9999.0
+		self.octave = 3
 		
 	def reset_patterngfx(self):
 		self.patterngfx = {}
