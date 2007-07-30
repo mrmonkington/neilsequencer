@@ -926,6 +926,7 @@ class RouteView(gtk.DrawingArea):
 		# open parameter view if its an effect
 		if mp.get_type() == zzub.zzub_plugin_type_effect:
 			self.show_parameter_dialog(mp)
+		self.rootwindow.select_page(self.rootwindow.PAGE_ROUTE, 1)
 		
 	def get_plugin_menu(self, include_generators = True, include_effects = True, **kargs):
 		"""
@@ -1444,9 +1445,12 @@ class RouteView(gtk.DrawingArea):
 			o, n = note
 			data = (min(octave+o,9)<<4) | (n+1)
 		else:
-			data =  zzub.zzub_note_value_off
-			track=self.chordnotes[oldnote]
-			del self.chordnotes[oldnote]
+			try:
+				data =  zzub.zzub_note_value_off
+				track=self.chordnotes[oldnote]
+				del self.chordnotes[oldnote]
+			except KeyError:
+				pass
 		#pattern.set_value(row, group, track, index, data)
 		player.lock_tick()			
 		try:	

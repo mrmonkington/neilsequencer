@@ -502,8 +502,6 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		self.connect('delete-event', self.on_close)
 
 		self.framepanel.set_current_page(self.PAGE_ROUTE)
-		# compensate for focus problem at start
-		gobject.timeout_add(1000, self.select_page, self.PAGE_ROUTE)
 		
 		gobject.timeout_add(1000/25, self.on_handle_events)
 		
@@ -900,7 +898,7 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		#~ for ctrlid, panel in self.pages.values():
 			#~ panel.SetRect((x,y,w,h))
 			
-	def select_page(self, index):
+	def select_page(self, index, force=0):
 		"""
 		Selects a client panel. If the client panel has a view attribute,
 		that view attribute is being interpreted as a window and will be
@@ -910,7 +908,7 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		@type index: int
 		"""
 		panel, stockid = self.pages[index]
-		if self.framepanel.get_current_page() != index:
+		if self.framepanel.get_current_page() != index or force:
 			self.framepanel.set_current_page(index)
 		if hasattr(panel,'view'):
 			print "grab focus",panel.view
