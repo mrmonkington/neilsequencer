@@ -326,20 +326,6 @@ class ParameterView(gtk.VBox):
 					s.set_value(v)
 					self.update_valuelabel(g,t,i)
 					
-		elif data.type == zzub.zzub_event_type_midi_control:
-			ctrl = getattr(data,'').midi_message
-			cmd = ctrl.status >> 4
-			midinote=ctrl.data1
-			velocity=ctrl.data2
-			o=midinote/12
-			n=midinote%12
-			note=(o,n)
-			routeview = self.rootwindow.routeframe.view
-			if cmd == 0x8 or cmd == 0x9 and velocity==0:
-				routeview.play_note(self.plugin, zzub.zzub_note_value_off,0,note)
-			if cmd == 0x9 and velocity!=0:
-				routeview.play_note(self.plugin, note,0,-1)
-					
 	def update_presets(self):
 		"""
 		Updates the preset box.
