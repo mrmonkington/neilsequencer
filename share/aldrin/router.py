@@ -59,16 +59,6 @@ AREA_ANY = 0
 AREA_PANNING = 1
 AREA_LED = 2
 
-class ChordPlaying:
-	"""
-	Stores info about currently playing keyjazz notes
-	"""
-	def __init__(self, group=0, track=0, timestamp=0, note=0):
-		self.group=group
-		self.track=track
-		self.timestamp=timestamp
-		self.note=note
-
 class OscillatorView(gtk.DrawingArea):
 	"""
 	Oscillator viewer.
@@ -625,7 +615,7 @@ class RouteView(gtk.DrawingArea):
 		self.rootwindow.event_handlers.append(self.on_player_callback)
 		self.solo_plugin = None
 		self.selected_plugin = None
-		self.chordnotes=[]
+		self.chordnotes={}
 		self.update_colors()
 		gtk.DrawingArea.__init__(self)
 		self.volume_slider = VolumeSlider()		
@@ -1437,30 +1427,26 @@ class RouteView(gtk.DrawingArea):
 		group = 2
 		track = 0
 		index = 0
-		notefound=-1
-		i=0
 		parameter_list = [parameter.get_name() for parameter in plugin.get_parameter_list(group)]		
 		try:
 			index = parameter_list.index("Note")
 		except:
 			return
-		for chordnote in self.chordnotes:
-				if chordnote.note==note:
-					notefound=i
-				i+=1
 		if note !=  zzub.zzub_note_value_off:
-			if notefound==-1 and oldnote==-1: #only add midi notes to stored chord (not keypresses)
-				track=i
-				self.chordnotes.append(ChordPlaying(group,track,0,note ))
+			if note not in self.chordnotes:
+				for tracknumber in range(len(self.chordnotes)+2):
+					track=tracknumber
+					if tracknumber in self.chordnotes.values():
+						continue
+					else:
+						break
+				self.chordnotes[note]=(track)
 			o, n = note
 			data = (min(octave+o,9)<<4) | (n+1)
 		else:
 			data =  zzub.zzub_note_value_off
-			try:
-				track=self.chordnotes[notefound].track
-				self.chordnotes.pop(notefound)
-			except: 
-				pass
+			track=self.chordnotes[oldnote]
+			del self.chordnotes[oldnote]
 		#pattern.set_value(row, group, track, index, data)
 		player.lock_tick()			
 		try:	
@@ -1472,7 +1458,6 @@ class RouteView(gtk.DrawingArea):
 			traceback.print_exc()
 		player.unlock_tick()		
 		#self.plugin.remove_pattern(pattern)
-		
 	
 	def on_key_jazz(self, widget, event, plugin):
 		if not plugin:			
@@ -1492,12 +1477,6 @@ class RouteView(gtk.DrawingArea):
 			info.octave = min(max(info.octave-1,0), 9)
 		elif kv < 256:
 			note = key_to_note(kv)
-			if note:
-				o,n=note
-				o=min((o+info.octave),9)
-				note=o,n
-			else:
-				return
 		if note:	
 			self.play_note(plugin, note, info.octave, -1)
 
