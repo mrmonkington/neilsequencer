@@ -881,7 +881,7 @@ class RouteView(gtk.DrawingArea):
 		assert mp._handle
 		if mp.get_type() == zzub.zzub_plugin_type_generator and \
 			(pluginloader.get_parameter_count(1) or pluginloader.get_parameter_count(2)):
-			pattern = mp.create_pattern(16)
+			pattern = mp.create_pattern(self.rootwindow.seqframe.view.step)
 			pattern.set_name('00')
 			seq = player.get_current_sequencer()
 			t=seq.create_track(mp)
