@@ -172,7 +172,7 @@ class PatternToolBar(gtk.HBox):
 
 		self.playnotes.set_active(True)
 		self.midistep.set_active(False)
-
+		
 		self.plugin = 0
 		self.pattern = 0
 		self.wave = 0
@@ -188,6 +188,13 @@ class PatternToolBar(gtk.HBox):
 		self.pack_start(self.octaveselect, expand=False)
 		self.pack_start(self.playnotes, expand=False)
 		self.pack_start(self.midistep, expand=False)
+		self.midistep.connect('toggled', self.on_midisteptoggle)
+	
+	def on_midisteptoggle(self, widget):
+		if self.midistep.get_active():
+			common.get_plugin_infos().get(self.view.rootwindow.routeframe.view.selected_plugin).reset_plugingfx()
+			self.view.rootwindow.routeframe.view.selected_plugin=None
+			#self.view.rootwindow.routeframe.redraw()
 	
 	def reset(self):
 		self.plugin = 0
@@ -657,6 +664,7 @@ class PatternView(gtk.DrawingArea):
 		gobject.timeout_add(100, self.update_position)
 		self.hscroll.connect('change-value', self.on_hscroll_window)
 		self.vscroll.connect('change-value', self.on_vscroll_window)
+	
 	
 	def on_copy(self, widget):
 		"""

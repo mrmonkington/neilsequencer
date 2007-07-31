@@ -1190,7 +1190,9 @@ class RouteView(gtk.DrawingArea):
 				self.grab_add()
 			last = self.selected_plugin
 			self.selected_plugin = self.current_plugin
-			common.get_plugin_infos().get(self.selected_plugin).reset_plugingfx()									
+			if self.selected_plugin:
+				common.get_plugin_infos().get(self.selected_plugin).reset_plugingfx()									
+				self.rootwindow.patternframe.toolbar.midistep.set_active(False)
 			if last:
 				common.get_plugin_infos().get(last).reset_plugingfx()
 			self.rootwindow.select_page(self.rootwindow.PAGE_ROUTE)
