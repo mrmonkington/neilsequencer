@@ -1052,7 +1052,6 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		config.get_config().add_recent_file_config(self.filename)
 		self.update_filemenu()
 		self.document_changed()
-		self.select_page(self.PAGE_ROUTE)
 		
 	def save_file(self, filename):
 		"""

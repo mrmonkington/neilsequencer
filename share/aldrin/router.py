@@ -927,7 +927,6 @@ class RouteView(gtk.DrawingArea):
 		# open parameter view if its an effect
 		if mp.get_type() == zzub.zzub_plugin_type_effect:
 			self.show_parameter_dialog(mp)
-		self.rootwindow.select_page(self.rootwindow.PAGE_ROUTE)
 		
 	def get_plugin_menu(self, include_generators = True, include_effects = True, **kargs):
 		"""
@@ -1193,7 +1192,8 @@ class RouteView(gtk.DrawingArea):
 			self.selected_plugin = self.current_plugin
 			common.get_plugin_infos().get(self.selected_plugin).reset_plugingfx()									
 			if last:
-				common.get_plugin_infos().get(last).reset_plugingfx()		
+				common.get_plugin_infos().get(last).reset_plugingfx()
+			self.rootwindow.select_page(self.rootwindow.PAGE_ROUTE)
 		else:
 			conn = self.get_connection_at((mx,my))
 			if conn:
