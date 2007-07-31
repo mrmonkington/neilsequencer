@@ -898,7 +898,7 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		#~ for ctrlid, panel in self.pages.values():
 			#~ panel.SetRect((x,y,w,h))
 			
-	def select_page(self, index, force=0):
+	def select_page(self, index):
 		"""
 		Selects a client panel. If the client panel has a view attribute,
 		that view attribute is being interpreted as a window and will be
@@ -908,7 +908,7 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		@type index: int
 		"""
 		panel, stockid = self.pages[index]
-		if self.framepanel.get_current_page() != index or force:
+		if self.framepanel.get_current_page() != index:
 			self.framepanel.set_current_page(index)
 		if hasattr(panel,'view'):
 			print "grab focus",panel.view
@@ -1052,6 +1052,7 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		config.get_config().add_recent_file_config(self.filename)
 		self.update_filemenu()
 		self.document_changed()
+		self.select_page(self.PAGE_ROUTE)
 		
 	def save_file(self, filename):
 		"""
