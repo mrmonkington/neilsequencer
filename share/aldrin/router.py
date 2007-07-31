@@ -1276,15 +1276,14 @@ class RouteView(gtk.DrawingArea):
 			o=midinote/12
 			n=midinote%12
 			note=(o,n)
-			routeview = self.rootwindow.routeframe.view
 			if cmd == 0x8 or cmd == 0x9 and velocity==0:
 				try:
-					routeview.play_note(self.selected_plugin, zzub.zzub_note_value_off,0,note)
+					self.play_note(self.selected_plugin, zzub.zzub_note_value_off,0,note)
 				except:
 					pass
 			if cmd == 0x9 and velocity!=0:
 				try:
-					routeview.play_note(self.selected_plugin, note,0,-1)
+					self.play_note(self.selected_plugin, note,0,-1)
 				except:
 					pass
 	
@@ -1483,8 +1482,10 @@ class RouteView(gtk.DrawingArea):
 					else:
 						break
 				self.chordnotes[note]=(track)
-			o, n = note
-			data = (min(octave+o,9)<<4) | (n+1)
+				o, n = note
+				data = (min(octave+o,9)<<4) | (n+1)
+			else:
+				return
 		else:
 			try:
 				data =  zzub.zzub_note_value_off
