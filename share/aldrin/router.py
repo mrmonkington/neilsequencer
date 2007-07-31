@@ -927,6 +927,13 @@ class RouteView(gtk.DrawingArea):
 		# open parameter view if its an effect
 		if mp.get_type() == zzub.zzub_plugin_type_effect:
 			self.show_parameter_dialog(mp)
+		#tab to first note column on adding a new machine
+		patternframe=self.rootwindow.patternframe.view
+		if patternframe.move_track_right():
+				patternframe.set_index(0)
+				patternframe.set_subindex(0)
+				patternframe.show_cursor_right()
+				patternframe.refresh_view()
 		
 	def get_plugin_menu(self, include_generators = True, include_effects = True, **kargs):
 		"""

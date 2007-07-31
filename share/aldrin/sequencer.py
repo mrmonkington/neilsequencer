@@ -552,7 +552,7 @@ class SequencerView(gtk.DrawingArea):
 		menu.append(make_submenu_item(pmenu, "Add track"))
 		menu.append(make_menu_item("Delete track", "", self.on_popup_delete_track))
 		menu.append(gtk.SeparatorMenuItem())
-		menu.append(make_menu_item("Add pattern", "", self.rootwindow.patternframe.view.on_popup_create_pattern, self.get_track().get_plugin()))
+		menu.append(make_menu_item("Add pattern", "", self.add_pattern))
 		menu.append(gtk.SeparatorMenuItem())
 		menu.append(make_submenu_item(wavemenu, "Record to Instrument"))
 		menu.append(gtk.SeparatorMenuItem())
@@ -564,6 +564,10 @@ class SequencerView(gtk.DrawingArea):
 		menu.attach_to_widget(self, None)
 		menu.popup(None, None, None, event.button, event.time)
 		
+	def add_pattern(self, widget):
+		self.rootwindow.patternframe.view.on_popup_create_pattern(self.get_track().get_plugin())
+		self.rootwindow.select_page(self.rootwindow.PAGE_SEQUENCER)
+	
 	def show_plugin_dialog(self):		
 		choices = []
 		for plugin in player.get_plugin_list():			
