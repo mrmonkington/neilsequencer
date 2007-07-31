@@ -1487,7 +1487,8 @@ class RouteView(gtk.DrawingArea):
 		player.lock_tick()			
 		try:	
 			#v = pattern.get_value(row, group, track, index)
-			m.set_parameter_value(group, track, index, data, player.get_automation())			
+			#only send automation command if both record and play depressed:
+			m.set_parameter_value(group, track, index, data, (player.get_automation()+(not(player.get_state())))/2)
 			m.tick()
 		except:
 			import traceback
