@@ -66,7 +66,7 @@ class OscillatorView(gtk.DrawingArea):
 	Visualizes a pcm wave float buffer.
 	"""
 	
-	def __init__(self, plugin, *args, **kwds):
+	def __init__(self, plugin, parent):
 		"""
 		Initialization.
 		"""
@@ -168,6 +168,7 @@ class SignalAnalysisDialog(gtk.Dialog):
 		
 		self.btnok = self.add_button(gtk.STOCK_OK, gtk.RESPONSE_OK)
 		self.connect('response', self.on_close)
+		gobject.timeout_add(1000/50, self.on_timer)
 		self.show_all()
 		#self.SetAutoLayout(True)
 		#self.SetSizerAndFit(vsizer)
