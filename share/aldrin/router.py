@@ -66,127 +66,83 @@ class OscillatorView(gtk.DrawingArea):
 	Visualizes a pcm wave float buffer.
 	"""
 	
-	def __init__(self, plugin, parent):
+	def __init__(self, plugin):
 		"""
 		Initialization.
 		"""
+		gtk.DrawingArea.__init__(self)
 		self.plugin = plugin
 		self.x = 0
-		self.reset_osc()
 		self.lastpos = 0
 		self.w = 0
 		self.sb = Queue.Queue()
-		gtk.DrawingArea.__init__(self)
-		#Canvas.__init__(self, *args, **kwds)
-		self.pp = self.plugin.add_post_process(self.mix_callback, 0)
+		self.drawingarea = self
+		gobject.timeout_add(100, self.DrawBuffer)
+		gobject.timeout_add(10, self.get_peaks)
+		self.left=[]
+		self.right=[]
 		
-	def reset_osc(self):
-		pass
-		#~ self.sr = 0
-		#~ self.l1 = 9999
-		#~ self.l2 = -9999
-		#~ self.r1 = 9999
-		#~ self.r2 = -9999
-		
-	def mix_callback(self, left, right, size, tag):
-		"""
-		called by the plugin
-		"""
-		i = 0
-		while (i < size) and (self.w > 0):
-			self.sb.put(left[i])
-			self.sb.put(right[i])
-			i += 1
-			self.w -= 1
-				
-	def destroy(self):
-		"""
-		shut down and remove from post process queue.
-		"""
-		self.plugin.remove_post_process(self.pp)
+	def get_peaks(self):
+		self.left.append(self.plugin.get_last_peak()[0])
+		self.right.append(self.plugin.get_last_peak()[1])
+		return True
 		
 	def DrawBuffer(self):
 		"""
 		Overriding a L{Canvas} method that paints onto an offscreen buffer.
 		Draws the oscillator graphics.
 		"""
-		w,h = self.GetClientSize()
-		if self.w == 0:
-			self.w = w
-		if (self.sb.qsize() < w):
-			return
-		dc = self.buffer
-		cfg = config.get_config()
-		bgbrush = cfg.get_brush("SA Freq BG")
-		pen = cfg.get_pen("SA Freq Line")
-		dc.SetBackground(bgbrush)
-		dc.Clear()
-		dc.SetPen(pen)
+		alloc=self.get_allocation()
+		w,h = alloc.width, alloc.height
+		try:
+			gc = self.drawingarea.window.new_gc()
+		except:
+			return False
+		cm = gc.get_colormap()
+		drawable = self.drawingarea.window
+		drawable.clear()
 		h2 = h/2
 		h4 = h/4
 		h34 = h4*3
 		x = 0
-		while x < w:
-			#~ if self.sb.empty():
-				#~ break
-			l = self.sb.get()
-			r = self.sb.get()
+		a=0
+		while x < w-4:
+			try:
+				if a+1>(len(self.left)):
+					a=0
+				l=self.left[a]
+				r=self.right[a]
+			except:
+				l=0
+				r=0
 			x1 = x
-			yl1 = -l * h4 + h4
-			yr1 = -r * h4 + h34
-			dc.DrawLine(x1, yl1, x1, yl1+1)
-			dc.DrawLine(x1, yr1, x1, yr1+1)
-			x += 1
+			yl1 = int(-l * h4 + h4)
+			yr1 = int(-r * h4 + h34)
+			drawable.draw_line(gc, x1, yl1, x1+12, yl1+1)
+			drawable.draw_line( gc,x1, yr1, x1+12, yr1+1)
+			x += 12
+			a +=1
+		self.left=[]
+		self.right=[]
+		return True
 
 class SignalAnalysisDialog(gtk.Dialog):
 	"""
 	Displays a visualization of plugin traffic.
 	"""
-	def __init__(self, plugin, parent):
+	def __init__(self, rootwindow, plugin, parent):
 		"""
 		Displays Signal Analysis view
 		"""
-		
-		gtk.Dialog.__init__(self,
-			"Signal Analysis",
-			parent.get_toplevel(),
-			gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
-			None
-		)
+		gtk.Dialog.__init__(self, parent=parent.get_toplevel())
+		self.view = parent
 		self.plugin = plugin
-		vbox = gtk.VBox(False, MARGIN)
-		vbox.set_border_width(MARGIN)
-		self.plugin = plugin
+		self.oscview = OscillatorView(plugin)
+		self.vbox.add(self.oscview)		
 		self.pluginloader = plugin.get_pluginloader()
 		self.resize(300,200)
-		vsizer = gtk.VButtonBox()
-		
-		
-		#vsizer = wx.BoxSizer(wx.VERTICAL)
-		self.oscview = OscillatorView(self.plugin, self, -1)
-		vsizer.add(self.oscview)
-		
-		self.btnok = self.add_button(gtk.STOCK_OK, gtk.RESPONSE_OK)
-		self.connect('response', self.on_close)
-		gobject.timeout_add(1000/50, self.on_timer)
 		self.show_all()
-		#self.SetAutoLayout(True)
-		#self.SetSizerAndFit(vsizer)
-		#self.Layout()
-		#self.Center()
-		#self.timer = wx.Timer(self, -1)
-		#self.timer.Start(1000/50)
-		#wx.EVT_TIMER(self, self.timer.GetId(), self.on_timer)
-		#wx.EVT_CLOSE(self, self.on_close)
 
-	def on_close(self, widget, value):
-		self.oscview.destroy()
-
-	def on_timer(self, event):
-		"""
-		Event handler for the timer.
-		"""
-		self.oscview.ReDraw()
 		
 class AttributesDialog(gtk.Dialog):
 	"""
@@ -846,9 +802,8 @@ class RouteView(gtk.DrawingArea):
 		"""
 		Event handler for the "Signal Analysis" context menu option.
 		"""
-		dlg = SignalAnalysisDialog(conn.get_input(), self)
-		dlg.run()
-		dlg.destroy()
+		dlg = SignalAnalysisDialog(self.rootwindow, conn.get_input(), self)
+		dlg.show_all()
 		
 	def on_popup_show_attribs(self, widget, mp):
 		"""
