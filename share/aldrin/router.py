@@ -874,6 +874,7 @@ class RouteView(gtk.DrawingArea):
 		basename = pluginloader.get_short_name()
 		name = pluginloader.get_short_name()
 		basenumber = 2
+		mask=gtk.get_current_event.state()
 		while True:
 			found = False
 			for mp in player.get_plugin_list():
@@ -894,7 +895,8 @@ class RouteView(gtk.DrawingArea):
 			seq = player.get_current_sequencer()
 			t=seq.create_track(mp)
 			t.set_event(0,16)
-			player.get_plugin_list()[0].add_input(mp, 16384, 16384)
+			if not(mask & gtk.gdk.SHIFT_MASK):
+				player.get_plugin_list()[0].add_input(mp, 16384, 16384)
 		mp.set_position(*self.pixel_to_float(self.contextmenupos))
 		# if we have a context plugin, prepend connections
 		if 'plugin' in kargs:
