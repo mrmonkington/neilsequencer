@@ -998,15 +998,17 @@ class SequencerView(gtk.DrawingArea):
 		#It would be better to call this once on song change, and update the value if an event is added with 
 		#a higher index.
 		self.wmax=0
+		maxtrack=0
 		w=1
 		for i in range(h):
 			track=seq.get_track(i)
 			if track.get_event_count():
-				w=track.get_event(track.get_event_count()-1)[0]
-			if w<self.wmax:
-				w=self.wmax
-			else:
+				w,p=track.get_event(track.get_event_count()-1)
+				w+=track.get_plugin().get_pattern(p-16).get_row_count()
+			if w>self.wmax:
 				self.wmax=w
+				
+		print self.wmax
 		w=self.wmax/self.step+3
 		return w,h
 
