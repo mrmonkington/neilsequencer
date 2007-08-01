@@ -528,7 +528,7 @@ class VolumeSlider(gtk.Window):
 		self.y = newpos
 		self.amp = max(min(self.amp + (float(delta) / VOLBARHEIGHT), 1.0), 0.0)
 		amp = min(max(int(db2linear(self.amp * -48.0, -48.0) * 16384.0), 0), 16384)
-		self.conn.set_amplitude(amp)
+		self.conn.get_output().set_parameter_value(0, self.connindex, 0, amp, True)
 		self.redraw()
 		return True
 		
@@ -558,7 +558,7 @@ class VolumeSlider(gtk.Window):
 			pos = int(self.amp * (VOLBARHEIGHT - VOLKNOBHEIGHT))
 			drawable.draw_rectangle(gc, True, 1, pos+1, VOLBARWIDTH-2, VOLKNOBHEIGHT-2)
 		
-	def display(self, (mx,my), conn):
+	def display(self, (mx,my), conn, index):
 		"""
 		Called by the router view to show the control.
 		
@@ -571,7 +571,8 @@ class VolumeSlider(gtk.Window):
 		"""
 		self.y = VOLBARHEIGHT / 2
 		self.conn = conn
-		self.amp = (linear2db((self.conn.get_amplitude() / 16384.0), -48.0) / -48.0)
+		self.connindex= index
+		self.amp = (linear2db((self.conn.get_output().get_parameter_value(0, index, 0)/ 16384.0), -48.0) / -48.0)
 		self.move(int(mx - VOLBARWIDTH*0.5), int(my - VOLBARHEIGHT*0.5))
 		self.show_all()
 		self.drawingarea.grab_add()
@@ -775,8 +776,11 @@ class RouteView(gtk.DrawingArea):
 					break
 				conn = conns.pop()
 				input = conn.get_input()
-				amp = conn.get_amplitude()
-				pan = conn.get_panning()
+				for i in range(conn.get_output().get_input_connection_count()):
+						if conn.get_output().get_input_connection(i)==conn:
+							break
+				amp = conn.get_output().get_parameter_value(0,i,0)
+				pan = conn.get_output().get_parameter_value(0,i,1)
 				inplugs.append((input,amp,pan))
 				mp.delete_input(input)
 			while True:
@@ -785,8 +789,11 @@ class RouteView(gtk.DrawingArea):
 					break
 				conn = conns.pop()
 				output = conn.get_output()
-				amp = conn.get_amplitude()
-				pan = conn.get_panning()
+				for i in range(conn.get_output().get_input_connection_count()):
+						if conn.get_output().get_input_connection(i)==conn:
+							break
+				amp = conn.get_output().get_parameter_value(0,i,0)
+				pan = conn.get_output().get_parameter_value(0,i,1)
 				outplugs.append((output,amp,pan))
 				output.delete_input(mp)
 			# and now restore them
@@ -900,8 +907,11 @@ class RouteView(gtk.DrawingArea):
 					break
 				conn = conns.pop()
 				input = conn.get_input()
-				amp = conn.get_amplitude()
-				pan = conn.get_panning()
+				for i in range(conn.get_output().get_input_connection_count()):
+						if conn.get_output().get_input_connection(i)==conn:
+							break
+				amp = conn.get_output().get_parameter_value(0,i,0)
+				pan = conn.get_output().get_parameter_value(0,i,1)
 				inplugs.append((input,amp,pan))
 				plugin.delete_input(input)
 			# restore
@@ -911,8 +921,11 @@ class RouteView(gtk.DrawingArea):
 		# if we have a context connection, replace that one
 		elif 'conn' in kargs:
 			conn = kargs['conn']
-			amp = conn.get_amplitude()
-			pan = conn.get_panning()
+			for i in range(conn.get_output().get_input_connection_count()):
+					if conn.get_output().get_input_connection(i)==conn:
+						break
+			amp = conn.get_output().get_parameter_value(0,i,0)
+			pan = conn.get_output().get_parameter_value(0,i,1)
 			minput = conn.get_input()
 			moutput = conn.get_output()
 			moutput.delete_input(minput)
@@ -1049,7 +1062,10 @@ class RouteView(gtk.DrawingArea):
 						menu.append(make_menu_item(prepstr(cmd), "", self.on_popup_command, mp, 0, index))
 			extman.get_extension_manager().extend_menu(interface.UIOBJECT_ROUTE_MENU_PLUGIN, menu, plugin=mp)
 		else:
-			conn = self.get_connection_at((mx,my))
+			try:
+				conn, index = self.get_connection_at((mx,my))
+			except TypeError:
+				conn = None
 			if conn:
 				menu.append(make_menu_item("_Disconnect plugins", "Disconnect plugins", self.on_popup_disconnect, conn))
 				menu.append(gtk.SeparatorMenuItem())
@@ -1121,7 +1137,10 @@ class RouteView(gtk.DrawingArea):
 				dx,dy = cpx - mx, cpy - my
 				length = (dx*dx + dy*dy) ** 0.5
 				if length <= 14:
-					return conn
+					for i in range(conn.get_output().get_input_connection_count()):
+						if conn.get_output().get_input_connection(i)==conn:
+							break
+					return conn, i
 		
 	def get_plugin_at(self, (x,y)):
 		"""
@@ -1204,10 +1223,13 @@ class RouteView(gtk.DrawingArea):
 				common.get_plugin_infos().get(last).reset_plugingfx()
 			self.rootwindow.select_page(self.rootwindow.PAGE_ROUTE)
 		else:
-			conn = self.get_connection_at((mx,my))
+			try:
+				conn, index = self.get_connection_at((mx,my))
+			except TypeError:
+				conn=None
 			if conn:
 				ox, oy = self.window.get_origin()
-				self.volume_slider.display((ox+mx,oy+my), conn)
+				self.volume_slider.display((ox+mx,oy+my), conn, index)
 			else:
 				if self.selected_plugin:
 					last = self.selected_plugin
