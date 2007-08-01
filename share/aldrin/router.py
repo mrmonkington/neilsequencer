@@ -76,7 +76,8 @@ class OscillatorView(gtk.DrawingArea):
 		self.lastpos = 0
 		self.w = 0
 		self.sb = Queue.Queue()
-		Canvas.__init__(self, *args, **kwds)
+		gtk.DrawingArea.__init__(self)
+		#Canvas.__init__(self, *args, **kwds)
 		self.pp = self.plugin.add_post_process(self.mix_callback, 0)
 		
 	def reset_osc(self):
@@ -141,32 +142,44 @@ class SignalAnalysisDialog(gtk.Dialog):
 	"""
 	Displays a visualization of plugin traffic.
 	"""
-	def __init__(self, plugin, *args, **kwds):
+	def __init__(self, plugin, parent):
 		"""
-		Initializer.
+		Displays Signal Analysis view
+		"""
 		
-		@param plugin: Plugin object.
-		@type plugin: wx.Plugin
-		"""
+		gtk.Dialog.__init__(self,
+			"Signal Analysis",
+			parent.get_toplevel(),
+			gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
+			None
+		)
 		self.plugin = plugin
-		kwds['style'] = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER
-		wx.Dialog.__init__(self, *args, **kwds)
-		self.SetMinSize((300,200))
-		vsizer = wx.BoxSizer(wx.VERTICAL)
+		vbox = gtk.VBox(False, MARGIN)
+		vbox.set_border_width(MARGIN)
+		self.plugin = plugin
+		self.pluginloader = plugin.get_pluginloader()
+		self.resize(300,200)
+		vsizer = gtk.VButtonBox()
+		
+		
+		#vsizer = wx.BoxSizer(wx.VERTICAL)
 		self.oscview = OscillatorView(self.plugin, self, -1)
-		vsizer.Add(self.oscview, 1, wx.EXPAND)
-		self.SetAutoLayout(True)
-		self.SetSizerAndFit(vsizer)
-		self.Layout()
-		self.Center()
-		self.timer = wx.Timer(self, -1)
-		self.timer.Start(1000/50)
-		wx.EVT_TIMER(self, self.timer.GetId(), self.on_timer)
-		wx.EVT_CLOSE(self, self.on_close)
+		vsizer.add(self.oscview)
+		
+		self.btnok = self.add_button(gtk.STOCK_OK, gtk.RESPONSE_OK)
+		self.connect('response', self.on_close)
+		self.show_all()
+		#self.SetAutoLayout(True)
+		#self.SetSizerAndFit(vsizer)
+		#self.Layout()
+		#self.Center()
+		#self.timer = wx.Timer(self, -1)
+		#self.timer.Start(1000/50)
+		#wx.EVT_TIMER(self, self.timer.GetId(), self.on_timer)
+		#wx.EVT_CLOSE(self, self.on_close)
 
-	def on_close(self, event):
+	def on_close(self, widget, value):
 		self.oscview.destroy()
-		event.Skip()
 
 	def on_timer(self, event):
 		"""
@@ -874,7 +887,7 @@ class RouteView(gtk.DrawingArea):
 		basename = pluginloader.get_short_name()
 		name = pluginloader.get_short_name()
 		basenumber = 2
-		mask=gtk.get_current_event.state()
+		mask=gtk.get_current_event_state()
 		while True:
 			found = False
 			for mp in player.get_plugin_list():
