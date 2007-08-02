@@ -971,7 +971,16 @@ class RouteView(gtk.DrawingArea):
 					add_separator = True
 		plugin_menu = gtk.Menu()
 		fill_menu(plugin_menu, self.plugin_tree)
+		plugin_menu.append(gtk.SeparatorMenuItem())
+		plugin_menu.append(make_menu_item("Unmute All", "", self.on_popup_unmute_all))
 		return plugin_menu
+	
+	def on_popup_unmute_all(self, widget):
+		for mp in reversed(player.get_plugin_list()):
+			info = common.get_plugin_infos().get(mp)
+			info.muted=False
+			mp.set_mute(info.muted)
+			info.reset_plugingfx()
 		
 	def on_context_menu(self, widget, event):
 		"""

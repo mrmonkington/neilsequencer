@@ -1008,7 +1008,6 @@ class SequencerView(gtk.DrawingArea):
 			if w>self.wmax:
 				self.wmax=w
 				
-		print self.wmax
 		w=self.wmax/self.step+3
 		return w,h
 
