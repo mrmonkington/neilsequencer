@@ -1,3 +1,58 @@
+Aldrin 0.12 (Luna)
+==================
+
+Enhancements:
+
+Play MIDI input on selected machine
+Record chords using midi or keyjazz (create tracks to hold extra notes first)
+Green Milk synth added
+FSM Infector synth added
+Added home and end for sequencer
+Simple rack view implemented
+Slider increments handling arrow keys and slider body mouse clicks.
+Multiple columns for preset dropdown.
+Menu accelerators for new, open, save.
+AZERTY keyboard compatibility
+Scrollbars added to sequencer
+Use midi keyboard for step-entry in pattern editor
+A tool to manage and import/export presets
+ability to create new pattern from sequencer view
+
+#163 use < > keys to change sample in pattern editor
+#287 Volume cannot be bound to MIDI controls
+#292 need way to select which machine midi affects
+#330 Selection with mouse or shift-arrow keys in pattern editor
+#335 Autoconnect generators, autocreate pattern (shift to override)
+#353 move preferences dialog to edit tab
+#375 Numpad entry implemented
+#377 Parameter slider responds to arrow keys and mouse clicks on surface.
+#378 Cursor movement speed increase.
+#380 Key jazz in parameter window
+
+Bugs fixed:
+
+Fix for status bar change on cursor movement
+Slider single step increment equal to 1
+#260 cpu monitor window woes
+#315 Sequence editor causes SIGSEGV if there is no machine added.
+#328 MIDI controls binding not working correctly for LUNAR plugins
+#342 'unmute all machines' - machine view
+#350 Parameter windows not resizable
+#351 Buzz songs import not working
+#354 Python traceback when reading malformed wav file
+#362 feisty: pyzzub is installed for python 2.4, not 2.5
+#365 Scrollbar doesn't work with Fluxbox
+#367 MIDI control doesn't work correctly with generators
+#369 Error opening demo song (paniq-knark.ccm)
+#371 in pattern edit: font size doesn't match cursor/grid size
+#382 Selections inbetween machines are incompatible, can cause a crash.
+#383 MIDI input does not work
+#389 Muting effects after soloing does not work
+#390 Pattern editor does not show values of recorded parameters
+#392 Fixed interpolation.
+#403 scrollbars in pattern editor are dodgy
+#405 Signal analysis in router needs converted from wx -> Gtk
+
 Aldrin 0.11 (Terra)
 ===================
 
