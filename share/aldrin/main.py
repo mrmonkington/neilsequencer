@@ -29,7 +29,7 @@ import gobject
 
 import time
 
-from utils import format_time, ticks_to_time, prepstr, linear2db, filepath, \
+from utils import format_time, ticks_to_time, prepstr, linear2db, db2linear, filepath, \
 	is_debug, question, error, add_scrollbars, file_filter, new_stock_image_toggle_button, \
 	new_stock_image_button, message
 import utils
@@ -1366,7 +1366,7 @@ class AmpView(gtk.DrawingArea):
 	"""
 	A simple control rendering a Buzz-like master VU bar.
 	"""
-	def __init__(self):
+	def __init__(self, parent):
 		"""
 		Initializer.
 		"""
@@ -1379,7 +1379,7 @@ class AmpView(gtk.DrawingArea):
 		gtk.DrawingArea.__init__(self)
 		self.set_size_request(MARGIN,100)
 		self.connect("expose_event", self.expose)
-		gobject.timeout_add(1000/25, self.on_update)
+		gobject.timeout_add(100, self.on_update)
 		
 	def set_amp(self, amp, t):
 		self.amps.put(amp, t)
@@ -1388,11 +1388,12 @@ class AmpView(gtk.DrawingArea):
 		"""
 		Event handler triggered by a 25fps timer event.
 		"""
-		v = self.amps.get_next()
-		if v != None:
-			self.amp = v
-			rect = self.get_allocation()
-			self.window.invalidate_rect((0,0,rect.width,rect.height), False)
+		master = player.get_plugin(0)
+		vol=master.get_parameter_value(1, 0, 0)
+		maxl, maxr = master.get_last_peak()
+		self.amp = min(max(maxl,maxr),1.0)
+		rect = self.get_allocation()
+		self.window.invalidate_rect((0,0,rect.width,rect.height), False)
 		return True
 		
 	def draw(self, ctx):
@@ -1442,8 +1443,8 @@ class MasterPanel(gtk.HBox):
 		self.masterslider.set_inverted(True)
 		self.masterslider.connect('scroll-event', self.on_mousewheel)
 		self.masterslider.connect('change-value', self.on_scroll_changed)
-		self.ampl = AmpView()
-		self.ampr = AmpView()
+		self.ampl = AmpView(self)
+		self.ampr = AmpView(self)
 		self.add(self.ampl)
 		self.add(self.masterslider)
 		self.add(self.ampr)
@@ -1463,10 +1464,6 @@ class MasterPanel(gtk.HBox):
 		if plugin == player.get_plugin(0):
 			if data.type == zzub.zzub_event_type_parameter_changed:
 				self.update_all()
-			elif data.type == zzub.zzub_event_type_vu:
-				vu = getattr(data,'').vu
-				self.ampl.set_amp(vu.left_amp, vu.time)
-				self.ampr.set_amp(vu.right_amp, vu.time)
 
 	def on_scroll_changed(self, widget, scroll, value):
 		"""
