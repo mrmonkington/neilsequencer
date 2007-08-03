@@ -26,7 +26,7 @@ import sys
 from utils import prepstr
 
 NAME = "Aldrin"
-VERSION = "0.11 (Terra)"
+VERSION = "0.12 (Luna)"
 COPYRIGHT = "Copyright (C) 2006, 2007 The Aldrin Development Team"
 COMMENTS = '"no insult, but i think you\'re too weird to really make the best music app ever created." -- rpfr'
 
@@ -41,11 +41,11 @@ AUTHORS = [
 'Leonard Ritter <contact@leonard-ritter.com>',
 'Pieter Holtzhausen <13682857@sun.ac.za>',
 'Anders Ervik <calvin@countzero.no>',
+'James Stone <jamesmstone@gmail.com>',
 'Carsten Sørensen',
 'Joachim Michaelis <jm@binarywerks.dk>',
 'Aaron Oxford <aaron@hardwarehookups.com.au>',
 'Laurent De Soras <laurent.de.soras@club-internet.fr>',
-'Leonard Ritter <contact@leonard-ritter.com>',
 'Greg Raue <graue@oceanbase.org>',
 ]
 
