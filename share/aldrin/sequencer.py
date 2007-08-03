@@ -565,7 +565,7 @@ class SequencerView(gtk.DrawingArea):
 		menu.popup(None, None, None, event.button, event.time)
 		
 	def add_pattern(self, widget):
-		self.rootwindow.patternframe.view.on_popup_create_pattern(self.get_track().get_plugin())
+		self.rootwindow.patternframe.view.on_popup_create_pattern(None, self.get_track().get_plugin())
 		self.rootwindow.select_page(self.rootwindow.PAGE_SEQUENCER)
 	
 	def show_plugin_dialog(self):		
