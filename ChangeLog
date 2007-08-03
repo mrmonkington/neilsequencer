@@ -21,6 +21,7 @@ ability to create new pattern from sequencer view
 #163 use < > keys to change sample in pattern editor
 #287 Volume cannot be bound to MIDI controls
 #292 need way to select which machine midi affects
+#322 Main volume meter lags to follow output
 #330 Selection with mouse or shift-arrow keys in pattern editor
 #335 Autoconnect generators, autocreate pattern (shift to override)
 #353 move preferences dialog to edit tab
