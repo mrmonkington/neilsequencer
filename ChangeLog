@@ -34,6 +34,7 @@ Bugs fixed:
 
 Fix for status bar change on cursor movement
 Slider single step increment equal to 1
+Parameters display correctly on blackbox and other window managers
 #260 cpu monitor window woes
 #315 Sequence editor causes SIGSEGV if there is no machine added.
 #328 MIDI controls binding not working correctly for LUNAR plugins
