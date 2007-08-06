@@ -959,7 +959,7 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		return True
 			
 	def on_activate_page(self, notebook, page, page_num):
-		gobject.timeout_add(10, self.select_page, page_num)
+		self.select_page(page_num)
 
 	def open_recent_file(self, widget, filename):
 		"""
