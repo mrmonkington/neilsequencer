@@ -482,7 +482,6 @@ class AldrinFrame(gtk.Window, IRootWindow):
 			panel,stockid = self.pages[k]
 			panel.show_all()
 			self.framepanel.append_page(panel, gtk.image_new_from_stock(stockid, gtk.ICON_SIZE_SMALL_TOOLBAR))
-		self.framepanel.connect('switch-page', self.on_activate_page)
 			
 		hbox = gtk.HBox()
 		hbox.add(self.framepanel)
@@ -504,6 +503,8 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		self.framepanel.set_current_page(self.PAGE_ROUTE)
 		
 		gobject.timeout_add(1000/25, self.on_handle_events)
+		self.framepanel.connect('switch-page', self.on_activate_page)
+		self.activated=0
 		
 		self.document_changed()
 		self.show_all()
@@ -907,15 +908,18 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		@param index: Index of the panel (use one of the self.PAGE_* constants)
 		@type index: int
 		"""
-		panel, stockid = self.pages[index]
-		if self.framepanel.get_current_page() != index:
-			self.framepanel.set_current_page(index)
-		if hasattr(panel,'view'):
-			print "grab focus",panel.view
-			panel.view.grab_focus()
-		else:
-			print "not grab focus"
-			panel.grab_focus()
+		if not(self.activated):
+			self.activated=1
+			panel, stockid = self.pages[index]
+			if self.framepanel.get_current_page() != index:
+				self.framepanel.set_current_page(index)
+			if hasattr(panel,'view'):
+				print "grab focus",panel.view
+				panel.view.grab_focus()
+			else:
+				print "not grab focus"
+				panel.grab_focus()
+		self.activated=0
 			
 	def on_preferences(self, event):
 		"""
@@ -960,6 +964,7 @@ class AldrinFrame(gtk.Window, IRootWindow):
 			
 	def on_activate_page(self, notebook, page, page_num):
 		self.select_page(page_num)
+			
 
 	def open_recent_file(self, widget, filename):
 		"""
