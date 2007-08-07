@@ -416,43 +416,59 @@ class PatternPanel(gtk.VBox):
 			self.update_all()
 		elif data.type == zzub.zzub_event_type_new_plugin:
 			self.update_all()
-		elif data.type == zzub.zzub_event_type_midi_control and self.toolbar.midistep.get_active() :
+		elif data.type == zzub.zzub_event_type_midi_control:
 			ctrl = getattr(data,'').midi_message
 			cmd = ctrl.status >> 4
-			if cmd == 0x9:
-				midinote=ctrl.data1
-				velocity=ctrl.data2
-				octave=midinote/12
-				note=midinote%12
-				if velocity>0:
-					data = (octave)<<4 | (note+1)
-					wi = None
-					wp = None
-					wdata = None
-					for i in range(self.view.parameter_count[self.view.group]):
-						pwp = self.view.plugin.get_parameter(self.view.group,i)
-						if pwp.get_flags() & zzub.zzub_parameter_flag_wavetable_index:
-							wp = pwp
-							wi = i
-							break
-					if wp != None:
-							wdata = self.toolbar.wave+1
-					if wdata!=None:
-						self.view.pattern.set_value(self.view.row, self.view.group, self.view.track, wi, wdata)
-					self.view.pattern.set_value(self.view.row, self.view.group, self.view.track, self.view.index, data)
-					self.view.play_note(1)
-				else:
-						m = self.view.get_plugin()
+			midinote=ctrl.data1
+			velocity=ctrl.data2
+			o=midinote/12
+			n=midinote%12
+			note=(o,n)
+			if cmd == 0x8 or cmd == 0x9 and velocity==0:
+				self.rootwindow.routeframe.view.play_note(self.rootwindow.routeframe.view.selected_plugin, zzub.zzub_note_value_off,0,note)
+				try:
+					self.rootwindow.routeframe.view.play_note(self.rootwindow.routeframe.view.selected_plugin, zzub.zzub_note_value_off,0,note)
+				except:
+					pass
+			if cmd == 0x9 and velocity!=0:
+				try:
+					self.rootwindow.routeframe.view.play_note(self.rootwindow.routeframe.view.selected_plugin, note,0,-1)
+				except:
+					pass
+			if self.toolbar.midistep.get_active() :
+				if cmd == 0x9:
+					if velocity>0:
+						data = (o)<<4 | (n+1)
+						wi = None
+						wp = None
+						wdata = None
+						for i in range(self.view.parameter_count[self.view.group]):
+							pwp = self.view.plugin.get_parameter(self.view.group,i)
+							if pwp.get_flags() & zzub.zzub_parameter_flag_wavetable_index:
+								wp = pwp
+								wi = i
+								break
+						if wp != None:
+								wdata = self.toolbar.wave+1
+						if wdata!=None:
+							self.view.pattern.set_value(self.view.row, self.view.group, self.view.track, wi, wdata)
 						try:
-							for index in range(self.view.parameter_count[self.view.group]):
-								v = self.view.pattern.get_value(self.view.row, self.view.group, self.view.track, index)
-								p = self.view.plugin.get_parameter(self.view.group, index)
-								if index==self.view.index:
-									v=zzub.zzub_note_value_off
-								m.set_parameter_value(self.view.group, self.view.track, index, v, 0)
-						except:
-							import traceback
-							traceback.print_exc()
+							self.view.pattern.set_value(self.view.row, self.view.group, self.view.track, self.view.index, data)
+							self.view.play_note(1)
+						except AttributeError:
+							return
+					else:
+							m = self.view.get_plugin()
+							try:
+								for index in range(self.view.parameter_count[self.view.group]):
+									v = self.view.pattern.get_value(self.view.row, self.view.group, self.view.track, index)
+									p = self.view.plugin.get_parameter(self.view.group, index)
+									if index==self.view.index:
+										v=zzub.zzub_note_value_off
+									m.set_parameter_value(self.view.group, self.view.track, index, v, 0)
+							except:
+								import traceback
+								traceback.print_exc()
 		elif data.type == zzub.zzub_event_type_parameter_changed and player.get_automation():
 			self.view.update_line(player.get_position())
 			self.view.redraw()

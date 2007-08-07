@@ -600,7 +600,6 @@ class RouteView(gtk.DrawingArea):
 		self.connect('key-press-event', self.on_key_jazz, None)	
 		self.connect('key-release-event', self.on_key_jazz_release, None)		
 		gobject.timeout_add(100, self.on_draw_led_timer)
-		self.rootwindow.event_handlers.append(self.on_callback)
 		#~ wx.EVT_SET_FOCUS(self, self.on_focus)
 		
 	def update_colors(self):
@@ -1258,36 +1257,6 @@ class RouteView(gtk.DrawingArea):
 		
 	def update_all(self):
 		self.update_colors()
-		
-	def on_callback(self, player, plugin, data):
-		"""
-		parameter window callback for ui events sent by zzub.
-		
-		@param player: player instance.
-		@type player: zzub.Player
-		@param plugin: plugin instance
-		@type plugin: zzub.Plugin
-		@param data: event data.
-		@type data: zzub_event_data_t
-		"""
-		if data.type == zzub.zzub_event_type_midi_control:
-			ctrl = getattr(data,'').midi_message
-			cmd = ctrl.status >> 4
-			midinote=ctrl.data1
-			velocity=ctrl.data2
-			o=midinote/12
-			n=midinote%12
-			note=(o,n)
-			if cmd == 0x8 or cmd == 0x9 and velocity==0:
-				try:
-					self.play_note(self.selected_plugin, zzub.zzub_note_value_off,0,note)
-				except:
-					pass
-			if cmd == 0x9 and velocity!=0:
-				try:
-					self.play_note(self.selected_plugin, note,0,-1)
-				except:
-					pass
 	
 	def on_draw_led_timer(self):
 		"""
@@ -1464,7 +1433,10 @@ class RouteView(gtk.DrawingArea):
 			
 	def play_note(self, plugin, note, octave, oldnote):
 		m = plugin
-		plugin = m.get_pluginloader()
+		try:
+			plugin = m.get_pluginloader()
+		except AttributeError:
+			return
 		#pattern = self.plugin.create_pattern(1)
 		row = 0
 		group = 2
