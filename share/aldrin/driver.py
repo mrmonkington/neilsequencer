@@ -59,8 +59,8 @@ class MidiDriver:
 class AudioDriver:
 	def __init__(self):
 		self.enabled = False
-		self.samplerate = 48000
-		self.buffersize = 512
+		self.samplerate = 44100
+		self.buffersize = 256
 		
 	def destroy(self):
 		if not self.enabled:
@@ -77,7 +77,6 @@ class AudioDriver:
 			self.destroy()
 		inputname, outputname, samplerate, buffersize = config.get_config().get_audiodriver_config()
 		assert player.audiodriver_get_count()
-		print "a"+outputname+"a"
 		print "available drivers:"
 		bestpick = -1
 		for i in range(player.audiodriver_get_count()):
