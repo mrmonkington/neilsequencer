@@ -99,6 +99,7 @@ class SequencerToolBar(gtk.HBox):
 			self.stepselect.append_text("%i" % i)
 		self.stepselect.set_active(self.steps.index(self.parent.view.step))
 		config.get_config().set_default_int('SequencerStep', self.parent.view.step)
+		self.parent.view.adjust_scrollbars()
 		
 	def on_stepselect(self, widget):
 		"""
