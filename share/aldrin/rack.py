@@ -44,15 +44,6 @@ import common
 player = common.get_player()
 from common import MARGIN, MARGIN2, MARGIN3, MARGIN0
 
-class ChordPlaying:
-	"""
-	Stores info about currently playing keyjazz notes
-	"""
-	def __init__(self, track=0, note=0):
-		self.track=track
-		self.note=note
-
-
 class ParameterView(gtk.VBox):
 	"""
 	Displays parameter sliders for a plugin in a new Dialog.
@@ -505,7 +496,8 @@ class ParameterView(gtk.VBox):
 		"""		
 		print g,t,i
 		key = event.keyval
-		if (key >= ord('0')) and (key <= ord('9')):
+		if gtk.gdk.keyval_from_name('KP_0') <= key <= gtk.gdk.keyval_from_name('KP_9'):
+			key = key - gtk.gdk.keyval_from_name('KP_0')  + gtk.gdk.keyval_from_name('0') 
 			p = self.pluginloader.get_parameter(g,i)
 			minv = p.get_value_min()
 			maxv = p.get_value_max()
