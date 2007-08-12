@@ -1023,22 +1023,24 @@ class RouteView(gtk.DrawingArea):
 			if mp.get_type() in (zzub.zzub_plugin_type_effect,zzub.zzub_plugin_type_master):
 				menu.append(gtk.SeparatorMenuItem())
 				menu.append(make_submenu_item(self.get_plugin_menu(include_generators=False, plugin=mp), "_Prepend Effect"))
-			commands = mp.get_commands()
-			if commands:
-				menu.append(gtk.SeparatorMenuItem())
-				submenuindex = 0
-				for index in range(len(commands)):
-					cmd = commands[index]
-					if cmd.startswith('/'):
-						submenu = gtk.Menu()
-						subcommands = mp.get_sub_commands(index)
-						submenuindex += 1
-						for subindex in range(len(subcommands)):
-							subcmd = subcommands[subindex]
-							submenu.append(make_menu_item(prepstr(subcmd), "", self.on_popup_command, mp, submenuindex, subindex))
-						menu.append(make_submenu_item(submenu, prepstr(cmd)))
-					else:
-						menu.append(make_menu_item(prepstr(cmd), "", self.on_popup_command, mp, 0, index))
+			#Doesn't work at present:
+			#
+			#commands = mp.get_commands()
+			#if commands:
+			#	menu.append(gtk.SeparatorMenuItem())
+			#	submenuindex = 0
+			#	for index in range(len(commands)):
+			#		cmd = commands[index]
+			#		if cmd.startswith('/'):
+			#			submenu = gtk.Menu()
+			#			subcommands = mp.get_sub_commands(index)
+			#			submenuindex += 1
+			#			for subindex in range(len(subcommands)):
+			#				subcmd = subcommands[subindex]
+			#				submenu.append(make_menu_item(prepstr(subcmd), "", self.on_popup_command, mp, submenuindex, subindex))
+			#			menu.append(make_submenu_item(submenu, prepstr(cmd)))
+			#		else:
+			#			menu.append(make_menu_item(prepstr(cmd), "", self.on_popup_command, mp, 0, index))
 			extman.get_extension_manager().extend_menu(interface.UIOBJECT_ROUTE_MENU_PLUGIN, menu, plugin=mp)
 		else:
 			try:
