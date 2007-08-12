@@ -2155,6 +2155,11 @@ class PatternView(gtk.DrawingArea):
 				tc = self.group_track_count[g]
 				self.lines[row][g] = [None]*tc
 			self.update_line(row)
+			
+	def get_line_pattern(self):
+		master = player.get_plugin(0)
+		tpb = master.get_parameter_value(1, 0, 2)
+		return tpb*4,tpb
 
 	def draw(self,ctx):	
 		"""
@@ -2228,6 +2233,7 @@ class PatternView(gtk.DrawingArea):
 		y = clipy1
 		gc.set_clip_rectangle(gtk.gdk.Rectangle(startx, 0, w - startx, h))
 		if self.lines:
+			l1,l2 = self.get_line_pattern()
 			tc = self.group_track_count
 			def draw_parameters(row, group, track=0):
 				"""Draw the parameter values"""
@@ -2243,10 +2249,10 @@ class PatternView(gtk.DrawingArea):
 			#~ dc.SetPen(wx.TRANSPARENT_PEN)
 			while (i < rows) and (y < h):
 				# darker colour lines each 4 and 16 lines
-				if (i % 16) == 0:
+				if (i % l1) == 0:
 					gc.set_foreground(fbrush1)
 					gc.set_background(fbrush1)
-				elif (i % 4) == 0:
+				elif (i % l2) == 0:
 					gc.set_foreground(fbrush2)
 					gc.set_background(fbrush2)
 				else:
