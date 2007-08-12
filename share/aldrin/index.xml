@@ -8,6 +8,7 @@
 	<ref label="FSM Infector (Synthesizer)" uri="@krzysztof_foltman/generator/infector;1"/>
 	<ref label="Kibibu Green Milk (Synthesizer)" uri="@cameron_foale/generator/green_milk;1"/>
 	<ref label="Makk M4wII (Synthesizer)" uri="@makk.org/M4wII;1"/>
+	<ref label="LiveJump" uri="@zzub.org/livejump;1"/>
 	<group label="DSSI Plugins">
 		<refs pattern="@zzub.org/dssidapter/*"/>
 	</group>
@@ -17,6 +18,7 @@
 	<ref icon="lunar_gain" label="Lunar Gain" uri="@trac.zeitherrschaft.org/aldrin/lunar/effect/gain;1"/>
 	<ref icon="lunar_pan" label="Lunar Pan" uri="@trac.zeitherrschaft.org/aldrin/lunar/effect/panning;1"/>
 	<ref icon="lunar_verb" label="Lunar Verb" uri="@trac.zeitherrschaft.org/aldrin/lunar/effect/reverb;1"/>
+	<ref label="Bigyo Frequency Shifter" uri="@bigyo/frequency+shifter;1"/>
 	<ref label="Frequency UnKnown O-Delay (Delay)" uri="@frequencyunknown.org/o-delay;1"/>
 	<ref label="FireSledge ParamEQ (Equalizer)" uri="@FireSledge.org/ParamEQ;1"/>
 	<ref label="Graue SoftSat (Distortion)" uri="graue@oceanbase.org/effect/softsat;1"/>
