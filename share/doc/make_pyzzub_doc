@@ -1,0 +1,3 @@
+export LD_LIBRARY_PATH=../lib
+export LIBRARY_LOAD_NONE=true
+epydoc --html -n "pyzzub" -o ./pyzzub --debug --css ./pyzzub.css ../../src/pyzzub/zzub

@@ -1,0 +1,264 @@
+#encoding: latin-1
+
+# libzzub, Buzé, Aldrin
+# Modular Sequencer
+# Copyright (C) 2006 The Aldrin Development Team
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+Import('env', 'posix', 'win32', 'mac', 'install_lib', 'install', 'cl', 'vs_projects')
+import glob
+
+#######################################
+#
+# libzzub shared library
+#
+#######################################
+
+localenv = env.Copy()
+
+files = [
+	'bmxreader.cpp',
+	'bmxwriter.cpp',
+	'compress.cpp',
+	'decompress.cpp',
+	'driver.cpp',
+	'dummy.cpp',
+	'host.cpp',
+	'libzzub.cpp',
+	'master.cpp',
+	'metaplugin.cpp',
+	'pattern.cpp',
+	'player.cpp',
+	'pluginloader.cpp',
+	'sequence.cpp',
+	'sequencer.cpp',
+	'tools.cpp',
+	'waveplayer.cpp',
+	'wavetable.cpp',
+	'midi.cpp',
+	'recorder.cpp',
+	'ccm.cpp',
+	'input.cpp',
+	'output.cpp',
+	'synchronization.cpp',
+]
+
+# we build from our private flac,
+# since some are using 1.1.3, and that
+# one breaks a few things.
+localenv.Append(CPPPATH=[
+	"${ROOTPATH}/src/flac/include"
+])
+localenv.Append(CCFLAGS=[
+	'-DFLAC__NO_DLL',
+])
+env.SConscript("${ROOTPATH}/src/flac/src/libFLAC/SConscript")
+
+# minizip, zlib and flac dependencies
+files += [
+	'${MINIZIP_SRC_PATH}/ioapi.c',
+	'${MINIZIP_SRC_PATH}/mztools.c',
+	'${MINIZIP_SRC_PATH}/unzip.c',
+	'${MINIZIP_SRC_PATH}/zip.c',
+]
+if win32:
+	# build from our private zlib
+	localenv.Append(CPPPATH=["${ROOTPATH}/src/zlib"])
+	env.SConscript("${ROOTPATH}/src/zlib/SConscript")
+	# no deprecation warnings
+	localenv.Append(CCFLAGS=[
+		'-D_CRT_SECURE_NO_DEPRECATE',
+	])
+	
+localenv.Append(LIBS=[
+	'FLAC',
+	'z',
+])
+
+localenv.Append(CCFLAGS=['-D_LIB','-D_LIBZZUB'])
+
+# neccessities
+if posix:	
+	localenv.Append(LIBS=[
+		'pthread',
+		localenv['LIB_DL'],
+		localenv['LIB_COMPAT'],
+	])
+elif win32:
+	localenv.Append(LIBS=[
+		'oleaut32'
+	])
+
+if localenv['USE_SIGNATURE'] == True:
+	localenv.Append(CCFLAGS=[
+		'-DUSE_SIGNATURE'
+	])
+
+
+if localenv['SNDFILE']:
+	localenv.Append(LIBS=[
+		'sndfile',
+	])
+	localenv.Append(CCFLAGS=[
+		'-DUSE_SNDFILE',
+	])
+
+# portmidi support
+localenv.Append(CPPPATH=[
+	'${PORTMIDI_SRC_PATH}/pm_common',
+	'${PORTMIDI_SRC_PATH}/porttime'
+])
+
+if posix:
+	# porttime and portmidi
+	files += [
+			'${PORTMIDI_SRC_PATH}/porttime/porttime.c',
+			'${PORTMIDI_SRC_PATH}/pm_common/pmutil.c',
+			'${PORTMIDI_SRC_PATH}/pm_common/portmidi.c',
+	]
+
+	if localenv['COREAUDIO'] == True:
+		files += [
+			'${PORTMIDI_SRC_PATH}/pm_mac/pmmac.c', 
+			'${PORTMIDI_SRC_PATH}/pm_mac/pmmacosxcm.c',
+			'${PORTMIDI_SRC_PATH}/porttime/ptmacosx_cf.c',
+		]
+		localenv.Append(LINKFLAGS=[
+			'-framework', 'CoreMIDI',
+			'-framework', 'CoreFoundation',
+			'-framework', 'CoreAudio'
+		])
+	else:
+		files += [
+			'${PORTMIDI_SRC_PATH}/porttime/ptlinux.c',
+			'${PORTMIDI_SRC_PATH}/pm_linux/pmlinux.c',
+		]
+		localenv.Append(CCFLAGS=[
+			'-DPM_CHECK_ERRORS',
+			'-DNEWBUFFER'
+		])
+		if localenv["ALSA"] == True:
+			files += [ '${PORTMIDI_SRC_PATH}/pm_linux/pmlinuxalsa.c' ]
+			localenv.Append(LIBS=[ 'asound', ])
+			localenv.Append(CCFLAGS=[ '-DPMALSA', ])
+
+elif win32:
+	localenv.Append(LIBS=[
+		'portmidi',			
+		'porttime',
+	])
+
+#######################################
+# rtaudio
+#######################################
+
+localenv.SConscript('../rtaudio/SConscript')
+localenv.Append(LIBS=[
+	'rtaudio_static',
+])
+localenv.Append(CPPPATH=[
+	'../rtaudio',
+])
+
+if env['MP3'] == True:
+	localenv.SConscript('../libmad/SConscript')
+	localenv.Append(LIBS=[
+		'libmad_static',
+	])
+	localenv.Append(CPPPATH=[
+		'../libmad',
+	])
+	localenv.Append(CCFLAGS=[
+		'-DUSE_LIBMAD',
+	])
+
+if win32:
+	localenv.Append(CCFLAGS=[
+		'-D__WINDOWS_ASIO__',
+		'-D__WINDOWS_DS__',
+		'-D__WINDOWS_SILENT__',
+	])
+	localenv.Append(LIBS=[
+		'advapi32',
+		'ole32',
+		'dsound',
+	])
+
+if localenv['COREAUDIO'] == True:
+	localenv.Append(CCFLAGS=['-D__MACOSX_CORE__'])
+if localenv['ALSA'] == True:
+	localenv.Append(CCFLAGS=['-D__LINUX_ALSA__'])
+	localenv.Append(LIBS=['asound'])
+if localenv['JACK'] == True:
+	localenv.Append(CCFLAGS=['-D__LINUX_JACK__'])
+	localenv.Append(LIBS=[ 'jack', localenv['LIB_RT'] ])
+if localenv['OSS'] == True:
+	localenv.Append(CCFLAGS=['-D__LINUX_OSS__'])
+
+if posix:
+	localenv.Append(LIBS=[
+		'pthread',
+		'm',
+	])
+
+#######################################
+# targets
+#######################################
+
+# add fink paths for OS X
+if mac:
+	localenv.Append(CPPPATH=['/sw/include'])
+	localenv.Append(LIBPATH=['/sw/lib'])
+
+if win32:
+	libzzub_static = localenv.Library('${LIB_BUILD_PATH}/zzub_static',files)
+
+if hasattr(localenv, 'MSVSProject'):
+	localenv.MSVSProject(target = 'libzzub_static' + localenv['MSVSPROJECTSUFFIX'],
+		srcs = glob.glob('*.cpp'),
+		incs = glob.glob('*.h'),
+		buildtarget = libzzub_static,
+		variant = 'Debug',
+		auto_build_solution=0)
+	vs_projects+=['src/libzzub/libzzub_static' + localenv.subst('$MSVSPROJECTSUFFIX') ]
+
+if win32:
+	files.append('libzzub.def')
+
+shlibsuffix = localenv['SHLIBSUFFIX']
+
+if posix:
+	localenv['SHLIBSUFFIX'] += '.' + env['LIBZZUB_VERSION']
+libzzub = localenv.SharedLibrary('${LIB_BUILD_PATH}/zzub',files)
+installed_libzzub = install_lib(libzzub)
+if posix:
+	vcomps = env['LIBZZUB_VERSION'].split('.')
+	for i in range(len(vcomps)):
+		v = '.'.join(vcomps[:i])
+		if v:
+			v = '.'+v
+		symlinkcmd = 'cd $TARGET.dir && rm -f $TARGET.name && ln -s $SOURCE.name $TARGET.name'
+		localenv.Command('${LIB_BUILD_PATH}/libzzub'+shlibsuffix+v, libzzub, symlinkcmd)
+		localenv.Command('${DESTDIR}${PREFIX}${LIBDIR}/libzzub'+shlibsuffix+v, installed_libzzub, symlinkcmd)
+
+if hasattr(localenv, 'MSVSProject'):
+	localenv.MSVSProject(target = 'libzzub' + localenv['MSVSPROJECTSUFFIX'],
+		srcs = glob.glob('*.cpp'),
+		incs = glob.glob('*.h'),
+		buildtarget = libzzub[0],   # len(libzzub)==3, but we need only 1
+		variant = 'Debug',
+		auto_build_solution=0)
+	vs_projects+=['src/libzzub/libzzub' + localenv.subst('$MSVSPROJECTSUFFIX') ]

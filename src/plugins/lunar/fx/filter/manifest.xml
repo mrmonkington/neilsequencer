@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<zzub>
+	<plugin
+		uri="@trac.zeitherrschaft.org/aldrin/lunar/effect/filter;1"
+		name="Lunar Filter"
+		shortname="Filter"
+		type="effect"
+		description="An SVF filter effect (2pass)."
+		author="Leonard Ritter"
+		email="contact at leonard-ritter+com">
+		<parameters>
+			<valuenamegroup>
+				<valuenames id="ftypes">
+					<alias value="0" name="Notch"/>
+					<alias value="1" name="Low Pass"/>
+					<alias value="2" name="High Pass"/>
+					<alias value="3" name="Band Pass"/>
+					<alias value="4" name="Peak"/>
+				</valuenames>
+			</valuenamegroup>
+			<global>
+				<parameter
+					id="ftype"
+					name="Type"
+					description="Type of filter (0 = notch, 1 = low, 2 = high, 3 = band, 4 = peak)"
+					type="byte"
+					minvalue="0"
+					maxvalue="4"
+					defvalue="1"
+					valuenames="ftypes"
+					state="true"/>
+				<parameter
+					id="freq"
+					name="Cutoff (Hz)"
+					description="Cutoff frequency of filter"
+					type="float"
+					logarithmic="true"
+					power="0.7"
+					minvalue="10"
+					maxvalue="20000"
+					defvalue="20000"
+					precision="1"
+					state="true"/>
+				<parameter
+					id="res"
+					name="Resonance"
+					description="Resonance of filter"
+					type="float"
+					minvalue="0"
+					maxvalue="0.99"
+					defvalue="0"
+					precision="0.01"
+					state="true"/>
+				<!-- <parameter
+					id="dist"
+					name="Distortion"
+					description="Distortion of filter"
+					type="float"
+					minvalue="0"
+					maxvalue="0.1"
+					defvalue="0"
+					precision="0.01"
+					state="true"/> -->
+			</global>
+			<track>
+			</track>
+		</parameters>
+		<files>
+			<file ref="filter.cpp"/>
+			<file ref="filter.h"/>
+			<file ref="svf.h"/>
+		</files>
+		<modules>
+			<module id="filter">
+				<source language="c++" ref="filter.cpp" fxdef="filter.h"/>
+			</module>
+		</modules>
+	</plugin>
+</zzub>

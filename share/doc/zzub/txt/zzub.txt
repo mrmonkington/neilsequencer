@@ -1,0 +1,213 @@
+
+libzzub User Manual
+
+Leonard Ritter
+
+   Copyright © 2007 The libzzub Development Team
+
+   This book describes installation, configuration and usage of
+   libzzub, a powerful music sequencing library for the GNU/Linux
+   operating system.
+     _________________________________________________________
+
+   Table of Contents
+   1. Introduction
+   2. Installation
+
+        2.1. Building and installing libzzub
+        2.2. Building and installing pyzzub
+     _________________________________________________________
+
+Chapter 1. Introduction
+
+   Welcome to the libzzub User Manual. This book helps you with
+   configuration, installation and usage of libzzub, a powerful
+   music sequencing library for the GNU/Linux operating system.
+   If you are searching for a foundation of your next
+   Soundtracker, libzzub is what you want. libzzub provides an
+   extensible DSP plugin system, a wavetable, instruments, a
+   multitrack sequencer, support for major soundcard API's and
+   full compatibility with Jeskola Buzz on the Windows platform.
+
+   libzzub is currently being utilized as a core part of Aldrin,
+   Buzé and Buzz RMX. A community website revolving around these
+   programs is currently being built.
+     _________________________________________________________
+
+Chapter 2. Installation
+
+2.1. Building and installing libzzub
+
+   If you use a popular distribution of GNU/Linux, chances are
+   that your local package manager already offers a libzzub
+   package. If not, you will need to build libzzub yourself.
+
+   Independent of which distribution you use, building and
+   installing libzzub shouldn't be hard, given that you follow
+   this guide. If you have trouble installing libzzub, please
+   contact your distribution maintainers and ask them to include
+   support for libzzub.
+
+   libzzub consists of several components which have different
+   requirements. Some of these may already come with the distro
+   that you are using, some are a bit exotic and require
+   individual building. We have focused on keeping the number of
+   dependencies small and to include as much as required in the
+   distribution package itself. Lunar, the DSP plugin host of
+   libzzub, supports the latest version of LLVM, a JIT compiler
+   suite that is presently not common in all distributions. This
+   is an optional backend.
+
+   In order to assist you with building libzzub, libzzub features
+   an extensive configuration process that notifies you of
+   missing dependencies.
+
+   First make sure that you have all programs and libraries
+   installed required to build libzzub. Usually, all of them
+   should be provided by your distribution of GNU/Linux. Please
+   check with your distributions package manager documentation on
+   how to search and install packages. You are going to need
+   following packages:
+
+     * Python 2.4 or later.
+     * SCons 0.96.94 or later.
+     * GCC 4.0.1 or later.
+     * zlib
+     * libsndfile 1.0.17
+     * (Optional) LLVM 1.9.
+     * (Optional) llvm-gcc 4.0.1 or later, built for LLVM 1.9.
+
+   Depending on which sound API you wish to use, following
+   libraries are required as well:
+
+     * ALSA (libalsa).
+     * Jack Audio Connection Kit (libjack).
+
+   On Debian-style distributions such as Ubuntu, you will require
+   -dev packages additionally to regular library packages.
+
+   libzzub packages can currently be downloaded from Aldrins
+   SourceForge.net project website. You can either download a
+   release or build libzzub from the source repository. In this
+   guide, we are going to download a release.
+
+    1. On the project website, click on Downloads to see
+       available releases. You will see the downloads page on
+       which one or more releases are listed.
+    2. Download the sources of the most recent release. Usually,
+       the link should be named something like libzzub x.x Source
+       Release (x86, .tar.bz2), where x.x is the release number.
+    3. Unpack the downloaded sources into a new folder. You will
+       get a new subfolder named something like libzzub-x.x:
+[paniq@aspera tmp]$ tar -vxf libzzub-x.x.tar.bz2
+...
+libzzub-x.x/CREDITS
+libzzub-x.x/INSTALL
+libzzub-x.x/ChangeLog
+libzzub-x.x/LICENCE
+    4. Change into the newly created folder. and run scons to
+       configure libzzub for your system. If everything runs
+       fine, you are going to see an output as below. If not,
+       scons configure will tell you what is missing.
+[paniq@aspera tmp]$ cd libzzub-x.x
+[paniq@aspera libzzub-x.x]$ scons configure
+scons: Reading SConscript files ...
+Checking for C header file zlib.h... yes
+Checking for C header file CoreAudio/CoreAudio.h... no
+Checking for C header file alsa/asoundlib.h... yes
+Checking for C header file jack/jack.h... yes
+Checking for C header file sys/soundcard.h... yes
+Checking for llvm-config in PATH... (cached) /usr/bin/llvm-config
+Checking for version of '/usr/bin/llvm-config --version'... (cached) 1.
+9
+Finished configuration.
+
+                  === Using ===
+                    CoreAudio: no
+                         JACK: yes
+                         ALSA: yes
+                          OSS: yes
+                         LLVM: yes
+
+                === Components ===
+               Lunar DSP Host: yes
+
+               === Directories ===
+                     llvm-gcc: /home/paniq/llvm-gcc4-1.9-x86-linux-RHEL
+4/bin
+                       Prefix: /usr/local
+                 Install into: /usr/local
+            Library Directory: /usr/local/lib
+
+Please check if above settings reflect what you want, then build libzzu
+b using
+        scons
+To install scons, run
+        [sudo] scons install
+       You can configure scons to install into a different target
+       folder than /usr/local, to prevent libzzub from installing
+       system wide:
+[paniq@aspera libzzub-x.x]$ scons configure PREFIX=/home/paniq/usr
+       scons saves all settings, so you never need to pass an
+       option twice.
+       If you wish to build libzzub without Lunar (and thus,
+       missing out on a lot of nifty DSP plugins), you can turn
+       it off:
+[paniq@aspera libzzub-x.x]$ scons configure LUNAR=False
+       You can get a full list of options using the --help
+       option:
+[paniq@aspera libzzub-x.x]$ scons --help
+    5. Now that everything is set up, build libzzub:
+[paniq@aspera libzzub-x.x]$ scons
+scons: Reading SConscript files ...
+scons: done reading SConscript files.
+scons: Building targets ...
+...
+scons: done building targets.
+    6. Now install libzzub to your system (you will need root
+       rights if you are going to install libzzub system wide):
+[paniq@aspera libzzub-x.x]$ sudo scons install
+Password:
+scons: Reading SConscript files ...
+scons: done reading SConscript files.
+scons: Building targets ...
+Install file: "lib/libzzub" as "/usr/local/lib/libzzub"
+...
+scons: done building targets.
+
+   libzzub is now installed.
+     _________________________________________________________
+
+2.2. Building and installing pyzzub
+
+   libzzub comes with bindings for the Python programming
+   language, allowing you to use all of its functions within a
+   Python script.
+
+   In order to run pyzzub with Python 2.4, ctypes is an
+   additional requirement.
+
+   pyzzub is contained within the libzzub source directory
+   structure. To install pyzzub as a Python module, enter
+[paniq@aspera libzzub-x.x]$ cd src/pyzzub
+[paniq@aspera pyzzub]$ python setup.py build
+...
+copying zzub/zzub_classes.py -> build/lib/zzub
+copying zzub/library.py -> build/lib/zzub
+copying zzub/procwrap.py -> build/lib/zzub
+copying zzub/zzub_flat.py -> build/lib/zzub
+copying zzub/__init__.py -> build/lib/zzub
+...
+[paniq@aspera pyzzub]$ sudo python setup.py install
+
+   If everything went ok, you should be able to use pyzzub from
+   within Python:
+[paniq@aspera pyzzub]$ python
+Python 2.4.4c1 (#2, Oct 11 2006, 21:51:02)
+[GCC 4.1.2 20060928 (prerelease) (Ubuntu 4.1.1-13ubuntu5)] on linux2
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import zzub
+>>> zzub.Player()
+<zzub.Player object at 0xb7dc758c>
+
+   pyzzub is now installed.

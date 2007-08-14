@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<zzub>
+	<plugin
+		uri="@trac.zeitherrschaft.org/aldrin/lunar/generator/synth;1"
+		name="Lunar MiniSynth"
+		shortname="Synth"
+		type="generator"
+		mintracks="1"
+		maxtracks="8"
+		description="A simple synth demonstrating dsp scripting with Lunar."
+		author="Leonard Ritter"
+		email="contact at leonard-ritter+com">
+		<parameters>
+			<global>
+				<parameter
+					id="attack"
+					name="Attack (ms)"
+					description="How long until a tone is fully amplified."
+					type="float"
+					logarithmic="true"
+					minvalue="0.1"
+					maxvalue="1000"
+					defvalue="1"
+					precision="0.1"
+					state="true"/>
+				<parameter
+					id="decay"
+					name="Decay (ms)"
+					description="How long until a tone is at sustain volume."
+					type="float"
+					logarithmic="true"
+					minvalue="0.1"
+					maxvalue="1000"
+					defvalue="200"
+					precision="0.1"
+					state="true"/>
+				<parameter
+					id="sustain"
+					name="Sustain (%)"
+					description="Level of the sustain volume."
+					type="float"
+					logarithmic="true"
+					minvalue="0"
+					maxvalue="100"
+					defvalue="11"
+					precision="0.1"
+					state="true"/>
+				<parameter
+					id="release"
+					name="Release (ms)"
+					description="How long until the tone is fully silent."
+					type="float"
+					logarithmic="true"
+					minvalue="0.1"
+					maxvalue="1000"
+					defvalue="160"
+					precision="0.1"
+					state="true"/>
+				<parameter
+					id="freq"
+					name="Envelope Mod"
+					description="Envelope modulation of VCF"
+					type="float"
+					minvalue="0"
+					maxvalue="1"
+					defvalue="0.5"
+					precision="0.01"
+					state="true"/>
+				<parameter
+					id="res"
+					name="Resonance"
+					description="Resonance of VCF"
+					type="float"
+					minvalue="0"
+					maxvalue="0.99"
+					defvalue="0"
+					precision="0.01"
+					state="true"/>
+				<parameter
+					id="cutoff"
+					name="Cutoff (Hz)"
+					description="Cutoff frequency of filter"
+					type="float"
+					logarithmic="true"
+					power="0.7"
+					minvalue="10"
+					maxvalue="20000"
+					defvalue="10"
+					precision="1"
+					state="true"/>
+				<parameter
+					id="amp"
+					name="Master Gain (dB)"
+					description="Final gain of output signal"
+					type="float"
+					minvalue="-48"
+					maxvalue="0"
+					defvalue="-6"
+					precision="0.01"
+					state="true"/>
+			</global>
+			<track>
+				<parameter
+					id="note"
+					type="note"/>
+				<parameter
+					id="volume"
+					name="Volume"
+					description="Volume of note."
+					type="byte"
+					minvalue="0"
+					maxvalue="128"
+					defvalue="128"
+					novalue="255"/>
+			</track>
+		</parameters>
+		<files>
+			<file ref="synth.cpp"/>
+			<file ref="synth.h"/>
+			<file ref="svf.h"/>
+			<file ref="adsr.h"/>
+		</files>
+		<modules>
+			<module id="synth">
+				<source language="c++" ref="synth.cpp" fxdef="synth.h"/>
+			</module>
+		</modules>
+	</plugin>
+</zzub>

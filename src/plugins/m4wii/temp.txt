@@ -1,0 +1,77 @@
+/*
+		&paraMode,				// 0
+
+		&paraModWheel,			// 1
+		&paraPitchWheel,		// 2
+		&paraPitchBendAmt,		// 3
+
+        &paraGlide,				// 4
+
+		&paraWavetableOsc,		// 5
+		&paraFixedPitch,		// 6
+		&paraWaveDetuneSemi,	// 7
+
+        &paraWave1,				// 8
+        &paraPulseWidth1,		// 9
+
+        &paraWave2,				// 10
+        &paraPulseWidth2,		// 11
+        &paraDetuneSemi,		// 12
+        &paraDetuneFine,		// 13
+
+        &paraSync,				// 14
+        &paraMixType,			// 15
+        &paraMix,				// 16
+        &paraSubOscWave,		// 17
+        &paraSubOscVol,			// 18
+
+        &paraUEGAttackTime,			// 19
+        &paraUEGDecayTime,			// 20
+		&paraUEGSustainTime,		// 21
+		&paraUEGSustainLevel,		// 22
+		&paraUEGReleaseTime,		// 23
+        &paraUEnvMod,				// 24
+
+        &paraAEGAttackTime,			// 25
+		&paraAEGDecayTime,			// 26
+        &paraAEGSustainTime,		// 27
+        &paraAEGSustainLevel,		// 28
+        &paraAEGReleaseTime,		// 29
+
+        &paraFilterType,		// 30
+		&paraDist,				// 31
+        &paraCutoff,			// 32
+        &paraResonance,			// 33
+        &paraFEGAttackTime,		// 34
+        &paraFEGDecayTime,		// 35
+        &paraFEGSustainTime,	// 36
+        &paraFEGSustainLevel,	// 37
+        &paraFEGReleaseTime,	// 38
+        &paraFEnvMod,			// 39
+
+        // LFO 1
+        &paraLFO1Dest,			// 40
+        &paraLFO1Wave,			// 41
+        &paraLFO1Freq,			// 42
+        &paraLFO1Amount,		// 43
+        &paraLFO1PhaseDiff,		// 44
+        // LFO 2	
+        &paraLFO2Dest,			// 45
+        &paraLFO2Wave,			// 46
+        &paraLFO2Freq,			// 47
+        &paraLFO2Amount,		// 48
+        &paraLFO2PhaseDiff,		// 49
+
+		&paraUEGDest,			// 50
+
+		&paraPhase2,			// 51
+
+		&paraModDest1,			// 52
+		&paraModAmount1,		// 53
+		&paraModDest2,			// 54
+		&paraModAmount2,		// 55
+
+		&paraAmpGain,			// 56
+
+
+*/

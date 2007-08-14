@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<zzub>
+	<plugin
+		uri="@trac.zeitherrschaft.org/aldrin/lunar/effect/delay;1"
+		name="Lunar Delay"
+		shortname="Delay"
+		type="effect"
+		description="A delay effect."
+		author="Leonard Ritter"
+		email="contact at leonard-ritter+com">
+		<parameters>
+			<global>
+				<parameter
+					id="delay"
+					name="Delay"
+					description="Delay of output signal in 1024 steps per beat."
+					type="word"
+					minvalue="1"
+					maxvalue="2048"
+					novalue="65535"
+					defvalue="768"
+					state="true"/>
+				<parameter
+					id="fb"
+					name="Feedback (dB)"
+					description="Gain of feedback signal"
+					type="float"
+					minvalue="-48"
+					maxvalue="12"
+					defvalue="-8"
+					precision="0.01"
+					state="true"/>
+				<parameter
+					id="wet"
+					name="Wet Gain (dB)"
+					description="Gain of delay signal"
+					type="float"
+					minvalue="-48"
+					maxvalue="12"
+					defvalue="0"
+					precision="0.01"
+					state="true"/>
+				<parameter
+					id="dry"
+					name="Dry Gain (dB)"
+					description="Gain of dry signal"
+					type="float"
+					minvalue="-48"
+					maxvalue="12"
+					defvalue="0"
+					precision="0.01"
+					state="true"/>
+			</global>
+			<track>
+			</track>
+		</parameters>
+		<files>
+			<file ref="delay.cpp"/>
+			<file ref="delay.h"/>
+		</files>
+		<modules>
+			<module id="delay">
+				<source language="c++" ref="delay.cpp" fxdef="delay.h"/>
+			</module>
+		</modules>
+	</plugin>
+</zzub>

@@ -1,0 +1,3 @@
+- crispness/theviderness factors
+- portamento/vibrato
+- LFO init

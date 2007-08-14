@@ -1,0 +1,205 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN""http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>Building and installing pyzzub</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="libzzub User Manual"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="Installation"
+HREF="c23.html"><LINK
+REL="PREVIOUS"
+TITLE="Installation"
+HREF="c23.html"></HEAD
+><BODY
+CLASS="sect1"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>libzzub User Manual</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="c23.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 2. Installation</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+>&nbsp;</TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="sect1"
+><H1
+CLASS="sect1"
+><A
+NAME="install_pyzzub"
+>2.2. Building and installing pyzzub</A
+></H1
+><P
+>libzzub comes with bindings for the Python programming language, allowing you to use all of its
+	  functions within a Python script.</P
+><P
+>In order to run pyzzub with Python 2.4, <A
+HREF="http://python.net/crew/theller/ctypes/"
+TARGET="_top"
+>ctypes</A
+> is an additional requirement.</P
+><P
+>pyzzub is contained within the libzzub source directory structure. To install pyzzub as a Python module, enter</P
+><PRE
+CLASS="screen"
+><SAMP
+CLASS="prompt"
+>[paniq@aspera libzzub-x.x]$</SAMP
+> <B
+CLASS="command"
+>cd src/pyzzub</B
+>
+<SAMP
+CLASS="prompt"
+>[paniq@aspera pyzzub]$</SAMP
+> <B
+CLASS="command"
+>python setup.py build</B
+>
+...
+copying zzub/zzub_classes.py -&#62; build/lib/zzub
+copying zzub/library.py -&#62; build/lib/zzub
+copying zzub/procwrap.py -&#62; build/lib/zzub
+copying zzub/zzub_flat.py -&#62; build/lib/zzub
+copying zzub/__init__.py -&#62; build/lib/zzub
+...
+<SAMP
+CLASS="prompt"
+>[paniq@aspera pyzzub]$</SAMP
+> <B
+CLASS="command"
+>sudo python setup.py install</B
+></PRE
+><P
+>If everything went ok, you should be able to use pyzzub from within Python:</P
+><PRE
+CLASS="screen"
+><SAMP
+CLASS="prompt"
+>[paniq@aspera pyzzub]$</SAMP
+> <B
+CLASS="command"
+>python</B
+>
+Python 2.4.4c1 (#2, Oct 11 2006, 21:51:02) 
+[GCC 4.1.2 20060928 (prerelease) (Ubuntu 4.1.1-13ubuntu5)] on linux2
+Type "help", "copyright", "credits" or "license" for more information.
+<SAMP
+CLASS="prompt"
+>&#62;&#62;&#62;</SAMP
+> <B
+CLASS="command"
+>import zzub</B
+>
+<SAMP
+CLASS="prompt"
+>&#62;&#62;&#62;</SAMP
+> <B
+CLASS="command"
+>zzub.Player()</B
+>
+&#60;zzub.Player object at 0xb7dc758c&#62;</PRE
+><P
+>pyzzub is now installed.</P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="c23.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Installation</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c23.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>&nbsp;</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

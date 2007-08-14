@@ -1,0 +1,2 @@
+docbook2html -o zzub/html zzub/docbook/zzub.xml && \
+docbook2txt -o zzub/txt zzub/docbook/zzub.xml

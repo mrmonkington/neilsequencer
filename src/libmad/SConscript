@@ -1,0 +1,34 @@
+Import('env', 'posix', 'win32', 'install_lib', 'cl', 'vs_projects')
+import glob
+
+#######################################
+#
+# libmad mp3 decoder
+#
+#######################################
+
+localenv = env.Copy()
+
+files = [
+	'bit.c',
+	'decoder.c',
+	'fixed.c',
+	'frame.c',
+	'huffman.c',
+	'layer12.c',
+	'layer3.c',
+	#~ 'minimad.c',
+	'stream.c',
+	'synth.c',
+	'timer.c',
+	'version.c',
+]
+
+localenv.Append(CCFLAGS=[
+	'-DHAVE_CONFIG_H',
+	'-DFPM_INTEL', # this needs to be changed for other platforms
+])
+	
+libmad_static = localenv.StaticLibrary('${LIB_BUILD_PATH}/libmad_static', files)
+
+Export('libmad_static')
