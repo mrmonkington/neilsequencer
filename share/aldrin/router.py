@@ -1462,7 +1462,10 @@ class RouteView(gtk.DrawingArea):
 			return
 		#pattern = self.plugin.create_pattern(1)
 		row = 0
-		group = 2
+		if plugin.get_parameter_list(2):
+			group = 2
+		else:
+			group = 1
 		track = 0
 		index = 0
 		parameter_list = [parameter.get_name() for parameter in plugin.get_parameter_list(group)]		
