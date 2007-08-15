@@ -2138,7 +2138,10 @@ class PatternView(gtk.DrawingArea):
 				s = ''
 				for i in range(self.parameter_count[g]):
 					p = self.plugin.get_parameter(g,i)
-					s += get_str_from_param(p,self.pattern.get_value(row, g, t, i))
+					try:
+						s += get_str_from_param(p,self.pattern.get_value(row, g, t, i))
+					except IndexError:
+						pass
 					if i != self.parameter_count[g]-1:
 						s += ' '
 				try:
