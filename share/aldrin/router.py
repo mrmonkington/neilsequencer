@@ -1486,13 +1486,13 @@ class RouteView(gtk.DrawingArea):
 				data = (min(octave+o,9)<<4) | (n+1)
 			else:
 				return
-		else:
-			try:
-				data =  zzub.zzub_note_value_off
-				track=self.chordnotes[oldnote]
-				del self.chordnotes[oldnote]
-			except KeyError:
-				pass
+		elif group==2:
+				try:
+					data =  zzub.zzub_note_value_off
+					track=self.chordnotes[oldnote]
+					del self.chordnotes[oldnote]
+				except KeyError:
+					pass
 		#pattern.set_value(row, group, track, index, data)
 		player.lock_tick()			
 		try:	
