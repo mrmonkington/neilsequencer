@@ -132,6 +132,7 @@ class HDRecorderDialog(gtk.Dialog):
 		"""
 		Handler for the "Rec" button.
 		"""
+		self.master.reset_ticks_written()
 		self.master.set_write_wave(1)
 
 	def on_stop(self, widget):
