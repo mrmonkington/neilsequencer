@@ -1219,6 +1219,12 @@ class RouteView(gtk.DrawingArea):
 			last = self.selected_plugin
 			self.selected_plugin = self.current_plugin
 			if self.selected_plugin:
+				i=0
+				for mp in player.get_plugin_list():
+					if self.selected_plugin==mp:
+						break
+					i+=1
+				self.rootwindow.patternframe.toolbar.pluginselect.set_active(i)
 				common.get_plugin_infos().get(self.selected_plugin).reset_plugingfx()									
 				self.rootwindow.patternframe.toolbar.midistep.set_active(False)
 			if last:
