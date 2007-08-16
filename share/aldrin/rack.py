@@ -82,12 +82,14 @@ class ParameterView(gtk.VBox):
 		self.btncopy = new_stock_image_button(gtk.STOCK_COPY)
 		self.btnrandom = gtk.Button("_Random")
 		self.btnhelp = new_stock_image_button(gtk.STOCK_HELP)
+		self.btnsnap= gtk.Button("Snapshot")
 		menugroup = gtk.HBox(False, MARGIN)
 		menugroup.pack_start(self.presetbox)
 		menugroup.pack_start(self.btnadd, expand=False)
 		menugroup.pack_start(self.btnremove, expand=False)
 		menugroup.pack_start(self.btncopy, expand=False)
 		menugroup.pack_start(self.btnrandom, expand=False)
+		menugroup.pack_start(self.btnsnap, expand=False)
 		menugroup.pack_start(self.btnhelp, expand=False)
 		toplevelgroup = gtk.VBox(False, MARGIN)
 		toplevelgroup.set_border_width(MARGIN)
@@ -168,6 +170,7 @@ class ParameterView(gtk.VBox):
 		self.btnremove.connect('clicked', self.on_button_remove)
 		self.btncopy.connect('clicked', self.on_button_copy)
 		self.btnrandom.connect('clicked', self.on_button_random)
+		self.btnsnap.connect('clicked', self.on_button_snapshot)
 		self.btnhelp.connect('clicked', self.on_button_help)
 		self.connect('destroy', self.on_destroy)
 		if rootwindow.routeframe:
@@ -469,6 +472,23 @@ class ParameterView(gtk.VBox):
 						s.set_value(v)
 						self.update_valuelabel(g,t,i)
 	
+	def on_button_snapshot(self, event):
+		"""
+		Handler for clicks on the 'Snapshot' button.
+		"""
+		#for g in range(1,3):
+		#	for t in range(self.plugin.get_group_track_count(g)):
+		automation = player.get_automation()
+		player.set_automation(1)
+		for i in range(self.pluginloader.get_parameter_count(1)):
+			p = self.pluginloader.get_parameter(1,i)
+			nl,s,vl = self.pid2ctrls[(1,0,i)]
+			v=int(s.get_value())
+			self.plugin.set_parameter_value(1,0,i,v,1)
+		player.set_automation(automation)
+		self.rootwindow.patternframe.view.update_line(player.get_position())
+		self.rootwindow.patternframe.view.redraw()
+			
 	def on_button_help(self, event):
 		"""
 		Handler for clicks on the 'Help' button.
