@@ -506,7 +506,6 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		self.framepanel.connect('switch-page', self.on_activate_page)
 		self.framepanel.connect('button-release-event', self.button_up)
 		self.activated=0
-		self.index=0
 		
 		self.document_changed()
 		self.show_all()
@@ -928,12 +927,10 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		"""
 		selects panel after button up
 		"""
-		panel, stockid = self.pages[self.index]
+		panel, stockid = self.pages[self.framepanel.get_current_page()]
 		if hasattr(panel,'view'):
-			print "grab focus",panel.view
 			panel.view.grab_focus()
 		else:
-			print "not grab focus"
 			panel.grab_focus()
 		
 			
