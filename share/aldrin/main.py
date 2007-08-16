@@ -504,7 +504,9 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		
 		gobject.timeout_add(1000/25, self.on_handle_events)
 		self.framepanel.connect('switch-page', self.on_activate_page)
+		self.framepanel.connect('button-release-event', self.button_up)
 		self.activated=0
+		self.index=0
 		
 		self.document_changed()
 		self.show_all()
@@ -910,9 +912,10 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		"""
 		if not(self.activated):
 			self.activated=1
-			panel, stockid = self.pages[index]
-			if self.framepanel.get_current_page() != index:
-				self.framepanel.set_current_page(index)
+			self.index=index
+			panel, stockid = self.pages[self.index]
+			if self.framepanel.get_current_page() != self.index:
+				self.framepanel.set_current_page(self.index)
 			if hasattr(panel,'view'):
 				print "grab focus",panel.view
 				panel.view.grab_focus()
@@ -920,6 +923,20 @@ class AldrinFrame(gtk.Window, IRootWindow):
 				print "not grab focus"
 				panel.grab_focus()
 		self.activated=0
+		
+	def button_up(self, widget, event):
+		"""
+		selects panel after button up
+		"""
+		panel, stockid = self.pages[self.index]
+		if hasattr(panel,'view'):
+			print "grab focus",panel.view
+			panel.view.grab_focus()
+		else:
+			print "not grab focus"
+			panel.grab_focus()
+		
+			
 			
 	def on_preferences(self, event):
 		"""
