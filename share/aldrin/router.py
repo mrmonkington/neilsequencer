@@ -1515,17 +1515,19 @@ class RouteView(gtk.DrawingArea):
 		kv = event.keyval
 		k = gtk.gdk.keyval_name(kv)
 		note = None
-		info = common.get_plugin_infos().get(plugin)
+		octave = self.rootwindow.patternframe.view.octave
 		if k == "1":
 			note=zzub.zzub_note_value_off
 		elif  k == 'KP_Multiply':			
-			info.octave = min(max(info.octave+1,0), 9)
+			octave = min(max(octave+1,0), 9)
 		elif k ==  'KP_Divide':
-			info.octave = min(max(info.octave-1,0), 9)
+			octave = min(max(octave-1,0), 9)
 		elif kv < 256:
 			note = key_to_note(kv)
+		self.rootwindow.patternframe.view.octave=octave
+		self.rootwindow.patternframe.view.toolbar.update_octaves()
 		if note:	
-			self.play_note(plugin, note, info.octave, -1)
+			self.play_note(plugin, note, octave, -1)
 
 	def on_key_jazz_release(self, widget, event, plugin):
 		if not plugin:			
