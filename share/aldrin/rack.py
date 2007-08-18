@@ -100,10 +100,7 @@ class ParameterView(gtk.VBox):
 		
 		self.pluginloader = pl
 
-		self.presetbox_changed_id = None
 		self.update_presets()
-		self.presetbox.set_active(0)
-		self.presetbox_changed_id = self.presetbox.connect('changed', self.on_select_preset)
 
 		rowgroup = gtk.VBox()
 		rowgroup.set_border_width(MARGIN)
@@ -178,6 +175,9 @@ class ParameterView(gtk.VBox):
 			self.connect('key-press-event', routeview.on_key_jazz, self.plugin)		
 			self.connect('key-release-event', routeview.on_key_jazz_release, self.plugin)
 		self.connect('button-press-event', self.on_left_down)
+		self.presetbox.set_active(0)
+		self.presetbox.connect('notify::popup-shown', self.on_select_preset)
+		
 		
 		scrollwindow.add_with_viewport(rowgroup)
 		self.scrollwindow = scrollwindow
@@ -389,7 +389,7 @@ class ParameterView(gtk.VBox):
 			self.btnadd.set_sensitive(True)
 			self.btnremove.set_sensitive(True)
 
-	def on_select_preset(self, widget):
+	def on_select_preset(self, widget, gparam):
 		"""
 		Handler for changes of the choice box. Changes the current parameters
 		according to preset.
@@ -514,14 +514,13 @@ class ParameterView(gtk.VBox):
 		"""
 		Callback that responds to key stroke.
 		"""		
-		print g,t,i
-		key = event.keyval
-		if gtk.gdk.keyval_from_name('KP_0') <= key <= gtk.gdk.keyval_from_name('KP_9'):
-			key = key - gtk.gdk.keyval_from_name('KP_0')  + gtk.gdk.keyval_from_name('0') 
+		kv = event.keyval
+		if gtk.gdk.keyval_from_name('KP_0') <= kv <= gtk.gdk.keyval_from_name('KP_9'):
+			kv = kv - gtk.gdk.keyval_from_name('KP_0')  + gtk.gdk.keyval_from_name('0') 
 			p = self.pluginloader.get_parameter(g,i)
 			minv = p.get_value_min()
 			maxv = p.get_value_max()
-			data_entry = DataEntry((minv,maxv,chr(key)), self)
+			data_entry = DataEntry((minv,maxv,chr(kv)), self)
 			x,y,state = self.window.get_toplevel().get_pointer()
 			px,py = self.get_toplevel().get_position()
 			data_entry.move(px+x, py+y)

@@ -1522,7 +1522,31 @@ class RouteView(gtk.DrawingArea):
 		k = gtk.gdk.keyval_name(kv)
 		note = None
 		octave = self.rootwindow.patternframe.view.octave
-		if k == "1":
+		#these need to be here as well as main.py, or they don't work in rack view!
+		if k == 'F3':
+			self.rootwindow.select_page(self.rootwindow.PAGE_ROUTE)
+		elif k == 'F2':
+			self.rootwindow.select_page(self.rootwindow.PAGE_PATTERN)
+		elif k == 'F4':
+			self.rootwindow.select_page(self.rootwindow.PAGE_SEQUENCER)
+		elif k == 'F5':
+			self.rootwindow.btnplay.set_active(True)
+		elif k == 'F6':
+			self.rootwindow.play_from_cursor(event)
+		elif k == 'F7':
+			self.rootwindow.btnrecord.set_active(not self.btnrecord.get_active())
+		elif k == 'F8':
+			self.rootwindow.stop(event)
+		elif k == 'F9':
+			self.rootwindow.select_page(self.rootwindow.PAGE_WAVETABLE)
+		elif k == 'F10':
+			self.rootwindow.select_page(self.rootwindow.PAGE_INFO)
+		#~ elif k == 'F11':
+			#~ self.select_page(self.PAGE_RACK)
+		elif k == 'F12':
+			self.rootwindow.btnpanic.set_active(not self.btnpanic.get_active())
+		#on with the keyjazz stuff..
+		elif k == "1":
 			note=zzub.zzub_note_value_off
 		elif  k == 'KP_Multiply':			
 			octave = min(max(octave+1,0), 9)
