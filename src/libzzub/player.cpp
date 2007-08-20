@@ -450,14 +450,14 @@ void player::clear() {
 
     midiInputMappings.clear();
 
-	// delete all machines except master (which is always first)
-	while (getMachines()>1) {
-		zzub::metaplugin* m1=getMachine(1);
-		deleteMachine(m1);
+	// delete all machines except master and nonsongplugins
+	std::vector<zzub::metaplugin*> machinesCopy = machineInstances;
+	for (int i = 0; i<machinesCopy.size(); i++) {
+		zzub::metaplugin* plugin = machinesCopy[i];
+		if (plugin->machineInfo->type == zzub::plugin_type_master) continue;
+		if (plugin->nonSongPlugin) continue;
+		deleteMachine(plugin);
 	}
-
-	machineInstances.clear();
-	machineInstances.push_back(master);
 
 	master->clear();
 	master->tick();

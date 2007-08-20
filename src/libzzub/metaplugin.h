@@ -178,6 +178,7 @@ struct metaplugin {
 	std::list<scheduled_event> scheduledEvents;
 	std::vector<pattern*> patterns;
 
+	bool nonSongPlugin;	// if true, this plugin is not saved, nor removed from machineInstances on player::clear(). unless set to false, it must be explicitly deleted by the user.
 
 	metaplugin(zzub::player*, pluginloader*);
 	virtual ~metaplugin();

@@ -344,6 +344,7 @@ xml_node CcmWriter::saveClasses(xml_node &parent, zzub::player &player) {
     std::vector<pluginloader*> distinctLoaders;
     for (size_t i=0; i<player.getMachines(); i++) {
         metaplugin* plugin=player.getMachine(i);
+		if (plugin->nonSongPlugin) continue;
 
         std::vector<pluginloader*>::iterator p=find<vector<pluginloader*>::iterator >(distinctLoaders.begin(), distinctLoaders.end(), plugin->loader);
         if (p==distinctLoaders.end()) distinctLoaders.push_back(plugin->loader);
@@ -786,7 +787,9 @@ xml_node CcmWriter::savePlugins(xml_node &parent, zzub::player &player) {
 	item.name("plugins");
 
     for (size_t i=0; i<player.getMachines(); i++) {
-        savePlugin(item, player, *player.getMachine(i));
+		zzub::metaplugin* plugin = player.getMachine(i);
+		if (plugin->nonSongPlugin) continue;
+        savePlugin(item, player, *plugin);
     }
 	
 	return item;

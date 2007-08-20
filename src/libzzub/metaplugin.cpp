@@ -278,6 +278,7 @@ metaplugin::metaplugin(zzub::player* pl, pluginloader* loader) {
 	autoWrite = false;
 	ticksWritten = 0;
 	pluginRecorder = 0;
+	nonSongPlugin = false;
 }
 
 metaplugin::~metaplugin() { // todo: release pattern memory and connections

@@ -52,6 +52,7 @@ bool BuzzWriter::validateClassesForSave() {
 	for (size_t i=0; i<machines.size(); i++) {
 		metaplugin* plugin = machines[i];
 		if (plugin->getType()==zzub_plugin_type_master) continue;
+		if (plugin->nonSongPlugin) continue;
 
 		string pluginName=player->getBuzzName(plugin->loader->getUri());
 		if (pluginName=="")
@@ -74,7 +75,7 @@ void BuzzWriter::setMachines(std::vector<zzub::metaplugin*>& machineSelection) {
 	// save all machines except those with no_output-flag
 	for (size_t i = 0; i < machineSelection.size(); i++) {
 		zzub::metaplugin* machine = machineSelection[i];
-		if (!machine->isNoOutput() && machine != master) {
+		if (!machine->isNoOutput() && machine != master && !machine->nonSongPlugin) {
 			machines.push_back(machine);
 		}
 	}
