@@ -644,6 +644,7 @@ struct host {
 
 	// wavetable stream support
 	virtual plugin* stream_create(int index, int level);
+	virtual plugin* stream_create(const char* pluginUri, const char* dataUrl);
 	virtual void stream_destroy(plugin* stream);
 
 	metaplugin* _metaplugin;

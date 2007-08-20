@@ -1156,6 +1156,7 @@ void metaplugin::recordParameter(size_t group, size_t track, size_t param, int v
 		size_t row=seq->getCurrentlyPlayingPatternPosition();
 		if (row>=p->getRows()) row = 0;
 		t->setValue(row, param, value);
+		break;
 	}
 }
 

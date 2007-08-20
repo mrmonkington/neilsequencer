@@ -48,6 +48,7 @@ void stream_mp3::init(zzub::archive * const pi) {
 void stream_mp3::save(zzub::archive* po) {
 	zzub::outstream* strm = po->get_outstream("");
 	strm->write(fileName.c_str());
+	// TODO: should save samplerate and basenote too!
 }
 
 void stream_mp3::stop() {

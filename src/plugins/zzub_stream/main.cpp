@@ -29,11 +29,6 @@ int buzz_to_midi_note(int note) {
 	return 12 * (note >> 4) + (note & 0xf) - 1;
 }
 
-float note_to_frequency(float note) {
-	// A-4 = 440Hz = Midi note 57
-	return (float)440.0 * powf(2, (note - (float)57.0f) / (float)12.0f);
-} 
-
 const char* get_open_filename(const char* fileName, const char* filter) {
 
 	static char szFile[260];       // buffer for file name
@@ -60,6 +55,24 @@ const char* get_open_filename(const char* fileName, const char* filter) {
 	printf("get_open_filename not implemented!");
 #endif
 	return 0;
+}
+
+int find_level_index(const zzub::wave_info* info, const zzub::wave_level* level) {
+	for (int i = 0; i<info->get_levels(); i++) {
+		if (info->get_level(i) == level) return i;
+	}
+	return -1;
+}
+
+
+float lognote(int freq) {
+	return (logf(freq) - logf(440.0)) / logf(2.0) + 4.0;
+}
+
+void add_samples(float *pout, float *pin, int numsamples, float amp) {
+	do {
+		*pout++ += *pin++ * amp;
+	} while(--numsamples);
 }
 
 /***

@@ -2,33 +2,69 @@
 
 /***
 
-	Stream player plugin
-
-	This uses raw stream plugins (as defined by wave_level::stream_plugin_url and stream_data_url,
-	resamples as necessary and should also sync start/stop with the sequencer position.
+	Stream tracker plugin
 
 ***/
 
 #pragma pack(1)										// Place to retrieve parameters	
 
-struct playergvals {
+struct trackergvals {
+};
+
+struct trackertvals {
 	unsigned char note;
-	unsigned int offset;
-	unsigned int length;
+	unsigned char wave;
+	unsigned char volume;
+	unsigned char effect1;
+	unsigned char effect1_value;
+	unsigned char effect2;
+	unsigned char effect2_value;
 };
 
 #pragma pack()
 
-struct stream_player_plugin : zzub::plugin {
-	zzub::plugin* stream;
-	stereo_resampler resample;
+struct stream_tracker_plugin;
 
+struct streamtrack {
+
+	zzub::plugin* stream;
 	stream_resampler* resampler;
 
-	stream_player_plugin();
+	int note;
+	int wave;
+	int last_wave;
+	int last_level;
+	float amp;
+	
+	trackertvals* tval;
+	zzub::host* _host;
+	stream_tracker_plugin* _plugin;
+
+	streamtrack();
+	void init(stream_tracker_plugin* plugin, int index);
+	void process_events();
+	bool process_stereo(float **pin, float **pout, int numsamples, int mode);
+	void stop();
+	void destroy();
+
+};
+
+struct stream_tracker_plugin : zzub::plugin {
+
+	enum {
+		max_tracks = 16,
+	};
+
+	int num_tracks;
+	streamtrack tracks[max_tracks];
+	trackertvals tval[max_tracks];
+	trackergvals gval;
+
+	stream_tracker_plugin();
 
 	virtual void init(zzub::archive* pi);
 	virtual void save(zzub::archive*);
+	virtual void set_track_count(int i);
 	virtual void process_events();
 	virtual bool process_stereo(float **pin, float **pout, int numsamples, int mode);
 	virtual void command(int);
@@ -38,7 +74,6 @@ struct stream_player_plugin : zzub::plugin {
 	// ::zzub::plugin methods
 	virtual const char * describe_value(int param, int value) { return 0; }
 	virtual void attributes_changed() {}
-	virtual void set_track_count(int i) { }
 	virtual void mute_track(int) {}
 	virtual bool is_track_muted(int) const { return false; }
 	virtual void midi_note(int channel, int note, int velocity) {}
@@ -57,39 +92,10 @@ struct stream_player_plugin : zzub::plugin {
 	virtual void midi_control_change(int, int, int) {}
 	virtual bool handle_input(int, int, int) { return false; }
 
-	unsigned int get_offset() {
-		unsigned short low = gval.offset & 0xFFFF;
-		unsigned short high = gval.offset >> 16;
-		unsigned int offset;
-		if (low == 0xFFFF) 
-			offset = high << 16; else
-		if (high == 0xFFFF)
-			offset = low; else
-			offset = gval.offset;
-		return offset;
-	}
-
-	unsigned int get_length() {
-		unsigned short low = gval.length & 0xFFFF;
-		unsigned short high = gval.length >> 16;
-		unsigned int length;
-		if (low == 0xFFFF) 
-			length = high << 16; else
-		if (high == 0xFFFF)
-			length = low; else
-			length = gval.length;
-		return length;
-	}
-
-	void fill_resampler();
-
-protected:
-
-	playergvals gval;
 };
 
-struct stream_player_machine_info : zzub::info {
-	stream_player_machine_info();
-	virtual zzub::plugin* create_plugin() const { return new stream_player_plugin(); }
+struct stream_tracker_machine_info : zzub::info {
+	stream_tracker_machine_info();
+	virtual zzub::plugin* create_plugin() const { return new stream_tracker_plugin(); }
 	virtual bool store_info(zzub::archive *data) const { return false; }
 };

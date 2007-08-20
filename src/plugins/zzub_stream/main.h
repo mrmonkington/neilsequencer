@@ -8,8 +8,10 @@
 #include <zzub/plugin.h>
 
 const char* get_open_filename(const char* fileName, const char* filter);
-float note_to_frequency(float note);
 int buzz_to_midi_note(int note);
+int find_level_index(const zzub::wave_info* info, const zzub::wave_level* level);
+void add_samples(float *pout, float *pin, int numsamples, float amp);
+float lognote(int freq);
 
 
 #pragma pack(1)										// Place to retrieve parameters	
@@ -92,10 +94,13 @@ struct stream_machine_info : zzub::info {
 #include "stream_wav.h"
 #include "stream_mp3.h"
 #include "stream_wavetable.h"
+#include "resample.h"
 #include "stream_player.h"
+#include "stream_tracker.h"
 
 extern stream_machine_info_wav stream_info_wav;
 extern stream_machine_info_mp3 stream_info_mp3;
+extern stream_tracker_machine_info stream_tracker_info;
 extern stream_player_machine_info stream_player_info;
 extern stream_machine_info_wavetable stream_info_wavetable;
 
@@ -110,6 +115,7 @@ struct streamplugincollection : zzub::plugincollection {
 		factory->register_info(&stream_info_wav); 
 		factory->register_info(&stream_info_mp3); 
 		factory->register_info(&stream_info_wavetable); 
+		factory->register_info(&stream_tracker_info); 
 		factory->register_info(&stream_player_info); 
 	}
 	virtual const zzub::info *get_info(const char *uri, zzub::archive *data) { return 0; }

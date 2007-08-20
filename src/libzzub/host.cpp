@@ -456,6 +456,10 @@ std::string stringFromInt(int i, int len, char fillChar) {
 // TODO: should we return a streamplugin (vs metaplugin) instead, which handles enough of
 // parameter handling (such as clearing after tick) and supports the host-class etc? (streamhost?)
 
+plugin* host::stream_create(const char* pluginUri, const char* dataUrl) {
+	return _metaplugin->player->createStream(pluginUri, dataUrl);
+}
+
 plugin* host::stream_create(int index, int levelIndex) {
 	const wave_info* wave = get_wave(index);
 	if (!wave) return 0;
