@@ -480,18 +480,23 @@ class SequencerView(gtk.DrawingArea):
 						name += m.get_pattern(value).get_name()
 						# copy contents between patterns
 						eventlist.append((time, m.get_pattern(value)))
-						patternsize = max(patternsize, time - start[1] + m.get_pattern(value).get_row_count())
+						patternsize = max(patternsize, time - start[1] + m.get_pattern(value).get_row_count())						
 			if patternsize:
 				p = m.create_pattern(patternsize)
 				p.set_name(name + ' (merged)')
 				group_track_count = [m.get_input_connection_count(), 1, m.get_track_count()]
 				for time, pattern in eventlist:
+					t.remove_event_at(time)
 					for r in xrange(pattern.get_row_count()):
 						rowtime = time - start[1] + r
 						for g in range(3):
-							for t in xrange(group_track_count[g]):
+							for ti in xrange(group_track_count[g]):
 								for i in xrange(m.get_pluginloader().get_parameter_count(g)):
-									p.set_value(rowtime,g,t,i,pattern.get_value(r,g,t,i))
+									p.set_value(rowtime,g,ti,i,pattern.get_value(r,g,ti,i))
+				for i in xrange(m.get_pattern_count()):
+					if m.get_pattern(i) == p:
+						t.set_event(start[1], 0x10+i)
+						break
 		
 	def on_popup_cut(self, event=None):
 		self.on_popup_copy(event)
