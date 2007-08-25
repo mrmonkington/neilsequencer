@@ -452,12 +452,46 @@ class SequencerView(gtk.DrawingArea):
 		Copies the current selection into the clipboard
 		"""
 		if self.selection_start == None:
-			return		
-		data = self.CLIPBOARD_SEQUENCER		
+			return
+		data = self.CLIPBOARD_SEQUENCER
 		startrow = min(self.selection_start[1], self.selection_end[1])
 		for track,row,value in self.selection_range():
 			data += "%04x%08x%04x" % (track, row - startrow, value)
 		set_clipboard_text(data)
+		
+	def on_popup_merge(self, event=None):
+		seq = player.get_current_sequencer()
+		start = (min(self.selection_start[0], self.selection_end[0]), 
+					min(self.selection_start[1], self.selection_end[1]))
+		end = (max(self.selection_start[0], self.selection_end[0]), 
+					max(self.selection_start[1], self.selection_end[1]))
+		eventlist = []
+		patternsize = 0
+		for track in range(start[0], end[0]+1):
+			t = seq.get_track(track)
+			m = t.get_plugin()
+			name = ''
+			for time,value in t.get_event_list():
+				if (time >= start[1]) and (time < (end[1]+self.step)):
+					if value >= 0x10:
+						value -= 0x10
+						if name:
+							name += ' '
+						name += m.get_pattern(value).get_name()
+						# copy contents between patterns
+						eventlist.append((time, m.get_pattern(value)))
+						patternsize = max(patternsize, time - start[1] + m.get_pattern(value).get_row_count())
+			if patternsize:
+				p = m.create_pattern(patternsize)
+				p.set_name(name + ' (merged)')
+				group_track_count = [m.get_input_connection_count(), 1, m.get_track_count()]
+				for time, pattern in eventlist:
+					for r in xrange(pattern.get_row_count()):
+						rowtime = time - start[1] + r
+						for g in range(3):
+							for t in xrange(group_track_count[g]):
+								for i in xrange(m.get_pluginloader().get_parameter_count(g)):
+									p.set_value(rowtime,g,t,i,pattern.get_value(r,g,t,i))
 		
 	def on_popup_cut(self, event=None):
 		self.on_popup_copy(event)
@@ -561,6 +595,8 @@ class SequencerView(gtk.DrawingArea):
 		menu.append(make_menu_item("Copy", "", self.on_popup_copy))
 		menu.append(make_menu_item("Paste", "", self.on_popup_paste))
 		menu.append(make_menu_item("Delete", "", self.on_popup_delete))
+		menu.append(gtk.SeparatorMenuItem())
+		menu.append(make_menu_item("Merge", "", self.on_popup_merge))
 		menu.show_all()
 		menu.attach_to_widget(self, None)
 		menu.popup(None, None, None, event.button, event.time)
@@ -1244,7 +1280,7 @@ if __name__ == '__main__':
 	import testplayer, utils, zzub
 	player = testplayer.get_player()
 	player.load_ccm(utils.filepath('demosongs/paniq-knark.ccm'))
-	player.set_state(zzub.zzub_player_state_playing)
+	#~ player.set_state(zzub.zzub_player_state_playing)
 	window = testplayer.TestWindow()
 	window.add(SequencerPanel(window))
 	window.show_all()

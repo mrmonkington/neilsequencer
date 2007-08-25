@@ -658,7 +658,6 @@ def diff(oldlist, newlist):
 	"""
 	return [x for x in newlist if x not in oldlist],[x for x in oldlist if x not in newlist] # add, remove
 
-
 __all__ = [
 'is_frozen',
 'get_root_folder_path',
