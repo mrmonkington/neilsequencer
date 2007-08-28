@@ -587,7 +587,7 @@ class RouteView(gtk.DrawingArea):
 		self.solo_plugin = None
 		self.selected_plugin = None
 		self.chordnotes={}
-		self.target=None
+		self.autoconnect_target=None
 		self.update_colors()
 		gtk.DrawingArea.__init__(self)
 		self.volume_slider = VolumeSlider()		
@@ -865,11 +865,10 @@ class RouteView(gtk.DrawingArea):
 			t=seq.create_track(mp)
 			t.set_event(0,16)
 			if not(mask & gtk.gdk.SHIFT_MASK):
-				if self.target==None:
+				if self.autoconnect_target==None:
 					player.get_plugin_list()[0].add_input(mp, 16384, 16384)
 				else:
-					print self.target
-					self.target.add_input(mp, 16384, 16384)
+					self.autoconnect_target.add_input(mp, 16384, 16384)
 		mp.set_position(*self.pixel_to_float(self.contextmenupos))
 		# if we have a context plugin, prepend connections
 		if 'plugin' in kargs:
@@ -1000,7 +999,7 @@ class RouteView(gtk.DrawingArea):
 		"""
 		Event handler for menu option to set machine as target for default connection
 		"""
-		self.target=plugin
+		self.autoconnect_target = plugin
 	
 	def on_context_menu(self, widget, event):
 		"""
@@ -1033,8 +1032,6 @@ class RouteView(gtk.DrawingArea):
 			menu.append(make_check_item(common.get_plugin_infos().get(mp).muted, "_Mute", "Toggle Bypass", self.on_popup_mute, mp))
 			if mp.get_type() == zzub.zzub_plugin_type_generator:
 				menu.append(make_check_item(self.solo_plugin == mp, "_Solo", "Toggle Solo", self.on_popup_solo, mp))
-			if mp.get_type()==zzub.zzub_plugin_type_effect or mp.get_type()==zzub.zzub_plugin_type_master:
-				menu.append(make_menu_item("Set Target","Set as default target",self.on_popup_set_target, mp))
 			menu.append(gtk.SeparatorMenuItem())
 			menu.append(make_menu_item("_Parameters...", "View parameters", self.on_popup_show_params, mp))
 			menu.append(make_menu_item("_Attributes...", "Show Attributes", self.on_popup_show_attribs, mp))
@@ -1045,6 +1042,7 @@ class RouteView(gtk.DrawingArea):
 				menu.append(make_menu_item("_Delete", "Delete plugin", self.on_popup_delete, mp))
 			if mp.get_type() in (zzub.zzub_plugin_type_effect,zzub.zzub_plugin_type_master):
 				menu.append(gtk.SeparatorMenuItem())
+				menu.append(make_check_item(self.autoconnect_target == mp, "Default Target","Connect new generators to this plugin",self.on_popup_set_target, mp))
 				menu.append(make_submenu_item(self.get_plugin_menu(include_generators=False, plugin=mp), "_Prepend Effect"))
 			commands = mp.get_commands()
 			if commands:
@@ -1224,12 +1222,15 @@ class RouteView(gtk.DrawingArea):
 					if self.selected_plugin==mp:
 						break
 					i+=1
-				self.rootwindow.patternframe.toolbar.pluginselect.set_active(i)
+				if hasattr(self.rootwindow,'patternframe'):
+					self.rootwindow.patternframe.toolbar.pluginselect.set_active(i)
 				common.get_plugin_infos().get(self.selected_plugin).reset_plugingfx()									
-				self.rootwindow.patternframe.toolbar.midistep.set_active(False)
+				if hasattr(self.rootwindow,'patternframe'):
+					self.rootwindow.patternframe.toolbar.midistep.set_active(False)
 			if last:
 				common.get_plugin_infos().get(last).reset_plugingfx()
-			self.rootwindow.select_page(self.rootwindow.PAGE_ROUTE)
+			if hasattr(self.rootwindow, 'select_page'):
+				self.rootwindow.select_page(self.rootwindow.PAGE_ROUTE)
 		else:
 			try:
 				conn, index = self.get_connection_at((mx,my))

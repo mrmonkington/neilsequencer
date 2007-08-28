@@ -511,7 +511,7 @@ class SequencerView(gtk.DrawingArea):
 				t.remove_event_at(self.row + row)
 			else:
 				t.set_event(self.row + row, value)
-			
+		
 		self.redraw()
 		
 	def on_popup_delete(self, event):
