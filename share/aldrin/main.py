@@ -1051,7 +1051,6 @@ class AldrinFrame(gtk.Window, IRootWindow):
 			while gtk.events_pending():
 				gtk.main_iteration()
 			def progress_callback():	
-				print 'loading'
 				progBar.pulse()
 				while gtk.events_pending():
 					gtk.main_iteration()
@@ -1085,17 +1084,27 @@ class AldrinFrame(gtk.Window, IRootWindow):
 				filename += self.DEFAULT_EXTENSION
 			self.filename = filename
 			if os.path.isfile(filename):
-				# rename incremental
-				path,basename = os.path.split(filename)
-				basename,ext = os.path.splitext(basename)
-				i = 0
-				while True:
-					newpath = os.path.join(path,"%s%s.%03i.bak" % (basename,ext,i))
-					if not os.path.isfile(newpath):
-						break
-					i += 1
-				#print '%s => %s' % (filename, newpath)
-				os.rename(filename, newpath)
+				if config.get_config().get_incremental_saving():
+					# rename incremental
+					path,basename = os.path.split(filename)
+					basename,ext = os.path.splitext(basename)
+					i = 0
+					while True:
+						newpath = os.path.join(path,"%s%s.%03i.bak" % (basename,ext,i))
+						if not os.path.isfile(newpath):
+							break
+						i += 1
+					print '%s => %s' % (filename, newpath)
+					os.rename(filename, newpath)
+				else:
+					# store one backup copy
+					path,basename = os.path.split(filename)
+					basename,ext = os.path.splitext(basename)
+					newpath = os.path.join(path,"%s%s.bak" % (basename,ext))
+					if os.path.isfile(newpath):
+						os.remove(newpath)
+					print '%s => %s' % (filename, newpath)
+					os.rename(filename, newpath)
 			base,ext = os.path.splitext(self.filename)
 			#~ progress = wx.ProgressDialog("Aldrin", "Saving '%s'..." % prepstr(self.filename))
 			#~ wx.Yield()

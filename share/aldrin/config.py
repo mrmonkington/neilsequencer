@@ -598,6 +598,27 @@ class AldrinConfig(ConfigParser.ConfigParser):
 			self.write_value("Visible", visible)
 		self.flush()
 		
+	def get_incremental_saving(self):
+		"""
+		Retrieves the incremental saving option.
+		"""
+		self.set_section('Global')
+		value = self.read_value('IncrementalSaving', 'true')
+		if value == 'true':
+			return True
+		else:
+			return False
+		
+	def set_incremental_saving(self, value):
+		"""
+		Stores the incremental saving option.
+		"""
+		self.set_section('Global')
+		if value:
+			self.write_value('IncrementalSaving', 'true')
+		else:
+			self.write_value('IncrementalSaving', 'false')
+		
 	def load_window_pos(self, windowid, window):
 		"""
 		Retrieves a windows position from the config and applies it.
