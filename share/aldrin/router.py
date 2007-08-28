@@ -47,7 +47,7 @@ from presetbrowser import PresetView
 from patterns import key_to_note
 
 PLUGINWIDTH = 100
-PLUGINHEIGHT = 50
+PLUGINHEIGHT = 25
 LEDWIDTH,LEDHEIGHT = 8,PLUGINHEIGHT-4 # size of LED
 LEDOFSX,LEDOFSY = 2,2 # offset of LED
 
