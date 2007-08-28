@@ -51,6 +51,11 @@ PLUGINHEIGHT = 25
 LEDWIDTH,LEDHEIGHT = 8,PLUGINHEIGHT-4 # size of LED
 LEDOFSX,LEDOFSY = 2,2 # offset of LED
 
+ARROWRADIUS = 8
+
+QUANTIZEX = PLUGINWIDTH+ARROWRADIUS*2
+QUANTIZEY = PLUGINHEIGHT+ARROWRADIUS*2
+
 VOLBARWIDTH = 32
 VOLBARHEIGHT = 128
 VOLKNOBHEIGHT = 16
@@ -1258,6 +1263,10 @@ class RouteView(gtk.DrawingArea):
 			mx,my = int(x), int(y)
 			size = self.get_allocation()
 			x,y = max(0, min(mx - ox, size.width)), max(0, min(my - oy, size.height))
+			if (event.state & gtk.gdk.CONTROL_MASK):
+				# quantize position
+				x = int(float(x)/QUANTIZEX + 0.5) * QUANTIZEX
+				y = int(float(y)/QUANTIZEY + 0.5) * QUANTIZEY
 			self.current_plugin.set_position(*self.pixel_to_float((x,y)))
 			self.redraw()
 		elif self.connecting:
@@ -1439,9 +1448,9 @@ class RouteView(gtk.DrawingArea):
 			ctx.set_source_rgb(*linepen)
 			ctx.stroke()
 			cpx,cpy = crx + vx * (length * 0.5), cry + vy * (length * 0.5)
-			t1 = (int(cpx - vx * 10 + vy * 10), int(cpy - vy * 10 - vx * 10))
-			t2 = (int(cpx + vx * 10), int(cpy + vy * 10))
-			t3 = (int(cpx - vx * 10 - vy * 10), int(cpy - vy * 10 + vx * 10))
+			t1 = (int(cpx - vx * ARROWRADIUS + vy * ARROWRADIUS), int(cpy - vy * ARROWRADIUS - vx * ARROWRADIUS))
+			t2 = (int(cpx + vx * ARROWRADIUS), int(cpy + vy * ARROWRADIUS))
+			t3 = (int(cpx - vx * ARROWRADIUS - vy * ARROWRADIUS), int(cpy - vy * ARROWRADIUS + vx * ARROWRADIUS))
 			ctx.move_to(*t1)
 			ctx.line_to(*t2)
 			ctx.line_to(*t3)
