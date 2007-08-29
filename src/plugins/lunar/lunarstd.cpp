@@ -137,6 +137,13 @@ float lunar_abs(float x) { return std::abs(x); }
 float lunar_sin(float x) { return std::sin(x); }
 float lunar_cos(float x) { return std::cos(x); }
 float lunar_tan(float x) { return std::tan(x); }
+
+float lunar_sinh(float x) { return std::sinh(x); }
+float lunar_cosh(float x) { return std::cosh(x); }
+float lunar_atan(float x) { return std::atan(x); }
+float lunar_sqrt(float x) { return std::sqrt(x); }
+float lunar_fabs(float x) { return std::fabs(x); }
+
 // new:
 float lunar_floor(float x) { return std::floor(x); }
 float lunar_ceil(float x) { return std::ceil(x); }

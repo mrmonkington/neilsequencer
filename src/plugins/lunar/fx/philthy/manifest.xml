@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<zzub>
+	<plugin
+		uri="@trac.zeitherrschaft.org/aldrin/lunar/effect/philthy;1"
+		name="FSM Philthy"
+		shortname="Philthy"
+		type="effect"
+		description="A philthy filter"
+		author="Krzysztof Foltman"
+		email="">
+		<parameters>
+			<valuenamegroup>
+				<valuenames id="filter_types">
+                     <alias value="0" name="6L Multipeak"/>
+                     <alias value="1" name="6L Separated"/>
+                     <alias value="2" name="6L HiSquelch"/>
+                     <alias value="3" name="4L Skull D"/>
+                     <alias value="4" name="4L TwinPeaks"/>
+                     <alias value="5" name="4L Killah"/>
+                     <alias value="6" name="4L Phlatt"/>
+                     <alias value="7" name="2L Phlatt"/>
+                     <alias value="8" name="2L FrontFlt"/>
+                     <alias value="9" name="2L LaserOne"/>
+                     <alias value="10" name="2L FMish"/>
+                     <alias value="11" name="Notchez"/>
+                     <alias value="12" name="6H Relaxed"/>
+                     <alias value="13" name="6B Plain"/>
+                     <alias value="14" name="6X BatGuy"/>
+                     <alias value="15" name="6X Vocal1"/>
+                     <alias value="16" name="6X Vocal2"/>
+				</valuenames>
+			</valuenamegroup>
+			<global>
+				<parameter
+					id="filter_type"
+					name="Type"
+					description="Type of filter"
+					type="byte"
+					minvalue="0"
+					maxvalue="16"
+					defvalue="0"
+					valuenames="filter_types"
+					state="true"/>
+				<parameter
+					id="cutoff"
+					name="Cutoff (Hz)"
+					description="Cutoff frequency of filter"
+					type="float"
+                    minvalue="0"
+					maxvalue="240"
+					defvalue="120"
+					precision="1"
+					state="true"/>
+                    				<!--	logarithmic="true"
+					power="0.7"
+					minvalue="10"
+					maxvalue="20000"
+					defvalue="20000"
+					precision="1"-->
+				<parameter
+					id="resonance"
+					name="Resonance"
+					description="Resonance of filter"
+					type="float"
+					minvalue="0"
+					maxvalue="240"
+					defvalue="120"
+					precision="1"
+					state="true"/>
+                <parameter
+					id="thevfactor"
+					name="ThevFactor"
+					description="ThevFactor"
+					type="float"
+					minvalue="0"
+					maxvalue="240"
+					defvalue="120"
+					precision="0.5"
+					state="true"/>
+			</global>
+			<track>
+			</track>
+		</parameters>
+		<files>
+			<file ref="philthy.cpp"/>
+			<file ref="philthy.h"/>			
+			<file ref="filters.h"/>
+		</files>
+		<modules>
+			<module id="philthy">
+				<source language="c++" ref="philthy.cpp" fxdef="philthy.h"/>
+			</module>
+		</modules>
+	</plugin>
+</zzub>

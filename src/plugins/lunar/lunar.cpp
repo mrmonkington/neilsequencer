@@ -565,6 +565,11 @@ struct dspplugin : zzub::plugin {
 			add_symbol_func(M, "lunar_sin", (void*)&lunar_sin);
 			add_symbol_func(M, "lunar_cos", (void*)&lunar_cos);
 			add_symbol_func(M, "lunar_tan", (void*)&lunar_tan);
+			add_symbol_func(M, "lunar_sinh", (void*)&lunar_sinh);
+			add_symbol_func(M, "lunar_cosh", (void*)&lunar_cosh);
+			add_symbol_func(M, "lunar_atan", (void*)&lunar_atan);            
+			add_symbol_func(M, "lunar_sqrt", (void*)&lunar_sqrt);
+			add_symbol_func(M, "lunar_fabs", (void*)&lunar_fabs);
 			add_symbol_func(M, "lunar_floor", (void*)&lunar_floor);
 			add_symbol_func(M, "lunar_ceil", (void*)&lunar_ceil);
 			add_symbol_func(M, "lunar_lrint", (void*)&lunar_lrint);

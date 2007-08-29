@@ -36,6 +36,12 @@ inline float lunar_max(float a, float b) { return (a > b)?a:b; }
 float lunar_sin(float);
 float lunar_cos(float);
 float lunar_tan(float);
+float lunar_sinh(float);
+float lunar_cosh(float);
+float lunar_atan(float);
+float lunar_sqrt(float);
+float lunar_sqrt(float);
+float lunar_fabs(float);
 // new:
 float lunar_floor(float);
 float lunar_ceil(float);
@@ -65,6 +71,12 @@ long int lunar_lrint(float);
 #define sin lunar_sin
 #define cos lunar_cos
 #define tan lunar_tan
+
+#define sinh lunar_sinh
+#define cosh lunar_cosh
+#define atan lunar_atan
+#define sqrt lunar_sqrt
+#define fabs lunar_fabs
 // new:
 #define floor lunar_floor
 #define ceil lunar_ceil
