@@ -1394,23 +1394,20 @@ class AmpView(gtk.DrawingArea):
 	"""
 	A simple control rendering a Buzz-like master VU bar.
 	"""
-	def __init__(self, parent):
+	def __init__(self, parent, channel):
 		"""
 		Initializer.
 		"""
 		import Queue
 		self.range = 76
 		self.amp = 0.0
-		self.amps = EventPlayer()
+		self.channel = channel
 		self.stops = (0.0, 6.0 / self.range, 12.0 / self.range) # red, yellow, green
 		self.index = 0
 		gtk.DrawingArea.__init__(self)
 		self.set_size_request(MARGIN,100)
 		self.connect("expose_event", self.expose)
 		gobject.timeout_add(100, self.on_update)
-		
-	def set_amp(self, amp, t):
-		self.amps.put(amp, t)
 	
 	def on_update(self):
 		"""
@@ -1418,8 +1415,7 @@ class AmpView(gtk.DrawingArea):
 		"""
 		master = player.get_plugin(0)
 		vol=master.get_parameter_value(1, 0, 0)
-		maxl, maxr = master.get_last_peak()
-		self.amp = min(max(maxl,maxr),1.0)
+		self.amp = min(master.get_last_peak()[self.channel],1.0)
 		rect = self.get_allocation()
 		self.window.invalidate_rect((0,0,rect.width,rect.height), False)
 		return True
@@ -1471,8 +1467,8 @@ class MasterPanel(gtk.HBox):
 		self.masterslider.set_inverted(True)
 		self.masterslider.connect('scroll-event', self.on_mousewheel)
 		self.masterslider.connect('change-value', self.on_scroll_changed)
-		self.ampl = AmpView(self)
-		self.ampr = AmpView(self)
+		self.ampl = AmpView(self, 0)
+		self.ampr = AmpView(self, 1)
 		self.add(self.ampl)
 		self.add(self.masterslider)
 		self.add(self.ampr)
@@ -1530,8 +1526,6 @@ class MasterPanel(gtk.HBox):
 		vol = master.get_parameter_value(1, 0, 0)
 		self.masterslider.set_value(16384 - vol)
 		self.latency = driver.get_audiodriver().get_latency()
-		self.ampl.amps.reset()
-		self.ampr.amps.reset()
 
 class TransportPanel(gtk.HBox):
 	"""
