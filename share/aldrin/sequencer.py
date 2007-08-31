@@ -1232,6 +1232,26 @@ class SequencerView(gtk.DrawingArea):
 						r,g,b = from_hsb(hue, 0.2, cb*bgb)
 						gc.set_foreground(cm.alloc_color('#%02X%02X%02X' % (int(r*255),int(g*255),int(b*255))))
 						bb.draw_rectangle(gc, True, 0,0, psize-2, SEQTRACKSIZE-2)
+						r,g,b = from_hsb(hue, 0.5, cb*bgb*0.9)
+						gc.set_foreground(cm.alloc_color('#%02X%02X%02X' % (int(r*255),int(g*255),int(b*255))))
+						pat = m.get_pattern(value-0x10)
+						group_track_count = [m.get_input_connection_count(), 1, m.get_track_count()]
+						pl = m.get_pluginloader()
+						def has_event(patr):
+							for patg in range(3):
+								for patti in reversed(xrange(group_track_count[patg])):
+									for pati in xrange(m.get_pluginloader().get_parameter_count(patg)):
+										evy = -1
+										v = pat.get_value(patr, patg, patti, pati)
+										parm = pl.get_parameter(patg,pati)
+										if (v != parm.get_value_none()) and (parm.get_type() == 0):
+											return parm
+							return None
+						for patr in xrange(pat.get_row_count()):
+							evparm = has_event(patr)
+							if evparm:
+								evy = int(float(psize-2)/pat.get_row_count() * patr + 0.5)
+								bb.draw_rectangle(gc, True, evy, 4, 1, SEQTRACKSIZE-2-8)
 						r,g,b = from_hsb(hue, 1.0, cb*bgb*0.7)
 						gc.set_foreground(cm.alloc_color('#%02X%02X%02X' % (int(r*255),int(g*255),int(b*255))))
 						bb.draw_rectangle(gc, False, 0, 0, psize-2, SEQTRACKSIZE-2)
