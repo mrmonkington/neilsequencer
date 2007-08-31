@@ -334,7 +334,21 @@ class AldrinConfig(ConfigParser.ConfigParser):
 		"""
 		self.set_section('Defaults')
 		self.write_value(key, val)
-
+		
+	def get_experimental(self, key, defval=0):
+		"""
+		Returns whether an experimental feature is enabled.
+		"""
+		self.set_section('ExperimentalFeatures')
+		return int(self.read_value(key, str(defval))) == 1
+		
+	def set_experimental(self, key, val):
+		"""
+		Stores whether an experimental feature is enabled.
+		"""
+		self.set_section('ExperimentalFeatures')
+		self.write_value(key, str(int(val)))
+		
 	def set_keymap_language(self, lang):
 		"""
 		Sets the current keymap language
