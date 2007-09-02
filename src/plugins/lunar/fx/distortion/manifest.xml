@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<zzub>
+	<plugin
+		uri="@trac.zeitherrschaft.org/aldrin/lunar/effect/distortion;1"
+		name="Lunar Distortion"
+		shortname="Distortion"
+		type="effect"
+		description="A simple distortion effect that can do multiple clipping modes."
+		author="Leonard Ritter"
+		email="contact at leonard-ritter+com">
+		<parameters>
+			<valuenamegroup>
+				<valuenames id="dtypes">
+					<alias value="0" name="Digital Clip"/>
+					<alias value="1" name="Arctangent Clip"/>
+				</valuenames>
+			</valuenamegroup>
+			<global>
+				<parameter
+					id="pregain"
+					name="Gain In (dB)"
+					description="Gain of input signal"
+					type="float"
+					minvalue="-12"
+					maxvalue="96"
+					defvalue="0"
+					precision="0.01"
+					state="true"/>
+				<parameter
+					id="postgain"
+					name="Gain Out (dB)"
+					description="Gain of output signal"
+					type="float"
+					minvalue="-48"
+					maxvalue="12"
+					defvalue="0"
+					precision="0.01"
+					state="true"/>
+				<parameter
+					id="fxtype"
+					name="Effect Type"
+					description="Type of Distortion"
+					type="byte"
+					minvalue="0"
+					maxvalue="1"
+					defvalue="0"
+					novalue="255"
+					valuenames="dtypes"
+					state="true"/>
+			</global>
+			<track>
+			</track>
+		</parameters>
+		<files>
+			<file ref="distortion.cpp"/>
+			<file ref="distortion.h"/>
+		</files>
+		<modules>
+			<module id="distortion">
+				<source language="c++" ref="distortion.cpp" fxdef="distortion.h"/>
+			</module>
+		</modules>
+	</plugin>
+</zzub>
