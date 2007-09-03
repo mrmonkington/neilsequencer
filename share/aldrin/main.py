@@ -287,14 +287,21 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		if pluginpath:
 			pluginpaths = pluginpath.split(os.pathsep)
 		else:
-			pluginpaths = [
-				'/usr/local/lib64/zzub',
-				'/usr/local/lib/zzub',
-				'/usr/lib64/zzub',
-				'/usr/lib/zzub',
-			]
+			pluginpaths = []
+			paths = os.environ.get('LD_LIBRARY_PATH',None) # todo or PATH on mswindows
+			if paths: paths = paths.split(os.pathsep)
+			else: paths = []
+			paths.extend([
+					'/usr/local/lib64',
+					'/usr/local/lib',
+					'/usr/lib64',
+					'/usr/lib',
+				])
+			for path in [os.path.join(path, 'zzub') for path in paths]:
+				if os.path.exists(path) and not path in pluginpaths: pluginpaths.append(path)
 		for pluginpath in pluginpaths:
-			player.add_plugin_path(pluginpath + '/')
+			print 'plugin path:', pluginpath
+			player.add_plugin_path(pluginpath + os.sep)
 		inputname, outputname, samplerate, buffersize = config.get_config().get_audiodriver_config()
 		player.initialize(samplerate)
 		self.init_lunar()
