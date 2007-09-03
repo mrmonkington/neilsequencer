@@ -1509,6 +1509,8 @@ class RouteView(gtk.DrawingArea):
 					del self.chordnotes[oldnote]
 				except KeyError:
 					pass
+		else:
+			 return
 		#pattern.set_value(row, group, track, index, data)
 		player.lock_tick()			
 		try:	

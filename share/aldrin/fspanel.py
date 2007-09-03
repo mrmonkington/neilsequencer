@@ -129,6 +129,8 @@ class FreesoundPanel(gtk.HBox):
 		self.btnsearchusers = gtk.CheckButton("People")
 		self.btncancel = gtk.Button(stock=gtk.STOCK_CANCEL)
 		self.btnsearchtags.set_active(True)
+		self.btnopen = new_image_button(filepath("res/loadsample.png"), "Add/Insert Instrument")
+		self.btnopen.connect('clicked', self.on_load_sample)
 		self.resultlist, self.resultstore, columns = new_listview([
 			('Name', str),
 			('Duration', str),
@@ -145,6 +147,7 @@ class FreesoundPanel(gtk.HBox):
 		progressgroup = gtk.HBox(False, MARGIN)
 		progressgroup.pack_start(self.progress)
 		progressgroup.pack_end(self.btncancel, expand=False)
+		progressgroup.pack_end(self.btnopen, expand=False)
 		row = gtk.HBox(False, MARGIN)
 		row.pack_start(self.btnsearchtags, expand=False)
 		row.pack_start(self.btnsearchdesc, expand=False)
@@ -187,6 +190,7 @@ class FreesoundPanel(gtk.HBox):
 	def on_realize(self, widget):
 		self.progress.hide()
 		self.btncancel.hide()
+		self.btnopen.hide()
 		self.show_details()
 		
 	def on_resultlist_key_down(self, widget, event):
@@ -472,12 +476,14 @@ class FreesoundPanel(gtk.HBox):
 	def cancel_search(self):
 		self.cmds.append((self.progress.hide,()))
 		self.cmds.append((self.btncancel.hide,()))
+		self.cmds.append((self.btnopen.hide, ()))
 		
 	def search_thread(self, args):
 		self.cancel = False
 		self.cmds.append((self.progress.set_fraction,(0.0,)))
 		self.cmds.append((self.progress.show,()))
 		self.cmds.append((self.btncancel.show,()))
+		self.cmds.append((self.btnopen.show, ()))
 		try:
 			fs = self.get_freesound(warn=True)
 			assert fs
