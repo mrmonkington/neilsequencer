@@ -177,7 +177,6 @@ class ParameterView(gtk.VBox):
 		self.connect('button-press-event', self.on_left_down)
 
 		self.presetbox.set_active(0)
-		self.presetbox.connect('notify::popup-shown', self.on_select_preset)
 		self.presetbox.connect('changed', self.on_select_preset)
 		
 		scrollwindow.add_with_viewport(rowgroup)
@@ -390,7 +389,7 @@ class ParameterView(gtk.VBox):
 			self.btnadd.set_sensitive(True)
 			self.btnremove.set_sensitive(True)
 
-	def on_select_preset(self, widget, signal=None):
+	def on_select_preset(self, widget):
 		"""
 		Handler for changes of the choice box. Changes the current parameters
 		according to preset.
@@ -398,11 +397,14 @@ class ParameterView(gtk.VBox):
 		@param event: Command event.
 		@type event: wx.CommandEvent
 		"""
-		sel = max(self.presetbox.get_active() - 1,-1)
-		if sel == -1:
-			self.apply_preset(None)
+		if widget.get_active() == -1:
+			pass
 		else:
-			self.apply_preset(self.presets.presets[sel])
+			sel = max(self.presetbox.get_active() - 1,-1)
+			if sel == -1:
+				self.apply_preset(None)
+			else:
+				self.apply_preset(self.presets.presets[sel])
 		self.update_preset_buttons()
 			
 	def update_all_sliders(self):

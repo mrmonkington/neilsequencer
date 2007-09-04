@@ -937,11 +937,13 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		"""
 		selects panel after button up
 		"""
-		panel, stockid = self.pages[self.framepanel.get_current_page()]
-		if hasattr(panel,'view'):
-			panel.view.grab_focus()
-		else:
-			panel.grab_focus()
+		page=self.framepanel.get_current_page()
+		panel, stockid = self.pages[page]
+		if page==0 or page==2:
+			if hasattr(panel,'view'):
+				panel.view.grab_focus()
+			else:
+				panel.grab_focus()
 		
 			
 			
