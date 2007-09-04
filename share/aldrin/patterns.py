@@ -2164,8 +2164,14 @@ class PatternView(gtk.DrawingArea):
 
 	def get_line_pattern(self):
 		master = player.get_plugin(0) 
-		tpb = master.get_parameter_value(1, 0, 2) 
-		return tpb*4,tpb 
+		tpb = master.get_parameter_value(1, 0, 2)
+		return {
+			16: [64,32,16,8,4],
+			12: [48,24,12,4],
+			8: [32,16,8,4],
+			6: [24,12,6],
+			3: [12,4],
+		}.get(tpb,[16,4])
 
 	def draw(self,ctx):	
 		"""
@@ -2239,7 +2245,16 @@ class PatternView(gtk.DrawingArea):
 		y = clipy1
 		gc.set_clip_rectangle(gtk.gdk.Rectangle(startx, 0, w - startx, h))
 		if self.lines:
-			l1,l2 = self.get_line_pattern()
+			linepattern = self.get_line_pattern()
+			lpcount = len(linepattern)
+			linecolors = []
+			for lpindex, lp in enumerate(linepattern):
+				lpf2 = lpindex / float(lpcount-1)
+				lpf1 = 1.0 - lpf2
+				red = int(fbrush1.red * lpf1 + fbrush2.red * lpf2)
+				green = int(fbrush1.green * lpf1 + fbrush2.green * lpf2)
+				blue = int(fbrush1.blue * lpf1 + fbrush2.blue * lpf2)
+				linecolors.append(cm.alloc_color(red,green,blue))
 			tc = self.group_track_count
 			def draw_parameters(row, group, track=0):
 				"""Draw the parameter values"""
@@ -2254,16 +2269,12 @@ class PatternView(gtk.DrawingArea):
 			#~ dc.SetBackgroundMode(wx.SOLID)
 			#~ dc.SetPen(wx.TRANSPARENT_PEN)
 			while (i < rows) and (y < h):
-				# darker colour lines each 4 and 16 lines
-				if (i % l1) == 0:
-					gc.set_foreground(fbrush1)
-					gc.set_background(fbrush1)
-				elif (i % l2) == 0:
-					gc.set_foreground(fbrush2)
-					gc.set_background(fbrush2)
-				else:
-					gc.set_foreground(bgbrush)
-					gc.set_background(bgbrush)
+				gc.set_foreground(bgbrush)
+				gc.set_background(bgbrush)
+				for lp,lc in zip(reversed(linepattern),reversed(linecolors)):
+					if (i % lp) == 0:
+						gc.set_foreground(lc)
+						gc.set_background(lc)
 				for g in CONN,GLOBAL,TRACK:
 					if self.track_width[g]:
 						for t in range(self.group_track_count[g]):
