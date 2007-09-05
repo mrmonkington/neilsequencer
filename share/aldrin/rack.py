@@ -515,8 +515,7 @@ class ParameterView(gtk.VBox):
 		Callback that responds to key stroke.
 		"""		
 		kv = event.keyval
-		if gtk.gdk.keyval_from_name('KP_0') <= kv <= gtk.gdk.keyval_from_name('KP_9'):
-			kv = kv - gtk.gdk.keyval_from_name('KP_0')  + gtk.gdk.keyval_from_name('0') 
+		if (kv >= ord('0')) and (kv <= ord('9')):
 			p = self.pluginloader.get_parameter(g,i)
 			minv = p.get_value_min()
 			maxv = p.get_value_max()
