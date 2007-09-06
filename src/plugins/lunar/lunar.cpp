@@ -1146,6 +1146,12 @@ std::string hash_name(const std::string &name) {
 	return buffer;
 }
 
+#if defined(_WIN32)
+	#define PATHSEP "\\"
+#else
+	#define PATHSEP "/"
+#endif
+
 struct dspplugincollection : zzub::plugincollection {
 	std::list<dspplugin::info*> infos;
 	zzub::pluginfactory *factory;
@@ -1234,17 +1240,46 @@ struct dspplugincollection : zzub::plugincollection {
 			}
 			free(namelist);
 		}
+#elif defined(_WIN32)
+	std::string searchPath=folder + PATHSEP"*";
+	std::cout << "enumerating " << searchPath << std::endl;
+
+	WIN32_FIND_DATA fd;
+	HANDLE hFind=FindFirstFile(searchPath.c_str(), &fd);
+
+	while (hFind!=INVALID_HANDLE_VALUE) {
+		std::string fullFilePath=folder + PATHSEP + fd.cFileName;
+		std::cout << "enumerating '" << fullFilePath << "'" << std::endl;
+		if (fd.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) {			
+			std::cout << "enumerating folder '" << fullFilePath << "'" << std::endl;
+			char fullPath[1024];
+			char* filePart;
+			GetFullPathName(fullFilePath.c_str(), 1024, fullPath, &filePart);
+
+			register_plugin(fullPath);
+		}
+
+		if (!FindNextFile(hFind, &fd)) break;
+	}
+	FindClose(hFind);		
 #endif
 	}
 	
 	virtual void initialize(zzub::pluginfactory *factory) {
 		const char* loc = setlocale(LC_NUMERIC, "C");
 		
+#if defined(_WIN32)
 		enumerate_plugins("/usr/local/lib64/lunar/fx");
 		enumerate_plugins("/usr/local/lib/lunar/fx");
 		enumerate_plugins("/usr/lib64/lunar/fx");
 		enumerate_plugins("/usr/lib/lunar/fx");
-
+#else
+		enumerate_plugins("/usr/local/lib64/lunar/fx");
+		enumerate_plugins("/usr/local/lib/lunar/fx");
+		enumerate_plugins("/usr/lib64/lunar/fx");
+		enumerate_plugins("/usr/lib/lunar/fx");
+#endif
+		
 		this->factory = factory;
 		for (std::list<dspplugin::info*>::iterator i = infos.begin(); i != infos.end(); ++i) {
 			factory->register_info(*i);
@@ -1271,7 +1306,7 @@ struct dspplugincollection : zzub::plugincollection {
 						if (item->has_name("plugin") && item->attribute("uri").has_value(uri)) {
 							std::cout << "lunar: building info for '" << uri << "'." << std::endl;
 							// we can import this one
-							std::string fullpath = storagedir + "/" + hash_name(uri);
+							std::string fullpath = storagedir + PATHSEP + hash_name(uri);
 							// make sure the path exists
 							struct stat dirinfo;
 							int res = stat(fullpath.c_str(), &dirinfo);
@@ -1281,7 +1316,7 @@ struct dspplugincollection : zzub::plugincollection {
 									std::cerr << "could not create directory " << fullpath << std::endl;
 								}
 							}							
-							std::string manifestpath = fullpath + "/manifest.xml";							
+							std::string manifestpath = fullpath + PATHSEP"manifest.xml";							
 							FILE *f = fopen(manifestpath.c_str(), "wb");							
 							if (f) {
 								size_t written = fwrite(manifestdata_original.c_str(), 1, strlen(manifestdata_original.c_str()), f);
@@ -1317,7 +1352,7 @@ struct dspplugincollection : zzub::plugincollection {
 	}
 	
 	void register_plugin(const std::string &fullpath) {
-		std::string manifestpath = fullpath + "/manifest.xml";
+		std::string manifestpath = fullpath + PATHSEP"manifest.xml";
 		struct stat statinfo;
 		if (stat(manifestpath.c_str(), &statinfo)) {
 			std::cerr << "error: " << manifestpath << " does not exist." << std::endl;
