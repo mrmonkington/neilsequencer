@@ -210,6 +210,7 @@ struct mem_archive : zzub::archive {
 		if(i == buffers.end()) {
 			buffers.insert(bufferpair(path, std::vector<char>()));
 			i = buffers.find(path);
+      assert(i != buffers.end());
 		}
 		return i->second;
 	}
