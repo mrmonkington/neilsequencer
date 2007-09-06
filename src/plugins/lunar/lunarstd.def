@@ -7,11 +7,11 @@ EXPORTS
 	lunar_free
 	lunar_realloc
 	lunar_pow
+	lunar_atan
+	lunar_sqrt
 	lunar_log
 	lunar_exp
 	lunar_abs
-	lunar_min
-	lunar_max
 	lunar_sin
 	lunar_cos
 	lunar_tan

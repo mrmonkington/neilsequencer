@@ -375,7 +375,7 @@ struct dspplugin : zzub::plugin {
 				param.set_value_max(mp.get_good_value_max());
 				if (mp.islog) {
 					// uncalculate
-					defv = std::min(std::max(pow((log(defv) - log(minv)) / (log(maxv) - log(minv)), 1.0/mp.power),0.0),1.0);
+					defv = std::min(std::max(pow((log(defv) - log(minv)) / (log(maxv) - log(minv)), 1.0f/mp.power),0.0f),1.0f);
 					param.set_value_default(param.scale(defv));
 				} else {
 					param.set_value_default(param.scale((defv - mp.offset) / mp.scalar));
