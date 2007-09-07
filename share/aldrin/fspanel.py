@@ -72,6 +72,7 @@ class FreesoundPanel(gtk.HBox):
 	COL_ID = 4
 	
 	def __init__(self, wavetable):
+		gobject.threads_init()
 		self.wavetable = wavetable
 		gtk.HBox.__init__(self)
 		self.splitter = gtk.HPaned()
@@ -146,11 +147,11 @@ class FreesoundPanel(gtk.HBox):
 		#~ self.IMG_WAVE = imglist.Add(wx.Bitmap(filepath("res/wave.png"), wx.BITMAP_TYPE_ANY))
 		#~ self.resultlist.AssignImageList(imglist, wx.IMAGE_LIST_SMALL)
 		searchgroup.pack_end(self.btnsearch, expand=False)
+		searchgroup.pack_end(self.btnopen, expand=False)
 		vsearch.pack_start(searchgroup)
 		progressgroup = gtk.HBox(False, MARGIN)
 		progressgroup.pack_start(self.progress)
 		progressgroup.pack_end(self.btncancel, expand=False)
-		progressgroup.pack_end(self.btnopen, expand=False)
 		row = gtk.HBox(False, MARGIN)
 		row.pack_start(self.btnsearchtags, expand=False)
 		row.pack_start(self.btnsearchdesc, expand=False)
@@ -193,7 +194,6 @@ class FreesoundPanel(gtk.HBox):
 	def on_realize(self, widget):
 		self.progress.hide()
 		self.btncancel.hide()
-		self.btnopen.hide()
 		self.show_details()
 		
 	def on_resultlist_key_down(self, widget, event):
@@ -479,14 +479,12 @@ class FreesoundPanel(gtk.HBox):
 	def cancel_search(self):
 		self.cmds.append((self.progress.hide,()))
 		self.cmds.append((self.btncancel.hide,()))
-		self.cmds.append((self.btnopen.hide, ()))
 		
 	def search_thread(self, args):
 		self.cancel = False
 		self.cmds.append((self.progress.set_fraction,(0.0,)))
 		self.cmds.append((self.progress.show,()))
 		self.cmds.append((self.btncancel.show,()))
-		self.cmds.append((self.btnopen.show, ()))
 		try:
 			fs = self.get_freesound(warn=True)
 			assert fs
