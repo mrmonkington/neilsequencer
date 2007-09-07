@@ -26,7 +26,7 @@ import sys, os
 
 from gtkimport import gtk
 import gobject
-
+gobject.threads_init()
 import time
 
 from utils import format_time, ticks_to_time, prepstr, linear2db, db2linear, filepath, \
