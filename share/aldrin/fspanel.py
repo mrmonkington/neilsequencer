@@ -246,6 +246,10 @@ class FreesoundPanel(gtk.HBox):
 				files.append((sampleid, fullpath))
 		if files:
 			run_function_with_progress(self, "Downloading samples from freesound...", True, self.download_samples, files)
+			filenames=[]
+			for file in files:
+				filenames.append(file[1])
+			self.import_samples(filenames)
 			
 	def import_samples(self, filenames):
 		"""
