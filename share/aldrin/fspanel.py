@@ -72,6 +72,7 @@ class FreesoundPanel(gtk.HBox):
 	COL_ID = 4
 	
 	def __init__(self, wavetable):
+		gobject.threads_init()
 		self.wavetable = wavetable
 		gtk.HBox.__init__(self)
 		self.splitter = gtk.HPaned()
