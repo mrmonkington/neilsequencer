@@ -31,6 +31,7 @@ from utils import prepstr, db2linear, linear2db, note2str, format_filesize, \
 import utils
 import zzub
 import config
+import thread
 from envelope import EnvelopeView, ADSRPanel
 import freesound
 import common
@@ -180,14 +181,13 @@ class FreesoundPanel(gtk.HBox):
 		self.btncancel.connect('clicked', self.on_cancel)
 		self.edsearch.connect('activate', self.on_search)
 		self.resultlist.get_selection().connect('changed', self.on_select)
-		self.resultlist.connect('button-press-event', self.on_resultlist_dclick)
+		self.resultlist.connect('button-press-event', self.on_resultlist_button)
 		self.resultlist.connect('key-press-event', self.on_resultlist_key_down)
 		self.client = None
 		self.results = {}
 		self.imgcache = {}
 		self.wavecache = {}
 		self.show_details()
-		import thread
 		thread.start_new_thread(self.preload_freesound, ())
 		self.connect('realize', self.on_realize)
 		
@@ -210,7 +210,7 @@ class FreesoundPanel(gtk.HBox):
 			path, col = self.resultlist.get_cursor()
 			self.resultlist.set_cursor((path[0]+1,))
 		elif k in ('BackSpace', 'Return'):
-			self.on_load_sample(None)
+			self.on_load_sample()
 		elif k == 'Escape':
 			self.wavetable.set_current_page(0)
 			self.wavetable.samplelist.grab_focus()
@@ -221,14 +221,13 @@ class FreesoundPanel(gtk.HBox):
 			return False
 		return True
 			
-	def on_load_sample(self, *args):
+	def on_load_sample(self, widget=None):
 		"""
 		Called to load samples based on the current file list selection.
 		
 		Samples will first be downloaded to the local freesound folder,
 		and then into the wavetable.
 		"""
-		import thread
 		files = []
 		store, rows = self.resultlist.get_selection().get_selected_rows()
 		for row in rows:
@@ -286,11 +285,10 @@ class FreesoundPanel(gtk.HBox):
 		self.cmds.append((self.import_samples,(outfiles,)))
 		return True
 				
-	def preview_current(self):
+	def preview_current(self, widget=None):
 		"""
 		Preview currently focused item.
 		"""
-		import thread
 		path, col = self.resultlist.get_cursor()
 		if path:
 			sampleid = self.resultstore.get_value(self.resultstore.get_iter(path), 4)
@@ -300,14 +298,37 @@ class FreesoundPanel(gtk.HBox):
 				thread.start_new_thread(self.load_preview_wave, (extract_text(get_node(sample,'preview')),))
 
 		
-	def on_resultlist_dclick(self, widget, event):
+	def on_resultlist_button(self, widget, event):
 		"""
-		Called when a list entry is doubleclicked.
+		Called when button is pressed on list.
 		"""
 		if (event.button == 1) and (event.type == gtk.gdk._2BUTTON_PRESS):
 			# double click
 			self.preview_current()
+		if (event.button ==3):
+			return self.on_context_menu(widget, event)
+	
+	def on_context_menu(self, widget, event):
+		"""
+		Event handler for requests to show the context menu.
 		
+		@param event: event.
+		@type event: wx.Event
+		"""
+		mx,my = int(event.x), int(event.y)
+		self.contextmenupos = mx,my
+		menu = gtk.Menu()
+		def make_menu_item(label, desc, func, *args):
+			item = gtk.MenuItem(label=label)
+			if func:
+				item.connect('activate', func, *args)
+			return item
+		menu.append(make_menu_item("Preview", "Play Preview", self.preview_current))
+		menu.append(make_menu_item("Add", "Add To Wavetable", self.on_load_sample))
+		menu.show_all()
+		menu.attach_to_widget(self, None)
+		menu.popup(None, None, None, event.button, event.time)
+			
 	def preload_freesound(self):
 		"""
 		Loads freesound service and logs in.
@@ -362,7 +383,6 @@ class FreesoundPanel(gtk.HBox):
 	def show_details(self, sample=None):
 		if sample:
 			self.imgwave.clear()
-			import thread
 			thread.start_new_thread(self.load_wave_image, (extract_text(get_node(sample,'image')),))
 			
 			self.dtname.set_label(extract_text(get_node(sample,'originalFilename')))
@@ -543,7 +563,6 @@ class FreesoundPanel(gtk.HBox):
 			searchFilenames=int(self.btnsearchfiles.get_active()),
 			searchUsernames=int(self.btnsearchusers.get_active())
 		)
-		import thread
 		thread.start_new_thread(self.search_thread, (args,))
 		self.resultlist.grab_focus()
 
