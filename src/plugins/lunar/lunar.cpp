@@ -79,6 +79,7 @@ extern "C" {
 #include <sys/stat.h>
 #endif
 
+
 // cross platform library loading
 
 namespace lunar {
@@ -129,6 +130,10 @@ void xp_dlclose(xp_modulehandle handle)
 #endif // LUNARTARGET_GCC
 
 #include "lunarstd.h"
+
+#if defined(_WIN32)
+HMODULE g_hModule;
+#endif
 
 namespace lunar {
 
@@ -1269,10 +1274,11 @@ struct dspplugincollection : zzub::plugincollection {
 		const char* loc = setlocale(LC_NUMERIC, "C");
 		
 #if defined(_WIN32)
-		enumerate_plugins("/usr/local/lib64/lunar/fx");
-		enumerate_plugins("/usr/local/lib/lunar/fx");
-		enumerate_plugins("/usr/lib64/lunar/fx");
-		enumerate_plugins("/usr/lib/lunar/fx");
+		char modulename[MAX_PATH];
+		GetModuleFileName(g_hModule, modulename, MAX_PATH);
+		*strrchr(modulename,'\\') = '\0';
+		strcat(modulename, "\\..\\lunar\\fx");
+		enumerate_plugins(modulename);
 #else
 		enumerate_plugins("/usr/local/lib64/lunar/fx");
 		enumerate_plugins("/usr/local/lib/lunar/fx");
@@ -1410,3 +1416,23 @@ void lunar_set_local_storage_dir(const char *path) {
 
 const char *zzub_get_signature() { return ZZUB_SIGNATURE; }
 
+#if defined(_WIN32)
+
+BOOL WINAPI DllMain( HMODULE hModule, DWORD fdwreason, LPVOID lpReserved )
+{
+	switch(fdwreason)
+	{
+		case DLL_PROCESS_ATTACH:
+		{
+			g_hModule = hModule;
+		} break;
+		case DLL_PROCESS_DETACH:
+		{
+		} break;
+		default:
+			break;
+	}
+
+	return TRUE;
+}
+#endif
