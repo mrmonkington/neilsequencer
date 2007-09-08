@@ -128,6 +128,9 @@ int audiodriver::getApiDevices(int apiId) {
             // ds returns devices that has duplex support twice so we remove the last one
             int j = getDeviceByName(deviceName.c_str());
             if (j != -1) continue;
+				
+			if (info.outputChannels < 2)
+				continue; // if it doesn't have output, we can't use it
 
             if (info.isDefault && defaultDevice == -1)
                 defaultDevice = devices.size();
