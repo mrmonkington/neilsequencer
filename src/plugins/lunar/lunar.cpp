@@ -54,13 +54,13 @@ extern "C" {
 
 #include <sstream>
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <string>
 #include <list>
 #include <algorithm>
 #include <map>
-#include <math.h>
+#include <cmath>
 
 #include <sys/stat.h>
 
@@ -380,7 +380,7 @@ struct dspplugin : zzub::plugin {
 				param.set_value_max(mp.get_good_value_max());
 				if (mp.islog) {
 					// uncalculate
-					defv = std::min(std::max(pow((log(defv) - log(minv)) / (log(maxv) - log(minv)), 1.0f/mp.power),0.0f),1.0f);
+					defv = std::min(std::max(std::pow((std::log(defv) - std::log(minv)) / (std::log(maxv) - std::log(minv)), 1.0f/mp.power),0.0f),1.0f);
 					param.set_value_default(param.scale(defv));
 				} else {
 					param.set_value_default(param.scale((defv - mp.offset) / mp.scalar));
