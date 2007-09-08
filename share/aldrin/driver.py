@@ -76,7 +76,8 @@ class AudioDriver:
 		if self.enabled:
 			self.destroy()
 		inputname, outputname, samplerate, buffersize = config.get_config().get_audiodriver_config()
-		assert player.audiodriver_get_count()
+		if not player.audiodriver_get_count():
+			raise AudioInitException
 		print "available drivers:"
 		bestpick = -1
 		for i in range(player.audiodriver_get_count()):
