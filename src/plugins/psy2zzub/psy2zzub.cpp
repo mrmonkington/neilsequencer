@@ -106,7 +106,7 @@ namespace zzub { namespace plugins { namespace psycle_to_zzub {
 		}
 		
 		inline bool is_denormal(const float & f) {
-			return *reinterpret_cast<const unsigned int *>(&f) & 0x7f800000 == 0;
+			return *(reinterpret_cast<const unsigned int *>(&f)) & 0x7f800000 == 0;
 		}
 		
 		void replace_char(char *str,const char toReplace,const char replacedBy) {
@@ -177,11 +177,11 @@ namespace zzub { namespace plugins { namespace psycle_to_zzub {
 			HANDLE hFind=::FindFirstFile(search_path.c_str(), &fd);
 			while(hFind != INVALID_HANDLE_VALUE) {
 				std::string full_path(path + '\\' + fd.cFileName);
-				if(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) scan_plugins(fullPath.c_str());
+				if(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) scan_plugins(full_path.c_str());
 				else {
 					char absolute_path[MAX_PATH];
 					::GetFullPathName(full_path.c_str(), MAX_PATH, absolute_path, 0);
-					add_plugins(absolute_path);
+					add_plugin(absolute_path);
 				}
 				if (!::FindNextFile(hFind, &fd)) break;
 			}
