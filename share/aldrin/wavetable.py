@@ -60,10 +60,16 @@ class WavetablePanel(gtk.Notebook):
 		preview.set_size_request(200,-1)
 		btnopen = new_image_button(filepath("res/loadsample.png"), "Add/Insert Instrument")
 		btnopen.connect('clicked', self.on_load_sample)
+		btndeletefile = new_image_button(filepath("res/clear.png"), "Delete File")
+		btndeletefile.connect('clicked', self.on_delete_file)
+		btnrenamefile = new_image_button(filepath("res/rename.png"), "Rename File")
+		btnrenamefile.connect('clicked', self.on_rename_file)
 		chkautoplay = gtk.CheckButton("_Automatic Preview")
 		chkautoplay.set_active(True)
 		self.chkautoplay = chkautoplay
 		hbox = gtk.HBox(False, MARGIN)
+		hbox.pack_end(btnrenamefile, expand=False)
+		hbox.pack_end(btndeletefile, expand=False)
 		hbox.pack_end(btnopen, expand=False)
 		hbox.pack_end(chkautoplay, expand=False)
 		self.libpanel.set_extra_widget(hbox)
@@ -187,6 +193,7 @@ class WavetablePanel(gtk.Notebook):
 		self.btnplay.connect('clicked', self.on_play_wave)
 		self.btnstop.connect('clicked', self.on_stop_wave)
 		self.btnclear.connect('clicked', self.on_clear)
+		self.btnrename.connect('clicked', self.on_rename_instrument)
 		self.btnadsr.connect('clicked', self.on_show_adsr)
 		self.btnfitloop.connect('clicked', self.on_fit_loop)
 		self.volumeslider.connect('scroll-event', self.on_mousewheel)
@@ -263,6 +270,61 @@ class WavetablePanel(gtk.Notebook):
 		model, rows = self.samplelist.get_selection().get_selected_rows()
 		return [row[0] for row in rows]
 		
+	def on_delete_file(self, widget):
+		"""
+		Deletes currently selected file
+		"""
+		files = [path for path in self.libpanel.get_filenames() if os.path.isfile(path)]
+		if not files:
+			return
+		sel = self.get_sample_selection()
+		if question(self, '<b><big>Really delete selected files?</big></b>',False) != gtk.RESPONSE_YES:
+			return
+		for file in files:
+			os.remove(file)
+		self.libpanel.set_current_folder(self.libpanel.get_current_folder())
+		
+	def on_rename_file(self, widget):
+		"""
+		Renames currently selected file
+		"""
+		files = [path for path in self.libpanel.get_filenames() if os.path.isfile(path)]
+		if not(files) or len(files)>1:
+			return
+		data_entry = DataEntry(self, "Rename File")
+		if data_entry.run() == gtk.RESPONSE_OK:
+			try:
+				value = data_entry.edit.get_text()
+				os.rename(files[0], os.path.join(os.path.dirname(files[0]),value))
+			except:
+				import traceback
+				traceback.print_exc()
+		data_entry.destroy()
+		self.libpanel.set_current_folder(self.libpanel.get_current_folder())
+		
+	
+	def on_rename_instrument(self, widget):
+		"""
+		Renames currently selected sample.
+		"""
+		selects = self.get_sample_selection()
+		if not(selects) or len(selects)>1:
+			return
+		data_entry = DataEntry(self, "Rename Instrument")
+		if data_entry.run() == gtk.RESPONSE_OK:
+			try:
+				value = data_entry.edit.get_text()
+				target=self.get_sample_selection()[0]
+				w = player.get_wave(target)
+				w.set_name(value)
+			except:
+				import traceback
+				traceback.print_exc()
+		data_entry.destroy()
+		self.update_samplelist()
+		self.update_sampleprops()
+		self.rootwindow.patternframe.update_all()
+	
 	def on_samplerate_apply(self, widget, *args):
 		"""
 		Callback that responds to changes in the sample rate edit field.
@@ -810,6 +872,7 @@ class WavetablePanel(gtk.Notebook):
 			return
 		level = w.get_level(0)
 		self.samplename.set_label(w.get_path())
+		#self.samplename.set_label("Sample Name: "+w.get_name())
 		v = int(linear2db(w.get_volume()) * 100)
 		self.volumeslider.set_value(v)
 		f = w.get_flags()
@@ -893,6 +956,34 @@ class WavetablePanel(gtk.Notebook):
 				level.set_samples_per_second(int(sps+0.5))
 		self.update_sampleprops()
 		#~ self.update_subsamplelist()
+
+class DataEntry(gtk.Dialog):
+	"""
+	A data entry control for renaming files
+	"""
+	def __init__(self, parent, title):
+		"""
+		Initializer.
+		"""
+		gtk.Dialog.__init__(self,
+			title,
+			parent.get_toplevel(),
+			gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
+			(gtk.STOCK_OK, gtk.RESPONSE_OK, gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL),
+		)	
+		self.label = gtk.Label("New name:")
+		self.edit = gtk.Entry()
+		s = gtk.HBox()
+		s.pack_start(self.label, expand=False)
+		s.pack_start(self.edit)
+		self.vbox.pack_start(s, expand=False)
+		self.edit.grab_focus()
+		self.edit.select_region(1,-1)
+		self.show_all()
+		self.edit.connect('activate', self.on_text_enter)
+	
+	def on_text_enter(self, widget):
+		self.response(gtk.RESPONSE_OK)
 
 
 __all__ = [
