@@ -338,8 +338,10 @@ class WavetablePanel(gtk.Notebook):
 		files = [path for path in self.libpanel.get_filenames() if os.path.isfile(path)]
 		if not(files) or len(files)>1:
 			return
-		print files[0]
-		popen2.Popen4('audacity '+files[0])
+		editor=config.get_config().get_general_config()
+		if not(editor):
+			editor="audacity"
+		popen2.Popen4(editor+' '+files[0])
 	
 	def on_samplerate_apply(self, widget, *args):
 		"""

@@ -46,6 +46,45 @@ class CancelException(Exception):
 	modal UI dialogs.
 	"""
 
+class GeneralPanel(gtk.VBox):
+	"""
+	Panel which allows changing of general settings.
+	"""
+	def __init__(self):
+		"""
+		Initializing.
+		"""
+		gtk.VBox.__init__(self)
+		self.set_border_width(MARGIN)
+		frame1 = gtk.Frame("General Settings")
+		fssizer = gtk.VBox(False, MARGIN)
+		fssizer.set_border_width(MARGIN)
+		frame1.add(fssizer)
+		audioeditor = config.get_config().get_general_config()
+		self.audioeditor = gtk.Entry()
+		self.audioeditor.set_text(audioeditor)
+		sg1 = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
+		sg2 = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
+		def add_row(c1, c2):
+			row = gtk.HBox(False, MARGIN)
+			c1.set_alignment(1, 0.5)
+			sg1.add_widget(c1)
+			sg2.add_widget(c2)
+			row.pack_start(c1, expand=False)
+			row.pack_end(c2)
+			fssizer.pack_start(row, expand=False)
+		add_row(gtk.Label("External Sample Editor"), self.audioeditor)
+		self.add(frame1)
+		
+	def apply(self):
+		"""
+		Writes general config settings to file.
+		"""
+		audioeditorold = config.get_config().get_general_config()
+		audioeditor = self.audioeditor.get_text()
+		config.get_config().set_general_config(audioeditor)
+	
+
 class DriverPanel(gtk.VBox):
 	"""
 	Panel which allows to see and change audio driver settings.
@@ -485,12 +524,14 @@ class PreferencesDialog(gtk.Dialog):
 			gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT)
 		nb = gtk.Notebook()
 		nb.set_border_width(MARGIN)
+		self.generalpanel = GeneralPanel()
 		self.driverpanel = DriverPanel()
 		self.wavetablepanel = WavetablePanel()
 		self.midipanel = MidiPanel()
 		self.controllerpanel = ControllerPanel(rootwindow)
 		self.keyboardpanel = KeyboardPanel()
 		self.extensionspanel = ExtensionsPanel()
+		nb.append_page(self.generalpanel, gtk.Label("General"))
 		nb.append_page(self.driverpanel, gtk.Label("Audio"))
 		nb.append_page(self.midipanel, gtk.Label("MIDI"))
 		nb.append_page(self.controllerpanel, gtk.Label("Controllers"))
@@ -519,6 +560,7 @@ class PreferencesDialog(gtk.Dialog):
 		"""
 		Apply changes in settings without closing the dialog.
 		"""
+		self.generalpanel.apply()
 		self.wavetablepanel.apply()
 		self.extensionspanel.apply()
 		self.keyboardpanel.apply()

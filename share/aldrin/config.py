@@ -380,6 +380,13 @@ class AldrinConfig(ConfigParser.ConfigParser):
 		"""
 		self.set_section('Credentials/'+service)
 		return self.read_value('Username'), self.read_value('Password')
+	
+	def get_general_config(self):
+		"""
+		returns general config options
+		"""
+		self.set_section('General')
+		return self.read_value('ExternalEditor')
 		
 	def set_credentials(self, service, username, password):
 		"""
@@ -526,6 +533,15 @@ class AldrinConfig(ConfigParser.ConfigParser):
 		self.set_section('WavetablePaths')
 		for i in range(len(pathlist)):
 			self.write_value('Path%i' % i, pathlist[i])
+		self.flush()
+		
+	def set_general_config(self, audioeditor):
+		"""
+		Sets general config options
+		"""
+		self.delete_section('General')
+		self.set_section('General')
+		self.write_value('ExternalEditor', audioeditor)
 		self.flush()
 		
 	def set_plugin_presets(self, pluginloader, presets):
