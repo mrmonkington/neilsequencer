@@ -557,13 +557,14 @@ def new_listview(columns):
 	treeview.set_search_column(0)
 	return treeview, liststore, columncontrols
 	
-def new_image_button(path, tooltip):
+def new_image_button(path, tooltip, tooltips_object):
 	"""
 	Creates a button with a single image.
 	"""
 	image = gtk.Image()
 	image.set_from_pixbuf(gtk.gdk.pixbuf_new_from_file(path))
 	button = gtk.Button()
+	tooltips_object.set_tip(button, tooltip)
 	button.set_image(image)
 	return button
 	
@@ -587,13 +588,14 @@ def new_stock_image_toggle_button(stockid):
 	button.set_image(image)
 	return button
 
-def new_image_toggle_button(path, tooltip):
+def new_image_toggle_button(path, tooltip, tooltips_object):
 	"""
 	Creates a toggle button with a single image.
 	"""
 	image = gtk.Image()
 	image.set_from_pixbuf(gtk.gdk.pixbuf_new_from_file(path))
 	button = gtk.ToggleButton()
+	tooltips_object.set_tip(button, tooltip)
 	button.set_image(image)
 	return button
 

@@ -76,6 +76,7 @@ class FreesoundPanel(gtk.HBox):
 		gobject.threads_init()
 		self.wavetable = wavetable
 		gtk.HBox.__init__(self)
+		self.tooltips=gtk.Tooltips()
 		self.splitter = gtk.HPaned()
 		self.leftpanel = gtk.VBox(False, MARGIN)
 		vsizer = self.leftpanel
@@ -133,7 +134,7 @@ class FreesoundPanel(gtk.HBox):
 		self.btnsearch= gtk.Button("Search")
 		self.btnsearch.connect('clicked', self.on_search)
 		self.btnsearchtags.set_active(True)
-		self.btnopen = new_image_button(filepath("res/loadsample.png"), "Add/Insert Instrument")
+		self.btnopen = new_image_button(filepath("res/loadsample.png"), "Add/Insert Instrument", self.tooltips)
 		self.btnopen.connect('clicked', self.on_load_sample)
 		self.resultlist, self.resultstore, columns = new_listview([
 			('Name', str),
