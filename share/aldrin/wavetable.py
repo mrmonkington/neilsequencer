@@ -592,6 +592,7 @@ class WavetablePanel(gtk.Notebook):
 		self.rootwindow.patternframe.update_all()
 		self.set_current_page(0)
 		self.samplelist.grab_focus()
+		self.samplelist.set_cursor(selects[0])
 		
 	def on_load_sample(self, widget):
 		"""
