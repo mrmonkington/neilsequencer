@@ -127,11 +127,17 @@ class FreesoundPanel(gtk.HBox):
 		self.progress = gtk.ProgressBar()
 		searchgroup.pack_start(self.edsearch)
 		self.btnsearchtags = gtk.CheckButton("Tags")
+		self.tooltips.set_tip(self.btnsearchtags, "Search File Tags")
 		self.btnsearchdesc = gtk.CheckButton("Descriptions")
+		self.tooltips.set_tip(self.btnsearchdesc, "Search File Descriptions")
 		self.btnsearchfiles = gtk.CheckButton("Files")
+		self.tooltips.set_tip(self.btnsearchfiles, "Search File Names")
 		self.btnsearchusers = gtk.CheckButton("People")
+		self.tooltips.set_tip(self.btnsearchusers, "Search File Creators")
 		self.btncancel = gtk.Button(stock=gtk.STOCK_CANCEL)
+		self.tooltips.set_tip(self.btncancel, "Cancel Search")
 		self.btnsearch= gtk.Button("Search")
+		self.tooltips.set_tip(self.btnsearch, "Start New Search")
 		self.btnsearch.connect('clicked', self.on_search)
 		self.btnsearchtags.set_active(True)
 		self.btnopen = new_image_button(filepath("res/loadsample.png"), "Add/Insert Instrument", self.tooltips)
@@ -321,6 +327,7 @@ class FreesoundPanel(gtk.HBox):
 		menu = gtk.Menu()
 		def make_menu_item(label, desc, func, *args):
 			item = gtk.MenuItem(label=label)
+			self.tooltips.set_tip(item, desc)
 			if func:
 				item.connect('activate', func, *args)
 			return item
