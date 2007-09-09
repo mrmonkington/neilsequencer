@@ -31,6 +31,7 @@ import zzub
 import config
 from envelope import EnvelopeView, ADSRPanel
 import freesound
+import popen2
 import common
 from common import MARGIN, MARGIN2, MARGIN3
 player = common.get_player()
@@ -66,11 +67,13 @@ class WavetablePanel(gtk.Notebook):
 		btnrenamefile = new_image_button(filepath("res/rename.png"), "Rename File", self.tooltips)
 		btnrenamefile.connect('clicked', self.on_rename_file)
 		btneditfile= gtk.Button("Edit")
-		
+		self.tooltips.set_tip(btneditfile, "Open Sample in External Editor")
+		btneditfile.connect('clicked', self.on_edit_file)
 		chkautoplay = gtk.CheckButton("_Automatic Preview")
 		chkautoplay.set_active(True)
 		self.chkautoplay = chkautoplay
 		hbox = gtk.HBox(False, MARGIN)
+		hbox.pack_end(btneditfile, expand=False)
 		hbox.pack_end(btnrenamefile, expand=False)
 		hbox.pack_end(btndeletefile, expand=False)
 		hbox.pack_end(btnopen, expand=False)
@@ -298,7 +301,10 @@ class WavetablePanel(gtk.Notebook):
 		if data_entry.run() == gtk.RESPONSE_OK:
 			try:
 				value = data_entry.edit.get_text()
-				os.rename(files[0], os.path.join(os.path.dirname(files[0]),value))
+				filename=os.path.basename(files[0])
+				if filename[filename.rfind("."):]!=value[value.rfind("."):]:
+					value=value+filename[filename.rfind("."):]
+				os.rename(filename, os.path.join(os.path.dirname(filename),value))
 			except:
 				import traceback
 				traceback.print_exc()
@@ -327,6 +333,13 @@ class WavetablePanel(gtk.Notebook):
 		self.update_samplelist()
 		self.update_sampleprops()
 		self.rootwindow.patternframe.update_all()
+	
+	def on_edit_file(self, widget):
+		files = [path for path in self.libpanel.get_filenames() if os.path.isfile(path)]
+		if not(files) or len(files)>1:
+			return
+		print files[0]
+		popen2.Popen4('audacity '+files[0])
 	
 	def on_samplerate_apply(self, widget, *args):
 		"""
