@@ -528,7 +528,7 @@ class FreesoundPanel(gtk.HBox):
 			self.cmds.append((self.resultstore.clear,()))
 			self.results = {}
 			if len(items) > 300:
-				self.cmds.append((self.resultstore.append,(["Too many hits. Trunkating at 300...",'','','',''],)))
+				self.cmds.append((self.resultstore.append,(["Too many hits. Truncating at 300...",'','','',''],)))
 				items=items[0:300]
 			elif not items:
 				self.cmds.append((self.resultstore.append,(["No results matching your search terms.",'','','',''],)))
