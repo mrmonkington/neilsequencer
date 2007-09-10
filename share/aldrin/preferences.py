@@ -62,9 +62,11 @@ class GeneralPanel(gtk.VBox):
 		frame1.add(fssizer)
 		audioeditor, maxdownload = config.get_config().get_general_config()
 		incsave = config.get_config().get_incremental_saving()
+		rackpanel = config.get_config().get_experimental('RackPanel')
 		self.audioeditor = gtk.Entry()
 		self.maxdownload = gtk.Entry()
 		self.incsave = gtk.CheckButton()
+		self.rackpanel = gtk.CheckButton()
 		if not audioeditor:
 			audioeditor="audacity"
 		if not maxdownload:
@@ -74,6 +76,7 @@ class GeneralPanel(gtk.VBox):
 		self.audioeditor.set_text(audioeditor)
 		self.maxdownload.set_text(maxdownload)
 		self.incsave.set_active(int(incsave))
+		self.rackpanel.set_active(rackpanel)
 		sg1 = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
 		sg2 = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
 		def add_row(c1, c2):
@@ -87,6 +90,7 @@ class GeneralPanel(gtk.VBox):
 		add_row(gtk.Label("External Sample Editor"), self.audioeditor)
 		add_row(gtk.Label("Max. Results in Freesound Search"), self.maxdownload)
 		add_row(gtk.Label("Incremental Saves"), self.incsave)
+		add_row(gtk.Label("Rack Panel View (After Restart)"), self.rackpanel)
 		self.add(frame1)
 		
 	def apply(self):
@@ -102,6 +106,7 @@ class GeneralPanel(gtk.VBox):
 		audioeditor = self.audioeditor.get_text()
 		config.get_config().set_general_config(audioeditor, maxdownload)
 		config.get_config().set_incremental_saving(self.incsave.get_active())
+		config.get_config().set_experimental('RackPanel', self.rackpanel.get_active())
 	
 
 class DriverPanel(gtk.VBox):
