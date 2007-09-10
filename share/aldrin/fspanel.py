@@ -527,10 +527,9 @@ class FreesoundPanel(gtk.HBox):
 				items = [item.getAttribute("id") for item in self.result.childNodes if item.nodeType == item.ELEMENT_NODE and item.nodeName == 'sample']
 			self.cmds.append((self.resultstore.clear,()))
 			self.results = {}
-			if len(items) > 1000:
-				self.cmds.append((self.resultstore.append,(["Too many hits (max. 1000). Please refine your search.",'','','',''],)))
-				self.cancel_search()
-				return
+			if len(items) > 300:
+				self.cmds.append((self.resultstore.append,(["Too many hits. Trunkating at 300...",'','','',''],)))
+				items=items[0:300]
 			elif not items:
 				self.cmds.append((self.resultstore.append,(["No results matching your search terms.",'','','',''],)))
 			else:
