@@ -62,6 +62,8 @@ class GeneralPanel(gtk.VBox):
 		frame1.add(fssizer)
 		audioeditor = config.get_config().get_general_config()
 		self.audioeditor = gtk.Entry()
+		if not audioeditor:
+			audioeditor="audacity"
 		self.audioeditor.set_text(audioeditor)
 		sg1 = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
 		sg2 = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
