@@ -386,7 +386,7 @@ class AldrinConfig(ConfigParser.ConfigParser):
 		returns general config options
 		"""
 		self.set_section('General')
-		return self.read_value('ExternalEditor')
+		return self.read_value('ExternalEditor'), self.read_value('MaxDownload')
 		
 	def set_credentials(self, service, username, password):
 		"""
@@ -535,13 +535,14 @@ class AldrinConfig(ConfigParser.ConfigParser):
 			self.write_value('Path%i' % i, pathlist[i])
 		self.flush()
 		
-	def set_general_config(self, audioeditor):
+	def set_general_config(self, audioeditor, maxdownload):
 		"""
 		Sets general config options
 		"""
 		self.delete_section('General')
 		self.set_section('General')
 		self.write_value('ExternalEditor', audioeditor)
+		self.write_value('MaxDownload', str(maxdownload))
 		self.flush()
 		
 	def set_plugin_presets(self, pluginloader, presets):

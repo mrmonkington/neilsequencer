@@ -60,11 +60,20 @@ class GeneralPanel(gtk.VBox):
 		fssizer = gtk.VBox(False, MARGIN)
 		fssizer.set_border_width(MARGIN)
 		frame1.add(fssizer)
-		audioeditor = config.get_config().get_general_config()
+		audioeditor, maxdownload = config.get_config().get_general_config()
+		incsave = config.get_config().get_incremental_saving()
 		self.audioeditor = gtk.Entry()
+		self.maxdownload = gtk.Entry()
+		self.incsave = gtk.CheckButton()
 		if not audioeditor:
 			audioeditor="audacity"
+		if not maxdownload:
+			maxdownload="100"
+		if incsave=="":
+			incsave=1
 		self.audioeditor.set_text(audioeditor)
+		self.maxdownload.set_text(maxdownload)
+		self.incsave.set_active(int(incsave))
 		sg1 = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
 		sg2 = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
 		def add_row(c1, c2):
@@ -76,15 +85,23 @@ class GeneralPanel(gtk.VBox):
 			row.pack_end(c2)
 			fssizer.pack_start(row, expand=False)
 		add_row(gtk.Label("External Sample Editor"), self.audioeditor)
+		add_row(gtk.Label("Max. Results in Freesound Search"), self.maxdownload)
+		add_row(gtk.Label("Incremental Saves"), self.incsave)
 		self.add(frame1)
 		
 	def apply(self):
 		"""
 		Writes general config settings to file.
 		"""
-		audioeditorold = config.get_config().get_general_config()
+		try:
+			maxdownload=int(self.maxdownload.get_text())
+		except:
+			maxdownload=100
+		if maxdownload<0 or maxdownload>500:
+			maxdownload=100
 		audioeditor = self.audioeditor.get_text()
-		config.get_config().set_general_config(audioeditor)
+		config.get_config().set_general_config(audioeditor, maxdownload)
+		config.get_config().set_incremental_saving(self.incsave.get_active())
 	
 
 class DriverPanel(gtk.VBox):

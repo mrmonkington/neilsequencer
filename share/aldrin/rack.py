@@ -62,6 +62,7 @@ class ParameterView(gtk.VBox):
 		gtk.VBox.__init__(self)
 		self.set_flags(gtk.CAN_FOCUS)
 		self.plugin = plugin
+		self.tooltips=gtk.Tooltips()
 		name = prepstr(self.plugin.get_name())
 		pl = self.plugin.get_pluginloader()
 		classname = prepstr(pl.get_name())
@@ -78,18 +79,20 @@ class ParameterView(gtk.VBox):
 		self.presetbox.set_size_request(100,-1)
 		self.presetbox.set_wrap_width(4)
 		self.btnadd = new_stock_image_button(gtk.STOCK_ADD)
+		self.tooltips.set_tip(self.btnadd, "Write Values to Preset")
 		self.btnremove = new_stock_image_button(gtk.STOCK_REMOVE)
+		self.tooltips.set_tip(self.btnremove, "Delete Preset")
 		self.btncopy = new_stock_image_button(gtk.STOCK_COPY)
+		self.tooltips.set_tip(self.btncopy, "Copy Values to Clipboard (to Paste in Pattern)")
 		self.btnrandom = gtk.Button("_Random")
+		self.tooltips.set_tip(self.btnrandom, "Randomise Values")
 		self.btnhelp = new_stock_image_button(gtk.STOCK_HELP)
-		self.btnsnap= gtk.Button("Snapshot")
 		menugroup = gtk.HBox(False, MARGIN)
 		menugroup.pack_start(self.presetbox)
 		menugroup.pack_start(self.btnadd, expand=False)
 		menugroup.pack_start(self.btnremove, expand=False)
 		menugroup.pack_start(self.btncopy, expand=False)
 		menugroup.pack_start(self.btnrandom, expand=False)
-		menugroup.pack_start(self.btnsnap, expand=False)
 		menugroup.pack_start(self.btnhelp, expand=False)
 		toplevelgroup = gtk.VBox(False, MARGIN)
 		toplevelgroup.set_border_width(MARGIN)
@@ -167,7 +170,6 @@ class ParameterView(gtk.VBox):
 		self.btnremove.connect('clicked', self.on_button_remove)
 		self.btncopy.connect('clicked', self.on_button_copy)
 		self.btnrandom.connect('clicked', self.on_button_random)
-		self.btnsnap.connect('clicked', self.on_button_snapshot)
 		self.btnhelp.connect('clicked', self.on_button_help)
 		self.connect('destroy', self.on_destroy)
 		if rootwindow.routeframe:
@@ -471,23 +473,6 @@ class ParameterView(gtk.VBox):
 						self.plugin.set_parameter_value(g,t,i,v,0)
 						s.set_value(v)
 						self.update_valuelabel(g,t,i)
-	
-	def on_button_snapshot(self, event):
-		"""
-		Handler for clicks on the 'Snapshot' button.
-		"""
-		#for g in range(1,3):
-		#	for t in range(self.plugin.get_group_track_count(g)):
-		automation = player.get_automation()
-		player.set_automation(1)
-		for i in range(self.pluginloader.get_parameter_count(1)):
-			p = self.pluginloader.get_parameter(1,i)
-			nl,s,vl = self.pid2ctrls[(1,0,i)]
-			v=int(s.get_value())
-			self.plugin.set_parameter_value(1,0,i,v,1)
-		player.set_automation(automation)
-		self.rootwindow.patternframe.view.update_line(player.get_position())
-		self.rootwindow.patternframe.view.redraw()
 			
 	def on_button_help(self, event):
 		"""

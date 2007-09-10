@@ -338,7 +338,7 @@ class WavetablePanel(gtk.Notebook):
 		files = [path for path in self.libpanel.get_filenames() if os.path.isfile(path)]
 		if not(files) or len(files)>1:
 			return
-		editor=config.get_config().get_general_config()
+		editor, maxdownload=config.get_config().get_general_config()
 		if not(editor):
 			editor="audacity"
 		popen2.Popen4(editor+' '+files[0])
