@@ -528,6 +528,8 @@ class FreesoundPanel(gtk.HBox):
 			self.cmds.append((self.resultstore.clear,()))
 			self.results = {}
 			audioeditor, maxdownload = config.get_config().get_general_config()
+			if maxdownload=="":
+				maxdownload=100
 			if len(items) > int(maxdownload):
 				self.cmds.append((self.resultstore.append,(["Too many hits. Truncating at %i..." % int(maxdownload),'','','',''],)))
 				items=items[0:int(maxdownload)]
