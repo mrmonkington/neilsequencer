@@ -304,7 +304,7 @@ class WavetablePanel(gtk.Notebook):
 				filename=os.path.basename(files[0])
 				if filename[filename.rfind("."):]!=value[value.rfind("."):]:
 					value=value+filename[filename.rfind("."):]
-				os.rename(filename, os.path.join(os.path.dirname(filename),value))
+				os.rename(files[0], os.path.join(os.path.dirname(files[0]),value))
 			except:
 				import traceback
 				traceback.print_exc()
