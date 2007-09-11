@@ -18,14 +18,14 @@
 	<separator/>
 	<ref icon="lunar_delay" label="Lunar Delay" uri="@trac.zeitherrschaft.org/aldrin/lunar/effect/delay;1"/>
 	<ref icon="lunar_filter" label="Lunar Filter" uri="@trac.zeitherrschaft.org/aldrin/lunar/effect/filter;1"/>
-	<ref icon="lunar_filter" label="Lunar Philthy" uri="@trac.zeitherrschaft.org/aldrin/lunar/effect/philthy;1"/>
 	<ref icon="lunar_gain" label="Lunar Gain" uri="@trac.zeitherrschaft.org/aldrin/lunar/effect/gain;1"/>
 	<ref icon="lunar_pan" label="Lunar Pan" uri="@trac.zeitherrschaft.org/aldrin/lunar/effect/panning;1"/>
 	<ref icon="lunar_verb" label="Lunar Verb" uri="@trac.zeitherrschaft.org/aldrin/lunar/effect/reverb;1"/>
 	<ref icon="lunar_distortion" label="Lunar Distortion" uri="@trac.zeitherrschaft.org/aldrin/lunar/effect/distortion;1"/>
-	<ref label="Bigyo Frequency Shifter" uri="@bigyo/frequency+shifter;1"/>
-	<ref label="Frequency UnKnown O-Delay (Delay)" uri="@frequencyunknown.org/o-delay;1"/>
+	<ref label="FSM Philthy (Filter)" uri="@trac.zeitherrschaft.org/aldrin/lunar/effect/philthy;1"/>
 	<ref label="FireSledge ParamEQ (Equalizer)" uri="@FireSledge.org/ParamEQ;1"/>
+	<ref label="Frequency UnKnown O-Delay (Delay)" uri="@frequencyunknown.org/o-delay;1"/>
+	<ref label="Bigyo Frequency Shifter (Pitch Shifter)" uri="@bigyo/frequency+shifter;1"/>
 	<ref label="Graue SoftSat (Distortion)" uri="graue@oceanbase.org/effect/softsat;1"/>
 	<ref label="Joachims Multi (Mastering)" uri="@binarywerks.dk/multi-2;1"/>
 	<group label="LADSPA Plugins">
