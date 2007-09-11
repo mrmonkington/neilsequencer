@@ -87,6 +87,7 @@ class ParameterView(gtk.VBox):
 		self.btnrandom = gtk.Button("_Random")
 		self.tooltips.set_tip(self.btnrandom, "Randomise Values")
 		self.btnhelp = new_stock_image_button(gtk.STOCK_HELP)
+		self.tooltips.set_tip(self.btnhelp, "Help")
 		menugroup = gtk.HBox(False, MARGIN)
 		menugroup.pack_start(self.presetbox)
 		menugroup.pack_start(self.btnadd, expand=False)
@@ -493,7 +494,9 @@ class ParameterView(gtk.VBox):
 				import webbrowser
 				webbrowser.open_new(path)
 				return
-		wx.MessageDialog(self, message="Sorry, there's no help for this plugin yet.", caption = "Help", style = wx.ICON_WARNING|wx.OK|wx.CENTER).ShowModal()
+		info=gtk.MessageDialog(self.rootwindow,flags=0, type=gtk.MESSAGE_INFO, buttons=gtk.BUTTONS_OK, message_format="Sorry, there's no help for this plugin yet")
+		info.run()
+		info.destroy()
 		
 	def on_key_down(self, widget, event, (g,t,i)):
 		"""
