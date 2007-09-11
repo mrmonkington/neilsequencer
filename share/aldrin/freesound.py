@@ -74,17 +74,16 @@ class Freesound:
 	def get_stream(self, url):
 		return urllib2.urlopen(url)
 		
-	def retrieve(self, url, filename):
+	def retrieve(self, url, ostream):
 		conn = urllib2.urlopen(url)
-		outf = open(filename,'wb')
-		#print conn.info()['content-type']
+		print conn.info()['content-type']
 		length = int(conn.info()['content-length'])
 		while length:
 			blocksize = min(length,8192)
 			data = conn.read(blocksize)
-			outf.write(data)
+			ostream.write(data)
 			length -= blocksize
-		return filename, conn.info()
+		return conn.info()
 		#return urllib.urlretrieve(*args,**kargs)
 
 	def get_sample_info(self, sampleid):

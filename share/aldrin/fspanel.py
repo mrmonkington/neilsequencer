@@ -300,12 +300,14 @@ class FreesoundPanel(gtk.HBox):
 				value = (float(index) / filecount)
 				dialog.fraction = value
 				dialog.markup = "Downloading sample #%s (%s of %s)..." % (sampleid,index+1,filecount)
-				fname, headers = fs.download(sampleid, path)
+				outf = open(path, 'wb')
+				try: headers = fs.download(sampleid, outf)
+				finally: outf.close()
 				if headers['content-type'] == 'application/octet-stream':
-					basedir = os.path.dirname(fname)
+					basedir = os.path.dirname(path)
 					newpath = os.path.join(basedir, rx.match(headers['content-disposition']).group(1))
-					print "moving %s to %s..." % (fname, newpath)
-					os.rename(fname, newpath)
+					print "moving %s to %s..." % (path, newpath)
+					os.rename(path, newpath)
 					outfiles.append(newpath)
 				else:
 					print >> sys.stderr, "wrong content type for %s: %s" % (path, headers['content-type'])
@@ -377,7 +379,7 @@ class FreesoundPanel(gtk.HBox):
 		if self.active_wave_url != url:
 			print "hum."
 			return
-		path = self.wavecache[url].name
+		path = self.wavecache[url]
 		print "playing %s (%s)" % (path, format_filesize(os.stat(path)[stat.ST_SIZE]))
 		self.wavetable.preview_sample(path)
 		
@@ -386,10 +388,15 @@ class FreesoundPanel(gtk.HBox):
 		self.active_wave_url = url
 		if not url in self.wavecache:
 			import tempfile
-			outf = tempfile.NamedTemporaryFile(suffix=".mp3")
-			print url,"=>",outf.name
-			fname, headers = self.get_freesound(warn=True).retrieve(url, outf.name)
-			self.wavecache[url] = outf
+			fd, fname = tempfile.mkstemp(suffix=".mp3")
+			try:
+				print url,"=>",fname
+				ostream = os.fdopen(fd, 'wb') # note: we could also write directly with os.write(fd, data)
+			except: os.close(fd)
+			try:
+				headers = self.get_freesound(warn=True).retrieve(url, ostream)
+				self.wavecache[url] = fname
+			finally: ostream.close() # also closes fd
 		self.cmds.append((self.preview_wave, (url,)))
 		
 	def apply_image(self, url):
