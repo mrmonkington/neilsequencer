@@ -88,17 +88,10 @@ class GeneralPanel(gtk.VBox):
 		"""
 		Writes general config settings to file.
 		"""
-		try:
-			maxdownload=int(self.maxdownload.get_text())
-			assert maxdownload > 0
-		except:
-			error(self, "Please pick a valid number for maximum search results.")
-			raise CancelException
 		audioeditor = self.audioeditor.get_text()
-		config.get_config().set_freesound_max_search_results(maxdownload)
 		config.get_config().set_audioeditor_command(audioeditor)
 		config.get_config().set_incremental_saving(self.incsave.get_active())
-		config.get_config().set_experimental('RackPanel', self.rackpanel.get_active())
+		#config.get_config().set_experimental('RackPanel', self.rackpanel.get_active())
 	
 
 class DriverPanel(gtk.VBox):

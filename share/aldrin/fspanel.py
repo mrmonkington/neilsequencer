@@ -73,7 +73,6 @@ class FreesoundPanel(gtk.HBox):
 	COL_ID = 4
 	
 	def __init__(self, wavetable):
-		gobject.threads_init()
 		self.wavetable = wavetable
 		gtk.HBox.__init__(self)
 		self.tooltips=gtk.Tooltips()
@@ -123,6 +122,7 @@ class FreesoundPanel(gtk.HBox):
 		vdetails.pack_start(self.imgwave, expand=False)
 		vdetails.pack_start(vdetailgrid)
 		searchgroup = gtk.HBox(False, MARGIN)
+		downloadgroup = gtk.HBox(False, MARGIN)
 		self.edsearch = gtk.Entry()
 		self.progress = gtk.ProgressBar()
 		searchgroup.pack_start(self.edsearch)
@@ -138,6 +138,18 @@ class FreesoundPanel(gtk.HBox):
 		self.tooltips.set_tip(self.btncancel, "Cancel Search")
 		self.btnsearch= gtk.Button("Search")
 		self.tooltips.set_tip(self.btnsearch, "Start New Search")
+		self.combomaxdl = gtk.combo_box_new_text()
+		values=10, 25, 50, 100, 250, 1000
+		for value in values:
+			self.combomaxdl.append_text(str(value))
+		maxdl=config.get_config().get_freesound_max_search_results()
+		comboindex=0
+		for value in values:
+			if maxdl==value:
+				break
+			comboindex+=1
+		self.combomaxdl.set_active(comboindex)
+		self.combomaxdl.connect('changed', self.on_change_maxdl)
 		self.btnsearch.connect('clicked', self.on_search)
 		self.btnsearchtags.set_active(True)
 		self.btnopen = new_image_button(filepath("res/loadsample.png"), "Add/Insert Instrument", self.tooltips)
@@ -154,6 +166,8 @@ class FreesoundPanel(gtk.HBox):
 		#~ self.IMG_FOLDER = imglist.Add(wx.Bitmap(filepath("res/folder.png"), wx.BITMAP_TYPE_ANY))
 		#~ self.IMG_WAVE = imglist.Add(wx.Bitmap(filepath("res/wave.png"), wx.BITMAP_TYPE_ANY))
 		#~ self.resultlist.AssignImageList(imglist, wx.IMAGE_LIST_SMALL)
+		downloadgroup.pack_start(gtk.Label("Max. Results to Return"), expand=False)
+		downloadgroup.pack_start(self.combomaxdl, expand=False)
 		searchgroup.pack_end(self.btnsearch, expand=False)
 		searchgroup.pack_end(self.btnopen, expand=False)
 		vsearch.pack_start(searchgroup)
@@ -166,6 +180,7 @@ class FreesoundPanel(gtk.HBox):
 		row.pack_start(self.btnsearchfiles, expand=False)
 		row.pack_start(self.btnsearchusers, expand=False)
 		vsearch.pack_start(row, expand=False)
+		vsearch.pack_start(downloadgroup, expand=False)
 		vsearch.pack_start(progressgroup, expand=False)
 		logo = gtk.Image()
 		logo.set_from_pixbuf(gtk.gdk.pixbuf_new_from_file(filepath("res/fsbanner.png")))
@@ -228,6 +243,14 @@ class FreesoundPanel(gtk.HBox):
 			return False
 		return True
 			
+	def on_change_maxdl(self, widget):
+		"""
+		Update config when maximum downloads combo is changed
+		"""
+		max_search_results=self.combomaxdl.get_active_text()
+		config.get_config().set_freesound_max_search_results(int(max_search_results))
+		
+	
 	def on_load_sample(self, widget=None):
 		"""
 		Called to load samples based on the current file list selection.
