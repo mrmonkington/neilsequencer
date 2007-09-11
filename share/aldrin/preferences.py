@@ -61,19 +61,14 @@ class GeneralPanel(gtk.VBox):
 		fssizer.set_border_width(MARGIN)
 		frame1.add(fssizer)
 		audioeditor = config.get_config().get_audioeditor_command()
-		maxdownload = config.get_config().get_freesound_max_search_results()
 		incsave = config.get_config().get_incremental_saving()
-		rackpanel = config.get_config().get_experimental('RackPanel')
+		#rackpanel = config.get_config().get_experimental('RackPanel')
 		self.audioeditor = gtk.Entry()
-		self.maxdownload = gtk.Entry()
 		self.incsave = gtk.CheckButton()
 		self.rackpanel = gtk.CheckButton()
-		if not audioeditor:
-			audioeditor="audacity"
 		self.audioeditor.set_text(audioeditor)
-		self.maxdownload.set_text(str(maxdownload))
 		self.incsave.set_active(int(incsave))
-		self.rackpanel.set_active(rackpanel)
+		#self.rackpanel.set_active(rackpanel)
 		sg1 = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
 		sg2 = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
 		def add_row(c1, c2):
@@ -85,9 +80,8 @@ class GeneralPanel(gtk.VBox):
 			row.pack_end(c2)
 			fssizer.pack_start(row, expand=False)
 		add_row(gtk.Label("External Sample Editor"), self.audioeditor)
-		add_row(gtk.Label("Max. Results in Freesound Search"), self.maxdownload)
 		add_row(gtk.Label("Incremental Saves"), self.incsave)
-		add_row(gtk.Label("Rack Panel View (After Restart)"), self.rackpanel)
+		#add_row(gtk.Label("Rack Panel View (After Restart)"), self.rackpanel)
 		self.add(frame1)
 		
 	def apply(self):
@@ -553,12 +547,12 @@ class PreferencesDialog(gtk.Dialog):
 		self.controllerpanel = ControllerPanel(rootwindow)
 		self.keyboardpanel = KeyboardPanel()
 		self.extensionspanel = ExtensionsPanel()
-		nb.append_page(self.generalpanel, gtk.Label("General"))
 		nb.append_page(self.driverpanel, gtk.Label("Audio"))
 		nb.append_page(self.midipanel, gtk.Label("MIDI"))
 		nb.append_page(self.controllerpanel, gtk.Label("Controllers"))
 		nb.append_page(self.keyboardpanel, gtk.Label("Keyboard"))
 		nb.append_page(self.wavetablepanel, gtk.Label("Sound Library"))
+		nb.append_page(self.generalpanel, gtk.Label("General"))
 		nb.append_page(self.extensionspanel, gtk.Label("Extensions"))
 		self.vbox.add(nb)
 		
