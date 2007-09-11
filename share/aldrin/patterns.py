@@ -727,6 +727,9 @@ class PatternView(gtk.DrawingArea):
 		menu.append(make_menu_item("Remove pattern...","", self.on_popup_remove_pattern))
 		menu.append(make_menu_item("Create copy...", "", self.on_popup_create_copy))
 		menu.append(gtk.SeparatorMenuItem())
+		menu.append(make_menu_item("Double", "", self.on_popup_double))
+		menu.append(make_menu_item("Halve", "", self.on_popup_halve))
+		menu.append(gtk.SeparatorMenuItem())
 		issolo = self.rootwindow.routeframe.view.solo_plugin == self.get_plugin()
 		menu.append(make_check_item(issolo, "Solo Plugin", "Toggle solo", self.on_popup_solo))
 		menu.append(gtk.SeparatorMenuItem())
@@ -1448,6 +1451,38 @@ class PatternView(gtk.DrawingArea):
 				self.toolbar.select_pattern(i)
 				break
 	
+	def on_popup_double(self, event=None):
+		"""
+		Callback that doubles the length of the current pattern while
+		keeping notes intact
+		"""
+		m = self.get_plugin()
+		p = m.create_pattern((self.pattern.get_row_count())*2)
+		for r,g,t,i in self.pattern_range():
+			p.set_value(r*2,g,t,i,self.pattern.get_value(r,g,t,i))
+		name=self.pattern.get_name()
+		m.remove_pattern(self.pattern)
+		p.set_name(name)
+		self.pattern_changed()
+		
+	def on_popup_halve(self, event=None):
+		"""
+		Callback that halves the length of the current pattern while
+		keeping notes intact
+		"""
+		if self.pattern.get_row_count()==1:
+			return
+		m = self.get_plugin()
+		p = m.create_pattern((self.pattern.get_row_count())/2)
+		for r,g,t,i in self.pattern_range():
+			if r%2:
+				continue
+			p.set_value(r/2,g,t,i,self.pattern.get_value(r,g,t,i))
+		name=self.pattern.get_name()
+		m.remove_pattern(self.pattern)
+		p.set_name(name)
+		self.pattern_changed()
+		
 	def on_popup_create_copy(self, event=None):
 		"""
 		Callback that creates a copy of the current pattern.
