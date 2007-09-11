@@ -380,13 +380,36 @@ class AldrinConfig(ConfigParser.ConfigParser):
 		"""
 		self.set_section('Credentials/'+service)
 		return self.read_value('Username'), self.read_value('Password')
-	
-	def get_general_config(self):
+		
+	def set_audioeditor_command(self, cmd):
 		"""
-		returns general config options
+		Sets the audio editor command.
 		"""
-		self.set_section('General')
-		return self.read_value('ExternalEditor'), self.read_value('MaxDownload')
+		self.set_section('Global')
+		self.write_value('AudioEditorCommand', cmd)
+		self.flush()
+
+	def get_audioeditor_command(self):
+		"""
+		Returns the audio editor command.
+		"""
+		self.set_section('Global')
+		return self.read_value('AudioEditorCommand', 'audacity')
+		
+	def set_freesound_max_search_results(self, count):
+		"""
+		Sets the number of max search results in freesound.
+		"""
+		self.set_section('Freesound')
+		self.write_int_value('MaxSearchResults', count)
+		self.flush()
+		
+	def get_freesound_max_search_results(self):
+		"""
+		Returns the number of max search results in freesound.
+		"""
+		self.set_section('Freesound')
+		return self.read_int_value('MaxSearchResults', 100)
 		
 	def set_credentials(self, service, username, password):
 		"""
@@ -533,16 +556,6 @@ class AldrinConfig(ConfigParser.ConfigParser):
 		self.set_section('WavetablePaths')
 		for i in range(len(pathlist)):
 			self.write_value('Path%i' % i, pathlist[i])
-		self.flush()
-		
-	def set_general_config(self, audioeditor, maxdownload):
-		"""
-		Sets general config options
-		"""
-		self.delete_section('General')
-		self.set_section('General')
-		self.write_value('ExternalEditor', audioeditor)
-		self.write_value('MaxDownload', str(maxdownload))
 		self.flush()
 		
 	def set_plugin_presets(self, pluginloader, presets):

@@ -60,7 +60,8 @@ class GeneralPanel(gtk.VBox):
 		fssizer = gtk.VBox(False, MARGIN)
 		fssizer.set_border_width(MARGIN)
 		frame1.add(fssizer)
-		audioeditor, maxdownload = config.get_config().get_general_config()
+		audioeditor = config.get_config().get_audioeditor_command()
+		maxdownload = config.get_config().get_freesound_max_search_results()
 		incsave = config.get_config().get_incremental_saving()
 		rackpanel = config.get_config().get_experimental('RackPanel')
 		self.audioeditor = gtk.Entry()
@@ -69,12 +70,8 @@ class GeneralPanel(gtk.VBox):
 		self.rackpanel = gtk.CheckButton()
 		if not audioeditor:
 			audioeditor="audacity"
-		if not maxdownload:
-			maxdownload="100"
-		if incsave=="":
-			incsave=1
 		self.audioeditor.set_text(audioeditor)
-		self.maxdownload.set_text(maxdownload)
+		self.maxdownload.set_text(str(maxdownload))
 		self.incsave.set_active(int(incsave))
 		self.rackpanel.set_active(rackpanel)
 		sg1 = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
@@ -99,12 +96,13 @@ class GeneralPanel(gtk.VBox):
 		"""
 		try:
 			maxdownload=int(self.maxdownload.get_text())
+			assert maxdownload > 0
 		except:
-			maxdownload=100
-		if maxdownload<0 or maxdownload>500:
-			maxdownload=100
+			error(self, "Please pick a valid number for maximum search results.")
+			raise CancelException
 		audioeditor = self.audioeditor.get_text()
-		config.get_config().set_general_config(audioeditor, maxdownload)
+		config.get_config().set_freesound_max_search_results(maxdownload)
+		config.get_config().set_audioeditor_command(audioeditor)
 		config.get_config().set_incremental_saving(self.incsave.get_active())
 		config.get_config().set_experimental('RackPanel', self.rackpanel.get_active())
 	

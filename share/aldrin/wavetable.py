@@ -338,10 +338,13 @@ class WavetablePanel(gtk.Notebook):
 		files = [path for path in self.libpanel.get_filenames() if os.path.isfile(path)]
 		if not(files) or len(files)>1:
 			return
-		editor, maxdownload=config.get_config().get_general_config()
-		if not(editor):
-			editor="audacity"
-		popen2.Popen4(editor+' '+files[0])
+		editor = config.get_config().get_audioeditor_command()
+		try:
+			popen2.Popen4(editor+' '+files[0])
+		except:
+			import traceback
+			error(self, "<b><big>There was an error starting the external audio editor.</big></b>")
+			print traceback.format_exc()
 	
 	def on_samplerate_apply(self, widget, *args):
 		"""

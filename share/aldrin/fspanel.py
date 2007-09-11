@@ -527,12 +527,10 @@ class FreesoundPanel(gtk.HBox):
 				items = [item.getAttribute("id") for item in self.result.childNodes if item.nodeType == item.ELEMENT_NODE and item.nodeName == 'sample']
 			self.cmds.append((self.resultstore.clear,()))
 			self.results = {}
-			audioeditor, maxdownload = config.get_config().get_general_config()
-			if maxdownload=="":
-				maxdownload=100
-			if len(items) > int(maxdownload):
-				self.cmds.append((self.resultstore.append,(["Too many hits. Truncating at %i..." % int(maxdownload),'','','',''],)))
-				items=items[0:int(maxdownload)]
+			maxdownload = config.get_config().get_freesound_max_search_results()
+			if len(items) > maxdownload:
+				self.cmds.append((self.resultstore.append,(["Too many hits. Truncating at %i..." % maxdownload,'','','',''],)))
+				items=items[0:maxdownload]
 			elif not items:
 				self.cmds.append((self.resultstore.append,(["No results matching your search terms.",'','','',''],)))
 			else:
