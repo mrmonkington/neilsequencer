@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<zzub>
+	<plugin
+		uri="@trac.zeitherrschaft.org/aldrin/lunar/controller/lfo;1"
+		name="Lunar LFO"
+		shortname="LFO"
+		type="controller"
+		description="A simple controller which emits an LFO wave."
+		author="Leonard Ritter"
+		email="contact at leonard-ritter+com">
+		<parameters>
+			<global>
+			</global>
+			<track>
+			</track>
+			<controller>
+				<parameter
+					id="out1"
+					name="LFO Out 1"
+					description="LFO Signal"
+					type="float"
+					minvalue="0"
+					maxvalue="1"
+					defvalue="0"
+					precision="0.01"/>
+			</controller>
+		</parameters>
+		<attributes>
+		</attributes>
+		<files>
+			<file ref="lfo.cpp"/>
+			<file ref="lfo.h"/>
+		</files>
+		<modules>
+			<module id="lfo">
+				<source language="c++" ref="lfo.cpp" fxdef="lfo.h"/>
+			</module>
+		</modules>
+	</plugin>
+</zzub>

@@ -85,6 +85,13 @@ class zzub_event_data_change_parameter(Structure):
 
 zzub_event_data_change_parameter_t = zzub_event_data_change_parameter
 
+class zzub_event_data_set_tracks(Structure):
+	_fields_ = [
+		('plugin', POINTER(zzub_plugin_t)),
+	]
+
+zzub_event_data_set_tracks_t = zzub_event_data_set_tracks
+
 class zzub_event_data_player_state_changed(Structure):
 	_fields_ = [
 		('player_state', c_int),
@@ -143,7 +150,7 @@ class zzub_event_data_unknown(Structure):
 
 zzub_event_data_unknown_t = zzub_event_data_unknown
 
-class union__be212765(Union):
+class union__42b99e50(Union):
 	_fields_ = [
 		('new_plugin', zzub_event_data_new_plugin_t),
 		('delete_plugin', zzub_event_data_delete_plugin_t),
@@ -151,10 +158,14 @@ class union__be212765(Union):
 		('connect_plugin', zzub_event_data_connect_t),
 		('disconnect_plugin', zzub_event_data_connect_t),
 		('change_parameter', zzub_event_data_change_parameter_t),
+		('set_tracks', zzub_event_data_set_tracks_t),
 		('player_state_changed', zzub_event_data_player_state_changed_t),
 		('osc_message', zzub_event_data_osc_message_t),
 		('vu', zzub_event_data_vu_t),
 		('serialize', zzub_event_data_serialize_t),
+		('pre_connect_plugin', zzub_event_data_connect_t),
+		('pre_disconnect_plugin', zzub_event_data_connect_t),
+		('pre_set_tracks', zzub_event_data_set_tracks_t),
 		('all', zzub_event_data_all_t),
 		('unknown', zzub_event_data_unknown_t),
 	]
@@ -162,7 +173,7 @@ class union__be212765(Union):
 class zzub_event_data(Structure):
 	_fields_ = [
 		('type', c_int),
-		('', union__be212765),
+		('', union__42b99e50),
 	]
 
 zzub_event_data_t = zzub_event_data
@@ -249,6 +260,7 @@ zzub_buffer_size = 256
 zzub_plugin_type_master = 0
 zzub_plugin_type_generator = 1
 zzub_plugin_type_effect = 2
+zzub_plugin_type_controller = 3
 
 # enumeration zzub_event_type
 zzub_event_type_double_click = 0
@@ -257,6 +269,10 @@ zzub_event_type_delete_plugin = 2
 zzub_event_type_disconnect = 3
 zzub_event_type_connect = 4
 zzub_event_type_parameter_changed = 7
+zzub_event_type_set_tracks = 13
+zzub_event_type_pre_disconnect = 14
+zzub_event_type_pre_connect = 15
+zzub_event_type_pre_set_tracks = 16
 zzub_event_type_load_progress = 8
 zzub_event_type_midi_control = 11
 zzub_event_type_wave_allocated = 12

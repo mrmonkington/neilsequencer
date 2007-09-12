@@ -5,24 +5,18 @@
 extern "C" {
 #endif // __cplusplus
 typedef struct _lunar_globals {
-	float *filter_type;
-	float *cutoff;
-	float *resonance;
-	float *thevfactor;
 } lunar_globals_t;
 typedef struct _lunar_global_values {
-	float filter_type;
-	float cutoff;
-	float resonance;
-	float thevfactor;
 } lunar_global_values_t;
 typedef struct _lunar_track {
 } lunar_track_t;
 typedef struct _lunar_track_values {
 } lunar_track_values_t;
 typedef struct _lunar_controllers {
+	float *out1;
 } lunar_controllers_t;
 typedef struct _lunar_controller_values {
+	float out1;
 } lunar_controller_values_t;
 #if defined(__cplusplus)
 }
