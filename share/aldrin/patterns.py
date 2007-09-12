@@ -730,6 +730,10 @@ class PatternView(gtk.DrawingArea):
 		menu.append(make_menu_item("Double", "", self.on_popup_double))
 		menu.append(make_menu_item("Halve", "", self.on_popup_halve))
 		menu.append(gtk.SeparatorMenuItem())
+		menu.append(make_menu_item("Transpose selection up", "", self.transpose_selection,1))
+		menu.append(make_menu_item("Transpose selection down", "", self.transpose_selection,-1))
+		menu.append(make_menu_item("Randomize selection", "", self.randomize_selection))
+		menu.append(gtk.SeparatorMenuItem())
 		issolo = self.rootwindow.routeframe.view.solo_plugin == self.get_plugin()
 		menu.append(make_check_item(issolo, "Solo Plugin", "Toggle solo", self.on_popup_solo))
 		menu.append(gtk.SeparatorMenuItem())
@@ -1175,7 +1179,7 @@ class PatternView(gtk.DrawingArea):
 					for index in range(0, self.parameter_count[group]):
 						yield (row, group, track, index)
 		
-	def transpose_selection(self, offset):
+	def transpose_selection(self, widget, offset):
 		"""
 		Transposes the current selection by an offset.
 		
@@ -1194,12 +1198,14 @@ class PatternView(gtk.DrawingArea):
 				self.pattern.set_value(r,g,t,i,v)
 		self.pattern_changed()
 		
-	def randomize_selection(self):
+	def randomize_selection(self, widget):
 		"""
 		Fills the current selection with random values.
 		"""
 		import random
 		for r,g,t,i in self.selection_range():
+			if r>self.pattern.get_row_count():
+				return
 			p = self.plugin.get_parameter(g,i)
 			if (p.get_type() == 0):
 				v = mn2bn(random.randrange(0,120))
@@ -1607,9 +1613,9 @@ class PatternView(gtk.DrawingArea):
 					self.show_cursor_right()
 					self.refresh_view()
 		elif mask & gtk.gdk.SHIFT_MASK and k == 'KP_Add':
-			self.transpose_selection(1)
+			self.transpose_selection(None, 1)
 		elif mask & gtk.gdk.SHIFT_MASK and k == 'KP_Subtract':
-			self.transpose_selection(-1)
+			self.transpose_selection(None, -1)
 		elif mask & gtk.gdk.SHIFT_MASK and k == 'Down':
 			if not self.selection:
 				self.selection = self.Selection()
