@@ -165,6 +165,25 @@ struct metaparameter {
 	float precision;
 	std::map<float, std::string> valuenames;
 	
+	int translate_back(float value) const {
+		if (isfloat) {
+			if (islog) {
+				// FIXME
+				return param->scale((value-offset)/scalar);
+			} else {
+				return param->scale((value-offset)/scalar);
+			}
+		} else if (param->type == zzub::parameter_type_note) {
+			if (value == 0)
+				return zzub::note_value_off;
+			int midinote = (int)((log(value / 440.0f) / log(2.0f))*12.0f+57.5f);
+			return ((midinote/12)<<4)|((midinote%12)+1);
+		} else {
+			return int(value+0.5f);
+		}
+		return param->value_none;
+	}
+	
 	float translate(int value) const {
 		if (isfloat) {
 			if (islog) {
@@ -793,7 +812,7 @@ struct dspplugin : zzub::plugin {
 		track_count = (size_t)c;
 	}
 	
-	virtual void on_global_parameter_changed(int param, int value) {
+	void on_global_parameter_changed(int param, int value) {
 		const metaparameter &mp = _info.gparamids[param];
 		if (value == -1) {
 			grefs[param] = 0;
@@ -803,7 +822,7 @@ struct dspplugin : zzub::plugin {
 		}
 	}
 
-	virtual void on_track_parameter_changed(int track, int param, int value) {
+	void on_track_parameter_changed(int track, int param, int value) {
 		const metaparameter &mp = _info.tparamids[param];
 		if (value == -1) {
 			trefs[track][param] = 0;
@@ -813,7 +832,7 @@ struct dspplugin : zzub::plugin {
 		}
 	}
 
-	virtual void on_controller_parameter_changed(int param, int value) {
+	void on_controller_parameter_changed(int param, int value) {
 		const metaparameter &mp = _info.cparamids[param];
 		if (value == -1) {
 			crefs[param] = 0;
@@ -821,6 +840,14 @@ struct dspplugin : zzub::plugin {
 			cvalues[param] = mp.translate(value);
 			crefs[param] = &cvalues[param];
 		}
+	}
+	
+	int get_final_controller_parameter(int param) {
+		if (!crefs[param])
+			return -1;
+		cvalues[param] = *crefs[param];
+		const metaparameter &mp = _info.cparamids[param];
+		return mp.translate_back(cvalues[param]);
 	}
 
 	virtual void process_events() {
@@ -913,6 +940,31 @@ struct dspplugin : zzub::plugin {
 			}
 		}
 		call_process_events();
+		
+		// write back controller values
+		offset = (char *)controller_values + controller_size;
+		index = _info.controller_parameters.size();
+		for (i = _info.controller_parameters.rbegin(); i != _info.controller_parameters.rend(); ++i) {
+			index--;
+			offset -= (*i)->get_bytesize();
+			int value = get_final_controller_parameter(index);
+			if (value == -1)
+				value = (*i)->value_none;
+			switch ((*i)->type) {
+				case zzub::parameter_type_note:
+				case zzub::parameter_type_byte:
+				case zzub::parameter_type_switch:
+				{
+					unsigned char *pvalue = (unsigned char *)offset;
+					*pvalue = (unsigned char)value;
+				} break;
+				case zzub::parameter_type_word:
+				{
+					unsigned short *pvalue = (unsigned short *)offset;
+					*pvalue = (unsigned short)value;
+				} break;
+			}
+		}
 	}
 	
 	virtual ~dspplugin() {
