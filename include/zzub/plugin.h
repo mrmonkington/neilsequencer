@@ -726,7 +726,13 @@ struct info	{
 	const char* uri;
 	
 	std::vector<const zzub::parameter*> global_parameters;
-	std::vector<const zzub::parameter*> track_parameters;
+	
+  std::vector<const zzub::parameter*> track_parameters;
+  
+  // for controller plugins: those will be associated with parameters of remote plugins
+  // they are purely internal and will not be visible in the pattern editor or gui
+  std::vector<const zzub::parameter*> controller_parameters; 
+
 	std::vector<const zzub::attribute*> attributes;
 	
 	virtual zzub::plugin* create_plugin() const = 0;// { return 0; }
@@ -741,6 +747,12 @@ struct info	{
 	zzub::parameter& add_track_parameter() {
 		zzub::parameter *param = new zzub::parameter();
 		track_parameters.push_back(param);
+		return *param;
+	}
+
+	zzub::parameter& add_controller_parameter() {
+		zzub::parameter *param = new zzub::parameter();
+		controller_parameters.push_back(param);
 		return *param;
 	}
 
@@ -775,6 +787,11 @@ struct info	{
 			delete *i;
 		}
 		track_parameters.clear();
+		for (std::vector<const zzub::parameter*>::iterator i = controller_parameters.begin();
+			i != controller_parameters.end(); ++i) {
+			delete *i;
+		}
+		controller_parameters.clear();
 		for (std::vector<const zzub::attribute*>::iterator i = attributes.begin();
 			i != attributes.end(); ++i) {
 			delete *i;
@@ -782,7 +799,7 @@ struct info	{
 		attributes.clear();
 	}
 
-    static int calc_column_size(std::vector<const zzub::parameter*> params) {
+    static int calc_column_size(const std::vector<const zzub::parameter*> &params) {
         int size = 0;
         for (unsigned i = 0; i<params.size(); i++) {
             size += params[i]->get_bytesize();
@@ -839,6 +856,7 @@ struct plugin {
 	plugin() {
 		global_values = 0;
 		track_values = 0;
+    controller_values = 0;
 		attributes = 0;
 		_master_info = 0;
 		_host = 0;
@@ -846,6 +864,7 @@ struct plugin {
 
 	void *global_values;
 	void *track_values;
+  void *controller_values;
 	int *attributes;
 
 	master_info *_master_info;

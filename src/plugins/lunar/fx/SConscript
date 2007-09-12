@@ -41,9 +41,8 @@ def build_fxheader(target, source, env):
 	p = env['PLUGIN']
 	params = p.getElementsByTagName('parameters')[0]
 	g = p.getElementsByTagName('global')
-	if g: g = g[0]
 	t = p.getElementsByTagName('track')
-	if t: t = t[0]
+	c = p.getElementsByTagName('controller')
 	print >> ofile, "#if !defined(LUNAR_PLUGIN_LOCALS_H)"
 	print >> ofile, '#define LUNAR_PLUGIN_LOCALS_H'
 	print >> ofile, '#define LUNAR_USE_LOCALS'
@@ -52,7 +51,7 @@ def build_fxheader(target, source, env):
 	print >> ofile, 'extern "C" {'
 	print >> ofile, "#endif // __cplusplus"
 	
-	params = g.getElementsByTagName('parameter')
+	params = (g and g[0].getElementsByTagName('parameter')) or []
 	print >> ofile, "typedef struct _lunar_globals {"
 	for param in params:
 		print >> ofile, "\tfloat *%s;" % param.getAttribute("id")
@@ -62,7 +61,7 @@ def build_fxheader(target, source, env):
 		print >> ofile, "\tfloat %s;" % param.getAttribute("id")
 	print >> ofile, "} lunar_global_values_t;"
 
-	params = t.getElementsByTagName('parameter')
+	params = (t and t[0].getElementsByTagName('parameter')) or []
 	print >> ofile, "typedef struct _lunar_track {"
 	for param in params:
 		print >> ofile, "\tfloat *%s;" % param.getAttribute("id")
@@ -71,6 +70,16 @@ def build_fxheader(target, source, env):
 	for param in params:
 		print >> ofile, "\tfloat %s;" % param.getAttribute("id")
 	print >> ofile, "} lunar_track_values_t;"
+
+	params = (c and c[0].getElementsByTagName('parameter')) or []
+	print >> ofile, "typedef struct _lunar_controllers {"
+	for param in params:
+		print >> ofile, "\tfloat *%s;" % param.getAttribute("id")
+	print >> ofile, "} lunar_controllers_t;"
+	print >> ofile, "typedef struct _lunar_controller_values {"
+	for param in params:
+		print >> ofile, "\tfloat %s;" % param.getAttribute("id")
+	print >> ofile, "} lunar_controller_values_t;"
 
 	print >> ofile, "#if defined(__cplusplus)"
 	print >> ofile, '}'

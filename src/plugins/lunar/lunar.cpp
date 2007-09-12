@@ -216,6 +216,7 @@ struct dspplugin : zzub::plugin {
 		
 		std::vector<metaparameter> gparamids;
 		std::vector<metaparameter> tparamids;
+    std::vector<metaparameter> cparamids;
 		std::vector<std::string> attribids;
 		
 #if defined(LUNARTARGET_LLVM)
@@ -427,6 +428,8 @@ struct dspplugin : zzub::plugin {
 				this->type = zzub::plugin_type_generator;
 			} else if (type == "effect") {
 				this->type = zzub::plugin_type_effect;
+			} else if (type == "controller") {
+				this->type = zzub::plugin_type_controller;
 			} else {
 				std::cerr << "lunar: unknown value '" << type << "' for type attribute." << std::endl;
 				return false;
@@ -453,6 +456,17 @@ struct dspplugin : zzub::plugin {
 						if (!strcmp(parameter->name(), "parameter")) {
 							zzub::parameter &p = add_track_parameter();
 							if (!setup_parameter_from_xml(tparamids, p, *parameter, parameters))
+								return false;
+						}
+					}
+				}
+				// enumerate controller parameters
+				pug::xml_node controller = parameters.first_element_by_name("controller");
+				if (!controller.empty()) {
+					for (pug::xml_node::child_iterator parameter = controller.children_begin(); parameter != controller.children_end(); ++parameter) {
+						if (!strcmp(parameter->name(), "parameter")) {
+							zzub::parameter &p = add_controller_parameter();
+							if (!setup_parameter_from_xml(cparamids, p, *parameter, parameters))
 								return false;
 						}
 					}
@@ -724,20 +738,25 @@ struct dspplugin : zzub::plugin {
 	size_t global_size;
 	size_t track_size;
 	size_t track_count;
+  size_t controller_size;
 	std::vector<size_t> global_offsets;
 	std::vector<size_t> track_offsets;
+  std::vector<size_t> controller_offsets;
 	
 	std::vector<float> gvalues;
 	std::vector< std::vector<float> > tvalues;
+  std::vector<float> cvalues;
 
 	enum {
 		MAX_GPARAMS = 64,
+    MAX_CPARAMS = 64,
 		MAX_TRACKS = 64,
 		MAX_TPARAMS = 16,
 	};
 	
 	float* grefs[MAX_GPARAMS];
 	float* trefs[MAX_TRACKS][MAX_TPARAMS];
+	float* crefs[MAX_CPARAMS];
 	
 	int get_value(int group, int track, int param) {
 		const zzub::parameter *paraminfo = 0;
@@ -748,7 +767,10 @@ struct dspplugin : zzub::plugin {
 		} else if (group == 2) {
 			paraminfo = _info.track_parameters[param];
 			offset = &((char *)track_values)[track * track_size] + track_offsets[param];
-		}
+    } else if (group == 3) {
+      paraminfo = _info.controller_parameters[param];
+      offset = (char*)controller_values + controller_offsets[param];
+    }
 		unsigned char value = *(unsigned char *)offset;
 		switch(paraminfo->type) {
 			case zzub::parameter_type_note:
@@ -790,7 +812,17 @@ struct dspplugin : zzub::plugin {
 			trefs[track][param] = &tvalues[track][param];
 		}
 	}
-	
+
+	virtual void on_controller_parameter_changed(int param, int value) {
+		const metaparameter &mp = _info.cparamids[param];
+		if (value == -1) {
+			crefs[param] = 0;
+		} else {
+			cvalues[param] = mp.translate(value);
+			crefs[param] = &cvalues[param];
+		}
+	}
+
 	virtual void process_events() {
 		update_masterinfo_fields();
 		std::vector<const zzub::parameter *>::const_reverse_iterator i;
@@ -852,6 +884,34 @@ struct dspplugin : zzub::plugin {
 				}
 			}
 		}
+		offset = (char *)controller_values + controller_size;
+		index = _info.controller_parameters.size();
+		for (i = _info.controller_parameters.rbegin(); i != _info.controller_parameters.rend(); ++i) {
+			index--;
+			offset -= (*i)->get_bytesize();
+			switch ((*i)->type) {
+				case zzub::parameter_type_note:
+				case zzub::parameter_type_byte:
+				case zzub::parameter_type_switch:
+				{
+					unsigned char value = *(unsigned char *)offset;
+					if (value != (*i)->value_none) {
+						on_controller_parameter_changed(index, (int)value);
+					} else {
+						on_controller_parameter_changed(index, -1);
+					}
+				} break;
+				case zzub::parameter_type_word:
+				{
+					unsigned short value = *(unsigned short *)offset;
+					if (value != (*i)->value_none) {
+						on_controller_parameter_changed(index, (int)value);
+					} else {
+						on_controller_parameter_changed(index, -1);
+					}
+				} break;
+			}
+		}
 		call_process_events();
 	}
 	
@@ -861,6 +921,8 @@ struct dspplugin : zzub::plugin {
 			delete[] (char*)global_values;
 		if (track_values)
 			delete[] (char*)track_values;
+		if (controller_values)
+			delete[] (char*)controller_values;
 		if (attributes)
 			delete[] attributes;
 	}
@@ -903,6 +965,7 @@ struct dspplugin : zzub::plugin {
 		global_size = 0;
 		track_size = 0;
 		track_count = _info.min_tracks;
+    controller_size = 0;
 		char *offset = 0;
 		std::vector<const zzub::parameter *>::const_iterator i;
 		for (i = _info.global_parameters.begin(); i != _info.global_parameters.end(); ++i) {
@@ -912,6 +975,10 @@ struct dspplugin : zzub::plugin {
 		for (i = _info.track_parameters.begin(); i != _info.track_parameters.end(); ++i) {
 			track_offsets.push_back(track_size);
 			track_size += (*i)->get_bytesize();
+		}
+		for (i = _info.controller_parameters.begin(); i != _info.controller_parameters.end(); ++i) {
+			controller_offsets.push_back(controller_size);
+			controller_size += (*i)->get_bytesize();
 		}
 		if (global_size) {
 			assert(_info.global_parameters.size() <= MAX_GPARAMS);
@@ -927,6 +994,11 @@ struct dspplugin : zzub::plugin {
 				tvalues[t].resize(_info.track_parameters.size());
 			}
 		}
+    if (controller_size) {
+      assert(_info.controller_parameters.size() <= MAX_CPARAMS);
+      controller_values = new char[controller_size];
+      cvalues.resize(_info.controller_parameters.size());
+    }
 		if (_info.attributes.size())
 			attributes = new int[_info.attributes.size()];
 		// initialize fx members
@@ -934,6 +1006,7 @@ struct dspplugin : zzub::plugin {
 		fx->host = &host;
 		fx->globals = &grefs[0];
 		fx->tracks = &trefs[0];
+    fx->controllers = &crefs[0];
 		silencecount = 0;
 	}
 	
@@ -983,6 +1056,15 @@ struct dspplugin : zzub::plugin {
 					} else {
 						on_track_parameter_changed((int)t, index, -1);
 					}
+				}
+			}
+			index = _info.controller_parameters.size();
+			for (i = _info.controller_parameters.rbegin(); i != _info.controller_parameters.rend(); ++i) {
+				index--;
+				if ((*i)->flags & zzub::parameter_flag_state) {
+					on_controller_parameter_changed(index, (*i)->value_default);
+				} else {
+					on_controller_parameter_changed(index, -1);
 				}
 			}
 		}

@@ -20,6 +20,10 @@ typedef struct _lunar_track {
 } lunar_track_t;
 typedef struct _lunar_track_values {
 } lunar_track_values_t;
+typedef struct _lunar_controllers {
+} lunar_controllers_t;
+typedef struct _lunar_controller_values {
+} lunar_controller_values_t;
 #if defined(__cplusplus)
 }
 #endif // __cplusplus
