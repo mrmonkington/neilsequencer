@@ -1456,13 +1456,18 @@ class PatternView(gtk.DrawingArea):
 		Callback that doubles the length of the current pattern while
 		keeping notes intact
 		"""
-		m = self.get_plugin()
-		p = m.create_pattern((self.pattern.get_row_count())*2)
+		pattern_index=[]
+		pattern_contents=[]
 		for r,g,t,i in self.pattern_range():
-			p.set_value(r*2,g,t,i,self.pattern.get_value(r,g,t,i))
-		name=self.pattern.get_name()
-		m.remove_pattern(self.pattern)
-		p.set_name(name)
+			pattern_index.append((r,g,t,i))
+			pattern_contents.append(self.pattern.get_value(r,g,t,i))
+			param = self.plugin.get_parameter(g,i)
+			self.pattern.set_value(r,g,t,i,param.get_value_none())
+		item=0
+		self.pattern.set_row_count(self.pattern.get_row_count()*2)
+		for r,g,t,i in pattern_index:
+			self.pattern.set_value(r*2,g,t,i,pattern_contents[item])
+			item+=1
 		self.pattern_changed()
 		
 	def on_popup_halve(self, event=None):
@@ -1472,15 +1477,11 @@ class PatternView(gtk.DrawingArea):
 		"""
 		if self.pattern.get_row_count()==1:
 			return
-		m = self.get_plugin()
-		p = m.create_pattern((self.pattern.get_row_count())/2)
 		for r,g,t,i in self.pattern_range():
 			if r%2:
 				continue
-			p.set_value(r/2,g,t,i,self.pattern.get_value(r,g,t,i))
-		name=self.pattern.get_name()
-		m.remove_pattern(self.pattern)
-		p.set_name(name)
+			self.pattern.set_value(r/2,g,t,i,self.pattern.get_value(r,g,t,i))
+		self.pattern.set_row_count(self.pattern.get_row_count()/2)
 		self.pattern_changed()
 		
 	def on_popup_create_copy(self, event=None):
