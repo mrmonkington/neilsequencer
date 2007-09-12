@@ -64,6 +64,14 @@ enum plugin_type {
 	// This is the best type for writing a reverb,
 	// delay, flanger, filter or similar.
 	plugin_type_effect	= zzub_plugin_type_effect,
+
+  // Designates the plugin as a controller plugin. Controllers
+  // are the successors to peer plugins. They can change
+  // parameter values of generators and effects they are 
+  // connected to.
+  // This is the best type for writing a note transposer,
+  // lfo, algorithmic pattern player or similar.
+  plugin_type_controller = zzub_plugin_type_controller,
 };
 
 // Possible event types sent by the host. A plugin can register to

@@ -362,6 +362,7 @@ std::string plugintype_to_string(int plugintype) {
 		case zzub::plugin_type_master: return "master";
 		case zzub::plugin_type_generator: return "generator";
 		case zzub::plugin_type_effect: return "effect";
+    case zzub::plugin_type_controller: return "controller";
 		default: assert(0);
 	}
 	return "";

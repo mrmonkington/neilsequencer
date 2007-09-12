@@ -871,7 +871,10 @@ bool metaplugin::addInput(metaplugin* fromMachine, unsigned short amp, unsigned 
 
 	// generators don't have inputs, but some popular plugins are incorrectly flagged as generators
 	// the following line was commented out in response to that, so f.ekx songs using geoniks 2p filter will load
-	if (getType() == plugin_type_generator) return false;
+  if (getType() == plugin_type_generator) return false;
+
+  // controllers don't have inputs either
+  if (getType() == plugin_type_controller) return false;
 
 	// allow one type of cyclic connection, when the master is connected to a no_output machine
 	if (fromMachine->getType() == plugin_type_master) {

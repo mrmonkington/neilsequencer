@@ -48,6 +48,7 @@ enum zzub_plugin_type {
     zzub_plugin_type_master = 0,
     zzub_plugin_type_generator = 1,
     zzub_plugin_type_effect	= 2,
+    zzub_plugin_type_controller = 3, // controls and modifies a machines parameters
 };
 
 enum zzub_event_type {
