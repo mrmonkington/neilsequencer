@@ -618,11 +618,13 @@ class RouteView(gtk.DrawingArea):
 				zzub.zzub_plugin_type_master : cfg.get_float_color("MV Master"),
 				zzub.zzub_plugin_type_generator : cfg.get_float_color("MV Generator"),
 				zzub.zzub_plugin_type_effect : cfg.get_float_color("MV Effect"),
+				zzub.zzub_plugin_type_controller : cfg.get_float_color("MV Controller"),
 			},
 			{
 				zzub.zzub_plugin_type_master : cfg.get_float_color("MV Master"),
 				zzub.zzub_plugin_type_generator : cfg.get_float_color("MV Generator Mute"),
 				zzub.zzub_plugin_type_effect : cfg.get_float_color("MV Effect Mute"),
+				zzub.zzub_plugin_type_controller : cfg.get_float_color("MV Controller Mute"),
 			}
 		]
 		self.ledtype2brush = [
@@ -630,21 +632,25 @@ class RouteView(gtk.DrawingArea):
 				zzub.zzub_plugin_type_master : cfg.get_float_color("MV Master LED Off"),
 				zzub.zzub_plugin_type_generator : cfg.get_float_color("MV Generator LED Off"),
 				zzub.zzub_plugin_type_effect : cfg.get_float_color("MV Effect LED Off"),
+				zzub.zzub_plugin_type_controller : cfg.get_float_color("MV Controller LED Off"),
 			},
 			{
 				zzub.zzub_plugin_type_master : cfg.get_float_color("MV Master LED On"),
 				zzub.zzub_plugin_type_generator : cfg.get_float_color("MV Generator LED On"),
 				zzub.zzub_plugin_type_effect : cfg.get_float_color("MV Effect LED On"),
+				zzub.zzub_plugin_type_controller : cfg.get_float_color("MV Controller LED On"),
 			},
 			{
 				zzub.zzub_plugin_type_master : cfg.get_float_color("MV Master LED Border"),
 				zzub.zzub_plugin_type_generator : cfg.get_float_color("MV Generator LED Border"),
 				zzub.zzub_plugin_type_effect : cfg.get_float_color("MV Effect LED Border"),
+				zzub.zzub_plugin_type_controller : cfg.get_float_color("MV Controller LED Border"),
 			},
 			{
 				zzub.zzub_plugin_type_master : cfg.get_float_color("MV Machine LED Warning"),
 				zzub.zzub_plugin_type_generator : cfg.get_float_color("MV Machine LED Warning"),
 				zzub.zzub_plugin_type_effect : cfg.get_float_color("MV Machine LED Warning"),
+				zzub.zzub_plugin_type_controller : cfg.get_float_color("MV Machine LED Warning"),
 			},			
 		]
 		common.get_plugin_infos().reset_plugingfx()
