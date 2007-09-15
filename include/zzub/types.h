@@ -97,6 +97,8 @@ typedef struct _zzub_sequencer zzub_sequencer_t;
 typedef struct _zzub_pattern zzub_pattern_t;
 typedef struct _zzub_patterntrack zzub_patterntrack_t;
 typedef struct _zzub_connection zzub_connection_t;
+typedef struct _zzub_audio_connection zzub_audio_connection_t;
+typedef struct _zzub_event_connection zzub_event_connection_t;
 typedef struct _zzub_wave zzub_wave_t;
 typedef struct _zzub_wavelevel zzub_wavelevel_t;
 typedef struct _zzub_parameter zzub_parameter_t;
@@ -286,6 +288,11 @@ enum zzub_process_mode {
     zzub_process_mode_read	= (1 << 0),
     zzub_process_mode_write	= (1 << 1),
     zzub_process_mode_read_write = zzub_process_mode_read | zzub_process_mode_write,
+};
+
+enum zzub_connection_type {
+	zzub_connection_type_audio = 0,
+	zzub_connection_type_event = 1,
 };
 
 #if defined(__cplusplus)

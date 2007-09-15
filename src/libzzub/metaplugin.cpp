@@ -228,8 +228,63 @@ struct _connPanning : parameter {
 } connPanning;
 
 connection::connection() {
-	amp=pan=0x4000;
 	plugin_in=plugin_out=0;
+}
+
+
+audio_connection::audio_connection() {
+	amp=pan=0x4000;
+	connectionType = connection_type_audio;
+}
+
+bool audio_connection::work(player *p, int numSamples) {
+	metaplugin* outputMachine=plugin_out;
+	metaplugin* inputMachine=plugin_in;
+	float inAmp=amp/(float)0x4000;
+	float inPan=pan/(float)0x4000;	// pan=0..2, 1=center
+	bool status=false;
+
+	//assert(conn->lastFrame!=outputMachine->lastWorkPos); // lr: created problems when loading tracks
+	lastFrame=outputMachine->lastWorkPos;
+
+	// test if we already worked this machine (through a different effect chain)
+	if (inputMachine->lastWorkPos==p->masterInfo.tick_position) {
+		status=inputMachine->lastWorkState;
+	} else {
+		status=p->workMachine(inputMachine, numSamples);
+	}
+
+	// test for solo-state or if we're somehow muted and not supposed to play
+	if (!inputMachine->isSoloMutePlaying()) {
+		status=false;
+	}
+
+	if (outputMachine->doesInputMixing() && (!outputMachine->isBypassed() && !outputMachine->isSoftBypassed())) {
+		if (status)
+			outputMachine->input(inputMachine->machineBuffer, numSamples, inAmp); else
+			outputMachine->input(0, 0, 0);
+	}
+
+	if (status && (!outputMachine->doesInputMixing() || (outputMachine->isBypassed() || outputMachine->isSoftBypassed()) ) ) {
+		AddS2SPanMC(outputMachine->machineBuffer, inputMachine->machineBuffer, numSamples, inAmp, inPan);
+	}
+
+	return status;
+}
+
+event_connection::event_connection() {
+	connectionType = connection_type_event;
+}
+
+bool event_connection::work(player *p, int numSamples) {
+	return false;
+}
+
+controller_binding::controller_binding() {
+	source_param_index=-1;
+	target_param_group=-1;
+	target_param_track=-1;
+	target_param_index=-1;
 }
 
 metaplugin::metaplugin(zzub::player* pl, pluginloader* loader) {
@@ -886,7 +941,7 @@ bool metaplugin::addInput(metaplugin* fromMachine, unsigned short amp, unsigned 
 	}
 
 	// Create the connection
-	connection* conn = new connection();
+	audio_connection* conn = new audio_connection();
 	conn->amp = amp;
 	conn->pan = pan;
 	conn->plugin_in = fromMachine;

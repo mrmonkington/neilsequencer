@@ -357,12 +357,21 @@ xml_node CcmWriter::saveClasses(xml_node &parent, zzub::player &player) {
 	return item;
 }
 
+std::string connectiontype_to_string(int connectiontype) {
+	switch (connectiontype) {
+		case zzub::connection_type_audio: return "audio";
+		case zzub::connection_type_event: return "event";
+		default: assert(0);
+	}
+	return "";
+}
+
 std::string plugintype_to_string(int plugintype) {
 	switch (plugintype) {
 		case zzub::plugin_type_master: return "master";
 		case zzub::plugin_type_generator: return "generator";
 		case zzub::plugin_type_effect: return "effect";
-    case zzub::plugin_type_controller: return "controller";
+		case zzub::plugin_type_controller: return "controller";
 		default: assert(0);
 	}
 	return "";
@@ -476,11 +485,28 @@ xml_node CcmWriter::saveConnection(xml_node &parent, zzub::connection &connectio
 
 	item.attribute("id") = id_from_ptr(&connection);
 	item.attribute("ref") = id_from_ptr(connection.plugin_in);
+	item.attribute("type") = connectiontype_to_string(connection.connectionType);
 	
-	// we save normals, not exposing implementation details
-	item.attribute("amplitude") = amp_to_double(connection.amp);
-	item.attribute("panning") = pan_to_double(connection.pan);
-	
+	switch(connection.connectionType)
+	{
+		case zzub::connection_type_audio:
+		{
+			zzub::audio_connection &ac = (zzub::audio_connection &)connection;
+			
+			// we save normals, not exposing implementation details
+			item.attribute("amplitude") = amp_to_double(ac.amp);
+			item.attribute("panning") = pan_to_double(ac.pan);
+		} break;
+		case zzub::connection_type_event:
+		{
+			zzub::event_connection &ac = (zzub::event_connection &)connection;
+			// TODO
+		} break;
+		default:
+			assert(0);
+			break;
+	}
+		
 	return item;
 }
 
@@ -1449,9 +1475,19 @@ bool CcmReader::loadPlugins(xml_node &plugins, zzub::player &player) {
 				if (i->has_name("input")) {
 					std::map<std::string, metaplugin *>::iterator iplug = id2plugin.find(i->attribute("ref"));
 					if (iplug != id2plugin.end()) {
-						int amp = double_to_amp((double)i->attribute("amplitude"));
-						int pan = double_to_pan((double)i->attribute("panning"));
-						c->target->addInput(iplug->second, (unsigned short)amp, (unsigned short)pan);
+						std::string conntype = "audio";
+						if (i->has_attribute("type")) {
+							conntype = i->attribute("type").value();
+						}
+						if (conntype == "audio") {
+							int amp = double_to_amp((double)i->attribute("amplitude"));
+							int pan = double_to_pan((double)i->attribute("panning"));
+							c->target->addInput(iplug->second, (unsigned short)amp, (unsigned short)pan);
+						} else if (conntype == "event") {
+							// TODO
+						} else {
+							assert(0);
+						}
 					} else {
 						std::cerr << "ccm: no input " << i->attribute("ref").value() << " for connection " << i->attribute("id").value() << std::endl;
 					}

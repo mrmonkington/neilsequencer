@@ -221,6 +221,11 @@ enum process_mode {
 	process_mode_read_write = zzub_process_mode_read_write,
 };
 
+enum connection_type {
+	connection_type_audio = zzub_connection_type_audio,
+	connection_type_event = zzub_connection_type_event,
+};
+
 struct parameter {
 	parameter_type type;
 	const char *name;

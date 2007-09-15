@@ -53,7 +53,7 @@ class Attribute(object):
 		assert self._handle
 		return zzub_attribute_get_value_min(self._handle)
 	
-class Connection(object):
+class AudioConnection(object):
 	_handle = None
 	_hash = 0
 	
@@ -72,7 +72,44 @@ class Connection(object):
 
 	def get_amplitude(self):
 		assert self._handle
-		return zzub_connection_get_amplitude(self._handle)
+		return zzub_audio_connection_get_amplitude(self._handle)
+	
+	def get_panning(self):
+		assert self._handle
+		return zzub_audio_connection_get_panning(self._handle)
+	
+	def set_amplitude(self, amp):
+		assert self._handle
+		zzub_audio_connection_set_amplitude(self._handle,amp)
+	
+	def set_panning(self, pan):
+		assert self._handle
+		zzub_audio_connection_set_panning(self._handle,pan)
+	
+class Connection(object):
+	_handle = None
+	_hash = 0
+	
+	def __init__(self,handle):
+		self._handle = handle
+		self._hash = cast(self._handle, c_void_p).value
+
+	def __hash__(self):
+		return self._hash
+
+	def __eq__(self,other):
+		return self._hash == hash(other)
+
+	def __ne__(self,other):
+		return self._hash != hash(other)
+
+	def get_audio_connection(self):
+		assert self._handle
+		return AudioConnection(zzub_connection_get_audio_connection(self._handle))
+	
+	def get_event_connection(self):
+		assert self._handle
+		return EventConnection(zzub_connection_get_event_connection(self._handle))
 	
 	def get_input(self):
 		assert self._handle
@@ -82,17 +119,9 @@ class Connection(object):
 		assert self._handle
 		return Plugin(zzub_connection_get_output(self._handle))
 	
-	def get_panning(self):
+	def get_type(self):
 		assert self._handle
-		return zzub_connection_get_panning(self._handle)
-	
-	def set_amplitude(self, amp):
-		assert self._handle
-		zzub_connection_set_amplitude(self._handle,amp)
-	
-	def set_panning(self, pan):
-		assert self._handle
-		zzub_connection_set_panning(self._handle,pan)
+		return zzub_connection_get_type(self._handle)
 	
 class Envelope(object):
 	_handle = None
@@ -187,6 +216,23 @@ class Envelope(object):
 		assert self._handle
 		zzub_envelope_set_sustain(self._handle,sustain)
 	
+class EventConnection(object):
+	_handle = None
+	_hash = 0
+	
+	def __init__(self,handle):
+		self._handle = handle
+		self._hash = cast(self._handle, c_void_p).value
+
+	def __hash__(self):
+		return self._hash
+
+	def __eq__(self,other):
+		return self._hash == hash(other)
+
+	def __ne__(self,other):
+		return self._hash != hash(other)
+
 class Input(object):
 	_handle = None
 	_hash = 0

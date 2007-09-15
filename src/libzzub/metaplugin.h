@@ -51,15 +51,42 @@ public:
 	std::vector<zzub::parameter> parameters;
 };
 
+struct controller_binding {
+	int source_param_index;
+	int target_param_group;
+	int target_param_track;
+	int target_param_index;
+	
+	controller_binding();
+};
 
+// don't instantiate this class directly,
+// use either audio_connection or events_connection
 struct connection {
-	unsigned short amp, pan;
+	connection_type connectionType;
 	metaplugin* plugin_in, *plugin_out;
 
+	virtual bool work(class player *p, int numSamples) = 0;
+	virtual ~connection() {};
+protected:
+	connection();
+};
+
+struct audio_connection : public connection {
+	unsigned short amp, pan;
+	
 	int lastFrame;
 	float lastFrameMaxSampleL, lastFrameMaxSampleR;
+	
+	audio_connection();
+	virtual bool work(class player *p, int numSamples);
+};
 
-	connection();
+struct event_connection : public connection {
+	std::vector<controller_binding> bindings;
+
+	event_connection();
+	virtual bool work(class player *p, int numSamples);
 };
 
 class ParameterState {

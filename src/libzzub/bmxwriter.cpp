@@ -360,19 +360,25 @@ bool BuzzWriter::saveConnections() {
 	for (size_t i=0; i<machines.size(); i++) {
 		zzub::metaplugin* m = machines[i];
 		for (size_t j=0; j<m->getConnections(); j++) {
-			connection* cx=m->getConnection(j);
-			int i1=getMachineIndex(cx->plugin_in);
-			int i2=getMachineIndex(cx->plugin_out);
+			connection* _cx=m->getConnection(j);
+			if (_cx->connectionType == connection_type_audio) {
+				audio_connection* cx = (audio_connection*)_cx;
+				
+				int i1=getMachineIndex(cx->plugin_in);
+				int i2=getMachineIndex(cx->plugin_out);
 
-			// dont save connections to machines not included in the current selection
-			if (i1 == -1 || i2 == -1) continue;
+				// dont save connections to machines not included in the current selection
+				if (i1 == -1 || i2 == -1) continue;
 
-			f->write((unsigned short)i1);
-			f->write((unsigned short)i2);
-			f->write((unsigned short)cx->amp);
-			f->write((unsigned short)cx->pan);
+				f->write((unsigned short)i1);
+				f->write((unsigned short)i2);
+				f->write((unsigned short)cx->amp);
+				f->write((unsigned short)cx->pan);
 
-			conns++;
+				conns++;
+			} else if (_cx->connectionType == connection_type_event) {
+				// TODO: find a way to store event connections
+			}
 		}
 	}
 	int p2=f->position();

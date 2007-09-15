@@ -219,8 +219,6 @@ struct player :
 	virtual void updateTick(int numSamples);
 	virtual void finishWork();
 	bool workMachine(metaplugin* machine, int numSamples);
-	bool workConnection(connection* conn, int numSamples);
-
 
 	// Query player status
 	player_state getPlayState();

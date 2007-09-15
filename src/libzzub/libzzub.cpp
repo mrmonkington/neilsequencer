@@ -43,6 +43,8 @@ namespace zzub {
 	struct pattern;
 	struct patterntrack;
 	struct connection;
+	struct audio_connection;
+	struct event_connection;
 	struct wave_info_ex;
 	struct wave_level;
 	struct parameter;
@@ -66,6 +68,8 @@ typedef zzub::sequencer zzub_sequencer_t;
 typedef zzub::pattern zzub_pattern_t;
 typedef zzub::patterntrack zzub_patterntrack_t;
 typedef zzub::connection zzub_connection_t;
+typedef zzub::audio_connection zzub_audio_connection_t;
+typedef zzub::event_connection zzub_event_connection_t;
 typedef zzub::wave_info_ex zzub_wave_t;
 typedef zzub::wave_level zzub_wavelevel_t;
 typedef zzub::parameter zzub_parameter_t;
@@ -883,22 +887,6 @@ void zzub_plugin_remove_post_process(zzub_plugin_t *machine, zzub_postprocess_t 
 
 // Connection methods
 
-unsigned short zzub_connection_get_amplitude(zzub_connection_t *connection) {
-	return connection->amp;
-}
-
-unsigned short zzub_connection_get_panning(zzub_connection_t *connection) {
-	return connection->pan;
-}
-
-void zzub_connection_set_amplitude(zzub_connection_t *connection, unsigned short amp) {
-	connection->amp = amp;
-}
-
-void zzub_connection_set_panning(zzub_connection_t *connection, unsigned short pan) {
-	connection->pan = pan;
-}
-
 zzub_plugin_t *zzub_connection_get_input(zzub_connection_t *connection) {
 	return connection->plugin_in;
 }
@@ -906,6 +894,41 @@ zzub_plugin_t *zzub_connection_get_input(zzub_connection_t *connection) {
 zzub_plugin_t *zzub_connection_get_output(zzub_connection_t *connection) {
 	return connection->plugin_out;
 }
+
+int zzub_connection_get_type(zzub_connection_t *connection) {
+	return connection->connectionType;
+}
+
+zzub_audio_connection_t *zzub_connection_get_audio_connection(zzub_connection_t *connection) {
+	if (connection->connectionType == zzub_connection_type_audio)
+		return (zzub_audio_connection_t *)connection;
+	return 0;
+}
+
+zzub_event_connection_t *zzub_connection_get_event_connection(zzub_connection_t *connection) {
+	if (connection->connectionType == zzub_connection_type_event)
+		return (zzub_event_connection_t *)connection;
+	return 0;
+}
+
+// Audio connection methods
+
+unsigned short zzub_audio_connection_get_amplitude(zzub_audio_connection_t *connection) {
+	return connection->amp;
+}
+
+unsigned short zzub_audio_connection_get_panning(zzub_audio_connection_t *connection) {
+	return connection->pan;
+}
+
+void zzub_audio_connection_set_amplitude(zzub_audio_connection_t *connection, unsigned short amp) {
+	connection->amp = amp;
+}
+
+void zzub_audio_connection_set_panning(zzub_audio_connection_t *connection, unsigned short pan) {
+	connection->pan = pan;
+}
+
 
 /***
 

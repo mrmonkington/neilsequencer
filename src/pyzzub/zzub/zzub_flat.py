@@ -150,7 +150,7 @@ class zzub_event_data_unknown(Structure):
 
 zzub_event_data_unknown_t = zzub_event_data_unknown
 
-class union__42b99e50(Union):
+class union__53f3a8d3(Union):
 	_fields_ = [
 		('new_plugin', zzub_event_data_new_plugin_t),
 		('delete_plugin', zzub_event_data_delete_plugin_t),
@@ -173,7 +173,7 @@ class union__42b99e50(Union):
 class zzub_event_data(Structure):
 	_fields_ = [
 		('type', c_int),
-		('', union__42b99e50),
+		('', union__53f3a8d3),
 	]
 
 zzub_event_data_t = zzub_event_data
@@ -207,6 +207,18 @@ class _zzub_postprocess(Structure):
 	]
 
 zzub_postprocess_t = _zzub_postprocess
+
+class _zzub_event_connection(Structure):
+	_fields_ = [
+	]
+
+zzub_event_connection_t = _zzub_event_connection
+
+class _zzub_audio_connection(Structure):
+	_fields_ = [
+	]
+
+zzub_audio_connection_t = _zzub_audio_connection
 
 class _zzub_sequencer(Structure):
 	_fields_ = [
@@ -369,6 +381,10 @@ zzub_process_mode_no_io = 0
 zzub_process_mode_read = 1
 zzub_process_mode_write = 2
 zzub_process_mode_read_write = 3
+
+# enumeration zzub_connection_type
+zzub_connection_type_audio = 0
+zzub_connection_type_event = 1
 
 libzzub = dlopen('zzub',version='0.2.4')
 zzub_audiodriver_get_count               = dlsym(libzzub, 'zzub_audiodriver_get_count'            , c_int, ('player'  ,POINTER(zzub_player_t)))
@@ -534,12 +550,15 @@ zzub_plugin_set_attribute_value          = dlsym(libzzub, 'zzub_plugin_set_attri
 zzub_plugin_get_new_pattern_name         = dlsym(libzzub, 'zzub_plugin_get_new_pattern_name'      , None, ('machine' ,POINTER(zzub_plugin_t)),('name'    ,c_char_p  ),('maxLen'  ,c_int     ))
 zzub_plugin_add_post_process             = dlsym(libzzub, 'zzub_plugin_add_post_process'          , POINTER(zzub_postprocess_t), ('machine' ,POINTER(zzub_plugin_t)),('mixcallback',ZzubMixCallback),('tag'     ,c_void_p  ))
 zzub_plugin_remove_post_process          = dlsym(libzzub, 'zzub_plugin_remove_post_process'       , None, ('machine' ,POINTER(zzub_plugin_t)),('pp'      ,POINTER(zzub_postprocess_t)))
-zzub_connection_get_amplitude            = dlsym(libzzub, 'zzub_connection_get_amplitude'         , c_ushort, ('connection',POINTER(zzub_connection_t)))
-zzub_connection_get_panning              = dlsym(libzzub, 'zzub_connection_get_panning'           , c_ushort, ('connection',POINTER(zzub_connection_t)))
-zzub_connection_set_amplitude            = dlsym(libzzub, 'zzub_connection_set_amplitude'         , None, ('connection',POINTER(zzub_connection_t)),('amp'     ,c_ushort  ))
-zzub_connection_set_panning              = dlsym(libzzub, 'zzub_connection_set_panning'           , None, ('connection',POINTER(zzub_connection_t)),('pan'     ,c_ushort  ))
 zzub_connection_get_input                = dlsym(libzzub, 'zzub_connection_get_input'             , POINTER(zzub_plugin_t), ('connection',POINTER(zzub_connection_t)))
 zzub_connection_get_output               = dlsym(libzzub, 'zzub_connection_get_output'            , POINTER(zzub_plugin_t), ('connection',POINTER(zzub_connection_t)))
+zzub_connection_get_type                 = dlsym(libzzub, 'zzub_connection_get_type'              , c_int, ('connection',POINTER(zzub_connection_t)))
+zzub_connection_get_audio_connection     = dlsym(libzzub, 'zzub_connection_get_audio_connection'  , POINTER(zzub_audio_connection_t), ('connection',POINTER(zzub_connection_t)))
+zzub_connection_get_event_connection     = dlsym(libzzub, 'zzub_connection_get_event_connection'  , POINTER(zzub_event_connection_t), ('connection',POINTER(zzub_connection_t)))
+zzub_audio_connection_get_amplitude      = dlsym(libzzub, 'zzub_audio_connection_get_amplitude'   , c_ushort, ('connection',POINTER(zzub_audio_connection_t)))
+zzub_audio_connection_get_panning        = dlsym(libzzub, 'zzub_audio_connection_get_panning'     , c_ushort, ('connection',POINTER(zzub_audio_connection_t)))
+zzub_audio_connection_set_amplitude      = dlsym(libzzub, 'zzub_audio_connection_set_amplitude'   , None, ('connection',POINTER(zzub_audio_connection_t)),('amp'     ,c_ushort  ))
+zzub_audio_connection_set_panning        = dlsym(libzzub, 'zzub_audio_connection_set_panning'     , None, ('connection',POINTER(zzub_audio_connection_t)),('pan'     ,c_ushort  ))
 zzub_sequencer_destroy                   = dlsym(libzzub, 'zzub_sequencer_destroy'                , None, ('sequencer',POINTER(zzub_sequencer_t)))
 zzub_sequencer_create_range              = dlsym(libzzub, 'zzub_sequencer_create_range'           , POINTER(zzub_sequencer_t), ('sequencer',POINTER(zzub_sequencer_t)),('fromRow' ,c_int     ),('fromTrack',c_int     ),('toRow'   ,c_int     ),('toTrack' ,c_int     ))
 zzub_sequencer_get_track_count           = dlsym(libzzub, 'zzub_sequencer_get_track_count'        , c_int, ('sequencer',POINTER(zzub_sequencer_t)))

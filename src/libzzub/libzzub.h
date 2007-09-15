@@ -274,12 +274,18 @@ void zzub_plugin_remove_post_process(zzub_plugin_t *machine, zzub_postprocess_t 
 
 // Connection methods
 
-unsigned short zzub_connection_get_amplitude(zzub_connection_t *connection);
-unsigned short zzub_connection_get_panning(zzub_connection_t *connection);
-void zzub_connection_set_amplitude(zzub_connection_t *connection, unsigned short amp);
-void zzub_connection_set_panning(zzub_connection_t *connection, unsigned short pan);
 zzub_plugin_t *zzub_connection_get_input(zzub_connection_t *connection);
 zzub_plugin_t *zzub_connection_get_output(zzub_connection_t *connection);
+int zzub_connection_get_type(zzub_connection_t *connection);
+zzub_audio_connection_t *zzub_connection_get_audio_connection(zzub_connection_t *connection);
+zzub_event_connection_t *zzub_connection_get_event_connection(zzub_connection_t *connection);
+
+// Audio connection methods
+
+unsigned short zzub_audio_connection_get_amplitude(zzub_audio_connection_t *connection);
+unsigned short zzub_audio_connection_get_panning(zzub_audio_connection_t *connection);
+void zzub_audio_connection_set_amplitude(zzub_audio_connection_t *connection, unsigned short amp);
+void zzub_audio_connection_set_panning(zzub_audio_connection_t *connection, unsigned short pan);
 
 // Sequencer methods
 

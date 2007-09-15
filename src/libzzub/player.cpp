@@ -856,43 +856,6 @@ void player::finishWork() {
 
 /*! \brief Audio processing helper.
 */
-bool player::workConnection(connection* conn, int numSamples) {
-	metaplugin* outputMachine=(metaplugin*)conn->plugin_out;
-	metaplugin* inputMachine=(metaplugin*)conn->plugin_in;
-	float inAmp=conn->amp/(float)0x4000;
-	float inPan=conn->pan/(float)0x4000;	// pan=0..2, 1=center
-	bool status=false;
-
-	//assert(conn->lastFrame!=outputMachine->lastWorkPos); // lr: created problems when loading tracks
-	conn->lastFrame=outputMachine->lastWorkPos;
-
-	// test if we already worked this machine (through a different effect chain)
-	if (inputMachine->lastWorkPos==masterInfo.tick_position) {
-		status=inputMachine->lastWorkState;
-	} else {
-		status=workMachine(inputMachine, numSamples);
-	}
-
-	// test for solo-state or if we're somehow muted and not supposed to play
-	if (!inputMachine->isSoloMutePlaying()) {
-		status=false;
-	}
-
-	if (outputMachine->doesInputMixing() && (!outputMachine->isBypassed() && !outputMachine->isSoftBypassed())) {
-		if (status)
-			outputMachine->input(inputMachine->machineBuffer, numSamples, inAmp); else
-			outputMachine->input(0, 0, 0);
-	}
-
-	if (status && (!outputMachine->doesInputMixing() || (outputMachine->isBypassed() || outputMachine->isSoftBypassed()) ) ) {
-		AddS2SPanMC(outputMachine->machineBuffer, inputMachine->machineBuffer, numSamples, inAmp, inPan);
-	}
-
-	return status;
-}
-
-/*! \brief Audio processing helper.
-*/
 bool player::workMachine(metaplugin* machine, int numSamples) {
 	assert(machine->lastWorkPos!=workPos);
 
@@ -904,14 +867,17 @@ bool player::workMachine(metaplugin* machine, int numSamples) {
 
 	int maxInputAmp=0;
 	for (size_t i=0; i<inputConnections; i++) {
-		if (machine->inConnections[i]->amp>maxInputAmp)
-			maxInputAmp=machine->inConnections[i]->amp;
+		connection *cx = machine->inConnections[i];
+		if (cx->connectionType == connection_type_audio) {
+			audio_connection *cax = (audio_connection*)cx;
+			maxInputAmp = std::max(maxInputAmp, (int)cax->amp);
+		}
 
 		// check for no_output: these have been processed anyway, 
 		// and master->no_output would enter an infinite loop unless we continue
-		if (machine->inConnections[i]->plugin_in->isNoOutput()) continue;
+		if (cx->plugin_in->isNoOutput()) continue;
 
-		if (workConnection(machine->inConnections[i], numSamples)) {
+		if (cx->work(this, numSamples)) {
 			inputState=true;
 		}
 	}
