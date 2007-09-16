@@ -39,14 +39,26 @@ namespace zzub { namespace plugins { namespace psycle_to_zzub {
 				#endif
 		}
 
-		inline void * sym(handle_type handle, const char * symbol) {
-			return
+		typedef void (*function_pointer)();
+		inline function_pointer sym(handle_type handle, const char * symbol) {
+			union result_union
+			{
+				function_pointer typed;
+				#if defined _WIN64 || defined _WIN32
+					::PROC
+				#else
+					void *
+				#endif
+					untyped;
+			} result;
+			result.untyped =
 				#if defined _WIN64 || defined _WIN32
 					::GetProcAddress
 				#else
 					::dlsym
 				#endif
 				(handle, symbol);
+			return result.typed;
 		}
 
 		inline int close(handle_type handle) {
