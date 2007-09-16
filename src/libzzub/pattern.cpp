@@ -431,21 +431,43 @@ void patterntrack::transpose(int delta) {
 	}
 }
 
+namespace {	// duplicate from ccm.h
+int midi_to_buzz_note(int value) {
+	return ((value / 12) << 4) + (value % 12) + 1;
+}
+
+int buzz_to_midi_note(int value) {
+	return 12 * (value >> 4) + (value & 0xf) - 1;
+}
+}
 // TODO: notes must be interpolated in a different scale
 void patterntrack::interpolate() {
-	for (size_t j=0; j<getParams(); j++) {
-		int startValue=getValue(0, j);
-		int endValue=getValue(getRows()-1, j);
-		int noValue=getNoValue(getParam(j));
-		if (startValue==noValue) continue;
-		if (endValue==noValue) continue;
+	for (size_t j = 0; j < getParams(); j++) {
+		int type = getParam(j)->type;
+		int startValue, endValue;
+		if (type == zzub::parameter_type_note) {
+			startValue = getValue(0, j);
+			endValue = getValue(getRows()-1, j);
+			if (startValue != zzub::note_value_off && endValue != zzub::note_value_off) {
+				startValue = buzz_to_midi_note(startValue);
+				endValue = buzz_to_midi_note(endValue);
+			} else {
+				startValue = endValue = zzub::note_value_off;
+			}
+		} else {
+			startValue = getValue(0, j);
+			endValue = getValue(getRows()-1, j);
+		}
+		int noValue = getNoValue(getParam(j));
+		if (startValue == noValue) continue;
+		if (endValue == noValue) continue;
 
-		float delta=(float)(endValue-startValue) / ((float)getRows()-1);
+		float delta = (float)(endValue-startValue) / ((float)getRows()-1);
 
-		int type=getParam(j)->type;
-		for (size_t i=0; i<getRows(); i++) {
+		for (size_t i = 1; i < getRows() - 1; i++) {
 			if (type==zzub::parameter_type_note) {
-				// notes must be verfified for overflow
+				if (startValue != zzub::note_value_off)
+					setValue(i, j, (int)midi_to_buzz_note(((float)startValue+i*delta)));
 			} else {
 				setValue(i, j, (int)((float)startValue+i*delta));
 			}

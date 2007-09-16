@@ -494,8 +494,8 @@ xml_node CcmWriter::saveConnection(xml_node &parent, zzub::connection &connectio
 			zzub::audio_connection &ac = (zzub::audio_connection &)connection;
 			
 			// we save normals, not exposing implementation details
-			item.attribute("amplitude") = amp_to_double(ac.amp);
-			item.attribute("panning") = pan_to_double(ac.pan);
+			item.attribute("amplitude") = amp_to_double(ac.values.amp);
+			item.attribute("panning") = pan_to_double(ac.values.pan);
 		} break;
 		case zzub::connection_type_event:
 		{
@@ -616,7 +616,7 @@ xml_node CcmWriter::savePatternTrack(xml_node &parent, const std::string &colnam
         for (size_t j = 0; j < t.getParams(); ++j) {
 			const zzub::parameter *param = 0;
 			switch(group) {
-				case 0: param = connectionParameters[j]; break;
+				case 0: param = plugin.getConnection(track)->connection_parameters[j]; break;
 				case 1: param = plugin.machineInfo->global_parameters[j]; break;
 				case 2: param = plugin.machineInfo->track_parameters[j]; break;
 				default: assert(0);
@@ -747,7 +747,7 @@ xml_node CcmWriter::saveMidiMappings(xml_node &parent, zzub::player &player, zzu
 			
 			const zzub::parameter *param = 0;
 			switch(mm->group) {
-				case 0: param = connectionParameters[mm->column]; break;
+				case 0: param = plugin.getConnection(mm->track)->connection_parameters[mm->column]; break;
 				case 1: param = plugin.machineInfo->global_parameters[mm->column]; break;
 				case 2: param = plugin.machineInfo->track_parameters[mm->column]; break;
 				default: assert(0);

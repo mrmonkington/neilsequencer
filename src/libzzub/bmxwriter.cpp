@@ -372,8 +372,8 @@ bool BuzzWriter::saveConnections() {
 
 				f->write((unsigned short)i1);
 				f->write((unsigned short)i2);
-				f->write((unsigned short)cx->amp);
-				f->write((unsigned short)cx->pan);
+				f->write((unsigned short)cx->values.amp);
+				f->write((unsigned short)cx->values.pan);
 
 				conns++;
 			} else if (_cx->connectionType == connection_type_event) {

@@ -63,30 +63,36 @@ struct controller_binding {
 // don't instantiate this class directly,
 // use either audio_connection or events_connection
 struct connection {
+	void* connection_values;
 	connection_type connectionType;
 	metaplugin* plugin_in, *plugin_out;
+	std::vector<const zzub::parameter*> connection_parameters;
 
-	virtual bool work(class player *p, int numSamples) = 0;
+	virtual bool work(struct player *p, int numSamples) = 0;
 	virtual ~connection() {};
 protected:
 	connection();
 };
 
-struct audio_connection : public connection {
+struct audio_connection_values {
 	unsigned short amp, pan;
+};
+
+struct audio_connection : public connection {
+	audio_connection_values values;
 	
 	int lastFrame;
 	float lastFrameMaxSampleL, lastFrameMaxSampleR;
 	
 	audio_connection();
-	virtual bool work(class player *p, int numSamples);
+	virtual bool work(struct player *p, int numSamples);
 };
 
 struct event_connection : public connection {
 	std::vector<controller_binding> bindings;
 
 	event_connection();
-	virtual bool work(class player *p, int numSamples);
+	virtual bool work(struct player *p, int numSamples);
 };
 
 class ParameterState {

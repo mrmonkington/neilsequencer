@@ -233,15 +233,18 @@ connection::connection() {
 
 
 audio_connection::audio_connection() {
-	amp=pan=0x4000;
+	values.amp = values.pan = 0x4000;
 	connectionType = connection_type_audio;
+	connection_values = &values;
+	connection_parameters.push_back(&connVolume);
+	connection_parameters.push_back(&connPanning);
 }
 
 bool audio_connection::work(player *p, int numSamples) {
 	metaplugin* outputMachine=plugin_out;
 	metaplugin* inputMachine=plugin_in;
-	float inAmp=amp/(float)0x4000;
-	float inPan=pan/(float)0x4000;	// pan=0..2, 1=center
+	float inAmp=values.amp/(float)0x4000;
+	float inPan=values.pan/(float)0x4000;	// pan=0..2, 1=center
 	bool status=false;
 
 	//assert(conn->lastFrame!=outputMachine->lastWorkPos); // lr: created problems when loading tracks
@@ -633,8 +636,9 @@ pattern* metaplugin::createPattern(size_t rows) {
 void metaplugin::clear() {
 
 	while (getConnections()) {
-		connection* conn=getConnection((size_t)0);
-		if (!conn) break;
+		connection* conn = getConnection((size_t)0);
+		// dont clear connections from non song plugins
+		if (!conn || conn->plugin_in->nonSongPlugin) break;
 		deleteInput(conn->plugin_in);
 	}
 
@@ -942,8 +946,8 @@ bool metaplugin::addInput(metaplugin* fromMachine, unsigned short amp, unsigned 
 
 	// Create the connection
 	audio_connection* conn = new audio_connection();
-	conn->amp = amp;
-	conn->pan = pan;
+	conn->values.amp = amp;
+	conn->values.pan = pan;
 	conn->plugin_in = fromMachine;
 	conn->plugin_out = this;
 
@@ -959,14 +963,14 @@ bool metaplugin::addInput(metaplugin* fromMachine, unsigned short amp, unsigned 
 
 	add_input_edit.pattern_connection_tracks.resize(patterns.size());
 	for (size_t i = 0; i < patterns.size(); i++) {
-		patterntrack* pt = new patterntrack(0, patterns[i]->_connections.size() + i, connectionParameters, patterns[i]->getRows());
+		patterntrack* pt = new patterntrack(0, patterns[i]->_connections.size() + i, conn->connection_parameters, patterns[i]->getRows());
 		add_input_edit.pattern_connection_tracks[i] = patterns[i]->_connections;
 		add_input_edit.pattern_connection_tracks[i].push_back(pt);
 	}
 
 	// create connection states
 	ParameterState* state = new ParameterState();
-	state->initialize(conn, 0, inConnections.size()-1, connectionParameters);
+	state->initialize(conn->connection_values, 0, inConnections.size()-1, conn->connection_parameters);
 	state->getStateTrackControl()->setValue(0, 0, amp);
 	state->getStateTrackControl()->setValue(0, 1, pan);
 

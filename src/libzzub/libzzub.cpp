@@ -914,19 +914,19 @@ zzub_event_connection_t *zzub_connection_get_event_connection(zzub_connection_t 
 // Audio connection methods
 
 unsigned short zzub_audio_connection_get_amplitude(zzub_audio_connection_t *connection) {
-	return connection->amp;
+	return connection->values.amp;
 }
 
 unsigned short zzub_audio_connection_get_panning(zzub_audio_connection_t *connection) {
-	return connection->pan;
+	return connection->values.pan;
 }
 
 void zzub_audio_connection_set_amplitude(zzub_audio_connection_t *connection, unsigned short amp) {
-	connection->amp = amp;
+	connection->values.amp = amp;
 }
 
 void zzub_audio_connection_set_panning(zzub_audio_connection_t *connection, unsigned short pan) {
-	connection->pan = pan;
+	connection->values.pan = pan;
 }
 
 

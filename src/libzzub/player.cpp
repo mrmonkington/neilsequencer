@@ -870,7 +870,7 @@ bool player::workMachine(metaplugin* machine, int numSamples) {
 		connection *cx = machine->inConnections[i];
 		if (cx->connectionType == connection_type_audio) {
 			audio_connection *cax = (audio_connection*)cx;
-			maxInputAmp = std::max(maxInputAmp, (int)cax->amp);
+			maxInputAmp = std::max(maxInputAmp, (int)cax->values.amp);
 		}
 
 		// check for no_output: these have been processed anyway, 
