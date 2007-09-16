@@ -340,7 +340,7 @@ class WavetablePanel(gtk.Notebook):
 			return
 		editor = config.get_config().get_audioeditor_command()
 		try:
-			popen2.Popen4(editor+' '+files[0])
+			popen2.Popen4(editor+' \"'+files[0]+'\"')
 		except:
 			import traceback
 			error(self, "<b><big>There was an error starting the external audio editor.</big></b>")
