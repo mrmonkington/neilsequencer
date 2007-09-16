@@ -29,6 +29,7 @@ mac = (os.name == 'mac') or (sys.platform == 'darwin')
 linux = sys.platform == 'linux2'
 x86_64 = platform.machine() == 'x86_64'
 
+
 ######################################
 #
 # init environment and define options
@@ -75,7 +76,8 @@ opts.Add("MP3", "Support loading of MP3 samples", linux, None, bool_converter)
 opts.Add("LADSPA", "Support LADSPA plugins", False, None, bool_converter)
 opts.Add("DSSI", "Support DSSI plugins", False, None, bool_converter)
 
-env = Environment(ENV = os.environ, options=opts)
+if 'SCONS_TOOLS' in os.environ: env = Environment(ENV = os.environ, options = opts, tools = os.environ['SCONS_TOOLS'].split(','))
+else: env = Environment(ENV = os.environ, options = opts)
 
 def get_revision():
 	# if this is a repository, take the string from svnversion
@@ -139,13 +141,10 @@ if win32:
 	else:
 		env.Append(CCFLAGS=['-DDEBUG', '-D_DEBUG' ])
 
-	env.Append(LINKFLAGS=[
-		'-DEBUG',
-	])
 	env.Append(LIBS=[
 		'kernel32',
 		'user32',
-		'comdlg32.lib'	# for recorder::GetSaveFileName
+		'comdlg32' # for recorder::GetSaveFileName
 	])
 	env['LIB_DL'] = ''
 	env['LIB_RT'] = ''
@@ -193,6 +192,9 @@ if cl:
 		'-nologo',
 		'-EHsc',
 		'-W3',
+	])
+	env.Append(LINKFLAGS=[
+		'-DEBUG',
 	])
 	if env['DEBUG'] == False:
 		env.Append(CCFLAGS=['-MT', '-O2' ])

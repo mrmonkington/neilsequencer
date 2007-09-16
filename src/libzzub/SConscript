@@ -156,10 +156,31 @@ if posix:
 			localenv.Append(CCFLAGS=[ '-DPMALSA', ])
 
 elif win32:
-	localenv.Append(LIBS=[
-		'portmidi',			
-		'porttime',
-	])
+	if cl:
+		localenv.Append(LIBS=[
+			'portmidi',			
+			'porttime',
+		])
+	else:
+		# porttime and portmidi
+		localenv.Prepend(CPPPATH = [
+			'${PORTMIDI_SRC_PATH}/pm_common',
+			'${PORTMIDI_SRC_PATH}/porttime'
+		])
+		localenv.Append(CPPDEFINES = {
+			'NEWBUFFER': None
+		})
+		files += [
+				'${PORTMIDI_SRC_PATH}/porttime/porttime.c',
+				'${PORTMIDI_SRC_PATH}/porttime/ptwinmm.c',
+				'${PORTMIDI_SRC_PATH}/pm_common/pmutil.c',
+				'${PORTMIDI_SRC_PATH}/pm_common/portmidi.c',
+				'${PORTMIDI_SRC_PATH}/pm_win/pmwin.c',
+				'${PORTMIDI_SRC_PATH}/pm_win/pmwinmm.c',
+		]
+		localenv.AppendUnique(LIBS=[
+			'winmm'
+		])
 
 #######################################
 # rtaudio
