@@ -76,8 +76,7 @@ opts.Add("MP3", "Support loading of MP3 samples", linux, None, bool_converter)
 opts.Add("LADSPA", "Support LADSPA plugins", False, None, bool_converter)
 opts.Add("DSSI", "Support DSSI plugins", False, None, bool_converter)
 
-if 'SCONS_TOOLS' in os.environ: env = Environment(ENV = os.environ, options = opts, tools = os.environ['SCONS_TOOLS'].split(','))
-else: env = Environment(ENV = os.environ, options = opts)
+env = Environment(ENV = os.environ, options = opts)
 
 def get_revision():
 	# if this is a repository, take the string from svnversion
