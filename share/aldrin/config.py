@@ -47,6 +47,7 @@ DEFAULT_THEME = {
 	'MV Amp Border': 0x000000,
 	'MV Amp Handle': 0x999999,
 	'MV Arrow': 0x65d1b6,
+	'MV Controller Arrow': 0xf25555,
 	'MV Background': 0xeeeeee,
 	'MV Effect': 0x617ccd,
 	'MV Effect LED Border': 0x000000,

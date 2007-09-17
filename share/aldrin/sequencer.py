@@ -1117,6 +1117,7 @@ class SequencerView(gtk.DrawingArea):
 			zzub.zzub_plugin_type_effect : cm.alloc_color(cfg.get_color('MV Effect')),
 			zzub.zzub_plugin_type_generator : cm.alloc_color(cfg.get_color('MV Generator')),
 			zzub.zzub_plugin_type_master : cm.alloc_color(cfg.get_color('MV Master')),
+			zzub.zzub_plugin_type_controller : cm.alloc_color(cfg.get_color('MV Controller')),
 		}
 		bgbrush = cm.alloc_color(cfg.get_color('SE BG'))
 		fbrush1 = cm.alloc_color(cfg.get_color('SE BG Very Dark'))

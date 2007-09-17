@@ -503,7 +503,7 @@ class VolumeSlider(gtk.Window):
 		self.y = newpos
 		self.amp = max(min(self.amp + (float(delta) / VOLBARHEIGHT), 1.0), 0.0)
 		amp = min(max(int(db2linear(self.amp * -48.0, -48.0) * 16384.0), 0), 16384)
-		self.conn.get_output().set_parameter_value(0, self.connindex, 0, amp, True)
+		self.conn.get_audio_connection().set_amplitude(amp)
 		self.redraw()
 		return True
 		
@@ -546,8 +546,7 @@ class VolumeSlider(gtk.Window):
 		"""
 		self.y = VOLBARHEIGHT / 2
 		self.conn = conn
-		self.connindex= index
-		self.amp = (linear2db((self.conn.get_output().get_parameter_value(0, index, 0)/ 16384.0), -48.0) / -48.0)
+		self.amp = (linear2db((self.conn.get_audio_connection().get_amplitude()/ 16384.0), -48.0) / -48.0)
 		self.move(int(mx - VOLBARWIDTH*0.5), int(my - VOLBARHEIGHT*0.5))
 		self.show_all()
 		self.drawingarea.grab_add()
@@ -760,9 +759,14 @@ class RouteView(gtk.DrawingArea):
 				for i in range(conn.get_output().get_input_connection_count()):
 						if conn.get_output().get_input_connection(i)==conn:
 							break
-				amp = conn.get_output().get_parameter_value(0,i,0)
-				pan = conn.get_output().get_parameter_value(0,i,1)
-				inplugs.append((input,amp,pan))
+				try:
+					aconn = conn.get_audio_connection()
+					amp = aconn.get_amplitude()
+					pan = aconn.get_panning()
+					inplugs.append((input,amp,pan))
+				except:
+					import traceback
+					print traceback.format_exc()
 				mp.delete_input(input)
 			while True:
 				conns = mp.get_output_connection_list()
@@ -773,16 +777,21 @@ class RouteView(gtk.DrawingArea):
 				for i in range(conn.get_output().get_input_connection_count()):
 						if conn.get_output().get_input_connection(i)==conn:
 							break
-				amp = conn.get_output().get_parameter_value(0,i,0)
-				pan = conn.get_output().get_parameter_value(0,i,1)
-				outplugs.append((output,amp,pan))
+				try:
+					aconn = conn.get_audio_connection()
+					amp = aconn.get_amplitude()
+					pan = aconn.get_panning()
+					outplugs.append((output,amp,pan))
+				except:
+					import traceback
+					print traceback.format_exc()
 				output.delete_input(mp)
 			# and now restore them
 			for inplug,iamp,ipan in inplugs:
 				for outplug,oamp,opan in outplugs:
 					newamp = (iamp*oamp)/16384
 					newpan = ipan
-					outplug.add_input(inplug, newamp, newpan)
+					outplug.add_audio_input(inplug, newamp, newpan)
 			del common.get_plugin_infos()[mp]
 			mp.destroy()
 			self.redraw()
@@ -877,9 +886,9 @@ class RouteView(gtk.DrawingArea):
 			t.set_event(0,16)
 			if not(mask & gtk.gdk.SHIFT_MASK):
 				if self.autoconnect_target==None:
-					player.get_plugin_list()[0].add_input(mp, 16384, 16384)
+					player.get_plugin_list()[0].add_audio_input(mp, 16384, 16384)
 				else:
-					self.autoconnect_target.add_input(mp, 16384, 16384)
+					self.autoconnect_target.add_audio_input(mp, 16384, 16384)
 		mp.set_position(*self.pixel_to_float(self.contextmenupos))
 		# if we have a context plugin, prepend connections
 		if 'plugin' in kargs:
@@ -895,27 +904,37 @@ class RouteView(gtk.DrawingArea):
 				for i in range(conn.get_output().get_input_connection_count()):
 						if conn.get_output().get_input_connection(i)==conn:
 							break
-				amp = conn.get_output().get_parameter_value(0,i,0)
-				pan = conn.get_output().get_parameter_value(0,i,1)
-				inplugs.append((input,amp,pan))
+				try:
+					aconn = conn.get_audio_connection()
+					amp = aconn.get_amplitude()
+					pan = aconn.get_panning()
+					inplugs.append((input,amp,pan))
+				except:
+					import traceback
+					print traceback.format_exc()
 				plugin.delete_input(input)
 			# restore
 			for inplug,amp,pan in inplugs:
-				mp.add_input(inplug, amp, pan)
-			plugin.add_input(mp, 16384, 16384)
+				mp.add_audio_input(inplug, amp, pan)
+			plugin.add_audio_input(mp, 16384, 16384)
 		# if we have a context connection, replace that one
 		elif 'conn' in kargs:
 			conn = kargs['conn']
 			for i in range(conn.get_output().get_input_connection_count()):
 					if conn.get_output().get_input_connection(i)==conn:
 						break
-			amp = conn.get_output().get_parameter_value(0,i,0)
-			pan = conn.get_output().get_parameter_value(0,i,1)
-			minput = conn.get_input()
-			moutput = conn.get_output()
-			moutput.delete_input(minput)
-			mp.add_input(minput, amp, pan)
-			moutput.add_input(mp, 16384, 16384)
+			try:
+				aconn = conn.get_audio_connection()
+				amp = aconn.get_amplitude()
+				pan = aconn.get_panning()
+				minput = conn.get_input()
+				moutput = conn.get_output()
+				moutput.delete_input(minput)
+				mp.add_audio_input(minput, amp, pan)
+				moutput.add_audio_input(mp, 16384, 16384)
+			except:
+				import traceback
+				print traceback.format_exc()
 		self.rootwindow.document_changed()
 		# selects the plugin in the pattern view
 		plugintoolbar = self.rootwindow.patternframe.toolbar
@@ -933,7 +952,7 @@ class RouteView(gtk.DrawingArea):
 				patternframe.show_cursor_right()
 				patternframe.refresh_view()
 		
-	def get_plugin_menu(self, include_generators = True, include_effects = True, **kargs):
+	def get_plugin_menu(self, include_generators = True, include_effects = True, include_controllers = True, **kargs):
 		"""
 		Generates and returns a new plugin menu.
 		
@@ -966,6 +985,8 @@ class RouteView(gtk.DrawingArea):
 						if not include_generators and (child.pluginloader.get_type() == zzub.zzub_plugin_type_generator):
 							continue
 						if not include_effects and (child.pluginloader.get_type() == zzub.zzub_plugin_type_effect):
+							continue
+						if not include_controllers and (child.pluginloader.get_type() == zzub.zzub_plugin_type_controller):
 							continue
 					if add_separator:
 						add_separator = False
@@ -1054,7 +1075,7 @@ class RouteView(gtk.DrawingArea):
 			if mp.get_type() in (zzub.zzub_plugin_type_effect,zzub.zzub_plugin_type_master):
 				menu.append(gtk.SeparatorMenuItem())
 				menu.append(make_check_item(self.autoconnect_target == mp, "Default Target","Connect new generators to this plugin",self.on_popup_set_target, mp))
-				menu.append(make_submenu_item(self.get_plugin_menu(include_generators=False, plugin=mp), "_Prepend Effect"))
+				menu.append(make_submenu_item(self.get_plugin_menu(include_generators=False, include_controllers=False, plugin=mp), "_Prepend Effect"))
 			commands = mp.get_commands()
 			if commands:
 				menu.append(gtk.SeparatorMenuItem())
@@ -1068,7 +1089,7 @@ class RouteView(gtk.DrawingArea):
 						for subindex in range(len(subcommands)):
 							subcmd = subcommands[subindex]
 							submenu.append(make_menu_item(prepstr(subcmd), "", self.on_popup_command, mp, submenuindex, subindex))
-						menu.append(make_submenu_item(submenu, prepstr(cmd)))
+						menu.append(make_submenu_item(submenu, prepstr(cmd[1:])))
 					else:
 						menu.append(make_menu_item(prepstr(cmd), "", self.on_popup_command, mp, 0, index))
 			extman.get_extension_manager().extend_menu(interface.UIOBJECT_ROUTE_MENU_PLUGIN, menu, plugin=mp)
@@ -1079,10 +1100,16 @@ class RouteView(gtk.DrawingArea):
 				conn = None
 			if conn:
 				menu.append(make_menu_item("_Disconnect plugins", "Disconnect plugins", self.on_popup_disconnect, conn))
-				menu.append(gtk.SeparatorMenuItem())
-				menu.append(make_submenu_item(self.get_plugin_menu(include_generators=False,conn=conn), "_Insert Effect"))
-				menu.append(gtk.SeparatorMenuItem())
-				menu.append(make_menu_item("_Signal Analysis", "Signal Analysis", self.on_popup_show_signalanalysis, conn))
+				if conn.get_type() == zzub.zzub_connection_type_audio:
+					menu.append(gtk.SeparatorMenuItem())
+					menu.append(make_submenu_item(self.get_plugin_menu(include_generators=False,include_controllers=False, conn=conn), "_Insert Effect"))
+					menu.append(gtk.SeparatorMenuItem())
+					menu.append(make_menu_item("_Signal Analysis", "Signal Analysis", self.on_popup_show_signalanalysis, conn))
+				elif conn.get_type() == zzub.zzub_connection_type_event:
+					menu.append(gtk.SeparatorMenuItem())
+					mi = conn.get_input()
+					for param in mi.get_pluginloader().get_parameter_list(3):
+						print param
 				extman.get_extension_manager().extend_menu(interface.UIOBJECT_ROUTE_MENU_CONNECTION, menu, connection=conn)
 			else:
 				menu = self.get_plugin_menu()
@@ -1249,7 +1276,11 @@ class RouteView(gtk.DrawingArea):
 				conn=None
 			if conn:
 				ox, oy = self.window.get_origin()
-				self.volume_slider.display((ox+mx,oy+my), conn, index)
+				if conn.get_type() == zzub.zzub_connection_type_audio:
+					self.volume_slider.display((ox+mx,oy+my), conn, index)
+				elif conn.get_type() == zzub.zzub_connection_type_event:
+					# no idea what to do when clicking on an event connection yet
+					pass
 			else:
 				if self.selected_plugin:
 					last = self.selected_plugin
@@ -1292,7 +1323,10 @@ class RouteView(gtk.DrawingArea):
 			res = self.get_plugin_at((mx,my))
 			if res:
 				mp,(x,y),area = res
-				mp.add_input(self.current_plugin, 16384, 16384)
+				if self.current_plugin.get_type() == zzub.zzub_plugin_type_controller:
+					mp.add_event_input(self.current_plugin)
+				else:
+					mp.add_audio_input(self.current_plugin, 0x4000, 0x4000)
 		self.current_plugin = None
 		if self.dragging:
 			self.grab_remove()
@@ -1421,7 +1455,10 @@ class RouteView(gtk.DrawingArea):
 		cfg = config.get_config()
 		rect = self.get_allocation()
 		w,h = rect.width,rect.height
-		arrowbrush = cfg.get_float_color("MV Arrow")
+		arrowcolors = {
+			zzub.zzub_connection_type_audio : cfg.get_float_color("MV Arrow"),
+			zzub.zzub_connection_type_event : cfg.get_float_color("MV Controller Arrow")
+		}
 		bgbrush = cfg.get_float_color("MV Background")
 		linepen = cfg.get_float_color("MV Line")
 		ctx.translate(0.5,0.5)
@@ -1443,7 +1480,7 @@ class RouteView(gtk.DrawingArea):
 			ctx.line_to(rx,ry)
 			ctx.set_source_rgb(*linepen)
 			ctx.stroke()
-		def draw_line_arrow(crx,cry,rx,ry):
+		def draw_line_arrow(clr,crx,cry,rx,ry):
 			vx, vy = (rx-crx), (ry-cry)
 			length = (vx*vx+vy*vy)**0.5
 			if not length:
@@ -1461,7 +1498,7 @@ class RouteView(gtk.DrawingArea):
 			ctx.line_to(*t2)
 			ctx.line_to(*t3)
 			ctx.close_path()
-			ctx.set_source_rgb(*arrowbrush)
+			ctx.set_source_rgb(*clr)
 			ctx.fill_preserve()
 			ctx.set_source_rgb(*linepen)
 			ctx.stroke()
@@ -1469,7 +1506,7 @@ class RouteView(gtk.DrawingArea):
 		for mp,(rx,ry) in mplist:
 			for conn in mp.get_input_connection_list():
 				crx, cry = get_pixelpos(*conn.get_input().get_position())
-				draw_line_arrow(int(crx),int(cry),int(rx),int(ry))
+				draw_line_arrow(arrowcolors[conn.get_type()],int(crx),int(cry),int(rx),int(ry))
 		self.draw_leds()
 		if self.connecting:
 			crx, cry = get_pixelpos(*self.current_plugin.get_position())
