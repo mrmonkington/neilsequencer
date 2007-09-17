@@ -515,7 +515,7 @@ bool BuzzReader::loadConnections() {
 
 		//if (machine2->getType()==0 && machine1->getMachineFlags()&zzub::plugin_flag_no_output) {
 		//} else continue;	// tror denne er fikset i addInput nå... ?
-		machine2->addInput(machine1, amp, pan);
+		audio_connection *conn = machine2->addAudioInput(machine1, amp, pan);
 
 		connections[machine2].push_back(machine2->getConnection(machine1));
 

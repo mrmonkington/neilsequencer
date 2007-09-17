@@ -770,7 +770,7 @@ metaplugin* player::createMachine(char* inputData, int inputSize, std::string ma
 
     // automatically add NO_OUTPUT-machines to the master
 	if (machine->isNoOutput()) {
-		getMaster()->addInput((metaplugin*)machine, 0x4000, 0x4000);
+		getMaster()->addAudioInput((metaplugin*)machine, 0x4000, 0x4000);
 	}
 
     return machine;

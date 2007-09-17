@@ -150,7 +150,7 @@ class zzub_event_data_unknown(Structure):
 
 zzub_event_data_unknown_t = zzub_event_data_unknown
 
-class union__53f3a8d3(Union):
+class union__8dc4a97a(Union):
 	_fields_ = [
 		('new_plugin', zzub_event_data_new_plugin_t),
 		('delete_plugin', zzub_event_data_delete_plugin_t),
@@ -173,7 +173,7 @@ class union__53f3a8d3(Union):
 class zzub_event_data(Structure):
 	_fields_ = [
 		('type', c_int),
-		('', union__53f3a8d3),
+		('', union__8dc4a97a),
 	]
 
 zzub_event_data_t = zzub_event_data
@@ -522,7 +522,8 @@ zzub_plugin_get_input_connection         = dlsym(libzzub, 'zzub_plugin_get_input
 zzub_plugin_get_output_connection_count  = dlsym(libzzub, 'zzub_plugin_get_output_connection_count', c_int, ('machine' ,POINTER(zzub_plugin_t)))
 zzub_plugin_get_output_connection        = dlsym(libzzub, 'zzub_plugin_get_output_connection'     , POINTER(zzub_connection_t), ('machine' ,POINTER(zzub_plugin_t)),('index'   ,c_int     ))
 zzub_plugin_get_last_peak                = dlsym(libzzub, 'zzub_plugin_get_last_peak'             , None, ('machine' ,POINTER(zzub_plugin_t)),('maxL'    ,POINTER(c_float)),('maxR'    ,POINTER(c_float)))
-zzub_plugin_add_input                    = dlsym(libzzub, 'zzub_plugin_add_input'                 , c_int, ('machine' ,POINTER(zzub_plugin_t)),('fromMachine',POINTER(zzub_plugin_t)),('amp'     ,c_ushort  ),('pan'     ,c_ushort  ))
+zzub_plugin_add_audio_input              = dlsym(libzzub, 'zzub_plugin_add_audio_input'           , POINTER(zzub_connection_t), ('machine' ,POINTER(zzub_plugin_t)),('fromMachine',POINTER(zzub_plugin_t)),('amp'     ,c_ushort  ),('pan'     ,c_ushort  ))
+zzub_plugin_add_event_input              = dlsym(libzzub, 'zzub_plugin_add_event_input'           , POINTER(zzub_connection_t), ('machine' ,POINTER(zzub_plugin_t)),('fromMachine',POINTER(zzub_plugin_t)))
 zzub_plugin_delete_input                 = dlsym(libzzub, 'zzub_plugin_delete_input'              , None, ('machine' ,POINTER(zzub_plugin_t)),('fromMachine',POINTER(zzub_plugin_t)))
 zzub_plugin_set_input_channels           = dlsym(libzzub, 'zzub_plugin_set_input_channels'        , None, ('machine' ,POINTER(zzub_plugin_t)),('fromMachine',POINTER(zzub_plugin_t)),('channels',c_int     ))
 zzub_plugin_get_track_count              = dlsym(libzzub, 'zzub_plugin_get_track_count'           , c_int, ('machine' ,POINTER(zzub_plugin_t)))

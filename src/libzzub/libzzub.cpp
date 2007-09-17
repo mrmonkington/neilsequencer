@@ -523,6 +523,8 @@ int zzub_pluginloader_get_parameter_count(zzub_pluginloader_t* loader, int group
 			return loader->getInfo()->global_parameters.size();
 		case 2: // track params
 			return loader->getInfo()->track_parameters.size();
+		case 3: // controller params
+			return loader->getInfo()->controller_parameters.size();
 		default:
 			return 0;
 	}
@@ -536,6 +538,8 @@ const zzub_parameter_t *zzub_pluginloader_get_parameter(zzub_pluginloader_t* loa
 			return loader->getInfo()->global_parameters[index];
 		case 2: // track params
 			return loader->getInfo()->track_parameters[index];
+		case 3: // controller params
+			return loader->getInfo()->controller_parameters[index];
 		default:
 			return 0;
 	}
@@ -742,8 +746,12 @@ void zzub_plugin_get_last_peak(zzub_plugin_t *machine, float *maxL, float *maxR)
 	machine->getLastWorkMax(*maxL, *maxR);	
 }
 
-int zzub_plugin_add_input(zzub_plugin_t* machine, zzub_plugin_t* fromMachine, unsigned short amp, unsigned short pan) {
-	return machine->addInput(fromMachine, amp, pan);
+zzub_connection_t *zzub_plugin_add_audio_input(zzub_plugin_t* machine, zzub_plugin_t* fromMachine, unsigned short amp, unsigned short pan) {
+	return machine->addAudioInput(fromMachine, amp, pan);
+}
+
+zzub_connection_t *zzub_plugin_add_event_input(zzub_plugin_t* machine, zzub_plugin_t* fromMachine) {
+	return machine->addEventInput(fromMachine);
 }
 
 void zzub_plugin_delete_input(zzub_plugin_t* machine, zzub_plugin_t* fromMachine) {
@@ -900,13 +908,13 @@ int zzub_connection_get_type(zzub_connection_t *connection) {
 }
 
 zzub_audio_connection_t *zzub_connection_get_audio_connection(zzub_connection_t *connection) {
-	if (connection->connectionType == zzub_connection_type_audio)
+	if (connection->connectionType == zzub::connection_type_audio)
 		return (zzub_audio_connection_t *)connection;
 	return 0;
 }
 
 zzub_event_connection_t *zzub_connection_get_event_connection(zzub_connection_t *connection) {
-	if (connection->connectionType == zzub_connection_type_event)
+	if (connection->connectionType == zzub::connection_type_event)
 		return (zzub_event_connection_t *)connection;
 	return 0;
 }

@@ -1482,9 +1482,10 @@ bool CcmReader::loadPlugins(xml_node &plugins, zzub::player &player) {
 						if (conntype == "audio") {
 							int amp = double_to_amp((double)i->attribute("amplitude"));
 							int pan = double_to_pan((double)i->attribute("panning"));
-							c->target->addInput(iplug->second, (unsigned short)amp, (unsigned short)pan);
+							c->target->addAudioInput(iplug->second, (unsigned short)amp, (unsigned short)pan);
 						} else if (conntype == "event") {
-							// TODO
+							// TODO: restore controller associations
+							c->target->addEventInput(iplug->second);
 						} else {
 							assert(0);
 						}

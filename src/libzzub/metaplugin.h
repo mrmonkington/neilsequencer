@@ -89,6 +89,10 @@ struct audio_connection : public connection {
 };
 
 struct event_connection : public connection {
+	struct _values {
+		unsigned short amp, pan;
+	} values; // fake
+	
 	std::vector<controller_binding> bindings;
 
 	event_connection();
@@ -267,7 +271,8 @@ struct metaplugin {
 	void defaultAttributes();
 	zzub::player* getPlayer();
 	void clear();
-	bool addInput(zzub::metaplugin* fromMachine, unsigned short amp, unsigned short pan);
+	event_connection *addEventInput(zzub::metaplugin* fromMachine);
+	audio_connection *addAudioInput(zzub::metaplugin* fromMachine, unsigned short amp, unsigned short pan);
 	void deleteInput(zzub::metaplugin* fromMachine);
 	bool setInstrumentName(std::string name);
 	void playPatternRow(pattern* p, size_t row, bool record);

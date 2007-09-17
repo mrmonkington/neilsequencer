@@ -918,30 +918,89 @@ bool isCircular(metaplugin* inputMachine, metaplugin* outputMachine) {
 	return false;
 }
 
-bool metaplugin::addInput(metaplugin* fromMachine, unsigned short amp, unsigned short pan) {
+event_connection *metaplugin::addEventInput(metaplugin* fromMachine) {
+	// Check whether these machines are already connection to each others
+	if (getConnection(fromMachine)) return 0;
+	
+	// allow one type of cyclic connection, when the master is connected to a no_output machine
+	if (fromMachine->getType() == plugin_type_master) {
+		if ((machineInfo->flags & plugin_flag_no_output)== 0)
+			return 0;
+	} else {
+		// check cyclic connections
+		if (isCircular(fromMachine, this)) return 0;
+	}
+	
+	// Create the connection
+	event_connection* conn = new event_connection();
+	conn->plugin_in = fromMachine;
+	conn->plugin_out = this;
+
+	zzub_edit_connection add_input_edit;
+	add_input_edit.type = zzub_edit_add_input;
+	add_input_edit.conn = conn;
+
+	add_input_edit.input_connections = inConnections;
+	add_input_edit.input_connections.push_back(conn);
+
+	add_input_edit.output_connections = fromMachine->outConnections;
+	add_input_edit.output_connections.push_back(conn);
+
+	add_input_edit.pattern_connection_tracks.resize(patterns.size());
+	for (size_t i = 0; i < patterns.size(); i++) {
+		patterntrack* pt = new patterntrack(0, patterns[i]->_connections.size() + i, connectionParameters, patterns[i]->getRows());
+		add_input_edit.pattern_connection_tracks[i] = patterns[i]->_connections;
+		add_input_edit.pattern_connection_tracks[i].push_back(pt);
+	}
+
+	// create connection states
+	ParameterState* state = new ParameterState();
+	state->initialize(&conn->values, 0, inConnections.size()-1, connectionParameters);
+	state->getStateTrackControl()->setValue(0, 0, 0x4000);
+	state->getStateTrackControl()->setValue(0, 1, 0x4000);
+
+	add_input_edit.parameter_states = connectionStates;
+	add_input_edit.parameter_states.push_back(state);
+
+	zzub_event_data preEventData = { event_type_pre_connect };
+	preEventData.pre_connect_plugin.connection = (zzub_connection_t*)conn;
+	invokeEvent(preEventData, true);
+
+	player->executeThreadCommand(&add_input_edit);
+
+	//conn->plugin_out->machine->add_input(conn->plugin_in->getName().c_str());
+
+	zzub_event_data eventData = { event_type_connect };
+	eventData.connect_plugin.connection = (zzub_connection_t*)conn;
+	invokeEvent(eventData, true);
+
+	return conn;
+}
+
+audio_connection *metaplugin::addAudioInput(metaplugin* fromMachine, unsigned short amp, unsigned short pan) {
 	// Ensure this connection won't crash
 	bool isNoOutput = false;
 
 	if ((fromMachine->machineInfo->flags & plugin_flag_no_output) ) isNoOutput = true;
-	if (isNoOutput && getType() != plugin_type_master) return false;
+	if (isNoOutput && getType() != plugin_type_master) return 0;
 
 	// Check whether these machines are already connection to each others
-	if (getConnection(fromMachine)) return false;
+	if (getConnection(fromMachine)) return 0;
 
 	// generators don't have inputs, but some popular plugins are incorrectly flagged as generators
 	// the following line was commented out in response to that, so f.ekx songs using geoniks 2p filter will load
-  if (getType() == plugin_type_generator) return false;
+  if (getType() == plugin_type_generator) return 0;
 
   // controllers don't have inputs either
-  if (getType() == plugin_type_controller) return false;
+  if (getType() == plugin_type_controller) return 0;
 
 	// allow one type of cyclic connection, when the master is connected to a no_output machine
 	if (fromMachine->getType() == plugin_type_master) {
 		if ((machineInfo->flags & plugin_flag_no_output)== 0)
-			return false;
+			return 0;
 	} else {
 		// check cyclic connections
-		if (isCircular(fromMachine, this)) return false;
+		if (isCircular(fromMachine, this)) return 0;
 	}
 
 	// Create the connection
@@ -989,7 +1048,7 @@ bool metaplugin::addInput(metaplugin* fromMachine, unsigned short amp, unsigned 
 	eventData.connect_plugin.connection = (zzub_connection_t*)conn;
 	invokeEvent(eventData, true);
 
-	return true;
+	return conn;
 }
 
 void metaplugin::deleteInput(metaplugin* fromMachine) {

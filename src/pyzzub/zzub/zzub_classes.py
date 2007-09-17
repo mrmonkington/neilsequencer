@@ -784,9 +784,13 @@ class Plugin(object):
 	def __ne__(self,other):
 		return self._hash != hash(other)
 
-	def add_input(self, fromMachine, amp, pan):
+	def add_audio_input(self, fromMachine, amp, pan):
 		assert self._handle
-		return zzub_plugin_add_input(self._handle,fromMachine._handle,amp,pan)
+		return Connection(zzub_plugin_add_audio_input(self._handle,fromMachine._handle,amp,pan))
+	
+	def add_event_input(self, fromMachine):
+		assert self._handle
+		return Connection(zzub_plugin_add_event_input(self._handle,fromMachine._handle))
 	
 	def add_pattern(self, pattern):
 		assert self._handle

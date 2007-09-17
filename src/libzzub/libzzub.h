@@ -241,7 +241,8 @@ zzub_connection_t *zzub_plugin_get_input_connection(zzub_plugin_t *machine, int 
 int zzub_plugin_get_output_connection_count(zzub_plugin_t *machine);
 zzub_connection_t *zzub_plugin_get_output_connection(zzub_plugin_t *machine, int index);
 void zzub_plugin_get_last_peak(zzub_plugin_t *machine, float *maxL, float *maxR);
-int zzub_plugin_add_input(zzub_plugin_t* machine, zzub_plugin_t* fromMachine, unsigned short amp, unsigned short pan);
+zzub_connection_t *zzub_plugin_add_audio_input(zzub_plugin_t* machine, zzub_plugin_t* fromMachine, unsigned short amp, unsigned short pan);
+zzub_connection_t *zzub_plugin_add_event_input(zzub_plugin_t* machine, zzub_plugin_t* fromMachine);
 void zzub_plugin_delete_input(zzub_plugin_t* machine, zzub_plugin_t* fromMachine);
 void zzub_plugin_set_input_channels(zzub_plugin_t* machine, zzub_plugin_t* fromMachine, int channels);
 int zzub_plugin_get_track_count(zzub_plugin_t* machine);
