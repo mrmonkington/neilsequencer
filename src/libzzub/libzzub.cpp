@@ -930,11 +930,33 @@ unsigned short zzub_audio_connection_get_panning(zzub_audio_connection_t *connec
 }
 
 void zzub_audio_connection_set_amplitude(zzub_audio_connection_t *connection, unsigned short amp) {
-	connection->values.amp = amp;
+	int track = -1;
+	for (int i = 0; i < connection->plugin_out->getConnections(); ++i)
+	{
+		if (connection->plugin_out->getConnection(i) == connection)
+		{
+			track = i;
+			break;
+		}
+	}
+	if (track == -1)
+		return;
+	connection->plugin_out->setParameter(0, track, 0, amp, true);
 }
 
 void zzub_audio_connection_set_panning(zzub_audio_connection_t *connection, unsigned short pan) {
-	connection->values.pan = pan;
+	int track = -1;
+	for (int i = 0; i < connection->plugin_out->getConnections(); ++i)
+	{
+		if (connection->plugin_out->getConnection(i) == connection)
+		{
+			track = i;
+			break;
+		}
+	}
+	if (track == -1)
+		return;
+	connection->plugin_out->setParameter(0, track, 1, pan, true);
 }
 
 

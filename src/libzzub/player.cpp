@@ -297,6 +297,11 @@ player_state player::getPlayState() {
 
 */
 bool player::initialize() {
+#if defined(__SSE__)
+	std::cout << "SSE optimization is enabled." << std::endl;
+#else
+	std::cout << "SSE optimization is not enabled. Expect your CPU to choke once in a while." << std::endl;
+#endif
 
 	masterInfo.samples_per_second = workRate;
 
@@ -968,7 +973,13 @@ void player::workStereo(int numSamples) {
 	double load=(100.0 * workTime * double(masterInfo.samples_per_second)) / double(samplecount);
 	// slowly approach to new value
 	cpuLoad += 0.1 * (load - cpuLoad);
-	//SETGRADUN(); // don't turn it off
+	
+	// (paniq) flush to zero should be turned off outside our DSP loop
+	// because the player library might be running in a process where
+	// precise computation is expected (i.e. realtime physics simulation).
+	// leaving it on will cause unexpected behavior on code paths
+	// we do not control.
+	SETGRADUN();
 
 	if (midiDriver)
 		midiDriver->poll();
