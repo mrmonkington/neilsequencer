@@ -45,6 +45,7 @@ namespace zzub {
 	struct connection;
 	struct audio_connection;
 	struct event_connection;
+	struct event_connection_binding;
 	struct wave_info_ex;
 	struct wave_level;
 	struct parameter;
@@ -70,6 +71,7 @@ typedef zzub::patterntrack zzub_patterntrack_t;
 typedef zzub::connection zzub_connection_t;
 typedef zzub::audio_connection zzub_audio_connection_t;
 typedef zzub::event_connection zzub_event_connection_t;
+typedef zzub::event_connection_binding zzub_event_connection_binding_t;
 typedef zzub::wave_info_ex zzub_wave_t;
 typedef zzub::wave_level zzub_wavelevel_t;
 typedef zzub::parameter zzub_parameter_t;
@@ -982,6 +984,23 @@ zzub_event_connection_binding_t *zzub_event_connection_get_binding(zzub_event_co
 int zzub_event_connection_remove_binding(zzub_event_connection_t *connection, int index) {
 	connection->bindings.erase(connection->bindings.begin() + index);
 	return 0;
+}
+
+// event connection binding methods
+int zzub_event_connection_binding_get_group(zzub_event_connection_binding_t *binding) {
+	return binding->target_group_index;
+}
+
+int zzub_event_connection_binding_get_track(zzub_event_connection_binding_t *binding) {
+	return binding->target_track_index;
+}
+
+int zzub_event_connection_binding_get_column(zzub_event_connection_binding_t *binding) {
+	return binding->target_param_index;
+}
+
+int zzub_event_connection_binding_get_controller(zzub_event_connection_binding_t *binding) {
+	return binding->source_param_index;
 }
 
 /***

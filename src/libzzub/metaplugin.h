@@ -51,6 +51,13 @@ public:
 	std::vector<zzub::parameter> parameters;
 };
 
+struct event_connection_binding {
+	int source_param_index;
+	int target_group_index;
+	int target_track_index;
+	int target_param_index;
+};
+
 // don't instantiate this class directly,
 // use either audio_connection or events_connection
 struct connection {
@@ -84,7 +91,7 @@ struct event_connection : public connection {
 		unsigned short amp, pan;
 	} values; // fake
 	
-	std::vector<zzub_event_connection_binding_t> bindings;
+	std::vector<event_connection_binding> bindings;
 
 	event_connection();
 	virtual bool work(struct player *p, int numSamples);

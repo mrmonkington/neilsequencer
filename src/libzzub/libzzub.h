@@ -194,6 +194,7 @@ const char *zzub_pluginloader_get_loader_name(zzub_pluginloader_t* loader);
 int zzub_pluginloader_get_type(zzub_pluginloader_t* loader);
 const char *zzub_pluginloader_get_uri(zzub_pluginloader_t* loader);
 const char *zzub_pluginloader_get_author(zzub_pluginloader_t* loader);
+
 // parameter methods
 
 int zzub_parameter_get_type(const zzub_parameter_t* param);
@@ -293,6 +294,12 @@ int zzub_event_connection_add_binding(zzub_event_connection_t *connection, int s
 int zzub_event_connection_get_binding_count(zzub_event_connection_t *connection);
 zzub_event_connection_binding_t *zzub_event_connection_get_binding(zzub_event_connection_t *connection, int index);
 int zzub_event_connection_remove_binding(zzub_event_connection_t *connection, int index);
+
+// event connection binding methods
+int zzub_event_connection_binding_get_group(zzub_event_connection_binding_t *binding);
+int zzub_event_connection_binding_get_track(zzub_event_connection_binding_t *binding);
+int zzub_event_connection_binding_get_column(zzub_event_connection_binding_t *binding);
+int zzub_event_connection_binding_get_controller(zzub_event_connection_binding_t *binding);
 
 // Sequencer methods
 

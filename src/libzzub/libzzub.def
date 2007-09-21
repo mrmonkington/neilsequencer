@@ -178,6 +178,10 @@ EXPORTS
 	zzub_event_connection_get_binding_count
 	zzub_event_connection_get_binding
 	zzub_event_connection_remove_binding
+	zzub_event_connection_binding_get_group
+	zzub_event_connection_binding_get_track
+	zzub_event_connection_binding_get_column
+	zzub_event_connection_binding_get_controller
 	zzub_sequencer_destroy
 	zzub_sequencer_create_range
 	zzub_sequencer_get_track_count

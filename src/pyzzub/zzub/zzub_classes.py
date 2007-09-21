@@ -216,6 +216,39 @@ class Envelope(object):
 		assert self._handle
 		zzub_envelope_set_sustain(self._handle,sustain)
 	
+class EventConnectionBinding(object):
+	_handle = None
+	_hash = 0
+	
+	def __init__(self,handle):
+		self._handle = handle
+		self._hash = cast(self._handle, c_void_p).value
+
+	def __hash__(self):
+		return self._hash
+
+	def __eq__(self,other):
+		return self._hash == hash(other)
+
+	def __ne__(self,other):
+		return self._hash != hash(other)
+
+	def get_column(self):
+		assert self._handle
+		return zzub_event_connection_binding_get_column(self._handle)
+	
+	def get_controller(self):
+		assert self._handle
+		return zzub_event_connection_binding_get_controller(self._handle)
+	
+	def get_group(self):
+		assert self._handle
+		return zzub_event_connection_binding_get_group(self._handle)
+	
+	def get_track(self):
+		assert self._handle
+		return zzub_event_connection_binding_get_track(self._handle)
+	
 class EventConnection(object):
 	_handle = None
 	_hash = 0
@@ -239,7 +272,7 @@ class EventConnection(object):
 	
 	def get_binding(self, index):
 		assert self._handle
-		return zzub_event_connection_get_binding(self._handle,index)
+		return EventConnectionBinding(zzub_event_connection_get_binding(self._handle,index))
 	
 	def get_binding_count(self):
 		assert self._handle

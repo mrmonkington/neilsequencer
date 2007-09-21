@@ -99,6 +99,7 @@ typedef struct _zzub_patterntrack zzub_patterntrack_t;
 typedef struct _zzub_connection zzub_connection_t;
 typedef struct _zzub_audio_connection zzub_audio_connection_t;
 typedef struct _zzub_event_connection zzub_event_connection_t;
+typedef struct _zzub_event_connection_binding zzub_event_connection_binding_t;
 typedef struct _zzub_wave zzub_wave_t;
 typedef struct _zzub_wavelevel zzub_wavelevel_t;
 typedef struct _zzub_parameter zzub_parameter_t;
@@ -196,13 +197,6 @@ struct zzub_event_data {
 
 typedef int (*ZzubCallback)(zzub_player_t *player, zzub_plugin_t *machine, zzub_event_data_t* data, void *tag);
 typedef void (*ZzubMixCallback)(float *left, float *right, int size, void *tag);
-
-typedef struct zzub_event_connection_binding {
-	int source_param_index;
-	int target_group_index;
-	int target_track_index;
-	int target_param_index;
-} zzub_event_connection_binding_t;
 
 enum zzub_parameter_type {
     // parameter types
