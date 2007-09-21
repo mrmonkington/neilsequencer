@@ -27,6 +27,14 @@ class _zzub_parameter(Structure):
 
 zzub_parameter_t = _zzub_parameter
 
+class zzub_event_connection_binding(Structure):
+	_fields_ = [
+		('source_param_index', c_int),
+		('target_group_index', c_int),
+		('target_track_index', c_int),
+		('target_param_index', c_int),
+	]
+
 class _zzub_player(Structure):
 	_fields_ = [
 	]
@@ -150,7 +158,7 @@ class zzub_event_data_unknown(Structure):
 
 zzub_event_data_unknown_t = zzub_event_data_unknown
 
-class union__8dc4a97a(Union):
+class union__229f63f4(Union):
 	_fields_ = [
 		('new_plugin', zzub_event_data_new_plugin_t),
 		('delete_plugin', zzub_event_data_delete_plugin_t),
@@ -173,7 +181,7 @@ class union__8dc4a97a(Union):
 class zzub_event_data(Structure):
 	_fields_ = [
 		('type', c_int),
-		('', union__8dc4a97a),
+		('', union__229f63f4),
 	]
 
 zzub_event_data_t = zzub_event_data
@@ -208,17 +216,19 @@ class _zzub_postprocess(Structure):
 
 zzub_postprocess_t = _zzub_postprocess
 
-class _zzub_event_connection(Structure):
-	_fields_ = [
-	]
-
-zzub_event_connection_t = _zzub_event_connection
-
 class _zzub_audio_connection(Structure):
 	_fields_ = [
 	]
 
 zzub_audio_connection_t = _zzub_audio_connection
+
+zzub_event_connection_binding_t = zzub_event_connection_binding
+
+class _zzub_event_connection(Structure):
+	_fields_ = [
+	]
+
+zzub_event_connection_t = _zzub_event_connection
 
 class _zzub_sequencer(Structure):
 	_fields_ = [
@@ -560,6 +570,10 @@ zzub_audio_connection_get_amplitude      = dlsym(libzzub, 'zzub_audio_connection
 zzub_audio_connection_get_panning        = dlsym(libzzub, 'zzub_audio_connection_get_panning'     , c_ushort, ('connection',POINTER(zzub_audio_connection_t)))
 zzub_audio_connection_set_amplitude      = dlsym(libzzub, 'zzub_audio_connection_set_amplitude'   , None, ('connection',POINTER(zzub_audio_connection_t)),('amp'     ,c_ushort  ))
 zzub_audio_connection_set_panning        = dlsym(libzzub, 'zzub_audio_connection_set_panning'     , None, ('connection',POINTER(zzub_audio_connection_t)),('pan'     ,c_ushort  ))
+zzub_event_connection_add_binding        = dlsym(libzzub, 'zzub_event_connection_add_binding'     , c_int, ('connection',POINTER(zzub_event_connection_t)),('sourceparam',c_int     ),('targetgroup',c_int     ),('targettrack',c_int     ),('targetparam',c_int     ))
+zzub_event_connection_get_binding_count  = dlsym(libzzub, 'zzub_event_connection_get_binding_count', c_int, ('connection',POINTER(zzub_event_connection_t)))
+zzub_event_connection_get_binding        = dlsym(libzzub, 'zzub_event_connection_get_binding'     , POINTER(zzub_event_connection_binding_t), ('connection',POINTER(zzub_event_connection_t)),('index'   ,c_int     ))
+zzub_event_connection_remove_binding     = dlsym(libzzub, 'zzub_event_connection_remove_binding'  , c_int, ('connection',POINTER(zzub_event_connection_t)),('index'   ,c_int     ))
 zzub_sequencer_destroy                   = dlsym(libzzub, 'zzub_sequencer_destroy'                , None, ('sequencer',POINTER(zzub_sequencer_t)))
 zzub_sequencer_create_range              = dlsym(libzzub, 'zzub_sequencer_create_range'           , POINTER(zzub_sequencer_t), ('sequencer',POINTER(zzub_sequencer_t)),('fromRow' ,c_int     ),('fromTrack',c_int     ),('toRow'   ,c_int     ),('toTrack' ,c_int     ))
 zzub_sequencer_get_track_count           = dlsym(libzzub, 'zzub_sequencer_get_track_count'        , c_int, ('sequencer',POINTER(zzub_sequencer_t)))

@@ -288,6 +288,12 @@ unsigned short zzub_audio_connection_get_panning(zzub_audio_connection_t *connec
 void zzub_audio_connection_set_amplitude(zzub_audio_connection_t *connection, unsigned short amp);
 void zzub_audio_connection_set_panning(zzub_audio_connection_t *connection, unsigned short pan);
 
+// Event connection methods
+int zzub_event_connection_add_binding(zzub_event_connection_t *connection, int sourceparam, int targetgroup, int targettrack, int targetparam);
+int zzub_event_connection_get_binding_count(zzub_event_connection_t *connection);
+zzub_event_connection_binding_t *zzub_event_connection_get_binding(zzub_event_connection_t *connection, int index);
+int zzub_event_connection_remove_binding(zzub_event_connection_t *connection, int index);
+
 // Sequencer methods
 
 void zzub_sequencer_destroy(zzub_sequencer_t *sequencer);

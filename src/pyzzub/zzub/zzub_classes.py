@@ -233,6 +233,22 @@ class EventConnection(object):
 	def __ne__(self,other):
 		return self._hash != hash(other)
 
+	def add_binding(self, sourceparam, targetgroup, targettrack, targetparam):
+		assert self._handle
+		return zzub_event_connection_add_binding(self._handle,sourceparam,targetgroup,targettrack,targetparam)
+	
+	def get_binding(self, index):
+		assert self._handle
+		return zzub_event_connection_get_binding(self._handle,index)
+	
+	def get_binding_count(self):
+		assert self._handle
+		return zzub_event_connection_get_binding_count(self._handle)
+	
+	def remove_binding(self, index):
+		assert self._handle
+		return zzub_event_connection_remove_binding(self._handle,index)
+	
 class Input(object):
 	_handle = None
 	_hash = 0

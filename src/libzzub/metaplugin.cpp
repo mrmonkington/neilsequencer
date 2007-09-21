@@ -283,13 +283,6 @@ bool event_connection::work(player *p, int numSamples) {
 	return false;
 }
 
-controller_binding::controller_binding() {
-	source_param_index=-1;
-	target_param_group=-1;
-	target_param_track=-1;
-	target_param_index=-1;
-}
-
 metaplugin::metaplugin(zzub::player* pl, pluginloader* loader) {
 	for (int c = 0; c < 2; ++c) {
 		mixBuffer[c] = new float[MAXBUFFERSAMPLES*4];

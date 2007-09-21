@@ -173,7 +173,11 @@ EXPORTS
 	zzub_audio_connection_get_amplitude
 	zzub_audio_connection_get_panning
 	zzub_audio_connection_set_amplitude
-	zzub_audio_connection_set_panning	
+	zzub_audio_connection_set_panning
+	zzub_event_connection_add_binding
+	zzub_event_connection_get_binding_count
+	zzub_event_connection_get_binding
+	zzub_event_connection_remove_binding
 	zzub_sequencer_destroy
 	zzub_sequencer_create_range
 	zzub_sequencer_get_track_count

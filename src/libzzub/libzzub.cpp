@@ -959,6 +959,30 @@ void zzub_audio_connection_set_panning(zzub_audio_connection_t *connection, unsi
 	connection->plugin_out->setParameter(0, track, 1, pan, true);
 }
 
+// Event connection methods
+int zzub_event_connection_add_binding(zzub_event_connection_t *connection, int sourceparam, int targetgroup, int targettrack, int targetparam) {
+	zzub_event_connection_binding_t binding;
+	memset(&binding, 0, sizeof(binding));
+	binding.source_param_index = sourceparam;
+	binding.target_group_index = targetgroup;
+	binding.target_track_index = targettrack;
+	binding.target_param_index = targetparam;
+	connection->bindings.push_back(binding);
+	return connection->bindings.size() - 1;
+}
+
+int zzub_event_connection_get_binding_count(zzub_event_connection_t *connection) {
+	return connection->bindings.size();
+}
+
+zzub_event_connection_binding_t *zzub_event_connection_get_binding(zzub_event_connection_t *connection, int index) {
+	return &connection->bindings[index];
+}
+
+int zzub_event_connection_remove_binding(zzub_event_connection_t *connection, int index) {
+	connection->bindings.erase(connection->bindings.begin() + index);
+	return 0;
+}
 
 /***
 

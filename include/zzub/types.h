@@ -197,6 +197,13 @@ struct zzub_event_data {
 typedef int (*ZzubCallback)(zzub_player_t *player, zzub_plugin_t *machine, zzub_event_data_t* data, void *tag);
 typedef void (*ZzubMixCallback)(float *left, float *right, int size, void *tag);
 
+typedef struct zzub_event_connection_binding {
+	int source_param_index;
+	int target_group_index;
+	int target_track_index;
+	int target_param_index;
+} zzub_event_connection_binding_t;
+
 enum zzub_parameter_type {
     // parameter types
     zzub_parameter_type_note	= 0,
