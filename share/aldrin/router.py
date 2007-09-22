@@ -1249,6 +1249,7 @@ class RouteView(gtk.DrawingArea):
 				self.redraw()
 			elif (event.state & gtk.gdk.SHIFT_MASK) or (event.button == 2):
 				self.connecting = True
+				self.connectpos = int(mx), int(my)
 			elif not self.connecting:
 				self.dragging = True
 				self.grab_add()

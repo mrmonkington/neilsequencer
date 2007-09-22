@@ -118,10 +118,12 @@ class ParameterView(gtk.VBox):
 		
 		def add_slider(g,t,i):
 			p = pl.get_parameter(g,i)
-			if not (p.get_flags() & zzub.zzub_parameter_flag_state):
+			if (g != 3) and (not (p.get_flags() & zzub.zzub_parameter_flag_state)):
 				return
 			if g == 1:
 				name = prepstr(p.get_name())
+			elif g == 3:
+				name = "CC-%s" % prepstr(p.get_name())
 			else:
 				name = "%i-%s" % (t,prepstr(p.get_name()))
 			namelabel = gtk.Label()
@@ -134,6 +136,8 @@ class ParameterView(gtk.VBox):
 			slider.set_increments(1, increment)
 			v = plugin.get_parameter_value(g,t,i)
 			slider.set_value(v)
+			if g == 3:
+				slider.set_sensitive(False)
 			valuelabel = gtk.Label("")
 			valuelabel.set_alignment(0, 0.5)
 			valuelabel.set_size_request(80, -1)
@@ -166,6 +170,9 @@ class ParameterView(gtk.VBox):
 		for t in range(plugin.get_track_count()):
 			for i in range(pl.get_parameter_count(2)):
 				add_slider(2,t,i)
+		# controllers
+		for i in range(pl.get_parameter_count(3)): # controllers
+			add_slider(3,0,i)
 				
 		self.btnadd.connect('clicked', self.on_button_add)
 		self.btnremove.connect('clicked', self.on_button_remove)
