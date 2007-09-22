@@ -1379,6 +1379,7 @@ class RouteView(gtk.DrawingArea):
 			return cx * (1+x), cy * (1+y)
 		textcolor = cfg.get_float_color("MV Machine Text")
 		pluginpen = cfg.get_float_color("MV Machine Border")
+		pluginpenselected = cfg.get_float_color("MV Machine Border Selected")
 		#font = wx.Font(8, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
 		PW, PH = PLUGINWIDTH / 2, PLUGINHEIGHT / 2
 		for mp,(rx,ry) in ((mp,get_pixelpos(*mp.get_position())) for mp in player.get_plugin_list()):
@@ -1397,14 +1398,16 @@ class RouteView(gtk.DrawingArea):
 					pctx.set_source_rgb(*self.type2brush[1][mp.get_type()])
 				else:
 					pctx.set_source_rgb(*self.type2brush[0][mp.get_type()])
+				pctx.rectangle(-1,-1,PLUGINWIDTH+1,PLUGINHEIGHT+1)
+				pctx.fill()
+				pctx.rectangle(0,0,PLUGINWIDTH-1,PLUGINHEIGHT-1)
 				if mp == self.selected_plugin:
-					pctx.set_line_width(4)
+					pctx.set_dash([4.0,5.0], 0.5)
+					pctx.set_source_rgb(*pluginpenselected)
 				else:
-					pctx.set_line_width(1)
-				pctx.rectangle(0,0,PLUGINWIDTH-1,PLUGINHEIGHT-1)				
-				pctx.fill_preserve()
-				pctx.set_source_rgb(*pluginpen)
+					pctx.set_source_rgb(*pluginpen)
 				pctx.stroke()
+				pctx.set_dash([], 0.0)
 				if self.solo_plugin and self.solo_plugin != mp and mp.get_type() == zzub.zzub_plugin_type_generator:
 					title = prepstr('[' + mp.get_name() + ']')
 				elif pi.muted:
@@ -1576,6 +1579,8 @@ class RouteView(gtk.DrawingArea):
 		note = None
 		octave = self.rootwindow.patternframe.view.octave
 		#these need to be here as well as main.py, or they don't work in rack view!
+		# pq: not true. call the mainview handler instead. having this in more than
+		# one place can never be a good solution.
 		if k == 'F3':
 			self.rootwindow.select_page(self.rootwindow.PAGE_ROUTE)
 		elif k == 'F2':

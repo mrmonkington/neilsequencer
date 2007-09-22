@@ -74,8 +74,16 @@ def get_player():
 		player.add_plugin_path(pluginpath + '/')
 	inputname, outputname, samplerate, buffersize = config.get_config().get_audiodriver_config()
 	player.initialize(samplerate)
-	driver.get_audiodriver().init()
-	driver.get_mididriver().init()
+	try:
+		driver.get_audiodriver().init()
+	except:
+		import traceback
+		traceback.print_exc()
+	try:
+		driver.get_mididriver().init()
+	except:
+		import traceback
+		traceback.print_exc()
 	def handle_events(player):
 		player.handle_events()
 		return True
