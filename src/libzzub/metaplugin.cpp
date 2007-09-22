@@ -302,6 +302,22 @@ const zzub::parameter *event_connection::getParam(struct metaplugin *mp, size_t 
 	}
 }
 
+int event_connection::convert(int value, const zzub::parameter *oldparam, const zzub::parameter *newparam) {
+	int result = newparam->value_none;
+	if (value != oldparam->value_none) {
+		if ((oldparam->type == zzub::parameter_type_note) && (newparam->type == zzub::parameter_type_note))
+		{
+			result = value;
+		}
+		else
+		{
+			float v = oldparam->normalize(value);
+			result = newparam->scale(v);
+		}
+	}
+	return result;
+}
+
 bool event_connection::work() {
 	const zzub::parameter *param_in;
 	const zzub::parameter *param_out;
@@ -310,12 +326,7 @@ bool event_connection::work() {
 		param_in = getParam(plugin_in,3,b->source_param_index);
 		param_out = getParam(plugin_out,b->target_group_index, b->target_param_index);
 		int sv = plugin_out->getParameter(b->target_group_index, b->target_track_index, b->target_param_index);
-		int dv = param_in->value_none;
-		if (sv != param_out->value_none) {
-			float v = param_out->normalize(sv);
-			dv = param_in->scale(v);
-		}
-		plugin_in->setParameter(3, 0, b->source_param_index, dv, false);
+		plugin_in->setParameter(3, 0, b->source_param_index, convert(sv, param_out, param_in), false);
 	}
 	plugin_in->controllerState.applyControlChanges();
 	plugin_in->machine->process_controller_events();
@@ -324,14 +335,9 @@ bool event_connection::work() {
 		param_in = getParam(plugin_in,3,b->source_param_index);
 		param_out = getParam(plugin_out,b->target_group_index, b->target_param_index);
 		int sv = plugin_in->getParameter(3, 0, b->source_param_index);
-		int dv = param_out->value_none;
-		if (sv != param_in->value_none) {
-			float v = param_in->normalize(sv);
-			dv = param_out->scale(v);
-		}
 		patterntrack* pt=plugin_out->getStateTrack(b->target_group_index, b->target_track_index);
 		if (pt) {
-			pt->setValue(0, b->target_param_index, dv);
+			pt->setValue(0, b->target_param_index, convert(sv, param_in, param_out));
 		}
 	}
 	return true;

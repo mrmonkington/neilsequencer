@@ -94,6 +94,7 @@ struct event_connection : public connection {
 
 	event_connection();
 	bool work();
+	int convert(int value, const zzub::parameter *oldparam, const zzub::parameter *newparam);
 	const zzub::parameter *getParam(struct metaplugin *mp, size_t group, size_t index);
 };
 
