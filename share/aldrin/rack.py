@@ -43,6 +43,8 @@ from patterns import key_to_note
 import common
 player = common.get_player()
 from common import MARGIN, MARGIN2, MARGIN3, MARGIN0
+import cPickle
+
 
 class ParameterView(gtk.VBox):
 	"""
@@ -51,6 +53,13 @@ class ParameterView(gtk.VBox):
 	
 	UNBIND_ALL = 'unbind-all'
 	CONTROLLER = 'controller'
+	
+	DROP_TARGET_CTRL_SLIDER = 0
+	
+	DROP_TARGETS = [
+		('application/x-controller-slider-drop', gtk.TARGET_SAME_APP, DROP_TARGET_CTRL_SLIDER),
+	]
+
 	
 	def __init__(self, rootwindow, plugin):
 		"""
@@ -136,8 +145,17 @@ class ParameterView(gtk.VBox):
 			slider.set_increments(1, increment)
 			v = plugin.get_parameter_value(g,t,i)
 			slider.set_value(v)
-			if g == 3:
-				slider.set_sensitive(False)
+			if g == 3: # controller
+				slider.drag_source_set(gtk.gdk.BUTTON1_MASK | gtk.gdk.BUTTON3_MASK,
+					self.DROP_TARGETS, gtk.gdk.ACTION_COPY)
+				slider.connect('drag-data-get', self.on_drag_data_get, (g,t,i))
+				slider.connect('drag-data-delete', self.on_drag_data_delete, (g,t,i))
+				slider.connect('drag-end', self.on_drag_end, (g,t,i))
+			else:
+				slider.drag_dest_set(gtk.DEST_DEFAULT_ALL, self.DROP_TARGETS,
+					gtk.gdk.ACTION_COPY)
+				slider.connect('drag-data-received', self.on_drag_data_received, (g,t,i))
+				slider.connect('drag-drop', self.on_drag_drop, (g,t,i))
 			valuelabel = gtk.Label("")
 			valuelabel.set_alignment(0, 0.5)
 			valuelabel.set_size_request(80, -1)
@@ -180,7 +198,7 @@ class ParameterView(gtk.VBox):
 		self.btnrandom.connect('clicked', self.on_button_random)
 		self.btnhelp.connect('clicked', self.on_button_help)
 		self.connect('destroy', self.on_destroy)
-		if rootwindow.routeframe:
+		if hasattr(rootwindow, 'routeframe') and rootwindow.routeframe:
 			routeview = rootwindow.routeframe.view
 			self.connect('key-press-event', routeview.on_key_jazz, self.plugin)		
 			self.connect('key-release-event', routeview.on_key_jazz_release, self.plugin)
@@ -214,14 +232,82 @@ class ParameterView(gtk.VBox):
 	def get_title(self):
 		return self._title
 		
+	def on_drag_data_get(self, btn, context, selection_data, info, time, (g,t,i)):
+		if info == self.DROP_TARGET_CTRL_SLIDER:
+			text = cPickle.dumps((hash(self.plugin), g, t, i))
+			selection_data.set(selection_data.target, 8, text)
+
+	def on_drag_data_delete(self, btn, context, data, (g,t,i)):
+		pass
+		
+	def on_drag_drop(self, w, context, x, y, time, (g,t,i)):
+		return True
+		
+	def on_drag_end(self, w, context, (g,t,i)):
+		self.update_namelabel(g,t,i)
+		
+	def find_event_connection(self, source):
+		for conn in self.plugin.get_input_connection_list():
+			if conn.get_type() == zzub.zzub_connection_type_event:
+				if conn.get_input() == source:
+					return conn
+		return None
+		
+	def connect_controller(self, source,sg,st,si,tg,tt,ti):
+		conn = self.find_event_connection(source)
+		if not conn:
+			# no connection, so we make a new one			
+			self.plugin.add_event_input(source)
+			conn = self.find_event_connection(source)
+			if not conn: # we can't make one
+				error(self, "<big><b>Cannot connect parameters.</b></big>")
+				return
+		cv = conn.get_event_connection()
+		result = cv.add_binding(si,tg,tt,ti)
+		if result == -1:
+			error(self, "<big><b>Cannot connect parameters.</b></big>")
+		self.update_namelabel(tg,tt,ti)
+		
+	def on_drag_data_received(self, w, context, x, y, data, info, time, (g,t,i)):
+		try:
+			if data and data.format == 8:
+				pluginhash, sg,st,si = cPickle.loads(data.data)
+				for plugin in player.get_plugin_list():
+					if hash(plugin) == pluginhash:
+						self.connect_controller(plugin,sg,st,si,g,t,i)
+						break
+				context.finish(True, False, time)
+				return
+		except:
+			import traceback
+			traceback.print_exc()
+		context.finish(False, False, time)
+			
 	def on_unbind(self, widget, (g,t,i)):
 		"""
-		Unbinds all controllers from the selected parameter.
-		
-		@param event: Event.
-		@type event: wx.Event
+		Unbinds all midi controllers from the selected parameter.
 		"""
 		player.remove_midimapping(self.plugin, g, t, i)
+		self.update_namelabel(g,t,i)
+		
+	def on_unbind_event_connection_binding(self, widget, (g,t,i)):
+		"""
+		Unbinds all event connection bindings from the selected parameter.
+		"""
+		conns = []
+		while True:
+			result = self.get_event_connection_bindings(g,t,i)
+			if not result:
+				break
+			conn,c = result[0]
+			cv = conn.get_event_connection()
+			cv.remove_binding(c)
+			if not conn in conns:
+				conns.append(conn)
+		# remove all connections without any binding
+		for conn in conns:
+			if conn.get_event_connection().get_binding_count() == 0:
+				conn.get_output().delete_input(conn.get_input())
 		self.update_namelabel(g,t,i)
 		
 	def on_learn_controller(self, widget, (g,t,i)):
@@ -247,9 +333,33 @@ class ParameterView(gtk.VBox):
 		player.add_midimapping(self.plugin, g, t, i, channel, ctrlid)
 		self.update_namelabel(g,t,i)
 		
+	def get_event_connection_bindings(self, g,t,i):
+		result = []
+		if g == 3:
+			# we are the source
+			for conn in self.plugin.get_output_connection_list():
+				if conn.get_type() == zzub.zzub_connection_type_event:
+					cv = conn.get_event_connection()
+					for c in xrange(cv.get_binding_count()):
+						binding = cv.get_binding(c)
+						if binding.get_controller() == i:
+							result.append((conn,c))
+		else:
+			# we are the target
+			for conn in self.plugin.get_input_connection_list():
+				if conn.get_type() == zzub.zzub_connection_type_event:
+					cv = conn.get_event_connection()
+					for c in xrange(cv.get_binding_count()):
+						binding = cv.get_binding(c)
+						if (binding.get_group() == g) and (binding.get_track() == t) and (binding.get_column() == i):
+							result.append((conn,c))
+		return result
+		
 	def update_namelabel(self, g,t,i):
 		nl,s,vl = self.pid2ctrls[(g,t,i)]
 		markup = "<b>%s</b>" % nl._default_name
+		if self.get_event_connection_bindings(g,t,i):
+			markup = "<i>%s</i>" % markup
 		for mm in player.get_midimapping_list():
 			mp,mg,mt,mi = mm.get_plugin(), mm.get_group(), mm.get_track(), mm.get_column()
 			if (mp == self.plugin) and ((mg,mt,mi) == (g,t,i)):
@@ -270,8 +380,6 @@ class ParameterView(gtk.VBox):
 		elif event.button == 3:
 			nl,s,vl = self.pid2ctrls[(g,t,i)]
 			menu = gtk.Menu()
-			submenu = gtk.Menu()
-			index = 0
 			def make_submenu_item(submenu, name):
 				item = gtk.MenuItem(label=name)
 				item.set_submenu(submenu)
@@ -283,26 +391,58 @@ class ParameterView(gtk.VBox):
 				return item
 			def cmp_nocase(a,b):
 				return cmp(a[0].lower(),b[0].lower())
-			for name,channel,ctrlid in sorted(config.get_config().get_midi_controllers(), cmp_nocase):
-				submenu.append(make_menu_item(prepstr(name), "", self.on_bind_controller, (g,t,i), (name,channel,ctrlid)))
-				index += 1
-			controllers = 0
-			for mm in player.get_midimapping_list():
-				mp,mg,mt,mi = mm.get_plugin(), mm.get_group(), mm.get_track(), mm.get_column()
-				if (mp == self.plugin) and ((mg,mt,mi) == (g,t,i)):
-					label = "Bound to CC #%03i (CH%02i)" % (mm.get_controller(), mm.get_channel()+1)
+			evbinds = self.get_event_connection_bindings(g,t,i)
+			if g == 3:
+				for conn,c in evbinds:
+					cv = conn.get_event_connection()
+					binding = cv.get_binding(c)
+					paramname = conn.get_output().get_pluginloader().get_parameter(binding.get_group(),binding.get_column()).get_name()
+					if binding.get_group() == 2:
+						paramname = "%i-%s" % (binding.get_track(), paramname)
+					label = "Bound to %s: %s" % (conn.get_output().get_name(), paramname)
 					item = gtk.MenuItem(label=label)
 					item.set_sensitive(False)
 					menu.append(item)
-					controllers +=1
-			if controllers:
-				menu.append(gtk.SeparatorMenuItem())
-			if index:
-				menu.append(make_submenu_item(submenu, "_Bind to MIDI Controller"))
-			menu.append(make_menu_item("_Learn MIDI Controller", "", self.on_learn_controller, (g,t,i)))
-			if controllers:
-				menu.append(gtk.SeparatorMenuItem())
-				menu.append(make_menu_item("_Unbind Parameter", "", self.on_unbind, (g,t,i)))
+				if evbinds:
+					menu.append(gtk.SeparatorMenuItem())
+					menu.append(make_menu_item("_Unbind Controller from Targets", "", self.on_unbind_event_connection_binding, (g,t,i)))
+				else:
+					return False
+			else:
+				index = 0
+				submenu = gtk.Menu()
+				for name,channel,ctrlid in sorted(config.get_config().get_midi_controllers(), cmp_nocase):
+					submenu.append(make_menu_item(prepstr(name), "", self.on_bind_controller, (g,t,i), (name,channel,ctrlid)))
+					index += 1
+				controllers = 0
+				for mm in player.get_midimapping_list():
+					mp,mg,mt,mi = mm.get_plugin(), mm.get_group(), mm.get_track(), mm.get_column()
+					if (mp == self.plugin) and ((mg,mt,mi) == (g,t,i)):
+						label = "Bound to CC #%03i (CH%02i)" % (mm.get_controller(), mm.get_channel()+1)
+						item = gtk.MenuItem(label=label)
+						item.set_sensitive(False)
+						menu.append(item)
+						controllers +=1
+				if controllers:
+					menu.append(gtk.SeparatorMenuItem())
+				if index:
+					menu.append(make_submenu_item(submenu, "_Bind to MIDI Controller"))
+				menu.append(make_menu_item("_Learn MIDI Controller", "", self.on_learn_controller, (g,t,i)))
+				if controllers:
+					menu.append(gtk.SeparatorMenuItem())
+					menu.append(make_menu_item("_Unbind Parameter from MIDI", "", self.on_unbind, (g,t,i)))
+				if evbinds:
+					menu.append(gtk.SeparatorMenuItem())
+					for conn,c in evbinds:
+						cv = conn.get_event_connection()
+						binding = cv.get_binding(c)
+						paramname = conn.get_input().get_pluginloader().get_parameter(3,binding.get_controller()).get_name()
+						label = "Bound to %s: %s" % (conn.get_input().get_name(), paramname)
+						item = gtk.MenuItem(label=label)
+						item.set_sensitive(False)
+						menu.append(item)
+					menu.append(gtk.SeparatorMenuItem())
+					menu.append(make_menu_item("_Unbind Parameter from Controller", "", self.on_unbind_event_connection_binding, (g,t,i)))
 			menu.show_all()
 			menu.attach_to_widget(self, None)
 			menu.popup(None, None, None, event.button, event.time)
@@ -684,7 +824,7 @@ class RackPanel(gtk.VBox):
 if __name__ == '__main__':
 	import testplayer, utils
 	player = testplayer.get_player()
-	player.load_ccm(utils.filepath('demosongs/paniq-knark.ccm'))
+	player.load_ccm(utils.filepath('demosongs/tests/lfotest.ccm'))
 	window = testplayer.TestWindow()
 	rack = RackPanel(window)
 	window.add(rack)

@@ -670,6 +670,10 @@ class RouteView(gtk.DrawingArea):
 			dlg = self.plugin_dialogs.get(plugin,None)
 			if dlg:
 				dlg.destroy()
+		elif data.type == zzub.zzub_event_type_disconnect:
+			self.redraw()
+		elif data.type == zzub.zzub_event_type_connect:
+			self.redraw()
 
 	def reset(self):
 		"""
@@ -1248,8 +1252,11 @@ class RouteView(gtk.DrawingArea):
 				self.toggle_mute(self.current_plugin)		
 				self.redraw()
 			elif (event.state & gtk.gdk.SHIFT_MASK) or (event.button == 2):
-				self.connecting = True
-				self.connectpos = int(mx), int(my)
+				if self.current_plugin.get_type() == zzub.zzub_plugin_type_controller:
+					pass
+				else:
+					self.connecting = True
+					self.connectpos = int(mx), int(my)
 			elif not self.connecting:
 				self.dragging = True
 				self.grab_add()
@@ -1325,7 +1332,8 @@ class RouteView(gtk.DrawingArea):
 			if res:
 				mp,(x,y),area = res
 				if self.current_plugin.get_type() == zzub.zzub_plugin_type_controller:
-					mp.add_event_input(self.current_plugin)
+					#mp.add_event_input(self.current_plugin)
+					pass
 				else:
 					mp.add_audio_input(self.current_plugin, 0x4000, 0x4000)
 		self.current_plugin = None
