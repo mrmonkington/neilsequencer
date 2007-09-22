@@ -21,6 +21,9 @@ public:
 		if (phase >= 2*M_PI)
 			phase -= 2*M_PI;
 		val = (1.0f+sin(phase))*0.5f;
+	}
+	
+	void process_controller_events() {
 		controllers->out1 = &val;
 	}
 	

@@ -93,6 +93,8 @@ class CcmWriter {
 	xml_node addMeta(xml_node &parent, const std::string &propname);
 	xml_node saveSequencer(xml_node &parent, const std::string &id, sequencer &seq);
 	xml_node saveConnection(xml_node &parent, zzub::connection &connection);
+	xml_node saveEventBindings(xml_node &parent, std::vector<zzub::event_connection_binding> &bindings);
+	xml_node saveEventBinding(xml_node &parent, zzub::event_connection_binding &binding);
 	xml_node saveConnections(xml_node &parent, zzub::metaplugin &plugin);
 	xml_node saveParameterValue(xml_node &parent, std::string &group, int track, int param, int value);
 	xml_node saveArchive(xml_node &parent, const std::string&, zzub::mem_archive &arc);

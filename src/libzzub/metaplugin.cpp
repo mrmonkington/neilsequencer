@@ -199,6 +199,13 @@ void ParameterState::applyControlChanges() {
 	}
 }
 
+void ParameterState::copyBackControlChanges() {
+	for (size_t i = 0; i < stateControl->getParams(); i++) {
+		int v = stateOrig->getValue(0, i);
+		stateControl->setValue(0, i, v);
+	}
+}
+
 std::vector<const parameter *> connectionParameters;
 
 struct _connVolume : parameter {
@@ -279,8 +286,52 @@ event_connection::event_connection() {
 	connectionType = connection_type_event;
 }
 
-bool event_connection::work(player *p, int numSamples) {
-	return false;
+const zzub::parameter *event_connection::getParam(struct metaplugin *mp, size_t group, size_t index)
+{
+	switch (group) {
+		case 0: // input connections
+            return connectionParameters[index];
+		case 1: // globals
+			return mp->machineInfo->global_parameters[index];
+		case 2: // track params
+			return mp->machineInfo->track_parameters[index];
+		case 3: // controller params
+			return mp->machineInfo->controller_parameters[index];
+		default:
+			return 0;
+	}
+}
+
+bool event_connection::work() {
+	const zzub::parameter *param_in;
+	const zzub::parameter *param_out;
+	std::vector<event_connection_binding>::iterator b;
+	for (b = bindings.begin(); b != bindings.end(); ++b) {
+		param_in = getParam(plugin_in,3,b->source_param_index);
+		param_out = getParam(plugin_out,b->target_group_index, b->target_param_index);
+		int sv = plugin_out->getParameter(b->target_group_index, b->target_track_index, b->target_param_index);
+		int dv = param_in->value_none;
+		if (sv != param_out->value_none) {
+			float v = param_out->normalize(sv);
+			dv = param_in->scale(v);
+		}
+		plugin_in->setParameter(3, 0, b->source_param_index, dv, false);
+	}
+	plugin_in->controllerState.applyControlChanges();
+	plugin_in->machine->process_controller_events();
+	plugin_in->controllerState.copyBackControlChanges();
+	for (b = bindings.begin(); b != bindings.end(); ++b) {
+		param_in = getParam(plugin_in,3,b->source_param_index);
+		param_out = getParam(plugin_out,b->target_group_index, b->target_param_index);
+		int sv = plugin_in->getParameter(3, 0, b->source_param_index);
+		int dv = param_out->value_none;
+		if (sv != param_in->value_none) {
+			float v = param_in->normalize(sv);
+			dv = param_out->scale(v);
+		}
+		plugin_out->setParameter(b->target_group_index, b->target_track_index, b->target_param_index, dv, false);
+	}
+	return true;
 }
 
 metaplugin::metaplugin(zzub::player* pl, pluginloader* loader) {
@@ -385,6 +436,7 @@ bool metaplugin::create(char* inputData, int dataSize) {
     // set up states
 	globalState.initialize(machine->global_values, 1, 0, machineInfo->global_parameters);
 	_internal_globalState=globalState.getStateTrackCopy()->getValuePtr(0,0);
+	controllerState.initialize(machine->controller_values, 3, 0, machineInfo->controller_parameters);
 
 	setTracks(machineInfo->min_tracks);
 	defaultParameters(); 
@@ -707,10 +759,23 @@ bool metaplugin::removePostProcessor(tickstream* ts) {
     return true;
 }
 
+void metaplugin::processControllers() {
+	size_t inputConnections = inConnections.size();
+	
+	for (size_t i=0; i < inputConnections; i++) {
+		connection *cx = inConnections[i];
+		if (cx->connectionType == connection_type_event) {
+			event_connection *cv = (event_connection*)cx;
+			cv->work();
+		}
+	}
+}
+
 void metaplugin::tickAsync() {
 	if (!initialized) return ;
 
 	clearUnChangedParameters();
+	processControllers();
 	applyControlChanges();
 
 	machine->process_events();
@@ -729,6 +794,7 @@ void metaplugin::tick() {
 	if (state==player_state_playing)
 		player->currentlyPlayingSequencer->advanceMachine((metaplugin*)this);
 
+	processControllers();
 	applyControlChanges();
 
 	machine->process_events();
@@ -916,16 +982,10 @@ bool isCircular(metaplugin* inputMachine, metaplugin* outputMachine) {
 
 event_connection *metaplugin::addEventInput(metaplugin* fromMachine) {
 	// Check whether these machines are already connection to each others
-	if (getConnection(fromMachine)) return 0;
+	if (getConnection(fromMachine, zzub::connection_type_event)) return 0;
 	
-	// allow one type of cyclic connection, when the master is connected to a no_output machine
-	if (fromMachine->getType() == plugin_type_master) {
-		if ((machineInfo->flags & plugin_flag_no_output)== 0)
-			return 0;
-	} else {
-		// check cyclic connections
-		if (isCircular(fromMachine, this)) return 0;
-	}
+	// check cyclic connections
+	if (isCircular(fromMachine, this)) return 0;
 	
 	// Create the connection
 	event_connection* conn = new event_connection();
@@ -1151,6 +1211,8 @@ patterntrack* metaplugin::getStateTrack(size_t group, size_t index) {
 		case 2:
 			if (index>=trackStates.size()) return 0;
 			return trackStates[index]->getStateTrack();
+		case 3:
+			return controllerState.getStateTrack();
 		default:
 			return 0;
 	}
@@ -1166,6 +1228,8 @@ patterntrack* metaplugin::getStateTrackCopy(size_t group, size_t index) {
 		case 2:
 			if (index>=trackStates.size()) return 0;
 			return trackStates[index]->getStateTrackCopy();
+		case 3:
+			return controllerState.getStateTrackCopy();
 		default:
 			return 0;
 	}
@@ -1181,6 +1245,8 @@ patterntrack* metaplugin::getStateTrackControl(size_t group, size_t index) {
 		case 2:
 			if (index>=trackStates.size()) return 0;
 			return trackStates[index]->getStateTrackControl();
+		case  3:
+			return controllerState.getStateTrackControl();
 		default:
 			return 0;
 	}
@@ -1286,15 +1352,18 @@ void metaplugin::setParameter(size_t group, size_t track, size_t param, int valu
 
 	if (record && player->recordParameters)
 		recordParameter(group, track, param, value); else
-		pt->setValue(0, param, value);
+	
+	pt->setValue(0, param, value);
 
-	// send notification
-	zzub_event_data eventData={ event_type_parameter_changed };
-	eventData.change_parameter.group=group;
-	eventData.change_parameter.track=track;
-	eventData.change_parameter.param=param;
-	eventData.change_parameter.value=value;
-	invokeEvent(eventData);
+	if (group != 3) {
+		// send notification
+		zzub_event_data eventData={ event_type_parameter_changed };
+		eventData.change_parameter.group=group;
+		eventData.change_parameter.track=track;
+		eventData.change_parameter.param=param;
+		eventData.change_parameter.value=value;
+		invokeEvent(eventData);
+	}
 
 	softMuted=false;
 	softBypassed=false;
@@ -1452,10 +1521,10 @@ connection* metaplugin::getConnection(size_t index) {
 	return c;
 }
 
-connection* metaplugin::getConnection(metaplugin* machine) {
+connection* metaplugin::getConnection(metaplugin* machine, zzub::connection_type ctype) {
 	connection* c=0;
 	for (size_t i=0; i<inConnections.size(); i++) {
-		if (inConnections[i]->plugin_in==machine) {
+		if ((inConnections[i]->plugin_in==machine) && (inConnections[i]->connectionType == ctype)) {
 			return inConnections[i];
 		}
 	}

@@ -479,6 +479,29 @@ int double_to_pan(double v) {
 	return int(((v + 1.0) * 16384.0)+0.5);
 }
 
+xml_node CcmWriter::saveEventBinding(xml_node &parent, zzub::event_connection_binding &binding) {
+	xml_node item = parent.append_child(node_element);
+	item.name("binding");
+	
+	item.attribute("source_param_index") = (long)binding.source_param_index;
+	item.attribute("target_group_index") = (long)binding.target_group_index;
+	item.attribute("target_track_index") = (long)binding.target_track_index;
+	item.attribute("target_param_index") = (long)binding.target_param_index;
+	
+	return item;
+}
+
+xml_node CcmWriter::saveEventBindings(xml_node &parent, std::vector<zzub::event_connection_binding> &bindings) {
+	xml_node item = parent.append_child(node_element);
+	item.name("bindings");
+	
+	for (size_t i=0; i<bindings.size(); i++) {
+		saveEventBinding(item, bindings[i]);
+	}
+
+	return item;
+}
+
 xml_node CcmWriter::saveConnection(xml_node &parent, zzub::connection &connection) {
 	xml_node item = parent.append_child(node_element);
 	item.name("input");
@@ -500,7 +523,8 @@ xml_node CcmWriter::saveConnection(xml_node &parent, zzub::connection &connectio
 		case zzub::connection_type_event:
 		{
 			zzub::event_connection &ac = (zzub::event_connection &)connection;
-			// TODO
+			
+			saveEventBindings(item, ac.bindings);
 		} break;
 		default:
 			assert(0);
@@ -1485,7 +1509,7 @@ bool CcmReader::loadPlugins(xml_node &plugins, zzub::player &player) {
 							c->target->addAudioInput(iplug->second, (unsigned short)amp, (unsigned short)pan);
 						} else if (conntype == "event") {
 							// TODO: restore controller associations
-							c->target->addEventInput(iplug->second);
+							event_connection *evc = c->target->addEventInput(iplug->second);
 						} else {
 							assert(0);
 						}

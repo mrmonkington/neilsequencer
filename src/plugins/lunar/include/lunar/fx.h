@@ -123,6 +123,7 @@ struct lunar_fx {
 	void (*init)(lunar_fx *);
 	void (*exit)(lunar_fx *);
 	void (*process_events)(lunar_fx *);
+	void (*process_controller_events)(lunar_fx *);
 	void (*process_stereo)(lunar_fx *, float *, float *,float *, float *, int n);
 	void (*instrument_changed)(lunar_fx *, int instr);
 	void (*speed_changed)(lunar_fx *);

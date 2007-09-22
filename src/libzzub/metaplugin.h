@@ -66,7 +66,6 @@ struct connection {
 	metaplugin* plugin_in, *plugin_out;
 	std::vector<const zzub::parameter*> connection_parameters;
 
-	virtual bool work(struct player *p, int numSamples) = 0;
 	virtual ~connection() {};
 protected:
 	connection();
@@ -83,7 +82,7 @@ struct audio_connection : public connection {
 	float lastFrameMaxSampleL, lastFrameMaxSampleR;
 	
 	audio_connection();
-	virtual bool work(struct player *p, int numSamples);
+	bool work(struct player *p, int numSamples);
 };
 
 struct event_connection : public connection {
@@ -94,7 +93,8 @@ struct event_connection : public connection {
 	std::vector<event_connection_binding> bindings;
 
 	event_connection();
-	virtual bool work(struct player *p, int numSamples);
+	bool work();
+	const zzub::parameter *getParam(struct metaplugin *mp, size_t group, size_t index);
 };
 
 class ParameterState {
@@ -121,6 +121,7 @@ public:
 	void clearUnChangedParameters();
 	void copyChangedParameters();
 	void applyControlChanges();
+	void copyBackControlChanges();
 }; 
 
 struct event_all_args {
@@ -207,6 +208,7 @@ struct metaplugin {
 	std::vector<ParameterState*> connectionStates;
 	ParameterState globalState;
 	std::vector<ParameterState*> trackStates;
+	ParameterState controllerState;
 
 	std::vector<zzub::tickstream*> postProcessors;
 	zzub::recorder* pluginRecorder;
@@ -312,7 +314,7 @@ struct metaplugin {
 	// connections
 	size_t getConnections();
 	connection* getConnection(size_t index);
-	connection* getConnection(zzub::metaplugin* input);
+	connection* getConnection(zzub::metaplugin* input, zzub::connection_type ctype = zzub::connection_type_audio);
 	size_t getOutputConnections();
 	connection* getOutputConnection(size_t index);
 
@@ -325,6 +327,7 @@ struct metaplugin {
 	static bool skipRemainingInput(instream* input, int dataSize, int dataPos);
 	virtual void tick();
 	void tickAsync(); // call this from the ui to tick asynchroneously
+	void processControllers();
 	bool work(float** pout, int numSamples, unsigned long mode);
 	void input(float** buffer, int numSamples, float amp);
 	void copyChangedParameters();

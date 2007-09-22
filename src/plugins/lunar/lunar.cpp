@@ -449,6 +449,7 @@ struct dspplugin : zzub::plugin {
 				this->type = zzub::plugin_type_effect;
 			} else if (type == "controller") {
 				this->type = zzub::plugin_type_controller;
+				this->flags |= zzub::plugin_flag_no_output;
 			} else {
 				std::cerr << "lunar: unknown value '" << type << "' for type attribute." << std::endl;
 				return false;
@@ -851,6 +852,60 @@ struct dspplugin : zzub::plugin {
 	}
 	
 	virtual void process_controller_events() {
+		char *offset = (char *)controller_values + controller_size;
+		int index = _info.controller_parameters.size();
+		std::vector<const zzub::parameter *>::const_reverse_iterator i;
+		for (i = _info.controller_parameters.rbegin(); i != _info.controller_parameters.rend(); ++i) {
+			index--;
+			offset -= (*i)->get_bytesize();
+			switch ((*i)->type) {
+				case zzub::parameter_type_note:
+				case zzub::parameter_type_byte:
+				case zzub::parameter_type_switch:
+				{
+					unsigned char value = *(unsigned char *)offset;
+					if (value != (*i)->value_none) {
+						on_controller_parameter_changed(index, (int)value);
+					} else {
+						on_controller_parameter_changed(index, -1);
+					}
+				} break;
+				case zzub::parameter_type_word:
+				{
+					unsigned short value = *(unsigned short *)offset;
+					if (value != (*i)->value_none) {
+						on_controller_parameter_changed(index, (int)value);
+					} else {
+						on_controller_parameter_changed(index, -1);
+					}
+				} break;
+			}
+		}
+		call_process_controller_events();
+		// write back controller values
+		offset = (char *)controller_values + controller_size;
+		index = _info.controller_parameters.size();
+		for (i = _info.controller_parameters.rbegin(); i != _info.controller_parameters.rend(); ++i) {
+			index--;
+			offset -= (*i)->get_bytesize();
+			int value = get_final_controller_parameter(index);
+			if (value == -1)
+				value = (*i)->value_none;
+			switch ((*i)->type) {
+				case zzub::parameter_type_note:
+				case zzub::parameter_type_byte:
+				case zzub::parameter_type_switch:
+				{
+					unsigned char *pvalue = (unsigned char *)offset;
+					*pvalue = (unsigned char)value;
+				} break;
+				case zzub::parameter_type_word:
+				{
+					unsigned short *pvalue = (unsigned short *)offset;
+					*pvalue = (unsigned short)value;
+				} break;
+			}
+		}
 	}
 
 	virtual void process_events() {
@@ -914,60 +969,7 @@ struct dspplugin : zzub::plugin {
 				}
 			}
 		}
-		offset = (char *)controller_values + controller_size;
-		index = _info.controller_parameters.size();
-		for (i = _info.controller_parameters.rbegin(); i != _info.controller_parameters.rend(); ++i) {
-			index--;
-			offset -= (*i)->get_bytesize();
-			switch ((*i)->type) {
-				case zzub::parameter_type_note:
-				case zzub::parameter_type_byte:
-				case zzub::parameter_type_switch:
-				{
-					unsigned char value = *(unsigned char *)offset;
-					if (value != (*i)->value_none) {
-						on_controller_parameter_changed(index, (int)value);
-					} else {
-						on_controller_parameter_changed(index, -1);
-					}
-				} break;
-				case zzub::parameter_type_word:
-				{
-					unsigned short value = *(unsigned short *)offset;
-					if (value != (*i)->value_none) {
-						on_controller_parameter_changed(index, (int)value);
-					} else {
-						on_controller_parameter_changed(index, -1);
-					}
-				} break;
-			}
-		}
 		call_process_events();
-		
-		// write back controller values
-		offset = (char *)controller_values + controller_size;
-		index = _info.controller_parameters.size();
-		for (i = _info.controller_parameters.rbegin(); i != _info.controller_parameters.rend(); ++i) {
-			index--;
-			offset -= (*i)->get_bytesize();
-			int value = get_final_controller_parameter(index);
-			if (value == -1)
-				value = (*i)->value_none;
-			switch ((*i)->type) {
-				case zzub::parameter_type_note:
-				case zzub::parameter_type_byte:
-				case zzub::parameter_type_switch:
-				{
-					unsigned char *pvalue = (unsigned char *)offset;
-					*pvalue = (unsigned char)value;
-				} break;
-				case zzub::parameter_type_word:
-				{
-					unsigned short *pvalue = (unsigned short *)offset;
-					*pvalue = (unsigned short)value;
-				} break;
-			}
-		}
 	}
 	
 	virtual ~dspplugin() {
@@ -1169,6 +1171,12 @@ struct dspplugin : zzub::plugin {
 		if (fxcopy.process_events) {
 			fxcopy.process_events(fx);
 
+		}
+	}
+	
+	void call_process_controller_events() {
+		if (fxcopy.process_controller_events) {
+			fxcopy.process_controller_events(fx);
 		}
 	}
 

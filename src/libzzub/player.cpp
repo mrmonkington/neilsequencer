@@ -876,14 +876,13 @@ bool player::workMachine(metaplugin* machine, int numSamples) {
 		if (cx->connectionType == connection_type_audio) {
 			audio_connection *cax = (audio_connection*)cx;
 			maxInputAmp = std::max(maxInputAmp, (int)cax->values.amp);
-		}
+			// check for no_output: these have been processed anyway, 
+			// and master->no_output would enter an infinite loop unless we continue
+			if (cx->plugin_in->isNoOutput()) continue;
 
-		// check for no_output: these have been processed anyway, 
-		// and master->no_output would enter an infinite loop unless we continue
-		if (cx->plugin_in->isNoOutput()) continue;
-
-		if (cx->work(this, numSamples)) {
-			inputState=true;
+			if (cax->work(this, numSamples)) {
+				inputState=true;
+			}
 		}
 	}
 
