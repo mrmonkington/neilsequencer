@@ -329,7 +329,10 @@ bool event_connection::work() {
 			float v = param_in->normalize(sv);
 			dv = param_out->scale(v);
 		}
-		plugin_out->setParameter(b->target_group_index, b->target_track_index, b->target_param_index, dv, false);
+		patterntrack* pt=plugin_out->getStateTrack(b->target_group_index, b->target_track_index);
+		if (pt) {
+			pt->setValue(0, b->target_param_index, dv);
+		}
 	}
 	return true;
 }
@@ -775,8 +778,8 @@ void metaplugin::tickAsync() {
 	if (!initialized) return ;
 
 	clearUnChangedParameters();
-	processControllers();
 	applyControlChanges();
+	processControllers();
 
 	machine->process_events();
 	
@@ -794,8 +797,8 @@ void metaplugin::tick() {
 	if (state==player_state_playing)
 		player->currentlyPlayingSequencer->advanceMachine((metaplugin*)this);
 
-	processControllers();
 	applyControlChanges();
+	processControllers();
 
 	machine->process_events();
 	lastTickPos=player->getWorkPosition();
@@ -1251,6 +1254,7 @@ patterntrack* metaplugin::getStateTrackControl(size_t group, size_t index) {
 			return 0;
 	}
 }
+
 
 // getCommands returns a blank string when there are no commands, otherwise a \n-separated string
 std::string metaplugin::getCommands() {
