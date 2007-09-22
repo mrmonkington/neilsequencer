@@ -69,6 +69,7 @@ class PatternDialog(gtk.Dialog):
 		self.edtname = gtk.Entry()
 		self.lengthlabel = gtk.Label("Length")
 		self.lengthbox = gtk.combo_box_entry_new_text()
+		self.chkswitch = gtk.CheckButton('Switch to new pattern')
 		for s in patternsizes:
 			self.lengthbox.append_text(str(s))
 		self.rowslabel = gtk.Label("Rows")
@@ -84,6 +85,7 @@ class PatternDialog(gtk.Dialog):
 			vbox.pack_start(row, expand=False)
 		add_row(self.namelabel, self.edtname)
 		add_row(self.rowslabel, self.lengthbox)
+		vbox.pack_start(self.chkswitch, expand=False)
 		self.edtname.connect('activate', self.on_enter)
 		self.lengthbox.child.connect('activate', self.on_enter)
 		self.vbox.add(vbox)
@@ -109,8 +111,8 @@ def show_pattern_dialog(parent, name, length, dlgmode):
 	@param dlgmode: Dialog mode (DLGMODE_NEW: create new pattern, 
 	DLGMODE_COPY: create copy of pattern, DLGMODE_CHANGE: modify pattern)
 	@type dlgmode: int
-	@return: Tuple containing pattern name and length
-	@rtype: (string, int)
+	@return: Tuple containing pattern name, length, and whether to switch to new pattern or not
+	@rtype: (string, int, int)
 	"""
 	dlg = PatternDialog(parent)
 	dlg.dlgmode = dlgmode
@@ -121,7 +123,9 @@ def show_pattern_dialog(parent, name, length, dlgmode):
 		dlg.lengthbox.set_sensitive(False)
 	elif dlgmode == DLGMODE_CHANGE:
 		dlg.set_title("Pattern Properties")
+		self.chkswitch.set_sensitive(False)
 	dlg.edtname.set_text(name)
+	dlg.chkswitch.set_active(config.get_config().get_default_int('SwitchToNewPattern', 1))
 	dlg.lengthbox.child.set_text(str(length))
 	dlg.edtname.select_region(0, -1)
 	dlg.edtname.grab_focus()
@@ -129,7 +133,9 @@ def show_pattern_dialog(parent, name, length, dlgmode):
 	dlg.hide_all()
 	result = None
 	if response == gtk.RESPONSE_OK:
-		result = str(dlg.edtname.get_text()), int(dlg.lengthbox.child.get_text())
+		switch = int(dlg.chkswitch.get_active())
+		config.get_config().set_default_int('SwitchToNewPattern', switch)
+		result = str(dlg.edtname.get_text()), int(dlg.lengthbox.child.get_text()), switch
 	dlg.destroy()
 	return result
 		
@@ -1464,15 +1470,16 @@ class PatternView(gtk.DrawingArea):
 		result = show_pattern_dialog(self,name,self.patternsize,DLGMODE_NEW)
 		if not result:
 			return
-		name, self.patternsize = result
+		name, self.patternsize, switch = result
 		if not m:
 			m = self.get_plugin()
 		p = m.create_pattern(self.patternsize)
-		p.set_name(name)	
-		for i in range(m.get_pattern_count()):
-			if m.get_pattern(i) == p:
-				self.toolbar.select_pattern(i)
-				break
+		p.set_name(name)
+		if switch:
+			for i in range(m.get_pattern_count()):
+				if m.get_pattern(i) == p:
+					self.toolbar.select_pattern(i)
+					break
 	
 	def on_popup_double(self, event=None):
 		"""
@@ -1515,16 +1522,17 @@ class PatternView(gtk.DrawingArea):
 		result = show_pattern_dialog(self,name,self.row_count,DLGMODE_COPY)
 		if not result:
 			return
-		name, self.patternsize = result
+		name, self.patternsize, switch = result
 		m = self.get_plugin()
 		p = m.create_pattern(self.row_count)
 		p.set_name(name)
 		for r,g,t,i in self.pattern_range():
 			p.set_value(r,g,t,i,self.pattern.get_value(r,g,t,i))
-		for i in range(m.get_pattern_count()):
-			if m.get_pattern(i) == p:
-				self.toolbar.select_pattern(i)
-				break
+		if switch:
+			for i in range(m.get_pattern_count()):
+				if m.get_pattern(i) == p:
+					self.toolbar.select_pattern(i)
+					break
 	
 	def on_popup_solo(self, event=None):
 		"""
@@ -1540,7 +1548,7 @@ class PatternView(gtk.DrawingArea):
 		result = show_pattern_dialog(self,self.pattern.get_name(),self.pattern.get_row_count(),DLGMODE_CHANGE)
 		if not result:
 			return
-		name, rc = result
+		name, rc, switch = result
 		self.patternsize = rc
 		if self.pattern.get_name() != name:
 			self.pattern.set_name(name)
