@@ -56,6 +56,7 @@ struct input_plugin : plugin {
 		_host->audio_driver_read(attributeValues[0] * 2 + 1, pout[1], numsamples);
 		return true;
 	}
+	virtual void process_controller_events() {}
 	virtual void stop() {}
 	virtual void save(zzub::archive *arc) {}
 	virtual void attributes_changed() {

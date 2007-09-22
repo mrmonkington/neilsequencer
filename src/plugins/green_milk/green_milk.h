@@ -404,6 +404,7 @@ public:
 
 	virtual void destroy() { delete this; }
 	virtual void process_events();
+	virtual void process_controller_events() {}
 
 	virtual void init(zzub::archive *arc);		// Called on startup
 	virtual void save(zzub::archive *arc);	// Called to save any extra settings

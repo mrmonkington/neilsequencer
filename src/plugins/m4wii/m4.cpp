@@ -548,6 +548,7 @@ public:
         virtual ~m4wii();
 
         virtual void init(zzub::archive *pi);
+		virtual void process_controller_events() {}
         virtual void process_events();
 		virtual bool process_stereo(float **pin, float **pout, int numsamples, int mode);
         virtual void set_track_count(int n) { numTracks = n; }

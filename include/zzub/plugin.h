@@ -831,6 +831,7 @@ struct plugin {
 	virtual void destroy() = 0;//{ delete this; }
 	virtual void init(zzub::archive *arc) = 0;//{}
 	virtual void process_events() = 0;//{}
+	virtual void process_controller_events() = 0;//{}
 	virtual bool process_stereo(float **pin, float **pout, int numsamples, int mode) = 0;//{ return false; }
 	virtual void stop() = 0;//{}
 	virtual void save(zzub::archive *arc) = 0;//{}

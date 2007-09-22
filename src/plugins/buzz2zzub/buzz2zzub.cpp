@@ -221,6 +221,7 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 		if (isLdmixer || isVocoderXp || isUtrk)
 			_host->set_event_handler(reinterpret_cast<zzub::metaplugin*>(thisplugin), this);
 	}
+	virtual void process_controller_events() {}
 	virtual void process_events()
 	{
 		unhack::hackTick(_master_info->beats_per_minute, _host->get_song_begin_loop(), 

@@ -90,6 +90,7 @@ public:
 	virtual void process_events();
 
 	virtual void init(zzub::archive * pi);
+	virtual void process_controller_events() {}
 	virtual bool process_stereo(float **pin, float **pout, int numsamples, int mode);
 
 	virtual void command(int i);

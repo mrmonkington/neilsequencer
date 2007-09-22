@@ -40,6 +40,7 @@ struct master_plugin : plugin {
 
 	master_plugin();
 	void process_events();
+	virtual void process_controller_events() {}
 	bool process_stereo(float **pin, float **pout, int numsamples, int mode);
 
     void updateSpeed(int bpm, int tpb);

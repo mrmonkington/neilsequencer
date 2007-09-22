@@ -27,6 +27,7 @@ struct dummy_plugin : public plugin {
     dummy_plugin(const zzub::info* info);
 
 	void process_events();
+	virtual void process_controller_events() {}
 	//virtual bool process_audio(float *psamples, int numsamples, int const mode);
 	virtual bool process_stereo(float **pin, float **pout, int numsamples, int mode);
 	

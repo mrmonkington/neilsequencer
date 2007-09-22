@@ -65,6 +65,7 @@ struct livejump : public zzub::plugin {
 	virtual const char * describe_value(int param, int value); 
 
 	// ::zzub::plugin methods
+	virtual void process_controller_events() {}
 	virtual void destroy() { delete this; }
 	virtual void stop() {}
 	virtual void save(zzub::archive*) {}

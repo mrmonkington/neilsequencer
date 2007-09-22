@@ -50,6 +50,7 @@ struct output_plugin : plugin {
 	virtual void process_events() {
 		attributes_changed();
 	}
+	virtual void process_controller_events() {}
 	virtual bool process_stereo(float **pin, float **pout, int numsamples, int mode) {
 		if( (mode&zzub::process_mode_write)==0 )
 			return false;

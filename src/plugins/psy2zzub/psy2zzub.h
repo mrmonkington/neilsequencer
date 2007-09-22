@@ -55,6 +55,7 @@ namespace zzub { namespace plugins { namespace psycle_to_zzub {
 				void init(zzub::archive *arc);
 				void save(zzub::archive *arc);
 				void destroy();
+				virtual void process_controller_events() {}
 				void process_events();
 				bool process_stereo(float **pin,float **pout,int numsamples,int mode);
 				void stop() { if(psycle_plugin) psycle_plugin->Stop(); }

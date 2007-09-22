@@ -36,6 +36,7 @@ class graue_softsat: public zzub::plugin
 		virtual void OutputModeChanged(bool stereo) { }
 
 		// ::zzub::plugin methods
+		virtual void process_controller_events() {}
 		virtual void destroy() { delete this; }
 		virtual void stop() {}
 		virtual void attributes_changed() {}

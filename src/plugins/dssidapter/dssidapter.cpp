@@ -420,6 +420,7 @@ struct dssidapter : plugin, event_handler
 	}
 	
 	// ::zzub::plugin methods
+	virtual void process_controller_events() {}
 	virtual void stop() {}
 	virtual void save(zzub::archive*) {}
 	virtual void attributes_changed() {}

@@ -849,6 +849,9 @@ struct dspplugin : zzub::plugin {
 		const metaparameter &mp = _info.cparamids[param];
 		return mp.translate_back(cvalues[param]);
 	}
+	
+	virtual void process_controller_events() {
+	}
 
 	virtual void process_events() {
 		update_masterinfo_fields();

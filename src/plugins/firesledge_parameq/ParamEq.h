@@ -125,6 +125,7 @@ public:
 	} _mac_info;
 
 	// ::zzub::plugin methods
+	virtual void process_controller_events() {}
 	virtual void destroy() { delete this; }
 	virtual void stop() {}
 	virtual void attributes_changed() {}

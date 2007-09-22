@@ -239,6 +239,8 @@ struct ladspadapter : plugin
 		}
 	}
 	
+	virtual void process_controller_events() {}
+	
 	virtual const char * describe_value(const int param, const int value)
 	{ 
 		static char text[256];

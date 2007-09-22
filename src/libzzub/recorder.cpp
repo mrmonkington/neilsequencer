@@ -376,6 +376,7 @@ struct recorder_wavetable_plugin : plugin {
 		}
 		rec.process_events();
 	}
+	virtual void process_controller_events() {}
 	virtual bool process_stereo(float **pin, float **pout, int numsamples, int mode) {
 		rec.process_stereo(pin, numsamples);
 		return true;
@@ -446,6 +447,7 @@ struct recorder_file_plugin : plugin {
 		}
 		rec.process_events();
 	}
+	virtual void process_controller_events() {}
 	virtual bool process_stereo(float **pin, float **pout, int numsamples, int mode) {
 		rec.process_stereo(pin, numsamples);
 		return true;
