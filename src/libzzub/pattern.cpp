@@ -794,6 +794,8 @@ bool pattern::patternToLinear(size_t group, size_t track, size_t column, size_t&
 		case 2:
 			patternIndex = numConnectionParameters + machineInfo->global_parameters.size() + track*machineInfo->track_parameters.size() + column;
 			return true;
+		case 3:
+			return false;
 		default:
 			assert(false);
 			return false;
@@ -821,7 +823,7 @@ bool pattern::linearToPattern(size_t patternIndex, size_t& group, size_t& track,
 	}
 
 	patternIndex -= machineInfo->global_parameters.size();
-
+	
 	if (!machineInfo->track_parameters.size()) return false;
 
 	size_t t = patternIndex / machineInfo->track_parameters.size();

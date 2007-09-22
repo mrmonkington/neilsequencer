@@ -773,6 +773,9 @@ std::string metaplugin::describeValue(size_t group, size_t param, int value) {
 		sprintf(pc, "%04x", value);
 		return pc;
 	}
+	if (group == 3) {
+		return "";
+	}
 	size_t currentParameter=no_column;
     pattern conv(machineInfo, getConnections(), getTracks(), 0);
 	if (conv.patternToLinear(group, 0, param, currentParameter))
