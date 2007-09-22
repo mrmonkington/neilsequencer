@@ -839,8 +839,16 @@ xml_node CcmWriter::savePlugins(xml_node &parent, zzub::player &player) {
 
     for (size_t i=0; i<player.getMachines(); i++) {
 		zzub::metaplugin* plugin = player.getMachine(i);
-		if (plugin->nonSongPlugin) continue;
-        savePlugin(item, player, *plugin);
+		if (!plugin->isNoOutput() && !plugin->nonSongPlugin) {
+			savePlugin(item, player, *plugin);
+		}
+    }
+
+    for (size_t i=0; i<player.getMachines(); i++) {
+		zzub::metaplugin* plugin = player.getMachine(i);
+		if (plugin->isNoOutput()) {
+			savePlugin(item, player, *plugin);
+		}
     }
 	
 	return item;
@@ -1510,6 +1518,20 @@ bool CcmReader::loadPlugins(xml_node &plugins, zzub::player &player) {
 						} else if (conntype == "event") {
 							// TODO: restore controller associations
 							event_connection *evc = c->target->addEventInput(iplug->second);
+							for (xml_node::child_iterator j = i->children_begin(); j != i->children_end(); ++j) {
+								if (j->has_name("bindings")) {
+									for (xml_node::child_iterator k = j->children_begin(); k != j->children_end(); ++k) {
+										if (k->has_name("binding")) {
+											event_connection_binding binding;
+											binding.source_param_index = long(k->attribute("source_param_index"));
+											binding.target_group_index = long(k->attribute("target_group_index"));
+											binding.target_track_index = long(k->attribute("target_track_index"));
+											binding.target_param_index = long(k->attribute("target_param_index"));
+											evc->bindings.push_back(binding);
+										}
+									}
+								}
+							}
 						} else {
 							assert(0);
 						}

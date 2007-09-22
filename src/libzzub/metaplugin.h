@@ -314,7 +314,8 @@ struct metaplugin {
 	// connections
 	size_t getConnections();
 	connection* getConnection(size_t index);
-	connection* getConnection(zzub::metaplugin* input, zzub::connection_type ctype = zzub::connection_type_audio);
+	connection* getConnection(zzub::metaplugin* input, zzub::connection_type ctype);
+	connection* getConnection(zzub::metaplugin* input);
 	size_t getOutputConnections();
 	connection* getOutputConnection(size_t index);
 

@@ -1044,7 +1044,7 @@ audio_connection *metaplugin::addAudioInput(metaplugin* fromMachine, unsigned sh
 	if (isNoOutput && getType() != plugin_type_master) return 0;
 
 	// Check whether these machines are already connection to each others
-	if (getConnection(fromMachine)) return 0;
+	if (getConnection(fromMachine, zzub::connection_type_audio)) return 0;
 
 	// generators don't have inputs, but some popular plugins are incorrectly flagged as generators
 	// the following line was commented out in response to that, so f.ekx songs using geoniks 2p filter will load
@@ -1114,7 +1114,6 @@ void metaplugin::deleteInput(metaplugin* fromMachine) {
 	using namespace std;
 
 	connection* conn = getConnection(fromMachine);
-
 	if (!conn) return ;
 
 	zzub_edit_connection delete_input_edit;
@@ -1529,6 +1528,16 @@ connection* metaplugin::getConnection(metaplugin* machine, zzub::connection_type
 	connection* c=0;
 	for (size_t i=0; i<inConnections.size(); i++) {
 		if ((inConnections[i]->plugin_in==machine) && (inConnections[i]->connectionType == ctype)) {
+			return inConnections[i];
+		}
+	}
+	return 0;
+}
+
+connection* metaplugin::getConnection(metaplugin* machine) {
+	connection* c=0;
+	for (size_t i=0; i<inConnections.size(); i++) {
+		if ((inConnections[i]->plugin_in==machine)) {
 			return inConnections[i];
 		}
 	}
