@@ -1517,6 +1517,7 @@ class RouteView(gtk.DrawingArea):
 		
 		for mp,(rx,ry) in mplist:
 			for conn in mp.get_input_connection_list():
+				#~ if not (conn.get_input().get_pluginloader().get_flags() & zzub.plugin_flag_no_output):
 				crx, cry = get_pixelpos(*conn.get_input().get_position())
 				draw_line_arrow(arrowcolors[conn.get_type()],int(crx),int(cry),int(rx),int(ry))
 		self.draw_leds()
