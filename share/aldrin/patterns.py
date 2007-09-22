@@ -922,6 +922,24 @@ class PatternView(gtk.DrawingArea):
 					return True
 				g += 1		
 		return False
+		
+	def show_row(self, r):
+		"""
+		Makes a row in the editor visible.
+		
+		@param r: Row position.
+		@type r: int
+		"""
+		row = min(max(r,0), self.row_count - 1)
+		if row >= 0:
+			w,h = self.get_client_size()
+			endrow = (((h - self.top_margin) / self.row_height) + self.start_row) - 1
+			if (row < self.start_row):
+				self.start_row = row
+				self.redraw()
+			elif (row >= endrow):
+				self.start_row = row - (endrow - self.start_row)
+				self.redraw()
 
 	def set_row(self, r):
 		"""
@@ -931,15 +949,7 @@ class PatternView(gtk.DrawingArea):
 		@type r: int
 		"""
 		self.row = min(max(r,0), self.row_count - 1)
-		if self.row >= 0:
-			w,h = self.get_client_size()
-			endrow = (((h - self.top_margin) / self.row_height) + self.start_row) - 1
-			if (self.row < self.start_row):
-				self.start_row = self.row
-				self.redraw()
-			elif (self.row >= endrow):
-				self.start_row = self.row - (endrow - self.start_row)
-				self.redraw()
+		self.show_row(self.row)
 		
 	def set_subindex(self, si):
 		"""
@@ -1417,6 +1427,7 @@ class PatternView(gtk.DrawingArea):
 				self.selection.mode=SEL_TRACK
 			else:
 				self.selection.mode=SEL_COLUMN
+			self.show_row(row)
 			if row<self.clickpos[0]:
 				self.selection.end=self.clickpos[0]+1
 				self.selection.begin=row
