@@ -54,11 +54,11 @@ bool BuzzWriter::validateClassesForSave() {
 		if (plugin->getType()==zzub_plugin_type_master) continue;
 		if (plugin->nonSongPlugin) continue;
 
-		string pluginName=player->getBuzzName(plugin->loader->getUri());
+		string pluginName=player->getBuzzName(plugin->loader->plugin_info->uri);
 		if (pluginName=="")
-			pluginName=plugin->loader->getUri();
+			pluginName=plugin->loader->plugin_info->uri;
 		if (!pluginName.size()) {
-			player->loadError+=plugin->getLoaderName() + " cannot be saved.\n";
+			player->loadError+=(std::string)plugin->loader->plugin_info->name + " cannot be saved.\n";
 			returnValue=false;
 		}
 	}
@@ -202,17 +202,17 @@ bool BuzzWriter::savePara() {
 	for (size_t i=0; i<machines.size(); i++) {
 		zzub::metaplugin* m = machines[i];
 		f->write(m->getName().c_str());
-		string pluginName=player->getBuzzName(m->loader->getUri());
+		string pluginName=player->getBuzzName(m->loader->plugin_info->uri);
 		if (pluginName=="")
-			pluginName=m->loader->getUri();
+			pluginName=m->loader->plugin_info->uri;
 		f->write(pluginName.c_str());
-		size_t numGlobals = m->machineInfo->global_parameters.size();
+		size_t numGlobals = m->loader->plugin_info->global_parameters.size();
 		f->write(numGlobals);
-		size_t numTrackParams = m->machineInfo->track_parameters.size();
+		size_t numTrackParams = m->loader->plugin_info->track_parameters.size();
 		f->write(numTrackParams);
 
 		for (size_t j=0; j<numGlobals; j++) {
-			const zzub::parameter* cmp = m->machineInfo->global_parameters[j];
+			const zzub::parameter* cmp = m->loader->plugin_info->global_parameters[j];
 			f->write((char)cmp->type);
 			f->write(cmp->name);
 			f->write(cmp->value_min);
@@ -223,7 +223,7 @@ bool BuzzWriter::savePara() {
 		}
 
 		for (size_t j=0; j<numTrackParams; j++) {
-			const zzub::parameter* cmp = m->machineInfo->track_parameters[j];
+			const zzub::parameter* cmp = m->loader->plugin_info->track_parameters[j];
 			f->write((char)cmp->type);
 			f->write(cmp->name);
 			f->write(cmp->value_min);
@@ -246,9 +246,9 @@ bool BuzzWriter::saveMachine(zzub::metaplugin* machine) {
 	// når vi var buzzlib var det writeAsciiZ(m->getFullName().c_str());
 	// nå er det zzublib, og da blir det slik:
 	if (m->getType()!=zzub::plugin_type_master) {
-		std::string machineName=player->getBuzzName(m->loader->getUri());//this->player->getAliasForMachine(m);
+		std::string machineName=player->getBuzzName(m->loader->plugin_info->uri);//this->player->getAliasForMachine(m);
 		if (!machineName.length())
-			machineName=m->loader->getUri();
+			machineName=m->loader->plugin_info->uri;
 		f->write(machineName.c_str());
 	}
 	f->write(m->x);

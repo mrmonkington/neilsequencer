@@ -160,64 +160,14 @@ int pluginlib::getPlugins()
 pluginloader::pluginloader(pluginlib *lib, const info *_info) {	
 	this->lib = lib;
 	this->plugin_info = _info;
-	/*
-	if (this->plugin_info->name) {
-        // some machines have terminating whitespace (ex HD Combo), so we trim it here
-		this->fullName= trim(this->plugin_info->name);
-	}
-	this->uri=trim(this->plugin_info->uri);
-	transform(this->uri.begin(), this->uri.end(), this->uri.begin(), toLower);	
-	*/
-	// XXX: deduce presetfile from machinename in info struct, not dll name
-	//~ int ld=fileName.find_last_of('.');
-	//~ string presetFile=fileName.substr(0, ld)+".prs"; //getPlayer()->getMachinePath(machine->machineInfo.Type) + machine->fullName + ".prs";
-	//~ presets.load(presetFile);
-	
-	// XXX: deduce helpfile from machinename in info struct, not dll name
-	//~ helpFile=fileName.substr(0, ld)+".html";
-	//~ FILE* f=fopen(helpFile.c_str(), "rb");
-	//~ if (!f)
-	//~ helpFile=""; else
-	//~ fclose(f);
-
 }
 
 pluginloader::~pluginloader() {
 }
 
-const info* pluginloader::getInfo() {
-	return plugin_info;
-}
-
 plugin* pluginloader::createMachine() {
-	const info *i = getInfo();
-	if (!i) return 0;
+	if (!plugin_info) return 0;
 	return plugin_info->create_plugin();
-}
-
-int pluginloader::getType() {
-	const info* i=getInfo();
-	if (!i) return -1;
-	return i->type;
-}
-
-const char* pluginloader::getName() {
-	return plugin_info->name;
-}
-
-const char* pluginloader::getUri() {
-	return plugin_info->uri;
-}
-
-static std::string empty_string;
-std::string pluginloader::getFile() {
-	if (lib)
-		return lib->fileName;
-	return empty_string;
-}
-
-std::string pluginloader::getHelpFile() {
-	return helpFile;
 }
 
 };

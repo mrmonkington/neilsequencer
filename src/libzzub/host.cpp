@@ -380,7 +380,7 @@ metaplugin* host::get_metaplugin(char const *name) {
 const info* host::get_info(metaplugin *pmac) {
 	if (pmac==0) return 0;
 	if (!_metaplugin->player->machineExists(pmac)) return 0;
-	return ((metaplugin*)pmac)->machineInfo;
+	return ((metaplugin*)pmac)->loader->plugin_info;
 }
 
 const char* host::get_name(metaplugin *pmac) {

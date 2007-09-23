@@ -76,21 +76,11 @@ struct pluginloader {
 
 	const pluginlib *lib;
 	const info *plugin_info;
-	
-	std::string helpFile;
 
 	pluginloader(pluginlib *lib, const info *_info);
 	~pluginloader();
 
-	virtual const info* getInfo();
 	virtual plugin* createMachine();
-
-	int getType();
-	const char* getName();
-    const char* getUri();
-	std::string getFile();
-	std::string getHelpFile();
-
 };
 
 

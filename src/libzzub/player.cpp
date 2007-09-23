@@ -163,11 +163,11 @@ void player::loadPluginLibrary(const std::string &fullpath) {
 	upon initialization and during loading of songs.
 */
 
-void player::registerMachineLoader(pluginloader *pl) {
-	string pluginUri=pl->getUri();
+void player::registerMachineLoader(pluginloader *loader) {
+	string pluginUri = loader->plugin_info->uri;
 	transform(pluginUri.begin(), pluginUri.end(), pluginUri.begin(), toLower);
 	if (!isBlackListed(pluginUri)) {
-		machines[pluginUri]=pl;
+		machines[pluginUri] = loader;
 	}
 }
 
@@ -459,7 +459,7 @@ void player::clear() {
 	std::vector<zzub::metaplugin*> machinesCopy = machineInstances;
 	for (int i = 0; i<machinesCopy.size(); i++) {
 		zzub::metaplugin* plugin = machinesCopy[i];
-		if (plugin->machineInfo->type == zzub::plugin_type_master) continue;
+		if (plugin->loader->plugin_info->type == zzub::plugin_type_master) continue;
 		if (plugin->nonSongPlugin) continue;
 		deleteMachine(plugin);
 	}
@@ -484,7 +484,7 @@ std::string player::getNewMachineName(std::string machineUri) {
 	string baseName;
 	if (!loader) 
 		baseName=machineUri; else
-		baseName=loader->getInfo()->short_name;
+		baseName=loader->plugin_info->short_name;
 	char pc[16];
 	for (int i=0; i<9999; i++) {
 		if (i==0) {

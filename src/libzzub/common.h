@@ -105,13 +105,13 @@ enum LoadProgressType {
 #endif
 
 
-#include <math.h>
+#include <cmath>
 #include <list>
 #include <map>
 #include <vector>
 #include <string>
 #include <iostream>
-#include <assert.h>
+#include <cassert>
 #include <algorithm>
 
 #include "criticalsection.h"

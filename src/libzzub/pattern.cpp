@@ -169,7 +169,7 @@ patterntrack* patterntrack::deserialize(zzub::instream* reader, zzub::metaplugin
 
 	conv.patternToLinear(targetGroup, targetTrack, 0, linearIndex);
 	int targetParameters = 0;
-	const zzub::info* info = targetMachine->machineInfo;
+	const zzub::info* info = targetMachine->loader->plugin_info;
 	switch (targetGroup) {
 		case 0:
 			targetParameters = 2;
@@ -484,7 +484,7 @@ void patterntrack::interpolate() {
 ***/
 
 pattern::pattern(metaplugin* plugin, size_t _rows) {
-	machineInfo = plugin->machineInfo;
+	machineInfo = plugin->loader->plugin_info;
 	rows = 0;
 	_global = new patterntrack(1, 0, machineInfo->global_parameters, _rows);
 	setRows(_rows);
@@ -648,7 +648,7 @@ pattern* pattern::deserialize(zzub::player* player, zzub::instream* reader, zzub
 		tracks[i] = track;
 	}
 
-	pattern* ptn=new pattern(targetMachine->machineInfo, global, conns, tracks);
+	pattern* ptn=new pattern(targetMachine->loader->plugin_info, global, conns, tracks);
 	ptn->name=patternName;
 	return ptn;
 

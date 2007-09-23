@@ -148,7 +148,6 @@ struct metaplugin {
 	host* machineCallbacks;
 	CCriticalSection interfaceLock;
 
-//	int _placeholder;                       // unused but occupies 4 bytes for alignment with the below
 	unsigned int lastWorkSamples;
 	int lastWorkPos;
 	float lastFrameMaxL, lastFrameMaxR;     // player statistics
@@ -175,7 +174,7 @@ struct metaplugin {
 	float *mixBuffer[2];	// necessary=*2, allocated=*4, when this buffer is a bit larger than necessary, we avoid buggy machines to trash the stack, such as dedacode slicer
 	float *machineBuffer[2];// max buffer size = 4196 samples in stereo (plus extra to care for stack trashing)
 
-	const zzub::info *machineInfo;
+	void* _placeholder;                       // unused but occupies 4 bytes for alignment with the below
 	std::string machineName;                // replace the char* at 0x14
 
 	bool softMuted;			                // true when muted in sequencer
@@ -227,8 +226,6 @@ struct metaplugin {
 	// CMachineInterface and CMachineInterfaceEx wrappers:
 	const std::string& getName();
 	void setName(std::string n);
-	int getType() { return machineInfo->type; }
-	std::string getLoaderName();
 	std::string describeValue(size_t param, int value);
 	std::string describeValue(size_t group, size_t param, int value);
 	void command(int cmd);
@@ -265,7 +262,8 @@ struct metaplugin {
 	inline bool isBypassed() { return bypassed; }
 	void softBypass(bool state);
 	inline bool isSoftBypassed() { return softBypassed; }
-	bool isNoOutput() { return (machineInfo->flags&zzub::plugin_flag_no_output)!=0; }
+	bool isNoOutput();
+	zzub::plugin_type getType();
 	void defaultParameters();
 	void clearParameters();
 	void stopParameters();
@@ -285,16 +283,10 @@ struct metaplugin {
 	int getMachineParameterValue(size_t index);
 	void findNoteColumn(size_t& noteColumn, size_t& noteGroup, bool& multiTrackKeyJazz);
 	const zzub::parameter* getMachineParameter(size_t group, size_t track, size_t param);
-	inline int getMachineFlags() { return machineInfo->flags; }
-	inline size_t getMachineMinTracks() { return machineInfo->min_tracks; }
-	inline size_t getMachineMaxTracks() { return machineInfo->max_tracks; }
 	patterntrack* getStateTrack(size_t group, size_t index);		// getEditableStateTrack
 	patterntrack* getStateTrackCopy(size_t group, size_t index);	// getStateTrack
 	patterntrack* getStateTrackControl(size_t group, size_t index);	// getStateTrack
-	size_t getStateParameters();		// only parameters marked MPF_STATE are returned, e.g for iterating machine parameter sliders
 
-	// sequences:
-	sequence* createSequence();
 	void setTracks(size_t newTracks);
 	size_t getTracks();
 
@@ -308,9 +300,6 @@ struct metaplugin {
 	pattern* getPattern(std::string);
 	int getPatternIndex(pattern* pattern);
 	size_t getPatterns();
-
-	// div pattern column space conversions:
-	bool stateToPatternSpace(size_t stateIndex, size_t& group, size_t& track, size_t& column);
 
 	// connections
 	size_t getConnections();
@@ -335,6 +324,8 @@ struct metaplugin {
 	void copyChangedParameters();
 	void clearUnChangedParameters();
 	void applyControlChanges();
+
+	// post-processing
 	void postProcessStereo(bool zero, int numSamples);
 	void postProcessEvents();
 	void addPostProcessor(tickstream* ts);
@@ -352,9 +343,12 @@ struct metaplugin {
 	bool getAutoWrite();
 	int getTicksWritten();
 	void resetTicksWritten();
+
+	// same as hd-recording above, just via a pluggable interface
 	void setRecorder(zzub::recorder*);
 	zzub::recorder* getRecorder();
 
+	// test for binary buzz machine compatibility, important when using win32/buzz2zzub-wrapper
 	bool checkBuzzCompatibility();
 };
 

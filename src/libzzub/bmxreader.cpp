@@ -187,19 +187,19 @@ bool BuzzReader::testMachineCompatibility(zzub::metaplugin* machine) {
 	using namespace std;
 	if (machine==player->getMaster()) return true;
 
-	MachineValidation* param=findMachinePara(machine->getName(), machine->loader->getUri());
+	MachineValidation* param=findMachinePara(machine->getName(), machine->loader->plugin_info->uri);
 
 	if (param==0) {
-		lastError=machine->getName() + " (" + machine->getLoaderName() + ") Warning: No PARA info found. Machine is most likely not connected.\n";
+		lastError=machine->getName() + " (" + machine->loader->plugin_info->name + ") Warning: No PARA info found. Machine is most likely not connected.\n";
 		return true;
 	}
 
-	if (param->numGlobals != machine->machineInfo->global_parameters.size()) {
-		lastError=machine->getName() + " (" + machine->getLoaderName() + ") Error: PARA global parameter count mismatch.\n";
+	if (param->numGlobals != machine->loader->plugin_info->global_parameters.size()) {
+		lastError=machine->getName() + " (" + machine->loader->plugin_info->name + ") Error: PARA global parameter count mismatch.\n";
 		return false;
 	}
-	if (param->numTrackParams != machine->machineInfo->track_parameters.size()) {
-		lastError=machine->getName() + " (" + machine->getLoaderName() + ") Error: PARA track parameter count mismatch.\n";
+	if (param->numTrackParams != machine->loader->plugin_info->track_parameters.size()) {
+		lastError=machine->getName() + " (" + machine->loader->plugin_info->name + ") Error: PARA track parameter count mismatch.\n";
 		return false;
 	}
 
@@ -258,12 +258,12 @@ bool BuzzReader::invoke(zzub_event_data_t& data) {
 	if (data.type==zzub_event_type_new_plugin) {
 		zzub::metaplugin* machine=(zzub::metaplugin*)data.new_plugin.plugin;
 		if (this->machineParameters.machines.size()==0) {
-			lastWarning=machine->getName() + " (" + machine->getLoaderName() + ") Warning: Song has no PARA section. Machine validation overrided.\n" + lastWarning;
+			lastWarning=machine->getName() + " (" + machine->loader->plugin_info->name + ") Warning: Song has no PARA section. Machine validation overrided.\n" + lastWarning;
 			return true;
 		}
 
 		if (!testMachineCompatibility(machine)) {
-			lastError=machine->getName() + " (" + machine->getLoaderName() + ") Error: Failed machine compatibility test.\n" + lastError;
+			lastError=machine->getName() + " (" + machine->loader->plugin_info->name + ") Error: Failed machine compatibility test.\n" + lastError;
 
 			// vi kan fortsatt tillate denne masinen å validatere dersom låten IKKE har en para-seksjon assosiert
 			return false;

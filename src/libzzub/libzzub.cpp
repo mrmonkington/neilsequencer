@@ -506,15 +506,15 @@ int zzub_midimapping_get_controller(zzub_midimapping_t *mapping) {
 
 const char *zzub_pluginloader_get_loader_name(zzub_pluginloader_t* loader)
 {
-	return loader->getUri();
+	return loader->plugin_info->uri;
 }
 
 const char *zzub_pluginloader_get_name(zzub_pluginloader_t* loader) {
-    return loader->getName();//getInfo()->name;
+    return loader->plugin_info->name;
 }
 
 const char *zzub_pluginloader_get_short_name(zzub_pluginloader_t* loader) {
-	return loader->getInfo()->short_name;
+	return loader->plugin_info->short_name;
 }
 
 int zzub_pluginloader_get_parameter_count(zzub_pluginloader_t* loader, int group) {
@@ -522,11 +522,11 @@ int zzub_pluginloader_get_parameter_count(zzub_pluginloader_t* loader, int group
 		case 0: // input connections
             return 2;
 		case 1: // globals
-			return loader->getInfo()->global_parameters.size();
+			return loader->plugin_info->global_parameters.size();
 		case 2: // track params
-			return loader->getInfo()->track_parameters.size();
+			return loader->plugin_info->track_parameters.size();
 		case 3: // controller params
-			return loader->getInfo()->controller_parameters.size();
+			return loader->plugin_info->controller_parameters.size();
 		default:
 			return 0;
 	}
@@ -537,34 +537,34 @@ const zzub_parameter_t *zzub_pluginloader_get_parameter(zzub_pluginloader_t* loa
 		case 0: // input connections
             return connectionParameters[index];
 		case 1: // globals
-			return loader->getInfo()->global_parameters[index];
+			return loader->plugin_info->global_parameters[index];
 		case 2: // track params
-			return loader->getInfo()->track_parameters[index];
+			return loader->plugin_info->track_parameters[index];
 		case 3: // controller params
-			return loader->getInfo()->controller_parameters[index];
+			return loader->plugin_info->controller_parameters[index];
 		default:
 			return 0;
 	}
 }
 
 int zzub_pluginloader_get_type(zzub_pluginloader_t* loader) {
-	return loader->getInfo()->type;
+	return loader->plugin_info->type;
 }
 
 const char *zzub_pluginloader_get_uri(zzub_pluginloader_t* loader) {
-	return loader->getInfo()->uri;
+	return loader->plugin_info->uri;
 }
 
 const char *zzub_pluginloader_get_author(zzub_pluginloader_t* loader) {
-	return loader->getInfo()->author;
+	return loader->plugin_info->author;
 }
 
 int zzub_pluginloader_get_attribute_count(zzub_pluginloader_t* loader) {
-	return loader->getInfo()->attributes.size();
+	return loader->plugin_info->attributes.size();
 }
 
 const zzub_attribute_t *zzub_pluginloader_get_attribute(zzub_pluginloader_t* loader, int index) {
-	return loader->getInfo()->attributes[index];
+	return loader->plugin_info->attributes[index];
 }
 
 // parameter methods
@@ -668,7 +668,7 @@ int zzub_plugin_get_sub_commands(zzub_plugin_t *machine, int i, char* commands, 
 }
 
 int zzub_plugin_get_type(zzub_plugin_t *machine) {
-	return machine->getType();
+	return machine->loader->plugin_info->type;
 }
 
 int zzub_plugin_get_output_channels(zzub_plugin_t *machine) {

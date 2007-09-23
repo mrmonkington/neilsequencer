@@ -430,12 +430,12 @@ xml_node CcmWriter::saveClass(xml_node &parent, zzub::pluginloader &pl) {
 
 	xml_node item = parent.append_child(node_element);
 	item.name("pluginclass");
-	item.attribute("id") = pl.getUri();
+	item.attribute("id") = pl.plugin_info->uri;
 	item.attribute("type") = plugintype_to_string(pl.plugin_info->type);
 	
 	mem_archive arc;
 	pl.plugin_info->store_info(&arc);
-	saveArchive(item, pl.getUri(), arc);
+	saveArchive(item, pl.plugin_info->uri, arc);
 	
 	xml_node params = item.append_child(node_element);
 	params.name("parameters");
@@ -576,14 +576,14 @@ xml_node CcmWriter::saveInit(xml_node &parent, zzub::metaplugin &plugin) {
 	plugin.machine->save(&arc);
 	saveArchive(item, id_from_ptr(&plugin), arc);
 
-	if (plugin.machineInfo->global_parameters.size()) {
+	if (plugin.loader->plugin_info->global_parameters.size()) {
 		xml_node global = item.append_child(node_element);
 		global.name("global");
 		
-		for (size_t i = 0; i != plugin.machineInfo->global_parameters.size(); ++i) {
+		for (size_t i = 0; i != plugin.loader->plugin_info->global_parameters.size(); ++i) {
 			xml_node n = global.append_child(node_element);
 			n.name("n");
-			n.attribute("ref") = id_from_ptr(plugin.machineInfo->global_parameters[i]);
+			n.attribute("ref") = id_from_ptr(plugin.loader->plugin_info->global_parameters[i]);
 			n.attribute("v") = (long)plugin.getParameter(1, 0, i);
 		}
 	}
@@ -597,10 +597,10 @@ xml_node CcmWriter::saveInit(xml_node &parent, zzub::metaplugin &plugin) {
 			track.name("track");
 			track.attribute("index") = (long)t;
 			
-			for (size_t i = 0; i != plugin.machineInfo->track_parameters.size(); ++i) {
+			for (size_t i = 0; i != plugin.loader->plugin_info->track_parameters.size(); ++i) {
 				xml_node n = track.append_child(node_element);
 				n.name("n");
-				n.attribute("ref") = id_from_ptr(plugin.machineInfo->track_parameters[i]);
+				n.attribute("ref") = id_from_ptr(plugin.loader->plugin_info->track_parameters[i]);
 				n.attribute("v") = (long)plugin.getParameter(2, t, i);
 			}
 		}
@@ -641,8 +641,8 @@ xml_node CcmWriter::savePatternTrack(xml_node &parent, const std::string &colnam
 			const zzub::parameter *param = 0;
 			switch(group) {
 				case 0: param = plugin.getConnection(track)->connection_parameters[j]; break;
-				case 1: param = plugin.machineInfo->global_parameters[j]; break;
-				case 2: param = plugin.machineInfo->track_parameters[j]; break;
+				case 1: param = plugin.loader->plugin_info->global_parameters[j]; break;
+				case 2: param = plugin.loader->plugin_info->track_parameters[j]; break;
 				default: assert(0);
 			}
 
@@ -772,8 +772,8 @@ xml_node CcmWriter::saveMidiMappings(xml_node &parent, zzub::player &player, zzu
 			const zzub::parameter *param = 0;
 			switch(mm->group) {
 				case 0: param = plugin.getConnection(mm->track)->connection_parameters[mm->column]; break;
-				case 1: param = plugin.machineInfo->global_parameters[mm->column]; break;
-				case 2: param = plugin.machineInfo->track_parameters[mm->column]; break;
+				case 1: param = plugin.loader->plugin_info->global_parameters[mm->column]; break;
+				case 2: param = plugin.loader->plugin_info->track_parameters[mm->column]; break;
 				default: assert(0);
 			}
 
@@ -810,7 +810,7 @@ xml_node CcmWriter::savePlugin(xml_node &parent, zzub::player &player, zzub::met
 	item.name("plugin");
 	item.attribute("id") = id_from_ptr(&plugin);
 	item.attribute("name") = plugin.getName();
-	item.attribute("ref") = plugin.loader->getUri();
+	item.attribute("ref") = plugin.loader->plugin_info->uri;
 	
 	// ui properties should be elsewhere
 	xml_node position = item.append_child(node_element);

@@ -292,11 +292,11 @@ const zzub::parameter *event_connection::getParam(struct metaplugin *mp, size_t 
 		case 0: // input connections
             return connectionParameters[index];
 		case 1: // globals
-			return mp->machineInfo->global_parameters[index];
+			return mp->loader->plugin_info->global_parameters[index];
 		case 2: // track params
-			return mp->machineInfo->track_parameters[index];
+			return mp->loader->plugin_info->track_parameters[index];
 		case 3: // controller params
-			return mp->machineInfo->controller_parameters[index];
+			return mp->loader->plugin_info->controller_parameters[index];
 		default:
 			return 0;
 	}
@@ -423,8 +423,7 @@ metaplugin::~metaplugin() { // todo: release pattern memory and connections
 bool metaplugin::create(char* inputData, int dataSize) {
 
     // copy info and create plugin
-    machineInfo=loader->getInfo();
-	assert(machineInfo);
+	assert(loader->plugin_info);
     machine=loader->createMachine();
     if (!machine) return false;
 
@@ -443,11 +442,11 @@ bool metaplugin::create(char* inputData, int dataSize) {
     }
 
     // set up states
-	globalState.initialize(machine->global_values, 1, 0, machineInfo->global_parameters);
+	globalState.initialize(machine->global_values, 1, 0, loader->plugin_info->global_parameters);
 	_internal_globalState=globalState.getStateTrackCopy()->getValuePtr(0,0);
-	controllerState.initialize(machine->controller_values, 3, 0, machineInfo->controller_parameters);
+	controllerState.initialize(machine->controller_values, 3, 0, loader->plugin_info->controller_parameters);
 
-	setTracks(machineInfo->min_tracks);
+	setTracks(loader->plugin_info->min_tracks);
 	defaultParameters(); 
 
     // tell everyone we created a new plugin
@@ -517,16 +516,11 @@ void metaplugin::setName(std::string name) {
     machineName=name; 
 }
 
-std::string metaplugin::getLoaderName() {
-
-    return loader->getName(); 
-}
-
 void metaplugin::setTracks(size_t newTracks) {
-	if (newTracks>getMachineMaxTracks())
-		newTracks=getMachineMaxTracks();
-	if (newTracks<getMachineMinTracks())
-		newTracks=getMachineMinTracks();
+	if (newTracks > loader->plugin_info->max_tracks)
+		newTracks = loader->plugin_info->max_tracks;
+	if (newTracks < loader->plugin_info->min_tracks)
+		newTracks = loader->plugin_info->min_tracks;
 
 	zzub_edit_tracks edit;
 	edit.type = zzub_edit_set_tracks;
@@ -535,7 +529,7 @@ void metaplugin::setTracks(size_t newTracks) {
 	edit.pattern_tracks.resize(patterns.size());
 
 	size_t prevTracks = trackStates.size();
-	size_t trackSize = machineInfo->get_group_size(2);
+	size_t trackSize = loader->plugin_info->get_group_size(2);
 
 	vector<patterntrack*> deleted_tracks;
 
@@ -549,7 +543,7 @@ void metaplugin::setTracks(size_t newTracks) {
 			if (j<patterns[i]->_tracks.size()) {
 				edit.pattern_tracks[i][j] = patterns[i]->_tracks[j];
 			} else {
-				edit.pattern_tracks[i][j] = new patterntrack(2, j, machineInfo->track_parameters, rows);
+				edit.pattern_tracks[i][j] = new patterntrack(2, j, loader->plugin_info->track_parameters, rows);
 			}
 		}
 	}
@@ -563,7 +557,7 @@ void metaplugin::setTracks(size_t newTracks) {
 	edit.parameter_states.resize(newTracks);
 	for (size_t i = prevTracks; i<newTracks; i++) {
 		edit.parameter_states[i] = new ParameterState();
-		edit.parameter_states[i]->initialize((char*)machine->track_values + i*trackSize, 2, (int)i, machineInfo->track_parameters);
+		edit.parameter_states[i]->initialize((char*)machine->track_values + i*trackSize, 2, (int)i, loader->plugin_info->track_parameters);
 
 		// copy novalue states internally:
 		edit.parameter_states[i]->copyChangedParameters();
@@ -597,10 +591,6 @@ void metaplugin::setTracks(size_t newTracks) {
 		_internal_trackState = 0;
 }
 
-
-sequence* metaplugin::createSequence() {
-	return player->song_sequencer.createTrack(this);
-}
 
 void metaplugin::addPattern(pattern* pattern) {
 	zzub_edit_pattern edit_pattern_edit;
@@ -681,7 +671,7 @@ bool metaplugin::movePattern(size_t index, size_t newIndex) {
 
 
 pattern* metaplugin::createPattern(size_t rows) {
-	pattern* ptn = new pattern(machineInfo, getConnections(), getTracks(), rows);
+	pattern* ptn = new pattern(loader->plugin_info, getConnections(), getTracks(), rows);
 	addPattern(ptn);
 	return ptn;
 }
@@ -852,7 +842,7 @@ std::string metaplugin::describeValue(size_t group, size_t param, int value) {
 		return "";
 	}
 	size_t currentParameter=no_column;
-    pattern conv(machineInfo, getConnections(), getTracks(), 0);
+    pattern conv(loader->plugin_info, getConnections(), getTracks(), 0);
 	if (conv.patternToLinear(group, 0, param, currentParameter))
 	    currentParameter-=getConnections()*2;	// subtract connection parameters
 
@@ -880,8 +870,8 @@ void metaplugin::attributesChanged() {
 }
 
 size_t metaplugin::getAttributes() {
-	if (machineInfo->attributes.size()<0) return 0;
-	return (size_t)machineInfo->attributes.size();
+	if (loader->plugin_info->attributes.size()<0) return 0;
+	return (size_t)loader->plugin_info->attributes.size();
 }
 
 int metaplugin::getAttributeValue(size_t i) {
@@ -889,7 +879,7 @@ int metaplugin::getAttributeValue(size_t i) {
 }
 
 const attribute& metaplugin::getAttribute(size_t i) {
-	return *machineInfo->attributes[i];
+	return *loader->plugin_info->attributes[i];
 }
 
 // used by buzzreader to determine if pointer is writable - some machines may say they have attributes but not provide a pointer (?)
@@ -902,7 +892,7 @@ void metaplugin::setAttributeValue(size_t i, int value) {
 }
 
 bool metaplugin::doesInputMixing() {
-	return ((machineInfo->flags&plugin_flag_does_input_mixing)!=0);
+	return ((loader->plugin_info->flags&plugin_flag_does_input_mixing)!=0);
 }
 
 float** metaplugin::getBuffer(DWORD* lastBufferSize) {
@@ -944,6 +934,14 @@ void metaplugin::bypass(bool state) {
 
 void metaplugin::softBypass(bool state) {
 	softBypassed = state;
+}
+
+bool metaplugin::isNoOutput() {
+	return (loader->plugin_info->flags & zzub::plugin_flag_no_output) != 0;
+}
+
+zzub::plugin_type metaplugin::getType() {
+	return (plugin_type)loader->plugin_info->type;
 }
 
 pattern* metaplugin::getPattern(std::string name) {
@@ -1046,7 +1044,7 @@ audio_connection *metaplugin::addAudioInput(metaplugin* fromMachine, unsigned sh
 	// Ensure this connection won't crash
 	bool isNoOutput = false;
 
-	if ((fromMachine->machineInfo->flags & plugin_flag_no_output) ) isNoOutput = true;
+	if ((fromMachine->loader->plugin_info->flags & plugin_flag_no_output) ) isNoOutput = true;
 	if (isNoOutput && getType() != plugin_type_master) return 0;
 
 	// Check whether these machines are already connection to each others
@@ -1061,7 +1059,7 @@ audio_connection *metaplugin::addAudioInput(metaplugin* fromMachine, unsigned sh
 
 	// allow one type of cyclic connection, when the master is connected to a no_output machine
 	if (fromMachine->getType() == plugin_type_master) {
-		if ((machineInfo->flags & plugin_flag_no_output)== 0)
+		if ((loader->plugin_info->flags & plugin_flag_no_output)== 0)
 			return 0;
 	} else {
 		// check cyclic connections
@@ -1187,11 +1185,11 @@ void metaplugin::stopParameters() {
 
 
 void metaplugin::defaultAttributes() {
-	int attributeCount=machineInfo->attributes.size();
+	int attributeCount=loader->plugin_info->attributes.size();
 
 	for (size_t k=0; k<this->getAttributes(); k++) {
 		if (machine->attributes) {
-			machine->attributes[k]=machineInfo->attributes[k]->value_default;
+			machine->attributes[k]=loader->plugin_info->attributes[k]->value_default;
 		}
 	}
 } 
@@ -1263,8 +1261,8 @@ patterntrack* metaplugin::getStateTrackControl(size_t group, size_t index) {
 
 // getCommands returns a blank string when there are no commands, otherwise a \n-separated string
 std::string metaplugin::getCommands() {
-	if (!machineInfo->commands) return "";
-	return machineInfo->commands;
+	if (!loader->plugin_info->commands) return "";
+	return loader->plugin_info->commands;
 }
 
 // if a command string starts with the char '\', it has subcommands
@@ -1316,7 +1314,7 @@ void metaplugin::playPatternRow(pattern* pattern, size_t row, bool record) {
 	}
 
 	if (machine->track_values) {
-		size_t trackSize = machineInfo->get_group_size(2);
+		size_t trackSize = loader->plugin_info->get_group_size(2);
 		for (size_t i=0; i<getTracks(); i++) {
 			patterntrack* track=pattern->getPatternTrack(2, i);
 			if (track==0) continue;	// thread safety =)
@@ -1398,7 +1396,7 @@ int metaplugin::getParameter(size_t group, size_t track, size_t param) {
 
 const parameter* metaplugin::getMachineParameter(size_t group, size_t track, size_t param) {
 	size_t index=0;
-	pattern conv(machineInfo, getConnections(), getTracks(), 0);
+	pattern conv(loader->plugin_info, getConnections(), getTracks(), 0);
 	conv.patternToLinear(group, track, param, index);
 	return conv.getColumnParameter(index);
 }
@@ -1408,7 +1406,7 @@ int metaplugin::getMachineParameterValue(size_t index) {
 	size_t linearIndex=index+getConnections()*2;
 	size_t group, track, column;
 
-	pattern conv(machineInfo, getConnections(), getTracks(), 0);
+	pattern conv(loader->plugin_info, getConnections(), getTracks(), 0);
 	if (!conv.linearToPattern(linearIndex, group, track, column))
 		return 0;
 
@@ -1501,8 +1499,8 @@ void metaplugin::removeEventHandler(event_handler* ev) {
 }
 
 size_t metaplugin::getTracks() { 
-	if ((size_t)machineInfo->min_tracks>tracks)
-		return machineInfo->min_tracks; 
+	if ((size_t)loader->plugin_info->min_tracks>tracks)
+		return loader->plugin_info->min_tracks; 
 	return tracks;
 }
 
@@ -1585,15 +1583,6 @@ const envelope_info& metaplugin::getEnvelopeInfo(size_t index) {
 	return *ei[index];
 }
 
-size_t metaplugin::getStateParameters() {
-	size_t count=getConnections();  // volume are state parameters
-	count+=globalState.getStateTrack()->getStateParams();
-	for (size_t i=0; i<trackStates.size(); i++)
-		count+=trackStates[i]->getStateTrack()->getStateParams();
-
-	return count;
-}
-
 // resetMixer sørger for at maskinene mixer på nytt etter stop/play (ellers får vi asserts i player::workmachine() når posintick==lastWorkPos==0 && mixSize!=prevSize)
 void metaplugin::resetMixer() {
 	if (getType()==plugin_type_master)
@@ -1654,7 +1643,7 @@ bool metaplugin::work(float** pout, int numSamples, unsigned long flags) {
 	lastWorkSamples=numSamples;
 	sampleswritten += numSamples;
 
-	if (machineInfo->type == zzub_plugin_type_master) {
+	if (loader->plugin_info->type == zzub_plugin_type_master) {
 		// send vu information
 		zzub_event_data eventData={zzub_event_type_vu};
 		eventData.vu.size = numSamples;
@@ -1671,53 +1660,6 @@ bool metaplugin::work(float** pout, int numSamples, unsigned long flags) {
 
 void metaplugin::input(float** buffer, int numSamples, float amp) {
 	machine->input(buffer, numSamples, amp);
-}
-
-
-/*
-
-    metaplugin column space conversion helpers
-
-*/
-bool metaplugin::stateToPatternSpace(size_t index, size_t& group, size_t& track, size_t& column) {
-	size_t currentParameter=0;
-
-	for (size_t i=0; i<getConnections(); i++) {
-		if (index == currentParameter) {
-			group=0;
-			track=i;
-			column=0;
-			return true;
-		}
-		currentParameter++;
-	}
-
-	for (size_t i=0; i<machineInfo->global_parameters.size(); i++) {
-		if (machineInfo->global_parameters[i]->flags&parameter_flag_state) {
-			if (index==currentParameter) {
-				group=1;
-				track=0;
-				column=i;
-				return true;
-			}
-			currentParameter++;
-		}
-	}
-
-	for (size_t j=0; j<getTracks(); j++) {
-		for (size_t i=0; i<machineInfo->track_parameters.size(); i++) {
-			if (machineInfo->track_parameters[i]->flags&parameter_flag_state) {
-				if (index==currentParameter) {
-					group=2;
-					track=j;
-					column=i;
-					return true;
-				}
-				currentParameter++;
-			}
-		}
-	}
-	return false;
 }
 
 void metaplugin::setWriteWave(bool enable) {
