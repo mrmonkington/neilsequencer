@@ -39,10 +39,10 @@
 #include "mdk.h"
 #include "mdkimpl.h"
 #include "dsplib.h"
-#include "../../libzzub/criticalsection.h"  // needed by metaplugin
+#include "../../libzzub/synchronization.h"  // needed by metaplugin
 #include "../../libzzub/metaplugin.h"       // needs to set some internal Buzz-only stuff 
-#include "../../libzzub/sequencer.h"       // needs to set some internal Buzz-only stuff 
-#include "../../libzzub/player.h"       // needs to set some internal Buzz-only stuff 
+#include "../../libzzub/sequencer.h"        // needs to set some internal Buzz-only stuff 
+#include "../../libzzub/player.h"           // needs to set some internal Buzz-only stuff 
 #include "unhack.h"
 
 void CopyM2S(float *pout, float *pin, int numsamples, float amp);
@@ -621,7 +621,7 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 		metaplugin* thisplugin = _host->get_metaplugin();
 		player* thisplayer = thisplugin->player;
 
-		thisplayer->playerLock.Lock();
+		thisplayer->playerLock.lock();
 
 		// setting thisplayer->workStarted to false tells the player to execute editing operations on the current thread
 		thisplayer->workStarted = false;
@@ -633,7 +633,7 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 		player* thisplayer = thisplugin->player;
 
 		thisplayer->workStarted = true;
-		thisplayer->playerLock.Unlock();
+		thisplayer->playerLock.unlock();
 	}
 
 	void pre_add_input_event() {
