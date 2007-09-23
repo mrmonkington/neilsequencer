@@ -123,7 +123,7 @@ def show_pattern_dialog(parent, name, length, dlgmode):
 		dlg.lengthbox.set_sensitive(False)
 	elif dlgmode == DLGMODE_CHANGE:
 		dlg.set_title("Pattern Properties")
-		self.chkswitch.set_sensitive(False)
+		dlg.chkswitch.set_sensitive(False)
 	dlg.edtname.set_text(name)
 	dlg.chkswitch.set_active(config.get_config().get_default_int('SwitchToNewPattern', 1))
 	dlg.lengthbox.child.set_text(str(length))
