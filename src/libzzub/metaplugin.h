@@ -132,9 +132,9 @@ struct metaplugin {
 	// Jeskola Buzz compatible CMachine header.
 	// Some machines look up these by reading directly from zzub::metaplugin memory.
 
-	char _placeholder[16];
+	char _placeholder[12];
 	char* _internal_name;					// 0x14: polac's VST reads this string, set to 0
-	char _placeholder2[48];
+	char _placeholder2[52];
 	void* _internal_machine;				// pointer to CMachine*, scanned for by some plugins
 	void* _internal_machine_ex;				// 0x50: same as above, but is not scanned for
 	char _placeholder3[20];

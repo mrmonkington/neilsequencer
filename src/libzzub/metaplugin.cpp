@@ -357,7 +357,7 @@ metaplugin::metaplugin(zzub::player* pl, pluginloader* loader) {
 
 	_internal_globalState = 0;
 	_internal_trackState = 0;
-	_internal_name = 0;
+	_internal_name = "";	// Must set to "" or else PVST will crash in SetInstrument
 	_internal_seqCommand = 0;
 
 	this->player=pl;
