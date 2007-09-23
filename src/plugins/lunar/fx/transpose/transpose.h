@@ -7,20 +7,52 @@ extern "C" {
 typedef struct _lunar_globals {
 	float *otrans;
 	float *ntrans;
+	float *hquantize;
 } lunar_globals_t;
 typedef struct _lunar_global_values {
 	float otrans;
 	float ntrans;
+	float hquantize;
 } lunar_global_values_t;
 typedef struct _lunar_track {
 } lunar_track_t;
 typedef struct _lunar_track_values {
 } lunar_track_values_t;
 typedef struct _lunar_controllers {
-	float *note;
+	float *note1;
+	float *note2;
+	float *note3;
+	float *note4;
+	float *note5;
+	float *note6;
+	float *note7;
+	float *note8;
+	float *lnote1;
+	float *lnote2;
+	float *lnote3;
+	float *lnote4;
+	float *lnote5;
+	float *lnote6;
+	float *lnote7;
+	float *lnote8;
 } lunar_controllers_t;
 typedef struct _lunar_controller_values {
-	float note;
+	float note1;
+	float note2;
+	float note3;
+	float note4;
+	float note5;
+	float note6;
+	float note7;
+	float note8;
+	float lnote1;
+	float lnote2;
+	float lnote3;
+	float lnote4;
+	float lnote5;
+	float lnote6;
+	float lnote7;
+	float lnote8;
 } lunar_controller_values_t;
 #if defined(__cplusplus)
 }

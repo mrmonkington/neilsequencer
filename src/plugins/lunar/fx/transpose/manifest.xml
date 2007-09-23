@@ -38,6 +38,15 @@
 					<alias value="11" name="+5"/>
 					<alias value="12" name="+6"/>
 				</valuenames>
+				<valuenames id="onoff">
+					<alias value="0" name="Off"/>
+					<alias value="1" name="On"/>
+				</valuenames>
+				<valuenames id="hquantizevals">
+					<alias value="0" name="None"/>
+					<alias value="1" name="Major"/>
+					<alias value="2" name="Minor"/>
+				</valuenames>
 			</valuenamegroup>
 			<global>
 				<parameter
@@ -60,14 +69,99 @@
 					defvalue="6"
 					valuenames="notetrans"
 					state="true"/>
+				<parameter
+					id="hquantize"
+					name="Harmonic Quantize"
+					description="Quantize note harmonically"
+					type="byte"
+					minvalue="0"
+					maxvalue="2"
+					defvalue="0"
+					valuenames="hquantizevals"
+					state="true"/>
 			</global>
 			<track>
 			</track>
 			<controller>
 				<parameter
-					id="note"
-					name="Note"
-					description="Connect a note parameter to this slot"
+					id="note1"
+					name="Note #1"
+					description="Transposes the note connected"
+					type="midinote"/>
+				<parameter
+					id="note2"
+					name="Note #2"
+					description="Transposes the note connected"
+					type="midinote"/>
+				<parameter
+					id="note3"
+					name="Note #3"
+					description="Transposes the note connected"
+					type="midinote"/>
+				<parameter
+					id="note4"
+					name="Note #4"
+					description="Transposes the note connected"
+					type="midinote"/>
+				<parameter
+					id="note5"
+					name="Note #5"
+					description="Transposes the note connected"
+					type="midinote"/>
+				<parameter
+					id="note6"
+					name="Note #6"
+					description="Transposes the note connected"
+					type="midinote"/>
+				<parameter
+					id="note7"
+					name="Note #7"
+					description="Transposes the note connected"
+					type="midinote"/>
+				<parameter
+					id="note8"
+					name="Note #8"
+					description="Transposes the note connected"
+					type="midinote"/>
+				<parameter
+					id="lnote1"
+					name="Locked Note #1"
+					description="Transposes the note connected, but keeps octave."
+					type="midinote"/>
+				<parameter
+					id="lnote2"
+					name="Locked Note #2"
+					description="Transposes the note connected, but keeps octave."
+					type="midinote"/>
+				<parameter
+					id="lnote3"
+					name="Locked Note #3"
+					description="Transposes the note connected, but keeps octave."
+					type="midinote"/>
+				<parameter
+					id="lnote4"
+					name="Locked Note #4"
+					description="Transposes the note connected, but keeps octave."
+					type="midinote"/>
+				<parameter
+					id="lnote5"
+					name="Locked Note #5"
+					description="Transposes the note connected, but keeps octave."
+					type="midinote"/>
+				<parameter
+					id="lnote6"
+					name="Locked Note #6"
+					description="Transposes the note connected, but keeps octave."
+					type="midinote"/>
+				<parameter
+					id="lnote7"
+					name="Locked Note #7"
+					description="Transposes the note connected, but keeps octave."
+					type="midinote"/>
+				<parameter
+					id="lnote8"
+					name="Locked Note #8"
+					description="Transposes the note connected, but keeps octave."
 					type="midinote"/>
 			</controller>
 		</parameters>
