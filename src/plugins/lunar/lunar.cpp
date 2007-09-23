@@ -159,6 +159,7 @@ struct metaparameter {
 	zzub::parameter *param;
 	bool isfloat;
 	bool islog;
+	bool ismidinote;
 	float power;
 	float offset;
 	float scalar;
@@ -176,7 +177,11 @@ struct metaparameter {
 		} else if (param->type == zzub::parameter_type_note) {
 			if (value == 0)
 				return zzub::note_value_off;
-			int midinote = (int)((log(value / 440.0f) / log(2.0f))*12.0f+57.5f);
+			int midinote = 0;
+			if (ismidinote)
+				midinote = (int)(value + 0.5f);
+			else
+				midinote = (int)((log(value / 440.0f) / log(2.0f))*12.0f+57.5f);
 			return ((midinote/12)<<4)|((midinote%12)+1);
 		} else {
 			return int(value+0.5f);
@@ -195,7 +200,10 @@ struct metaparameter {
 			if (value == zzub::note_value_off)
 				return 0;
 			int midinote = 12 * (value >> 4) + (value & 0xf) - 1;
-			return 440.0f * pow(2.0f, float(midinote-57) / 12.0f);
+			if (!ismidinote)
+				return 440.0f * pow(2.0f, float(midinote-57) / 12.0f);
+			else
+				return float(midinote);
 		} else {
 			return float(value);
 		}
@@ -211,6 +219,7 @@ struct metaparameter {
 	metaparameter() {
 		power = 1.0;
 		param = 0;
+		ismidinote = false;
 		isfloat = false;
 		islog = false;
 		offset = 0;
@@ -301,6 +310,9 @@ struct dspplugin : zzub::plugin {
 			std::string type = item.attribute("type").value();
 			if (type == "note") {
 				param.set_note();
+			} else if (type == "midinote") {
+				param.set_note();
+				mp.ismidinote = true;
 			} else if (type == "switch") {
 				param.set_switch();
 			} else if (type == "byte") {

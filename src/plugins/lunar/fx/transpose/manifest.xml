@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<zzub>
+	<plugin
+		uri="@trac.zeitherrschaft.org/aldrin/lunar/controller/transpose;1"
+		name="Lunar Transpose"
+		shortname="Transpose"
+		type="controller"
+		description="A simple controller which transposes note values."
+		author="Leonard Ritter"
+		email="contact at leonard-ritter+com">
+		<parameters>
+			<valuenamegroup>
+				<valuenames id="octavetrans">
+					<alias value="0" name="-5"/>
+					<alias value="1" name="-4"/>
+					<alias value="2" name="-3"/>
+					<alias value="3" name="-2"/>
+					<alias value="4" name="-1"/>
+					<alias value="5" name="None"/>
+					<alias value="6" name="+1"/>
+					<alias value="7" name="+2"/>
+					<alias value="8" name="+3"/>
+					<alias value="9" name="+4"/>
+					<alias value="10" name="+5"/>
+				</valuenames>
+				<valuenames id="notetrans">
+					<alias value="0" name="-6"/>
+					<alias value="1" name="-5"/>
+					<alias value="2" name="-4"/>
+					<alias value="3" name="-3"/>
+					<alias value="4" name="-2"/>
+					<alias value="5" name="-1"/>
+					<alias value="6" name="None"/>
+					<alias value="7" name="+1"/>
+					<alias value="8" name="+2"/>
+					<alias value="9" name="+3"/>
+					<alias value="10" name="+4"/>
+					<alias value="11" name="+5"/>
+					<alias value="12" name="+6"/>
+				</valuenames>
+			</valuenamegroup>
+			<global>
+				<parameter
+					id="otrans"
+					name="Global Octave"
+					description="Transpose note value globally (octave-wise)"
+					type="byte"
+					minvalue="0"
+					maxvalue="10"
+					defvalue="5"
+					valuenames="octavetrans"
+					state="true"/>
+				<parameter
+					id="ntrans"
+					name="Global Note"
+					description="Transpose note value globally (note-wise)"
+					type="byte"
+					minvalue="0"
+					maxvalue="12"
+					defvalue="6"
+					valuenames="notetrans"
+					state="true"/>
+			</global>
+			<track>
+			</track>
+			<controller>
+				<parameter
+					id="note"
+					name="Note"
+					description="Connect a note parameter to this slot"
+					type="midinote"/>
+			</controller>
+		</parameters>
+		<attributes>
+		</attributes>
+		<files>
+			<file ref="transpose.cpp"/>
+			<file ref="transpose.h"/>
+		</files>
+		<modules>
+			<module id="transpose">
+				<source language="c++" ref="transpose.cpp" fxdef="transpose.h"/>
+			</module>
+		</modules>
+	</plugin>
+</zzub>

@@ -81,9 +81,7 @@ struct audio_connection : public connection {
 };
 
 struct event_connection : public connection {
-	struct _values {
-		unsigned short amp, pan;
-	} values; // fake
+	audio_connection_values values;
 	
 	std::vector<event_connection_binding> bindings;
 

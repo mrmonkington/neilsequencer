@@ -279,14 +279,18 @@ bool audio_connection::work(player *p, int numSamples) {
 }
 
 event_connection::event_connection() {
+	values.amp = values.pan = 0x4000;
 	connectionType = connection_type_event;
+	connection_values = &values;
+	connection_parameters.push_back(&connVolume);
+	connection_parameters.push_back(&connPanning);
 }
 
 const zzub::parameter *event_connection::getParam(struct metaplugin *mp, size_t group, size_t index)
 {
 	switch (group) {
 		case 0: // input connections
-            return connectionParameters[index];
+            return zzub::connectionParameters[index];
 		case 1: // globals
 			return mp->loader->plugin_info->global_parameters[index];
 		case 2: // track params
@@ -321,7 +325,9 @@ bool event_connection::work() {
 	for (b = bindings.begin(); b != bindings.end(); ++b) {
 		param_in = getParam(plugin_in,3,b->source_param_index);
 		param_out = getParam(plugin_out,b->target_group_index, b->target_param_index);
-		int sv = plugin_out->getParameter(b->target_group_index, b->target_track_index, b->target_param_index);
+		patterntrack* pt=plugin_out->getStateTrack(b->target_group_index, b->target_track_index);
+		int sv = pt->getValue(0, b->target_param_index);
+		//~ int sv = plugin_out->getParameter(b->target_group_index, b->target_track_index, b->target_param_index);
 		plugin_in->setParameter(3, 0, b->source_param_index, convert(sv, param_out, param_in), false);
 	}
 	plugin_in->controllerState.applyControlChanges();
@@ -1006,14 +1012,14 @@ event_connection *metaplugin::addEventInput(metaplugin* fromMachine) {
 
 	add_input_edit.pattern_connection_tracks.resize(patterns.size());
 	for (size_t i = 0; i < patterns.size(); i++) {
-		patterntrack* pt = new patterntrack(0, patterns[i]->_connections.size() + i, connectionParameters, patterns[i]->getRows());
+		patterntrack* pt = new patterntrack(0, patterns[i]->_connections.size() + i, conn->connection_parameters, patterns[i]->getRows());
 		add_input_edit.pattern_connection_tracks[i] = patterns[i]->_connections;
 		add_input_edit.pattern_connection_tracks[i].push_back(pt);
 	}
 
 	// create connection states
 	ParameterState* state = new ParameterState();
-	state->initialize(&conn->values, 0, inConnections.size()-1, connectionParameters);
+	state->initialize(&conn->values, 0, inConnections.size()-1, conn->connection_parameters);
 	state->getStateTrackControl()->setValue(0, 0, 0x4000);
 	state->getStateTrackControl()->setValue(0, 1, 0x4000);
 

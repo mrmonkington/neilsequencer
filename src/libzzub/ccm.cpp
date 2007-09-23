@@ -640,7 +640,10 @@ xml_node CcmWriter::savePatternTrack(xml_node &parent, const std::string &colnam
         for (size_t j = 0; j < t.getParams(); ++j) {
 			const zzub::parameter *param = 0;
 			switch(group) {
-				case 0: param = plugin.getConnection(track)->connection_parameters[j]; break;
+				case 0: 
+				{
+					param = plugin.getConnection(track)->connection_parameters[j]; 
+				} break;
 				case 1: param = plugin.loader->plugin_info->global_parameters[j]; break;
 				case 2: param = plugin.loader->plugin_info->track_parameters[j]; break;
 				default: assert(0);
