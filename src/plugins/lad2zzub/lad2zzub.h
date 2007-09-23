@@ -317,6 +317,8 @@ public:
 	void input(float **samples,int size,float amp);
 	bool handle_input(int index,int amp,int pan);
 
+	virtual void process_controller_events() {}
+
 //**** CLadspa ****************************************************************************************************************************************
 
 private:

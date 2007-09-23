@@ -29,6 +29,7 @@ struct module_plugin : zzub::plugin {
 	virtual void command(int);
 
 	// ::zzub::plugin methods
+	virtual void process_controller_events() {}
 	virtual void destroy() { delete this; }
 	virtual void stop() {}
 	virtual void save(zzub::archive*) {}

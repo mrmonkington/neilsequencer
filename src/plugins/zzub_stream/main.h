@@ -34,6 +34,7 @@ struct stream_plugin : zzub::plugin {
 	stream_plugin();
 
 	// ::zzub::plugin methods
+	virtual void process_controller_events() {}
 	virtual const char * describe_value(int param, int value) { return 0; }
 	virtual void destroy() { delete this; }
 	virtual void stop() {}

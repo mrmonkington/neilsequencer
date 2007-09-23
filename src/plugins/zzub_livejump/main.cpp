@@ -1,7 +1,7 @@
 #include <string.h>
 #include <stdlib.h>
-#include <assert.h>
-#include <math.h>
+#include <cassert>
+#include <cmath>
 #include <stdio.h>
 #include <zzub/signature.h>
 #include <zzub/plugin.h>

@@ -72,6 +72,7 @@ struct stream_tracker_plugin : zzub::plugin {
 	virtual void destroy();
 
 	// ::zzub::plugin methods
+	virtual void process_controller_events() {}
 	virtual const char * describe_value(int param, int value) { return 0; }
 	virtual void attributes_changed() {}
 	virtual void mute_track(int) {}
