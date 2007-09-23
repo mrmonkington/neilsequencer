@@ -26,7 +26,7 @@ struct wave_player {
 	zzub::player* player;
 	wave_info_ex* info;
 	size_t level;
-	CCriticalSection critial;
+	synchronization::critical_section critial;
 	float currentSample;
 	float sampleDelta;
 	int note;

@@ -133,8 +133,8 @@ struct player :
 
 	Timer timer;								// hires timer, for cpu-meter
 
-	CCriticalSection playerLock;				// locked while mixing
-	CCriticalSection playerTickLock;			// locked while ticking
+	synchronization::critical_section playerLock;				// locked while mixing
+	synchronization::critical_section playerTickLock;			// locked while ticking
 
 	std::map<std::string, pluginloader*> machines;
 	std::map<std::string, std::string> aliases;
@@ -167,7 +167,7 @@ struct player :
 
 	std::vector<midimapping> midiInputMappings;
 	std::deque<event_message> messageQueue;
-	CCriticalSection eventLock;
+	synchronization::critical_section eventLock;
 
 	std::string infoText; // song comment
 	float* inputBuffer[audiodriver::MAX_CHANNELS];

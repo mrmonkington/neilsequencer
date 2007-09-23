@@ -17,10 +17,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include "common.h"
-#if defined(_MSC_VER)
-// structured exception handling in visual c++
-#include <eh.h>
-#endif
 #include <float.h>
 #include <cmath>
 #include "pattern.h"
@@ -345,16 +341,18 @@ bool event_connection::work() {
 
 metaplugin::metaplugin(zzub::player* pl, pluginloader* loader) {
 	for (int c = 0; c < 2; ++c) {
-		mixBuffer[c] = new float[MAXBUFFERSAMPLES*4];
-		memset(mixBuffer[c], 0, sizeof(float) * MAXBUFFERSAMPLES*4);
-		machineBuffer[c] = new float[MAXBUFFERSAMPLES*4];
-		memset(machineBuffer[c], 0, sizeof(float) * MAXBUFFERSAMPLES*4);
+		mixBuffer[c] = new float[zzub::buffer_size * 4];
+		memset(mixBuffer[c], 0, sizeof(float) * zzub::buffer_size * 4);
+		machineBuffer[c] = new float[zzub::buffer_size * 4];
+		memset(machineBuffer[c], 0, sizeof(float) * zzub::buffer_size * 4);
 	}
 	sampleswritten = 0;
 	machineCallbacks=new host(this);
-	_internal_globalState=0;
-	_internal_trackState=0;
-	_name=0;
+
+	_internal_globalState = 0;
+	_internal_trackState = 0;
+	_internal_name = 0;
+	_internal_seqCommand = 0;
 
 	this->player=pl;
 	this->loader=loader;
@@ -363,15 +361,12 @@ metaplugin::metaplugin(zzub::player* pl, pluginloader* loader) {
 	tracks=0;
 	x=0;
 	y=0;
-	lastPositionInSequencerPatternList=-1;
-	lastScrollInParameterView=0;
 
 	hardMuted=false;
 	softMuted=false;
 	bypassed=false;
 	softBypassed=false;
 	initialized=false;
-	sequencerCommand = 0;
 
 	workTime=0;
 	lastWorkPos=-1;
@@ -1457,7 +1452,7 @@ void metaplugin::addEventHandler(event_handler *ev) {
 
 bool metaplugin::invokeEvent(zzub_event_data_t& data, bool immediate) {
 	if (!immediate)
-		player->eventLock.Lock();
+		player->eventLock.lock();
 
 	bool handled=false;
 	for (size_t i=0; i<events.size(); i++) {
@@ -1471,14 +1466,14 @@ bool metaplugin::invokeEvent(zzub_event_data_t& data, bool immediate) {
 		}
 	}
 	if (!immediate)
-		player->eventLock.Unlock();
+		player->eventLock.unlock();
 	return handled;
 }
 
 void metaplugin::removeEventHandler(event_handler* ev) {
 
 	// flush messages for this handler
-	player->eventLock.Lock();
+	player->eventLock.lock();
 	for (deque<event_message>::iterator i = player->messageQueue.begin(); i!=player->messageQueue.end(); i++) {
 		event_handler* eh = i->event;
 		if (eh == ev) {
@@ -1490,11 +1485,11 @@ void metaplugin::removeEventHandler(event_handler* ev) {
 	for (vector<event_handler*>::iterator i=events.begin(); i!=events.end(); ++i) {
 		if (*i==ev) {
 			events.erase(i);
-			player->eventLock.Unlock();
+			player->eventLock.unlock();
 			return ;
 		}
 	}
-	player->eventLock.Unlock();
+	player->eventLock.unlock();
 
 }
 
@@ -1734,13 +1729,13 @@ zzub::recorder* metaplugin::getRecorder() {
 
 bool metaplugin::checkBuzzCompatibility() {
 	// check offsets that may be used for known hacks
-	int nameofs = offsetof(metaplugin, _name);					// 0x14 / 0x18 (+/- vtbl)
+	int nameofs = offsetof(metaplugin, _internal_name);			// 0x14 / 0x18 (+/- vtbl)
 	int exofs = offsetof(metaplugin, _internal_machine_ex);		// 0x50
 	int gstateofs = offsetof(metaplugin, _internal_globalState);// 0x68
 	int tstateofs = offsetof(metaplugin, _internal_trackState);	// 0x6c
 	int xofs = offsetof(metaplugin, x);							// 0xa8
 	int yofs = offsetof(metaplugin, y);							// 0xac
-	int seqcmdofs = offsetof(metaplugin, sequencerCommand);		// 0xe8
+	int seqcmdofs = offsetof(metaplugin, _internal_seqCommand); // 0xe8
 	int hardmuteofs = offsetof(metaplugin, hardMuted);			// 0xfd
 
 	if (exofs != 0x50) return false;

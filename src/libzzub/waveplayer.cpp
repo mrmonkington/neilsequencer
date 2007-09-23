@@ -84,28 +84,28 @@ void wave_player::initialize(zzub::player* poo) {
 void wave_player::play(wave_info_ex* info, size_t level, int note) {
 	stop();
 
-	critial.Lock();
+	critial.lock();
 	this->info=info;
 	this->level=level;
 	this->currentSample=0.0f;
 	this->note=note;
-	critial.Unlock();
+	critial.unlock();
 }
 
 void wave_player::stop() {
-	critial.Lock();
+	critial.lock();
 
 	this->info=0;
 	this->level=-1;
 	this->currentSample=0;
-	critial.Unlock();
+	critial.unlock();
 }
 
 void wave_player::work(float** samples, size_t numSamples, bool stereo) {
-	critial.Lock();
+	critial.lock();
 
 	if (level==-1 || !info) {
-		critial.Unlock();
+		critial.unlock();
 		return;
 	}
 		
@@ -157,7 +157,7 @@ void wave_player::work(float** samples, size_t numSamples, bool stereo) {
 		currentSample+=sampleDelta;
 	}
 
-	critial.Unlock();
+	critial.unlock();
 
 }
 

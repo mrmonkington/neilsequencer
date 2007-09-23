@@ -32,7 +32,7 @@ const size_t no_row = SIZE_T_MAX;
 struct patterntrack;
 
 struct patterntrack {
-	CCriticalSection patternLock;
+	synchronization::critical_section patternLock;
 	size_t group;
 	size_t track;
 	size_t rows;

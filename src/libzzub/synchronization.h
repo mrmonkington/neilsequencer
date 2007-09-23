@@ -28,4 +28,20 @@ struct critical_section {
 	void unlock() { api->unlock(); }
 };
 
+class critical_section_locker
+{
+protected:
+	critical_section* cs;
+
+public:
+	critical_section_locker(critical_section& cs) {
+		this->cs = &cs;
+		this->cs->lock();
+	}
+	
+	~critical_section_locker() {
+		this->cs->unlock();
+	}
+};
+
 }

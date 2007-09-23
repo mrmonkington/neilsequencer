@@ -23,9 +23,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #if defined(_WIN32)
 
-#include <io.h>
 #include <windows.h>
-#include <mmsystem.h>
 
 #elif defined(POSIX) // 
 
@@ -68,11 +66,6 @@ typedef long				*LPLONG;
 typedef DWORD				*LPDWORD;
 typedef void				*LPVOID;
 
-
-// or whatever one use to store a shared library on non-win32
-//typedef void* HMODULE;
-
-//typedef void* HANDLE;
 #define strcmpi strcasecmp
 
 typedef char* LPSTR;
@@ -114,7 +107,7 @@ enum LoadProgressType {
 #include <cassert>
 #include <algorithm>
 
-#include "criticalsection.h"
+#include "synchronization.h"
 
 #include "zzub/plugin.h"
 

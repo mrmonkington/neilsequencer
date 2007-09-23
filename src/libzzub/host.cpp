@@ -32,8 +32,8 @@ namespace zzub {
 host::host(metaplugin* m) {
 	_metaplugin=m;
 	for (int c = 0; c < 2; ++c) {
-		auxBuffer[c] = new float[MAXBUFFERSIZE*4];
-		memset(auxBuffer[c], 0, sizeof(float) * MAXBUFFERSIZE);
+		auxBuffer[c] = new float[zzub::buffer_size * sizeof(float) * 4];
+		memset(auxBuffer[c], 0, zzub::buffer_size * sizeof(float) * 4);
 	}
 }
 
@@ -66,11 +66,11 @@ void host::message(char const *txt) {
 }
 
 void host::lock() {
-	_metaplugin->interfaceLock.Lock();
+	_metaplugin->interfaceLock.lock();
 }
 
 void host::unlock() {
-	_metaplugin->interfaceLock.Unlock();
+	_metaplugin->interfaceLock.unlock();
 }
 
 int host::get_write_position() {
@@ -84,8 +84,8 @@ float **host::get_auxiliary_buffer() {
 
 void host::clear_auxiliary_buffer() { 
 	float **buffer = get_auxiliary_buffer();
-	memset(buffer[0], 0, MAXBUFFERSIZE * sizeof(float));
-	memset(buffer[1], 0, MAXBUFFERSIZE * sizeof(float));
+	memset(buffer[0], 0, zzub::buffer_size * sizeof(float));
+	memset(buffer[1], 0, zzub::buffer_size * sizeof(float));
 }
 
 int host::get_next_free_wave_index() {

@@ -132,7 +132,7 @@ const zzub::parameter* patterntrack::getParam(size_t param) {
 }
 
 void patterntrack::serialize(zzub::outstream* writer) {
-	CCriticalSectionLocker csl(this->patternLock);
+	synchronization::critical_section_locker csl(this->patternLock);
 	writer->write(group);
 	writer->write(track);
 	writer->write(rows);
@@ -231,7 +231,7 @@ void patterntrack::setValue(size_t row, size_t param, int value) {
 	}
 
 	if (trackBuffer==0) return ;		// this may get Raverb to (not) initialize - or Raverb is not initialized for some reason
-	CCriticalSectionLocker csl(this->patternLock);
+	synchronization::critical_section_locker csl(this->patternLock);
 	
 	assert(param<offsets.size());
 
@@ -259,7 +259,7 @@ char* patterntrack::getValuePtr(size_t row, size_t param) {
 }
 
 int patterntrack::getValue(size_t row, size_t param) {
-	CCriticalSectionLocker csl(this->patternLock);
+	synchronization::critical_section_locker csl(this->patternLock);
 	int value=0;
 	char* p=getValuePtr(row, param);
 	if (p==0) {
@@ -306,7 +306,7 @@ void patterntrack::resize(size_t newRows) {
 	// lock only this section, since we
 	// are locking as well in resetValues
 	{
-		CCriticalSectionLocker csl(this->patternLock);
+		synchronization::critical_section_locker csl(this->patternLock);
 		size_t bufferSize = newRows*rowSize;
 		if (trackBuffer && ownsBuffer) {
 			char* newBuffer = new char[bufferSize];

@@ -56,23 +56,23 @@ void sequence::advanceTick() {
 			if (event->type == sequence_event_type_mute) {
 				// Mute sequencer
 				machine->softMute();	// kaller vi stop() går det veldig galt
-				machine->sequencerCommand = 1;
+				machine->_internal_seqCommand = 1;
 				pattern=0;
 			} else
 			if (event->type == sequence_event_type_break) {
 				// Break sequencer
 				machine->clearParameters();
-				machine->sequencerCommand = 0;
+				machine->_internal_seqCommand = 0;
 				pattern=0;
 			} else
 			if (event->type == sequence_event_type_thru) {
 				// Thru / bypass effect
 				machine->softBypass(true);
-				machine->sequencerCommand = 2;
+				machine->_internal_seqCommand = 2;
 				pattern = 0;
 			} else
 			if (event->type == sequence_event_type_pattern) {
-				machine->sequencerCommand = 0;
+				machine->_internal_seqCommand = 0;
 				pattern=event->value;
 				patternPosition=0;
 			}

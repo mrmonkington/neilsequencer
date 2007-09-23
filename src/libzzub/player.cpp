@@ -84,8 +84,8 @@ player::player()
 	:song_sequencer(this) 
 {
 	for (int c = 0; c < 2; ++c) {
-		mixBuffer[c] = new float[MAXBUFFERSAMPLES*4];
-		memset(mixBuffer[c], 0, sizeof(float) * MAXBUFFERSAMPLES*4);
+		mixBuffer[c] = new float[zzub::buffer_size * 4];
+		memset(mixBuffer[c], 0, sizeof(float) * zzub::buffer_size * 4);
 	}
 	soloMachine=0;
 	workPos=0;
@@ -370,23 +370,23 @@ pluginloader* player::getMachineLoader(std::string uri) {
 	member objects, and return values from zzub::metaplugin and player methods.
 */
 void player::lock() {
-	playerLock.Lock();
+	playerLock.lock();
 }
 
 /*! \brief Unlock the player.
 */
 void player::unlock() {
-	playerLock.Unlock();
+	playerLock.unlock();
 }
 
 /*! \brief Lock sequencer and pattern data. */
 void player::lockTick() {
-	playerTickLock.Lock();
+	playerTickLock.lock();
 }
 
 /*!	\brief Unlock sequencer and pattern data. */
 void player::unlockTick() {
-	playerTickLock.Unlock();
+	playerTickLock.unlock();
 }
 
 /*! \brief Returns a machine loader by index. */
@@ -549,14 +549,14 @@ void player::deleteMachine(zzub::metaplugin* machine) {
 	master->invokeEvent(eventData, true);
 
     // flush pending events for this machine
-    eventLock.Lock();
+    eventLock.lock();
     for (deque<event_message>::iterator i = messageQueue.begin(); i!=messageQueue.end(); i++) {
         if (i->plugin == machine) {
             i = messageQueue.erase(i);
             --i;
         }
     }
-    eventLock.Unlock();
+    eventLock.unlock();
 
 	delete machine;
 }
@@ -945,8 +945,8 @@ void player::workStereo(int numSamples) {
 
 	    player_state state = getPlayState();
 
-	    memset(master->machineBuffer[0], 0, MAXBUFFERSAMPLES*sizeof(float));
-	    memset(master->machineBuffer[1], 0, MAXBUFFERSAMPLES*sizeof(float));
+	    memset(master->machineBuffer[0], 0, zzub::buffer_size * sizeof(float));
+	    memset(master->machineBuffer[1], 0, zzub::buffer_size * sizeof(float));
 
 		if (state != player_state_muted && state != player_state_released) {
 			for (unsigned i = 0; i < machineInstances.size(); i++) {
@@ -1105,21 +1105,21 @@ queued until the host invokes handleMessages() on its thread.
 */
 void player::handleMessages() {
 	while (true) {
-		eventLock.Lock();
+		eventLock.lock();
 		size_t messages = messageQueue.size();
-		eventLock.Unlock();
+		eventLock.unlock();
 
  		if (messages == 0) break;
 
-		eventLock.Lock();
+		eventLock.lock();
         event_message& message=messageQueue.front();
-		eventLock.Unlock();
+		eventLock.unlock();
 
 		message.event->invoke(message.data);
 
-		eventLock.Lock();
+		eventLock.lock();
         messageQueue.pop_front();
-        eventLock.Unlock();
+        eventLock.unlock();
     }
 }
 

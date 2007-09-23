@@ -18,8 +18,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #pragma once
 
-class StreamWriter;
-
 namespace zzub {
 
 struct metaplugin;
@@ -34,9 +32,6 @@ struct patterntrack;
 struct recorder;
 struct tickstream;
 extern std::vector<const parameter *> connectionParameters;
-
-#define MAXBUFFERSAMPLES 256	// must match machineinterface.h
-#define MAXBUFFERSIZE MAXBUFFERSAMPLES*sizeof(float)
 
 // MachineValidation is normally populated by reading the .bmx PARA section
 class MachineValidation {
@@ -134,57 +129,64 @@ struct scheduled_event {
     int time, data;
 };
 
-// zzub::metaplugin as seen from a buzz machine.
-// NOTE: The order of member variables in zzub::metaplugin is NOT random.
-// Some machines look up these by reading directly from zzub::metaplugin memory.
-
 struct metaplugin {
 
-	int initDataSize, initDataRead;		    // used to generate warnings when reading too much or too little from the .bmx
-	pluginloader* loader;
-	zzub::plugin* machine;	                // returned by createMachine
-											// when attaching to a vst (for renaming? which does not take place?)
-	char* _name;							// assumed to be at 0x14 polac's VST reads this string
-	host* machineCallbacks;
-	CCriticalSection interfaceLock;
+	// Jeskola Buzz compatible CMachine header.
+	// Some machines look up these by reading directly from zzub::metaplugin memory.
 
+	char _placeholder[16];
+	char* _internal_name;					// 0x14: polac's VST reads this string, set to 0
+	char _placeholder2[48];
+	void* _internal_machine;				// pointer to CMachine*, scanned for by some plugins
+	void* _internal_machine_ex;				// 0x50: same as above, but is not scanned for
+	char _placeholder3[20];
+	char* _internal_globalState;			// 0x68: copy of machines global state
+	char* _internal_trackState;				// 0x6C: copy of machines track state
+	char _placeholder4[120];
+	int _internal_seqCommand;				// 0xE8: used by mooter, 0 = --, 1 = mute, 2 = thru
+	char _placeholder6[17];
+	bool hardMuted;							// 0xFD: true when muted by user, used by mooter
+
+	// End of Buzz compatible header
+
+	// machine info
+	std::string machineName;
+	size_t tracks;
+	std::vector<pattern*> patterns;
+	zzub::player* player;
+	pluginloader* loader;
+	zzub::plugin* machine;					// returned by createMachine
+	host* machineCallbacks;
+	int initDataSize, initDataRead;			// used to generate warnings when reading too much or too little from the .bmx
+	synchronization::critical_section interfaceLock;
+
+	// machine state
+	bool initialized;						// the player does not do anything if this is false
+	bool softMuted;							// true when muted in sequencer
+	bool bypassed;
+	bool softBypassed;
+	bool nonSongPlugin;						// if true, this plugin is not saved, nor removed from machineInstances on player::clear(). unless set to false, it must be explicitly deleted by the user.
+	float x, y;								// x and y are expected at offsets 0xA8 and 0xAC
+	bool minimized;
+
+	// player statistics
 	unsigned int lastWorkSamples;
 	int lastWorkPos;
-	float lastFrameMaxL, lastFrameMaxR;     // player statistics
-	bool bypassed;
-
-	void* _internal_machine;                // pointer to CMachine* populated by buzz2zzub, so that plugins that scan for this member can find it. it may need a specific offset, but all sources I have seen so far scan for it
-	void* _internal_machine_ex;             // same as above, but is not scanned for. must be at 0x50?
-	size_t tracks;
-	zzub::player* player;
-
-	double workTime;	                    // length of last Work or WorkStereo
-
-	// These contain (duplicate) pointers to copies of machine parameters as required by some polac machine
-	char* _internal_globalState;            // GState is assumed to be located at 0x68
-	char* _internal_trackState;             // TState is assumed to be located at 0x6C
-
-	int numOutputChannels;
-
-	bool lastWorkState;	                    // result of last Work() or WorkStereo()
+	float lastFrameMaxL, lastFrameMaxR;
+	bool lastWorkState;						// result of last Work() or WorkStereo()
 	int lastTickPos;
 	long long sampleswritten;
+	double workTime;						// length of last Work or WorkStereo
+
+	// parameter state
+	std::vector<ParameterState*> connectionStates;
+	ParameterState globalState;
+	std::vector<ParameterState*> trackStates;
+	ParameterState controllerState;
 
 	// work buffers
 	float *mixBuffer[2];	// necessary=*2, allocated=*4, when this buffer is a bit larger than necessary, we avoid buggy machines to trash the stack, such as dedacode slicer
 	float *machineBuffer[2];// max buffer size = 4196 samples in stereo (plus extra to care for stack trashing)
-
-	void* _placeholder;                       // unused but occupies 4 bytes for alignment with the below
-	std::string machineName;                // replace the char* at 0x14
-
-	bool softMuted;			                // true when muted in sequencer
-	bool initialized;                       // the player does not do anything if this is false
-
-	// Properties used mainly by the UI:
-	float x, y;                             // x and y are expected at offsets 0xA8 and 0xAC
-	bool minimized;
-	int lastPositionInSequencerPatternList;
-	int lastScrollInParameterView;
 
 	// wave writer properties
 	bool writeWave; // if true, mixed buffers will be written to outfile
@@ -192,30 +194,20 @@ struct metaplugin {
 	int endWritePosition; // writeWave will be set to true if this tick is reached, if -1, no effect
 	bool autoWrite; // write wave when playing and stop writing when stopped
 	int ticksWritten; // number of ticks that have been written
-	bool softBypassed;
 
-	int sequencerCommand;	// used by mooter, 0 = --, 1 = mute, 2 = thru
-	int _internal_temp1, _internal_temp2;
-	int _internal_temp3, _internal_temp4;
-	bool _internal_placeholder;
-	bool hardMuted;			// true when muted by user, used by mooter
+	// alternative wave writers
+	std::vector<zzub::tickstream*> postProcessors;
+	zzub::recorder* pluginRecorder;
 
+	// connections
 	std::vector<connection*> inConnections;
 	std::vector<connection*> outConnections;
 
+	// listeners to events sent from this machine
 	std::vector<event_handler*> events;
 
-	std::vector<ParameterState*> connectionStates;
-	ParameterState globalState;
-	std::vector<ParameterState*> trackStates;
-	ParameterState controllerState;
-
-	std::vector<zzub::tickstream*> postProcessors;
-	zzub::recorder* pluginRecorder;
+	// MIDI-out events
 	std::list<scheduled_event> scheduledEvents;
-	std::vector<pattern*> patterns;
-
-	bool nonSongPlugin;	// if true, this plugin is not saved, nor removed from machineInstances on player::clear(). unless set to false, it must be explicitly deleted by the user.
 
 	metaplugin(zzub::player*, pluginloader*);
 	virtual ~metaplugin();
