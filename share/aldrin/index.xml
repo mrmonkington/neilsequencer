@@ -17,6 +17,7 @@
 	</group> 
 	<separator/>
 	<ref label="Lunar LFO" uri="@trac.zeitherrschaft.org/aldrin/lunar/controller/lfo;1"/>
+	<ref label="Lunar Transpose" uri="@trac.zeitherrschaft.org/aldrin/lunar/controller/transpose;1"/>
 	<separator/>
 	<ref icon="lunar_delay" label="Lunar Delay" uri="@trac.zeitherrschaft.org/aldrin/lunar/effect/delay;1"/>
 	<ref icon="lunar_filter" label="Lunar Filter" uri="@trac.zeitherrschaft.org/aldrin/lunar/effect/filter;1"/>
