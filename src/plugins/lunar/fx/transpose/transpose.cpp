@@ -14,6 +14,7 @@ public:
 	float otrans;
 	float ntrans;
 	int *quantize;
+	int custom_quantize[12];
 	
 	void init() {
 		otrans = 0.0f;
@@ -24,14 +25,37 @@ public:
 	void exit() {
 		delete this;
 	}
+	
+	void read_custom_qvalue(int index, float *v) {
+		if (v) {
+			custom_quantize[index] = (12 + int(*v + 0.5f) - index) % 12;
+		}
+	}
 
 	void process_events() {
 		if (globals->otrans)
 			otrans = *globals->otrans - 5.0f;
 		if (globals->ntrans)
 			ntrans = *globals->ntrans - 6.0f;
-		if (globals->hquantize)
-			quantize = quantizes[int(*globals->hquantize + 0.5f)];
+		if (globals->hquantize) {
+			int q = int(*globals->hquantize + 0.5f);
+			if (q == 0)
+				quantize = custom_quantize;
+			else
+				quantize = quantizes[q];
+		}
+		read_custom_qvalue(0, globals->q0);
+		read_custom_qvalue(1, globals->q1);
+		read_custom_qvalue(2, globals->q2);
+		read_custom_qvalue(3, globals->q3);
+		read_custom_qvalue(4, globals->q4);
+		read_custom_qvalue(5, globals->q5);
+		read_custom_qvalue(6, globals->q6);
+		read_custom_qvalue(7, globals->q7);
+		read_custom_qvalue(8, globals->q8);
+		read_custom_qvalue(9, globals->q9);
+		read_custom_qvalue(10, globals->q10);
+		read_custom_qvalue(11, globals->q11);
 	}
 	
 	float quantize_note(float fnote) {
