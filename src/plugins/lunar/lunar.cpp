@@ -1001,6 +1001,7 @@ struct dspplugin : zzub::plugin {
 	};
 	std::list< std::vector<float> > buffers; // list of buffers
 	std::list< stereopair > stereopairs; // list of stereopairs
+	zzub::master_info last_master_info;
 	
 	float *create_buffer(int size) {
 		buffers.push_back(std::vector<float>());
@@ -1075,8 +1076,9 @@ struct dspplugin : zzub::plugin {
 		fx->host = &host;
 		fx->globals = &grefs[0];
 		fx->tracks = &trefs[0];
-    fx->controllers = &crefs[0];
+		fx->controllers = &crefs[0];
 		silencecount = 0;
+		memset(&last_master_info, 0, sizeof(zzub::master_info));
 	}
 	
 	void exit_host() {
@@ -1093,6 +1095,16 @@ struct dspplugin : zzub::plugin {
 		transport.tick_position = _master_info->tick_position;
 		transport.ticks_per_second = _master_info->ticks_per_second;
 		fx->track_count = track_count;
+	}
+	
+	void check_masterinfo_changed() {
+		if ((last_master_info.beats_per_minute != _master_info->beats_per_minute)
+			||(last_master_info.samples_per_second != _master_info->samples_per_second)
+		||(last_master_info.ticks_per_beat != _master_info->ticks_per_beat))
+		{
+			last_master_info = *_master_info;
+			call_transport_changed();
+		}
 	}
 	
 	virtual void init(zzub::archive *)
@@ -1179,6 +1191,13 @@ struct dspplugin : zzub::plugin {
 	
 	virtual void OutputModeChanged(bool stereo) { }
 	
+	void call_transport_changed() {
+		if (fxcopy.transport_changed) {
+			fxcopy.transport_changed(fx);
+
+		}
+	}
+	
 	void call_process_events() {
 		if (fxcopy.process_events) {
 			fxcopy.process_events(fx);
@@ -1193,7 +1212,7 @@ struct dspplugin : zzub::plugin {
 	}
 
 	virtual bool process_stereo(float **pin, float **pout, int numsamples, int mode) {
-		
+		check_masterinfo_changed();
 		if( (mode&zzub::process_mode_write)==0 )
 			return false;
 		// if we are an effect, the input is empty and there was more than one second of silence,

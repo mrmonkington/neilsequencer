@@ -14,6 +14,7 @@ public:
 	};
 
 	ringbuffer_t rb[2];
+	float delay_in_beats;
 	float wet;
 	float dry;
 	float fb;
@@ -44,6 +45,7 @@ public:
 	}
 
 	void init() {
+		delay_in_beats = 0.75f;
 		rb_init(&rb[0]);
 		rb_init(&rb[1]);
 		wet = 0.0f;
@@ -53,17 +55,22 @@ public:
 
 	void exit() {
 	}
+	
+	void update_buffer() {
+		int rbsize = (int)min(transport->samples_per_tick * transport->ticks_per_beat * delay_in_beats + 0.5f, MAX_DELAY_LENGTH);
+		printf("delay = %f, rbsize = %i\n", delay_in_beats, rbsize);
+		rb_setup(&rb[0], rbsize);
+		rb_setup(&rb[1], rbsize);
+	}
+	
+	void transport_changed() {
+		update_buffer();
+	}
 
 	void process_events() {
-		float delay_in_beats;
-		int rbsize;
-		
 		if (globals->delay) {
 			delay_in_beats = *globals->delay / 1024.0f;
-			rbsize = (int)min(transport->samples_per_tick * transport->ticks_per_beat * delay_in_beats + 0.5f, MAX_DELAY_LENGTH);
-			printf("delay = %f, rbsize = %i\n", delay_in_beats, rbsize);
-			rb_setup(&rb[0], rbsize);
-			rb_setup(&rb[1], rbsize);
+			update_buffer();
 		}
 		if (globals->wet) {
 			wet = dbtoamp(*globals->wet, -48.0f);
