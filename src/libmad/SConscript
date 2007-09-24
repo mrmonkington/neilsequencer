@@ -24,11 +24,17 @@ files = [
 	'version.c',
 ]
 
-localenv.Append(CCFLAGS=[
-	'-DHAVE_CONFIG_H',
-	'-DFPM_INTEL', # this needs to be changed for other platforms
-])
-	
+if cl:
+	localenv.Append(CCFLAGS=[
+		'-Dinline=__inline',
+		'-DFPM_INTEL', # this needs to be changed for other platforms
+	])
+else:
+	localenv.Append(CCFLAGS=[
+		'-DHAVE_CONFIG_H',
+		'-DFPM_INTEL', # this needs to be changed for other platforms
+	])
+
 libmad_static = localenv.StaticLibrary('${LIB_BUILD_PATH}/libmad_static', files)
 
 Export('libmad_static')
