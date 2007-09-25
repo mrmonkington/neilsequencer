@@ -79,7 +79,7 @@ void sequence::advanceTick() {
 		}
 
 		if (pattern && patternPosition<pattern->getRows()) {
-			machine->playPatternRow(pattern, (int)patternPosition, false);
+			if (!machine->hardMuted) machine->playPatternRow(pattern, (int)patternPosition, false);
 			patternPosition++;
 		}
 	}

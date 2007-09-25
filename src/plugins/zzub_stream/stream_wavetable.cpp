@@ -113,6 +113,8 @@ bool stream_wavetable::process_stereo(float **pin, float **pout, int numsamples,
 		return false;
 	}
 
+	float amp = wave->volume;
+
 	char* sample_ptrc = (char*)wave->get_sample_ptr(level);
 	int bytes_per_sample = wave->get_bytes_per_sample(level);
 	int channels = wave->get_stereo()?2:1;
@@ -121,13 +123,13 @@ bool stream_wavetable::process_stereo(float **pin, float **pout, int numsamples,
 	sample_ptrc += (bytes_per_sample * channels) * currentPosition;
 
 	for (int i = 0; i<maxread; i++) {
-		pout[0][i] = sample_scale(format, sample_ptrc);
+		pout[0][i] = sample_scale(format, sample_ptrc) * amp;
 		sample_ptrc += bytes_per_sample;
 
 		if (channels == 1) {
 			pout[1][i] = pout[0][i]; 
 		} else {
-			pout[1][i] = sample_scale(format, sample_ptrc);
+			pout[1][i] = sample_scale(format, sample_ptrc) * amp;
 			sample_ptrc += bytes_per_sample;
 		}
 	}
