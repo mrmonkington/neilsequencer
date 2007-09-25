@@ -628,7 +628,8 @@ def file_filter(name,*patterns):
 	ff = gtk.FileFilter()
 	ff.set_name(name)
 	for pattern in patterns:
-		ff.add_pattern(pattern)
+		ff.add_pattern(pattern.upper())
+		ff.add_pattern(pattern.lower())
 	return ff
 
 	
