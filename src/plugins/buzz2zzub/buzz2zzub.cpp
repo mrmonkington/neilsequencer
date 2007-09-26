@@ -548,7 +548,7 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 			param++;
 		}
 		buzzinfo->numAttributes = _info->attributes.size();
-		buzzinfo->Attributes = (const CMachineAttribute **)&_info->attributes[0];
+		buzzinfo->Attributes = _info->attributes.size() > 0 ? (const CMachineAttribute **)&_info->attributes[0] : 0;
 		buzzinfo->Name = _info->name;
 		buzzinfo->ShortName = _info->short_name;
 		buzzinfo->Author = _info->author;
