@@ -26,6 +26,7 @@ from gtkimport import gtk
 import gobject
 import cairo
 import pangocairo
+from utils import PLUGIN_FLAGS_MASK, ROOT_PLUGIN_FLAGS, GENERATOR_PLUGIN_FLAGS, EFFECT_PLUGIN_FLAGS, CONTROLLER_PLUGIN_FLAGS
 from utils import prepstr, filepath, db2linear, linear2db, is_debug, filenameify, \
 	get_item_count, question, error, new_listview, add_scrollbars, get_clipboard_text, set_clipboard_text, \
 	gettext, new_stock_image_button
@@ -577,6 +578,19 @@ class RouteView(gtk.DrawingArea):
 	
 	drawrequest = 0
 	
+	# 0 = default
+	# 1 = muted
+	# 2 = led off
+	# 3 = led on
+	# 4 = led border
+	# 5 = led warning
+	COLOR_DEFAULT = 0
+	COLOR_MUTED = 1
+	COLOR_LED_OFF = 2
+	COLOR_LED_ON = 3
+	COLOR_LED_BORDER = 4
+	COLOR_LED_WARNING = 5
+	
 	def __init__(self, rootwindow, parent):
 		"""
 		Initializer.
@@ -612,46 +626,18 @@ class RouteView(gtk.DrawingArea):
 		Updates the routers color scheme.
 		"""
 		cfg = config.get_config()
-		self.type2brush = [
-			{
-				zzub.zzub_plugin_type_master : cfg.get_float_color("MV Master"),
-				zzub.zzub_plugin_type_generator : cfg.get_float_color("MV Generator"),
-				zzub.zzub_plugin_type_effect : cfg.get_float_color("MV Effect"),
-				zzub.zzub_plugin_type_controller : cfg.get_float_color("MV Controller"),
-			},
-			{
-				zzub.zzub_plugin_type_master : cfg.get_float_color("MV Master"),
-				zzub.zzub_plugin_type_generator : cfg.get_float_color("MV Generator Mute"),
-				zzub.zzub_plugin_type_effect : cfg.get_float_color("MV Effect Mute"),
-				zzub.zzub_plugin_type_controller : cfg.get_float_color("MV Controller Mute"),
-			}
-		]
-		self.ledtype2brush = [
-			{
-				zzub.zzub_plugin_type_master : cfg.get_float_color("MV Master LED Off"),
-				zzub.zzub_plugin_type_generator : cfg.get_float_color("MV Generator LED Off"),
-				zzub.zzub_plugin_type_effect : cfg.get_float_color("MV Effect LED Off"),
-				zzub.zzub_plugin_type_controller : cfg.get_float_color("MV Controller LED Off"),
-			},
-			{
-				zzub.zzub_plugin_type_master : cfg.get_float_color("MV Master LED On"),
-				zzub.zzub_plugin_type_generator : cfg.get_float_color("MV Generator LED On"),
-				zzub.zzub_plugin_type_effect : cfg.get_float_color("MV Effect LED On"),
-				zzub.zzub_plugin_type_controller : cfg.get_float_color("MV Controller LED On"),
-			},
-			{
-				zzub.zzub_plugin_type_master : cfg.get_float_color("MV Master LED Border"),
-				zzub.zzub_plugin_type_generator : cfg.get_float_color("MV Generator LED Border"),
-				zzub.zzub_plugin_type_effect : cfg.get_float_color("MV Effect LED Border"),
-				zzub.zzub_plugin_type_controller : cfg.get_float_color("MV Controller LED Border"),
-			},
-			{
-				zzub.zzub_plugin_type_master : cfg.get_float_color("MV Machine LED Warning"),
-				zzub.zzub_plugin_type_generator : cfg.get_float_color("MV Machine LED Warning"),
-				zzub.zzub_plugin_type_effect : cfg.get_float_color("MV Machine LED Warning"),
-				zzub.zzub_plugin_type_controller : cfg.get_float_color("MV Machine LED Warning"),
-			},			
-		]
+		flags2brushnames = {
+			ROOT_PLUGIN_FLAGS: ('MV Master', 'MV Master', 'MV Master LED Off', 'MV Master LED On', 'MV Master LED Border', 'MV Machine LED Warning'),
+			GENERATOR_PLUGIN_FLAGS: ('MV Generator', 'MV Generator Mute', 'MV Generator LED Off', 'MV Generator LED On', 'MV Generator LED Border', 'MV Machine LED Warning'),
+			EFFECT_PLUGIN_FLAGS: ('MV Effect', 'MV Effect Mute', 'MV Effect LED Off', 'MV Effect LED On', 'MV Effect LED Border', 'MV Machine LED Warning'),
+			CONTROLLER_PLUGIN_FLAGS: ('MV Controller', 'MV Controller Mute', 'MV Controller LED Off', 'MV Controller LED On', 'MV Controller LED Border', 'MV Machine LED Warning'),
+		}
+		self.flags2brushes = {}
+		for flags,names in flags2brushnames.iteritems():
+			brushes = []
+			for name in names:
+				brushes.append(cfg.get_float_color(name))
+			self.flags2brushes[flags] = brushes
 		common.get_plugin_infos().reset_plugingfx()
 		
 	def on_player_callback(self, player, plugin, data):
@@ -1404,9 +1390,9 @@ class RouteView(gtk.DrawingArea):
 				pctx.set_line_width(1)
 				# adjust colour for muted plugins
 				if pi.muted:
-					pctx.set_source_rgb(*self.type2brush[1][mp.get_type()])
+					pctx.set_source_rgb(*self.flags2brushes[mp.get_flags() & PLUGIN_FLAGS_MASK][self.COLOR_MUTED])
 				else:
-					pctx.set_source_rgb(*self.type2brush[0][mp.get_type()])
+					pctx.set_source_rgb(*self.flags2brushes[mp.get_flags() & PLUGIN_FLAGS_MASK][self.COLOR_DEFAULT])
 				pctx.rectangle(-1,-1,PLUGINWIDTH+1,PLUGINHEIGHT+1)
 				pctx.fill()
 				pctx.rectangle(0,0,PLUGINWIDTH-1,PLUGINHEIGHT-1)
@@ -1417,7 +1403,7 @@ class RouteView(gtk.DrawingArea):
 					pctx.set_source_rgb(*pluginpen)
 				pctx.stroke()
 				pctx.set_dash([], 0.0)
-				if self.solo_plugin and self.solo_plugin != mp and mp.get_type() == zzub.zzub_plugin_type_generator:
+				if self.solo_plugin and self.solo_plugin != mp and (mp.get_flags() & zzub.plugin_flags_has_audio_output):
 					title = prepstr('[' + mp.get_name() + ']')
 				elif pi.muted:
 					title = prepstr('(' + mp.get_name() + ')')
@@ -1439,21 +1425,21 @@ class RouteView(gtk.DrawingArea):
 				pctx.translate(0.5,0.5)
 				pctx.set_line_width(1)
 				if amp >= 1:
-					pctx.set_source_rgb(*self.ledtype2brush[3][mp.get_type()])
+					pctx.set_source_rgb(*self.flags2brushes[mp.get_flags() & PLUGIN_FLAGS_MASK][self.COLOR_LED_WARNING])
 					pctx.rectangle(LEDOFSX, LEDOFSY, LEDWIDTH-1, LEDHEIGHT-1)
 					pctx.fill_preserve()
-					pctx.set_source_rgb(*self.ledtype2brush[2][mp.get_type()])
+					pctx.set_source_rgb(*self.flags2brushes[mp.get_flags() & PLUGIN_FLAGS_MASK][self.COLOR_LED_BORDER])
 					pctx.stroke()
 				else:
-					pctx.set_source_rgb(*self.ledtype2brush[0][mp.get_type()])
+					pctx.set_source_rgb(*self.flags2brushes[mp.get_flags() & PLUGIN_FLAGS_MASK][self.COLOR_LED_OFF])
 					pctx.rectangle(LEDOFSX, LEDOFSY, LEDWIDTH-1, LEDHEIGHT-1)
 					pctx.fill_preserve()
-					pctx.set_source_rgb(*self.ledtype2brush[2][mp.get_type()])
+					pctx.set_source_rgb(*self.flags2brushes[mp.get_flags() & PLUGIN_FLAGS_MASK][self.COLOR_LED_BORDER])
 					pctx.stroke()
 					amp = 1.0 - (linear2db(amp,-76.0)/-76.0)
 					height = int(LEDHEIGHT*amp)-2
 					if (height > 0):
-						pctx.set_source_rgb(*self.ledtype2brush[1][mp.get_type()])
+						pctx.set_source_rgb(*self.flags2brushes[mp.get_flags() & PLUGIN_FLAGS_MASK][self.COLOR_LED_ON])
 						pctx.rectangle(LEDOFSX+1, LEDOFSY+LEDHEIGHT-height, LEDWIDTH-3, height-2)
 						pctx.fill()
 				pi.amp = amp

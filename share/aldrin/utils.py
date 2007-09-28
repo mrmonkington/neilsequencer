@@ -661,6 +661,12 @@ def diff(oldlist, newlist):
 	"""
 	return [x for x in newlist if x not in oldlist],[x for x in oldlist if x not in newlist] # add, remove
 
+PLUGIN_FLAGS_MASK = zzub.zzub_plugin_flag_is_root|zzub.zzub_plugin_flag_has_audio_input|zzub.zzub_plugin_flag_has_audio_output|zzub.zzub_plugin_flag_has_event_output
+ROOT_PLUGIN_FLAGS = zzub.zzub_plugin_flag_is_root|zzub.zzub_plugin_flag_has_audio_input
+GENERATOR_PLUGIN_FLAGS = zzub.zzub_plugin_flag_has_audio_output
+EFFECT_PLUGIN_FLAGS = zzub.zzub_plugin_flag_has_audio_input|zzub.zzub_plugin_flag_has_audio_output
+CONTROLLER_PLUGIN_FLAGS = zzub.zzub_plugin_flag_has_event_output
+
 __all__ = [
 'is_frozen',
 'get_root_folder_path',

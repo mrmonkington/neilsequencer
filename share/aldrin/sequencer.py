@@ -26,6 +26,7 @@ editor and its associated components.
 from gtkimport import gtk
 import pango
 import gobject
+from utils import PLUGIN_FLAGS_MASK, ROOT_PLUGIN_FLAGS, GENERATOR_PLUGIN_FLAGS, EFFECT_PLUGIN_FLAGS, CONTROLLER_PLUGIN_FLAGS
 from utils import prepstr, from_hsb, to_hsb, get_item_count, get_clipboard_text, set_clipboard_text, add_scrollbars
 import random
 import ctypes
@@ -1114,10 +1115,10 @@ class SequencerView(gtk.DrawingArea):
 		bgb = max(bghsb[2],0.1)
 		#font = wx.Font(7.5, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
 		type2brush = {
-			zzub.zzub_plugin_type_effect : cm.alloc_color(cfg.get_color('MV Effect')),
-			zzub.zzub_plugin_type_generator : cm.alloc_color(cfg.get_color('MV Generator')),
-			zzub.zzub_plugin_type_master : cm.alloc_color(cfg.get_color('MV Master')),
-			zzub.zzub_plugin_type_controller : cm.alloc_color(cfg.get_color('MV Controller')),
+			EFFECT_PLUGIN_FLAGS : cm.alloc_color(cfg.get_color('MV Effect')),
+			GENERATOR_PLUGIN_FLAGS : cm.alloc_color(cfg.get_color('MV Generator')),
+			ROOT_PLUGIN_FLAGS : cm.alloc_color(cfg.get_color('MV Master')),
+			CONTROLLER_PLUGIN_FLAGS : cm.alloc_color(cfg.get_color('MV Controller')),
 		}
 		bgbrush = cm.alloc_color(cfg.get_color('SE BG'))
 		fbrush1 = cm.alloc_color(cfg.get_color('SE BG Very Dark'))
@@ -1182,11 +1183,11 @@ class SequencerView(gtk.DrawingArea):
 			pgfx = pi.patterngfx
 			mname = m.get_name()
 			title = prepstr(mname)
-			if solo_plugin and solo_plugin != m and m.get_type() == zzub.zzub_plugin_type_generator:
+			if solo_plugin and solo_plugin != m and ((m.get_flags() & PLUGIN_FLAGS_MASK) == GENERATOR_PLUGIN_FLAGS):
 				title = "[%s]" % title
 			elif self.plugin_info[m].muted:
 				title = "(%s)" % title
-			gc.set_foreground(type2brush[m.get_type()])
+			gc.set_foreground(type2brush[m.get_flags() & PLUGIN_FLAGS_MASK])
 			drawable.draw_rectangle(gc, True, 0, y, SEQLEFTMARGIN-1, SEQTRACKSIZE)
 			gc.set_foreground(pen)
 			drawable.draw_rectangle(gc, False, 0, y, SEQLEFTMARGIN-1, SEQTRACKSIZE)

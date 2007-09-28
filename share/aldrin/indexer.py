@@ -127,7 +127,7 @@ def parse_index(player, filepath):
 	uri2plugin = {}
 	uriused = []
 	for pl in player.get_pluginloader_list():
-		if pl.get_type() != zzub.zzub_plugin_type_master:
+		if not (pl.get_flags() & zzub.zzub_plugin_flag_is_root):
 			name = pl.get_name()
 			uri = pl.get_uri()
 			name2uri[name] = uri
