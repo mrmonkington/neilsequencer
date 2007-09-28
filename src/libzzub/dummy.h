@@ -61,7 +61,7 @@ struct dummy_plugin : public plugin {
 
 struct dummy_loader : public pluginloader {
     std::string uri;
-    dummy_loader(int type, std::string pluginUri, int attributes, int globalValues, int trackValues, parameter* params);
+    dummy_loader(int flags, std::string pluginUri, int attributes, int globalValues, int trackValues, parameter* params);
     virtual plugin* createMachine();
 };
 

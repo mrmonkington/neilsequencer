@@ -98,7 +98,7 @@ void enumerate_dssiplugin
 		i->m_label = desc->LADSPA_Plugin->Label;
 		i->m_name = desc->LADSPA_Plugin->Name;		
 		i->m_maker = desc->LADSPA_Plugin->Maker;
-		i->type = zzub::plugin_type_generator;
+		i->flags = zzub::plugin_flag_has_audio_output;
 		i->name = i->m_name.c_str();
 		i->min_tracks = 1;
 		i->max_tracks = 16;

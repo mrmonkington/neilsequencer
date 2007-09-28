@@ -938,11 +938,11 @@ void metaplugin::softBypass(bool state) {
 }
 
 bool metaplugin::isNoOutput() {
-	return (loader->plugin_info->flags & zzub::plugin_flag_no_output) != 0;
+	return (loader->plugin_info->flags & (zzub::plugin_flag_is_root|zzub::plugin_flag_has_audio_output)) == 0;
 }
 
-zzub::plugin_type metaplugin::getType() {
-	return (plugin_type)loader->plugin_info->type;
+int metaplugin::getFlags() { 
+	return loader->plugin_info->flags;
 }
 
 pattern* metaplugin::getPattern(std::string name) {
@@ -1045,22 +1045,19 @@ audio_connection *metaplugin::addAudioInput(metaplugin* fromMachine, unsigned sh
 	// Ensure this connection won't crash
 	bool isNoOutput = false;
 
-	if ((fromMachine->loader->plugin_info->flags & plugin_flag_no_output) ) isNoOutput = true;
-	if (isNoOutput && getType() != plugin_type_master) return 0;
+	if (!(fromMachine->loader->plugin_info->flags & zzub::plugin_flag_has_audio_output) ) isNoOutput = true;
+	if (isNoOutput && !(getFlags() & zzub::plugin_flag_is_root)) return 0;
 
 	// Check whether these machines are already connection to each others
 	if (getConnection(fromMachine, zzub::connection_type_audio)) return 0;
 
 	// generators don't have inputs, but some popular plugins are incorrectly flagged as generators
 	// the following line was commented out in response to that, so f.ekx songs using geoniks 2p filter will load
-  if (getType() == plugin_type_generator) return 0;
-
-  // controllers don't have inputs either
-  if (getType() == plugin_type_controller) return 0;
+	if (!(getFlags() & zzub::plugin_flag_has_audio_input)) return 0;
 
 	// allow one type of cyclic connection, when the master is connected to a no_output machine
-	if (fromMachine->getType() == plugin_type_master) {
-		if ((loader->plugin_info->flags & plugin_flag_no_output)== 0)
+	if (fromMachine->getFlags() & zzub::plugin_flag_is_root) {
+		if (loader->plugin_info->flags & zzub::plugin_flag_has_audio_output)
 			return 0;
 	} else {
 		// check cyclic connections
@@ -1565,7 +1562,7 @@ bool metaplugin::isSoloMutePlaying() {
 	if (isSoftMuted()) return false;
 	if (isMuted()) return false;
 	if (!player->getSoloMachine()) return true;
-	if (getType()!=plugin_type_generator) return true;
+	if (getFlags() & zzub::plugin_flag_has_audio_input) return true;
 	if (player->getSoloMachine()==this) 
 		return true; else
 		return false;
@@ -1586,7 +1583,7 @@ const envelope_info& metaplugin::getEnvelopeInfo(size_t index) {
 
 // resetMixer sørger for at maskinene mixer på nytt etter stop/play (ellers får vi asserts i player::workmachine() når posintick==lastWorkPos==0 && mixSize!=prevSize)
 void metaplugin::resetMixer() {
-	if (getType()==plugin_type_master)
+	if (getFlags() & zzub::plugin_flag_is_root)
 		machine->_master_info->tick_position=0;
 	lastWorkPos=-1;
 }
@@ -1644,7 +1641,7 @@ bool metaplugin::work(float** pout, int numSamples, unsigned long flags) {
 	lastWorkSamples=numSamples;
 	sampleswritten += numSamples;
 
-	if (loader->plugin_info->type == zzub_plugin_type_master) {
+	if (loader->plugin_info->flags & zzub::plugin_flag_is_root) {
 		// send vu information
 		zzub_event_data eventData={zzub_event_type_vu};
 		eventData.vu.size = numSamples;

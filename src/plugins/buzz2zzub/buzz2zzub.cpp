@@ -45,6 +45,13 @@
 #include "../../libzzub/player.h"           // needs to set some internal Buzz-only stuff 
 #include "unhack.h"
 
+#define PLUGIN_FLAGS_MASK (zzub_plugin_flag_is_root|zzub_plugin_flag_has_audio_input|zzub_plugin_flag_has_audio_output|zzub_plugin_flag_has_event_output)
+#define ROOT_PLUGIN_FLAGS (zzub_plugin_flag_is_root|zzub_plugin_flag_has_audio_input)
+#define GENERATOR_PLUGIN_FLAGS (zzub_plugin_flag_has_audio_output)
+#define EFFECT_PLUGIN_FLAGS (zzub_plugin_flag_has_audio_input|zzub_plugin_flag_has_audio_output)
+#define CONTROLLER_PLUGIN_FLAGS (zzub_plugin_flag_has_event_output)
+
+
 void CopyM2S(float *pout, float *pin, int numsamples, float amp);
 
 
@@ -530,7 +537,14 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 		
 		CMachineInfo *buzzinfo = new CMachineInfo();
 		machineinfos.push_back(buzzinfo);
-		buzzinfo->Type = _info->type;
+		if ((_info->flags & PLUGIN_FLAGS_MASK) == ROOT_PLUGIN_FLAGS)
+			buzzinfo->Type = MT_MASTER;
+		else if ((_info->flags & PLUGIN_FLAGS_MASK) == GENERATOR_PLUGIN_FLAGS)
+			buzzinfo->Type = MT_GENERATOR;
+		else if ((_info->flags & PLUGIN_FLAGS_MASK) == EFFECT_PLUGIN_FLAGS)
+			buzzinfo->Type = MT_EFFECT;
+		else
+			buzzinfo->Type = MT_EFFECT;
 		buzzinfo->Version = _info->version;
 		buzzinfo->Flags = _info->flags;
 		buzzinfo->minTracks = _info->min_tracks;
@@ -759,9 +773,14 @@ struct buzzplugininfo : zzub::info
 		
 		const CMachineInfo *buzzinfo = GetInfo();
 
-		type = buzzinfo->Type;
 		version = buzzinfo->Version;
 		flags = buzzinfo->Flags;
+		switch (buzzinfo->Type) {
+			case MT_MASTER: flags |= ROOT_PLUGIN_FLAGS; break;
+			case MT_GENERATOR: flags |= GENERATOR_PLUGIN_FLAGS; break;
+			case MT_EFFECT:
+			default: flags |= EFFECT_PLUGIN_FLAGS; break;
+		}
 		min_tracks = buzzinfo->minTracks;
 		max_tracks = buzzinfo->maxTracks;
 		for (int i = 0; i < buzzinfo->numGlobalParameters; ++i) {

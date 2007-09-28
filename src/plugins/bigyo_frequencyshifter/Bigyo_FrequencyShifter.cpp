@@ -58,7 +58,7 @@ const zzub::parameter *paraDirectionR = 0;
 const zzub::parameter *paraRate = 0;
 
 machine_info::machine_info() {
-	this->type = zzub::plugin_type_effect;
+	this->flags = zzub::plugin_flag_has_audio_input | zzub::plugin_flag_has_audio_output;
 	this->name = "Bigyo FrequencyShifter";
 	this->short_name = "FreqShift";
 	this->author = "Marcin Dabrowski";

@@ -48,7 +48,7 @@ if __name__ == "__main__":
 		raise SystemExit, 1
 
 	p.audiodriver_set_samplerate(44100)
-	res = p.audiodriver_create(-1) # best pick
+	res = p.audiodriver_create(-1, -1) # best pick
 	if res:
 		print "error creating audiodriver."
 		raise SystemExit, 1

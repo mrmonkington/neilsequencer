@@ -40,7 +40,6 @@ const size_t default_dummy_maxtracks=255;
 
 struct dummy_info : zzub::info {
 	dummy_info() {
-		this->type = zzub::plugin_type_master;
 		this->flags = zzub::plugin_flag_mono_to_stereo;
 		this->max_tracks = default_dummy_maxtracks;
 		this->name = "Dummy";
@@ -81,14 +80,14 @@ bool dummy_plugin::process_stereo(float **pin, float **pout, int numsamples, int
 }
 
 
-dummy_loader::dummy_loader(int type, std::string pluginUri, int attributes, int globalValues, int trackValues, parameter* params)
+dummy_loader::dummy_loader(int flags, std::string pluginUri, int attributes, int globalValues, int trackValues, parameter* params)
     :pluginloader(0, 0) 
 {
     dummy_info* newInfo=new dummy_info();
 
     this->uri=pluginUri;
 
-    newInfo->type=type;
+    newInfo->flags |= flags;
     newInfo->uri=this->uri.c_str();
     //~ newInfo->attribute_count=attributes;
     //~ newInfo->global_parameter_count=globalValues;

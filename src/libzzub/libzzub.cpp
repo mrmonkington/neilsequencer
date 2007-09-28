@@ -547,8 +547,8 @@ const zzub_parameter_t *zzub_pluginloader_get_parameter(zzub_pluginloader_t* loa
 	}
 }
 
-int zzub_pluginloader_get_type(zzub_pluginloader_t* loader) {
-	return loader->plugin_info->type;
+int zzub_pluginloader_get_flags(zzub_pluginloader_t* loader) {
+	return loader->plugin_info->flags;
 }
 
 const char *zzub_pluginloader_get_uri(zzub_pluginloader_t* loader) {
@@ -667,8 +667,8 @@ int zzub_plugin_get_sub_commands(zzub_plugin_t *machine, int i, char* commands, 
 	return strlen(commands);
 }
 
-int zzub_plugin_get_type(zzub_plugin_t *machine) {
-	return machine->loader->plugin_info->type;
+int zzub_plugin_get_flags(zzub_plugin_t *machine) {
+	return machine->loader->plugin_info->flags;
 }
 
 int zzub_plugin_get_output_channels(zzub_plugin_t *machine) {

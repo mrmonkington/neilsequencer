@@ -456,12 +456,11 @@ struct dspplugin : zzub::plugin {
 			// info type
 			std::string type = item.attribute("type").value();
 			if (type == "generator") {
-				this->type = zzub::plugin_type_generator;
+				this->flags = zzub::plugin_flag_has_audio_output;
 			} else if (type == "effect") {
-				this->type = zzub::plugin_type_effect;
+				this->flags = zzub::plugin_flag_has_audio_input | zzub::plugin_flag_has_audio_output;
 			} else if (type == "controller") {
-				this->type = zzub::plugin_type_controller;
-				this->flags |= zzub::plugin_flag_no_output;
+				this->flags = zzub::plugin_flag_has_event_output;
 			} else {
 				std::cerr << "lunar: unknown value '" << type << "' for type attribute." << std::endl;
 				return false;
@@ -1218,7 +1217,7 @@ struct dspplugin : zzub::plugin {
 		// if we are an effect, the input is empty and there was more than one second of silence,
 		// don't generate any data.
 		
-		if (_info.type == zzub_plugin_type_effect) {
+		if (_info.flags & zzub::plugin_flag_has_audio_input) {
 			if (!(mode&zzub::process_mode_read)) {
 				if (silencecount > _master_info->samples_per_second)
 					return false;

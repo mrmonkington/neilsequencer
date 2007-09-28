@@ -150,7 +150,7 @@ class zzub_event_data_unknown(Structure):
 
 zzub_event_data_unknown_t = zzub_event_data_unknown
 
-class union__10b9a4b8(Union):
+class union__8ab17ba0(Union):
 	_fields_ = [
 		('new_plugin', zzub_event_data_new_plugin_t),
 		('delete_plugin', zzub_event_data_delete_plugin_t),
@@ -173,7 +173,7 @@ class union__10b9a4b8(Union):
 class zzub_event_data(Structure):
 	_fields_ = [
 		('type', c_int),
-		('', union__10b9a4b8),
+		('', union__8ab17ba0),
 	]
 
 zzub_event_data_t = zzub_event_data
@@ -274,12 +274,6 @@ zzub_event_id = c_void_p
 zzub_version = 15
 zzub_buffer_size = 256
 
-# enumeration zzub_plugin_type
-zzub_plugin_type_master = 0
-zzub_plugin_type_generator = 1
-zzub_plugin_type_effect = 2
-zzub_plugin_type_controller = 3
-
 # enumeration zzub_event_type
 zzub_event_type_double_click = 0
 zzub_event_type_new_plugin = 1
@@ -363,9 +357,13 @@ zzub_plugin_flag_plays_waves = 2
 zzub_plugin_flag_uses_lib_interface = 4
 zzub_plugin_flag_uses_instruments = 8
 zzub_plugin_flag_does_input_mixing = 16
-zzub_plugin_flag_no_output = 32
 zzub_plugin_flag_control_plugin = 64
 zzub_plugin_flag_auxiliary = 128
+zzub_plugin_flag_is_root = 65536
+zzub_plugin_flag_has_audio_input = 131072
+zzub_plugin_flag_has_audio_output = 262144
+zzub_plugin_flag_has_event_input = 524288
+zzub_plugin_flag_has_event_output = 1048576
 
 # enumeration zzub_state_flag
 zzub_state_flag_playing = 1
@@ -486,7 +484,7 @@ zzub_pluginloader_get_parameter          = dlsym(libzzub, 'zzub_pluginloader_get
 zzub_pluginloader_get_attribute_count    = dlsym(libzzub, 'zzub_pluginloader_get_attribute_count' , c_int, ('loader'  ,POINTER(zzub_pluginloader_t)))
 zzub_pluginloader_get_attribute          = dlsym(libzzub, 'zzub_pluginloader_get_attribute'       , POINTER(zzub_attribute_t), ('loader'  ,POINTER(zzub_pluginloader_t)),('index'   ,c_int     ))
 zzub_pluginloader_get_loader_name        = dlsym(libzzub, 'zzub_pluginloader_get_loader_name'     , c_char_p, ('loader'  ,POINTER(zzub_pluginloader_t)))
-zzub_pluginloader_get_type               = dlsym(libzzub, 'zzub_pluginloader_get_type'            , c_int, ('loader'  ,POINTER(zzub_pluginloader_t)))
+zzub_pluginloader_get_flags              = dlsym(libzzub, 'zzub_pluginloader_get_flags'           , c_int, ('loader'  ,POINTER(zzub_pluginloader_t)))
 zzub_pluginloader_get_uri                = dlsym(libzzub, 'zzub_pluginloader_get_uri'             , c_char_p, ('loader'  ,POINTER(zzub_pluginloader_t)))
 zzub_pluginloader_get_author             = dlsym(libzzub, 'zzub_pluginloader_get_author'          , c_char_p, ('loader'  ,POINTER(zzub_pluginloader_t)))
 zzub_parameter_get_type                  = dlsym(libzzub, 'zzub_parameter_get_type'               , c_int, ('param'   ,POINTER(zzub_parameter_t)))
@@ -508,7 +506,7 @@ zzub_plugin_get_name                     = dlsym(libzzub, 'zzub_plugin_get_name'
 zzub_plugin_get_commands                 = dlsym(libzzub, 'zzub_plugin_get_commands'              , c_int, ('machine' ,POINTER(zzub_plugin_t)),('commands',c_char_p  ),('maxlen'  ,c_int     ))
 zzub_plugin_get_sub_commands             = dlsym(libzzub, 'zzub_plugin_get_sub_commands'          , c_int, ('machine' ,POINTER(zzub_plugin_t)),('i'       ,c_int     ),('commands',c_char_p  ),('maxlen'  ,c_int     ))
 zzub_plugin_command                      = dlsym(libzzub, 'zzub_plugin_command'                   , None, ('machine' ,POINTER(zzub_plugin_t)),('i'       ,c_int     ))
-zzub_plugin_get_type                     = dlsym(libzzub, 'zzub_plugin_get_type'                  , c_int, ('machine' ,POINTER(zzub_plugin_t)))
+zzub_plugin_get_flags                    = dlsym(libzzub, 'zzub_plugin_get_flags'                 , c_int, ('machine' ,POINTER(zzub_plugin_t)))
 zzub_plugin_get_output_channels          = dlsym(libzzub, 'zzub_plugin_get_output_channels'       , c_int, ('machine' ,POINTER(zzub_plugin_t)))
 zzub_plugin_get_pluginloader             = dlsym(libzzub, 'zzub_plugin_get_pluginloader'          , POINTER(zzub_pluginloader_t), ('machine' ,POINTER(zzub_plugin_t)))
 zzub_plugin_add_pattern                  = dlsym(libzzub, 'zzub_plugin_add_pattern'               , None, ('machine' ,POINTER(zzub_plugin_t)),('pattern' ,POINTER(zzub_pattern_t)))

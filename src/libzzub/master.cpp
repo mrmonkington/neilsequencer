@@ -44,8 +44,7 @@ const int NO_MASTER_TPB=0xFF;
 
 struct master_plugin_info : zzub::info {
 	master_plugin_info() {
-		this->type = zzub::plugin_type_master;
-		this->flags = zzub::plugin_flag_mono_to_stereo;
+		this->flags = zzub::plugin_flag_mono_to_stereo | zzub::plugin_flag_is_root | zzub::plugin_flag_has_audio_input;
 		this->name = "Master";
 		this->short_name = "Master";
 		this->author = "n/a";

@@ -305,8 +305,15 @@ bool BuzzReader::loadMachines() {
 		unsigned short attributeCount, tracks;
 		int* attributeValues, *globalValues, *trackValues;
 
+		//~ enum zzub_plugin_type {
+		//~ // possible plugin types
+		//~ zzub_plugin_type_master = 0,
+		//~ zzub_plugin_type_generator = 1,
+		//~ zzub_plugin_type_effect	= 2,
+		//~ };
+
 		f->read(type);
-		if (type!=zzub::plugin_type_master)
+		if (type)
 			f->read(fullName); else
 			fullName="Master";
 		f->read(x);

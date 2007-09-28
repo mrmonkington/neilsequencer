@@ -205,12 +205,10 @@ const char *zzub_get_signature() { return ZZUB_SIGNATURE; }
 
 struct livejump_info : zzub::info {
 	livejump_info() {
-		this->type = zzub::plugin_type_generator;
 		this->name = "zzub Live Jump";
 		this->short_name = "LiveJump";
 		this->author = "Andy Werk <calvin@countzero.no>";
 		this->uri = "@zzub.org/livejump;1";
-		this->flags = zzub::plugin_flag_no_output;
 		
 		paraNote = &add_global_parameter()
 			.set_note()

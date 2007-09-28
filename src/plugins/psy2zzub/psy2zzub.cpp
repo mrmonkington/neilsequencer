@@ -239,19 +239,19 @@ namespace zzub { namespace plugins { namespace psycle_to_zzub {
 				if(zzub_info) {
 					switch(psycle_info->Flags) {
 						case psycle::plugin_interface::GENERATOR:
-							zzub_info->type = zzub::plugin_type_generator;
+							zzub_info->flags = zzub::plugin_flag_has_audio_output;
 							break;
 						case psycle::plugin_interface::SEQUENCER:
 							///\todo
-							zzub_info->type = zzub::plugin_type_effect;
+							zzub_info->flags = zzub::plugin_flag_has_audio_input | zzub::plugin_flag_has_audio_output;
 							break;
 						case psycle::plugin_interface::EFFECT:
 						default:
-							zzub_info->type = zzub::plugin_type_effect;
+							zzub_info->flags = zzub::plugin_flag_has_audio_input | zzub::plugin_flag_has_audio_output;
 					}
 
 					zzub_info->version = zzub::version;
-					zzub_info->flags = zzub::plugin_flag_mono_to_stereo;
+					zzub_info->flags |= zzub::plugin_flag_mono_to_stereo;
 
 					zzub_info->psy_name = psycle_info->Name;
 					zzub_info->name = zzub_info->psy_name.c_str();

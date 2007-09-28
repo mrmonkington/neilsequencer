@@ -51,7 +51,7 @@ bool BuzzWriter::validateClassesForSave() {
 	player->loadError="";
 	for (size_t i=0; i<machines.size(); i++) {
 		metaplugin* plugin = machines[i];
-		if (plugin->getType()==zzub_plugin_type_master) continue;
+		if (plugin->getFlags() & zzub::plugin_flag_is_root) continue;
 		if (plugin->nonSongPlugin) continue;
 
 		string pluginName=player->getBuzzName(plugin->loader->plugin_info->uri);
@@ -241,11 +241,21 @@ bool BuzzWriter::saveMachine(zzub::metaplugin* machine) {
 	zzub::metaplugin* m=machine;
 
 	f->write(m->getName().c_str());
-	f->write((char)m->getType());
+	
+	int type = -1;
+	if (m->getFlags() & zzub::plugin_flag_is_root)
+		type = 0;
+	else if (m->getFlags() & zzub::plugin_flag_has_audio_input)
+		type = 2; // effect
+	else if (m->getFlags() & zzub::plugin_flag_has_audio_output)
+		type = 1; // generator
+	assert(type != -1);
+	
+	f->write((char)type);
 
 	// når vi var buzzlib var det writeAsciiZ(m->getFullName().c_str());
 	// nå er det zzublib, og da blir det slik:
-	if (m->getType()!=zzub::plugin_type_master) {
+	if (type) {
 		std::string machineName=player->getBuzzName(m->loader->plugin_info->uri);//this->player->getAliasForMachine(m);
 		if (!machineName.length())
 			machineName=m->loader->plugin_info->uri;

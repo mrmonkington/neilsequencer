@@ -885,6 +885,10 @@ class Plugin(object):
 		assert self._handle
 		return zzub_plugin_get_end_write_position(self._handle)
 	
+	def get_flags(self):
+		assert self._handle
+		return zzub_plugin_get_flags(self._handle)
+	
 	def get_input_connection(self, index):
 		assert self._handle
 		return Connection(zzub_plugin_get_input_connection(self._handle,index))
@@ -972,10 +976,6 @@ class Plugin(object):
 	def get_track_count(self):
 		assert self._handle
 		return zzub_plugin_get_track_count(self._handle)
-	
-	def get_type(self):
-		assert self._handle
-		return zzub_plugin_get_type(self._handle)
 	
 	def get_wave_file_path(self):
 		assert self._handle
@@ -1107,6 +1107,10 @@ class Pluginloader(object):
 		assert self._handle
 		return zzub_pluginloader_get_author(self._handle)
 	
+	def get_flags(self):
+		assert self._handle
+		return zzub_pluginloader_get_flags(self._handle)
+	
 	def get_loader_name(self):
 		assert self._handle
 		return zzub_pluginloader_get_loader_name(self._handle)
@@ -1126,10 +1130,6 @@ class Pluginloader(object):
 	def get_short_name(self):
 		assert self._handle
 		return zzub_pluginloader_get_short_name(self._handle)
-	
-	def get_type(self):
-		assert self._handle
-		return zzub_pluginloader_get_type(self._handle)
 	
 	def get_uri(self):
 		assert self._handle

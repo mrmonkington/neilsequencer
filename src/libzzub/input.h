@@ -24,8 +24,7 @@ namespace zzub {
 struct input_plugin_info : zzub::info {
 
 	input_plugin_info() {
-		this->type = zzub::plugin_type_generator;
-		this->flags = 0;
+		this->flags = zzub::plugin_flag_has_audio_output;
 		this->name = "Audio Input";
 		this->short_name = "Input";
 		this->author = "n/a";

@@ -233,7 +233,7 @@ const char *zzub_get_signature() { return ZZUB_SIGNATURE; }
 
 struct fukodelay_info : zzub::info {
 	fukodelay_info() {
-		this->type = zzub::plugin_type_effect;
+		this->flags = zzub::plugin_flag_has_audio_input | zzub::plugin_flag_has_audio_output;
 		this->name = "FUK O-Delay";
 		this->short_name = "O-Delay";
 		this->author = "Aaron Oxford <aaron@hardwarehookups.com.au>";

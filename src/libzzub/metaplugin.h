@@ -252,8 +252,8 @@ struct metaplugin {
 	inline bool isBypassed() { return bypassed; }
 	void softBypass(bool state);
 	inline bool isSoftBypassed() { return softBypassed; }
+	int getFlags();
 	bool isNoOutput();
-	zzub::plugin_type getType();
 	void defaultParameters();
 	void clearParameters();
 	void stopParameters();

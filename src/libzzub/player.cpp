@@ -459,7 +459,7 @@ void player::clear() {
 	std::vector<zzub::metaplugin*> machinesCopy = machineInstances;
 	for (int i = 0; i<machinesCopy.size(); i++) {
 		zzub::metaplugin* plugin = machinesCopy[i];
-		if (plugin->loader->plugin_info->type == zzub::plugin_type_master) continue;
+		if (plugin->loader->plugin_info->flags & zzub::plugin_flag_is_root) continue;
 		if (plugin->nonSongPlugin) continue;
 		deleteMachine(plugin);
 	}

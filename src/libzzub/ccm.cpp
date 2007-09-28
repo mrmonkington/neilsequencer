@@ -366,17 +366,6 @@ std::string connectiontype_to_string(int connectiontype) {
 	return "";
 }
 
-std::string plugintype_to_string(int plugintype) {
-	switch (plugintype) {
-		case zzub::plugin_type_master: return "master";
-		case zzub::plugin_type_generator: return "generator";
-		case zzub::plugin_type_effect: return "effect";
-		case zzub::plugin_type_controller: return "controller";
-		default: assert(0);
-	}
-	return "";
-}
-
 std::string paramtype_to_string(int paramtype) {
 	switch (paramtype) {
 		case zzub::parameter_type_note: return "note16"; // buzz note with base 16
@@ -431,7 +420,30 @@ xml_node CcmWriter::saveClass(xml_node &parent, zzub::pluginloader &pl) {
 	xml_node item = parent.append_child(node_element);
 	item.name("pluginclass");
 	item.attribute("id") = pl.plugin_info->uri;
-	item.attribute("type") = plugintype_to_string(pl.plugin_info->type);
+	if (pl.plugin_info->flags & zzub::plugin_flag_mono_to_stereo)
+		item.attribute("mono_to_stereo") = true;
+	if (pl.plugin_info->flags & zzub::plugin_flag_plays_waves)
+		item.attribute("plays_waves") = true;
+	if (pl.plugin_info->flags & zzub::plugin_flag_uses_lib_interface)
+		item.attribute("uses_lib_interface") = true;
+	if (pl.plugin_info->flags & zzub::plugin_flag_uses_instruments)
+		item.attribute("uses_instruments") = true;
+	if (pl.plugin_info->flags & zzub::plugin_flag_does_input_mixing)
+		item.attribute("does_input_mixing") = true;
+	if (pl.plugin_info->flags & zzub::plugin_flag_control_plugin)
+		item.attribute("control_plugin") = true;
+	if (pl.plugin_info->flags & zzub::plugin_flag_auxiliary)
+		item.attribute("auxiliary") = true;
+	if (pl.plugin_info->flags & zzub::plugin_flag_is_root)
+		item.attribute("is_root") = true;
+	if (pl.plugin_info->flags & zzub::plugin_flag_has_audio_input)
+		item.attribute("has_audio_input") = true;
+	if (pl.plugin_info->flags & zzub::plugin_flag_has_audio_output)
+		item.attribute("has_audio_output") = true;
+	if (pl.plugin_info->flags & zzub::plugin_flag_has_event_input)
+		item.attribute("has_event_input") = true;
+	if (pl.plugin_info->flags & zzub::plugin_flag_has_event_output)
+		item.attribute("has_event_output") = true;
 	
 	mem_archive arc;
 	pl.plugin_info->store_info(&arc);

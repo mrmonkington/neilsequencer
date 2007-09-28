@@ -43,14 +43,6 @@ enum {
     zzub_buffer_size = 256,
 };
 
-enum zzub_plugin_type {
-    // possible plugin types
-    zzub_plugin_type_master = 0,
-    zzub_plugin_type_generator = 1,
-    zzub_plugin_type_effect	= 2,
-    zzub_plugin_type_controller = 3, // controls and modifies a machines parameters
-};
-
 enum zzub_event_type {
     // plugin events
     zzub_event_type_double_click = 0,
@@ -259,9 +251,15 @@ enum zzub_plugin_flag {
     zzub_plugin_flag_uses_lib_interface	= (1 << 2),
     zzub_plugin_flag_uses_instruments	= (1 << 3),
     zzub_plugin_flag_does_input_mixing	= (1 << 4),
-    zzub_plugin_flag_no_output	= (1 << 5),
+    //~ zzub_plugin_flag_no_output	= (1 << 5), // deprecated
     zzub_plugin_flag_control_plugin	= (1 << 6),
     zzub_plugin_flag_auxiliary	= (1 << 7),
+	
+	zzub_plugin_flag_is_root = (1 << 16), // master plugin only
+	zzub_plugin_flag_has_audio_input = (1 << 17), // for audio effects
+	zzub_plugin_flag_has_audio_output = (1 << 18), // for audio generators and effects
+	zzub_plugin_flag_has_event_input = (1 << 19), // for event effects
+	zzub_plugin_flag_has_event_output = (1 << 20), // for event generators and effects
 };
 
 enum zzub_state_flag {

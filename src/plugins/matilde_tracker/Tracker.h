@@ -86,8 +86,7 @@ public:
 
 	static struct info : zzub::info {
 		info() {
-            this->flags = zzub::plugin_flag_plays_waves;
-			this->type = zzub::plugin_type_generator;
+            this->flags = zzub::plugin_flag_plays_waves | zzub::plugin_flag_has_audio_output;
 			this->min_tracks = 1;
 			this->max_tracks = MAX_TRACKS;
 			this->name = "Matilde Tracker";

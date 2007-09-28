@@ -41,39 +41,6 @@ enum {
 	buffer_size = zzub_buffer_size,
 };
 
-// Possible plugin types. Pass one of these attributes to
-// the type member of zzub::info.
-enum plugin_type {
-	// Designates the plugin as a master plugin. This attribute
-	// is only used internally and should not be used
-	// for plugins.
-	plugin_type_master = zzub_plugin_type_master,
-	
-	// Designates the plugin as a generator plugin. As the
-	// name suggests, generators render sound.
-	// zzub::plugin::process_stereo() will be called with an
-	// invalid pointer to pin, since no input audio is
-	// available.
-	// This is the best type for writing a synthesizer,
-	// sampler, drum machine or similar.
-	plugin_type_generator = zzub_plugin_type_generator,
-	
-	// Designates the plugin as an effect plugin. Effects
-	// process input buffers and store the result in
-	// output buffers.
-	// This is the best type for writing a reverb,
-	// delay, flanger, filter or similar.
-	plugin_type_effect	= zzub_plugin_type_effect,
-
-  // Designates the plugin as a controller plugin. Controllers
-  // are the successors to peer plugins. They can change
-  // parameter values of generators and effects they are 
-  // connected to.
-  // This is the best type for writing a note transposer,
-  // lfo, algorithmic pattern player or similar.
-  plugin_type_controller = zzub_plugin_type_controller,
-};
-
 // Possible event types sent by the host. A plugin can register to
 // receive these events in zzub::plugin::init() using the
 // zzub::host::set_event_handler() method.
@@ -189,9 +156,14 @@ enum plugin_flag {
 	plugin_flag_uses_lib_interface	= zzub_plugin_flag_uses_lib_interface,
 	plugin_flag_uses_instruments	= zzub_plugin_flag_uses_instruments,
 	plugin_flag_does_input_mixing	= zzub_plugin_flag_does_input_mixing,
-	plugin_flag_no_output	= zzub_plugin_flag_no_output,
+	//~ plugin_flag_no_output	= zzub_plugin_flag_no_output,
 	plugin_flag_control_plugin	= zzub_plugin_flag_control_plugin,
 	plugin_flag_auxiliary	= zzub_plugin_flag_auxiliary,
+	plugin_flag_is_root = zzub_plugin_flag_is_root,
+	plugin_flag_has_audio_input = zzub_plugin_flag_has_audio_input,
+	plugin_flag_has_audio_output = zzub_plugin_flag_has_audio_output,
+	plugin_flag_has_event_input = zzub_plugin_flag_has_event_input,
+	plugin_flag_has_event_output = zzub_plugin_flag_has_event_output,
 };
 
 enum state_flag {
@@ -718,7 +690,6 @@ struct archive {
 };
 
 struct info	{
-	int type;
 	int version;
 	int flags;
 	unsigned int min_tracks;
@@ -768,7 +739,6 @@ struct info	{
 	}
 	
 	info() {
-		type = 0;
 		version = zzub::version;
 		flags = 0;
 		min_tracks = 0;

@@ -121,8 +121,7 @@ struct recorder_wavetable_plugin_info : zzub::info {
 	player *_player;
 	
 	recorder_wavetable_plugin_info() {
-		this->type = zzub::plugin_type_effect;
-		this->flags = plugin_flag_no_output;
+		this->flags = zzub::plugin_flag_has_audio_input;
 		this->name = "Instrument Recorder";
 		this->short_name = "IRecorder";
 		this->author = "n/a";
@@ -152,8 +151,7 @@ struct recorder_file_plugin_info : zzub::info {
 	player *_player;
 	
 	recorder_file_plugin_info() {
-		this->type = zzub::plugin_type_effect;
-		this->flags = plugin_flag_no_output;
+		this->flags = zzub::plugin_flag_has_audio_input;
 		this->name = "File Recorder";
 		this->short_name = "FRecorder";
 		this->author = "n/a";

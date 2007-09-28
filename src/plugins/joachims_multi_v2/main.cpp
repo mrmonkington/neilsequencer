@@ -1081,7 +1081,7 @@ const char * multi2::describe_value(int param, int value)
 
 struct multi2_info : zzub::info {
 	multi2_info() {
-		this->type = zzub::plugin_type_effect;
+		this->flags = zzub::plugin_flag_has_audio_input | zzub::plugin_flag_has_audio_output;
 		this->name = "Joachims Multi v2";
 		this->short_name = "Multi";
 		this->author = "Joachim Michaelis";

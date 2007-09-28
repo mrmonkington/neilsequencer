@@ -23,8 +23,7 @@ namespace zzub {
 	
 struct output_plugin_info : zzub::info {
 	output_plugin_info() {
-		this->type = zzub::plugin_type_effect;
-		this->flags = plugin_flag_no_output;
+		this->flags = zzub::plugin_flag_has_audio_input;
 		this->name = "Audio Output";
 		this->short_name = "Output";
 		this->author = "n/a";

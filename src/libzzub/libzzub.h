@@ -191,7 +191,7 @@ const zzub_parameter_t *zzub_pluginloader_get_parameter(zzub_pluginloader_t* loa
 int zzub_pluginloader_get_attribute_count(zzub_pluginloader_t* loader);
 const zzub_attribute_t *zzub_pluginloader_get_attribute(zzub_pluginloader_t* loader, int index);
 const char *zzub_pluginloader_get_loader_name(zzub_pluginloader_t* loader);
-int zzub_pluginloader_get_type(zzub_pluginloader_t* loader);
+int zzub_pluginloader_get_flags(zzub_pluginloader_t* loader);
 const char *zzub_pluginloader_get_uri(zzub_pluginloader_t* loader);
 const char *zzub_pluginloader_get_author(zzub_pluginloader_t* loader);
 
@@ -222,7 +222,7 @@ int zzub_plugin_get_name(zzub_plugin_t *machine, char* name, int maxlen);
 int zzub_plugin_get_commands(zzub_plugin_t *machine, char* commands, int maxlen);
 int zzub_plugin_get_sub_commands(zzub_plugin_t *machine, int i, char* commands, int maxlen);
 void zzub_plugin_command(zzub_plugin_t *machine, int i);
-int zzub_plugin_get_type(zzub_plugin_t *machine);
+int zzub_plugin_get_flags(zzub_plugin_t *machine);
 int zzub_plugin_get_output_channels(zzub_plugin_t *machine);
 zzub_pluginloader_t *zzub_plugin_get_pluginloader(zzub_plugin_t *machine);
 void zzub_plugin_add_pattern(zzub_plugin_t *machine, zzub_pattern_t *pattern);
