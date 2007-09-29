@@ -667,6 +667,18 @@ GENERATOR_PLUGIN_FLAGS = zzub.zzub_plugin_flag_has_audio_output
 EFFECT_PLUGIN_FLAGS = zzub.zzub_plugin_flag_has_audio_input|zzub.zzub_plugin_flag_has_audio_output
 CONTROLLER_PLUGIN_FLAGS = zzub.zzub_plugin_flag_has_event_output
 
+def is_effect(plugin):
+	return ((plugin.get_flags() & PLUGIN_FLAGS_MASK) == EFFECT_PLUGIN_FLAGS)
+
+def is_generator(plugin):
+	return ((plugin.get_flags() & PLUGIN_FLAGS_MASK) == GENERATOR_PLUGIN_FLAGS)
+
+def is_controller(plugin):
+	return ((plugin.get_flags() & PLUGIN_FLAGS_MASK) == CONTROLLER_PLUGIN_FLAGS)
+
+def is_root(plugin):
+	return ((plugin.get_flags() & PLUGIN_FLAGS_MASK) == ROOT_PLUGIN_FLAGS)
+
 __all__ = [
 'is_frozen',
 'get_root_folder_path',
@@ -707,6 +719,10 @@ __all__ = [
 'get_clipboard_text',
 'gettext',
 'diff',
+'is_effect',
+'is_generator',
+'is_controller',
+'is_root',
 ]
 
 if __name__ == '__main__':

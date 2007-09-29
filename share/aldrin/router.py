@@ -27,6 +27,7 @@ import gobject
 import cairo
 import pangocairo
 from utils import PLUGIN_FLAGS_MASK, ROOT_PLUGIN_FLAGS, GENERATOR_PLUGIN_FLAGS, EFFECT_PLUGIN_FLAGS, CONTROLLER_PLUGIN_FLAGS
+from utils import is_effect,is_generator,is_controller,is_root
 from utils import prepstr, filepath, db2linear, linear2db, is_debug, filenameify, \
 	get_item_count, question, error, new_listview, add_scrollbars, get_clipboard_text, set_clipboard_text, \
 	gettext, new_stock_image_button
@@ -326,9 +327,9 @@ class PluginBrowserDialog(gtk.Dialog):
 			name2pl[name] = pl
 		for name in sorted(name2pl, lambda a,b : cmp(a.lower(),b.lower())):
 			pl = name2pl[name]
-			if pl.get_type() == zzub.zzub_plugin_type_generator:
+			if (pl.get_flags() & PLUGIN_FLAGS_MASK) == GENERATOR_PLUGIN_FLAGS:
 				node = generatornode
-			elif pl.get_type() == zzub.zzub_plugin_type_effect:
+			elif (pl.get_flags() & PLUGIN_FLAGS_MASK) == EFFECT_PLUGIN_FLAGS:
 				node = effectnode
 			else:
 				continue
@@ -343,7 +344,6 @@ class PluginBrowserDialog(gtk.Dialog):
 						zzub.zzub_parameter_type_byte : 'byte',
 						zzub.zzub_parameter_type_word : 'word',
 					}
-					self.treeview.AppendItem(paramnode, prepstr('type = "%s"' % type2name[param.get_type()]))
 					self.treeview.AppendItem(paramnode, prepstr('description = "%s"' % param.get_description()))
 					self.treeview.AppendItem(paramnode, prepstr('minvalue = "%s"' % param.get_value_min()))
 					self.treeview.AppendItem(paramnode, prepstr('maxvalue = "%s"' % param.get_value_max()))
@@ -689,11 +689,11 @@ class RouteView(gtk.DrawingArea):
 			for plugin, info in common.get_plugin_infos().iteritems():
 				plugin.set_mute(info.muted)
 				info.reset_plugingfx()
-		elif plugin.get_type() == zzub.zzub_plugin_type_generator:
+		elif is_generator(plugin):
 			# mute all plugins except solo plugin
 			self.solo_plugin = plugin			
 			for plugin, info in common.get_plugin_infos().iteritems():				
-				if plugin != self.solo_plugin and plugin.get_type() == zzub.zzub_plugin_type_generator:					
+				if plugin != self.solo_plugin and is_generator(plugin):					
 					plugin.set_mute(True)
 					info.reset_plugingfx()
 				elif plugin == self.solo_plugin:
@@ -717,7 +717,7 @@ class RouteView(gtk.DrawingArea):
 		pi = common.get_plugin_infos().get(plugin)
 		pi.muted = not pi.muted
 		# make sure a machine muted by solo is not unmuted manually
-		if not self.solo_plugin or plugin == self.solo_plugin or plugin.get_type() == zzub.zzub_plugin_type_effect:
+		if not self.solo_plugin or plugin == self.solo_plugin or is_effect(plugin):
 			plugin.set_mute(pi.muted)
 		pi.reset_plugingfx()
 	
@@ -867,7 +867,7 @@ class RouteView(gtk.DrawingArea):
 		print "create_plugin: ",name
 		mp = player.create_plugin(None, 0, name, pluginloader)
 		assert mp._handle
-		if mp.get_type() == zzub.zzub_plugin_type_generator and \
+		if ((mp.get_flags() & PLUGIN_FLAGS_MASK) == GENERATOR_PLUGIN_FLAGS) and \
 			(pluginloader.get_parameter_count(1) or pluginloader.get_parameter_count(2)):
 			pattern = mp.create_pattern(self.rootwindow.seqframe.view.step)
 			pattern.set_name('00')
@@ -932,7 +932,7 @@ class RouteView(gtk.DrawingArea):
 		# add plugin information
 		common.get_plugin_infos().add_plugin(mp)
 		# open parameter view if its an effect
-		if mp.get_type() == zzub.zzub_plugin_type_effect:
+		if is_effect(mp):
 			self.show_parameter_dialog(mp)
 		#tab to first note column on adding a new machine
 		patternframe=self.rootwindow.patternframe.view
@@ -972,11 +972,11 @@ class RouteView(gtk.DrawingArea):
 					menu.append(make_submenu_item(submenu, prepstr(child.name)))
 				elif isinstance(child, indexer.Reference):
 					if child.pluginloader:
-						if not include_generators and (child.pluginloader.get_type() == zzub.zzub_plugin_type_generator):
+						if not include_generators and is_generator(child.pluginloader):
 							continue
-						if not include_effects and (child.pluginloader.get_type() == zzub.zzub_plugin_type_effect):
+						if not include_effects and is_effect(child.pluginloader):
 							continue
-						if not include_controllers and (child.pluginloader.get_type() == zzub.zzub_plugin_type_controller):
+						if not include_controllers and is_controller(child.pluginloader):
 							continue
 					if add_separator:
 						add_separator = False
@@ -1052,7 +1052,7 @@ class RouteView(gtk.DrawingArea):
 		if res:
 			mp,(x,y),area = res
 			menu.append(make_check_item(common.get_plugin_infos().get(mp).muted, "_Mute", "Toggle Bypass", self.on_popup_mute, mp))
-			if mp.get_type() == zzub.zzub_plugin_type_generator:
+			if is_generator(mp):
 				menu.append(make_check_item(self.solo_plugin == mp, "_Solo", "Toggle Solo", self.on_popup_solo, mp))
 			menu.append(gtk.SeparatorMenuItem())
 			menu.append(make_menu_item("_Parameters...", "View parameters", self.on_popup_show_params, mp))
@@ -1060,9 +1060,9 @@ class RouteView(gtk.DrawingArea):
 			menu.append(make_menu_item("P_resets...", "Manage presets", self.on_popup_show_presets, mp))
 			menu.append(gtk.SeparatorMenuItem())
 			menu.append(make_menu_item("_Rename...", "", self.on_popup_rename, mp))
-			if mp.get_type() != zzub.zzub_plugin_type_master:
+			if not is_root(mp):
 				menu.append(make_menu_item("_Delete", "Delete plugin", self.on_popup_delete, mp))
-			if mp.get_type() in (zzub.zzub_plugin_type_effect,zzub.zzub_plugin_type_master):
+			if is_generator(mp) or is_root(mp):
 				menu.append(gtk.SeparatorMenuItem())
 				menu.append(make_check_item(self.autoconnect_target == mp, "Default Target","Connect new generators to this plugin",self.on_popup_set_target, mp))
 				menu.append(make_submenu_item(self.get_plugin_menu(include_generators=False, include_controllers=False, plugin=mp), "_Prepend Effect"))
@@ -1238,7 +1238,7 @@ class RouteView(gtk.DrawingArea):
 				self.toggle_mute(self.current_plugin)		
 				self.redraw()
 			elif (event.state & gtk.gdk.SHIFT_MASK) or (event.button == 2):
-				if self.current_plugin.get_type() == zzub.zzub_plugin_type_controller:
+				if is_controller(self.current_plugin):
 					pass
 				else:
 					self.connecting = True
@@ -1317,7 +1317,7 @@ class RouteView(gtk.DrawingArea):
 			res = self.get_plugin_at((mx,my))
 			if res:
 				mp,(x,y),area = res
-				if self.current_plugin.get_type() == zzub.zzub_plugin_type_controller:
+				if is_controller(self.current_plugin):
 					#mp.add_event_input(self.current_plugin)
 					pass
 				else:
