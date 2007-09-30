@@ -1403,7 +1403,7 @@ class RouteView(gtk.DrawingArea):
 					pctx.set_source_rgb(*pluginpen)
 				pctx.stroke()
 				pctx.set_dash([], 0.0)
-				if self.solo_plugin and self.solo_plugin != mp and (mp.get_flags() & zzub.plugin_flags_has_audio_output):
+				if self.solo_plugin and self.solo_plugin != mp and is_generator(mp):
 					title = prepstr('[' + mp.get_name() + ']')
 				elif pi.muted:
 					title = prepstr('(' + mp.get_name() + ')')

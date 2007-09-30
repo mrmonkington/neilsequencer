@@ -28,6 +28,7 @@ import pango
 import gobject
 from utils import PLUGIN_FLAGS_MASK, ROOT_PLUGIN_FLAGS, GENERATOR_PLUGIN_FLAGS, EFFECT_PLUGIN_FLAGS, CONTROLLER_PLUGIN_FLAGS
 from utils import prepstr, from_hsb, to_hsb, get_item_count, get_clipboard_text, set_clipboard_text, add_scrollbars
+from utils import is_effect,is_generator,is_controller,is_root
 import random
 import ctypes
 import zzub
@@ -1183,7 +1184,7 @@ class SequencerView(gtk.DrawingArea):
 			pgfx = pi.patterngfx
 			mname = m.get_name()
 			title = prepstr(mname)
-			if solo_plugin and solo_plugin != m and ((m.get_flags() & PLUGIN_FLAGS_MASK) == GENERATOR_PLUGIN_FLAGS):
+			if solo_plugin and solo_plugin != m and is_generator(m):
 				title = "[%s]" % title
 			elif self.plugin_info[m].muted:
 				title = "(%s)" % title
