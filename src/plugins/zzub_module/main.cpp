@@ -81,7 +81,6 @@ const zzub::parameter *paraEffectValue = 0;
 const int module_plugin_value_none = 0xFF;
 
 module_plugin_info::module_plugin_info() {
-	this->type = zzub::plugin_type_generator;
 	this->name = "zzub Module";
 	this->short_name = "Module";
 	this->author = "Andy Werk <calvin@countzero.no>";

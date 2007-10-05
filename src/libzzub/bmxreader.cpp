@@ -367,11 +367,34 @@ bool BuzzReader::loadMachines() {
 			}
 		}
 
+#define PLUGIN_FLAGS_MASK (zzub_plugin_flag_is_root|zzub_plugin_flag_has_audio_input|zzub_plugin_flag_has_audio_output|zzub_plugin_flag_has_event_output)
+#define ROOT_PLUGIN_FLAGS (zzub_plugin_flag_is_root|zzub_plugin_flag_has_audio_input)
+#define GENERATOR_PLUGIN_FLAGS (zzub_plugin_flag_has_audio_output)
+#define EFFECT_PLUGIN_FLAGS (zzub_plugin_flag_has_audio_input|zzub_plugin_flag_has_audio_output)
+#define CONTROLLER_PLUGIN_FLAGS (zzub_plugin_flag_has_event_output)
+// machine types
+#define MT_MASTER				0 
+#define MT_GENERATOR			1
+#define MT_EFFECT				2
+
+		int flags = 0;
+		switch (type) {
+			case MT_MASTER:
+				flags = ROOT_PLUGIN_FLAGS;
+				break;
+			case MT_GENERATOR:
+				flags = GENERATOR_PLUGIN_FLAGS;
+				break;
+			default:
+				flags = EFFECT_PLUGIN_FLAGS;
+				break;
+		}
+
 		// if there is no loader for this uri, or validation failed, try to create a dummy loader + machine
 		if (loader==0) {
 			MachineValidation* validator=findMachinePara(machineName, fullName);
 			if (validator) {
-				loader=player->createDummyLoader(type, pluginUri, attributeCount, validator->numGlobals, validator->numTrackParams, &validator->parameters.front());
+				loader=player->createDummyLoader(flags, pluginUri, attributeCount, validator->numGlobals, validator->numTrackParams, &validator->parameters.front());
 			}
 			if (!loader) {
 				lastError=machineName + " (" + fullName + ") Error: Cannot load nor create dummy machine.\n" + lastError;

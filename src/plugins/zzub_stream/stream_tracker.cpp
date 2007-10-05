@@ -28,8 +28,7 @@ const zzub::parameter *paraEffect2Value = 0;
 }
 
 stream_tracker_machine_info::stream_tracker_machine_info() {
-	this->type = zzub::plugin_type_generator;
-	this->flags = zzub::plugin_flag_plays_waves;
+	this->flags = zzub::plugin_flag_plays_waves | zzub::plugin_flag_has_audio_output;
 	this->name = "zzub Stream Tracker (resampled)";
 	this->short_name = "StreamTracker";
 	this->author = "Andy Werk";

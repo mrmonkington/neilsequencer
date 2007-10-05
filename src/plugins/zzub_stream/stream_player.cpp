@@ -26,8 +26,7 @@ const zzub::parameter *paraLengthLow = 0;
 }
 
 stream_player_machine_info::stream_player_machine_info() {
-	this->type = zzub::plugin_type_generator;
-	this->flags = zzub::plugin_flag_plays_waves;
+	this->flags = zzub::plugin_flag_plays_waves | zzub::plugin_flag_has_audio_output;
 	this->name = "zzub Stream Player (resampled)";
 	this->short_name = "StreamPlayer";
 	this->author = "Andy Werk";

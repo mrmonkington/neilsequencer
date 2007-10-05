@@ -105,8 +105,7 @@ const zzub::parameter *paraLengthLow = 0;
 }
 
 stream_machine_info::stream_machine_info() {
-	this->type = zzub::plugin_type_generator;
-	this->flags = zzub::plugin_flag_plays_waves;	// TODO: plugin_flag_stream
+	this->flags = zzub::plugin_flag_plays_waves | zzub::plugin_flag_has_audio_output;	// TODO: plugin_flag_stream
 	
 	// what about a 32bit parameter instead
 	paraOffsetLow = &add_global_parameter()
