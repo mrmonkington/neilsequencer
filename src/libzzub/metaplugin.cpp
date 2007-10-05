@@ -1043,21 +1043,29 @@ event_connection *metaplugin::addEventInput(metaplugin* fromMachine) {
 
 audio_connection *metaplugin::addAudioInput(metaplugin* fromMachine, unsigned short amp, unsigned short pan) {
 	// Ensure this connection won't crash
-	bool isNoOutput = false;
 
-	if (!(fromMachine->loader->plugin_info->flags & zzub::plugin_flag_has_audio_output) ) isNoOutput = true;
-	if (isNoOutput && !(getFlags() & zzub::plugin_flag_is_root)) return 0;
+	int from_flags = fromMachine->loader->plugin_info->flags;
+	int to_flags = loader->plugin_info->flags;
+
+	bool from_is_root = (from_flags & zzub::plugin_flag_is_root) != 0;
+	bool from_has_out = (from_flags & zzub::plugin_flag_has_audio_output) != 0;
+
+	bool to_is_root = (to_flags & zzub::plugin_flag_is_root) != 0;
+	bool to_has_in = (to_flags & zzub::plugin_flag_has_audio_input) != 0;
+	bool to_has_out = (to_flags & zzub::plugin_flag_has_audio_output) != 0;
+
+	if ((!from_has_out && !from_is_root) && !to_is_root) return 0;
 
 	// Check whether these machines are already connection to each others
 	if (getConnection(fromMachine, zzub::connection_type_audio)) return 0;
 
 	// generators don't have inputs, but some popular plugins are incorrectly flagged as generators
 	// the following line was commented out in response to that, so f.ekx songs using geoniks 2p filter will load
-	if (!(getFlags() & zzub::plugin_flag_has_audio_input)) return 0;
+	if (!to_has_in) return 0;
 
 	// allow one type of cyclic connection, when the master is connected to a no_output machine
-	if (fromMachine->getFlags() & zzub::plugin_flag_is_root) {
-		if (loader->plugin_info->flags & zzub::plugin_flag_has_audio_output)
+	if (from_is_root) {
+		if (to_has_out)
 			return 0;
 	} else {
 		// check cyclic connections
