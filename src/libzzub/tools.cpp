@@ -29,8 +29,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "common.h"
 #include "tools.h"
 
-char toLower(char c) { return tolower(c); }
-
 char backslashToSlash(char c) { if (c=='\\') return '/'; return c; }
 
 void AddM2SPan(float* output, float* input, int numSamples, float inAmp, float inPan) {

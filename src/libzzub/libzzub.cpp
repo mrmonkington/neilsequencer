@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <cctype>
 #if defined(USE_LIBMAD)
 #include <mad.h>
 #endif
@@ -1410,7 +1411,7 @@ int zzub_wave_load_sample(zzub_wave_t* wave, int level, const char *path) {
 	std::string fullpath = path;
 	int dpos=(int)fullpath.find_last_of('.');
 	std::string ext = fullpath.substr(dpos);
-	std::transform(ext.begin(), ext.end(), ext.begin(), toLower);
+	std::transform(ext.begin(), ext.end(), ext.begin(), std::tolower);
 #if defined(USE_LIBMAD)
 	if (ext == ".mp3") {
 		printf("loading mp3 '%s'...\n", path);

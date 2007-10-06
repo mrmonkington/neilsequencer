@@ -18,10 +18,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include <iostream>
-#include <stdio.h>
-#include <memory.h>
 #include <RtAudio.h>
-#include <assert.h>
+#include <cassert>
 #include "driver.h"
 
 using namespace std;
@@ -240,7 +238,7 @@ bool audiodriver::createDevice(int index, int inIndex, int sampleRate, int buffe
 	}
 	
 	audiodevice* device = getDeviceInfo(index);
-	printf("creating output device '%s' with %iHz samplerate\n", device->name.c_str(), sampleRate);
+	cout << "creating output device '" << device->name << "' with " << sampleRate << "Hz samplerate" << endl;
 
     audio = new RtAudio((RtAudio::RtAudioApi)devices[index].api_id);
 

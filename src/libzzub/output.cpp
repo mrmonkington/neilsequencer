@@ -20,8 +20,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "common.h"
 #include "tools.h"
 #include "driver.h"
-#include <assert.h>
-#include <cstring>
+#include <cassert>
+#include <sstream>
 
 using namespace std;
 
@@ -67,7 +67,7 @@ struct output_plugin : plugin {
 	}
 	virtual void command(int index) {
 		if (index>=0x100 && index < 0x200) {
-			printf("output command %i\n", index);
+			cout << "output command " << index << endl;
 			int channel = index - 0x100;
 			attributeValues[0] = channel;
 			attributes_changed();
@@ -88,16 +88,12 @@ struct output_plugin : plugin {
 	virtual const char* describe_param(int param) { return 0; }
 	virtual bool set_instrument(const char *name) { return false; }
 	virtual void get_sub_menu(int index, zzub::outstream *os) { 
-		printf("get_sub_menu index %i\n", index);
+		cout << "get_sub_menu index " << index << endl;
 		if (index != 0) return ;
 		for (int i = 0; i<_host->audio_driver_get_channel_count(false) / 2; i++) {
-			char pc[64];
-			char marked[4];
-			if (i==attributeValues[0]) 
-				strcpy(marked, "*"); else
-				strcpy(marked, "");
-			sprintf(pc, "%sStereo Channel %i / %i", marked, i*2, i*2+1);
-			os->write((const char*)pc);
+			std::stringstream strm;
+			strm << (i==attributeValues[0]?"*":"") << "Stereo Channel " << (i*2) << " / " << i*2+1;
+			os->write((const char*)strm.str().c_str());
 		}
 		os->write("\0");
 	}

@@ -19,8 +19,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "common.h"
 #include <functional>
 #include <algorithm>
-#include <time.h>
-#include <float.h>
+#include <cctype>
+#include <ctime>
 #include "bmxreader.h"
 #include "bmxwriter.h"
 #include "timer.h"
@@ -145,7 +145,7 @@ void player::loadPluginLibrary(const std::string &fullpath) {
 	int dpos=(int)fullpath.find_last_of('.');
 	string fileExtension = fullpath.substr(dpos);
 #if defined(_WIN32)
-	transform(fileExtension.begin(), fileExtension.end(), fileExtension.begin(), toLower);
+	transform(fileExtension.begin(), fileExtension.end(), fileExtension.begin(), std::tolower);
 	if (fileExtension == ".dll") {	
 #elif defined(POSIX)
 	if (fileExtension == ".so") {
@@ -165,7 +165,7 @@ void player::loadPluginLibrary(const std::string &fullpath) {
 
 void player::registerMachineLoader(pluginloader *loader) {
 	string pluginUri = loader->plugin_info->uri;
-	transform(pluginUri.begin(), pluginUri.end(), pluginUri.begin(), toLower);
+	transform(pluginUri.begin(), pluginUri.end(), pluginUri.begin(), std::tolower);
 	if (!isBlackListed(pluginUri)) {
 		machines[pluginUri] = loader;
 	}
@@ -356,7 +356,7 @@ pluginloader* player::getMachineLoader(std::string uri) {
     if (uri=="Master" || uri=="@zzub.org/master") return masterLoader;
 
 	string keyName=uri;
-	transform(keyName.begin(), keyName.end(), keyName.begin(), toLower);
+	transform(keyName.begin(), keyName.end(), keyName.begin(), std::tolower);
 	map<string, pluginloader*>::iterator i=machines.find(keyName);
 	pluginloader* l=i==machines.end()?0:i->second;
 
@@ -784,10 +784,10 @@ metaplugin* player::createMachine(char* inputData, int inputSize, std::string ma
 /*! \brief Test if a plugin name is blacklisted.
 */
 bool player::isBlackListed(std::string name) {
-	transform(name.begin(), name.end(), name.begin(), toLower);
+	transform(name.begin(), name.end(), name.begin(), std::tolower);
 	for (size_t i=0; i<blacklist.size(); i++) {
 		string keyName=blacklist[i];
-		transform(keyName.begin(), keyName.end(), keyName.begin(), toLower);
+		transform(keyName.begin(), keyName.end(), keyName.begin(), std::tolower);
 		if (keyName==name) return true;
 	}
 	return false;
@@ -996,10 +996,10 @@ void player::workStereo(int numSamples) {
 
 /*! \brief Look up URI based on an alias */
 std::string player::getBuzzUri(std::string name) {
-    transform(name.begin(), name.end(), name.begin(), toLower);
+    transform(name.begin(), name.end(), name.begin(), std::tolower);
     for (map<string, string>::iterator i=aliases.begin(); i!=aliases.end(); ++i) {
         string alias=i->first;
-        transform(alias.begin(), alias.end(), alias.begin(), toLower);
+        transform(alias.begin(), alias.end(), alias.begin(), std::tolower);
         if (alias==name) return i->second;
     }
     return "";
@@ -1007,10 +1007,10 @@ std::string player::getBuzzUri(std::string name) {
 
 /*! \brief Look up alias based on a URI */
 std::string player::getBuzzName(std::string uri) {
-    transform(uri.begin(), uri.end(), uri.begin(), toLower);
+    transform(uri.begin(), uri.end(), uri.begin(), std::tolower);
     for (map<string, string>::iterator i=aliases.begin(); i!=aliases.end(); ++i) {
         string id=i->second;
-        transform(id.begin(), id.end(), id.begin(), toLower);
+        transform(id.begin(), id.end(), id.begin(), std::tolower);
         if (id==uri) return i->first;
     }
     return "";

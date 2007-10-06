@@ -65,7 +65,6 @@ void Copy24ToF32(void* srcbuf, void* targetbuf, size_t numSamples);
 void Copy24ToS32(void* srcbuf, void* targetbuf, size_t numSamples);
 
 // this is a wrapper for quick GCC support, since GCC's transform() doesnt accept regular tolower
-char toLower(char c);
 char backslashToSlash(char c);
 
 // zzub tools

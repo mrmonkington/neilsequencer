@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <cctype>
 #include "unhack.h"
 #include "MemoryModule.h"
 
@@ -145,10 +146,8 @@ std::string unhack::machineNameFromFileName(std::string fileName) {
     return fileName;
 }
 
-char toLower(char c) { return tolower(c); }
-
 bool isMfc(std::string mfc) {
-	std::transform(mfc.begin(), mfc.end(), mfc.begin(), toLower);
+	std::transform(mfc.begin(), mfc.end(), mfc.begin(), std::tolower);
 	return mfc == "mfc42";
 }
 
