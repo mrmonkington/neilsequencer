@@ -1411,7 +1411,7 @@ int zzub_wave_load_sample(zzub_wave_t* wave, int level, const char *path) {
 	std::string fullpath = path;
 	int dpos=(int)fullpath.find_last_of('.');
 	std::string ext = fullpath.substr(dpos);
-	std::transform(ext.begin(), ext.end(), ext.begin(), std::tolower);
+	std::transform(ext.begin(), ext.end(), ext.begin(), (int(*)(int))std::tolower);
 #if defined(USE_LIBMAD)
 	if (ext == ".mp3") {
 		printf("loading mp3 '%s'...\n", path);
