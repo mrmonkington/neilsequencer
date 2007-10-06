@@ -147,7 +147,7 @@ std::string unhack::machineNameFromFileName(std::string fileName) {
 }
 
 bool isMfc(std::string mfc) {
-	std::transform(mfc.begin(), mfc.end(), mfc.begin(), std::tolower);
+	std::transform(mfc.begin(), mfc.end(), mfc.begin(), (int(*)(int))std::tolower);
 	return mfc == "mfc42";
 }
 
