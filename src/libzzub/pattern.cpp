@@ -408,7 +408,7 @@ void patterntrack::lock() { patternLock.Lock(); }
 void patterntrack::unlock() { patternLock.Unlock(); }
 */
 
-void patterntrack::transpose(int delta) {
+void patterntrack::transpose(int delta, bool notesOnly) {
 	for (size_t i=0; i<getRows(); i++) {
 		for (size_t j=0; j<getParams(); j++) {
 			int value=getValue(i, j);
@@ -423,7 +423,7 @@ void patterntrack::transpose(int delta) {
 				if (value!=noValue && value!=zzub::note_value_off && value+delta>=1)
 					setValue(i, j, transposeNote(value, delta));
 			} else 
-			if (value+delta>=minValue && value+delta<=maxValue) {
+			if (!notesOnly && value+delta>=minValue && value+delta<=maxValue) {
 				setValue(i,j, value+delta);
 			}
 		}

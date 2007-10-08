@@ -69,7 +69,7 @@ struct patterntrack {
 	void deleteRow(size_t column, size_t row);
 	void insertRow(size_t column, size_t row);
 	void resetValues(size_t column, size_t row);
-	void transpose(int delta);
+	void transpose(int delta, bool notesOnly);
 	void interpolate();
 };
 
