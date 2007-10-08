@@ -662,11 +662,11 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 	void post_delete_input_event() { }
 
 	void pre_set_tracks_event() {
-		if (isUtrk) evil_lock();
+		if (isUtrk || isLdmixer) evil_lock();
 	}
 
 	void post_set_tracks_event() {
-		if (isUtrk) evil_unlock();
+		if (isUtrk || isLdmixer) evil_unlock();
 	}
 };
 
