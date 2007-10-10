@@ -95,6 +95,7 @@ void stream_player_plugin::init(zzub::archive* pi) {
 	inf->read(dataUrl);
 	inf->read(pluginUri);
 	if (stream) _host->stream_destroy(stream);
+	if (resampler) delete resampler;
 
 	stream = _host->stream_create(pluginUri.c_str(), dataUrl.c_str());
 	resampler = new stream_resampler(stream);

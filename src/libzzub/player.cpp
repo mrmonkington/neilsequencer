@@ -1172,6 +1172,7 @@ plugin* player::createStream(std::string streamPluginUri, std::string streamData
 	int* streamvals = (int*)plugin->global_values;
 	streamvals[0] = 0xFFFFFFFF;
 	streamvals[1] = 0xFFFFFFFF;
+	delete a;
 
 	return plugin;
 }

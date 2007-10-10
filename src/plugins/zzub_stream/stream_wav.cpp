@@ -32,6 +32,7 @@ stream_wav::stream_wav() {
 }
 
 stream_wav::~stream_wav() {
+	close();
 }
 
 void stream_wav::init(zzub::archive * const pi) {

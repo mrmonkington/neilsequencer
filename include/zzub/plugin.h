@@ -798,6 +798,7 @@ struct info	{
 };
 
 struct plugin {
+	virtual ~plugin() { }
 	virtual void destroy() = 0;//{ delete this; }
 	virtual void init(zzub::archive *arc) = 0;//{}
 	virtual void process_events() = 0;//{}
