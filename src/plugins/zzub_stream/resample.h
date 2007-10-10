@@ -40,7 +40,7 @@ struct stream_resampler {
 	enum {
 		overlap_samples = 256,
 		resampler_samples = 4096*4,
-		max_samples_per_tick = resampler_samples * 10, // hold sampledata for up to 10 octaves more than base note
+		max_samples_per_tick = resampler_samples * (1 << 6), // hold sampledata for up to 6 octaves more than base note
 	};
 
 	zzub::plugin* plugin;

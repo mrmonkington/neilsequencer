@@ -164,7 +164,13 @@ void stream_resampler::fill_resampler() {
 		next_fill_overlap = sourceoverlap;
 	}
 	
-	assert(samples_to_process < max_samples_per_tick);
+	if (samples_to_process >= max_samples_per_tick) {
+		// didnt expect this great resampler pitch difference
+		playing = false;
+		samples_in_resampler = 0;
+		return ;
+	}
+	//assert(samples_to_process < max_samples_per_tick);
 
 	// zero what we expect to write, streams may not write all samples
 	memset(outs[0], 0, samples_to_process * sizeof(float));

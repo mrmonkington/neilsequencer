@@ -75,17 +75,20 @@ void stream_wavetable::process_events() {
 }
 
 inline float sample_scale(zzub::wave_buffer_type format, void* buffer) {
+	unsigned int i;
 	switch (format) {
 		case zzub::wave_buffer_type_si16:
 			return static_cast<float>(*(short*)buffer) / 0x7fff;
 		case zzub::wave_buffer_type_si24:
-            return static_cast<float>(*(unsigned int*)buffer) / 0x7fffff;
+			i = (*(unsigned int*)buffer) & 0x00ffffff;
+			if (i & 0x00800000) i = i | 0xFF000000;
+			return static_cast<float>((int)i) / 0x007fffff;
 		case zzub::wave_buffer_type_si32:
-            return static_cast<float>(*(int*)buffer) / 0x7fffffff;
+			return static_cast<float>(*(int*)buffer) / 0x7fffffff;
 		case zzub::wave_buffer_type_f32:
 			return *(float*)buffer;
-        default:
-            return 0;
+		default:
+			return 0;
 	}
 }
 

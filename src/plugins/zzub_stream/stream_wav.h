@@ -9,6 +9,8 @@ struct stream_wav : stream_plugin {
 	bool loaded;
 	bool triggered;
 	unsigned int currentPosition;
+	float* buffer;
+	size_t buffer_size;
 
 	stream_wav();
 	virtual ~stream_wav();

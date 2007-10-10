@@ -27,6 +27,8 @@ stream_wav::stream_wav() {
 	memset(&sfinfo, 0, sizeof(sfinfo));
 	loaded = false;
 	triggered = false;
+	buffer = 0;
+	buffer_size = 0;
 }
 
 stream_wav::~stream_wav() {
@@ -79,16 +81,26 @@ bool stream_wav::process_stereo(float **pin, float **pout, int numsamples, int m
 
 	// HAHA! TODO: move this allocation somewhere not-every-time
 
-	float* buffer = new float[numsamples * sfinfo.channels];
+	size_t target_buffersize = numsamples * sfinfo.channels;
+	if (target_buffersize > buffer_size) {
+		if (buffer) delete[] buffer;
+		buffer_size = target_buffersize;
+		buffer = new float[buffer_size];
+	}
+
 	sf_readf_float(sf, buffer, maxread);
 
 	for (int i = 0; i<maxread; i++) {
-		pout[0][i] = buffer[i*sfinfo.channels + 0];
-		pout[1][i] = buffer[i*sfinfo.channels + 1];
+		float l = buffer[i*sfinfo.channels + 0];
+		pout[0][i] = l;
+		if (sfinfo.channels == 1) {
+			pout[1][i] = l;
+		} else {
+			pout[1][i] = buffer[i*sfinfo.channels + 1];
+		}
 	}
 	currentPosition += maxread;
 
-	delete[] buffer;
 	return result;
 }
 
@@ -121,6 +133,10 @@ bool stream_wav::open() {
 }
 
 void stream_wav::close() {
+	if (buffer) {
+		delete[] buffer;
+		buffer_size = 0;
+	}
 	if (!sf) return ;
 	loaded = false;
 	triggered = false;

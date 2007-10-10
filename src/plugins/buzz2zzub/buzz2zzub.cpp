@@ -775,11 +775,29 @@ struct buzzplugininfo : zzub::info
 
 		version = buzzinfo->Version;
 		flags = buzzinfo->Flags;
+		
+		// NOTE: A Buzz generator marked MIF_NO_OUTPUT is flagged with
+		// neither input nor output flags. An effect with NO_OUTPUT is marked 
+		// as input only. The MIF_NO_OUTPUT-flag is cleared no matter.
 		switch (buzzinfo->Type) {
-			case MT_MASTER: flags |= ROOT_PLUGIN_FLAGS; break;
-			case MT_GENERATOR: flags |= GENERATOR_PLUGIN_FLAGS; break;
+			case MT_MASTER: 
+				flags |= ROOT_PLUGIN_FLAGS; 
+				break;
+			case MT_GENERATOR: 
+				if ((buzzinfo->Flags & MIF_NO_OUTPUT) != 0)
+					flags ^= MIF_NO_OUTPUT; else
+					flags |= GENERATOR_PLUGIN_FLAGS; 
+				break;
 			case MT_EFFECT:
-			default: flags |= EFFECT_PLUGIN_FLAGS; break;
+				if ((buzzinfo->Flags & MIF_NO_OUTPUT) != 0) {
+					flags ^= MIF_NO_OUTPUT; 
+					flags |= zzub_plugin_flag_has_audio_input;
+				} else
+					flags |= EFFECT_PLUGIN_FLAGS; 
+				break;
+			default: 
+				flags |= EFFECT_PLUGIN_FLAGS; 
+				break;
 		}
 		min_tracks = buzzinfo->minTracks;
 		max_tracks = buzzinfo->maxTracks;
