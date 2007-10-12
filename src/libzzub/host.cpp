@@ -107,18 +107,40 @@ bool host::allocate_wave(int i, int level, int samples, wave_buffer_type type, b
 	wt.waves[i-1].allocate_level(level, samples, type, stereo);
 
 	// need to tell someone we updated, so windows can be redrawn
-    zzub_event_data eventData={event_type_wave_allocated};
+	zzub_event_data eventData={event_type_wave_allocated};
 	_metaplugin->player->master->invokeEvent(eventData);
-//	_metaplugin->player->master.invokeEvent(event_type_wave_allocated, &wt);
 
 	return true;
 }
 
 
 void host::schedule_event(int const time, unsigned int data) {
-//	message("ScheduleEvent not implemented");
-    scheduled_event ev = { time, data };
-    this->_metaplugin->scheduledEvents.push_back(ev);
+	message("ScheduleEvent not implemented");
+	return ;
+	scheduled_event ev = { time, data };
+	this->_metaplugin->scheduledEvents.push_back(ev);
+}
+
+void host::get_midi_output_names(outstream *pout) {
+	// return a list of open midi output devices
+
+	midi_io* driver = _metaplugin->player->midiDriver;
+	if (!driver) return ;
+	for (size_t i=0; i<driver->getDevices(); i++) {
+		if (!driver->isOutput(i)) continue;
+
+		const char* name = driver->getDeviceName(i);
+		pout->write((void*)name, strlen(name)+1);
+	}
+}
+
+int host::get_midi_device(const char* device_name) {
+	midi_io* driver = _metaplugin->player->midiDriver;
+	for (size_t i=0; i<driver->getDevices(); i++) {
+		const char* name = driver->getDeviceName(i);
+		if (strcmp(device_name, name) == 0) return i;
+	}
+	return -1;
 }
 
 void host::midi_out(int const dev, unsigned int data) {

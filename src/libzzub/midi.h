@@ -23,8 +23,13 @@ typedef void PortMidiStream;
 namespace zzub {
 
 struct midi_io {
-    virtual bool poll() = 0;
-    virtual bool send(size_t index, unsigned int data) = 0;
+	virtual ~midi_io() { }
+	virtual bool poll() = 0;
+	virtual bool send(size_t index, unsigned int data) = 0;
+	virtual size_t getDevices() = 0;
+	virtual bool isInput(size_t index) = 0;
+	virtual bool isOutput(size_t index) = 0;
+	virtual const char* getDeviceName(size_t index) = 0;
 };
 
 struct midiworker {
@@ -32,28 +37,28 @@ struct midiworker {
 	midiworker() {
 		midiDriver = 0;
 	}
-    virtual void midiEvent(unsigned short status, unsigned char data1, unsigned char data2)=0;
+	virtual void midiEvent(unsigned short status, unsigned char data1, unsigned char data2)=0;
 };
 
 struct mididriver : midi_io {
-    ~mididriver();
+	~mididriver();
 
-    midiworker* worker;
-    std::vector<PortMidiStream*> devices;
+	midiworker* worker;
+	std::vector<PortMidiStream*> devices;
 
-    bool initialize(midiworker*);
-    
-    bool openDevice(size_t index);
-    bool closeAllDevices();
-    void close();
+	bool initialize(midiworker*);
 
-    size_t getDevices();
-    bool isInput(size_t index);
-    bool isOutput(size_t index);
-    const char* getDeviceName(size_t index);
+	bool openDevice(size_t index);
+	bool closeAllDevices();
+	void close();
 
-    virtual bool poll();
-    virtual bool send(size_t index, unsigned int data);
+	size_t getDevices();
+	bool isInput(size_t index);
+	bool isOutput(size_t index);
+	const char* getDeviceName(size_t index);
+
+	virtual bool poll();
+	virtual bool send(size_t index, unsigned int data);
 
 };
 

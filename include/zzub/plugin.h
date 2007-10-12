@@ -575,7 +575,9 @@ struct host {
 	virtual int get_next_free_wave_index();
 	virtual bool allocate_wave(int index, int level, int samples, wave_buffer_type type, bool stereo, const char *name);
 	virtual void schedule_event(int time, unsigned int data);
+	virtual void get_midi_output_names(outstream *pout);
 	virtual void midi_out(int device, unsigned int data);
+	virtual int get_midi_device(const char* name);
 	virtual const short * get_oscillator_table(int waveform);
 	virtual int get_envelope_size(int wave, int envelope);
 	virtual bool get_envelope_point(int wave, int envelope, int index, unsigned short &x, unsigned short &y, int &flags);

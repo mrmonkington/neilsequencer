@@ -224,7 +224,6 @@ struct _connPanning : parameter {
 		.set_description("Panning (0=left, 4000=center, 8000=right)")
 		.set_value_min(0).set_value_max(0x8000)
 		.set_value_none(0xffff)
-		.set_state_flag()
 		.set_value_default(0x4000)
 		.append(connectionParameters);
 	}
