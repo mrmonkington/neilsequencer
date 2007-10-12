@@ -369,7 +369,8 @@ if env['LUNARTARGET'] == '':
 
 def is_cleaning():
 	import SCons.Script.Main 
-	return SCons.Script.Main.options.clean
+	try: return SCons.Script.Main.GetOption('clean')
+	except: return SCons.Script.Main.options.clean
 
 if (not is_cleaning()) and ('configure' in COMMAND_LINE_TARGETS):
 	import os
