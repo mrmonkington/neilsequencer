@@ -143,9 +143,10 @@ struct midioutnames : zzub::outstream {
 		tracker = _tracker;
 	}
 
-	virtual outstream::write(void* buffer, int size) {
+	virtual int write(void* buffer, int size) {
 		char* str = (char*)buffer;
 		tracker->devices.push_back(str);
+		return size;
 	}
 	long position() {
 		return 0;
