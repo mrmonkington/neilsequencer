@@ -2664,6 +2664,7 @@ bool RtApiAsio :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
   }
 
   // Allocate, initialize, and save the bufferInfos in our stream callbackInfo structure.
+  unsigned long bufferBytes;
   bool buffersAllocated = false;
   unsigned int i, nChannels = stream_.nDeviceChannels[0] + stream_.nDeviceChannels[1];
   handle->bufferInfos = (ASIOBufferInfo *) malloc( nChannels * sizeof(ASIOBufferInfo) );
@@ -2708,7 +2709,7 @@ bool RtApiAsio :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
     stream_.doConvertBuffer[mode] = true;
 
   // Allocate necessary internal buffers
-  unsigned long bufferBytes = stream_.nUserChannels[mode] * *bufferSize * formatBytes( stream_.userFormat );
+  bufferBytes = stream_.nUserChannels[mode] * *bufferSize * formatBytes( stream_.userFormat );
   stream_.userBuffer[mode] = (char *) calloc( bufferBytes, 1 );
   if ( stream_.userBuffer[mode] == NULL ) {
     errorText_ = "RtApiAsio::probeDeviceOpen: error allocating user buffer memory.";
