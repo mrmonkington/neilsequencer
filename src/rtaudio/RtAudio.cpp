@@ -2664,7 +2664,6 @@ bool RtApiAsio :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
   }
 
   // Allocate, initialize, and save the bufferInfos in our stream callbackInfo structure.
-  unsigned long bufferBytes;
   bool buffersAllocated = false;
   unsigned int i, nChannels = stream_.nDeviceChannels[0] + stream_.nDeviceChannels[1];
   handle->bufferInfos = (ASIOBufferInfo *) malloc( nChannels * sizeof(ASIOBufferInfo) );
@@ -2709,6 +2708,7 @@ bool RtApiAsio :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
     stream_.doConvertBuffer[mode] = true;
 
   // Allocate necessary internal buffers
+  unsigned long bufferBytes;
   bufferBytes = stream_.nUserChannels[mode] * *bufferSize * formatBytes( stream_.userFormat );
   stream_.userBuffer[mode] = (char *) calloc( bufferBytes, 1 );
   if ( stream_.userBuffer[mode] == NULL ) {
@@ -3200,6 +3200,14 @@ static const char* getAsioErrorString( ASIOError result )
 
 #include <dsound.h>
 #include <assert.h>
+
+#if defined(__MINGW32__)
+// missing from latest mingw winapi
+#define WAVE_FORMAT_96M08 0x00010000 /* 96 kHz, Mono, 8-bit */
+#define WAVE_FORMAT_96S08 0x00020000 /* 96 kHz, Stereo, 8-bit */
+#define WAVE_FORMAT_96M16 0x00040000 /* 96 kHz, Mono, 16-bit */
+#define WAVE_FORMAT_96S16 0x00080000 /* 96 kHz, Stereo, 16-bit */
+#endif
 
 #define MINIMUM_DEVICE_BUFFER_SIZE 32768
 
