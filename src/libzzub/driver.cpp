@@ -58,11 +58,13 @@ void i2s(float **s, float *i, int channels, int numsamples) {
 	}
 }
 
-int rtaudio_process_callback(char *output, int frameCount, void *data) {
-	assert(frameCount <= audiodriver::MAX_FRAMESIZE);
+int rtaudio_process_callback(void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames, double streamTime, RtAudioStreamStatus status, void *data) {
+	assert(nBufferFrames <= audiodriver::MAX_FRAMESIZE);
 	audiodriver *self = (audiodriver *)data;
-	float* buffer = (float*)output;
-	float* ob = buffer;
+	float* oBuffer = (float*)outputBuffer;
+	float* ob = oBuffer;
+	float* iBuffer = (float*)inputBuffer;
+	float* ib = iBuffer;
 	float* ip[audiodriver::MAX_CHANNELS];
 	float* op[audiodriver::MAX_CHANNELS];
 
@@ -76,15 +78,15 @@ int rtaudio_process_callback(char *output, int frameCount, void *data) {
 	}
 
 	// de-interleave all input channels
-    if (self->isRecording()) {
-        i2s(ip, ob, in_ch, frameCount);
-    }
+	if (self->isRecording()) {
+		i2s(ip, ib, in_ch, nBufferFrames);
+	}
 
-	self->worker->workStereo(frameCount);
+	self->worker->workStereo(nBufferFrames);
 
 	// re-interleave output channels
 	float f;
-	for (int i=0; i<frameCount; i++) {
+	for (int i=0; i<nBufferFrames; i++) {
 		for (int j = 0; j<out_ch; j++) {
 			f=*op[j]++;
 			if (f>1) f=1.0f;
@@ -107,7 +109,7 @@ audiodriver::~audiodriver()
 
 int audiodriver::getApiDevices(int apiId) {
 	try {
-        audio = new RtAudio((RtAudio::RtAudioApi)apiId);
+        audio = new RtAudio((RtAudio::Api)apiId);
 	} catch (RtError &error) {
 		error.printMessage();
 		return -1;
@@ -116,26 +118,27 @@ int audiodriver::getApiDevices(int apiId) {
     // rtaudio returns an invalid deviceInfo for non-probed devices after a stream is opened, so probe all devices now
     for (int i = 0; i<audio->getDeviceCount(); i++) {
         audiodevice ad;
-	    RtAudioDeviceInfo info;
+		RtAudio::DeviceInfo info;
 	    try {
-		    info = audio->getDeviceInfo(i+1);
+		    info = audio->getDeviceInfo(i);
 			if (info.probed == false) continue;
 
             std::string deviceName = info.name;
 
             // ds returns devices that has duplex support twice so we remove the last one
-            int j = getDeviceByName(deviceName.c_str());
-            if (j != -1) continue;
+			// NOTE: something changed in rtaudio4 so we can't do this any more
+            //int j = getDeviceByName(deviceName.c_str());
+            //if (j != -1) continue;
 				
-			if (info.outputChannels < 2)
-				continue; // if it doesn't have output, we can't use it
+			//if (info.outputChannels < 2)
+			//	continue; // if it doesn't have output, we can't use it
 
-            if (info.isDefault && defaultDevice == -1)
+            if (info.isDefaultOutput && defaultDevice == -1)
                 defaultDevice = devices.size();
 
             ad.name = deviceName;
             ad.api_id = apiId;
-            ad.device_id = i+1;
+            ad.device_id = i;
             ad.out_channels = info.outputChannels;
             ad.in_channels = info.inputChannels;
             ad.rates = info.sampleRates;
@@ -173,7 +176,7 @@ void audiodriver::initialize(audioworker *worker)
 #if defined(__MACOSX_CORE__)
       getApiDevices(RtAudio::RtAudio::MACOSX_CORE);
 #endif
-	getApiDevices(RtAudio::XP_SILENT);
+//	getApiDevices(RtAudio::XP_SILENT);
 }
 
 void audiodriver::reset()
@@ -240,7 +243,7 @@ bool audiodriver::createDevice(int index, int inIndex, int sampleRate, int buffe
 	audiodevice* device = getDeviceInfo(index);
 	cout << "creating output device '" << device->name << "' with " << sampleRate << "Hz samplerate" << endl;
 
-    audio = new RtAudio((RtAudio::RtAudioApi)devices[index].api_id);
+    audio = new RtAudio((RtAudio::Api)devices[index].api_id);
 
     // ensure rtaudio out/in ids are on the same api or disable input
     int outdevid = devices[index].device_id;
@@ -257,9 +260,21 @@ bool audiodriver::createDevice(int index, int inIndex, int sampleRate, int buffe
         indevch = devices[inIndex].in_channels;
     }
 	try {
-		audio->openStream(outdevid, outdevch, indevid, indevch, RTAUDIO_FLOAT32, sampleRate, (int*)&bufferSize, 4);
-		audio->setStreamCallback(&rtaudio_process_callback, (void *)this);
-        if (indevid != 0)
+
+		RtAudio::StreamParameters iParams, oParams;
+		oParams.deviceId = outdevid;
+		oParams.firstChannel = 0;
+		oParams.nChannels = outdevch;
+
+		iParams.deviceId = indevid;
+		iParams.firstChannel = 0;
+		iParams.nChannels = indevch;
+
+		if (inapi != -1)
+			audio->openStream(&oParams, &iParams, RTAUDIO_FLOAT32, sampleRate, (unsigned int*)&bufferSize, &rtaudio_process_callback, (void*)this); else
+			audio->openStream(&oParams, 0, RTAUDIO_FLOAT32, sampleRate, (unsigned int*)&bufferSize, &rtaudio_process_callback, (void*)this);
+
+		if (indevid != 0)
             recording = true;
 
 		worker->workDevice = &devices[index];
@@ -267,6 +282,7 @@ bool audiodriver::createDevice(int index, int inIndex, int sampleRate, int buffe
 		worker->workRate = sampleRate;
 		worker->workBufferSize = bufferSize;
 		worker->workChannel = channel;
+		worker->workLatency = audio->getStreamLatency();
 		return true;
 	} catch (RtError &error) {
 		error.getMessage();

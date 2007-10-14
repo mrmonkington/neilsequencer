@@ -34,7 +34,7 @@ struct audiodevice {
 	std::string name;
 	int in_channels;
 	int out_channels;
-	std::vector<int> rates;
+	std::vector<unsigned int> rates;
 };
 
 struct audiodriver
@@ -78,6 +78,7 @@ struct audioworker {
 	int workChannel;		// 0..maxChannels/2
 	int workRate;
 	int workBufferSize;
+	int workLatency;
 	audiodevice* workDevice;
 	audiodevice* workInputDevice;
 	bool workStarted;
