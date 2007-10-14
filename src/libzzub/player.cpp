@@ -101,6 +101,7 @@ player::player()
 	cpuLoad = 0;
 	editCommand = 0;
 	stopFlag = false;
+	midiNoteMachine = 0;
 }
 
 player::~player(void) {
@@ -530,6 +531,7 @@ void player::deleteMachine(zzub::metaplugin* machine) {
 	assert(machine!=master);
 
 	lock();
+	if (midiNoteMachine == machine) midiNoteMachine = 0;
 	machineInstances.erase(machineInstances.begin()+getMachineIndex(machine));
     machine->initialized=false;
 	unlock();
@@ -928,16 +930,16 @@ void player::workStereo(int numSamples) {
 	double tempTime=timer.frame();
 	int samplecount = numSamples;
 
-    long bufpos = 0;
+    workBufpos = 0;
     while (numSamples > 0) {
 		// init buffer pointers for all input and output channels
 		for (int i = 0; i < workDevice->out_channels; i++) {
-			outputBuffer[i] = &workOutputBuffer[i][bufpos];
+			outputBuffer[i] = &workOutputBuffer[i][workBufpos];
 			//memset(outputBuffer[i], 0, numSamples * sizeof(float));
 		}
 		for (int i = 0; i < workDevice->in_channels; i++) {
 	        if (workInputDevice)
-				inputBuffer[i] = &workInputBuffer[i][bufpos]; else
+				inputBuffer[i] = &workInputBuffer[i][workBufpos]; else
 	            inputBuffer[i] = 0;
 		}
 
@@ -961,10 +963,14 @@ void player::workStereo(int numSamples) {
 		// this can be called from many context, eg a recorder in the ui thread
 		// so - outputChannel may need to be adjusted depending on the situation
 		assert(workChannel < workDevice->out_channels/2);
-        memcpy(&workOutputBuffer[workChannel*2+0][bufpos], master->machineBuffer[0], mixSamples*sizeof(float));
-        memcpy(&workOutputBuffer[workChannel*2+1][bufpos], master->machineBuffer[1], mixSamples*sizeof(float));
+        memcpy(&workOutputBuffer[workChannel*2+0][workBufpos], master->machineBuffer[0], mixSamples*sizeof(float));
+        memcpy(&workOutputBuffer[workChannel*2+1][workBufpos], master->machineBuffer[1], mixSamples*sizeof(float));
 	    numSamples -= mixSamples;
-        bufpos += mixSamples;
+        workBufpos += mixSamples;
+
+		if (midiDriver)
+			midiDriver->poll();
+
     }
 	
 	workTime=timer.frame()-tempTime;
@@ -979,9 +985,6 @@ void player::workStereo(int numSamples) {
 	// leaving it on will cause unexpected behavior on code paths
 	// we do not control.
 	SETGRADUN();
-
-	if (midiDriver)
-		midiDriver->poll();
 
 	unlock();
 
@@ -1017,7 +1020,15 @@ std::string player::getBuzzName(std::string uri) {
 }
 
 /*! \brief MIDI callback */
+namespace {	// duplicate from ccm.h and pattern.cpp
+int midi_to_buzz_note(int value) {
+	return ((value / 12) << 4) + (value % 12) + 1;
+}
 
+int buzz_to_midi_note(int value) {
+	return 12 * (value >> 4) + (value & 0xf) - 1;
+}
+}
 void player::midiEvent(unsigned short status, unsigned char data1, unsigned char data2) {
     // look up mapping(s) and send value to plugin
     int channel=status&0xF;
@@ -1045,6 +1056,20 @@ void player::midiEvent(unsigned short status, unsigned char data1, unsigned char
 			zzub::metaplugin* m=(zzub::metaplugin*)machineInstances[i];
 			if (m->machine)
 				m->machine->midi_note(channel, (int)data1, velocity);
+
+			if (m->midiInputChannel == channel || m->midiInputChannel == 16 || (m->midiInputChannel == 17 && m == midiNoteMachine)) {
+				// play a recordable note/off, w/optional velocity, delay and cut
+				int note, prevNote;
+				if (command == 9 && velocity != 0) {
+					note = midi_to_buzz_note(data1);
+					prevNote = -1;
+				} else {
+					note = zzub::note_value_off;
+					prevNote = midi_to_buzz_note(data1);
+				}
+
+				playMachineNote(m, note, prevNote, velocity);
+			}
 		}
 	}
 	else if (command == 0xb) {
@@ -1062,6 +1087,101 @@ void player::midiEvent(unsigned short status, unsigned char data1, unsigned char
     eventData.midi_message.data2=data2;
 
     master->invokeEvent(eventData);
+}
+
+void player::playMachineNote(zzub::metaplugin* plugin, int note, int prevNote, int velocity) {
+	// create a blank 1-row pattern we're going to play
+	zzub::pattern* p = new zzub::pattern(plugin->loader->plugin_info, plugin->getConnections(), plugin->getTracks(), 1);
+
+	bool multiChannel;
+	size_t noteGroup = -1;
+	size_t noteParameter = -1;
+	plugin->findNoteColumn(noteParameter, noteGroup, multiChannel);
+	if (noteParameter == -1) return ;
+
+	if (multiChannel) {
+		// play note on track
+		if (note == note_value_off) {
+			// find which track this note was played in and play a note-stop
+			for (size_t i = 0; i<keyjazz.size(); i++) {
+				if (keyjazz[i].note == prevNote || prevNote == -1) {
+					patterntrack* pt = p->getPatternTrack(keyjazz[i].group, keyjazz[i].track);
+					pt->setValue(0, noteParameter, note_value_off);
+					keyjazz.erase(keyjazz.begin() + i);
+					i--;
+					if (prevNote != -1) break;
+				}
+			}
+		} else {
+			size_t lowestTime = UINT_MAX;
+			int lowestTrack = -1;
+			int foundTrack = -1;
+			size_t lowestIndex;
+
+			vector<bool> foundTracks(plugin->getTracks());
+			for (size_t i = 0; i < foundTracks.size(); i++)
+				foundTracks[i] = false;
+
+			for (size_t j = 0; j < keyjazz.size(); j++) {
+				foundTracks[keyjazz[j].track] = true;
+				if (keyjazz[j].timestamp < lowestTime) {
+					lowestTime = keyjazz[j].timestamp;
+					lowestTrack = keyjazz[j].track;
+					lowestIndex = j;
+				}
+			}
+
+			for (size_t i = 0; i < foundTracks.size(); i++) {
+				if (foundTracks[i] == false) {
+					foundTrack = i;
+					break;
+				}
+			}
+			if (foundTrack == -1) {
+				foundTrack = lowestTrack;
+				keyjazz.erase(keyjazz.begin()+lowestIndex);
+			}
+
+			patterntrack* pt = p->getPatternTrack(noteGroup, foundTrack);
+			pt->setValue(0, noteParameter, note);
+
+			// find an available track or the one with lowest timestamp
+			keyjazz_note ki = {workPos, noteGroup, foundTrack, note };
+			keyjazz.push_back(ki);
+		}
+	} else {
+		// play global note - no need for track counting
+		if (note == note_value_off) {
+			for (int i = 0; i<keyjazz.size(); i++) {
+				if (keyjazz[i].note == prevNote) {
+					keyjazz.clear();
+
+					patterntrack* pt = p->getPatternTrack(noteGroup, 0);
+					pt->setValue(0, noteParameter, note);
+					break;
+				}
+			}
+		} else {
+			keyjazz_note ki = {workPos, 1, 0, note };
+			keyjazz.clear();
+			keyjazz.push_back(ki);
+			
+			patterntrack* pt = p->getPatternTrack(noteGroup, 0);
+			pt->setValue(0, noteParameter, note);
+		}
+	}
+
+	lock();
+	plugin->playPatternRow(p, 0, true);
+	plugin->tickAsync();
+	unlock();
+
+	delete p;
+}
+
+void player::resetKeyjazz() {
+	// todo: set note off for all current playing keys
+	keyjazz.clear();
 }
 
 /*! \brief Define a MIDI mapping */

@@ -390,6 +390,7 @@ metaplugin::metaplugin(zzub::player* pl, pluginloader* loader) {
 	ticksWritten = 0;
 	pluginRecorder = 0;
 	nonSongPlugin = false;
+	midiInputChannel = 17;
 }
 
 metaplugin::~metaplugin() { // todo: release pattern memory and connections

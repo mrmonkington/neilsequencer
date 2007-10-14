@@ -44,6 +44,12 @@ enum player_state {
 	player_state_released
 };
 
+struct keyjazz_note {
+	size_t timestamp;
+	size_t group, track;
+	int note;
+};
+
 struct midimapping {
 	zzub::metaplugin* machine;
 	size_t group, track, column;
@@ -127,6 +133,7 @@ struct player :
 	metaplugin* soloMachine;
 
 	int workPos;								// total accumulation of samples processed
+	int workBufpos;								// sample position in current buffer
 	int lastTickPos;							// at which workPos we last ticked
 
 	std::vector<metaplugin*> machineInstances;	// machines in current song
@@ -177,6 +184,9 @@ struct player :
 	double cpuLoad;							// cpu load
 	bool stopFlag;
 	volatile zzub_edit* editCommand;
+
+	zzub::metaplugin* midiNoteMachine;
+	std::vector<keyjazz_note> keyjazz;
 
 	player();
 	virtual ~player(void);
@@ -281,6 +291,9 @@ struct player :
 	void executeThreadCommand(zzub_edit* edit);
 
 	plugin* createStream(std::string streamUri, std::string streamDataUrl);
+
+	void playMachineNote(zzub::metaplugin* plugin, int note, int prevNote, int velocity);
+	void resetKeyjazz();
 
 };
 

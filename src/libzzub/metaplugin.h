@@ -204,8 +204,9 @@ struct metaplugin {
 	// listeners to events sent from this machine
 	std::vector<event_handler*> events;
 
-	// MIDI-out events
+	// MIDI stuff
 	std::list<scheduled_event> scheduledEvents;
+	int midiInputChannel;	// 0..15 = midi channel 1..16, 16 = all, 17 = "play if selected"
 
 	metaplugin(zzub::player*, pluginloader*);
 	virtual ~metaplugin();

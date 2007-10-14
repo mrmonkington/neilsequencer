@@ -146,14 +146,22 @@ bool wave_info_ex::allocate_level(size_t level, size_t numSamples, zzub::wave_bu
 			// initialize wave_info when the first level is allocated
 			set_stereo(stereo);
 			volume = 1.0f;
-		}
+		} else
+		if (stereo != get_stereo())
+			return false;
 
 		levels.resize(level+1);
 		for (size_t i = 0; i < levels.size(); ++i) {
 			levels[i].wave = this; // make sure they all carry a pointer back
 			levels[i].level = i; // and an index
 		}
-	}
+	} else
+	if (levels.size() == 1 && stereo != get_stereo()) {
+		// toggle stereo mode if there was only one level allocated and we're replacing it
+		set_stereo(stereo);
+	} else 
+	if (stereo != get_stereo())
+		return false;
 
 	int waveChannels = stereo?2:1;
 	size_t waveBufferSize = 0;

@@ -128,6 +128,7 @@ void host::get_midi_output_names(outstream *pout) {
 	if (!driver) return ;
 	for (size_t i=0; i<driver->getDevices(); i++) {
 		if (!driver->isOutput(i)) continue;
+		if (!driver->isOpen(i)) continue;
 
 		const char* name = driver->getDeviceName(i);
 		pout->write((void*)name, strlen(name)+1);
@@ -150,7 +151,13 @@ void host::midi_out(int const dev, unsigned int data) {
 
 	midi_io* driver = _metaplugin->player->midiDriver;
 	if (!driver) return ;
-	driver->send(dev, data);
+	
+	//float latency = _metaplugin->player->workLatency + _metaplugin->player->workBufpos;
+	float latency = _metaplugin->player->workLatency /*+ _metaplugin->player->workBufferSize*/ + _metaplugin->player->workBufpos;
+	float samples_per_ms = (float)_metaplugin->player->masterInfo.samples_per_second / 1000.0f;
+
+	int time_ms = latency / samples_per_ms;	// get latency and write position in ms from audio driver
+	driver->schedule_send(dev, time_ms, data);
 }
 
 short const *host::get_oscillator_table(int const waveform) {
