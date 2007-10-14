@@ -113,11 +113,11 @@ struct miditracker : public zzub::plugin {
 	virtual void get_sub_menu(int, zzub::outstream*);
 	virtual void set_track_count(int i);
 	virtual void command(int);
+	virtual void stop();
 
 	// ::zzub::plugin methods
 	virtual void process_controller_events() {}
 	virtual void destroy() { delete this; }
-	virtual void stop() {}
 	virtual void attributes_changed() {}
 	virtual void mute_track(int) {}
 	virtual bool is_track_muted(int) const { return false; }
@@ -213,15 +213,13 @@ void miditrack::process_stereo(int numsamples) {
 
 			tracker->_host->midi_out(midi_device, message);
 			//cout << "miditracker playing note " << note << " with delay " << (int)note_delay << endl;
-		} else {
-			if (last_note != zzub::note_value_none) {
-				int status = 0x80 | (midi_channel & 0x0f);
-				int message = MAKEMIDI(status, last_note, 0);
+		} else 
+		if (note != zzub::note_value_none && last_note != zzub::note_value_none) {
+			int status = 0x80 | (midi_channel & 0x0f);
+			int message = MAKEMIDI(status, last_note, 0);
 
-				tracker->_host->midi_out(midi_device, message);
-				last_note = zzub::note_value_none;
-
-			}
+			tracker->_host->midi_out(midi_device, message);
+			last_note = zzub::note_value_none;
 			//cout << "miditracker playing note-off " << note << " with delay " << (int)note_delay << endl;
 		}
 		note = zzub::note_value_none;
@@ -286,6 +284,22 @@ void miditracker::process_events() {
 
 	for (int i = 0; i < num_tracks; i++) {
 		tracks[i].tick();
+	}
+}
+
+void miditracker::stop() {
+	int midi_device = _host->get_midi_device(devices[open_device].c_str());
+	if (midi_device == -1) return ;
+
+	for (int i = 0; i < num_tracks; i++) {
+		if (tracks[i].last_note != zzub::note_value_none) {
+			int status = 0x80 | (tracks[i].midi_channel & 0x0f);
+			int message = MAKEMIDI(status, tracks[i].last_note, 0);
+
+			_host->midi_out(midi_device, message);
+			tracks[i].note = zzub::note_value_none;
+			tracks[i].last_note = zzub::note_value_none;
+		}
 	}
 }
 

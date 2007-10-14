@@ -171,7 +171,7 @@ void audiodriver::initialize(audioworker *worker)
     getApiDevices(RtAudio::LINUX_OSS);
 #endif
 #if defined(__UNIX_JACK__)
-    getApiDevices(RtAudio::LINUX_JACK);
+    getApiDevices(RtAudio::UNIX_JACK);
 #endif
 #if defined(__MACOSX_CORE__)
       getApiDevices(RtAudio::RtAudio::MACOSX_CORE);

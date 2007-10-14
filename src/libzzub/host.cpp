@@ -138,6 +138,7 @@ void host::get_midi_output_names(outstream *pout) {
 int host::get_midi_device(const char* device_name) {
 	midi_io* driver = _metaplugin->player->midiDriver;
 	for (size_t i=0; i<driver->getDevices(); i++) {
+		if (!driver->isOutput(i)) continue;
 		const char* name = driver->getDeviceName(i);
 		if (strcmp(device_name, name) == 0) return i;
 	}
