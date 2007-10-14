@@ -28,7 +28,7 @@ if win32:
 	
 if localenv['COREAUDIO'] == True: localenv.Append(CCFLAGS=['-D__MACOSX_CORE__'])
 if localenv['ALSA'] == True: localenv.Append(CCFLAGS=['-D__LINUX_ALSA__'])
-if localenv['JACK'] == True: localenv.Append(CCFLAGS=['-D__LINUX_JACK__'])
+if localenv['JACK'] == True: localenv.Append(CCFLAGS=['-D__UNIX_JACK__'])
 if localenv['OSS'] == True: localenv.Append(CCFLAGS=['-D__LINUX_OSS__'])
 
 #	localenv.Append(CCFLAGS=[
