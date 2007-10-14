@@ -2972,7 +2972,8 @@ bool RtApiAsio :: callbackEvent( long bufferIndex )
   }
 
   unsigned int bufferBytes, i, j;
-  unsigned int nChannels = stream_.nDeviceChannels[0] + stream_.nDeviceChannels[1];
+  unsigned int nChannels;
+  nChannels = stream_.nDeviceChannels[0] + stream_.nDeviceChannels[1];
   if ( stream_.mode == OUTPUT || stream_.mode == DUPLEX ) {
 
     bufferBytes = stream_.bufferSize * formatBytes( stream_.deviceFormat[0] );
