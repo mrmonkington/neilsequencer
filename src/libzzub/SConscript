@@ -224,7 +224,7 @@ if localenv['ALSA'] == True:
 	localenv.Append(CCFLAGS=['-D__LINUX_ALSA__'])
 	localenv.Append(LIBS=['asound'])
 if localenv['JACK'] == True:
-	localenv.Append(CCFLAGS=['-D__LINUX_JACK__'])
+	localenv.Append(CCFLAGS=['-D__UNIX_JACK__'])
 	localenv.Append(LIBS=[ 'jack', localenv['LIB_RT'] ])
 if localenv['OSS'] == True:
 	localenv.Append(CCFLAGS=['-D__LINUX_OSS__'])
