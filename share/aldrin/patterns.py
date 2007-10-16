@@ -2246,7 +2246,6 @@ class PatternView(gtk.DrawingArea):
 		Draws the pattern view graphics.
 		"""	
 		st = time.time()
-
 		row=None
 		rows=None
 		fulldraw=True
@@ -2263,6 +2262,7 @@ class PatternView(gtk.DrawingArea):
 		drawable = self.window
 
 		bgbrush = cm.alloc_color(cfg.get_color('PE BG'))
+	
 		fbrush1 = cm.alloc_color(cfg.get_color('PE BG Very Dark'))
 		fbrush2 = cm.alloc_color(cfg.get_color('PE BG Dark'))
 		selbrush = cm.alloc_color(cfg.get_color('PE Sel BG'))
@@ -2275,14 +2275,11 @@ class PatternView(gtk.DrawingArea):
 		layout = pango.Layout(self.get_pango_context())
 		layout.set_font_description(self.fontdesc)
 		layout.set_width(-1)
-		
+	
 		# clear the view if no current pattern
 		if not self.pattern:
 			drawable.draw_rectangle(gc, True, 0, 0, w, h)
 			return
-
-		#~ dc.SetTextBackground(cfg.get_color16('PE BG'))
-		#~ dc.SetTextForeground(cfg.get_color16('PE Text'))
 
 		if not rows:
 			rows = self.row_count		
@@ -2290,7 +2287,6 @@ class PatternView(gtk.DrawingArea):
 		clipy2 = PATROWHEIGHT + ((rows - self.start_row) * self.row_height)
 		
 		start_row, start_group, start_track, start_index, start_subindex = self.charpos_to_pattern((self.start_col, self.start_row))
-		
 		# full draw clears everything and draws all the line numbers and lines
 		if fulldraw:
 			drawable.draw_rectangle(gc, True, 0, 0, w, h)
@@ -2298,12 +2294,11 @@ class PatternView(gtk.DrawingArea):
 			i = row
 			y = clipy1
 			gc.set_foreground(pen)
-			while (i < rows) and (y < h):
-				layout.set_text(str(i))
-				px,py = layout.get_pixel_size()
-				drawable.draw_layout(gc, x-5 - px, y + PATROWHEIGHT/2 - (py/2), layout)
-				y += PATROWHEIGHT
-				i += 1
+			num_rows = min(rows - row, (h - clipy1) / PATROWHEIGHT + 1)
+			s = '\n'. join([str(i) for i in xrange(row, row+num_rows)])
+			layout.set_text(s)
+			px,py =layout.get_pixel_size()
+			drawable.draw_layout(gc, x-5 - px, y, layout)
 			drawable.draw_line(gc, x, 0, x, h)
 			y = PATROWHEIGHT-1
 			drawable.draw_line(gc, 0, y, w, y)
@@ -2323,31 +2318,54 @@ class PatternView(gtk.DrawingArea):
 				blue = int(fbrush1.blue * lpf1 + fbrush2.blue * lpf2)
 				linecolors.append(cm.alloc_color(red,green,blue))
 			tc = self.group_track_count
+			
+			def draw_parameters_range(row, num_rows, group, track=0):
+				"""Draw the parameter values for a range of rows"""
+				x,y = self.pattern_to_pos(row, group, track, 0)
+				s = '\n'.join([self.lines[i][group][track] for i in xrange(row, row+num_rows)])
+				w = PATCOLWIDTH * len(self.lines[row][group][track])
+				layout.set_text(s)
+				px,py = layout.get_pixel_size()
+				drawable.draw_layout(gc, x, y, layout)
+				return x + px
 			def draw_parameters(row, group, track=0):
 				"""Draw the parameter values"""
-				xs,y = self.pattern_to_pos(row, group, track, 0)
-				x = xs
+				x,y = self.pattern_to_pos(row, group, track, 0)
 				s = self.lines[row][group][track]
 				w = PATCOLWIDTH * len(s)
 				layout.set_text(s)
 				px,py = layout.get_pixel_size()
 				drawable.draw_layout(gc, x,y + PATROWHEIGHT/2 - (py/2), layout)
+			
 			# draw track background
-			#~ dc.SetBackgroundMode(wx.SOLID)
-			#~ dc.SetPen(wx.TRANSPARENT_PEN)
+			gc.set_foreground(bgbrush)
+			gc.set_background(bgbrush)
+			for g in CONN,GLOBAL,TRACK:
+				if self.track_width[g]:
+					for t in range(self.group_track_count[g]):
+							if ((g == start_group) and (t >= start_track)) or (g > start_group):
+								xs,fy = self.pattern_to_pos(row, g, t, 0)
+								width = (self.track_width[g]-1)*self.column_width
+								drawable.draw_rectangle(gc,True,xs,clipy1, width, clipy1+num_rows*PATROWHEIGHT)
+								if xs + width > w:
+									break				
 			while (i < rows) and (y < h):
-				gc.set_foreground(bgbrush)
-				gc.set_background(bgbrush)
-				for lp,lc in zip(reversed(linepattern),reversed(linecolors)):
+				do_draw = False
+				for lp,lc in zip(reversed(linepattern), reversed(linecolors)):
 					if (i % lp) == 0:
 						gc.set_foreground(lc)
 						gc.set_background(lc)
-				for g in CONN,GLOBAL,TRACK:
-					if self.track_width[g]:
-						for t in range(self.group_track_count[g]):
-							if ((g == start_group) and (t >= start_track)) or (g > start_group):
-								xs,fy = self.pattern_to_pos(row, g, t, 0)
-								drawable.draw_rectangle(gc,True,xs,y,(self.track_width[g]-1)*self.column_width,self.row_height)
+						do_draw = True
+				if do_draw:
+					for g in CONN, GLOBAL, TRACK:
+						if self.track_width[g]:
+							for t in range(self.group_track_count[g]):
+								if ((g == start_group) and (t >= start_track)) or (g > start_group):
+									xs, fy = self.pattern_to_pos(row, g, t, 0)
+									width = (self.track_width[g]-1)*self.column_width
+									drawable.draw_rectangle(gc,True,xs,y, width, self.row_height)
+									if xs + width > w:
+										break
 				i += 1
 				y += PATROWHEIGHT
 			# draw selection
@@ -2381,27 +2399,31 @@ class PatternView(gtk.DrawingArea):
 			# draw the parameter values
 			i = row
 			y = clipy1
-			#dc.SetBackgroundMode(wx.TRANSPARENT)
 			gc.set_foreground(pen)
 			for track in range(self.group_track_count[TRACK]):
 				x, y = self.pattern_to_pos(row, TRACK, track, 0)								
 				s = str(track)
-				w = self.track_width[TRACK]*self.column_width
+				width = self.track_width[TRACK]*self.column_width
 				layout.set_text(s)
 				px,py = layout.get_pixel_size()
-				drawable.draw_layout(gc, x + w/2 - px/2, PATROWHEIGHT/2 - (py/2), layout)
-			while (i < rows) and (y < h):
-				x = PATLEFTMARGIN + 5
-				for t in range(self.group_track_count[CONN]):
-					draw_parameters(i, CONN, t)
-				draw_parameters(i, GLOBAL, 0)
-				for t in range(self.group_track_count[TRACK]):
-					draw_parameters(i, TRACK, t)
-				i += 1
-				y += PATROWHEIGHT
-		#~ print "%ims" % ((time.time() - st)*1000)
-		#~ dc.DestroyClippingRegion()
+				drawable.draw_layout(gc, x + width/2 - px/2, PATROWHEIGHT/2 - (py/2), layout)
+			parameter_list = self.plugin.get_parameter_list(TRACK)
+			num_rows = min(rows - row, (h - clipy1) / PATROWHEIGHT + 1)
+			out_of_bounds = False
+			for t in range(self.group_track_count[CONN]):
+				extent = draw_parameters_range(row, num_rows, CONN, t)
+				out_of_bounds = extent > w
+			if not out_of_bounds:
+				extent = draw_parameters_range(row, num_rows, GLOBAL, 0)
+				out_of_bounds = extent > w
+				if not out_of_bounds:
+					for t in range(self.group_track_count[TRACK]):
+						extent = draw_parameters_range(row, num_rows, TRACK, t)
+						if extent > w:
+							break
+						
 		self.draw_xor()
+		#print "%ims" % ((time.time() - st)*1000)
 
 __all__ = [
 'PatternDialog',
