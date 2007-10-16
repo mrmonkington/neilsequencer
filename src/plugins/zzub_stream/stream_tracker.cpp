@@ -174,6 +174,7 @@ streamtrack::streamtrack() {
 	_plugin = 0;
 	last_level = -1;
 	amp = 1.0f;
+	resampler = 0;
 }
 
 void streamtrack::init(stream_tracker_plugin* plugin, int index) {

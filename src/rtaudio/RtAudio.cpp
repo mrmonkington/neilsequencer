@@ -3666,7 +3666,8 @@ bool RtApiDs :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigned 
       bufferBytes *= 2;
 
     // Set cooperative level to DSSCL_EXCLUSIVE
-    result = output->SetCooperativeLevel( hWnd, DSSCL_EXCLUSIVE );
+    //result = output->SetCooperativeLevel( hWnd, DSSCL_EXCLUSIVE );
+    result = output->SetCooperativeLevel( hWnd, DSSCL_PRIORITY );
     if ( FAILED( result ) ) {
       output->Release();
       errorStream_ << "RtApiDs::probeDeviceOpen: error (" << getErrorString( result ) << ") setting cooperative level (" << dsinfo.name << ")!";
@@ -3707,6 +3708,7 @@ bool RtApiDs :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigned 
     ZeroMemory( &bufferDescription, sizeof( DSBUFFERDESC ) );
     bufferDescription.dwSize = sizeof( DSBUFFERDESC );
     bufferDescription.dwFlags = ( DSBCAPS_STICKYFOCUS |
+                                  DSBCAPS_GLOBALFOCUS |
                                   DSBCAPS_GETCURRENTPOSITION2 |
                                   DSBCAPS_LOCHARDWARE );  // Force hardware mixing
     bufferDescription.dwBufferBytes = bufferBytes;
@@ -3717,6 +3719,7 @@ bool RtApiDs :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigned 
     result = output->CreateSoundBuffer( &bufferDescription, &buffer, NULL );
     if ( FAILED( result ) ) {
       bufferDescription.dwFlags = ( DSBCAPS_STICKYFOCUS |
+                                    DSBCAPS_GLOBALFOCUS |
                                     DSBCAPS_GETCURRENTPOSITION2 |
                                     DSBCAPS_LOCSOFTWARE );  // Force software mixing
       result = output->CreateSoundBuffer( &bufferDescription, &buffer, NULL );
@@ -3977,6 +3980,8 @@ bool RtApiDs :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigned 
     goto error;
   }
 
+  // Boost DS thread priority
+  SetThreadPriority((HANDLE)stream_.callbackInfo.thread, THREAD_PRIORITY_HIGHEST); 
   return SUCCESS;
 
  error:
