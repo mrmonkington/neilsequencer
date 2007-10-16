@@ -108,50 +108,52 @@ audiodriver::~audiodriver()
 
 
 int audiodriver::getApiDevices(int apiId) {
+	int deviceCount = 0;
 	try {
-        audio = new RtAudio((RtAudio::Api)apiId);
+		audio = new RtAudio((RtAudio::Api)apiId);
+		deviceCount = audio->getDeviceCount();
 	} catch (RtError &error) {
 		error.printMessage();
 		return -1;
 	}	
 
-    // rtaudio returns an invalid deviceInfo for non-probed devices after a stream is opened, so probe all devices now
-    for (int i = 0; i<audio->getDeviceCount(); i++) {
-        audiodevice ad;
+	// rtaudio returns an invalid deviceInfo for non-probed devices after a stream is opened, so probe all devices now
+	for (int i = 0; i<deviceCount; i++) {
+		audiodevice ad;
 		RtAudio::DeviceInfo info;
-	    try {
-		    info = audio->getDeviceInfo(i);
+		try {
+			info = audio->getDeviceInfo(i);
 			if (info.probed == false) continue;
 
-            std::string deviceName = info.name;
+			std::string deviceName = info.name;
 
-            // ds returns devices that has duplex support twice so we remove the last one
+			// ds returns devices that has duplex support twice so we remove the last one
 			// NOTE: something changed in rtaudio4 so we can't do this any more
-            //int j = getDeviceByName(deviceName.c_str());
-            //if (j != -1) continue;
+			//int j = getDeviceByName(deviceName.c_str());
+			//if (j != -1) continue;
 				
 			//if (info.outputChannels < 2)
 			//	continue; // if it doesn't have output, we can't use it
 
-            if (info.isDefaultOutput && defaultDevice == -1)
-                defaultDevice = devices.size();
+			if (info.isDefaultOutput && defaultDevice == -1)
+				defaultDevice = devices.size();
 
-            ad.name = deviceName;
-            ad.api_id = apiId;
-            ad.device_id = i;
-            ad.out_channels = info.outputChannels;
-            ad.in_channels = info.inputChannels;
-            ad.rates = info.sampleRates;
-            devices.push_back(ad);
+			ad.name = deviceName;
+			ad.api_id = apiId;
+			ad.device_id = i;
+			ad.out_channels = info.outputChannels;
+			ad.in_channels = info.inputChannels;
+			ad.rates = info.sampleRates;
+			devices.push_back(ad);
 
-	    } catch (RtError &error) {
-		    error.printMessage();
-		    continue;
-	    }
-    }
-    delete audio;
-    audio = 0;
-    return 0;
+		} catch (RtError &error) {
+			error.printMessage();
+			continue;
+		}
+	}
+	delete audio;
+	audio = 0;
+	return 0;
 }
 
 

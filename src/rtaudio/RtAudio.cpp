@@ -6001,6 +6001,7 @@ unsigned int RtApiOss :: getDeviceCount( void )
     return 0;
   }
 
+  close( mixerfd );
   return sysinfo.numaudios;
 }
 
