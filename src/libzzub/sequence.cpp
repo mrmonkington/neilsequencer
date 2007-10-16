@@ -63,18 +63,21 @@ void sequence::advanceTick() {
 				// Break sequencer
 				machine->clearParameters();
 				machine->_internal_seqCommand = 0;
+				machine->softMuted = false;
 				pattern=0;
 			} else
 			if (event->type == sequence_event_type_thru) {
 				// Thru / bypass effect
 				machine->softBypass(true);
 				machine->_internal_seqCommand = 2;
+				machine->softMuted = false;
 				pattern = 0;
 			} else
 			if (event->type == sequence_event_type_pattern) {
 				machine->_internal_seqCommand = 0;
 				pattern=event->value;
 				patternPosition=0;
+				machine->softMuted = false;
 			}
 		}
 
