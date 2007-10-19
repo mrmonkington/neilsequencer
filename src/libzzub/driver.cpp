@@ -273,7 +273,7 @@ bool audiodriver::createDevice(int index, int inIndex, int sampleRate, int buffe
 		iParams.nChannels = indevch;
 
 		RtAudio::StreamOptions streamOpts;
-		memset(streamOpts, 0, sizeof(RtAudio::StreamOptions));
+		memset(&streamOpts, 0, sizeof(RtAudio::StreamOptions));
 		streamOpts.numberOfBuffers = 4;
 
 		if (inapi != -1)
