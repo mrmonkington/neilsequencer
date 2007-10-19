@@ -203,6 +203,15 @@ void miditrack::process_stereo(int numsamples) {
 		//fordi nå driver vi og fyller opp en buffer, men hvis vi kan finne ut hvor playeren spiller nå
 		//så kan vi regne ut hvor lenge det er til ticket starter, så kommer delayen oppå det
 
+		if (note == zzub::note_value_off || last_note != zzub::note_value_none) {
+			int status = 0x80 | (midi_channel & 0x0f);
+			int message = MAKEMIDI(status, last_note, 0);
+
+			tracker->_host->midi_out(midi_device, message);
+			last_note = zzub::note_value_none;
+			//cout << "miditracker playing note-off " << note << " with delay " << (int)note_delay << endl;
+		}
+
 		if (note != zzub::note_value_off) {
 
 			int midi_note = buzz_to_midi_note(note);
@@ -213,15 +222,8 @@ void miditrack::process_stereo(int numsamples) {
 
 			tracker->_host->midi_out(midi_device, message);
 			//cout << "miditracker playing note " << note << " with delay " << (int)note_delay << endl;
-		} else 
-		if (note != zzub::note_value_none && last_note != zzub::note_value_none) {
-			int status = 0x80 | (midi_channel & 0x0f);
-			int message = MAKEMIDI(status, last_note, 0);
-
-			tracker->_host->midi_out(midi_device, message);
-			last_note = zzub::note_value_none;
-			//cout << "miditracker playing note-off " << note << " with delay " << (int)note_delay << endl;
 		}
+
 		note = zzub::note_value_none;
 	}
 }
