@@ -132,8 +132,8 @@ int audiodriver::getApiDevices(int apiId) {
 			//int j = getDeviceByName(deviceName.c_str());
 			//if (j != -1) continue;
 				
-			//if (info.outputChannels < 2)
-			//	continue; // if it doesn't have output, we can't use it
+			if (info.outputChannels < 2)
+				continue; // if it doesn't have output, we can't use it
 
 			if (info.isDefaultOutput && defaultDevice == -1)
 				defaultDevice = devices.size();
@@ -273,7 +273,6 @@ bool audiodriver::createDevice(int index, int inIndex, int sampleRate, int buffe
 		iParams.nChannels = indevch;
 
 		RtAudio::StreamOptions streamOpts;
-		memset(&streamOpts, 0, sizeof(RtAudio::StreamOptions));
 		streamOpts.numberOfBuffers = 4;
 
 		if (inapi != -1)
