@@ -1552,6 +1552,11 @@ class TransportPanel(gtk.HBox):
 		gtk.HBox.__init__(self)
 		self.rootwindow = rootwindow
 		self.rootwindow.event_handlers.append(self.on_player_callback)
+		self.cpulabel = gtk.Label("CPU")
+		self.cpu = gtk.ProgressBar()
+		self.cpu.set_size_request(80,-1)
+		self.cpuvalue = gtk.Label("100%")
+		self.cpuvalue.set_size_request(32,-1)
 		self.bpmlabel = gtk.Label("BPM")
 		self.bpm = gtk.SpinButton()
 		self.bpm.set_range(16,500)
@@ -1619,6 +1624,16 @@ class TransportPanel(gtk.HBox):
 		combosizer.pack_start(self.tpb,expand=False)
 
 		combosizer.pack_start(gtk.VSeparator(), expand=False)
+		cpubox = gtk.HBox(False, MARGIN)
+		cpubox.pack_start(self.cpulabel, expand=False)
+		cpubox.pack_start(self.cpu, expand=False)
+		cpubox.pack_start(self.cpuvalue, expand=False)
+		cpuvbox = gtk.VBox(False, MARGIN0)
+		cpuvbox.pack_start(gtk.VBox())
+		cpuvbox.pack_start(cpubox, expand=False)
+		cpuvbox.pack_end(gtk.VBox())
+		combosizer.pack_start(cpuvbox, expand=False)
+		combosizer.pack_start(gtk.VSeparator(), expand=False)
 		combosizer.pack_start(self.btnpanic, expand=False)
 		
 		self.pack_start(gtk.HBox())
@@ -1630,7 +1645,14 @@ class TransportPanel(gtk.HBox):
 		self.bpm_value_changed = self.bpm.connect('value-changed', self.on_bpm)
 		self.tpb_value_changed = self.tpb.connect('value-changed', self.on_tpb)
 		gobject.timeout_add(100, self.update_label)
+		gobject.timeout_add(500, self.update_cpu)
 		self.update_all()
+		
+	def update_cpu(self):
+		cpu = player.audiodriver_get_cpu_load()
+		self.cpu.set_fraction(cpu / 100.0)
+		self.cpuvalue.set_label("%i%%" % int(cpu + 0.5))
+		return True
 		
 	def update_label(self):
 		"""
