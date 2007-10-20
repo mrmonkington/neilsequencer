@@ -127,9 +127,10 @@ void livejump::process_events() {
 	if (gval.tick != paraTick->value_none) {
 		int pos = _host->get_play_position();
 		int tick = gval.tick;
+		// mode: 0=absolute, 1=back, 2=forward
 		if (mode == 1) tick = pos - tick; else
 		if (mode == 2) tick = pos + tick;
-		schedule_jump(pos+1, tick, zzub::note_value_none);
+		schedule_jump(pos, tick, zzub::note_value_none);
 	}
 
 	if (scheduled_tick == 0) {
@@ -159,7 +160,8 @@ void livejump::midi_note(int channel, int note, int velocity) {
 			int pos = _host->get_play_position();
 			if (mode == 1) tick = pos - tick; else
 			if (mode == 2) tick = pos + tick;
-			pos += snap - (pos % snap);
+			if (pos % snap != 0)
+				pos += snap - (pos % snap);
 			if (pos < 0)
 				pos = 0;
 			if (pos >= _host->get_song_end())
