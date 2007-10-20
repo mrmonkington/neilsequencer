@@ -188,6 +188,7 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 	bool isLdmixer;
 	bool isUtrk;
 	bool isVocoderXp;
+	bool isPvst;
 	
 	plugin(CMachineInterface* machine, const info* mi)
 	{
@@ -223,9 +224,10 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
         isLdmixer = strcmp(machineInfo->uri, "@zzub.org/buzz2zzub/ld+mixer") == 0;
         isVocoderXp = strcmp(machineInfo->uri, "@zzub.org/buzz2zzub/ld+vocoder+xp") == 0;
         isUtrk = strcmp(machineInfo->uri, "@zzub.org/buzz2zzub/Fuzzpilz+UnwieldyTracker") == 0 || strcmp(machineInfo->uri, "@zzub.org/buzz2zzub/UnwieldyTracker") == 0;
+        isPvst = strcmp(machineInfo->uri, "@zzub.org/buzz2zzub/Polac+VST+1.1") == 0;
 		
 		// ld mixer and utrk need event handlers
-		if (isLdmixer || isVocoderXp || isUtrk)
+		if (isLdmixer || isVocoderXp || isUtrk || isPvst)
 			_host->set_event_handler(reinterpret_cast<zzub::metaplugin*>(thisplugin), this);
 	}
 	virtual void process_controller_events() {}
@@ -651,11 +653,11 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 	}
 
 	void pre_add_input_event() {
-		if (isLdmixer || isVocoderXp) evil_lock();
+		if (isLdmixer || isVocoderXp || isPvst) evil_lock();
 	}
 
 	void post_add_input_event() {
-		if (isLdmixer || isVocoderXp) evil_unlock();
+		if (isLdmixer || isVocoderXp || isPvst) evil_unlock();
 	}
 
 	void pre_delete_input_event() { }
