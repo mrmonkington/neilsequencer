@@ -36,10 +36,11 @@ class PluginInfo(object):
 	def __init__(self, plugin):
 		self.plugin = plugin
 		self.muted = False
+		self.cpu = -9999.0
 		self.pattern_position = (0, 0, 0, 0, 0)
 		self.selection = None
 		self.plugingfx = None
-		self.patterngfx = {}		
+		self.patterngfx = {}
 		self.amp = -9999.0
 		self.octave = 3
 		
@@ -49,6 +50,7 @@ class PluginInfo(object):
 	def reset_plugingfx(self):
 		self.plugingfx = None
 		self.amp = -9999.0
+		self.cpu = -9999.0
 		
 class PluginInfoCollection:
 	"""

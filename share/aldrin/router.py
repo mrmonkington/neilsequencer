@@ -52,6 +52,8 @@ PLUGINWIDTH = 100
 PLUGINHEIGHT = 25
 LEDWIDTH,LEDHEIGHT = 8,PLUGINHEIGHT-4 # size of LED
 LEDOFSX,LEDOFSY = 2,2 # offset of LED
+CPUWIDTH,CPUHEIGHT = 8,PLUGINHEIGHT-4 # size of LED
+CPUOFSX,CPUOFSY = PLUGINWIDTH-CPUWIDTH-2,2 # offset of LED
 
 ARROWRADIUS = 8
 
@@ -590,6 +592,10 @@ class RouteView(gtk.DrawingArea):
 	COLOR_LED_ON = 3
 	COLOR_LED_BORDER = 4
 	COLOR_LED_WARNING = 5
+	COLOR_CPU_OFF = 6
+	COLOR_CPU_ON = 7
+	COLOR_CPU_BORDER = 8
+	COLOR_CPU_WARNING = 9
 	
 	def __init__(self, rootwindow, parent):
 		"""
@@ -627,16 +633,16 @@ class RouteView(gtk.DrawingArea):
 		"""
 		cfg = config.get_config()
 		flags2brushnames = {
-			ROOT_PLUGIN_FLAGS: ('MV Master', 'MV Master', 'MV Master LED Off', 'MV Master LED On', 'MV Master LED Border', 'MV Machine LED Warning'),
-			GENERATOR_PLUGIN_FLAGS: ('MV Generator', 'MV Generator Mute', 'MV Generator LED Off', 'MV Generator LED On', 'MV Generator LED Border', 'MV Machine LED Warning'),
-			EFFECT_PLUGIN_FLAGS: ('MV Effect', 'MV Effect Mute', 'MV Effect LED Off', 'MV Effect LED On', 'MV Effect LED Border', 'MV Machine LED Warning'),
-			CONTROLLER_PLUGIN_FLAGS: ('MV Controller', 'MV Controller Mute', 'MV Controller LED Off', 'MV Controller LED On', 'MV Controller LED Border', 'MV Machine LED Warning'),
+			ROOT_PLUGIN_FLAGS: ('MV Master', 'MV Master', 'MV Master LED Off', 'MV Master LED On', 'MV Master LED Border', 'MV Machine LED Warning', 'MV CPU LED Off', 'MV CPU LED On', 'MV CPU LED Border', 'MV CPU LED Warning'),
+			GENERATOR_PLUGIN_FLAGS: ('MV Generator', 'MV Generator Mute', 'MV Generator LED Off', 'MV Generator LED On', 'MV Generator LED Border', 'MV Machine LED Warning', 'MV CPU LED Off', 'MV CPU LED On', 'MV CPU LED Border', 'MV CPU LED Warning'),
+			EFFECT_PLUGIN_FLAGS: ('MV Effect', 'MV Effect Mute', 'MV Effect LED Off', 'MV Effect LED On', 'MV Effect LED Border', 'MV Machine LED Warning', 'MV CPU LED Off', 'MV CPU LED On', 'MV CPU LED Border', 'MV CPU LED Warning'),
+			CONTROLLER_PLUGIN_FLAGS: ('MV Controller', 'MV Controller Mute', 'MV Controller LED Off', 'MV Controller LED On', 'MV Controller LED Border', 'MV Machine LED Warning', 'MV CPU LED Off', 'MV CPU LED On', 'MV CPU LED Border', 'MV CPU LED Warning'),
 		}
 		self.flags2brushes = {}
 		for flags,names in flags2brushnames.iteritems():
 			brushes = []
 			for name in names:
-				brushes.append(cfg.get_float_color(name))
+				brushes.append(cfg.get_color(name))
 			self.flags2brushes[flags] = brushes
 		common.get_plugin_infos().reset_plugingfx()
 		
@@ -1366,84 +1372,106 @@ class RouteView(gtk.DrawingArea):
 		Draws only the leds into the offscreen buffer.
 		"""
 		gc = self.window.new_gc()
+		cm = gc.get_colormap()
 		cfg = config.get_config()
 		rect = self.get_allocation()
+		import pango
+		layout = pango.Layout(self.get_pango_context())
+		#~ layout.set_font_description(self.fontdesc)
+		layout.set_width(-1)
 		w,h = rect.width,rect.height
 		cx,cy = w*0.5,h*0.5
 		def get_pixelpos(x,y):
 			return cx * (1+x), cy * (1+y)
-		textcolor = cfg.get_float_color("MV Machine Text")
-		pluginpen = cfg.get_float_color("MV Machine Border")
-		pluginpenselected = cfg.get_float_color("MV Machine Border Selected")
+		textcolor = cm.alloc_color(cfg.get_color("MV Machine Text"))
+		pluginpen = cm.alloc_color(cfg.get_color("MV Machine Border"))
+		pluginpenselected = cm.alloc_color(cfg.get_color("MV Machine Border Selected"))
 		#font = wx.Font(8, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
 		PW, PH = PLUGINWIDTH / 2, PLUGINHEIGHT / 2
-		for mp,(rx,ry) in ((mp,get_pixelpos(*mp.get_position())) for mp in player.get_plugin_list()):
+		cpu = min(player.audiodriver_get_cpu_load(), 100.0)
+		player.lock_tick()
+		cpu_loads = {}
+		pluginlist = player.get_plugin_list()
+		biggestload = 0
+		try:
+			for mp in pluginlist:
+				cpuload = mp.get_last_worktime()
+				biggestload = max(biggestload, cpuload)
+				cpu_loads[mp] = cpuload
+		except:
+			import traceback
+			traceback.print_exc()
+		player.unlock_tick()
+		total_workload = max(sum(cpu_loads.values()),0.001)
+		cputreshold = 0.75
+		for mp,(rx,ry) in ((mp,get_pixelpos(*mp.get_position())) for mp in pluginlist):
 			rx,ry = rx - PW, ry - PH
 			pi = common.get_plugin_infos().get(mp)
 			if not pi:
 				continue
 			if not pi.plugingfx:
 				pi.plugingfx = gtk.gdk.Pixmap(self.window, PLUGINWIDTH, PLUGINHEIGHT, -1)
-				pctx = pi.plugingfx.cairo_create()
-				pctx.save()
-				pctx.translate(0.5,0.5)
-				pctx.set_line_width(1)
+				#~ pctx = pi.plugingfx.cairo_create()
+				#~ pctx.save()
+				#~ pctx.translate(0.5,0.5)
+				#~ pctx.set_line_width(1)
 				# adjust colour for muted plugins
 				if pi.muted:
-					pctx.set_source_rgb(*self.flags2brushes[mp.get_flags() & PLUGIN_FLAGS_MASK][self.COLOR_MUTED])
+					gc.set_foreground(cm.alloc_color(self.flags2brushes[mp.get_flags() & PLUGIN_FLAGS_MASK][self.COLOR_MUTED]))
 				else:
-					pctx.set_source_rgb(*self.flags2brushes[mp.get_flags() & PLUGIN_FLAGS_MASK][self.COLOR_DEFAULT])
-				pctx.rectangle(-1,-1,PLUGINWIDTH+1,PLUGINHEIGHT+1)
-				pctx.fill()
-				pctx.rectangle(0,0,PLUGINWIDTH-1,PLUGINHEIGHT-1)
+					gc.set_foreground(cm.alloc_color(self.flags2brushes[mp.get_flags() & PLUGIN_FLAGS_MASK][self.COLOR_DEFAULT]))
+				pi.plugingfx.draw_rectangle(gc, True, -1,-1,PLUGINWIDTH+1,PLUGINHEIGHT+1)
 				if mp == self.selected_plugin:
-					pctx.set_dash([4.0,5.0], 0.5)
-					pctx.set_source_rgb(*pluginpenselected)
+					#~ pctx.set_dash([4.0,5.0], 0.5)
+					gc.set_foreground(pluginpenselected)
 				else:
-					pctx.set_source_rgb(*pluginpen)
-				pctx.stroke()
-				pctx.set_dash([], 0.0)
+					gc.set_foreground(pluginpen)
+				pi.plugingfx.draw_rectangle(gc, False, 0, 0, PLUGINWIDTH-1,PLUGINHEIGHT-1)
+				#~ pctx.set_dash([], 0.0)
 				if self.solo_plugin and self.solo_plugin != mp and is_generator(mp):
 					title = prepstr('[' + mp.get_name() + ']')
 				elif pi.muted:
 					title = prepstr('(' + mp.get_name() + ')')
 				else:
 					title = prepstr(mp.get_name())
-				xb, yb, tw, th, xa, ya = pctx.text_extents(title)
-				pctx.restore()
-				pctx.select_font_face('Bitstream Vera Sans', cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
-				pctx.translate(int(PLUGINWIDTH/2 - tw/2), int(PLUGINHEIGHT/2 + th/2))
-				pctx.text_path(title)
-				pctx.set_source_rgb(*textcolor)
-				pctx.fill()
-				del pctx
+				layout.set_text(title)
+				lw,lh = layout.get_pixel_size()
+				gc.set_foreground(textcolor)
+				pi.plugingfx.draw_layout(gc, PLUGINWIDTH/2 - lw/2, PLUGINHEIGHT/2 - lh/2, layout)
 				
 			maxl, maxr = mp.get_last_peak()
 			amp = min(max(maxl,maxr),1.0)
 			if amp != pi.amp:
-				pctx = pi.plugingfx.cairo_create()
-				pctx.translate(0.5,0.5)
-				pctx.set_line_width(1)
 				if amp >= 1:
-					pctx.set_source_rgb(*self.flags2brushes[mp.get_flags() & PLUGIN_FLAGS_MASK][self.COLOR_LED_WARNING])
-					pctx.rectangle(LEDOFSX, LEDOFSY, LEDWIDTH-1, LEDHEIGHT-1)
-					pctx.fill_preserve()
-					pctx.set_source_rgb(*self.flags2brushes[mp.get_flags() & PLUGIN_FLAGS_MASK][self.COLOR_LED_BORDER])
-					pctx.stroke()
+					gc.set_foreground(cm.alloc_color(self.flags2brushes[mp.get_flags() & PLUGIN_FLAGS_MASK][self.COLOR_LED_WARNING]))
+					pi.plugingfx.draw_rectangle(gc, True, LEDOFSX, LEDOFSY, LEDWIDTH-1, LEDHEIGHT-1)
 				else:
-					pctx.set_source_rgb(*self.flags2brushes[mp.get_flags() & PLUGIN_FLAGS_MASK][self.COLOR_LED_OFF])
-					pctx.rectangle(LEDOFSX, LEDOFSY, LEDWIDTH-1, LEDHEIGHT-1)
-					pctx.fill_preserve()
-					pctx.set_source_rgb(*self.flags2brushes[mp.get_flags() & PLUGIN_FLAGS_MASK][self.COLOR_LED_BORDER])
-					pctx.stroke()
+					gc.set_foreground(cm.alloc_color(self.flags2brushes[mp.get_flags() & PLUGIN_FLAGS_MASK][self.COLOR_LED_OFF]))
+					pi.plugingfx.draw_rectangle(gc, True, LEDOFSX, LEDOFSY, LEDWIDTH-1, LEDHEIGHT-1)
 					amp = 1.0 - (linear2db(amp,-76.0)/-76.0)
-					height = int(LEDHEIGHT*amp)-2
+					height = int((LEDHEIGHT-4)*amp + 0.5)
 					if (height > 0):
-						pctx.set_source_rgb(*self.flags2brushes[mp.get_flags() & PLUGIN_FLAGS_MASK][self.COLOR_LED_ON])
-						pctx.rectangle(LEDOFSX+1, LEDOFSY+LEDHEIGHT-height, LEDWIDTH-3, height-2)
-						pctx.fill()
+						gc.set_foreground(cm.alloc_color(self.flags2brushes[mp.get_flags() & PLUGIN_FLAGS_MASK][self.COLOR_LED_ON]))
+						pi.plugingfx.draw_rectangle(gc, True, LEDOFSX+2, LEDOFSY+LEDHEIGHT-height-2, LEDWIDTH-4, height)
+				gc.set_foreground(cm.alloc_color(self.flags2brushes[mp.get_flags() & PLUGIN_FLAGS_MASK][self.COLOR_LED_BORDER]))
+				pi.plugingfx.draw_rectangle(gc, False, LEDOFSX, LEDOFSY, LEDWIDTH-1, LEDHEIGHT-1)
 				pi.amp = amp
-				del pctx
+			
+			relperc = max(((cpu_loads[mp]*cpu) / (biggestload*100))*0.1 + pi.cpu*0.9, 0.0)
+			if relperc != pi.cpu:
+				pi.cpu = relperc
+				gc.set_foreground(cm.alloc_color(self.flags2brushes[mp.get_flags() & PLUGIN_FLAGS_MASK][self.COLOR_CPU_OFF]))
+				pi.plugingfx.draw_rectangle(gc, True, CPUOFSX, CPUOFSY, CPUWIDTH-1, CPUHEIGHT-1)
+				height = int((CPUHEIGHT-4)*relperc + 0.5)
+				if (height > 0):
+					if relperc >= cputreshold:
+						gc.set_foreground(cm.alloc_color(self.flags2brushes[mp.get_flags() & PLUGIN_FLAGS_MASK][self.COLOR_CPU_WARNING]))
+					else:
+						gc.set_foreground(cm.alloc_color(self.flags2brushes[mp.get_flags() & PLUGIN_FLAGS_MASK][self.COLOR_CPU_ON]))
+					pi.plugingfx.draw_rectangle(gc, True, CPUOFSX+2, CPUOFSY+CPUHEIGHT-height-2, CPUWIDTH-4, height)
+				gc.set_foreground(cm.alloc_color(self.flags2brushes[mp.get_flags() & PLUGIN_FLAGS_MASK][self.COLOR_CPU_BORDER]))
+				pi.plugingfx.draw_rectangle(gc, False, CPUOFSX, CPUOFSY, CPUWIDTH-1, CPUHEIGHT-1)
+			
 			self.window.draw_drawable(gc, pi.plugingfx, 0, 0, int(rx), int(ry), -1, -1)
 		
 	def draw(self, ctx):

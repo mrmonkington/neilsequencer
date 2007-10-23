@@ -1649,7 +1649,7 @@ class TransportPanel(gtk.HBox):
 		self.update_all()
 		
 	def update_cpu(self):
-		cpu = player.audiodriver_get_cpu_load()
+		cpu = min(player.audiodriver_get_cpu_load(), 100)
 		self.cpu.set_fraction(cpu / 100.0)
 		self.cpuvalue.set_label("%i%%" % int(cpu + 0.5))
 		return True

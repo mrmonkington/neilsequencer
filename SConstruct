@@ -180,4 +180,13 @@ for f in glob.glob('share/aldrin/res/*.svg'):
 Export('env', 'install')
 env.SConscript('${ROOTPATH}/share/aldrin/extensions/SConscript')
 
+################################################
+#
+# aldrin pluginviews
+#
+################################################
+
+Export('env', 'install')
+env.SConscript('${ROOTPATH}/share/aldrin/pluginviews/SConscript')
+
 
