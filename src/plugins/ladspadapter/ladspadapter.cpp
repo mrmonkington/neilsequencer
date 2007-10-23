@@ -129,6 +129,7 @@ struct ladspadapter : plugin
 	LADSPA_Data *data_values;
 	float inputs[16][256];
 	float outputs[16][256];
+	int silencecount;
 	
 	~ladspadapter()
 	{
@@ -177,6 +178,7 @@ struct ladspadapter : plugin
 		library = loadLADSPAPluginLibrary(myinfo->m_filename.c_str());
 		desc = findLADSPAPluginDescriptor(library, myinfo->m_filename.c_str(), myinfo->m_label.c_str());
 		handle = 0;
+		silencecount = 0;
 	}
 	
 	virtual void destroy()
@@ -256,6 +258,7 @@ struct ladspadapter : plugin
 		if (mode == zzub::process_mode_no_io)
 			return false;
 		if (mode & zzub::process_mode_read) {
+			silencecount = 0;
 			if (myinfo->m_audioins.size() == 1) {
 				float *plin = inputs[0];
 				float *pIL = pin[0];
@@ -268,6 +271,9 @@ struct ladspadapter : plugin
 				memcpy(inputs[1], pin[1], sizeof(float) * numsamples);
 			}
 		} else {
+			if (silencecount > _master_info->samples_per_second) {
+				return false;
+			}
 			for (int i = 0; i < myinfo->m_audioins.size(); ++i) {
 				memset(inputs[i], 0, sizeof(float)*numsamples);
 			}
@@ -282,6 +288,12 @@ struct ladspadapter : plugin
 			} else {
 				return false;
 			}
+			if (buffer_has_signals(pout[0], numsamples) || buffer_has_signals(pout[1], numsamples)) {
+				silencecount = 0;
+				return true;
+			}
+			silencecount += numsamples;
+			return false;
 		}
 		return true; 
 	}

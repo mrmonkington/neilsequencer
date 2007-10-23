@@ -1227,17 +1227,9 @@ struct dspplugin : zzub::plugin {
 		}
 		if (fxcopy.process_stereo) {
 			fxcopy.process_stereo(fx,pin[0],pin[1],pout[0],pout[1],numsamples);
-			int ns = numsamples;
-			float *pl = pout[0]; float *pr = pout[1];
-			while (ns--) {
-				if (*pl++) {
-					silencecount = 0;
-					return true;
-				}
-				if (*pr++) {
-					silencecount = 0;
-					return true;
-				}
+			if (zzub::buffer_has_signals(pout[0], numsamples) || zzub::buffer_has_signals(pout[1], numsamples)) {
+				silencecount = 0;
+				return true;
 			}
 			silencecount += numsamples;
 			return false;

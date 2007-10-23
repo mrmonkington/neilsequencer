@@ -906,6 +906,18 @@ struct scopelock {
 	host *h;
 };
 
+#define SIGNAL_TRESHOLD (0.0000158489f)
+
+inline bool buffer_has_signals(const float *buffer, int ns) {
+	while (ns--) {
+		if ((*buffer > SIGNAL_TRESHOLD)||(*buffer < -SIGNAL_TRESHOLD)) {
+			return true;
+		}
+		buffer++;
+	}
+	return false;
+}
+
 #define ZZUB_PLUGIN_LOCK zzub::scopelock _sl(this->_host);
 
 } // namespace zzub

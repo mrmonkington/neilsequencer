@@ -273,10 +273,14 @@ bool audiodriver::createDevice(int index, int inIndex, int sampleRate, int buffe
 		iParams.nChannels = indevch;
 
 		RtAudio::StreamOptions streamOpts;
-		streamOpts.numberOfBuffers = 4;
-
+#if defined(_WIN32)
+	streamOpts.numberOfBuffers = 4;
+#elif defined(POSIX)
+	streamOpts.numberOfBuffers = 2;
+#endif
 		if (inapi != -1)
-			audio->openStream(&oParams, &iParams, RTAUDIO_FLOAT32, sampleRate, (unsigned int*)&bufferSize, &rtaudio_process_callback, (void*)this); else
+			audio->openStream(&oParams, &iParams, RTAUDIO_FLOAT32, sampleRate, (unsigned int*)&bufferSize, &rtaudio_process_callback, (void*)this); 
+		else
 			audio->openStream(&oParams, 0, RTAUDIO_FLOAT32, sampleRate, (unsigned int*)&bufferSize, &rtaudio_process_callback, (void*)this);
 
 		if (indevid != 0)
