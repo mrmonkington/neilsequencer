@@ -69,7 +69,7 @@ DEFAULT_THEME = {
 	'MV Controller Pan BG': 0xffdd73,
 	'MV Line': 0x000000,
 	'MV Machine Border': 0x000000,
-	'MV Machine Border Selected': 0x000000,
+	'MV Machine Border Selected': 0x00c000,
 	'MV Machine LED Warning': 0xff0000,
 	'MV Machine Text': 0x000000,
 	'MV Master': 0xcccccc,
