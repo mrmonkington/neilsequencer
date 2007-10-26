@@ -5151,6 +5151,7 @@ bool RtApiAlsa :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
 			if ( subdevice < 0 ) break;
       if ( nDevices == device ) {
         sprintf( name, "hw:%d,%d", card, subdevice );
+        snd_ctl_close( chandle );
         goto foundDevice;
       }
       nDevices++;
