@@ -1068,7 +1068,7 @@ class RouteView(gtk.DrawingArea):
 			menu.append(make_menu_item("_Rename...", "", self.on_popup_rename, mp))
 			if not is_root(mp):
 				menu.append(make_menu_item("_Delete", "Delete plugin", self.on_popup_delete, mp))
-			if is_generator(mp) or is_root(mp):
+			if is_effect(mp) or is_root(mp):
 				menu.append(gtk.SeparatorMenuItem())
 				menu.append(make_check_item(self.autoconnect_target == mp, "Default Target","Connect new generators to this plugin",self.on_popup_set_target, mp))
 				menu.append(make_submenu_item(self.get_plugin_menu(include_generators=False, include_controllers=False, plugin=mp), "_Prepend Effect"))
