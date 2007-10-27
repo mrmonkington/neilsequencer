@@ -1724,7 +1724,7 @@ class PatternView(gtk.DrawingArea):
 			elif k == 'x':
 				self.cut()
 			elif k == 'r':
-				self.randomize_selection()
+				self.randomize_selection(self)
 			elif k == 'i':
 				self.interpolate_selection()
 			elif k == 'u':
@@ -1780,7 +1780,13 @@ class PatternView(gtk.DrawingArea):
 			self.refresh_view()
 		elif k == 'Insert':
 			self.pattern.insert_row(self.group, self.track, -1, self.row)
-			self.pattern_changed()
+			del self.lines[self.group][self.track][-1]
+			self.lines[self.group][self.track].insert(self.row, "")
+			self.update_line(self.row)
+			self.redraw()
+			plugin = self.get_plugin()
+			if plugin:
+				self.plugin_info.get(plugin).reset_patterngfx()
 		elif k == 'Delete':
 			#if self.selection!=None:
 			#	if self.row>=self.selection.begin and self.row<self.selection.end:
@@ -1789,7 +1795,13 @@ class PatternView(gtk.DrawingArea):
 			#		self.pattern.delete_row(self.group, self.track, -1, self.row)
 			#else:
 			self.pattern.delete_row(self.group, self.track, -1, self.row)
-			self.pattern_changed()
+ 			del self.lines[self.group][self.track][self.row]
+ 			self.lines[self.group][self.track].append('')
+ 			self.update_line(self.row_count-1)
+			self.redraw()
+			plugin = self.get_plugin()
+			if plugin:
+				self.plugin_info.get(plugin).reset_patterngfx()
 		elif k == 'Return':
 			mainwindow = self.rootwindow
 			mainwindow.select_page(mainwindow.PAGE_SEQUENCER)
@@ -2200,33 +2212,34 @@ class PatternView(gtk.DrawingArea):
 		@type row: int
 		"""	
 		for g in range(3):
-			tc = self.group_track_count[g]
-			for t in range(tc):
-				s = ''
-				for i in range(self.parameter_count[g]):
-					p = self.plugin.get_parameter(g,i)
-					try:
-						s += get_str_from_param(p,self.pattern.get_value(row, g, t, i))
-					except IndexError:
-						pass
-					if i != self.parameter_count[g]-1:
-						s += ' '
-				try:
-					self.lines[row][g][t] = s
-				except IndexError:
-					pass
-		
+			if self.lines[g]:
+				tc = self.group_track_count[g]
+				for t in range(tc):
+					s = ''
+					for i in range(self.parameter_count[g]):
+						p = self.plugin.get_parameter(g,i)
+						try:
+							s += get_str_from_param(p,self.pattern.get_value(row, g, t, i))
+						except IndexError:
+							pass
+						if i != self.parameter_count[g]-1:
+							s += ' '
+					self.lines[g][t][row] = s
+
 	def prepare_textbuffer(self):
 		"""
 		Initializes a buffer to handle the current pattern data.
-		"""	
-		self.lines = [None]*self.row_count
+		"""
+		self.lines = [None]*3	
+		for group in range(3):
+			if self.parameter_count[group] > 0:
+				tc = self.group_track_count[group]
+				self.lines[group] = [None]*tc			
+				for track in range(tc):
+					self.lines[group][track] = [None]*self.row_count
+			else:
+				self.lines[group] = []
 		for row in range(self.row_count):
-			s = ''
-			self.lines[row] = [None]*3
-			for g in range(3):
-				tc = self.group_track_count[g]
-				self.lines[row][g] = [None]*tc
 			self.update_line(row)
 
 	def get_line_pattern(self):
@@ -2322,8 +2335,8 @@ class PatternView(gtk.DrawingArea):
 			def draw_parameters_range(row, num_rows, group, track=0):
 				"""Draw the parameter values for a range of rows"""
 				x,y = self.pattern_to_pos(row, group, track, 0)
-				s = '\n'.join([self.lines[i][group][track] for i in xrange(row, row+num_rows)])
-				w = PATCOLWIDTH * len(self.lines[row][group][track])
+				s = '\n'.join([self.lines[group][track][i] for i in xrange(row, row+num_rows)])
+				w = PATCOLWIDTH * len(self.lines[group][track][row])
 				layout.set_text(s)
 				px,py = layout.get_pixel_size()
 				drawable.draw_layout(gc, x, y, layout)
@@ -2331,7 +2344,7 @@ class PatternView(gtk.DrawingArea):
 			def draw_parameters(row, group, track=0):
 				"""Draw the parameter values"""
 				x,y = self.pattern_to_pos(row, group, track, 0)
-				s = self.lines[row][group][track]
+				s = self.lines[group][track][row]
 				w = PATCOLWIDTH * len(s)
 				layout.set_text(s)
 				px,py = layout.get_pixel_size()
@@ -2348,7 +2361,7 @@ class PatternView(gtk.DrawingArea):
 								width = (self.track_width[g]-1)*self.column_width
 								drawable.draw_rectangle(gc,True,xs,clipy1, width, clipy1+num_rows*PATROWHEIGHT)
 								if xs + width > w:
-									break				
+									break
 			while (i < rows) and (y < h):
 				do_draw = False
 				for lp,lc in zip(reversed(linepattern), reversed(linecolors)):
@@ -2413,9 +2426,10 @@ class PatternView(gtk.DrawingArea):
 			for t in range(self.group_track_count[CONN]):
 				extent = draw_parameters_range(row, num_rows, CONN, t)
 				out_of_bounds = extent > w
-			if not out_of_bounds:
-				extent = draw_parameters_range(row, num_rows, GLOBAL, 0)
-				out_of_bounds = extent > w
+			if not out_of_bounds:	
+				if self.lines[GLOBAL]:
+					extent = draw_parameters_range(row, num_rows, GLOBAL, 0)
+					out_of_bounds = extent > w
 				if not out_of_bounds:
 					for t in range(self.group_track_count[TRACK]):
 						extent = draw_parameters_range(row, num_rows, TRACK, t)
