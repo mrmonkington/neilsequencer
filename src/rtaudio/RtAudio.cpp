@@ -1816,8 +1816,8 @@ bool RtApiJack :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
   // Count the available ports containing the client name as device
   // channels.  Jack "input ports" equal RtAudio output channels.
   unsigned int nChannels = 0;
-  unsigned long flag = JackPortIsOutput;
-  if ( mode == INPUT ) flag = JackPortIsInput;
+  unsigned long flag = JackPortIsInput;
+  if ( mode == INPUT ) flag = JackPortIsOutput;
   ports = jack_get_ports( client, deviceName.c_str(), NULL, flag );
   if ( ports ) {
     while ( ports[ nChannels ] ) nChannels++;

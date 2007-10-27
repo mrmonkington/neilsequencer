@@ -163,14 +163,17 @@ void audiodriver::initialize(audioworker *worker)
 #if defined(__WINDOWS_DS__)
     getApiDevices(RtAudio::WINDOWS_DS);
 #endif
+#if defined(__UNIX_JACK__)
+    getApiDevices(RtAudio::UNIX_JACK);
+#endif
 #if defined(__LINUX_ALSA__)
-    getApiDevices(RtAudio::LINUX_ALSA);
+	// only probe for alsa if no (jack) devices were already found
+	// prevents a problem that only occurs on some hardware, in particular (some?) SBLive!
+	if (devices.size() == 0)
+		getApiDevices(RtAudio::LINUX_ALSA);
 #endif
 #if defined(__LINUX_OSS__)
     getApiDevices(RtAudio::LINUX_OSS);
-#endif
-#if defined(__UNIX_JACK__)
-    getApiDevices(RtAudio::UNIX_JACK);
 #endif
 #if defined(__MACOSX_CORE__)
       getApiDevices(RtAudio::RtAudio::MACOSX_CORE);
