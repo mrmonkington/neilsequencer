@@ -47,7 +47,6 @@ struct audiodriver
 
 	audioworker *worker;
 	RtAudio *audio;
-	bool recording;
 
 	int defaultDevice;
 	std::vector<audiodevice> devices;
@@ -70,7 +69,6 @@ struct audiodriver
 	virtual int getDeviceByName(const char* name);
 	audiodevice* getDeviceInfo(int index);
 	double getCpuLoad();
-	bool isRecording();
 };
 
 

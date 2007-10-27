@@ -136,13 +136,10 @@ struct mem_outstream : zzub::outstream {
 
 	virtual void seek(long offset, int origin) {
 		if (origin == SEEK_SET) {
-			assert(offset < this->buffer.size());
 			pos = offset;
 		} else if (origin == SEEK_CUR) {
-			assert((pos + offset) <= this->buffer.size());
 			pos += offset;
 		} else if (origin == SEEK_END) {
-			assert(((long)this->buffer.size() - offset) > 0);
 			pos = this->buffer.size() - offset;
 		} else {
 			assert(0);
@@ -172,13 +169,10 @@ struct mem_instream : zzub::instream {
 	
 	virtual void seek(long offset, int origin) {
 		if (origin == SEEK_SET) {
-			assert(offset < this->buffer.size());
 			pos = offset;
 		} else if (origin == SEEK_CUR) {
-			assert((pos + offset) <= this->buffer.size());
 			pos += offset;
 		} else if (origin == SEEK_END) {
-			assert(((long)this->buffer.size() - offset) > 0);
 			pos = this->buffer.size() - offset;
 		} else {
 			assert(0);

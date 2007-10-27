@@ -40,7 +40,6 @@ namespace zzub {
 audiodriver::audiodriver()
 {
 	audio = 0;
-    recording = false;
     defaultDevice = -1;
 }
 
@@ -78,9 +77,7 @@ int rtaudio_process_callback(void *outputBuffer, void *inputBuffer, unsigned int
 	}
 
 	// de-interleave all input channels
-	if (self->isRecording()) {
-		i2s(ip, ib, in_ch, nBufferFrames);
-	}
+	i2s(ip, ib, in_ch, nBufferFrames);
 
 	self->worker->workStereo(nBufferFrames);
 
@@ -273,18 +270,12 @@ bool audiodriver::createDevice(int index, int inIndex, int sampleRate, int buffe
 		iParams.nChannels = indevch;
 
 		RtAudio::StreamOptions streamOpts;
-#if defined(_WIN32)
-	streamOpts.numberOfBuffers = 4;
-#elif defined(POSIX)
-	streamOpts.numberOfBuffers = 2;
-#endif
-		if (inapi != -1)
-			audio->openStream(&oParams, &iParams, RTAUDIO_FLOAT32, sampleRate, (unsigned int*)&bufferSize, &rtaudio_process_callback, (void*)this); 
-		else
-			audio->openStream(&oParams, 0, RTAUDIO_FLOAT32, sampleRate, (unsigned int*)&bufferSize, &rtaudio_process_callback, (void*)this);
+		streamOpts.numberOfBuffers = 4;
 
-		if (indevid != 0)
-            recording = true;
+		if (inapi != -1)
+			audio->openStream(&oParams, &iParams, RTAUDIO_FLOAT32, sampleRate, (unsigned int*)&bufferSize, &rtaudio_process_callback, (void*)this, &streamOpts); 
+		else
+			audio->openStream(&oParams, 0, RTAUDIO_FLOAT32, sampleRate, (unsigned int*)&bufferSize, &rtaudio_process_callback, (void*)this, &streamOpts);
 
 		worker->workDevice = &devices[index];
 		worker->workInputDevice = inIndex != -1 ? &devices[inIndex] : 0;
@@ -309,7 +300,6 @@ void audiodriver::destroyDevice()
 	enable(false);
     delete audio;
     audio = 0;
-    recording = false;
 
 	worker->workDevice = 0;
 	worker->workInputDevice = 0;
@@ -322,10 +312,6 @@ int audiodriver::getBestDevice()
 
 double audiodriver::getCpuLoad() {
     return 1.0;
-}
-
-bool audiodriver::isRecording() {
-    return recording;
 }
 
 audiodevice* audiodriver::getDeviceInfo(int index) {
