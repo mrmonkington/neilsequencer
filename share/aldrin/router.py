@@ -610,7 +610,6 @@ class RouteView(gtk.DrawingArea):
 		self.rootwindow.event_handlers.append(self.on_player_callback)
 		self.solo_plugin = None
 		self.selected_plugin = None
-		self.chordnotes={}
 		self.autoconnect_target=None
 		self.update_colors()
 		gtk.DrawingArea.__init__(self)
