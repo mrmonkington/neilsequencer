@@ -124,13 +124,10 @@ int audiodriver::getApiDevices(int apiId) {
 
 			std::string deviceName = info.name;
 
-			// ds returns devices that has duplex support twice so we remove the last one
-			// NOTE: something changed in rtaudio4 so we can't do this any more
-			//int j = getDeviceByName(deviceName.c_str());
-			//if (j != -1) continue;
-				
-			if (info.outputChannels < 2)
-				continue; // if it doesn't have output, we can't use it
+			// DS returns output and input devices separately, 
+			// on other apis, we accept only output and duplex devices
+			if (apiId != RtAudio::Api::WINDOWS_DS && info.outputChannels < 2)
+				continue;
 
 			if (info.isDefaultOutput && defaultDevice == -1)
 				defaultDevice = devices.size();
@@ -178,7 +175,6 @@ void audiodriver::initialize(audioworker *worker)
 #if defined(__MACOSX_CORE__)
       getApiDevices(RtAudio::RtAudio::MACOSX_CORE);
 #endif
-//	getApiDevices(RtAudio::XP_SILENT);
 }
 
 void audiodriver::reset()
