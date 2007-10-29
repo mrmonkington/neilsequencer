@@ -628,6 +628,10 @@ class Player(object):
 		assert self._handle
 		return zzub_player_get_loop_start(self._handle)
 	
+	def get_midi_plugin(self):
+		assert self._handle
+		return Plugin(zzub_player_get_midi_plugin(self._handle))
+	
 	def get_midimapping(self, index):
 		assert self._handle
 		return Midimapping(zzub_player_get_midimapping(self._handle,index))
@@ -775,6 +779,10 @@ class Player(object):
 	def set_loop_start(self, v):
 		assert self._handle
 		zzub_player_set_loop_start(self._handle,v)
+	
+	def set_midi_plugin(self, plugin):
+		assert self._handle
+		zzub_player_set_midi_plugin(self._handle,plugin._handle)
 	
 	def set_position(self, tick):
 		assert self._handle
@@ -992,6 +1000,10 @@ class Plugin(object):
 	def move_pattern(self, index, newIndex):
 		assert self._handle
 		zzub_plugin_move_pattern(self._handle,index,newIndex)
+	
+	def play_midi_note(self, note, prevNote, velocity):
+		assert self._handle
+		zzub_plugin_play_midi_note(self._handle,note,prevNote,velocity)
 	
 	def remove_pattern(self, pattern):
 		assert self._handle
