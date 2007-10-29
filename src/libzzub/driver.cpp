@@ -126,7 +126,7 @@ int audiodriver::getApiDevices(int apiId) {
 
 			// DS returns output and input devices separately, 
 			// on other apis, we accept only output and duplex devices
-			if (apiId != RtAudio::Api::WINDOWS_DS && info.outputChannels < 2)
+			if (apiId != RtAudio::WINDOWS_DS && info.outputChannels < 2)
 				continue;
 
 			if (info.isDefaultOutput && defaultDevice == -1)
