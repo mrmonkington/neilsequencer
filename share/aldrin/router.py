@@ -1254,6 +1254,7 @@ class RouteView(gtk.DrawingArea):
 				self.grab_add()
 			last = self.selected_plugin
 			self.selected_plugin = self.current_plugin
+			player.set_midi_plugin(self.current_plugin)
 			if self.selected_plugin:
 				i=0
 				for mp in player.get_plugin_list():
@@ -1263,8 +1264,6 @@ class RouteView(gtk.DrawingArea):
 				if hasattr(self.rootwindow,'patternframe'):
 					self.rootwindow.patternframe.toolbar.pluginselect.set_active(i)
 				common.get_plugin_infos().get(self.selected_plugin).reset_plugingfx()									
-				if hasattr(self.rootwindow,'patternframe'):
-					self.rootwindow.patternframe.toolbar.midistep.set_active(False)
 			if last:
 				common.get_plugin_infos().get(last).reset_plugingfx()
 			if hasattr(self.rootwindow, 'select_page'):
@@ -1539,58 +1538,6 @@ class RouteView(gtk.DrawingArea):
 			crx, cry = get_pixelpos(*self.current_plugin.get_position())
 			rx,ry= self.connectpos
 			draw_line(int(crx),int(cry),int(rx),int(ry))
-			
-	def play_note(self, plugin, note, octave, oldnote):
-		m = plugin
-		try:
-			plugin = m.get_pluginloader()
-		except AttributeError:
-			return
-		#pattern = self.plugin.create_pattern(1)
-		row = 0
-		if plugin.get_parameter_list(2):
-			group = 2
-		else:
-			group = 1
-		track = 0
-		index = 0
-		parameter_list = [parameter.get_name() for parameter in plugin.get_parameter_list(group)]		
-		try:
-			index = parameter_list.index("Note")
-		except:
-			return
-		if note !=  zzub.zzub_note_value_off:
-			if note not in self.chordnotes:
-				for tracknumber in range(len(self.chordnotes)+2):
-					track=tracknumber
-					if tracknumber in self.chordnotes.values():
-						continue
-					else:
-						break
-				self.chordnotes[note]=(track)
-				o, n = note
-				data = (min(octave+o,9)<<4) | (n+1)
-			else:
-				return
-		else:
-			try:
-				data =  zzub.zzub_note_value_off
-				track=self.chordnotes[oldnote]
-				del self.chordnotes[oldnote]
-			except KeyError:
-				pass
-		#pattern.set_value(row, group, track, index, data)
-		player.lock_tick()			
-		try:	
-			#v = pattern.get_value(row, group, track, index)
-			#only send automation command if both record and play depressed:
-			m.set_parameter_value(group, track, index, data, (player.get_automation()+(not(player.get_state())))/2)
-			m.tick()
-		except:
-			import traceback
-			traceback.print_exc()
-		player.unlock_tick()		
-		#self.plugin.remove_pattern(pattern)
 	
 	def on_key_jazz(self, widget, event, plugin):
 		if not plugin:			
@@ -1638,8 +1585,12 @@ class RouteView(gtk.DrawingArea):
 			note = key_to_note(kv)
 		self.rootwindow.patternframe.view.octave=octave
 		self.rootwindow.patternframe.view.toolbar.update_octaves()
-		if note:	
-			self.play_note(plugin, note, octave, -1)
+		if note:
+			try:
+				n=((note[0]+octave)<<4|note[1]+1)
+				plugin.play_midi_note(n, 0, 127)
+			except TypeError:
+				pass
 
 	def on_key_jazz_release(self, widget, event, plugin):
 		if not plugin:			
@@ -1651,8 +1602,13 @@ class RouteView(gtk.DrawingArea):
 		k = gtk.gdk.keyval_name(kv)
 		info = common.get_plugin_infos().get(plugin)
 		if kv<256:
+			octave = self.rootwindow.patternframe.view.octave
 			note = key_to_note(kv)
-			self.play_note(plugin, zzub.zzub_note_value_off, info.octave, note)
+			try:
+				n=((note[0]+octave)<<4|note[1]+1)
+				plugin.play_midi_note(zzub.zzub_note_value_off, n, 0)
+			except TypeError:
+				pass
 
 
 __all__ = [

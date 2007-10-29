@@ -174,10 +174,8 @@ class PatternToolBar(gtk.HBox):
 		self.octaveselect.connect('changed', self.on_octaveselect)
 		self.octavelabel.set_mnemonic_widget(self.octaveselect)
 		self.playnotes = gtk.CheckButton(label="Play _notes")
-		self.midistep = gtk.CheckButton(label="Midi step record")
 
 		self.playnotes.set_active(True)
-		self.midistep.set_active(False)
 		
 		self.plugin = 0
 		self.pattern = 0
@@ -193,15 +191,7 @@ class PatternToolBar(gtk.HBox):
 		self.pack_start(self.octavelabel, expand=False)
 		self.pack_start(self.octaveselect, expand=False)
 		self.pack_start(self.playnotes, expand=False)
-		self.pack_start(self.midistep, expand=False)
-		self.midistep.connect('toggled', self.on_midisteptoggle)
-	
-	def on_midisteptoggle(self, widget):
-		if self.midistep.get_active():
-			common.get_plugin_infos().get(self.view.rootwindow.routeframe.view.selected_plugin).reset_plugingfx()
-			self.view.rootwindow.routeframe.view.selected_plugin=None
-			#self.view.rootwindow.routeframe.redraw()
-	
+		
 	def reset(self):
 		self.plugin = 0
 		self.pattern = 0
@@ -422,56 +412,6 @@ class PatternPanel(gtk.VBox):
 			self.update_all()
 		elif data.type == zzub.zzub_event_type_new_plugin:
 			self.update_all()
-		elif data.type == zzub.zzub_event_type_midi_control:
-			ctrl = getattr(data,'').midi_message
-			cmd = ctrl.status >> 4
-			midinote=ctrl.data1
-			velocity=ctrl.data2
-			o=midinote/12
-			n=midinote%12
-			note=(o,n)
-			if cmd == 0x9 and velocity!=0:
-				try:
-					self.rootwindow.routeframe.view.play_note(self.rootwindow.routeframe.view.selected_plugin, note,0,-1)
-				except:
-					pass
-				if self.toolbar.midistep.get_active() :
-					data = (o)<<4 | (n+1)
-					wi = None
-					wp = None
-					wdata = None
-					for i in range(self.view.parameter_count[self.view.group]):
-						pwp = self.view.plugin.get_parameter(self.view.group,i)
-						if pwp.get_flags() & zzub.zzub_parameter_flag_wavetable_index:
-							wp = pwp
-							wi = i
-							break
-					if wp != None:
-							wdata = self.toolbar.wave+1
-					if wdata!=None:
-						self.view.pattern.set_value(self.view.row, self.view.group, self.view.track, wi, wdata)
-					try:
-						self.view.pattern.set_value(self.view.row, self.view.group, self.view.track, self.view.index, data)
-						self.view.play_note(1)
-					except AttributeError:
-						return
-			if cmd == 0x8 or cmd == 0x9 and velocity==0:
-				try:
-					self.rootwindow.routeframe.view.play_note(self.rootwindow.routeframe.view.selected_plugin, zzub.zzub_note_value_off,0,note)
-				except:
-					pass
-				if self.toolbar.midistep.get_active() :	
-					m = self.view.get_plugin()
-					try:
-							for index in range(self.view.parameter_count[self.view.group]):
-								v = self.view.pattern.get_value(self.view.row, self.view.group, self.view.track, index)
-								p = self.view.plugin.get_parameter(self.view.group, index)
-								if index==self.view.index:
-									v=zzub.zzub_note_value_off
-								m.set_parameter_value(self.view.group, self.view.track, index, v, 0)
-					except:
-							import traceback
-							traceback.print_exc()
 		elif data.type == zzub.zzub_event_type_parameter_changed and player.get_automation():
 			self.view.update_line(player.get_position())
 			self.view.redraw()
