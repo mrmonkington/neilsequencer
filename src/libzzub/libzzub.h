@@ -173,6 +173,9 @@ void zzub_player_set_automation(zzub_player_t* player, int enable);
 const char *zzub_player_get_infotext(zzub_player_t *player);
 void zzub_player_set_infotext(zzub_player_t *player, const char *text);
 
+void zzub_player_set_midi_plugin(zzub_player_t *player, zzub_plugin_t *plugin);
+zzub_plugin_t *zzub_player_get_midi_plugin(zzub_player_t *player);
+
 // midimapping functions
 
 zzub_plugin_t *zzub_midimapping_get_plugin(zzub_midimapping_t *mapping);
@@ -273,6 +276,7 @@ void zzub_plugin_set_attribute_value(zzub_plugin_t *machine, int index, int valu
 void zzub_plugin_get_new_pattern_name(zzub_plugin_t *machine, char* name, int maxLen);
 zzub_postprocess_t *zzub_plugin_add_post_process(zzub_plugin_t *machine, ZzubMixCallback mixcallback, void *tag);
 void zzub_plugin_remove_post_process(zzub_plugin_t *machine, zzub_postprocess_t *pp);
+void zzub_plugin_play_midi_note(zzub_plugin_t *plugin, int note, int prevNote, int velocity);
 
 // Connection methods
 

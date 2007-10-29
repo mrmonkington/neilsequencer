@@ -82,6 +82,8 @@ EXPORTS
 	zzub_player_get_infotext
 	zzub_player_set_infotext
 	zzub_player_get_plugincollection_by_uri
+	zzub_player_set_midi_plugin
+	zzub_player_get_midi_plugin
 	zzub_midimapping_get_plugin
 	zzub_midimapping_get_group
 	zzub_midimapping_get_track
@@ -165,6 +167,7 @@ EXPORTS
 	zzub_plugin_get_mixbuffer
 	zzub_plugin_add_post_process
 	zzub_plugin_remove_post_process
+	zzub_plugin_play_midi_note
 	zzub_connection_get_input
 	zzub_connection_get_output
 	zzub_connection_get_type

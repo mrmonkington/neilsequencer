@@ -477,6 +477,14 @@ void zzub_player_set_tpb(zzub_player_t *player, int tpb) {
 	player->setTicksPerBeat(tpb);
 }
 
+void zzub_player_set_midi_plugin(zzub_player_t *player, zzub_plugin_t *plugin) {
+	player->midiNoteMachine = plugin;
+}
+
+zzub_plugin_t *zzub_player_get_midi_plugin(zzub_player_t *player) {
+	return player->midiNoteMachine;
+}
+
 // midimapping functions
 
 zzub_plugin_t *zzub_midimapping_get_plugin(zzub_midimapping_t *mapping) {
@@ -894,6 +902,10 @@ zzub_postprocess_t *zzub_plugin_add_post_process(zzub_plugin_t *machine, ZzubMix
 void zzub_plugin_remove_post_process(zzub_plugin_t *machine, zzub_postprocess_t *pp) {
 	machine->removePostProcessor(pp);
 	delete pp;
+}
+
+void zzub_plugin_play_midi_note(zzub_plugin_t *plugin, int note, int prevNote, int velocity) {
+	plugin->player->playMachineNote(plugin, note, prevNote, velocity);
 }
 
 // Connection methods
