@@ -68,6 +68,8 @@ void process_midi(PtTimestamp timestamp, void *userData) {
 		if (i->time_ms == 0) {
 			driver->send(i->device, i->data);
 			i = driver->outMessages.erase(i);
+			if (i == driver->outMessages.end())
+				break;
 		} else {
 			i->time_ms--;
 		}
