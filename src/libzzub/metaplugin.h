@@ -266,7 +266,7 @@ struct metaplugin {
 	void deleteInput(zzub::metaplugin* fromMachine);
 	bool setInstrumentName(std::string name);
 	void playPatternRow(pattern* p, size_t row, bool record);
-	void recordParameter(size_t group, size_t track, size_t param, int value);
+	bool recordParameter(size_t group, size_t track, size_t param, int value);
 
 	// state parameter API's
 	virtual void setParameter(size_t group, size_t track, size_t param, int value, bool record);

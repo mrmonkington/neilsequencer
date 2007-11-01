@@ -104,7 +104,10 @@ bool host::allocate_wave(int i, int level, int samples, wave_buffer_type type, b
 	wt.waves[i-1].volume=1.0;
 	wt.waves[i-1].flags=wave_flag_envelope;	// TODO? stereo or mono??
 	wt.waves[i-1].envelopes.push_back(envelope_entry());
-	wt.waves[i-1].allocate_level(level, samples, type, stereo);
+	if (!wt.waves[i-1].allocate_level(level, samples, type, stereo)) {
+		wt.waves[i-1].clear();
+		return false;
+	}
 
 	// need to tell someone we updated, so windows can be redrawn
 	zzub_event_data eventData={event_type_wave_allocated};

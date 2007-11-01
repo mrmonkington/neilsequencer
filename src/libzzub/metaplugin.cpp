@@ -1337,7 +1337,7 @@ void metaplugin::playPatternRow(pattern* pattern, size_t row, bool record) {
 	softBypassed=false;
 }
 
-void metaplugin::recordParameter(size_t group, size_t track, size_t param, int value) {
+bool metaplugin::recordParameter(size_t group, size_t track, size_t param, int value) {
 	sequencer* seqr=player->currentlyPlayingSequencer;
 	for (size_t i=0; i<seqr->getTracks(); i++) {
 		sequence* seq=seqr->getTrack(i);
@@ -1353,8 +1353,9 @@ void metaplugin::recordParameter(size_t group, size_t track, size_t param, int v
 		size_t row=seq->getCurrentlyPlayingPatternPosition();
 		if (row>=p->getRows()) row = 0;
 		t->setValue(row, param, value);
-		break;
+		return true;
 	}
+	return false;
 }
 
 
@@ -1363,10 +1364,12 @@ void metaplugin::setParameter(size_t group, size_t track, size_t param, int valu
 	patterntrack* pt=getStateTrackControl(group, track);
 	if (pt==0) return ;
 
+	bool was_recorded = false;
 	if (record && player->recordParameters)
-		recordParameter(group, track, param, value); else
+		was_recorded = recordParameter(group, track, param, value);
 	
-	pt->setValue(0, param, value);
+	if (!was_recorded)
+		pt->setValue(0, param, value);
 
 	if (group != 3) {
 		// send notification
