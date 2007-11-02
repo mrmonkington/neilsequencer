@@ -608,7 +608,7 @@ bool BuzzReader::loadWaveTable() {
 			entry->envelopes.resize(numEnvelopes);
 			for (int j=0; j<numEnvelopes; j++) {
 				unsigned short numPoints;
-				envelope_entry& env=entry->envelopes.back();
+				envelope_entry& env=entry->envelopes[j];//.back();
 			
 				f->read(env.attack);	// Attack time 
 				f->read(env.decay);	// Decay time
