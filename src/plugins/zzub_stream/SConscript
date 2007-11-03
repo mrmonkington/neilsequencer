@@ -31,6 +31,8 @@ if pluginenv['ZZUB_STREAM']:
 			'stream_wav.cpp',
 			'stream_wavetable.cpp',
 			'stream_player.cpp',
+			'stream_tracker.cpp',
+			'resample.cpp',
 		
 			'resampler/BaseVoiceState.cpp',
 			'resampler/Downsampler2Flt.cpp',
