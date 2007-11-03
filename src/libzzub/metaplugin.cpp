@@ -790,6 +790,9 @@ void metaplugin::tick() {
 
 	clearUnChangedParameters();
 
+	// lastMidiState is set to true in host::midi_out
+	lastMidiState = false;
+
 	player_state state=player->getPlayState();
 	if (state==player_state_playing)
 		player->currentlyPlayingSequencer->advanceMachine((metaplugin*)this);

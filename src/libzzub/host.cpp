@@ -161,6 +161,8 @@ void host::midi_out(int const dev, unsigned int data) {
 
 	int time_ms = latency / samples_per_ms;	// get latency and write position in ms from audio driver
 	driver->schedule_send(dev, time_ms, data);
+
+	_metaplugin->lastMidiState = true;
 }
 
 short const *host::get_oscillator_table(int const waveform) {

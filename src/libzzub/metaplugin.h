@@ -171,7 +171,8 @@ struct metaplugin {
 	unsigned int lastWorkSamples;
 	int lastWorkPos;
 	float lastFrameMaxL, lastFrameMaxR;
-	bool lastWorkState;						// result of last Work() or WorkStereo()
+	bool lastWorkState;						// result of the last process_stereo
+	bool lastMidiState;						// true if the plugin sent any midi out during the last process_stereo
 	int lastTickPos;
 	long long sampleswritten;
 	double workTime;						// length of last Work or WorkStereo
