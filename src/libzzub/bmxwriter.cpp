@@ -249,6 +249,8 @@ bool BuzzWriter::saveMachine(zzub::metaplugin* machine) {
 		type = 2; // effect
 	else if (m->getFlags() & zzub::plugin_flag_has_audio_output)
 		type = 1; // generator
+	else
+		type = 1; // else assume buzz-machine was a generator with no_output - required for saving backwards-compatible peer machines
 	assert(type != -1);
 	
 	f->write((char)type);

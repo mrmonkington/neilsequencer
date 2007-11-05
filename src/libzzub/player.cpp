@@ -1037,11 +1037,11 @@ void player::midiEvent(unsigned short status, unsigned char data1, unsigned char
         if (mm.channel==channel && mm.controller==data1) {
             metaplugin* plugin=mm.machine;
             const parameter* param=plugin->getMachineParameter(mm.group, mm.track, mm.column);
-            int minValue=param->value_min;
-		    int maxValue=param->value_max;
-            float delta=(float)((maxValue-minValue)) / 127.0f;
+            float minValue = (float)param->value_min;
+		    float maxValue = (float)param->value_max;
+            float delta = (maxValue - minValue) / 127.0f;
 
-            plugin->setParameter(mm.group, mm.track, mm.column, minValue + (float)data2 * delta, true);
+            plugin->setParameter(mm.group, mm.track, mm.column, (int)ceil(minValue + data2 * delta), true);
 		    //plugin->machine->process_events();
         }
     }
