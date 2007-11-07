@@ -1875,6 +1875,10 @@ class PatternView(gtk.DrawingArea):
 		k = gtk.gdk.keyval_name(kv)
 		if (k == 'Shift_L' or k=='Shift_R'):
 			self.shiftselect = None
+		m = self.get_plugin()
+		m.set_parameter_value(self.group, self.track, self.index, zzub.zzub_note_value_off, 0)
+		
+		
 	
 	def on_char(self, event):
 		"""
