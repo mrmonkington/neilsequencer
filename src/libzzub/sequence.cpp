@@ -166,12 +166,12 @@ sequence* sequence::createCopy(zzub::pattern* value) {
 
 bool sequence::removeEvents(zzub::pattern* value) {
 	size_t erased=0;
-	for (vector<sequence_event>::iterator i=events.begin(); i!=events.end(); ++i) {
+	for (vector<sequence_event>::iterator i=events.begin(); i!=events.end();) {
 		if (i->value==value) {
 			i=events.erase(i);
-			i--;
 			erased++;
 		}
+		else ++i;
 	}
 
 	return erased>0;
@@ -189,11 +189,11 @@ bool sequence::removeEvent(size_t pos) {
 
 
 bool sequence::removeEvents(size_t fromPos, size_t toPos) {
-	for (vector<sequence_event>::iterator i=events.begin(); i!=events.end(); ++i) {
+	for (vector<sequence_event>::iterator i=events.begin(); i!=events.end();) {
 		if (i->pos>=fromPos && i->pos<=toPos) {
 			i = events.erase(i);
-			--i;
 		}
+		else ++i;
 	}
 	return false;
 }
