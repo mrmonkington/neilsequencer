@@ -1145,6 +1145,8 @@ class PatternView(gtk.DrawingArea):
 		for r,g,t,i in self.selection_range():
 			if r>self.pattern.get_row_count()-1:
 				break
+			if r<0:
+				continue
 			p = self.plugin.get_parameter(g,i)
 			v = self.pattern.get_value(r,g,t,i)
 			if v != p.get_value_none():
@@ -1164,6 +1166,8 @@ class PatternView(gtk.DrawingArea):
 		for r,g,t,i in self.selection_range():
 			if r>self.pattern.get_row_count()-1:
 				break
+			if r<0:
+				continue
 			p = self.plugin.get_parameter(g,i)
 			if (p.get_type() == 0):
 				v = mn2bn(random.randrange(0,120))
@@ -1181,6 +1185,8 @@ class PatternView(gtk.DrawingArea):
 		for r,g,t,i in self.selection_range():
 			if r>self.pattern.get_row_count()-1:
 				break
+			if r<0:
+				continue
 			p = self.plugin.get_parameter(g,i)
 			v1 = self.pattern.get_value(self.selection.begin,g,t,i)
 			v2 = self.pattern.get_value(self.selection.end-1,g,t,i)
@@ -1222,6 +1228,8 @@ class PatternView(gtk.DrawingArea):
 		for r,g,t,i in self.selection_range():
 			if r>self.pattern.get_row_count()-1:
 				break
+			if r<0:
+				continue
 			data += "%04x%01x%02x%02x%04x" % (r - self.selection.begin,g,t,i,self.pattern.get_value(r,g,t,i))
 		set_clipboard_text(data)
 		
