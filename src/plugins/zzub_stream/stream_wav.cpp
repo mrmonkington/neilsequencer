@@ -137,6 +137,7 @@ void stream_wav::close() {
 	if (buffer) {
 		delete[] buffer;
 		buffer_size = 0;
+		buffer = 0;
 	}
 	if (!sf) return ;
 	loaded = false;

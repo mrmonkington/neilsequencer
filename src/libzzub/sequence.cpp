@@ -191,8 +191,8 @@ bool sequence::removeEvent(size_t pos) {
 bool sequence::removeEvents(size_t fromPos, size_t toPos) {
 	for (vector<sequence_event>::iterator i=events.begin(); i!=events.end(); ++i) {
 		if (i->pos>=fromPos && i->pos<=toPos) {
-			events.erase(i);
-			i--;
+			i = events.erase(i);
+			--i;
 		}
 	}
 	return false;

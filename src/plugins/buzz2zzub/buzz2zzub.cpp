@@ -598,6 +598,15 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 	virtual void add_input(const char *name) {
 		if (!machine2) return;
 		machine2->AddInput(name, true);
+		
+		// force stereo input:
+		// pvst may in some cases insist on interpreting the input buffer as a mono signal
+		// unless we specifically call SetInputChannels(). otherwise we get garbled sound.
+		// this could happen when loading a bmx saved in buzz with a mono machine running into pvst.
+		
+		// because everything is stereo in libzzub, the same problem is (still) true in reverse:
+		// a bmx saved in buze where a mono machine runs into pvst will cause garbled sound in buzz.
+		machine2->SetInputChannels(name, true);
 	}
 	virtual void delete_input(const char *name) {
 		if (!machine2) return ;

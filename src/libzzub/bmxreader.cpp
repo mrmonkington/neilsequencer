@@ -341,7 +341,8 @@ bool BuzzReader::loadMachines() {
 
 		loader=player->getMachineLoader(pluginUri);
 
-		// validate machine name, disallow duplicate machine names
+		string loadedMachineName = machineName;
+		// validate machine name, disallow duplicate machine names - but keep a copy of the original so we can still lookup the PARA
 		if (machineName != "Master" && player->getMachine(machineName)) {
 			std::string newName = player->getNewMachineName(pluginUri);
 			lastWarning = "Duplicate machine name found. " + machineName + " renamed to " + newName + "\n" + lastWarning;
@@ -392,7 +393,8 @@ bool BuzzReader::loadMachines() {
 
 		// if there is no loader for this uri, or validation failed, try to create a dummy loader + machine
 		if (loader==0) {
-			MachineValidation* validator=findMachinePara(machineName, fullName);
+			// use loadedMachineName, because machineName could potentially change before we get here
+			MachineValidation* validator=findMachinePara(loadedMachineName, fullName);
 			if (validator) {
 				loader=player->createDummyLoader(flags, pluginUri, attributeCount, validator->numGlobals, validator->numTrackParams, &validator->parameters.front());
 			}
