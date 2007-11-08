@@ -275,6 +275,7 @@ public:
 //**** plugin *****************************************************************************************************************************************
 
 	void init(archive *arc);
+	void load(archive *arc){}
 	void save(archive *arc);
 
 	void destroy(void);	

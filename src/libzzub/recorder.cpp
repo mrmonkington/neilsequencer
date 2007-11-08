@@ -382,6 +382,7 @@ struct recorder_wavetable_plugin : plugin {
 		return true;
 	}
 	virtual void stop() {}
+	virtual void load(zzub::archive *arc) {}
 	virtual void save(zzub::archive *arc) {}
 	virtual void attributes_changed() {}
 	virtual void command(int index) {}
@@ -459,6 +460,7 @@ struct recorder_file_plugin : plugin {
 			rec.writeWave = false;
 		}
 	}
+	virtual void load(zzub::archive *arc) {}
 	virtual void save(zzub::archive *arc) {}
 	virtual void attributes_changed() {}
 	virtual void command(int index) {

@@ -95,6 +95,7 @@ public:
 
 	virtual void command(int i);
 
+	virtual void load(zzub::archive *arc) {}
 	virtual void save(zzub::archive * po);
 
 	virtual const char * describe_value(int param, int value);

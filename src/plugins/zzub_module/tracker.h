@@ -32,6 +32,7 @@ struct module_plugin : zzub::plugin {
 	virtual void process_controller_events() {}
 	virtual void destroy() { delete this; }
 	virtual void stop() {}
+	virtual void load(zzub::archive*) {}
 	virtual void save(zzub::archive*) {}
 	virtual void attributes_changed() {}
 	virtual void set_track_count(int i);

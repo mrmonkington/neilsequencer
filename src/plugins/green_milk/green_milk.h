@@ -407,6 +407,7 @@ public:
 	virtual void process_controller_events() {}
 
 	virtual void init(zzub::archive *arc);		// Called on startup
+	virtual void load(zzub::archive *arc) {}
 	virtual void save(zzub::archive *arc);	// Called to save any extra settings
 	virtual bool process_stereo(float **pin, float **pout, int numsamples, int mode);	// Stereo
 	virtual const char * describe_value(int param, int value);

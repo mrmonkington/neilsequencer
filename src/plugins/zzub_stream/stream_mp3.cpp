@@ -45,6 +45,15 @@ void stream_mp3::init(zzub::archive * const pi) {
 	changedFile = true;
 }
 
+void stream_mp3::load(zzub::archive* pi) {
+	zzub::instream* strm = pi->get_instream("");
+	if (!strm) return ;
+
+	if (!strm->read(fileName)) return ;
+
+	changedFile = true;
+}
+
 void stream_mp3::save(zzub::archive* po) {
 	zzub::outstream* strm = po->get_outstream("");
 	strm->write(fileName.c_str());

@@ -53,6 +53,7 @@ namespace zzub { namespace plugins { namespace psycle_to_zzub {
 			///\name implementation for zzub::plugin
 			///\{
 				void init(zzub::archive *arc);
+				void load(zzub::archive *arc) {}
 				void save(zzub::archive *arc);
 				void destroy();
 				virtual void process_controller_events() {}

@@ -38,6 +38,7 @@ struct stream_mp3 : stream_plugin {
 	virtual ~stream_mp3();
 
 	virtual void init(zzub::archive* pi);
+	virtual void load(zzub::archive*);
 	virtual void save(zzub::archive*);
 
 	virtual void process_events();
@@ -67,4 +68,5 @@ struct stream_machine_info_mp3 : stream_machine_info {
 	virtual zzub::plugin* create_plugin() const { return new stream_mp3(); }
 	virtual bool store_info(zzub::archive *data) const { return false; }
 };
+
 

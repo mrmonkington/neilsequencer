@@ -300,6 +300,7 @@ struct ladspadapter : plugin
 	
 	// ::zzub::plugin methods
 	virtual void stop() {}
+	virtual void load(zzub::archive *arc) {}
 	virtual void save(zzub::archive*) {}
 	virtual void attributes_changed() {}
 	virtual void command(int) {}

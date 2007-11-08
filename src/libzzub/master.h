@@ -49,6 +49,7 @@ struct master_plugin : plugin {
 	virtual void destroy() { /* delete this; */ }
 	virtual void init(zzub::archive*) {}
 	virtual void stop() {}
+	virtual void load(zzub::archive*) {}
 	virtual void save(zzub::archive*) {}
 	virtual void attributes_changed() {}
 	virtual void command(int) {}

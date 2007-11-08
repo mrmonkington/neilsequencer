@@ -916,6 +916,19 @@ void metaplugin::save(zzub::outstream* writer) {
 	}
 }
 
+void metaplugin::load(zzub::instream* reader) {
+	mem_archive arc;
+	
+	std::vector<char> &b = arc.get_buffer("");
+	int size = reader->size() - reader->position();
+	b.resize(size);
+	if(size > 0) {
+		reader->read(&b[0], size);
+		machine->load(&arc);
+	} else {
+		machine->load(0);
+	}
+}
 
 void metaplugin::stop() {
 	machine->stop();

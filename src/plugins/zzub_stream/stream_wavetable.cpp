@@ -60,6 +60,10 @@ void stream_wavetable::init(zzub::archive * const pi) {
 	this->currentPosition = 0;
 }
 
+void stream_wavetable::load(zzub::archive * const pi) {
+	init(pi);
+}
+
 void stream_wavetable::save(zzub::archive* po) {
 	zzub::outstream* strm = po->get_outstream("");
 	strm->write(stringFromInt(index, 0, ' ').c_str());

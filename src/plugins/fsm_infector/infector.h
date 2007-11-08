@@ -842,6 +842,7 @@ public:
 	
 	virtual void stop();
 	virtual void process_controller_events() {}
+	virtual void load(zzub::archive *arc) {}
 	virtual void save(zzub::archive *arc);
 	virtual void attributes_changed();
 	virtual void command(int index) {}

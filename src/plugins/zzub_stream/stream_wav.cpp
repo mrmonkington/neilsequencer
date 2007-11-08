@@ -45,6 +45,14 @@ void stream_wav::init(zzub::archive * const pi) {
 	open();
 }
 
+void stream_wav::load(zzub::archive * const pi) {
+	zzub::instream* strm = pi->get_instream("");
+	if (!strm) return ;
+
+	if (!strm->read(fileName)) return ;
+	open();
+}
+
 void stream_wav::save(zzub::archive* po) {
 	zzub::outstream* strm = po->get_outstream("");
 	strm->write(fileName.c_str());

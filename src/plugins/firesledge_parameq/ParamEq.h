@@ -57,6 +57,7 @@ public:
 	// ();
 	virtual bool process_stereo(float **pin, float **pout, int numsamples, int mode);
 	virtual void init(zzub::archive * pi);
+	virtual void load(zzub::archive *arc) {}
 	virtual void save(zzub::archive * po);
 
 	// zzub::plugin

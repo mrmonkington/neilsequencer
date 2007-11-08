@@ -1155,6 +1155,7 @@ struct dspplugin : zzub::plugin {
 	virtual void command(int i) {
 	}
 	
+	virtual void load(zzub::archive *arc) {}
 	virtual void save(zzub::archive *) {}
 		
 	const char *describe_value(const metaparameter &mp, int value) {

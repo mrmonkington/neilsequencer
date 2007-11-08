@@ -68,6 +68,7 @@ struct livejump : public zzub::plugin {
 	virtual void process_controller_events() {}
 	virtual void destroy() { delete this; }
 	virtual void stop() {}
+	virtual void load(zzub::archive*) {}
 	virtual void save(zzub::archive*) {}
 	virtual void attributes_changed() {}
 	virtual void command(int) {}
@@ -314,4 +315,5 @@ struct livejumpplugincollection : zzub::plugincollection {
 zzub::plugincollection *zzub_get_plugincollection() {
 	return new livejumpplugincollection();
 }
+
 

@@ -106,6 +106,7 @@ struct miditracker : public zzub::plugin {
 	virtual ~miditracker() { }
 
 	virtual void init(zzub::archive* pi);
+	virtual void load(zzub::archive*);
 	virtual void save(zzub::archive*);
 	virtual void process_events();
 	virtual bool process_stereo(float **pin, float **pout, int numsamples, int mode);
@@ -252,6 +253,15 @@ void miditracker::init(zzub::archive * const pi) {
 		return ;
 	}
 
+	zzub::instream* ins = pi->get_instream("");
+	std::string deviceName;
+	ins->read(deviceName);
+	std::vector<std::string>::iterator i = std::find(devices.begin(), devices.end(), deviceName);
+	if (i != devices.end())
+		open_device = i - devices.begin();
+}
+
+void miditracker::load(zzub::archive * const pi) {
 	zzub::instream* ins = pi->get_instream("");
 	std::string deviceName;
 	ins->read(deviceName);
@@ -507,4 +517,5 @@ struct miditrackerplugincollection : zzub::plugincollection {
 zzub::plugincollection *zzub_get_plugincollection() {
 	return new miditrackerplugincollection();
 }
+
 

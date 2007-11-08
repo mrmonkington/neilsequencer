@@ -807,6 +807,7 @@ struct plugin {
 	virtual void process_controller_events() = 0;//{}
 	virtual bool process_stereo(float **pin, float **pout, int numsamples, int mode) = 0;//{ return false; }
 	virtual void stop() = 0;//{}
+	virtual void load(zzub::archive *arc) = 0;//{}
 	virtual void save(zzub::archive *arc) = 0;//{}
 	virtual void attributes_changed() = 0;//{}
 	virtual void command(int index) = 0;//{}

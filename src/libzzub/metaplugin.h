@@ -228,6 +228,7 @@ struct metaplugin {
 	const zzub::attribute& getAttribute(size_t i);
 	bool hasAttributes();
 	void save(zzub::outstream* writer);
+	void load(zzub::instream* reader);
 	size_t getEnvelopeInfos();
 	const zzub::envelope_info& getEnvelopeInfo(size_t index);
 	std::string getCommands();

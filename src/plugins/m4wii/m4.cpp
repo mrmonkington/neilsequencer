@@ -566,6 +566,7 @@ public:
 		const char *ControlWrapper2(int, int);
 
 		virtual void destroy() { delete this; }
+		virtual void load(zzub::archive *arc) {}
 		virtual void save(zzub::archive *po) {}
 		virtual void attributes_changed() {}
 		virtual void command(int index) {}

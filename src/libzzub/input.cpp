@@ -59,6 +59,7 @@ struct input_plugin : plugin {
 	}
 	virtual void process_controller_events() {}
 	virtual void stop() {}
+	virtual void load(zzub::archive *arc) {}
 	virtual void save(zzub::archive *arc) {}
 	virtual void attributes_changed() {
 		if (attributeValues[0]<0 || attributeValues[0] >= _host->audio_driver_get_channel_count(true) / 2) {

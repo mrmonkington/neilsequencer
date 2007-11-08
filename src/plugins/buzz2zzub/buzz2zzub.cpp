@@ -295,6 +295,7 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 	{
 		machine->Stop();
 	}
+	virtual void load(archive *arc) {}
 	virtual void save(archive *arc)
 	{
 		machine->Save(&CMachineDataOutputWrap(arc->get_outstream("")));

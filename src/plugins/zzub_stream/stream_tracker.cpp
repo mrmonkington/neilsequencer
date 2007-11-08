@@ -113,6 +113,9 @@ void stream_tracker_plugin::init(zzub::archive* pi) {
 	}
 }
 
+void stream_tracker_plugin::load(zzub::archive* pi) {
+}
+
 void stream_tracker_plugin::save(zzub::archive* po) {
 }
 

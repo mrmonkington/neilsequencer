@@ -28,6 +28,7 @@ struct stream_player_plugin : zzub::plugin {
 	stream_player_plugin();
 
 	virtual void init(zzub::archive* pi);
+	virtual void load(zzub::archive*);
 	virtual void save(zzub::archive*);
 	virtual void process_events();
 	virtual bool process_stereo(float **pin, float **pout, int numsamples, int mode);

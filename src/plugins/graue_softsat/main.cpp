@@ -31,6 +31,7 @@ class graue_softsat: public zzub::plugin
 		virtual void init(zzub::archive *);
 		virtual bool process_stereo(float **pin, float **pout, int numsamples, int mode);
 		virtual void command(int i);
+		virtual void load(zzub::archive *arc) {}
 		virtual void save(zzub::archive *) { }
 		virtual const char * describe_value(int param, int value);
 		virtual void OutputModeChanged(bool stereo) { }

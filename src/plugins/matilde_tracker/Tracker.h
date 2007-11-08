@@ -35,6 +35,7 @@ public:
 
 	virtual void destroy() { delete this; }
 	virtual void init(zzub::archive *pi);
+	virtual void load(zzub::archive *arc) {}
 	virtual void process_controller_events() {}
 	virtual void process_events();
 #ifdef	MONO

@@ -59,6 +59,7 @@ struct output_plugin : plugin {
 		return false;
 	}
 	virtual void stop() {}
+	virtual void load(zzub::archive *arc) {}
 	virtual void save(zzub::archive *arc) {}
 	virtual void attributes_changed() {
 		if (attributeValues[0] < 0 || attributeValues[0]>= _host->audio_driver_get_channel_count(false) / 2) {

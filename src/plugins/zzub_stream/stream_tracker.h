@@ -63,6 +63,7 @@ struct stream_tracker_plugin : zzub::plugin {
 	stream_tracker_plugin();
 
 	virtual void init(zzub::archive* pi);
+	virtual void load(zzub::archive*);
 	virtual void save(zzub::archive*);
 	virtual void set_track_count(int i);
 	virtual void process_events();

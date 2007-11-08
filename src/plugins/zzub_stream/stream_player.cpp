@@ -104,6 +104,10 @@ void stream_player_plugin::init(zzub::archive* pi) {
 	// wavelevel* level = _host->get_stream_level(stream);	<- under the hood, the stream could be saved and deserialized into a wavelevel-struct
 }
 
+void stream_player_plugin::load(zzub::archive* pi) {
+	init(pi);
+}
+
 void stream_player_plugin::save(zzub::archive* po) {
 	if (stream)
 		stream->save(po);
@@ -167,4 +171,5 @@ void stream_player_plugin::destroy() {
 	resampler = 0;
 	delete this; 
 }
+
 
