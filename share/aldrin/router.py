@@ -1589,6 +1589,8 @@ class RouteView(gtk.DrawingArea):
 			try:
 				n=((note[0]+octave)<<4|note[1]+1)
 				plugin.play_midi_note(n, 0, 127)
+			except TypeError:
+				pass
 			except:
 				import traceback
 				traceback.print_exc()
@@ -1608,6 +1610,8 @@ class RouteView(gtk.DrawingArea):
 			try:
 				n=((note[0]+octave)<<4|note[1]+1)
 				plugin.play_midi_note(zzub.zzub_note_value_off, n, 0)
+			except TypeError:
+				pass
 			except:
 				import traceback 
 				traceback.print_exc()
