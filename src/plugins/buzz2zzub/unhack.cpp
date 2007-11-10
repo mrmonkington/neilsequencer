@@ -152,12 +152,19 @@ bool isMfc(std::string mfc) {
 }
 
 HMODULE unhack::loadLibrary(LPCTSTR lpLibFileName) {
-    std::string name=machineNameFromFileName(lpLibFileName);
+    std::string name = machineNameFromFileName(lpLibFileName);
 	bool patch = isPatch(name);
 	bool mfc = isMfc(name);
 
     if (patch || mfc) {
 
+		// check if patch indicates noload
+		vector<string>& p = patches[name];
+		for (size_t i = 0; i<p.size(); i++) {
+			if (p[i] == "noload") return 0;
+		}
+
+		// load binary bits of plugin dll
 		char lpFilePath[MAX_PATH];
 		if (mfc) {
 			char* lpFilePart;
@@ -188,9 +195,6 @@ HMODULE unhack::loadLibrary(LPCTSTR lpLibFileName) {
 
         delete[] data;
         
-		// moved to WrapModuleCreate:
-		// modules.insert(std::pair<HMODULE, std::string>(module, name));
-
         return module;
     } else
         return LoadLibrary(lpLibFileName);
