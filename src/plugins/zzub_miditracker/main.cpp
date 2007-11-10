@@ -353,7 +353,7 @@ const char *zzub_get_signature() { return ZZUB_SIGNATURE; }
 
 struct miditracker_info : zzub::info {
 	miditracker_info() {
-		this->flags = zzub::plugin_flag_has_audio_output;
+		this->flags = 0;
 		this->name = "zzub miditracker";
 		this->short_name = "miditracker";
 		this->author = "Andy Werk <calvin@countzero.no>";

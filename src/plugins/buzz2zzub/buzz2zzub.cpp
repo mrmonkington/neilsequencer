@@ -1,5 +1,6 @@
 // buzz2zzub plugin adapter
 // Copyright (C) 2006 Leonard Ritter (contact@leonard-ritter.com)
+// Copyright (C) 2006-2007 Anders Ervik <calvin@countzero.no>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -15,7 +16,6 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-
 // zzub2buzz allows running buzzmachines as zzub plugins
 // please note that this library will only build correctly
 // with msvc since gcc does not support thiscalls.
@@ -24,14 +24,16 @@
 // so it can be included on linux to fix compiler errors
 
 #include <windows.h>
-#include <stdio.h>
-#include <string.h>
-#include <assert.h>
+#include <cassert>
 #include <string>
 #include <vector>
+#include <iostream>
 #include <list>
 #include <algorithm>
 #include <map>
+#include <sstream>
+#include "inifile.h"
+
 #define __BUZZ2ZZUB__
 #include <zzub/signature.h>
 #include "zzub/plugin.h"
@@ -54,12 +56,14 @@
 
 void CopyM2S(float *pout, float *pin, int numsamples, float amp);
 
+using std::cout;
+using std::cerr;
+using std::endl;
 
 namespace buzz2zzub
 {
 
 using namespace zzub;
-
 
 
 void CopyStereoToMono(float *pout, float *pin, int numsamples, float amp)
@@ -424,9 +428,7 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 	virtual CPattern *GetSequenceData(int const row) { return reinterpret_cast<CPattern*>(_host->get_sequence_data(row)); }
 	virtual void SetSequenceData(int const row, CPattern *ppat) { _host->set_sequence_data(row, reinterpret_cast<zzub::pattern*>(ppat)); }
 	virtual void SetMachineInterfaceEx(CMachineInterfaceEx *pex) { 
-		printf("SetMachineInterfaceEx\n"); /* TODO */ 
-		this->machine2=pex;
-		//_host->set_plugin2(this);
+		this->machine2 = pex;
 	}
 	virtual void ControlChange__obsolete__(int group, int track, int param, int value)
 	{ _host->_legacy_control_change(group, track, param, value); }
@@ -759,23 +761,20 @@ struct buzzplugininfo : zzub::info
 		assert (!hDllInstance);
 
         hDllInstance = unhack::loadLibrary(m_path.c_str());
-        //hDllInstance = LoadLibrary(m_path.c_str());
 
 		if (!hDllInstance) {
-			printf("%s: LoadLibrary failed.\n", m_path.c_str());
+			cout << m_path << ": LoadLibrary failed." << endl;
 			return false;
 		}
         GetInfo = (GET_INFO)unhack::getProcAddress(hDllInstance, "GetInfo");
-//		GetInfo = (GET_INFO)GetProcAddress(hDllInstance, "GetInfo");
 		if (!GetInfo) {
-			printf("%s: missing GetInfo.\n", m_path.c_str());
+			cout << m_path << ": missing GetInfo." << endl;
 			return false;
 		}
 		
         CreateMachine = (CREATE_MACHINE)unhack::getProcAddress(hDllInstance, "CreateMachine");
-//		CreateMachine = (CREATE_MACHINE)GetProcAddress(hDllInstance, "CreateMachine");
 		if (!CreateMachine) {
-			printf("%s: missing CreateMachine.\n", m_path.c_str());
+			cout << m_path << ": missing CreateMachine." << endl;
 			return false;
 		}
 		
@@ -836,15 +835,50 @@ struct buzzplugininfo : zzub::info
 	}
 };
 
-std::vector<buzzplugininfo *> g_buzzplugins;
+struct plugintools {
+	static HMODULE hModule;  // set this in DLL_PROCESS_ATTACH
+
+	static std::string getPluginPath() {
+		if (!hModule) return "";
+
+		char modulename[MAX_PATH];
+		GetModuleFileName(hModule, modulename, MAX_PATH);
+		std::string result = modulename;
+		size_t ls = result.find_last_of("\\/");
+		return result.substr(0, ls + 1);
+	}
+};
 
 struct buzzplugincollection : zzub::plugincollection {
+
+	std::vector<buzzplugininfo *> buzzplugins;
+
+	buzzplugincollection() {
+        DSP_Init(44100);
+
+		load_config();
+
+		load_plugins("buzz");
+		load_plugins("..\\generators");
+		load_plugins("..\\effects");
+	}
+
+	~buzzplugincollection() {
+		std::vector<buzzplugininfo *>::iterator i;
+		for (i = buzzplugins.begin(); i != buzzplugins.end(); ++i)
+		{
+			(*i)->detach();
+			delete *i;
+		}
+		buzzplugins.clear();
+	}
+
 	// Called by the host initially. The collection registers
 	// plugins through the pluginfactory::register_info method.
 	// The factory pointer remains valid and can be stored
 	// for later reference.
 	virtual void initialize(zzub::pluginfactory *factory) {
-		for (std::vector<buzzplugininfo *>::iterator i = g_buzzplugins.begin(); i != g_buzzplugins.end(); ++i) {
+		for (std::vector<buzzplugininfo *>::iterator i = buzzplugins.begin(); i != buzzplugins.end(); ++i) {
 			const zzub::info *_info = *i;
 			factory->register_info(_info);
 		}
@@ -868,7 +902,61 @@ struct buzzplugincollection : zzub::plugincollection {
 	// usually related to paths.
 	virtual void configure(const char *key, const char *value) {}
 
+	void load_config() {
+		std::string configPath = plugintools::getPluginPath() + "buzz2zzub.ini";
+		ini::file inifile(configPath);
+		int patchCount = inifile.section("Patches").get("Count", 0);
+		for (int i = 0; i < patchCount; i++) {
+			std::stringstream patchName;
+			patchName << "Patch" << i;
+			std::string patchString = inifile.section("Patches").get<std::string>(patchName.str(), ""); 
+			if (patchString.empty()) continue;
+			size_t fe = patchString.find_first_of(':');
+			if (fe == std::string::npos) continue;
+			std::string dllName = patchString.substr(0, fe);
+			std::string patchCommand = patchString.substr(fe+1);
+			unhack::enablePatch(dllName, patchCommand);
+			cout << "Read patch from ini: " << dllName << " -> '" << patchCommand << "'" << endl;
+		}
+	}
+
+	void load_plugins(const char *relpath) {
+		std::string pluginPath = plugintools::getPluginPath() + relpath + "\\";
+		std::string searchPath = pluginPath + "*.dll";
+
+		cout << "buzz2zzub: searching folder " << pluginPath << "..." << endl;
+		WIN32_FIND_DATA fd;
+		HANDLE hFind = FindFirstFile(searchPath.c_str(), &fd);
+
+		while (hFind != INVALID_HANDLE_VALUE) {
+			
+			if ( (fd.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY)==0) {
+				std::string fullFilePath = pluginPath + fd.cFileName;
+				std::string name = fd.cFileName;
+				size_t ld = name.find_last_of('.');
+				name = name.substr(0, ld);
+
+				buzzplugininfo *i = new buzzplugininfo();
+				i->m_name = name;
+				i->m_path = fullFilePath;
+				cout << "buzz2zzub: adding " << name << "(" << fullFilePath << ")" << endl;
+				if (i->init())
+					buzzplugins.push_back(i);
+				else
+				{
+					i->detach();
+					delete i;
+				}
+			}
+
+			if (!FindNextFile(hFind, &fd)) break;
+		}
+		FindClose(hFind);
+
+	}
 };
+
+HMODULE plugintools::hModule = 0;
 
 zzub::plugincollection *zzub_get_plugincollection() {
 	return new buzzplugincollection();
@@ -876,105 +964,13 @@ zzub::plugincollection *zzub_get_plugincollection() {
 
 const char *zzub_get_signature() { return ZZUB_SIGNATURE; }
 
-HMODULE g_hModule;
-
-void load_plugins(const char *relpath) {
-	char modulename[MAX_PATH];
-	GetModuleFileName(g_hModule, modulename, MAX_PATH);
-	*strrchr(modulename,'\\') = '\0';
-	strcat(modulename, "\\");
-	strcat(modulename, relpath);
-	strcat(modulename, "\\");
-	char searchpath[MAX_PATH];
-	strcpy(searchpath, modulename);
-	strcat(searchpath, "*.dll");
-	
-	printf("buzz2zzub: searching folder %s...\n", modulename);
-	WIN32_FIND_DATA fd;
-	HANDLE hFind=FindFirstFile(searchpath, &fd);
-
-	while (hFind!=INVALID_HANDLE_VALUE) {
-		
-		if ( (fd.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY)==0) {
-			char fullfilepath[MAX_PATH];
-			strcpy(fullfilepath, modulename);
-			strcat(fullfilepath, fd.cFileName);					
-			char name[MAX_PATH];
-			strcpy(name, fd.cFileName);
-			buzzplugininfo *i = new buzzplugininfo();
-			*strrchr(name, '.') = '\0';
-			i->m_name = name;
-			i->m_path = fullfilepath;
-			printf("buzz2zzub: adding %s (%s)\n", name, fullfilepath);
-			if (i->init())
-				g_buzzplugins.push_back(i);
-			else
-			{
-				i->detach();
-				delete i;
-			}
-		}
-
-		if (!FindNextFile(hFind, &fd)) break;
-	}
-	FindClose(hFind);
-
-}
-
-BOOL WINAPI DllMain( HMODULE hModule, DWORD fdwreason, LPVOID lpReserved )
-{
-	switch(fdwreason)
-	{
-		case DLL_PROCESS_ATTACH: {
-            DSP_Init(44100);
-			
-			g_hModule = hModule;
-
-            unhack::enablePatch("Polac VST 1.1", "seq");
-            unhack::enablePatch("Polac VST 1.1", "bpm");
-            unhack::enablePatch("Polac VSTi 1.1", "seq");
-            unhack::enablePatch("Polac VSTi 1.1", "bpm");
-            unhack::enablePatch("Polac Metronome", "seq");
-            unhack::enablePatch("P. DooM's HACK Msync", "bpm");
-            unhack::enablePatch("P. DooM's HACK Msync", "seq");
-            unhack::enablePatch("P. DooM's HACK Jump", "seq");
-            unhack::enablePatch("BuzzInAMovie", "seq");
-            unhack::enablePatch("BuzzInAMovie", "bpm");
-            unhack::enablePatch("2ndPLoopJumpHACK", "seq");
-            unhack::enablePatch("ld mixer", "seq");
-            unhack::enablePatch("ld mixer", "midi");
-            unhack::enablePatch("Rebirth MIDI 2", "midi");
-			unhack::enablePatch("BTDSys LiveJumpHACK", "seq");
-			unhack::enablePatch("BTDSys LiveJumpHACK", "bpm");
-            unhack::enablePatch("BTDSys PeerCtrl", "bpm");
-            unhack::enablePatch("BTDSys PeerCtrl", "seq");
-            unhack::enablePatch("BTDSys PeerCtrl 'Basic'", "bpm");
-            unhack::enablePatch("BTDSys PeerCtrl 'Basic'", "seq");
-            unhack::enablePatch("Geoffroy TapTempoHACK", "bpm");
-            unhack::enablePatch("Geoffroy TapTempoHACK", "seq");
-            unhack::enablePatch("Polac Metronome", "seq");
-            unhack::enablePatch("Fuzzpilz Inp", "seq");
-            unhack::enablePatch("rewirelink", "seq");
-
-            unhack::enablePatch("BuzzRizer", "replace(80000000000000000F000000,80000000020000000F000000)");
-            unhack::enablePatch("Geonik's 2p Filter", "replace(CEFFFFFF010000000C000000,CEFFFFFF020000000C000000)");
-            unhack::enablePatch("Geonik's Expression 2", "replace(CEFFFFFF010000000C000000,CEFFFFFF020000000C000000)");
-            unhack::enablePatch("HD Monster_Kick", "replace(020000000C000000,010000000C000000)");
-
-			load_plugins("buzz");
-			load_plugins("..\\generators");
-			load_plugins("..\\effects");
-		} break;
+BOOL WINAPI DllMain( HMODULE hModule, DWORD fdwreason, LPVOID lpReserved ) {
+	switch(fdwreason) {
+		case DLL_PROCESS_ATTACH:
+			plugintools::hModule = hModule;
+			break;
 		case DLL_PROCESS_DETACH:
-		{
-			std::vector<buzzplugininfo *>::iterator i;
-			for (i = g_buzzplugins.begin(); i != g_buzzplugins.end(); ++i)
-			{
-				(*i)->detach();
-				delete *i;
-			}
-			g_buzzplugins.clear();
-		} break;
+			break;
 		default:
 			break;
 	}
