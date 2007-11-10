@@ -461,11 +461,11 @@ bool metaplugin::create(char* inputData, int dataSize) {
 }
 
 void metaplugin::initialize(int* attributeValues, int attributeCount, int* globalValues, int* trackValues, int tracks) {
-
+#if defined(BUZZ2ZZUB)
 	bool isBuzzCompatible = checkBuzzCompatibility();
 	if (!isBuzzCompatible)
 		cerr << "zzub::metaplugin is not binary compatible with CMachine" << endl;
-
+#endif
     // initialize attributes
     defaultAttributes();
     if (hasAttributes()) {
@@ -1758,6 +1758,7 @@ zzub::recorder* metaplugin::getRecorder() {
 }
 
 bool metaplugin::checkBuzzCompatibility() {
+#if defined(BUZZ2ZZUB)
 	// check offsets that may be used for known hacks
 	int nameofs = offsetof(metaplugin, _internal_name);			// 0x14 / 0x18 (+/- vtbl)
 	int exofs = offsetof(metaplugin, _internal_machine_ex);		// 0x50
@@ -1774,7 +1775,7 @@ bool metaplugin::checkBuzzCompatibility() {
 	
 	if (seqcmdofs != 0xe8) return false;
 	if (hardmuteofs != 0xfd) return false;
-
+#endif
 	return true;
 }
 

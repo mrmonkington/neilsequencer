@@ -116,6 +116,11 @@ if localenv['SNDFILE']:
 		'-DUSE_SNDFILE',
 	])
 
+if localenv['BUZZ2ZZUB'] == True:
+	localenv.Append(CCFLAGS=[
+		'-DBUZZ2ZZUB',
+	])
+
 # portmidi support
 localenv.Append(CPPPATH=[
 	'${PORTMIDI_SRC_PATH}/pm_common',
