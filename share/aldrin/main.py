@@ -942,7 +942,10 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		if page==0 or page==2:
 			if hasattr(panel,'view'):
 				if page==0:
-					panel.view.show_cursor_right()
+					try:
+						panel.view.show_cursor_right()
+					except AttributeError: #no pattern in current machine
+						pass
 				panel.view.grab_focus()
 			else:
 				panel.grab_focus()
