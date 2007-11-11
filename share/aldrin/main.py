@@ -939,9 +939,9 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		"""
 		page=self.framepanel.get_current_page()
 		panel, stockid = self.pages[page]
-		if page==PAGE_PATTERN or page==PAGE_SEQUENCER:
+		if page==0 or page==2:
 			if hasattr(panel,'view'):
-				if page==PAGE_PATTERN:
+				if page==0:
 					panel.view.show_cursor_right()
 				panel.view.grab_focus()
 			else:
