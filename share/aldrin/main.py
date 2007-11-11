@@ -492,12 +492,12 @@ class AldrinFrame(gtk.Window, IRootWindow):
 			panel,stockid = self.pages[k]
 			panel.show_all()
 			self.framepanel.append_page(panel, gtk.image_new_from_stock(stockid, gtk.ICON_SIZE_SMALL_TOOLBAR))
-			
+		
 		hbox = gtk.HBox()
 		hbox.add(self.framepanel)
 		hbox.pack_end(self.mastertoolbar, expand=False)
 		vbox.add(hbox)
-
+	
 		self.aldrinframe_statusbar = gtk.Statusbar()
 		
 		vbox.pack_start(self.transport, expand=False)
@@ -1486,6 +1486,7 @@ class MasterPanel(gtk.HBox):
 		self.masterslider.set_inverted(True)
 		self.masterslider.connect('scroll-event', self.on_mousewheel)
 		self.masterslider.connect('change-value', self.on_scroll_changed)
+		self.masterslider.connect('button-release-event', self.button_up)
 		self.ampl = AmpView(self, 0)
 		self.ampr = AmpView(self, 1)
 		self.add(self.ampl)
@@ -1545,6 +1546,15 @@ class MasterPanel(gtk.HBox):
 		vol = master.get_parameter_value(1, 0, 0)
 		self.masterslider.set_value(16384 - vol)
 		self.latency = driver.get_audiodriver().get_latency()
+
+	def button_up(self, widget, event):
+		"""
+		refocus panel
+		"""
+		page=self.rootwindow.framepanel.get_current_page()
+		panel, stockid = self.rootwindow.pages[page]
+		try: panel.view.grab_focus()
+		except: panel.grab_focus()
 
 class TransportPanel(gtk.HBox):
 	"""
@@ -1649,6 +1659,7 @@ class TransportPanel(gtk.HBox):
 		player.get_plugin(0).set_parameter_value(1, 0, 2, config.get_config().get_default_int('TPB', 4), 1)
 		self.bpm_value_changed = self.bpm.connect('value-changed', self.on_bpm)
 		self.tpb_value_changed = self.tpb.connect('value-changed', self.on_tpb)
+		self.connect('button-release-event', self.button_up)
 		gobject.timeout_add(100, self.update_label)
 		gobject.timeout_add(500, self.update_cpu)
 		self.update_all()
@@ -1734,6 +1745,15 @@ class TransportPanel(gtk.HBox):
 		tpb = master.get_parameter_value(1, 0, 2)
 		self.tpb.set_value(tpb)
 		self.tpb.handler_unblock(self.tpb_value_changed)
+	
+	def button_up(self, widget, event):
+		"""
+		refocus panel
+		"""
+		page=self.rootwindow.framepanel.get_current_page()
+		panel, stockid = self.rootwindow.pages[page]
+		try: panel.view.grab_focus()
+		except: panel.grab_focus()
 
 	def update_all(self):
 		"""
