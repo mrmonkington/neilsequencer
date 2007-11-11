@@ -310,7 +310,6 @@ class PluginBrowserDialog(gtk.Dialog):
 		"""
 		Initializer.
 		"""
-		wx.Dialog.__init__(self, *args, **kwds)
 		self.SetTitle("New Plugin")
 		self.treeview = wx.TreeCtrl(self, -1, style=wx.SUNKEN_BORDER | wx.TR_HIDE_ROOT | wx.TR_HAS_BUTTONS)
 		self.treeview.SetMinSize((400,300))
