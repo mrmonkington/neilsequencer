@@ -279,7 +279,9 @@ class PatternToolBar(gtk.HBox):
 		self.update_pluginselect()
 		self.update_patternselect()
 		self.view.pattern_changed()
-		self.view.show_cursor_right()
+		try: self.view.show_cursor_right()
+		except AttributeError:
+			pass
 
 	def select_pattern(self, i):
 		"""
