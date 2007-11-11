@@ -317,7 +317,7 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		em.register_service(interface.SERVICE_ROOTWINDOW, self, interface.IRootWindow)
 		em.realize_extensions(self)
 
-		self.set_size_request(500,400)
+		self.set_size_request(790,550)
 		audiotrouble = False
 		try:
 			driver.get_audiodriver().init()
@@ -939,8 +939,10 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		"""
 		page=self.framepanel.get_current_page()
 		panel, stockid = self.pages[page]
-		if page==0 or page==2:
+		if page==PAGE_PATTERN or page==PAGE_SEQUENCER:
 			if hasattr(panel,'view'):
+				if page==PAGE_PATTERN:
+					panel.view.show_cursor_right()
 				panel.view.grab_focus()
 			else:
 				panel.grab_focus()
