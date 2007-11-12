@@ -86,20 +86,6 @@ inline bool my_isnan(double x) {
     return x != x;
 }
 
- // TODO: finn bevis på at vi trenger sjekk for både 0 og isnan
-bool isBufferZero(float* buf, int numsamples) {
-	// sjekk om det bare er nuller i inputen
-	bool zeroInput=true;
-	for (int i=0; i<numsamples; i++) {
-//		if (fabs(buf[i])!=0.0) {
-		if (abs(buf[i])>=0.00001 && !my_isnan(buf[i])) {
-			zeroInput=false;
-			break;
-		}
-	}
-	return zeroInput;
-}
-
 class CMachineDataInputWrap : public CMachineDataInput
 {
 public:
@@ -181,20 +167,44 @@ void i2s(float **s, float *i, int numsamples) {
 	};
 }
 
+
+
+typedef CMachineInfo const *(__cdecl *GET_INFO)();
+typedef CMachineInterface *(__cdecl *CREATE_MACHINE)();
+
+
+struct buzzplugininfo : zzub::info
+{
+	std::string m_uri;
+	std::string m_name;
+	std::string m_path;
+	HINSTANCE hDllInstance;
+	GET_INFO GetInfo;
+	CREATE_MACHINE CreateMachine;
+	bool lockAddInput, lockSetTracks;
+	
+	buzzplugininfo();
+	
+	void detach();
+	
+	virtual zzub::plugin* create_plugin() const;
+	
+	virtual bool store_info(zzub::archive *arc) const;
+	
+	bool init();
+};
+
+
 struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 	
 	CMachineInterface* machine;
 	CMachineInterfaceEx* machine2;
 	CMDKImplementation* implementation;
-    const info* machineInfo;
+    const struct buzzplugininfo* machineInfo;
 
     int channels;
-	bool isLdmixer;
-	bool isUtrk;
-	bool isVocoderXp;
-	bool isPvst;
 	
-	plugin(CMachineInterface* machine, const info* mi)
+	plugin(CMachineInterface* machine, const buzzplugininfo* mi)
 	{
 		this->implementation=0;
 		this->machine2=0;
@@ -225,13 +235,8 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 		else
 			machine->Init(0); 
 
-        isLdmixer = strcmp(machineInfo->uri, "@zzub.org/buzz2zzub/ld+mixer") == 0;
-        isVocoderXp = strcmp(machineInfo->uri, "@zzub.org/buzz2zzub/ld+vocoder+xp") == 0;
-        isUtrk = strcmp(machineInfo->uri, "@zzub.org/buzz2zzub/Fuzzpilz+UnwieldyTracker") == 0 || strcmp(machineInfo->uri, "@zzub.org/buzz2zzub/UnwieldyTracker") == 0;
-        isPvst = strcmp(machineInfo->uri, "@zzub.org/buzz2zzub/Polac+VST+1.1") == 0;
-		
-		// ld mixer and utrk need event handlers
-		if (isLdmixer || isVocoderXp || isUtrk || isPvst)
+		// need event handlers
+		if (machineInfo->lockAddInput || machineInfo->lockSetTracks)
 			_host->set_event_handler(reinterpret_cast<zzub::metaplugin*>(thisplugin), this);
 	}
 	virtual void process_controller_events() {}
@@ -665,41 +670,26 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 	}
 
 	void pre_add_input_event() {
-		if (isLdmixer || isVocoderXp || isPvst) evil_lock();
+		if (machineInfo->lockAddInput) evil_lock();
 	}
 
 	void post_add_input_event() {
-		if (isLdmixer || isVocoderXp || isPvst) evil_unlock();
+		if (machineInfo->lockAddInput) evil_unlock();
 	}
 
 	void pre_delete_input_event() { }
 	void post_delete_input_event() { }
 
 	void pre_set_tracks_event() {
-		if (isUtrk || isLdmixer) evil_lock();
+		if (machineInfo->lockSetTracks) evil_lock();
 	}
 
 	void post_set_tracks_event() {
-		if (isUtrk || isLdmixer) evil_unlock();
+		if (machineInfo->lockSetTracks) evil_unlock();
 	}
 };
 
 
-}
-
-typedef CMachineInfo const *(__cdecl *GET_INFO)();
-typedef CMachineInterface *(__cdecl *CREATE_MACHINE)();
-
-
-struct buzzmachineinfo : zzub::info {
-	buzzmachineinfo(const CMachineInfo *buzzinfo) {
-	}
-	
-	virtual zzub::plugin* create_plugin() const {
-		return 0;
-	}
-	virtual bool store_info(zzub::archive *arc) const { return false; }
-};
 
 struct libwrap : public zzub::lib {
 	CLibInterface* blib;
@@ -716,124 +706,130 @@ struct libwrap : public zzub::lib {
 	}
 };
 
-struct buzzplugininfo : zzub::info
+
+
+
+buzzplugininfo::buzzplugininfo()
 {
-	std::string m_uri;
-	std::string m_name;
-	std::string m_path;
-	HINSTANCE hDllInstance;
-	GET_INFO GetInfo;
-	CREATE_MACHINE CreateMachine;
+	hDllInstance = 0;
+	GetInfo = 0;
+	CreateMachine = 0;
+	lockAddInput = lockSetTracks = false;
+}
 	
-	buzzplugininfo()
+void buzzplugininfo::detach()
+{
+	if (hDllInstance)
 	{
+        unhack::freeLibrary(hDllInstance);
 		hDllInstance = 0;
 		GetInfo = 0;
 		CreateMachine = 0;
-	}
+	}		
+}
 	
-	void detach()
+zzub::plugin* buzzplugininfo::create_plugin() const {
+	CMachineInterface* machine = CreateMachine();
+	if (machine)
 	{
-		if (hDllInstance)
-		{
-            unhack::freeLibrary(hDllInstance);
-			hDllInstance = 0;
-			GetInfo = 0;
-			CreateMachine = 0;
-		}		
+		return new buzz2zzub::plugin(machine, this);
 	}
+	return 0;
+}
 	
-	virtual zzub::plugin* create_plugin() const {
-		CMachineInterface* machine = CreateMachine();
-		if (machine)
-		{
-			return new buzz2zzub::plugin(machine, this);
-		}
-		return 0;
+bool buzzplugininfo::store_info(zzub::archive *arc) const {
+	return false;
+}
+	
+bool buzzplugininfo::init()
+{
+	assert (!hDllInstance);
+
+    hDllInstance = unhack::loadLibrary(m_path.c_str());
+
+	if (!hDllInstance) {
+		cout << m_path << ": LoadLibrary failed." << endl;
+		return false;
 	}
-	
-	virtual bool store_info(zzub::archive *arc) const {
+    GetInfo = (GET_INFO)unhack::getProcAddress(hDllInstance, "GetInfo");
+	if (!GetInfo) {
+		cout << m_path << ": missing GetInfo." << endl;
 		return false;
 	}
 	
-	bool init()
-	{
-		assert (!hDllInstance);
-
-        hDllInstance = unhack::loadLibrary(m_path.c_str());
-
-		if (!hDllInstance) {
-			cout << m_path << ": LoadLibrary failed." << endl;
-			return false;
-		}
-        GetInfo = (GET_INFO)unhack::getProcAddress(hDllInstance, "GetInfo");
-		if (!GetInfo) {
-			cout << m_path << ": missing GetInfo." << endl;
-			return false;
-		}
-		
-        CreateMachine = (CREATE_MACHINE)unhack::getProcAddress(hDllInstance, "CreateMachine");
-		if (!CreateMachine) {
-			cout << m_path << ": missing CreateMachine." << endl;
-			return false;
-		}
-		
-		m_uri="@zzub.org/buzz2zzub/" + m_name;
-		replace(m_uri.begin(), m_uri.end(), ' ', '+');
-		uri = m_uri.c_str();
-		
-		const CMachineInfo *buzzinfo = GetInfo();
-
-		version = buzzinfo->Version;
-		flags = buzzinfo->Flags;
-		
-		// NOTE: A Buzz generator marked MIF_NO_OUTPUT is flagged with
-		// neither input nor output flags. An effect with NO_OUTPUT is marked 
-		// as input only. The MIF_NO_OUTPUT-flag is cleared no matter.
-		switch (buzzinfo->Type) {
-			case MT_MASTER: 
-				flags |= ROOT_PLUGIN_FLAGS; 
-				break;
-			case MT_GENERATOR: 
-				if ((buzzinfo->Flags & MIF_NO_OUTPUT) != 0)
-					flags ^= MIF_NO_OUTPUT; else
-					flags |= GENERATOR_PLUGIN_FLAGS; 
-				break;
-			case MT_EFFECT:
-				if ((buzzinfo->Flags & MIF_NO_OUTPUT) != 0) {
-					flags ^= MIF_NO_OUTPUT; 
-					flags |= zzub_plugin_flag_has_audio_input;
-				} else
-					flags |= EFFECT_PLUGIN_FLAGS; 
-				break;
-			default: 
-				flags |= EFFECT_PLUGIN_FLAGS; 
-				break;
-		}
-		min_tracks = buzzinfo->minTracks;
-		max_tracks = buzzinfo->maxTracks;
-		for (int i = 0; i < buzzinfo->numGlobalParameters; ++i) {
-            zzub::parameter& param=add_global_parameter();
-            param = *(const zzub::parameter *)buzzinfo->Parameters[i];
-		}
-		for (int i = 0; i < buzzinfo->numTrackParameters; ++i) {
-            zzub::parameter& param=add_track_parameter();
-            param = *(const zzub::parameter *)buzzinfo->Parameters[buzzinfo->numGlobalParameters+i];
-		}
-		for (int i = 0; i < buzzinfo->numAttributes; ++i) {
-            zzub::attribute& attr=add_attribute();
-            attr = *(const zzub::attribute *)buzzinfo->Attributes[i];
-		}
-		name = buzzinfo->Name;
-		short_name = buzzinfo->ShortName;
-		author = buzzinfo->Author;
-		commands = buzzinfo->Commands;
-		if (buzzinfo->pLI)
-			plugin_lib = new libwrap(buzzinfo->pLI);
-
-		return true;
+    CreateMachine = (CREATE_MACHINE)unhack::getProcAddress(hDllInstance, "CreateMachine");
+	if (!CreateMachine) {
+		cout << m_path << ": missing CreateMachine." << endl;
+		return false;
 	}
-};
+	
+	m_uri="@zzub.org/buzz2zzub/" + m_name;
+	replace(m_uri.begin(), m_uri.end(), ' ', '+');
+	uri = m_uri.c_str();
+	
+	const CMachineInfo *buzzinfo = GetInfo();
+
+	version = buzzinfo->Version;
+	flags = buzzinfo->Flags;
+	
+	// NOTE: A Buzz generator marked MIF_NO_OUTPUT is flagged with
+	// neither input nor output flags. An effect with NO_OUTPUT is marked 
+	// as input only. The MIF_NO_OUTPUT-flag is cleared no matter.
+	switch (buzzinfo->Type) {
+		case MT_MASTER: 
+			flags |= ROOT_PLUGIN_FLAGS; 
+			break;
+		case MT_GENERATOR: 
+			if ((buzzinfo->Flags & MIF_NO_OUTPUT) != 0)
+				flags ^= MIF_NO_OUTPUT; else
+				flags |= GENERATOR_PLUGIN_FLAGS; 
+			break;
+		case MT_EFFECT:
+			if ((buzzinfo->Flags & MIF_NO_OUTPUT) != 0) {
+				flags ^= MIF_NO_OUTPUT; 
+				flags |= zzub_plugin_flag_has_audio_input;
+			} else
+				flags |= EFFECT_PLUGIN_FLAGS; 
+			break;
+		default: 
+			flags |= EFFECT_PLUGIN_FLAGS; 
+			break;
+	}
+	min_tracks = buzzinfo->minTracks;
+	max_tracks = buzzinfo->maxTracks;
+	for (int i = 0; i < buzzinfo->numGlobalParameters; ++i) {
+        zzub::parameter& param=add_global_parameter();
+        param = *(const zzub::parameter *)buzzinfo->Parameters[i];
+	}
+	for (int i = 0; i < buzzinfo->numTrackParameters; ++i) {
+        zzub::parameter& param=add_track_parameter();
+        param = *(const zzub::parameter *)buzzinfo->Parameters[buzzinfo->numGlobalParameters+i];
+	}
+	for (int i = 0; i < buzzinfo->numAttributes; ++i) {
+        zzub::attribute& attr=add_attribute();
+        attr = *(const zzub::attribute *)buzzinfo->Attributes[i];
+	}
+	name = buzzinfo->Name;
+	short_name = buzzinfo->ShortName;
+	author = buzzinfo->Author;
+	commands = buzzinfo->Commands;
+	if (buzzinfo->pLI)
+		plugin_lib = new libwrap(buzzinfo->pLI);
+
+	// set flags from buzz2zzub.ini
+	std::map<std::string, std::vector<std::string> >::iterator it = unhack::patches.find(name);
+	if (it != unhack::patches.end())
+		for (size_t i = 0; i<it->second.size(); i++) {
+			if (it->second[i] == "lock-add-input") {
+				lockAddInput = true;
+			} else
+			if (it->second[i] == "lock-set-tracks") {
+				lockSetTracks = true;
+			}
+		}
+
+	return true;
+}
 
 struct plugintools {
 	static HMODULE hModule;  // set this in DLL_PROCESS_ATTACH
@@ -958,8 +954,14 @@ struct buzzplugincollection : zzub::plugincollection {
 
 HMODULE plugintools::hModule = 0;
 
+
+
+} // namespace buzz2zzub
+
+
+
 zzub::plugincollection *zzub_get_plugincollection() {
-	return new buzzplugincollection();
+	return new buzz2zzub::buzzplugincollection();
 }
 
 const char *zzub_get_signature() { return ZZUB_SIGNATURE; }
@@ -967,7 +969,7 @@ const char *zzub_get_signature() { return ZZUB_SIGNATURE; }
 BOOL WINAPI DllMain( HMODULE hModule, DWORD fdwreason, LPVOID lpReserved ) {
 	switch(fdwreason) {
 		case DLL_PROCESS_ATTACH:
-			plugintools::hModule = hModule;
+			buzz2zzub::plugintools::hModule = hModule;
 			break;
 		case DLL_PROCESS_DETACH:
 			break;

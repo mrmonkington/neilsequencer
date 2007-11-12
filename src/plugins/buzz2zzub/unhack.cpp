@@ -44,7 +44,12 @@ void unhack::enablePatch(std::string machineName, std::string expr) {
 }
 
 bool unhack::isPatch(std::string machineName) {
-    return patches.find(machineName)!=patches.end();
+	std::map<std::string, std::vector<std::string> >::iterator it = patches.find(machineName);
+	if (it == patches.end()) return false;
+	for (size_t i = 0; i < it->second.size(); i++) {
+		if (it->second[i].find("patch") == 0) return true;
+	}
+	return false;
 }
 
 void unhack::process(std::string machineName, void* data, size_t len) {
@@ -53,17 +58,17 @@ void unhack::process(std::string machineName, void* data, size_t len) {
 
     for (size_t i = 0; i<p.size(); i++) {
         string token=p[i];
-        if (token=="bpm") {
+        if (token=="patch-bpm") {
             bpm(data, len, machineName);
         } else
-        if (token=="seq") {
+        if (token=="patch-seq") {
             seq(data, len, machineName);
         } else
-        if (token=="midi") {
+        if (token=="patch-midi") {
             midi(data, len, machineName);
         } else
-        if (token.find_first_of("replace(")==0) {
-            string param=token.substr(8);
+        if (token.find_first_of("patch-replace(")==0) {
+            string param=token.substr(14);
             param=param.substr(0, param.length()-1);
 
             int lc=param.find_first_of(',');
@@ -156,13 +161,14 @@ HMODULE unhack::loadLibrary(LPCTSTR lpLibFileName) {
 	bool patch = isPatch(name);
 	bool mfc = isMfc(name);
 
-    if (patch || mfc) {
-
-		// check if patch indicates noload
-		vector<string>& p = patches[name];
-		for (size_t i = 0; i<p.size(); i++) {
-			if (p[i] == "noload") return 0;
+	// check if patch indicates noload
+	std::map<std::string, std::vector<std::string> >::iterator it = patches.find(name);
+	if (it != patches.end())
+		for (size_t i = 0; i<it->second.size(); i++) {
+			if (it->second[i] == "noload") return 0;
 		}
+
+    if (patch || mfc) {
 
 		// load binary bits of plugin dll
 		char lpFilePath[MAX_PATH];
