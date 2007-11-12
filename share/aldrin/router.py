@@ -1207,10 +1207,10 @@ class RouteView(gtk.DrawingArea):
 		mx,my = int(event.x), int(event.y)
 		res = self.get_plugin_at((mx,my))
 		if not res:
-			pl = show_plugin_browser_dialog(self)
-			if pl:
-				self.contextmenupos = mx,my
-				self.on_popup_new_plugin(None, pl)
+		#	pl = show_plugin_browser_dialog(self)
+		#	if pl:
+		#		self.contextmenupos = mx,my
+		#		self.on_popup_new_plugin(None, pl)
 			return
 		mp,(x,y),area = res
 		if area == AREA_ANY:
