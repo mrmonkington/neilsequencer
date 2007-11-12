@@ -416,8 +416,11 @@ class PatternPanel(gtk.VBox):
 		elif data.type == zzub.zzub_event_type_new_plugin:
 			self.update_all()
 		elif data.type == zzub.zzub_event_type_parameter_changed and player.get_automation():
-			self.view.update_line(player.get_position())
-			self.view.redraw()
+			try:
+				self.view.update_line(player.get_position())
+				self.view.redraw()
+			except TypeError:
+				pass
 
 		# XXX: TODO, for updating during recording automation. make it fast
 		#~ elif data.type == zzub.zzub_event_type_parameter_changed and player.get_automation():
