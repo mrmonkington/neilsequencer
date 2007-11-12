@@ -803,6 +803,7 @@ class AldrinFrame(gtk.Window, IRootWindow):
 			player.set_automation(1)
 		else:
 			player.set_automation(0)
+		self.mastertoolbar.button_up(1,1)
 
 	def on_toggle_automation_accel(self, event):
 		"""
@@ -831,6 +832,7 @@ class AldrinFrame(gtk.Window, IRootWindow):
 			player.set_loop_enabled(1)
 		else:
 			player.set_loop_enabled(0)
+		self.mastertoolbar.button_up(1,1)
 			
 	def on_toggle_panic(self, widget):
 		"""
@@ -844,6 +846,7 @@ class AldrinFrame(gtk.Window, IRootWindow):
 			player.audiodriver_enable(0)
 		else:
 			player.audiodriver_enable(1)
+		self.mastertoolbar.button_up(1,1)
 
 	def on_toggle_panic_accel(self, event):
 		"""
@@ -1235,6 +1238,7 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		elif player.get_state() == zzub.zzub_player_state_playing:
 			# keep on
 			self.btnplay.set_active(True)
+		self.mastertoolbar.button_up(1,1)
 
 	def play_from_cursor(self, event):
 		"""
@@ -1274,6 +1278,7 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		"""
 		player.stop()
 		self.btnplay.set_active(False)
+		self.mastertoolbar.button_up(1,1)
 		
 	def save_changes(self):
 		"""
@@ -1659,7 +1664,8 @@ class TransportPanel(gtk.HBox):
 		player.get_plugin(0).set_parameter_value(1, 0, 2, config.get_config().get_default_int('TPB', 4), 1)
 		self.bpm_value_changed = self.bpm.connect('value-changed', self.on_bpm)
 		self.tpb_value_changed = self.tpb.connect('value-changed', self.on_tpb)
-		self.connect('button-release-event', self.button_up)
+		self.bpm.connect('focus-in-event', self.spin_focus)
+		self.tpb.connect('focus-in-event', self.spin_focus)
 		gobject.timeout_add(100, self.update_label)
 		gobject.timeout_add(500, self.update_cpu)
 		self.update_all()
@@ -1732,6 +1738,16 @@ class TransportPanel(gtk.HBox):
 		player.get_plugin(0).set_parameter_value(1, 0, 2, int(self.tpb.get_value()), 1)
 		config.get_config().set_default_int('TPB', int(self.tpb.get_value()))
 		
+	def spin_focus(self, widget, event):
+		"""
+		Event handler triggered when tbp and bpm get focus
+		"""
+		routeview=self.rootwindow.routeframe.view
+		if routeview.selected_plugin:
+			last = routeview.selected_plugin
+			routeview.selected_plugin = None			
+			common.get_plugin_infos().get(last).reset_plugingfx()
+		
 	def update_bpm(self):
 		self.bpm.handler_block(self.bpm_value_changed)
 		master = player.get_plugin(0)
@@ -1745,15 +1761,6 @@ class TransportPanel(gtk.HBox):
 		tpb = master.get_parameter_value(1, 0, 2)
 		self.tpb.set_value(tpb)
 		self.tpb.handler_unblock(self.tpb_value_changed)
-	
-	def button_up(self, widget, event):
-		"""
-		refocus panel
-		"""
-		page=self.rootwindow.framepanel.get_current_page()
-		panel, stockid = self.rootwindow.pages[page]
-		try: panel.view.grab_focus()
-		except: panel.grab_focus()
 
 	def update_all(self):
 		"""
