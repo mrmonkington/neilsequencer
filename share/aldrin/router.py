@@ -1415,9 +1415,9 @@ class RouteView(gtk.DrawingArea):
 				#~ pctx.set_line_width(1)
 				# adjust colour for muted plugins
 				if pi.muted:
-					gc.set_foreground(cm.alloc_color(self.flags2brushes[mp.get_flags() & PLUGIN_FLAGS_MASK][self.COLOR_MUTED]))
+					gc.set_foreground(cm.alloc_color(self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK, self.flags2brushes[GENERATOR_PLUGIN_FLAGS])[self.COLOR_MUTED]))
 				else:
-					gc.set_foreground(cm.alloc_color(self.flags2brushes[mp.get_flags() & PLUGIN_FLAGS_MASK][self.COLOR_DEFAULT]))
+					gc.set_foreground(cm.alloc_color(self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK, self.flags2brushes[GENERATOR_PLUGIN_FLAGS])[self.COLOR_DEFAULT]))
 				pi.plugingfx.draw_rectangle(gc, True, -1,-1,PLUGINWIDTH+1,PLUGINHEIGHT+1)
 				if mp == self.selected_plugin:
 					#~ pctx.set_dash([4.0,5.0], 0.5)
@@ -1441,33 +1441,33 @@ class RouteView(gtk.DrawingArea):
 			amp = min(max(maxl,maxr),1.0)
 			if amp != pi.amp:
 				if amp >= 1:
-					gc.set_foreground(cm.alloc_color(self.flags2brushes[mp.get_flags() & PLUGIN_FLAGS_MASK][self.COLOR_LED_WARNING]))
+					gc.set_foreground(cm.alloc_color(self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK, self.flags2brushes[GENERATOR_PLUGIN_FLAGS])[self.COLOR_LED_WARNING]))
 					pi.plugingfx.draw_rectangle(gc, True, LEDOFSX, LEDOFSY, LEDWIDTH-1, LEDHEIGHT-1)
 				else:
-					gc.set_foreground(cm.alloc_color(self.flags2brushes[mp.get_flags() & PLUGIN_FLAGS_MASK][self.COLOR_LED_OFF]))
+					gc.set_foreground(cm.alloc_color(self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK, self.flags2brushes[GENERATOR_PLUGIN_FLAGS])[self.COLOR_LED_OFF]))
 					pi.plugingfx.draw_rectangle(gc, True, LEDOFSX, LEDOFSY, LEDWIDTH-1, LEDHEIGHT-1)
 					amp = 1.0 - (linear2db(amp,-76.0)/-76.0)
 					height = int((LEDHEIGHT-4)*amp + 0.5)
 					if (height > 0):
-						gc.set_foreground(cm.alloc_color(self.flags2brushes[mp.get_flags() & PLUGIN_FLAGS_MASK][self.COLOR_LED_ON]))
+						gc.set_foreground(cm.alloc_color(self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK, self.flags2brushes[GENERATOR_PLUGIN_FLAGS])[self.COLOR_LED_ON]))
 						pi.plugingfx.draw_rectangle(gc, True, LEDOFSX+2, LEDOFSY+LEDHEIGHT-height-2, LEDWIDTH-4, height)
-				gc.set_foreground(cm.alloc_color(self.flags2brushes[mp.get_flags() & PLUGIN_FLAGS_MASK][self.COLOR_LED_BORDER]))
+				gc.set_foreground(cm.alloc_color(self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK, self.flags2brushes[GENERATOR_PLUGIN_FLAGS])[self.COLOR_LED_BORDER]))
 				pi.plugingfx.draw_rectangle(gc, False, LEDOFSX, LEDOFSY, LEDWIDTH-1, LEDHEIGHT-1)
 				pi.amp = amp
 			
 			relperc = max(((cpu_loads[mp]*cpu) / (biggestload*100))*0.1 + pi.cpu*0.9, 0.0)
 			if relperc != pi.cpu:
 				pi.cpu = relperc
-				gc.set_foreground(cm.alloc_color(self.flags2brushes[mp.get_flags() & PLUGIN_FLAGS_MASK][self.COLOR_CPU_OFF]))
+				gc.set_foreground(cm.alloc_color(self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK, self.flags2brushes[GENERATOR_PLUGIN_FLAGS])[self.COLOR_CPU_OFF]))
 				pi.plugingfx.draw_rectangle(gc, True, CPUOFSX, CPUOFSY, CPUWIDTH-1, CPUHEIGHT-1)
 				height = int((CPUHEIGHT-4)*relperc + 0.5)
 				if (height > 0):
 					if relperc >= cputreshold:
-						gc.set_foreground(cm.alloc_color(self.flags2brushes[mp.get_flags() & PLUGIN_FLAGS_MASK][self.COLOR_CPU_WARNING]))
+						gc.set_foreground(cm.alloc_color(self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK, self.flags2brushes[GENERATOR_PLUGIN_FLAGS])[self.COLOR_CPU_WARNING]))
 					else:
-						gc.set_foreground(cm.alloc_color(self.flags2brushes[mp.get_flags() & PLUGIN_FLAGS_MASK][self.COLOR_CPU_ON]))
+						gc.set_foreground(cm.alloc_color(self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK, self.flags2brushes[GENERATOR_PLUGIN_FLAGS])[self.COLOR_CPU_ON]))
 					pi.plugingfx.draw_rectangle(gc, True, CPUOFSX+2, CPUOFSY+CPUHEIGHT-height-2, CPUWIDTH-4, height)
-				gc.set_foreground(cm.alloc_color(self.flags2brushes[mp.get_flags() & PLUGIN_FLAGS_MASK][self.COLOR_CPU_BORDER]))
+				gc.set_foreground(cm.alloc_color(self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK, self.flags2brushes[GENERATOR_PLUGIN_FLAGS])[self.COLOR_CPU_BORDER]))
 				pi.plugingfx.draw_rectangle(gc, False, CPUOFSX, CPUOFSY, CPUWIDTH-1, CPUHEIGHT-1)
 			
 			self.window.draw_drawable(gc, pi.plugingfx, 0, 0, int(rx), int(ry), -1, -1)
