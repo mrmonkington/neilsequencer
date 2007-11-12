@@ -180,6 +180,9 @@ void stream_resampler::fill_resampler() {
 
 	bool result = plugin->process_stereo(0, outs, samples_to_process, zzub::process_mode_write);
 	if (!result) {
+		// clear overlap
+		memset(bufferL, 0, sourceoverlap * 2 * sizeof(float));
+		memset(bufferR, 0, sourceoverlap * 2 * sizeof(float));
 		playing = false;
 		samples_in_resampler = 0;
 		return ;
