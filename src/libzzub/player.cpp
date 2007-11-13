@@ -1031,23 +1031,26 @@ int buzz_to_midi_note(int value) {
 }
 void player::midiEvent(unsigned short status, unsigned char data1, unsigned char data2) {
     // look up mapping(s) and send value to plugin
-    int channel=status&0xF;
-    for (size_t i=0; i<midiInputMappings.size(); i++) {
-        midimapping& mm=midiInputMappings[i];
-        if (mm.channel==channel && mm.controller==data1) {
-            metaplugin* plugin=mm.machine;
-            const parameter* param=plugin->getMachineParameter(mm.group, mm.track, mm.column);
-            float minValue = (float)param->value_min;
-		    float maxValue = (float)param->value_max;
-            float delta = (maxValue - minValue) / 127.0f;
+    int channel = status&0xF;
+	int command = (status & 0xf0) >> 4;
 
-            plugin->setParameter(mm.group, mm.track, mm.column, (int)ceil(minValue + data2 * delta), true);
-		    //plugin->machine->process_events();
-        }
-    }
+	if (command == 0xb) {
+		for (size_t i=0; i<midiInputMappings.size(); i++) {
+			midimapping& mm=midiInputMappings[i];
+			if (mm.channel==channel && mm.controller==data1) {
+				metaplugin* plugin=mm.machine;
+				const parameter* param=plugin->getMachineParameter(mm.group, mm.track, mm.column);
+				float minValue = (float)param->value_min;
+				float maxValue = (float)param->value_max;
+				float delta = (maxValue - minValue) / 127.0f;
+
+				plugin->setParameter(mm.group, mm.track, mm.column, (int)ceil(minValue + data2 * delta), true);
+				//plugin->machine->process_events();
+			}
+		}
+	}
 	
 	// also send note events to plugins directly
-	int command = (status & 0xf0) >> 4;
 	if ((command == 8) || (command == 9)) {
 		int velocity = (int)data2;
 		if (command == 8)
@@ -1123,7 +1126,10 @@ void player::playMachineNote(zzub::metaplugin* plugin, int note, int prevNote, i
 				foundTracks[i] = false;
 
 			for (size_t j = 0; j < keyjazz.size(); j++) {
-				foundTracks[keyjazz[j].track] = true;
+				int track = keyjazz[j].track;
+				if (track >= foundTracks.size()) continue;
+
+				foundTracks[track] = true;
 				if (keyjazz[j].timestamp < lowestTime) {
 					lowestTime = keyjazz[j].timestamp;
 					lowestTrack = keyjazz[j].track;

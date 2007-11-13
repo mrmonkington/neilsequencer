@@ -78,7 +78,7 @@ void process_midi(PtTimestamp timestamp, void *userData) {
 
 bool mididriver::initialize(midiworker* worker) {
 	this->worker=worker;
-	this->worker->midiDriver = this;
+	if (this->worker) this->worker->midiDriver = this;
 	this->readQueue = Pm_QueueCreate(32, sizeof(midi_time_message));
 	this->sendQueue = Pm_QueueCreate(32, sizeof(midi_time_message));
 
