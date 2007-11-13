@@ -126,7 +126,7 @@ template <class TPtr> class TAutoPtrRef
 {
 public:
 
-	friend class TAutoPtr;
+	friend class TAutoPtr<TPtr>;
 
 	TAutoPtrRef(TAutoPtr<TPtr> &r) : ref(r)
 	{
