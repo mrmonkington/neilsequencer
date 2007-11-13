@@ -1454,8 +1454,11 @@ class RouteView(gtk.DrawingArea):
 				gc.set_foreground(cm.alloc_color(self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK, self.flags2brushes[GENERATOR_PLUGIN_FLAGS])[self.COLOR_LED_BORDER]))
 				pi.plugingfx.draw_rectangle(gc, False, LEDOFSX, LEDOFSY, LEDWIDTH-1, LEDHEIGHT-1)
 				pi.amp = amp
-			
-			relperc = max(((cpu_loads[mp]*cpu) / (biggestload*100))*0.1 + pi.cpu*0.9, 0.0)
+
+			try:
+				relperc = max(((cpu_loads[mp]*cpu) / (biggestload*100))*0.1 + pi.cpu*0.9, 0.0)
+			except ZeroDivisionError:
+				relperc=0
 			if relperc != pi.cpu:
 				pi.cpu = relperc
 				gc.set_foreground(cm.alloc_color(self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK, self.flags2brushes[GENERATOR_PLUGIN_FLAGS])[self.COLOR_CPU_OFF]))
