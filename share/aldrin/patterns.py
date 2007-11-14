@@ -415,16 +415,6 @@ class PatternPanel(gtk.VBox):
 			self.update_all()
 		elif data.type == zzub.zzub_event_type_new_plugin:
 			self.update_all()
-		elif data.type == zzub.zzub_event_type_parameter_changed and player.get_automation():
-			try:
-				self.view.update_line(player.get_position())
-				self.view.redraw()
-			except TypeError:
-				pass
-
-		# XXX: TODO, for updating during recording automation. make it fast
-		#~ elif data.type == zzub.zzub_event_type_parameter_changed and player.get_automation():
-			#~ self.update_all()
 
 	def reset(self):
 		"""
@@ -704,9 +694,11 @@ class PatternView(gtk.DrawingArea):
 		"""
 		playpos = player.get_position()
 		if self.playpos != playpos:
+			self.update_line(self.playpos)
 			self.draw_xor()
 			self.playpos = playpos
 			self.draw_xor()
+			self.redraw()
 		return True
 			
 	def get_new_pattern_name(self, m=None):
