@@ -610,6 +610,7 @@ class RouteView(gtk.DrawingArea):
 		self.solo_plugin = None
 		self.selected_plugin = None
 		self.autoconnect_target=None
+		self.chordnotes=[]
 		self.update_colors()
 		gtk.DrawingArea.__init__(self)
 		self.volume_slider = VolumeSlider()		
@@ -1588,14 +1589,16 @@ class RouteView(gtk.DrawingArea):
 		self.rootwindow.patternframe.view.octave=octave
 		self.rootwindow.patternframe.view.toolbar.update_octaves()
 		if note:
-			try:
-				n=((note[0]+octave)<<4|note[1]+1)
-				plugin.play_midi_note(n, 0, 127)
-			except TypeError:
-				pass
-			except:
-				import traceback
-				traceback.print_exc()
+			if note not in self.chordnotes:
+				self.chordnotes.append(note)
+				try:
+					n=((note[0]+octave)<<4|note[1]+1)
+					plugin.play_midi_note(n, 0, 127)
+				except TypeError:
+					pass
+				except:
+					import traceback
+					traceback.print_exc()
 
 	def on_key_jazz_release(self, widget, event, plugin):
 		if not plugin:			
@@ -1609,6 +1612,7 @@ class RouteView(gtk.DrawingArea):
 		if kv<256:
 			octave = self.rootwindow.patternframe.view.octave
 			note = key_to_note(kv)
+			self.chordnotes.remove(note)
 			try:
 				n=((note[0]+octave)<<4|note[1]+1)
 				plugin.play_midi_note(zzub.zzub_note_value_off, n, 0)
