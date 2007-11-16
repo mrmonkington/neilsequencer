@@ -694,7 +694,9 @@ class PatternView(gtk.DrawingArea):
 		"""
 		playpos = player.get_position()
 		if self.playpos != playpos:
-			self.update_line(self.playpos)
+			try: self.update_line(self.playpos)
+			except TypeError:
+				pass
 			self.draw_xor()
 			self.playpos = playpos
 			self.draw_xor()

@@ -1188,7 +1188,7 @@ class SequencerView(gtk.DrawingArea):
 				title = "[%s]" % title
 			elif self.plugin_info[m].muted:
 				title = "(%s)" % title
-			gc.set_foreground(type2brush[m.get_flags() & PLUGIN_FLAGS_MASK])
+			gc.set_foreground(type2brush.get(m.get_flags() & PLUGIN_FLAGS_MASK, type2brush[GENERATOR_PLUGIN_FLAGS]))
 			drawable.draw_rectangle(gc, True, 0, y, SEQLEFTMARGIN-1, SEQTRACKSIZE)
 			gc.set_foreground(pen)
 			drawable.draw_rectangle(gc, False, 0, y, SEQLEFTMARGIN-1, SEQTRACKSIZE)
