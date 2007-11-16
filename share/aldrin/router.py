@@ -1548,6 +1548,8 @@ class RouteView(gtk.DrawingArea):
 				plugin = self.selected_plugin
 			else:
 				return
+		if self.rootwindow.on_key_down(widget, event):
+			return
 		kv = event.keyval
 		k = gtk.gdk.keyval_name(kv)
 		note = None
