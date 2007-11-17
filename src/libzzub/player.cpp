@@ -1034,7 +1034,12 @@ void player::midiEvent(unsigned short status, unsigned char data1, unsigned char
     int channel = status&0xF;
 	int command = (status & 0xf0) >> 4;
 
-	if (command == 0xb) {
+	if ((command == 0xb) || (command == 0xe)) {
+		if (command == 0xe) {
+			// convert pitchbend to CC
+			data1 = 128;
+		}
+
 		for (size_t i=0; i<midiInputMappings.size(); i++) {
 			midimapping& mm=midiInputMappings[i];
 			if (mm.channel==channel && mm.controller==data1) {
@@ -1084,6 +1089,14 @@ void player::midiEvent(unsigned short status, unsigned char data1, unsigned char
 	}
 
     // plus all midi messages should be sent as master-events, so ui's can pick these up
+
+	if (command == 0xe) {
+		// convert pitchbend to CC
+		command = 0xb;
+		status = channel | (command << 4);
+		data1 = 128;
+	}
+
     zzub_event_data eventData={event_type_midi_control};
     eventData.midi_message.status=status;
     eventData.midi_message.data1=data1;

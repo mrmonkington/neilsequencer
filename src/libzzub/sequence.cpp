@@ -90,18 +90,19 @@ void sequence::advanceTick() {
 	iterateTick();
 }
 
-
 zzub::sequence_event* sequence::getValueAt(size_t valuePos) {
 
-	size_t pos=getPosition();
+	size_t tmpTrackPosition = trackPosition;
+	size_t tmpPositionIndex = positionIndex;
 
 	setPosition(valuePos);
-	zzub::sequence_event* value=getCurrentValue();
-	setPosition(pos);
+	zzub::sequence_event* value = getCurrentValue();
+
+	trackPosition = tmpTrackPosition;
+	positionIndex = tmpPositionIndex;
 
 	return value;
 }
-
 
 void sequence::setEvent(size_t pos, sequence_event_type type, zzub::pattern* value) {
 	using namespace std;
@@ -125,13 +126,14 @@ void sequence::setEvent(size_t pos, sequence_event_type type, zzub::pattern* val
 	}
 }
 
-
 void sequence::setPosition(size_t pos) {
-	trackPosition=0;
-	positionIndex=0;
-	for (size_t i=0; i<pos; i++) {
-		iterateTick();
-	}
+	trackPosition = pos;
+	size_t end = events.size();
+	if (end == 0) return;
+	for (positionIndex = 0, --end; positionIndex < end; ++positionIndex)
+		if (events[positionIndex].pos >= trackPosition)
+			break;
+
 }
 
 sequence_event* sequence::getCurrentValue() const {
@@ -261,6 +263,7 @@ void sequence::deserialize(zzub::instream* reader) {
 }
 
 };
+
 
 
 
