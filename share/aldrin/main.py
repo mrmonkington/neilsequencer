@@ -1024,6 +1024,8 @@ class AldrinFrame(gtk.Window, IRootWindow):
 			self.rackframe.update_all()
 		self.routeframe.view.update_colors()
 		self.routeframe.view.redraw()
+		self.seqframe.seqview.set_cursor_pos(0,0)
+		self.seqframe.seqview.adjust_scrollbars()
 		self.seqframe.seqview.redraw()
 		self.seqframe.update_list()
 		self.patternframe.update_all()
@@ -1033,6 +1035,7 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		self.btnloop.set_active(player.get_loop_enabled())
 		self.btnrecord.set_active(player.get_automation())
 		self.seqframe.adjust_seqscrollbars()
+		self.select_page(self.framepanel.get_current_page())
 		
 	def update_title(self):
 		"""

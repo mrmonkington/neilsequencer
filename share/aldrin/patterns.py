@@ -2004,7 +2004,9 @@ class PatternView(gtk.DrawingArea):
 		"""
 		Returns the size in characters of the virtual view area.
 		"""
-		h = self.pattern.get_row_count()
+		try: h = self.pattern.get_row_count()
+		except AttributeError:
+			return 0,0
 		w = 0
 		for g in CONN,GLOBAL,TRACK:
 			w += self.track_width[g] * self.group_track_count[g]
@@ -2176,7 +2178,9 @@ class PatternView(gtk.DrawingArea):
 							pass
 						if i != self.parameter_count[g]-1:
 							s += ' '
-					self.lines[g][t][row] = s
+					try: self.lines[g][t][row] = s
+					except IndexError:
+						pass
 
 	def prepare_textbuffer(self):
 		"""

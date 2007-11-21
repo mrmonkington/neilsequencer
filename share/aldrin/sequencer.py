@@ -1048,10 +1048,10 @@ class SequencerView(gtk.DrawingArea):
 			track=seq.get_track(i)
 			if track.get_event_count():
 				w,p=track.get_event(track.get_event_count()-1)
-				try:
-					w+=track.get_plugin().get_pattern(p-16).get_row_count()
-				except AssertionError:
-					pass
+				#try:
+				#	w+=track.get_plugin().get_pattern(p-16).get_row_count()
+				#except AssertionError:
+				#	pass
 			if w>self.wmax:
 				self.wmax=w
 				
