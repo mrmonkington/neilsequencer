@@ -8,7 +8,6 @@
 	<ref label="FSM Infector (Synthesizer)" uri="@krzysztof_foltman/generator/infector;1"/>
 	<ref label="Kibibu Green Milk (Synthesizer)" uri="@cameron_foale/generator/green_milk;1"/>
 	<ref label="Makk M4wII (Synthesizer)" uri="@makk.org/M4wII;1"/>
-	<ref label="streamplayer" uri="@zzub.org/miditracker;1"/>
 	<ref label="LiveJump" uri="@zzub.org/livejump;1"/>
 	<ref label="MidiTracker" uri="@zzub.org/miditracker;1"/>
 	<group label="DSSI Plugins">
