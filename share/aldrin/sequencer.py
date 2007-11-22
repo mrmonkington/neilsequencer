@@ -596,7 +596,10 @@ class SequencerView(gtk.DrawingArea):
 		menu.append(gtk.SeparatorMenuItem())
 		menu.append(make_menu_item("Add pattern", "", self.add_pattern))
 		menu.append(gtk.SeparatorMenuItem())
-		menu.append(make_submenu_item(wavemenu, "Record to Instrument"))
+		menu.append(make_menu_item("Set loop start", "", self.set_loop_start))
+		menu.append(make_menu_item("Set loop end", "", self.set_loop_end))
+		menu.append(gtk.SeparatorMenuItem())
+		menu.append(make_submenu_item(wavemenu, "Record to instrument"))
 		menu.append(gtk.SeparatorMenuItem())
 		menu.append(make_menu_item("Cut", "", self.on_popup_cut))
 		menu.append(make_menu_item("Copy", "", self.on_popup_copy))
@@ -632,7 +635,28 @@ class SequencerView(gtk.DrawingArea):
 			self.ReDraw()
 		dlg.Destroy()
 		
-	def on_key_down(self, widget, event):
+	def set_loop_start(self, event=None):
+		"""
+		Set loop startpoint
+		"""
+		player.set_loop_start(self.row)
+		if player.get_loop_end() <= self.row:
+			player.set_loop_end(self.row + self.step)
+		self.redraw()
+		
+	def set_loop_end(self, event=None):
+		pos = self.row# + self.step
+		if player.get_loop_end() != pos:
+			player.set_loop_end(pos)
+			if pos > player.get_song_end():
+				player.set_song_end(pos)
+			if player.get_loop_start() >= pos:
+				player.set_loop_start(0)
+		else:
+			player.set_song_end(pos)
+		self.redraw()
+		
+	def on_key_down(self, widget=None, event=None):
 		"""
 		Callback that responds to key stroke in sequence view.
 		
@@ -667,22 +691,10 @@ class SequencerView(gtk.DrawingArea):
 			elif k == 'Delete':
 				self.on_popup_delete_track(event)
 				self.adjust_scrollbars()
-			elif k == 'b':				
-				player.set_loop_start(self.row)
-				if player.get_loop_end() <= self.row:
-					player.set_loop_end(self.row + self.step)
-				self.redraw()
+			elif k == 'b':
+				self.set_loop_start()
 			elif k == 'e':
-				pos = self.row# + self.step
-				if player.get_loop_end() != pos:
-					player.set_loop_end(pos)
-					if pos > player.get_song_end():
-						player.set_song_end(pos)
-					if player.get_loop_start() >= pos:
-						player.set_loop_start(0)
-				else:
-					player.set_song_end(pos)
-				self.redraw()
+				self.set_loop_end()
 			elif k == 'l':			
 				t = self.get_track()
 				if t:
