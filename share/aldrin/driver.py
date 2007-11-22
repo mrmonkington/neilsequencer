@@ -47,13 +47,17 @@ class MidiDriver:
 		if self.enabled:
 			self.destroy()
 		midiinputs = config.get_config().get_mididriver_inputs()
+		midioutputs = config.get_config().get_mididriver_outputs()
 		for i in range(player.mididriver_get_count()):
-			if player.mididriver_is_input(i):
-				drivername = player.mididriver_get_name(i)
-				if drivername.strip() in midiinputs:
-					print "Opening MIDI device '%s'..." % drivername
-					if player.mididriver_open(i) != 0:
-						raise MidiInitException
+			drivername = player.mididriver_get_name(i).strip() 
+			if player.mididriver_is_input(i) and drivername in midiinputs:
+				print "Opening MIDI device '%s'..." % drivername
+				if player.mididriver_open(i) != 0:
+					raise MidiInitException
+			elif player.mididriver_is_output(i) and drivername in midioutputs:
+				print "Opening MIDI device '%s'..." % drivername
+				if player.mididriver_open(i) != 0:
+					raise MidiInitException
 		self.enabled = True
 
 class AudioDriver:
