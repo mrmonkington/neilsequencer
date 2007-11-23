@@ -636,6 +636,12 @@ bool BuzzReader::loadWaveTable() {
 		unsigned char waveLevels;
 		f->read(waveLevels);
 
+		// NOTE: allocate_level() resets volume to 1.0 on the first allocate_level(),
+		// (which in turn, happens because the default volume is 0.0, and when machines 
+		// allocate waves we need to update the volume to 1.0 without breaking anything)
+		// so we need to make a copy of the loaded volume and set it again afterwards
+		float vol = entry->volume;
+
 		for (int j=0; j<waveLevels; j++) {
 			int numSamples, loopStart, loopEnd, samplesPerSec;
 			unsigned char rootNote;
@@ -651,6 +657,8 @@ bool BuzzReader::loadWaveTable() {
 			entry->set_loop_end(j, loopEnd);
 			entry->set_samples_per_sec(j, samplesPerSec);
 		}
+
+		entry->volume = vol;
 	}
 
 	return true;

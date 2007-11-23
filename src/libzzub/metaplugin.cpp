@@ -1586,6 +1586,7 @@ connection* metaplugin::getOutputConnection(size_t index) {
 }
 
 bool metaplugin::isSoloMutePlaying() { 
+	if (nonSongPlugin) return true;
 	if (isSoftMuted()) return false;
 	if (isMuted()) return false;
 	if (!player->getSoloMachine()) return true;

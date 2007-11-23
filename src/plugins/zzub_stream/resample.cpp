@@ -105,9 +105,11 @@ bool stream_resampler::process_stereo(float** pout, int numsamples) {
 	float* s[2] = { pout[0], pout[1] };
 
 	while (playing && numsamples > 0) {
-		if (samples_in_resampler == 0) fill_resampler();
+		if (samples_in_resampler == 0) {
+			fill_resampler();
 
-		if (samples_in_resampler == 0) return false;	// TODO: this cuts of some..
+			if (samples_in_resampler == 0) break;	// TODO: this cuts of some..
+		}
 
 		int worksamples;
 		if (samples_in_resampler >= numsamples) {
@@ -180,9 +182,6 @@ void stream_resampler::fill_resampler() {
 
 	bool result = plugin->process_stereo(0, outs, samples_to_process, zzub::process_mode_write);
 	if (!result) {
-		// clear overlap
-		memset(bufferL, 0, sourceoverlap * 2 * sizeof(float));
-		memset(bufferR, 0, sourceoverlap * 2 * sizeof(float));
 		playing = false;
 		samples_in_resampler = 0;
 		return ;

@@ -156,6 +156,26 @@ void	Downsampler2Flt::downsample_block (float dest_ptr [], const float src_ptr [
 		++ pos;
 	}
 	while (pos < nbr_spl);
+
+	// Kills denormals, if any.
+
+	_y_arr [0] += ANTI_DENORMAL_FLT;
+	_y_arr [1] += ANTI_DENORMAL_FLT;
+	_y_arr [2] += ANTI_DENORMAL_FLT;
+	_y_arr [3] += ANTI_DENORMAL_FLT;
+	_y_arr [4] += ANTI_DENORMAL_FLT;
+	_y_arr [5] += ANTI_DENORMAL_FLT;
+	_y_arr [6] += ANTI_DENORMAL_FLT;
+	_y_arr [7] += ANTI_DENORMAL_FLT;
+
+	_y_arr [0] -= ANTI_DENORMAL_FLT;
+	_y_arr [1] -= ANTI_DENORMAL_FLT;
+	_y_arr [2] -= ANTI_DENORMAL_FLT;
+	_y_arr [3] -= ANTI_DENORMAL_FLT;
+	_y_arr [4] -= ANTI_DENORMAL_FLT;
+	_y_arr [5] -= ANTI_DENORMAL_FLT;
+	_y_arr [6] -= ANTI_DENORMAL_FLT;
+	_y_arr [7] -= ANTI_DENORMAL_FLT;
 }
 
 

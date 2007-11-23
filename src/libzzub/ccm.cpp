@@ -1715,7 +1715,6 @@ bool CcmReader::loadInstruments(xml_node &instruments, zzub::player &player) {
 			wave_info_ex &info = *player.getWave(long(i->attribute("index")));
 			info.name = i->attribute("name").value();
 			info.flags = 0;
-			info.volume = double(i->attribute("volume"));
 			
 			xml_node waves = i->first_element_by_name("waves");
 			if (!waves.empty()) {
@@ -1746,6 +1745,9 @@ bool CcmReader::loadInstruments(xml_node &instruments, zzub::player &player) {
 					}
 				}
 			}
+
+			// NOTE: must set volume after (first) allocate_level (which happens in decodeFLAC)
+			info.volume = double(i->attribute("volume"));
 			
 			xml_node envelopes = i->first_element_by_name("envelopes");
 			if (!envelopes.empty()) {
