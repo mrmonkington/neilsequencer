@@ -88,63 +88,10 @@ void AddS2SPanMC(float** output, float** input, int numSamples, float inAmp, flo
 	} while (--numSamples);
 }
 
-// buffer=output, machineBuffer=input, ch1=outch,ch2=inch (1 or 2)
-void mixBuffers(float* buffer, float* machineBuffer, int ch1, int ch2, int numSamples, float inAmp, float inPan) {
-	if (ch2==1) {
-		if (ch1==1) {
-			Add(buffer, machineBuffer, numSamples, inAmp);
-		} else {
-			AddM2SPan(buffer, machineBuffer, numSamples, inAmp, inPan);
-		}
-	} else {
-		// there are two channels in the input:
-		if (ch1==1) {
-			// the inPan stuff here is for connections marked with L or R in buzz
-			AddStereoToMono(buffer, machineBuffer, numSamples, inAmp, inPan<1?0:1);
-		} else {
-			AddS2SPan(buffer, machineBuffer, numSamples, inAmp, inPan);
-		}
-	}
-}
-
 void Amp(float *pout, int numsamples, float amp) {
 	for (int i=0; i<numsamples; i++) {
 		pout[i]*=amp;
 	}
-}
-
-
- inline bool my_isnan(double x)
- {
-   return x != x;
- }
-
- // TODO: finn bevis på at vi trenger sjekk for både 0 og isnan
-bool isBufferZero(float** buf, int numsamples) {
-	// lr: it makes sense to run through this code twice
-	// especially when there is a signal at the end,
-	// with separate buffer checks we find this after
-	// numsamples-1 steps, with interleaved buffers
-	// we find this after (numsamples-1)*2 steps.
-	//
-	// lr: checking for an empty buffer is a stupid 
-	// optimization idea anyway, since with growing
-	// complexity of tracks there will be simply
-	// no empty buffers ever (delays, reverbs),
-	// and thus this checking code here runs on every
-	// damn buffer for nothing.
-	//
-	// it will be more performant to take it out.
-	
-	for (int c=0; c < 2; ++c) {
-		for (int i=0; i<numsamples; i++) {
-	//		if (fabs(buf[i])!=0.0) {
-			if (fabs(buf[c][i])>=0.00001 && !my_isnan(buf[c][i])) {
-				return false;
-			}
-		}
-	}
-	return true;
 }
 
 float dB_to_linear(float val) {

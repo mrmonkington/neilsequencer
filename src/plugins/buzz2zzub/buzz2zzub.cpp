@@ -181,7 +181,7 @@ struct buzzplugininfo : zzub::info
 	HINSTANCE hDllInstance;
 	GET_INFO GetInfo;
 	CREATE_MACHINE CreateMachine;
-	bool lockAddInput, lockSetTracks;
+	bool lockAddInput, lockSetTracks, useSequencerHack;
 	
 	buzzplugininfo();
 	
@@ -242,24 +242,33 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 	virtual void process_controller_events() {}
 	virtual void process_events()
 	{
-		unhack::hackTick(_master_info->beats_per_minute, _host->get_song_begin_loop(), 
-			_host->get_song_end_loop(), _host->get_song_end(), _host->get_play_position());
+		int last_play_position;
+		if (machineInfo->useSequencerHack) {
+			unhack::hackTick(_master_info->beats_per_minute, _host->get_song_begin_loop(), 
+				_host->get_song_end_loop(), _host->get_song_end(), _host->get_play_position());
 
-		// support hacked jumping from ticks
-		int last_play_position = _host->get_play_position();
+			// support hacked jumping from ticks
+			last_play_position = _host->get_play_position();
+		}
 
 		machine->Tick();
 
-		if (last_play_position != unhack::hackseq->songPos)
-			_host->set_play_position(unhack::hackseq->songPos);
+		// check for hacked jumps
+		if (machineInfo->useSequencerHack) {
+			if (last_play_position != unhack::hackseq->songPos)
+				_host->set_play_position(unhack::hackseq->songPos);
+		}
 
 	}
-/*	virtual bool process_audio(float *psamples, int numsamples, const int mode)
-	{
-		return machine->Work(psamples, numsamples, mode);
-	}*/
+
 	virtual bool process_stereo(float **pin, float **pout, int numsamples, int mode)
 	{
+		int last_play_position;
+		if (machineInfo->useSequencerHack) {
+			// support hacked jumping from work()
+			last_play_position = _host->get_play_position();
+		}
+
         bool ret=false;
         int mode2=mode;
 
@@ -297,6 +306,12 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
         if (ret) {
             Amp(pouti, numsamples*2, 1.0f / 0x8000);
 			i2s(pout, pouti, numsamples); // interleaved to stereo
+		}
+
+		// check for hacked jumps
+		if (machineInfo->useSequencerHack) {
+			if (last_play_position != unhack::hackseq->songPos)
+				_host->set_play_position(unhack::hackseq->songPos);
 		}
         return ret;
 	}
@@ -714,7 +729,7 @@ buzzplugininfo::buzzplugininfo()
 	hDllInstance = 0;
 	GetInfo = 0;
 	CreateMachine = 0;
-	lockAddInput = lockSetTracks = false;
+	lockAddInput = lockSetTracks = useSequencerHack = false;
 }
 	
 void buzzplugininfo::detach()
@@ -825,6 +840,9 @@ bool buzzplugininfo::init()
 			} else
 			if (it->second[i] == "lock-set-tracks") {
 				lockSetTracks = true;
+			} else
+			if (it->second[i] == "patch-seq") {
+				useSequencerHack = true;
 			}
 		}
 

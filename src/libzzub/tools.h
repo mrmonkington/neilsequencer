@@ -30,8 +30,6 @@ double triangle(double v);
 
 // buffer tools
 void AddS2SPanMC(float** output, float** input, int numSamples, float inAmp, float inPan);
-void mixBuffers(float* output, float* input, int outch, int inch, int numSamples, float inAmp, float inPan);
-bool isBufferZero(float** buf, int numsamples);
 void CopyM2S(float *pout, float *pin, int numsamples, float amp);
 void Add(float *pout, float *pin, int numsamples, float amp);
 void AddStereoToMono(float *pout, float *pin, int numsamples, float amp);

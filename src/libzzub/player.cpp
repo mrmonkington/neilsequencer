@@ -895,7 +895,7 @@ bool player::workMachine(metaplugin* machine, int numSamples) {
 	if (inputState) {
 		// testing for doesInputMixing || !isBufferZero() fixes F:\audio\bmx\div\nool+ladproject - the longest travel.bmx
 		// testing for maxInputAmp fixes F:\audio\bmx\orange.bmx
-		if (inputConnections>0 && maxInputAmp>0 && (machine->doesInputMixing() || !isBufferZero(machine->machineBuffer, numSamples)))
+		if (inputConnections>0 && maxInputAmp>0 && (machine->doesInputMixing() || (buffer_has_signals(machine->machineBuffer[0], numSamples) || buffer_has_signals(machine->machineBuffer[1], numSamples))))
 //		if (inputConnections>0 && maxInputAmp>0)
 			flags=zzub::process_mode_read_write; else
 			flags=zzub::process_mode_write;
