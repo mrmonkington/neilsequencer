@@ -952,7 +952,6 @@ class PatternView(gtk.DrawingArea):
 		"""	
 		self.draw_xor()
 		for i in range(step+2):
-			print i
 			self.update_line(self.row+i+1)
 		self.set_row(self.row + step)
 		self.draw_xor()
