@@ -739,8 +739,8 @@ class SequencerView(gtk.DrawingArea):
 		elif k == 'Right' or k == 'KP_Right':
 			self.set_cursor_pos(self.track, self.row + self.step)
 			w=self.get_allocation().width
-			if self.row>(self.wmax+int((w-SEQLEFTMARGIN)/float(SEQROWSIZE)-2)*self.step):
-				self.set_cursor_pos(self.track, self.wmax+int((w-SEQLEFTMARGIN)/float(SEQROWSIZE)-2)*self.step)
+			#if self.row>(self.wmax+int((w-SEQLEFTMARGIN)/float(SEQROWSIZE)-2)*self.step):
+			#	self.set_cursor_pos(self.track, self.wmax+int((w-SEQLEFTMARGIN)/float(SEQROWSIZE)-2)*self.step)
 			self.adjust_scrollbars()
 		elif k == 'Up' or k == 'KP_Up':
 			self.set_cursor_pos(self.track-1, self.row)
@@ -1067,7 +1067,7 @@ class SequencerView(gtk.DrawingArea):
 			if w>self.wmax:
 				self.wmax=w
 				
-		w=self.wmax/self.step+3
+		w=self.wmax/self.step+512/self.step
 		return w,h
 
 
