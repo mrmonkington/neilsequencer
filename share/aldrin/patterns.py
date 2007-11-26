@@ -951,8 +951,8 @@ class PatternView(gtk.DrawingArea):
 		@type step: int
 		"""	
 		self.draw_xor()
-		for i in range(step+2):
-			self.update_line(self.row+i+1)
+		#for i in range(step+2):
+		#	self.update_line(self.row+i+1)
 		self.set_row(self.row + step)
 		self.draw_xor()
 		self.update_statusbar()
@@ -2026,9 +2026,9 @@ class PatternView(gtk.DrawingArea):
 		widget.set_value(value)
 		if self.start_row != value:
 			self.start_row = value
-			w,h=self.get_client_size()
-			for row in range(h/self.row_height):
-				self.update_line(self.start_row+row)
+			#w,h=self.get_client_size()
+			#for row in range(h/self.row_height):
+			#	self.update_line(self.start_row+row)
 			self.redraw()
 		return True
 
@@ -2200,9 +2200,10 @@ class PatternView(gtk.DrawingArea):
 					self.lines[group][track] = [None]*self.row_count
 			else:
 				self.lines[group] = []
-		w,h=self.get_client_size()
-		self.row=0
-		for row in range(h/self.row_height):
+		#w,h=self.get_client_size()
+		#self.row=0
+		#for row in range(h/self.row_height):
+		for row in range(self.row_count):
 			self.update_line(row)
 
 	def get_line_pattern(self):
