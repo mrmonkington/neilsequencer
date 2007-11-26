@@ -952,7 +952,7 @@ class SequencerView(gtk.DrawingArea):
 		return rect.width, rect.height
 			
 	def expose(self, widget, event):
-		#self.adjust_scrollbars()
+		self.adjust_scrollbars()
 		self.context = widget.window.cairo_create()
 		self.draw(self.context)
 		self.panel.update_list()
@@ -1042,7 +1042,7 @@ class SequencerView(gtk.DrawingArea):
 		adj.set_all(self.startseqtime/self.step, 0, int(vw+(w-SEQLEFTMARGIN)/float(SEQROWSIZE)-2), 1, 1, pw)
 		adj = self.vscroll.get_adjustment()
 		adj.set_all(self.starttrack, 0, vh, 1, 1, ph)
-		self.redraw()
+		#self.redraw()
 	
 	def get_virtual_size(self):
 		"""
@@ -1060,14 +1060,13 @@ class SequencerView(gtk.DrawingArea):
 			track=seq.get_track(i)
 			if track.get_event_count():
 				w,p=track.get_event(track.get_event_count()-1)
-				#try:
-				#	w+=track.get_plugin().get_pattern(p-16).get_row_count()
-				#except AssertionError:
-				#	pass
+				try:
+					w+=track.get_plugin().get_pattern(p-16).get_row_count()
+				except AssertionError:
+					pass
 			if w>self.wmax:
 				self.wmax=w
-				
-		w=self.wmax/self.step+512/self.step
+		w=self.wmax/self.step+3
 		return w,h
 
 
@@ -1269,16 +1268,18 @@ class SequencerView(gtk.DrawingArea):
 						bw = max(psize-2-2, 1)
 						patw = float(pat.get_row_count()) / bw
 						patr1 = 0
-						for evx in xrange(bw):
-							total,count = 0,0
-							for patr in xrange(int(patr1), min(int(patr1+patw), pat.get_row_count())):
-								t,c = get_event_count(patr)
-								total += t
-								count += c
-							if count:
-								evh = max(int(bh * (float(count) / float(total)) + 0.5), 1)
-								bb.draw_rectangle(gc, True, 1+evx, 2+bh-evh, 1, evh )
-							patr1 += patw
+						#make this optional: pattern length>256 too slow!
+						if config.get_config().get_seq_event_draw()==True:
+							for evx in xrange(bw):
+								total,count = 0,0
+								for patr in xrange(int(patr1), min(int(patr1+patw), pat.get_row_count())):
+									t,c = get_event_count(patr)
+									total += t
+									count += c
+								if count:
+									evh = max(int(bh * (float(count) / float(total)) + 0.5), 1)
+									bb.draw_rectangle(gc, True, 1+evx, 2+bh-evh, 1, evh )
+								patr1 += patw
 						r,g,b = from_hsb(hue, 1.0, cb*bgb*0.7)
 						gc.set_foreground(cm.alloc_color('#%02X%02X%02X' % (int(r*255),int(g*255),int(b*255))))
 						bb.draw_rectangle(gc, False, 0, 0, psize-2, SEQTRACKSIZE-2)
