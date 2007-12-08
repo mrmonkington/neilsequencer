@@ -266,6 +266,8 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 		int last_play_position;
 		if (machineInfo->useSequencerHack) {
 			// support hacked jumping from work()
+			unhack::hackTick(_master_info->beats_per_minute, _host->get_song_begin_loop(), 
+				_host->get_song_end_loop(), _host->get_song_end(), _host->get_play_position());
 			last_play_position = _host->get_play_position();
 		}
 
