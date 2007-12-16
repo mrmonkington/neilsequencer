@@ -692,15 +692,18 @@ class PatternView(gtk.DrawingArea):
 		"""
 		Updates the position.
 		"""
+		if self.rootwindow.index != self.rootwindow.PAGE_PATTERN:
+			return True
 		playpos = player.get_position()
 		if self.playpos != playpos:
 			try: self.update_line(self.playpos)
 			except TypeError:
 				pass
-			self.draw_xor()
+			self.draw_playpos_xor()
 			self.playpos = playpos
-			self.draw_xor()
-			self.redraw()
+			self.redraw(self.playpos, 1, False)
+			self.draw_playpos_xor()
+			self.redraw(self.playpos, 1, False)
 		return True
 			
 	def get_new_pattern_name(self, m=None):
@@ -924,7 +927,7 @@ class PatternView(gtk.DrawingArea):
 		Loads and redraws the pattern view after the pattern has been changed.
 		"""
 		self.init_values()
-		self.redraw()
+		#self.redraw() ## do i want this?
 		self.grab_focus()
 		plugin = self.get_plugin()
 		if plugin:
@@ -937,9 +940,9 @@ class PatternView(gtk.DrawingArea):
 		@param step: Amount the cursor is moved up.
 		@type step: int
 		"""	
-		self.draw_xor()
+		self.draw_cursor_xor()
 		self.set_row(self.row - step)
-		self.draw_xor()
+		self.draw_cursor_xor()
 		self.update_statusbar()
 		#~ self.refresh_view()
 		
@@ -950,11 +953,11 @@ class PatternView(gtk.DrawingArea):
 		@param step: Amount the cursor is moved down.
 		@type step: int
 		"""	
-		self.draw_xor()
+		self.draw_cursor_xor()
 		#for i in range(step+2):
 		#	self.update_line(self.row+i+1)
 		self.set_row(self.row + step)
-		self.draw_xor()
+		self.draw_cursor_xor()
 		self.update_statusbar()
 		#~ self.refresh_view()
 		
@@ -2081,34 +2084,42 @@ class PatternView(gtk.DrawingArea):
 		self.update_statusbar()
 		self.redraw()
 		self.adjust_scrollbars()
-	
-	def draw_xor(self):
-		"""
-		Overriding a L{Canvas} method that is called after painting is completed. 
-		Draws an XOR play cursor over the pattern view.
-		
-		@param dc: wx device context.
-		@type dc: wx.PaintDC
-		"""
+
+	def create_xor_gc(self):
 		if not self.pattern:
 			return
 		if not self.window:
 			return
 		gc = self.window.new_gc()
 		cm = gc.get_colormap()
-		drawable = self.window
 		w,h = self.get_client_size()
 		bbrush = cm.alloc_color('#ffffff')
 		gc.set_function(gtk.gdk.XOR)
 		gc.set_foreground(bbrush)
 		gc.set_background(bbrush)
-		
+		self.xor_gc = gc
+
+	def draw_xor(self):
+		self.draw_cursor_xor()
+		self.draw_playpos_xor()
+
+	def draw_cursor_xor(self):
+		drawable = self.window
+		if not hasattr(self, "xor_gc"):
+			self.create_xor_gc()
+		gc = self.xor_gc
 		PATROWHEIGHT = self.row_height
 		PATTOPMARGIN = self.top_margin
 		PATCOLWIDTH = self.column_width	
 		cx,cy = self.pattern_to_pos(self.row, self.group, self.track, self.index, self.subindex)
 		if (cx >= (PATLEFTMARGIN+4)) and (cy >= self.top_margin):
 			drawable.draw_rectangle(gc, True,cx,cy,self.column_width,self.row_height)
+
+	def draw_playpos_xor(self):
+		drawable = self.window
+		if not hasattr(self, "xor_gc"):
+			self.create_xor_gc()
+		gc = self.xor_gc
 		# draw play cursor
 		current_position = self.playpos
 		seq = player.get_current_sequencer()
@@ -2178,23 +2189,36 @@ class PatternView(gtk.DrawingArea):
 			if self.lines[g]:
 				tc = self.group_track_count[g]
 				for t in range(tc):
-					s = ''
-					for i in range(self.parameter_count[g]):
-						p = self.plugin.get_parameter(g,i)
-						try:
-							s += get_str_from_param(p,self.pattern.get_value(row, g, t, i))
-						except IndexError:
-							pass
-						if i != self.parameter_count[g]-1:
-							s += ' '
+					s = ' '.join([get_str_from_param(self.plugin.get_parameter(g, i),
+									 self.pattern.get_value(row, g, t, i))
+						      for i in range(self.parameter_count[g])])
 					try: self.lines[g][t][row] = s
 					except IndexError:
 						pass
+
+	# This does the same job as update_line, but if we need to
+	# update a lot of data at once, it's faster to use update_col.
+	def update_col(self, group, track):
+		count = self.parameter_count[group]
+		cols = [None] * count
+		for i in range(count):
+			param = self.plugin.get_parameter(group, i)
+			get_value = self.pattern.get_value
+			cols[i] = [get_str_from_param(param, get_value(row, group, track, i))
+				   for row in range(self.row_count)]
+		for row in range(self.row_count):
+			try:
+				self.lines[group][track][row] = \
+				    ' '.join([cols[i][row] for i in range(count)])
+			except IndexError:
+				pass
+		
 
 	def prepare_textbuffer(self):
 		"""
 		Initializes a buffer to handle the current pattern data.
 		"""
+		#st = time.time()
 		self.lines = [None]*3	
 		for group in range(3):
 			if self.parameter_count[group] > 0:
@@ -2202,13 +2226,13 @@ class PatternView(gtk.DrawingArea):
 				self.lines[group] = [None]*tc			
 				for track in range(tc):
 					self.lines[group][track] = [None]*self.row_count
+					self.update_col(group, track)
 			else:
 				self.lines[group] = []
 		#w,h=self.get_client_size()
 		#self.row=0
 		#for row in range(h/self.row_height):
-		for row in range(self.row_count):
-			self.update_line(row)
+		#print "end of prepare_textbuffer %.2f" % ((time.time() - st) * 1000.0)
 
 	def get_line_pattern(self):
 		master = player.get_plugin(0) 
@@ -2226,6 +2250,7 @@ class PatternView(gtk.DrawingArea):
 		Overriding a L{Canvas} method that paints onto an offscreen buffer.
 		Draws the pattern view graphics.
 		"""	
+		print "in PatternView.draw()"
 		st = time.time()
 		row=None
 		rows=None
@@ -2424,6 +2449,10 @@ if __name__ == '__main__':
 	player = testplayer.get_player()
 	player.load_ccm(utils.filepath('demosongs/paniq-knark.ccm'))
 	window = testplayer.TestWindow()
+	# update_position() needs the index to be set:
+	# (main.AldrinFrame.PAGE_PATTERN = 0)
+	window.PAGE_PATTERN = 0
+	window.index = 0 
 	window.add(PatternPanel(window))
 	window.show_all()
 	gtk.main()

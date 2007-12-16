@@ -1341,6 +1341,8 @@ class RouteView(gtk.DrawingArea):
 		"""
 		Timer event that only updates the plugin leds.
 		"""
+		if self.rootwindow.index != self.rootwindow.PAGE_ROUTE:
+			return True
 		if self.window:
 			#~ self.drawrequest |= self.DRAW_LEDS
 			#~ rect = self.get_allocation()
@@ -1613,5 +1615,9 @@ if __name__ == '__main__':
 	player.load_ccm(utils.filepath('demosongs/paniq-knark.ccm'))
 	window = testplayer.TestWindow()
 	window.add(RoutePanel(window))
+	# update_position() needs the index to be set:
+	# (main.AldrinFrame.PAGE_ROUTE = 1)
+	window.PAGE_ROUTE = 1
+	window.index = 1
 	window.show_all()
 	gtk.main()

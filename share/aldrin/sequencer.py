@@ -615,7 +615,7 @@ class SequencerView(gtk.DrawingArea):
 		self.rootwindow.patternframe.view.on_popup_create_pattern(None, self.get_track().get_plugin())
 		self.rootwindow.select_page(self.rootwindow.PAGE_SEQUENCER)
 	
-	def show_plugin_dialog(self):		
+	def show_plugin_dialog(self):
 		choices = []
 		for plugin in player.get_plugin_list():			
 			choices.append(prepstr(plugin.get_name()))
@@ -979,6 +979,8 @@ class SequencerView(gtk.DrawingArea):
 		"""
 		Updates the position.
 		"""
+		if self.rootwindow.index != self.rootwindow.PAGE_SEQUENCER:
+			return True
 		playpos = player.get_position()
 		if self.playpos != playpos:
 			self.draw_xor()
@@ -1336,5 +1338,9 @@ if __name__ == '__main__':
 	#~ player.set_state(zzub.zzub_player_state_playing)
 	window = testplayer.TestWindow()
 	window.add(SequencerPanel(window))
+	# update_position() needs the index to be set:
+	# (main.AldrinFrame.PAGE_SEQUENCER = 2)
+	window.PAGE_SEQUENCER = 2
+	window.index = 2
 	window.show_all()
 	gtk.main()
