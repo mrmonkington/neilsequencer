@@ -1008,9 +1008,12 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		@param event: menu event.
 		@type event: wx.MenuEvent
 		"""
-		self.save_changes()
-		self.open_file(filename)
-	
+		try:
+			self.save_changes()
+			self.open_file(filename)
+		except CancelException:
+			pass
+
 	def document_changed(self):
 		"""
 		Event handler triggered when the document has changed. You should
@@ -1292,8 +1295,8 @@ class AldrinFrame(gtk.Window, IRootWindow):
 			text = "<big><b>Save changes to <i>%s</i>?</b></big>" % os.path.basename(self.filename)
 		else:
 			text = "<big><b>Save changes?</b></big>"
-		response = question(self, text)		
-		if response == int(gtk.RESPONSE_CANCEL):
+		response = question(self, text)
+		if response == int(gtk.RESPONSE_CANCEL) or response == int(gtk.RESPONSE_DELETE_EVENT):
 			raise CancelException
 		elif response == int(gtk.RESPONSE_YES):
 			self.save()
