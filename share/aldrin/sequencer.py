@@ -679,10 +679,10 @@ class SequencerView(gtk.DrawingArea):
 				self.selection_start = (self.track, self.row)				
 		elif arrow_down:
 			self.deselect()
-		if mask & gtk.gdk.SHIFT_MASK and (k == 'KP_Add' or k == 'Left' or k == 'KP_Left'):
+		if mask & gtk.gdk.SHIFT_MASK and (k == 'KP_Add' or k == 'plus'):
 			self.panel.toolbar.increase_step()
 			self.set_cursor_pos(self.track, self.row)
-		elif mask & gtk.gdk.SHIFT_MASK and (k == 'KP_Subtract' or k == 'Right' or k == 'KP_Right'):
+		elif mask & gtk.gdk.SHIFT_MASK and (k == 'KP_Subtract' or k == 'underscore'):
 			self.panel.toolbar.decrease_step()
 			self.set_cursor_pos(self.track, self.row)
 		elif (mask & gtk.gdk.CONTROL_MASK):
