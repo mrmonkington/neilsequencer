@@ -696,10 +696,6 @@ class PatternView(gtk.DrawingArea):
 			return True
 		playpos = player.get_position()
 		if self.playpos != playpos:
-			try: 
-				self.update_line(self.playpos)
-			except TypeError:
-				pass
 			self.draw_playpos_xor()
 			self.playpos = playpos
 			self.draw_playpos_xor()
@@ -2198,8 +2194,9 @@ class PatternView(gtk.DrawingArea):
 				for t in range(tc):
 					s = ' '.join([get_str_from_param(self.plugin.get_parameter(g, i),
 									 self.pattern.get_value(row, g, t, i))
-						      for i in range(self.parameter_count[g])])
-					try: self.lines[g][t][row] = s
+									for i in range(self.parameter_count[g])])
+					try: 
+						self.lines[g][t][row] = s
 					except IndexError:
 						pass
 
