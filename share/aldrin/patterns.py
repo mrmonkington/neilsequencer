@@ -696,14 +696,13 @@ class PatternView(gtk.DrawingArea):
 			return True
 		playpos = player.get_position()
 		if self.playpos != playpos:
-			try: self.update_line(self.playpos)
+			try: 
+				self.update_line(self.playpos)
 			except TypeError:
 				pass
 			self.draw_playpos_xor()
 			self.playpos = playpos
-			self.redraw(self.playpos, 1, False)
 			self.draw_playpos_xor()
-			self.redraw(self.playpos, 1, False)
 		return True
 			
 	def get_new_pattern_name(self, m=None):
@@ -1869,7 +1868,7 @@ class PatternView(gtk.DrawingArea):
 				traceback.print_exc()
 			player.unlock_tick()
 		self.update_line(self.row)
-		self.redraw(self.row,self.row+1,False)
+		self.redraw()
 		self.move_down(self.row_step)
 	
 	def on_key_up(self, widget, event):
@@ -2104,6 +2103,10 @@ class PatternView(gtk.DrawingArea):
 		self.draw_playpos_xor()
 
 	def draw_cursor_xor(self):
+		if not self.pattern:
+			return
+		if not self.window:
+			return
 		drawable = self.window
 		if not hasattr(self, "xor_gc"):
 			self.create_xor_gc()
@@ -2116,6 +2119,10 @@ class PatternView(gtk.DrawingArea):
 			drawable.draw_rectangle(gc, True,cx,cy,self.column_width,self.row_height)
 
 	def draw_playpos_xor(self):
+		if not self.pattern:
+			return
+		if not self.window:
+			return	
 		drawable = self.window
 		if not hasattr(self, "xor_gc"):
 			self.create_xor_gc()
