@@ -1191,6 +1191,8 @@ class PatternView(gtk.DrawingArea):
 			v1 = self.pattern.get_value(self.selection.begin,g,t,i)
 			v2 = self.pattern.get_value(self.selection.end-1,g,t,i)
 			if (v1 != p.get_value_none()) and (v2 != p.get_value_none()):
+				if (p.get_type() == 0 and (v1 == zzub.zzub_note_value_off or v2 == zzub.zzub_note_value_off)):
+					continue
 				f = float(r - self.selection.begin) / float(self.selection.end - self.selection.begin - 1)
 				if (p.get_type() == 0):
 					v1 = bn2mn(v1)
@@ -1634,8 +1636,8 @@ class PatternView(gtk.DrawingArea):
 				self.on_popup_properties()
 			elif k == 'Delete':
 				self.on_popup_remove_pattern()
-			elif kv >= ord('1') and kv <= ord('9'):
-				self.row_step = kv - ord('1') + 1
+			elif kv >= ord('0') and kv <= ord('9'):
+				self.row_step = kv - ord('0')
 			elif k == 'b':
 				if not self.selection:
 					self.selection = self.Selection()
