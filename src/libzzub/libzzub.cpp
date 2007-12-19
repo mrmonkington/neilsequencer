@@ -268,6 +268,7 @@ int zzub_player_save_bmx(zzub_player_t *player, const char* fileName) {
 int zzub_player_load_ccm(zzub_player_t *player, const char* fileName) {
 	CcmReader f;
 	if (!f.open(fileName, player)) return -1;
+	zzub_player_set_position(player, 0);
 	return 0;
 }
 
