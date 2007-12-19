@@ -431,6 +431,10 @@ class Pattern(object):
 		assert self._handle
 		zzub_pattern_destroy(self._handle)
 	
+	def get_bandwidth_digest(self, digest, digestsize):
+		assert self._handle
+		zzub_pattern_get_bandwidth_digest(self._handle,digest,digestsize)
+	
 	def get_name(self, name, maxLen):
 		assert self._handle
 		zzub_pattern_get_name(self._handle,name,maxLen)

@@ -1164,7 +1164,33 @@ void zzub_pattern_set_value(zzub_pattern_t* pattern, int row, int group, int tra
 	t->setValue(row, column, value);
 }
 
-
+void zzub_pattern_get_bandwidth_digest(zzub_pattern_t* pattern, float *digest, int digestsize) {
+	float row = 0;
+	int rowcount = zzub_pattern_get_row_count(pattern);
+	// rows per digest sample
+	float rps = (float)rowcount / (float)digestsize;
+	for (int i = 0; i < digestsize; ++i) {
+		int total = 0;
+		int count = 0;
+		float rowend = std::min(row + rps, (float)rowcount);
+		for (int r = (int)row; r < (int)rowend; r++) {
+			size_t trackcount = pattern->getPatternTracks();
+			for (size_t t = 0; t < trackcount; ++t) {
+				patterntrack* track = pattern->getPatternTrack(t);
+				size_t paramcount = track->getParams();
+				for (size_t p = 0; p < paramcount; ++p) {
+					total += 1;
+					int value = track->getValue(r, p);
+					const parameter *param = track->getParam(p);
+					if (value != param->value_none)
+						count += 1;
+				}				
+			}
+		}
+		digest[i] = float(count) / float(total);
+		row = rowend;
+	}
+}
 
 #ifndef TRUE
 #define TRUE 0

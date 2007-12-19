@@ -150,7 +150,7 @@ class zzub_event_data_unknown(Structure):
 
 zzub_event_data_unknown_t = zzub_event_data_unknown
 
-class union__80aaf413(Union):
+class union__9456c93b(Union):
 	_fields_ = [
 		('new_plugin', zzub_event_data_new_plugin_t),
 		('delete_plugin', zzub_event_data_delete_plugin_t),
@@ -173,7 +173,7 @@ class union__80aaf413(Union):
 class zzub_event_data(Structure):
 	_fields_ = [
 		('type', c_int),
-		('', union__80aaf413),
+		('', union__9456c93b),
 	]
 
 zzub_event_data_t = zzub_event_data
@@ -603,6 +603,7 @@ zzub_pattern_get_track                   = dlsym(libzzub, 'zzub_pattern_get_trac
 zzub_pattern_get_track_count             = dlsym(libzzub, 'zzub_pattern_get_track_count'          , c_int, ('pattern' ,POINTER(zzub_pattern_t)))
 zzub_pattern_get_value                   = dlsym(libzzub, 'zzub_pattern_get_value'                , c_int, ('pattern' ,POINTER(zzub_pattern_t)),('row'     ,c_int     ),('group'   ,c_int     ),('track'   ,c_int     ),('column'  ,c_int     ))
 zzub_pattern_set_value                   = dlsym(libzzub, 'zzub_pattern_set_value'                , None, ('pattern' ,POINTER(zzub_pattern_t)),('row'     ,c_int     ),('group'   ,c_int     ),('track'   ,c_int     ),('column'  ,c_int     ),('value'   ,c_int     ))
+zzub_pattern_get_bandwidth_digest        = dlsym(libzzub, 'zzub_pattern_get_bandwidth_digest'     , None, ('pattern' ,POINTER(zzub_pattern_t)),('digest'  ,POINTER(c_float)),('digestsize',c_int     ))
 zzub_wave_get_level_count                = dlsym(libzzub, 'zzub_wave_get_level_count'             , c_int, ('wave'    ,POINTER(zzub_wave_t)))
 zzub_wave_get_level                      = dlsym(libzzub, 'zzub_wave_get_level'                   , POINTER(zzub_wavelevel_t), ('wave'    ,POINTER(zzub_wave_t)),('index'   ,c_int     ))
 zzub_wave_get_name                       = dlsym(libzzub, 'zzub_wave_get_name'                    , c_char_p, ('wave'    ,POINTER(zzub_wave_t)))

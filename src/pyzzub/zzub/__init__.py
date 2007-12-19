@@ -49,6 +49,11 @@ class Pattern(libzzub.Pattern):
 		name = (ctypes.c_char * 1024)()
 		libzzub.Pattern.get_new_name(self, name, 1024)
 		return name.value
+		
+	def get_bandwidth_digest(self, size):
+		digest = (ctypes.c_float * size)()
+		libzzub.Pattern.get_bandwidth_digest(self, digest, size)
+		return digest
 
 class Plugin(libzzub.Plugin):
 	def create_pattern(self, row):

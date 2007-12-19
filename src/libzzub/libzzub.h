@@ -341,6 +341,7 @@ zzub_patterntrack_t *zzub_pattern_get_track(zzub_pattern_t *pattern, int index);
 int zzub_pattern_get_track_count(zzub_pattern_t *pattern);
 int zzub_pattern_get_value(zzub_pattern_t* pattern, int row, int group, int track, int column);
 void zzub_pattern_set_value(zzub_pattern_t* pattern, int row, int group, int track, int column, int value);
+void zzub_pattern_get_bandwidth_digest(zzub_pattern_t* pattern, float *digest, int digestsize);
 //zzub_plugin_t* zzub_pattern_get_plugin(zzub_pattern_t* pattern);
 
 // Wave table

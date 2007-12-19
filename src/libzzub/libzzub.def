@@ -214,6 +214,7 @@ EXPORTS
 	zzub_pattern_get_track_count
 	zzub_pattern_get_value
 	zzub_pattern_set_value
+	zzub_pattern_get_bandwidth_digest
 	zzub_wave_get_level_count
 	zzub_wave_get_level
 	zzub_wave_get_name
