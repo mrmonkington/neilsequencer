@@ -1283,7 +1283,6 @@ class RouteView(gtk.DrawingArea):
 				if self.selected_plugin:
 					last = self.selected_plugin
 					self.selected_plugin = None
-					self.grab_add()			
 					common.get_plugin_infos().get(last).reset_plugingfx()
 		
 	def on_motion(self, widget, event):
