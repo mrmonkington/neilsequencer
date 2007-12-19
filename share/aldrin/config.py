@@ -675,6 +675,20 @@ class AldrinConfig(ConfigParser.ConfigParser):
 		else:
 			self.write_value('IncrementalSaving', 'false')
 
+	def get_pattern_font(self):
+		"""
+		Retrieves the incremental saving option.
+		"""
+		self.set_section('Global')
+		return self.read_value('PatternFontName', 'Monospace Bold 8')
+		
+	def set_pattern_font(self, fontname):
+		"""
+		Stores the incremental saving option.
+		"""
+		self.set_section('Global')
+		self.write_value('PatternFontName', fontname)
+
 	def load_window_pos(self, windowid, window):
 		"""
 		Retrieves a windows position from the config and applies it.

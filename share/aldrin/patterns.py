@@ -592,19 +592,7 @@ class PatternView(gtk.DrawingArea):
 		self.plugin_info = common.get_plugin_infos()
 		gtk.DrawingArea.__init__(self)
 		#"Bitstream Vera Sans Mono"
-		pctx = self.get_pango_context()
-		desc = pctx.get_font_description()
-		desc.set_style(pango.STYLE_NORMAL)
-		desc.set_family('Monospace')
-		desc.set_weight(pango.WEIGHT_BOLD)
-		self.fontdesc = desc
-		self.font = pctx.load_font(desc)
-		metrics = self.font.get_metrics(None)
-		fh = (metrics.get_ascent() + metrics.get_descent()) / pango.SCALE
-		fw = metrics.get_approximate_digit_width() / pango.SCALE
-		self.row_height = fh # row height
-		self.top_margin = fh # top margin
-		self.column_width = fw # column width
+		self.update_font()
 		# implements horizontal scrolling
 		self.start_col = 0
 		self.add_events(gtk.gdk.ALL_EVENTS_MASK)
@@ -620,6 +608,21 @@ class PatternView(gtk.DrawingArea):
 		self.hscroll.connect('change-value', self.on_hscroll_window)
 		self.vscroll.connect('change-value', self.on_vscroll_window)
 	
+	def update_font(self):
+		pctx = self.get_pango_context()
+		desc = pango.FontDescription(config.get_config().get_pattern_font()) #.get_font_description()
+		#~ desc.set_style(pango.STYLE_NORMAL)
+		#~ desc.set_family('Monospace')
+		#~ desc.set_weight(pango.WEIGHT_BOLD)
+		pctx.set_font_description(desc)
+		self.fontdesc = desc
+		self.font = pctx.load_font(desc)
+		metrics = self.font.get_metrics(None)
+		fh = (metrics.get_ascent() + metrics.get_descent()) / pango.SCALE
+		fw = metrics.get_approximate_digit_width() / pango.SCALE
+		self.row_height = fh # row height
+		self.top_margin = fh # top margin
+		self.column_width = fw # column width
 	
 	def on_copy(self, widget):
 		"""
@@ -1745,9 +1748,9 @@ class PatternView(gtk.DrawingArea):
 			#		self.pattern.delete_row(self.group, self.track, -1, self.row)
 			#else:
 			self.pattern.delete_row(self.group, self.track, -1, self.row)
- 			del self.lines[self.group][self.track][self.row]
- 			self.lines[self.group][self.track].append('')
- 			self.update_line(self.row_count-1)
+			del self.lines[self.group][self.track][self.row]
+			self.lines[self.group][self.track].append('')
+			self.update_line(self.row_count-1)
 			self.redraw()
 			plugin = self.get_plugin()
 			if plugin:
@@ -2081,6 +2084,7 @@ class PatternView(gtk.DrawingArea):
 		self.update_statusbar()
 		self.redraw()
 		self.adjust_scrollbars()
+		self.update_font()
 
 	def create_xor_gc(self):
 		if not self.pattern:

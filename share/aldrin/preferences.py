@@ -63,6 +63,11 @@ class GeneralPanel(gtk.VBox):
 		audioeditor = config.get_config().get_audioeditor_command()
 		incsave = config.get_config().get_incremental_saving()
 		#rackpanel = config.get_config().get_experimental('RackPanel')
+		self.patternfont = gtk.FontButton(config.get_config().get_pattern_font())
+		self.patternfont.set_use_font(True)
+		self.patternfont.set_use_size(True)
+		self.patternfont.set_show_style(True)
+		self.patternfont.set_show_size(True)
 		self.audioeditor = gtk.Entry()
 		self.incsave = gtk.CheckButton()
 		self.rackpanel = gtk.CheckButton()
@@ -81,6 +86,7 @@ class GeneralPanel(gtk.VBox):
 			fssizer.pack_start(row, expand=False)
 		add_row(gtk.Label("External Sample Editor"), self.audioeditor)
 		add_row(gtk.Label("Incremental Saves"), self.incsave)
+		add_row(gtk.Label("Pattern Font"), self.patternfont)
 		#add_row(gtk.Label("Rack Panel View (After Restart)"), self.rackpanel)
 		self.add(frame1)
 		
@@ -88,6 +94,7 @@ class GeneralPanel(gtk.VBox):
 		"""
 		Writes general config settings to file.
 		"""
+		config.get_config().set_pattern_font(self.patternfont.get_font_name())
 		audioeditor = self.audioeditor.get_text()
 		config.get_config().set_audioeditor_command(audioeditor)
 		config.get_config().set_incremental_saving(self.incsave.get_active())
