@@ -1283,7 +1283,10 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		@type event: wx.MenuEvent
 		"""
 		player.stop()
-		self.btnplay.set_active(False)
+		if self.btnplay.get_active()==False:
+			player.set_position(max(self.seqframe.view.row,0))
+		else:
+			self.btnplay.set_active(False)
 		self.mastertoolbar.button_up(1,1)
 		
 	def save_changes(self):
