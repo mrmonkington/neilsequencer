@@ -1253,35 +1253,13 @@ class SequencerView(gtk.DrawingArea):
 						pat = m.get_pattern(value-0x10)
 						group_track_count = [m.get_input_connection_count(), 1, m.get_track_count()]
 						pl = m.get_pluginloader()
-						def get_event_count(patr):
-							total = 0
-							count = 0
-							for patg in range(3):
-								for patti in reversed(xrange(group_track_count[patg])):
-									for pati in xrange(m.get_pluginloader().get_parameter_count(patg)):
-										total += 1
-										evy = -1
-										v = pat.get_value(patr, patg, patti, pati)
-										parm = pl.get_parameter(patg,pati)
-										if (v != parm.get_value_none()):
-											count += 1
-							return total, count
 						bh = SEQTRACKSIZE-2-4
 						bw = max(psize-2-2, 1)
-						patw = float(pat.get_row_count()) / bw
-						patr1 = 0
-						#make this optional: pattern length>256 too slow!
-						if config.get_config().get_seq_event_draw()==True:
-							for evx in xrange(bw):
-								total,count = 0,0
-								for patr in xrange(int(patr1), min(int(patr1+patw), pat.get_row_count())):
-									t,c = get_event_count(patr)
-									total += t
-									count += c
-								if count:
-									evh = max(int(bh * (float(count) / float(total)) + 0.5), 1)
-									bb.draw_rectangle(gc, True, 1+evx, 2+bh-evh, 1, evh )
-								patr1 += patw
+						digest = pat.get_bandwidth_digest(bw)
+						for evx,evh in enumerate(digest):
+							if evh:
+								evh = max(int(bh * (evh) + 0.5), 1)
+								bb.draw_rectangle(gc, True, 1+evx, 2+bh-evh, 1, evh )
 						r,g,b = from_hsb(hue, 1.0, cb*bgb*0.7)
 						gc.set_foreground(cm.alloc_color('#%02X%02X%02X' % (int(r*255),int(g*255),int(b*255))))
 						bb.draw_rectangle(gc, False, 0, 0, psize-2, SEQTRACKSIZE-2)
