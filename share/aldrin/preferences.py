@@ -62,15 +62,12 @@ class GeneralPanel(gtk.VBox):
 		frame1.add(fssizer)
 		audioeditor = config.get_config().get_audioeditor_command()
 		incsave = config.get_config().get_incremental_saving()
-		seq_event_draw = config.get_config().get_seq_event_draw()
 		#rackpanel = config.get_config().get_experimental('RackPanel')
 		self.audioeditor = gtk.Entry()
 		self.incsave = gtk.CheckButton()
-		self.seq_event_draw = gtk.CheckButton()
 		self.rackpanel = gtk.CheckButton()
 		self.audioeditor.set_text(audioeditor)
 		self.incsave.set_active(int(incsave))
-		self.seq_event_draw.set_active(int(seq_event_draw))
 		#self.rackpanel.set_active(rackpanel)
 		sg1 = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
 		sg2 = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
@@ -84,7 +81,6 @@ class GeneralPanel(gtk.VBox):
 			fssizer.pack_start(row, expand=False)
 		add_row(gtk.Label("External Sample Editor"), self.audioeditor)
 		add_row(gtk.Label("Incremental Saves"), self.incsave)
-		add_row(gtk.Label("Draw Events in Sequencer (slow)"), self.seq_event_draw)
 		#add_row(gtk.Label("Rack Panel View (After Restart)"), self.rackpanel)
 		self.add(frame1)
 		
@@ -95,7 +91,6 @@ class GeneralPanel(gtk.VBox):
 		audioeditor = self.audioeditor.get_text()
 		config.get_config().set_audioeditor_command(audioeditor)
 		config.get_config().set_incremental_saving(self.incsave.get_active())
-		config.get_config().set_seq_event_draw(self.seq_event_draw.get_active())
 		#config.get_config().set_experimental('RackPanel', self.rackpanel.get_active())
 	
 

@@ -674,28 +674,7 @@ class AldrinConfig(ConfigParser.ConfigParser):
 			self.write_value('IncrementalSaving', 'true')
 		else:
 			self.write_value('IncrementalSaving', 'false')
-		
-	def get_seq_event_draw(self):
-		"""
-		Retrieves the incremental saving option.
-		"""
-		self.set_section('Global')
-		value = self.read_value('SequencerEventDraw', 'true')
-		if value == 'true':
-			return True
-		else:
-			return False
-		
-	def set_seq_event_draw(self, value):
-		"""
-		Stores the incremental saving option.
-		"""
-		self.set_section('Global')
-		if value:
-			self.write_value('SequencerEventDraw', 'true')
-		else:
-			self.write_value('SequencerEventDraw', 'false')
-	
+
 	def load_window_pos(self, windowid, window):
 		"""
 		Retrieves a windows position from the config and applies it.
