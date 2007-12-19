@@ -26,6 +26,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "recorder.h"
 #include "archive.h"
 
+#include "sseoptimization.h"
+
 using namespace std;
 
 /*
@@ -1634,7 +1636,17 @@ bool metaplugin::work(float** pout, int numSamples, unsigned long flags) {
 		// make a copy of our pointers so the plugin can iterate them safely
 		float *plin[] = {pout[0],pout[1]};
 		float *plout[] = {machineBuffer[0],machineBuffer[1]};
+		
+		SETABRPUN(); // turn on flush-to-zero for SSE machines
         ret=machine->process_stereo(plin, plout, numSamples, flags); 
+		
+		// (paniq) flush to zero should be turned off outside our DSP loop
+		// because the player library might be running in a process where
+		// precise computation is expected (i.e. realtime physics simulation).
+		// leaving it on will cause unexpected behavior on code paths
+		// we do not control.
+		SETGRADUN();
+
     }
 
 	// make a copy so we can return the same buffer later (otherwise stereo self-mixers bug with multiple outputs)

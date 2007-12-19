@@ -33,33 +33,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <sys/stat.h>
 #endif
 
-#if defined(__SSE__)
-// denormalisation issues can be avoided by turning on
-// flush zero mode, which is an SSE instruction.
-// at the moment, this is only being enabled for 
-// gcc and i686 machines. modify sconstruct to 
-// support other targets.
-// also see http://www.intel.com/cd/ids/developer/asmo-na/eng/dc/pentium4/knowledgebase/90575.htm
-	#include <xmmintrin.h>
-
-	#if defined(__GNUC__)
-		#define SETGRADUN setgradun_
-		#define SETABRPUN setabrpun_
-	#endif
-	
-	void SETGRADUN()
-	{
-	 _MM_SET_FLUSH_ZERO_MODE (_MM_FLUSH_ZERO_OFF);
-	}
-
-	void SETABRPUN()
-	{
-	 _MM_SET_FLUSH_ZERO_MODE (_MM_FLUSH_ZERO_ON);
-	}
-#else
-#define SETGRADUN()
-#define SETABRPUN()
-#endif
+#include "sseoptimization.h"
 
 // HKEY_CURRENT_USER\Software\Jeskola\Buzz\Settings
 // her er en key som heter BuzzPath, som forteller roten av default buzz-installasjon
@@ -926,7 +900,6 @@ void player::workStereo(int numSamples) {
 		master->tickAsync();
 	}
 
-	SETABRPUN();
 	double tempTime=timer.frame();
 	int samplecount = numSamples;
 
@@ -979,13 +952,6 @@ void player::workStereo(int numSamples) {
 	// slowly approach to new value
 	cpuLoad += 0.1 * (load - cpuLoad);
 	
-	// (paniq) flush to zero should be turned off outside our DSP loop
-	// because the player library might be running in a process where
-	// precise computation is expected (i.e. realtime physics simulation).
-	// leaving it on will cause unexpected behavior on code paths
-	// we do not control.
-	SETGRADUN();
-
 	unlock();
 
 	if (editCommand) {
