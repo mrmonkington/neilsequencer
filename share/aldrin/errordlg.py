@@ -37,9 +37,14 @@ def error(parent, msg, msg2=None, details=None):
 	dialog.destroy()
 	return response
 
+last_exc = None
 def local_excepthook(type, value, traceback):
+	global last_exc
 	sys.__excepthook__(type, value, traceback)
 	exc = ''.join(format_exception(type, value, traceback))
+	if exc == last_exc:
+		return
+	last_exc = exc
 	error(Parent, "<b>An exception (<i>%s</i>) occurred.</b>" % type.__name__, str(value), exc)
 
 def install(parent=None):
@@ -49,4 +54,3 @@ def install(parent=None):
 
 if __name__ == '__main__':
 	install()
-	raise 5

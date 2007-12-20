@@ -150,57 +150,19 @@ class WaveEditView(gtk.DrawingArea):
 		minbuffer = (ctypes.c_float * w)()
 		maxbuffer = (ctypes.c_float * w)()
 		ampbuffer = (ctypes.c_float * w)()
-		#~ print level.get_samples_digest(0, minbuffer, maxbuffer, ampbuffer, w)
+		print level.get_samples_digest(0, minbuffer, maxbuffer, ampbuffer, w)
+		
+		ctx.set_source_rgb(*brush)
+		ctx.move_to(0, h*0.5)
+		for x in xrange(w):
+			ctx.line_to(x, h*0.5 + h*maxbuffer[x]*0.5)
+		for x in xrange(w):
+			ctx.line_to(w-x, h*0.5 + h*minbuffer[w-x-1]*0.5)
+		ctx.fill_preserve()
+		ctx.set_source_rgb(*pen)
+		ctx.stroke()
 
-		#~ if not self.envelope:
-			#~ return
-		#~ # 4096 (16)
-		#~ # 8192 (8)
-		#~ xlines = 16
-		#~ ylines = 8
-		#~ xf = 65535.0 / float(xlines)
-		#~ yf = 65535.0 / float(ylines)
-		#~ ctx.set_source_rgb(*gridpen)
-		#~ for xg in range(xlines+1):
-			#~ pt1 = self.env_to_pixel(xg*xf,0)
-			#~ ctx.move_to(pt1[0],0)
-			#~ ctx.line_to(pt1[0],h)
-			#~ ctx.stroke()
-		#~ for yg in range(ylines+1):
-			#~ pt1 = self.env_to_pixel(0,yg*yf)
-			#~ ctx.move_to(0,pt1[1])
-			#~ ctx.line_to(w,pt1[1])
-			#~ ctx.stroke()
-		#~ if not self.get_property('sensitive'):
-			#~ return
-		#~ points = self.get_translated_points()
-		#~ envp = None
-		#~ ctx.move_to(*self.env_to_pixel(0,0))
-		#~ for i in xrange(len(points)):
-			#~ pt1 = points[max(i,0)]
-			#~ ctx.line_to(pt1[0],pt1[1])
-			#~ if pt1[2] & zzub.zzub_envelope_flag_sustain:
-				#~ envp = pt1
-		#~ ctx.line_to(*self.env_to_pixel(65535,0))
-		#~ ctx.set_source_rgba(*(brush + (0.6,)))
-		#~ ctx.fill_preserve()
-		#~ ctx.set_source_rgb(*pen)
-		#~ ctx.stroke()
-		#~ if envp:
-			#~ ctx.set_source_rgb(*sustainpen)
-			#~ ctx.move_to(envp[0],0)
-			#~ ctx.line_to(envp[0],h)
-			#~ ctx.set_dash([4.0,2.0], 0.5)
-			#~ ctx.stroke()
-			#~ ctx.set_dash([], 0.0)
-		#~ if self.showpoints:
-			#~ for i in reversed(range(len(points))):
-				#~ pt1 = points[max(i,0)]
-				#~ pt2 = points[min(i+1,len(points)-1)]
-				#~ if i == self.currentpoint:
-					#~ ctx.set_source_rgb(*selectbrush)
-				#~ else:
-					#~ ctx.set_source_rgb(*dotbrush)
-				#~ import math
-				#~ ctx.arc(pt1[0],pt1[1],int((DOTSIZE/2.0)+0.5),0.0,math.pi*2)
-				#~ ctx.fill()
+if __name__ == '__main__':
+	import sys, utils
+	from main import run
+	run(sys.argv + [utils.filepath('demosongs/paniq-knark.ccm')])
