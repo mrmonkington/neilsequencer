@@ -1380,6 +1380,10 @@ class Wavelevel(object):
 		assert self._handle
 		return zzub_wavelevel_get_samples(self._handle)
 	
+	def get_samples_digest(self, channel, mindigest, maxdigest, ampdigest, digestsize):
+		assert self._handle
+		zzub_wavelevel_get_samples_digest(self._handle,channel,mindigest,maxdigest,ampdigest,digestsize)
+	
 	def get_samples_per_second(self):
 		assert self._handle
 		return zzub_wavelevel_get_samples_per_second(self._handle)
