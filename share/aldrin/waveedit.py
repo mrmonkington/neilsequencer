@@ -151,13 +151,22 @@ class WaveEditView(gtk.DrawingArea):
 		maxbuffer = (ctypes.c_float * w)()
 		ampbuffer = (ctypes.c_float * w)()
 		print level.get_samples_digest(0, minbuffer, maxbuffer, ampbuffer, w)
-		
-		ctx.set_source_rgb(*brush)
-		ctx.move_to(0, h*0.5)
+
+		ctx.set_source_rgb(*gridpen)
+		ctx.move_to(0, h-1)
 		for x in xrange(w):
-			ctx.line_to(x, h*0.5 + h*maxbuffer[x]*0.5)
+			a = 1.0 + linear2db(ampbuffer[x],-80.0) / 80.0
+			ctx.line_to(x, h-1-(h*a))
+		ctx.line_to(w-1, h-1)
+		ctx.fill()
+
+		ctx.set_source_rgba(*(brush + (0.5,)))
+		hm = h/2
+		ctx.move_to(0, hm)
 		for x in xrange(w):
-			ctx.line_to(w-x, h*0.5 + h*minbuffer[w-x-1]*0.5)
+			ctx.line_to(x, hm - h*maxbuffer[x]*0.5)
+		for x in xrange(w):
+			ctx.line_to(w-x, hm - h*minbuffer[w-x-1]*0.5)
 		ctx.fill_preserve()
 		ctx.set_source_rgb(*pen)
 		ctx.stroke()
