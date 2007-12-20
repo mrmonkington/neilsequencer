@@ -156,7 +156,7 @@ if gcc:
 	#env['CXXFLAGS'] += ['--no-rtti']
 	if env['DEBUG'] == False:
 		env.Append(CCFLAGS=[
-			'-O3',
+			'-O1', # O2 O3 break infector and a few others
 			'-fomit-frame-pointer',
 			'-funroll-loops',
 			'-DNDEBUG',

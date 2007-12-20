@@ -16,6 +16,7 @@
 #include <math.h>
 #include <float.h>
 #include <zzub/plugin.h>
+#include <iostream>
 #pragma optimize ("a", on)
 #include "DSPChips.h"
 
@@ -678,7 +679,7 @@ void fsm_infector::process_events()
   for (int i=0; i<38; i++)
     if (((unsigned char *)&gval)[i]!=fsm_infector_info.global_parameters[i]->value_none)
       ((unsigned char *)&gvalAct)[i]=((unsigned char *)&gval)[i];
-
+	
   inrCutoff.SetInertia(gvalAct.vFilterInertia);
   inrResonance.SetInertia(gvalAct.vFilterInertia);
   inrModulation.SetInertia(gvalAct.vFilterInertia);

@@ -2,6 +2,7 @@
 #include <malloc.h>
 #include <math.h>
 #include <float.h>
+#include <iostream>
 
 #include "fourier.h"
 
@@ -1138,7 +1139,9 @@ public:
   int m_nDeltaPhase;
   int m_nDepth;
 
-  inline void Set(int nFrequency, int nDepth) { m_nDeltaPhase=nFrequency; m_nDepth=nDepth; }
+  inline void Set(int nFrequency, int nDepth) { 
+	  m_nDeltaPhase=nFrequency; m_nDepth=nDepth; 
+	}
   inline int GetSample()
   {
     m_nPhase+=m_nDeltaPhase;
