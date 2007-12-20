@@ -106,6 +106,10 @@ DEFAULT_THEME = {
 	'EE Dot Selected': 0x000000,
 	'EE BG': 0xffffff,
 	'EE Grid': 0xe0e0e0,
+	'WE BG': 0xffffff,
+	'WE Line': 0x6060c0,
+	'WE Fill': 0xe0e0ff,
+	'WE Grid': 0xe0e0e0,
 }
 
 class AldrinConfig(ConfigParser.ConfigParser):

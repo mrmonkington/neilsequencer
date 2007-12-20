@@ -30,6 +30,7 @@ import utils
 import zzub
 import config
 from envelope import EnvelopeView, ADSRPanel
+from waveedit import WaveEditView
 import freesound
 import popen2
 import common
@@ -141,6 +142,7 @@ class WavetablePanel(gtk.Notebook):
 		self.cbenvelope = gtk.combo_box_new_text()
 		self.chkenable = gtk.CheckButton("Use Envelope")
 		self.envelope = EnvelopeView(self)
+		self.waveedit = WaveEditView(self)
 
 		samplebuttons = gtk.HBox(False, MARGIN)
 		samplebuttons.pack_start(self.btnstoresample, expand=False)
@@ -176,9 +178,13 @@ class WavetablePanel(gtk.Notebook):
 		envsection.pack_start(self.adsrpanel, expand=False)
 		self.envscrollwin = add_scrollbars(self.envelope)
 		envsection.pack_start(self.envscrollwin)
-		#~ wavsection = gtk.VBox(False, MARGIN)
 		nbsampleprops.append_page(envsection, gtk.Label("Envelopes"))
-		#~ nbsampleprops.append_page(wavsection, gtk.Label("Sample Editor"))
+		
+		waveedsection = gtk.VBox(False, MARGIN)
+		waveedsection.set_border_width(MARGIN)
+		self.waveedscrollwin = add_scrollbars(self.waveedit)
+		waveedsection.pack_start(self.waveedscrollwin)
+		nbsampleprops.append_page(waveedsection, gtk.Label("Sample Editor"))
 		sampleprops.pack_start(nbsampleprops)
 		self.instrpanel.add1(samplesel)
 		self.instrpanel.add2(sampleprops)
@@ -512,6 +518,7 @@ class WavetablePanel(gtk.Notebook):
 		self.update_sampleprops()
 		#~ self.update_subsamplelist()
 		self.envelope.update()
+		self.waveedit.update()
 		
 	def update_wave_amp(self):
 		"""
@@ -885,6 +892,7 @@ class WavetablePanel(gtk.Notebook):
 		self.btnplay.set_sensitive(iswave)
 		self.btnstop.set_sensitive(iswave)
 		self.envelope.set_sensitive(iswave)
+		self.waveedit.set_sensitive(iswave)
 		if self.btnadsr.get_active():
 			self.adsrpanel.show_all()
 		else:
@@ -931,6 +939,7 @@ class WavetablePanel(gtk.Notebook):
 		self.update_sampleprops()
 		#~ self.update_subsamplelist()
 		self.envelope.update()
+		self.waveedit.update()
 		
 	def update_samplelist(self):
 		"""

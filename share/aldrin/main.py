@@ -22,8 +22,10 @@
 Provides application class and controls used in the aldrin main window.
 """
 
-import sys, os
+import errordlg
+errordlg.install()
 
+import sys, os
 from gtkimport import gtk
 import gobject
 gobject.threads_init()
@@ -39,7 +41,6 @@ import zzub
 player = None
 playstarttime = None
 
-import errordlg
 import sequencer, router, patterns, wavetable, preferences, hdrecorder, cpumonitor, info, common, rack
 from sequencer import SequencerPanel
 from router import RoutePanel

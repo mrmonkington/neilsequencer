@@ -1,4 +1,5 @@
 @echo off
-set PATH=%PATH%;C:\usr\local\lib
-set ALDRIN_PLUGIN_PATH=C:\usr\local\lib\zzub
-python aldrin
+set PATH=C:\aldrin\lib;%PATH%
+set ALDRIN_PLUGIN_PATH=C:\aldrin\lib\zzub
+python aldrin %*
+
