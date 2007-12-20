@@ -124,7 +124,7 @@ install(aldrinpath, 'share/aldrin/blacklist.txt')
 install(aldrinpath, 'share/aldrin/aliases.txt')
 install('${DESTDIR}${PREFIX}/bin', 'bin/aldrin')
 if win32:
-	install('${DESTDIR}${PREFIX}', 'aldrin.bat')
+	install('${DESTDIR}${PREFIX}/bin', 'bin/aldrin.bat')
 	
 # docs
 install('${DOC_INSTALL_PATH}/aldrin/html', 
