@@ -1548,6 +1548,33 @@ int zzub_wave_save_sample(zzub_wave_t* wave, int level, const char *path) {
 #endif
 }
 
+void zzub_wavelevel_get_samples_digest(zzub_wavelevel_t * level, int channel, float *mindigest, float *maxdigest, float *ampdigest, int digestsize) {
+	short *samples = zzub_wavelevel_get_samples(level);
+	int samplecount = zzub_wavelevel_get_sample_count(level);
+	int channels = level->wave->get_stereo()?2:1;
+	float sps = (float)samplecount / (float)digestsize; // samples per sample
+	float blockstart = 0;
+	for (int i = 0; i < digestsize; ++i) {
+		float blockend = std::max(blockstart + sps, (float)samplecount);
+		float minsample = 1.0f;
+		float maxsample = -1.0f;
+		float amp = 0.0f;
+		for (int s = (int)blockstart; s < (int)blockend; ++s) {
+			float sample = (float)samples[(s*2)+channel] / 32768.0f;
+			minsample = std::min(minsample, sample);
+			maxsample = std::max(maxsample, sample);
+			amp += sample*sample;
+		}
+		if (mindigest)
+			mindigest[i] = minsample;
+		if (maxdigest)
+			maxdigest[i] = maxsample;
+		if (ampdigest)
+			ampdigest[i] = sqrtf(amp) / (blockend - blockstart);
+		blockstart = blockend;
+	}
+}
+
 int zzub_wavelevel_get_sample_count(zzub_wavelevel_t * level) {
 	return level->wave->get_sample_count(level->level); 
 }

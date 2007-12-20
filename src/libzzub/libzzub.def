@@ -232,6 +232,7 @@ EXPORTS
 	zzub_wave_get_envelope
 	zzub_wavelevel_get_sample_count
 	zzub_wavelevel_get_samples
+	zzub_wavelevel_get_samples_digest
 	zzub_wavelevel_get_root_note
 	zzub_wavelevel_get_samples_per_second
 	zzub_wavelevel_get_loop_start
