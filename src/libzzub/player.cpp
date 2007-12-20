@@ -797,6 +797,16 @@ void player::updateTick(int workSamples) {
 			// signal we want to mix until the end of this tick before stopping
 			stopFlag = true;
 
+		// check for delayed note offs
+		if (midiNoteMachine != 0) {
+			// playMachineNote may modify keyjazz so we use a copy
+			std::vector<keyjazz_note> keycopy = keyjazz;
+			for (size_t i = 0; i < keycopy.size(); i++) {
+				if (keycopy[i].delay_off == true) {
+					playMachineNote(midiNoteMachine, note_value_off, keycopy[i].note, 0);
+				}
+			}
+		}
 		unlockTick();
 
         workFracs+=masterInfo.samples_per_tick_frac;
@@ -1071,8 +1081,19 @@ void player::midiEvent(unsigned short status, unsigned char data1, unsigned char
     master->invokeEvent(eventData);
 }
 
-void player::playMachineNote(zzub::metaplugin* plugin, int note, int prevNote, int velocity) {
+bool isNotePlaying(const std::vector<zzub::keyjazz_note>& keyjazz, int note) {
+	for (size_t i = 0; i<keyjazz.size(); i++)
+		if (keyjazz[i].note == note) return true;
+	return false;
+}
+
+
+void player::playMachineNote(zzub::metaplugin* plugin, int note, int prevNote, int _velocity) {
 	// create a blank 1-row pattern we're going to play
+	
+	if (note == note_value_off && !isNotePlaying(keyjazz, prevNote)) return ;
+	if (note != note_value_off && isNotePlaying(keyjazz, note)) return ;
+
 	zzub::pattern* p = new zzub::pattern(plugin->loader->plugin_info, plugin->getConnections(), plugin->getTracks(), 1);
 
 	bool multiChannel;
@@ -1085,8 +1106,21 @@ void player::playMachineNote(zzub::metaplugin* plugin, int note, int prevNote, i
 		// play note on track
 		if (note == note_value_off) {
 			// find which track this note was played in and play a note-stop
+			// if note-off is on the same tick as the note it stops, we wait 
+			// until next tick before "comitting" it, so that we dont overwrite
+			// notes when recording
+			// if timestamp is >= lastTickPos, set keyjazz->delay_off to true 
+			// and return. a poller checks the keyjazz-vector each tick and
+			// records/plays noteoffs then.
 			for (size_t i = 0; i<keyjazz.size(); i++) {
 				if (keyjazz[i].note == prevNote || prevNote == -1) {
+					
+					if (keyjazz[i].timestamp >= lastTickPos) {
+						//cerr << "note off on the same tick as note was played!" << endl;
+						keyjazz[i].delay_off = true;
+						break;
+					}
+
 					patterntrack* pt = p->getPatternTrack(keyjazz[i].group, keyjazz[i].track);
 					pt->setValue(0, noteParameter, note_value_off);
 					keyjazz.erase(keyjazz.begin() + i);
@@ -1131,7 +1165,7 @@ void player::playMachineNote(zzub::metaplugin* plugin, int note, int prevNote, i
 			pt->setValue(0, noteParameter, note);
 
 			// find an available track or the one with lowest timestamp
-			keyjazz_note ki = {workPos, noteGroup, foundTrack, note };
+			keyjazz_note ki = {workPos, noteGroup, foundTrack, note, false };
 			keyjazz.push_back(ki);
 		}
 	} else {
@@ -1139,6 +1173,12 @@ void player::playMachineNote(zzub::metaplugin* plugin, int note, int prevNote, i
 		if (note == note_value_off) {
 			for (int i = 0; i<keyjazz.size(); i++) {
 				if (keyjazz[i].note == prevNote) {
+					if (keyjazz[i].timestamp >= lastTickPos) {
+						// cerr << "detected a note off on the same tick as note was played!" << endl;
+						keyjazz[i].delay_off = true;
+						break;
+					}
+
 					keyjazz.clear();
 
 					patterntrack* pt = p->getPatternTrack(noteGroup, 0);
@@ -1147,7 +1187,7 @@ void player::playMachineNote(zzub::metaplugin* plugin, int note, int prevNote, i
 				}
 			}
 		} else {
-			keyjazz_note ki = {workPos, 1, 0, note };
+			keyjazz_note ki = {workPos, 1, 0, note, false };
 			keyjazz.clear();
 			keyjazz.push_back(ki);
 			

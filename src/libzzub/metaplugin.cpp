@@ -1320,7 +1320,6 @@ void metaplugin::playPatternRow(pattern* pattern, size_t row, bool record) {
 
 	// TODO: use setParameter for vol/pan as well (nå er ParameterStates implementert for vol/pan, så dette skal funke - må verifiseres)
 	for (size_t i=0; i<getConnections(); i++) {
-		connection* conn=getConnection(i);
 		patterntrack* connTrack=pattern->getPatternTrack(0, i);
         for (size_t j=0; j<connTrack->getParams(); j++) {
             int value=connTrack->getValue(row, j);
@@ -1338,10 +1337,8 @@ void metaplugin::playPatternRow(pattern* pattern, size_t row, bool record) {
 	}
 
 	if (machine->track_values) {
-		size_t trackSize = loader->plugin_info->get_group_size(2);
 		for (size_t i=0; i<getTracks(); i++) {
 			patterntrack* track=pattern->getPatternTrack(2, i);
-			if (track==0) continue;	// thread safety =)
 			
 			for (size_t j=0; j<track->getParams(); j++) {
 				int value=track->getValue(row, j);

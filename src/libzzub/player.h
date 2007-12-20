@@ -45,9 +45,10 @@ enum player_state {
 };
 
 struct keyjazz_note {
-	size_t timestamp;
+	size_t timestamp;	// tick when note was played
 	size_t group, track;
 	int note;
+	bool delay_off;		// set to true if a noteoff was sent on the same timestamp (tick)
 };
 
 struct midimapping {
