@@ -1316,6 +1316,9 @@ class RouteView(gtk.DrawingArea):
 		@param event: Mouse event.
 		@type event: wx.MouseEvent
 		"""
+		if self.dragging:
+			self.dragging = False
+			self.grab_remove()
 		mx,my = int(event.x), int(event.y)
 		if self.connecting:
 			res = self.get_plugin_at((mx,my))
@@ -1327,9 +1330,6 @@ class RouteView(gtk.DrawingArea):
 				else:
 					mp.add_audio_input(self.current_plugin, 0x4000, 0x4000)
 		self.current_plugin = None
-		if self.dragging:
-			self.grab_remove()
-		self.dragging = False		
 		self.connecting = False
 		self.redraw()
 		
