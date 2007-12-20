@@ -39,6 +39,7 @@ import zzub
 player = None
 playstarttime = None
 
+import errordlg
 import sequencer, router, patterns, wavetable, preferences, hdrecorder, cpumonitor, info, common, rack
 from sequencer import SequencerPanel
 from router import RoutePanel
@@ -313,6 +314,7 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		# begin wxGlade: AldrinFrame.__init__
 		gtk.Window.__init__(self, gtk.WINDOW_TOPLEVEL)
 		#~ self.toolsmenu.hide()
+		errordlg.install(self)
 		em = extman.get_extension_manager()
 		em.register_service(interface.SERVICE_ROOTWINDOW, self, interface.IRootWindow)
 		em.realize_extensions(self)
