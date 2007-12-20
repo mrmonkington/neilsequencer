@@ -1581,7 +1581,7 @@ void zzub_wavelevel_get_samples_digest(zzub_wavelevel_t * level, int channel, fl
 		if (maxdigest)
 			maxdigest[i] = maxsample;
 		if (ampdigest)
-			ampdigest[i] = sqrtf(amp) / (blockend - blockstart);
+			ampdigest[i] = sqrtf(amp / (blockend - blockstart));
 		blockstart = blockend;
 	}
 }
