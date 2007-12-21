@@ -53,7 +53,7 @@ class WaveEditView(gtk.DrawingArea):
 		"""
 		self.wavetable = wavetable
 		self.wave = None
-		self.level = 0
+		self.level = None
 		gtk.DrawingArea.__init__(self)
 		self.add_events(gtk.gdk.ALL_EVENTS_MASK)
 		self.connect('button-press-event', self.on_left_down)
@@ -61,6 +61,7 @@ class WaveEditView(gtk.DrawingArea):
 		self.connect('motion-notify-event', self.on_motion)
 		self.connect('enter-notify-event', self.on_enter)
 		self.connect('leave-notify-event', self.on_leave)
+		self.connect('scroll-event', self.on_mousewheel)
 		self.connect("expose_event", self.expose)
 			
 	def expose(self, widget, event):
@@ -76,6 +77,36 @@ class WaveEditView(gtk.DrawingArea):
 		if self.window:
 			w,h = self.get_client_size()
 			self.window.invalidate_rect((0,0,w,h), False)
+			
+	def set_range(self, begin, end):
+		begin = max(min(begin, self.level.get_sample_count()-1), 0)
+		end = max(min(end, self.level.get_sample_count()), begin+1)
+		self.range = [begin, end]
+		self.redraw()
+		
+	def client_to_sample(self, x, y):
+		w,h = self.get_client_size()
+		sample = self.range[0] + (float(x) / float(w)) * (self.range[1] - self.range[0])
+		amp = (float(y) / float(h)) * 2.0 - 1.0
+		return int(sample+0.5),amp
+			
+	def on_mousewheel(self, widget, event):
+		"""
+		Callback that responds to mousewheeling in pattern view.
+		"""		
+		mx,my = int(event.x), int(event.y)
+		s,a = self.client_to_sample(mx,my)
+		b,e = self.range
+		diffl = s - b
+		diffr = e - s
+		if event.direction == gtk.gdk.SCROLL_UP:
+			diffl *= 2
+			diffr *= 2
+		elif event.direction == gtk.gdk.SCROLL_DOWN:
+			diffl /= 2
+			diffr /= 2
+		self.set_range(s - diffl, s + diffr)
+		self.redraw()
 			
 	def on_enter(self, widget, event):
 		"""
@@ -120,6 +151,8 @@ class WaveEditView(gtk.DrawingArea):
 		sel = self.wavetable.get_sample_selection()
 		if sel:
 			self.wave = player.get_wave(sel[0])
+			self.level = self.wave.get_level(0)
+			self.range = [0,self.level.get_sample_count()]
 		self.redraw()
 		
 	def set_sensitive(self, enable):
@@ -145,12 +178,7 @@ class WaveEditView(gtk.DrawingArea):
 		ctx.fill()
 		ctx.set_line_width(1)
 		
-		level = self.wave.get_level(self.level)
-		import ctypes
-		minbuffer = (ctypes.c_float * w)()
-		maxbuffer = (ctypes.c_float * w)()
-		ampbuffer = (ctypes.c_float * w)()
-		print level.get_samples_digest(0, minbuffer, maxbuffer, ampbuffer, w)
+		minbuffer, maxbuffer, ampbuffer = self.level.get_samples_digest(0, self.range[0], self.range[1],  w)
 
 		ctx.set_source_rgb(*gridpen)
 		ctx.move_to(0, h-1)
