@@ -45,6 +45,7 @@ enum player_state {
 };
 
 struct keyjazz_note {
+	metaplugin* plugin;
 	size_t timestamp;	// tick when note was played
 	size_t group, track;
 	int note;
