@@ -54,7 +54,7 @@ for structname, struct in structs:
 		basestructname = structname[:-len('_t')]
 		holdername = '_handle'
 		classname = classnames[struct]
-		print 'class %s(object):' % classname
+		print 'class _%s(object):' % classname
 		print '\t%s = None' % holdername
 		print '\t_hash = 0'
 		print '\t'		
@@ -114,3 +114,8 @@ for structname, struct in structs:
 				else:
 					print '\t\treturn ' + call
 				print '\t'
+
+print
+print '# you can override these'
+for classname in classnames.values():
+	print '%s = _%s' % (classname, classname)

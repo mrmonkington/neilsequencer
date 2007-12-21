@@ -3,7 +3,7 @@
 from ctypes import cast, c_void_p
 from zzub_flat import *
 
-class Archive(object):
+class _Archive(object):
 	_handle = None
 	_hash = 0
 	
@@ -20,7 +20,7 @@ class Archive(object):
 	def __ne__(self,other):
 		return self._hash != hash(other)
 
-class Attribute(object):
+class _Attribute(object):
 	_handle = None
 	_hash = 0
 	
@@ -53,7 +53,7 @@ class Attribute(object):
 		assert self._handle
 		return zzub_attribute_get_value_min(self._handle)
 	
-class AudioConnection(object):
+class _AudioConnection(object):
 	_handle = None
 	_hash = 0
 	
@@ -86,7 +86,7 @@ class AudioConnection(object):
 		assert self._handle
 		zzub_audio_connection_set_panning(self._handle,pan)
 	
-class Connection(object):
+class _Connection(object):
 	_handle = None
 	_hash = 0
 	
@@ -123,7 +123,7 @@ class Connection(object):
 		assert self._handle
 		return zzub_connection_get_type(self._handle)
 	
-class Envelope(object):
+class _Envelope(object):
 	_handle = None
 	_hash = 0
 	
@@ -216,7 +216,7 @@ class Envelope(object):
 		assert self._handle
 		zzub_envelope_set_sustain(self._handle,sustain)
 	
-class EventConnectionBinding(object):
+class _EventConnectionBinding(object):
 	_handle = None
 	_hash = 0
 	
@@ -249,7 +249,7 @@ class EventConnectionBinding(object):
 		assert self._handle
 		return zzub_event_connection_binding_get_track(self._handle)
 	
-class EventConnection(object):
+class _EventConnection(object):
 	_handle = None
 	_hash = 0
 	
@@ -282,7 +282,7 @@ class EventConnection(object):
 		assert self._handle
 		return zzub_event_connection_remove_binding(self._handle,index)
 	
-class Input(object):
+class _Input(object):
 	_handle = None
 	_hash = 0
 	
@@ -299,7 +299,7 @@ class Input(object):
 	def __ne__(self,other):
 		return self._hash != hash(other)
 
-class Midimapping(object):
+class _Midimapping(object):
 	_handle = None
 	_hash = 0
 	
@@ -340,7 +340,7 @@ class Midimapping(object):
 		assert self._handle
 		return zzub_midimapping_get_track(self._handle)
 	
-class Output(object):
+class _Output(object):
 	_handle = None
 	_hash = 0
 	
@@ -357,7 +357,7 @@ class Output(object):
 	def __ne__(self,other):
 		return self._hash != hash(other)
 
-class Parameter(object):
+class _Parameter(object):
 	_handle = None
 	_hash = 0
 	
@@ -406,7 +406,7 @@ class Parameter(object):
 		assert self._handle
 		return zzub_parameter_get_value_none(self._handle)
 	
-class Pattern(object):
+class _Pattern(object):
 	_handle = None
 	_hash = 0
 	
@@ -471,7 +471,7 @@ class Pattern(object):
 		assert self._handle
 		zzub_pattern_set_value(self._handle,row,group,track,column,value)
 	
-class Patterntrack(object):
+class _Patterntrack(object):
 	_handle = None
 	_hash = 0
 	
@@ -488,7 +488,7 @@ class Patterntrack(object):
 	def __ne__(self,other):
 		return self._hash != hash(other)
 
-class Player(object):
+class _Player(object):
 	_handle = None
 	_hash = 0
 	
@@ -828,7 +828,7 @@ class Player(object):
 		assert self._handle
 		return zzub_player_work_stereo(self._handle,numSamples)
 	
-class Plugin(object):
+class _Plugin(object):
 	_handle = None
 	_hash = 0
 	
@@ -1073,7 +1073,7 @@ class Plugin(object):
 		assert self._handle
 		zzub_plugin_tick(self._handle)
 	
-class Plugincollection(object):
+class _Plugincollection(object):
 	_handle = None
 	_hash = 0
 	
@@ -1094,7 +1094,7 @@ class Plugincollection(object):
 		assert self._handle
 		zzub_plugincollection_configure(self._handle,key,value)
 	
-class Pluginloader(object):
+class _Pluginloader(object):
 	_handle = None
 	_hash = 0
 	
@@ -1151,7 +1151,7 @@ class Pluginloader(object):
 		assert self._handle
 		return zzub_pluginloader_get_uri(self._handle)
 	
-class Postprocess(object):
+class _Postprocess(object):
 	_handle = None
 	_hash = 0
 	
@@ -1168,7 +1168,7 @@ class Postprocess(object):
 	def __ne__(self,other):
 		return self._hash != hash(other)
 
-class Sequence(object):
+class _Sequence(object):
 	_handle = None
 	_hash = 0
 	
@@ -1221,7 +1221,7 @@ class Sequence(object):
 		assert self._handle
 		zzub_sequence_set_event(self._handle,pos,value)
 	
-class Sequencer(object):
+class _Sequencer(object):
 	_handle = None
 	_hash = 0
 	
@@ -1266,7 +1266,7 @@ class Sequencer(object):
 		assert self._handle
 		zzub_sequencer_remove_track(self._handle,index)
 	
-class Wave(object):
+class _Wave(object):
 	_handle = None
 	_hash = 0
 	
@@ -1343,7 +1343,7 @@ class Wave(object):
 		assert self._handle
 		zzub_wave_set_volume(self._handle,volume)
 	
-class Wavelevel(object):
+class _Wavelevel(object):
 	_handle = None
 	_hash = 0
 	
@@ -1380,9 +1380,9 @@ class Wavelevel(object):
 		assert self._handle
 		return zzub_wavelevel_get_samples(self._handle)
 	
-	def get_samples_digest(self, channel, mindigest, maxdigest, ampdigest, digestsize):
+	def get_samples_digest(self, channel, start, end, mindigest, maxdigest, ampdigest, digestsize):
 		assert self._handle
-		zzub_wavelevel_get_samples_digest(self._handle,channel,mindigest,maxdigest,ampdigest,digestsize)
+		zzub_wavelevel_get_samples_digest(self._handle,channel,start,end,mindigest,maxdigest,ampdigest,digestsize)
 	
 	def get_samples_per_second(self):
 		assert self._handle
@@ -1404,3 +1404,27 @@ class Wavelevel(object):
 		assert self._handle
 		zzub_wavelevel_set_samples_per_second(self._handle,samplespersecond)
 	
+
+# you can override these
+Wave = _Wave
+Plugincollection = _Plugincollection
+Pluginloader = _Pluginloader
+Plugin = _Plugin
+EventConnectionBinding = _EventConnectionBinding
+Wavelevel = _Wavelevel
+Postprocess = _Postprocess
+Sequencer = _Sequencer
+Attribute = _Attribute
+Archive = _Archive
+Pattern = _Pattern
+AudioConnection = _AudioConnection
+Connection = _Connection
+Patterntrack = _Patterntrack
+Parameter = _Parameter
+Envelope = _Envelope
+Player = _Player
+Midimapping = _Midimapping
+Sequence = _Sequence
+EventConnection = _EventConnection
+Input = _Input
+Output = _Output

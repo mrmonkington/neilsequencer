@@ -150,7 +150,7 @@ class zzub_event_data_unknown(Structure):
 
 zzub_event_data_unknown_t = zzub_event_data_unknown
 
-class union__ad3fcb85(Union):
+class union__9cb258f1(Union):
 	_fields_ = [
 		('new_plugin', zzub_event_data_new_plugin_t),
 		('delete_plugin', zzub_event_data_delete_plugin_t),
@@ -173,7 +173,7 @@ class union__ad3fcb85(Union):
 class zzub_event_data(Structure):
 	_fields_ = [
 		('type', c_int),
-		('', union__ad3fcb85),
+		('', union__9cb258f1),
 	]
 
 zzub_event_data_t = zzub_event_data
@@ -621,7 +621,7 @@ zzub_wave_get_envelope_count             = dlsym(libzzub, 'zzub_wave_get_envelop
 zzub_wave_get_envelope                   = dlsym(libzzub, 'zzub_wave_get_envelope'                , POINTER(zzub_envelope_t), ('wave'    ,POINTER(zzub_wave_t)),('index'   ,c_int     ))
 zzub_wavelevel_get_sample_count          = dlsym(libzzub, 'zzub_wavelevel_get_sample_count'       , c_int, ('level'   ,POINTER(zzub_wavelevel_t)))
 zzub_wavelevel_get_samples               = dlsym(libzzub, 'zzub_wavelevel_get_samples'            , POINTER(c_short), ('level'   ,POINTER(zzub_wavelevel_t)))
-zzub_wavelevel_get_samples_digest        = dlsym(libzzub, 'zzub_wavelevel_get_samples_digest'     , None, ('level'   ,POINTER(zzub_wavelevel_t)),('channel' ,c_int     ),('mindigest',POINTER(c_float)),('maxdigest',POINTER(c_float)),('ampdigest',POINTER(c_float)),('digestsize',c_int     ))
+zzub_wavelevel_get_samples_digest        = dlsym(libzzub, 'zzub_wavelevel_get_samples_digest'     , None, ('level'   ,POINTER(zzub_wavelevel_t)),('channel' ,c_int     ),('start'   ,c_int     ),('end'     ,c_int     ),('mindigest',POINTER(c_float)),('maxdigest',POINTER(c_float)),('ampdigest',POINTER(c_float)),('digestsize',c_int     ))
 zzub_wavelevel_get_root_note             = dlsym(libzzub, 'zzub_wavelevel_get_root_note'          , c_int, ('level'   ,POINTER(zzub_wavelevel_t)))
 zzub_wavelevel_get_samples_per_second    = dlsym(libzzub, 'zzub_wavelevel_get_samples_per_second' , c_int, ('level'   ,POINTER(zzub_wavelevel_t)))
 zzub_wavelevel_get_loop_start            = dlsym(libzzub, 'zzub_wavelevel_get_loop_start'         , c_int, ('level'   ,POINTER(zzub_wavelevel_t)))

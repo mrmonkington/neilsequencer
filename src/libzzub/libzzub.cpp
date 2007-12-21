@@ -1548,41 +1548,69 @@ int zzub_wave_save_sample(zzub_wave_t* wave, int level, const char *path) {
 #endif
 }
 
-void zzub_wavelevel_get_samples_digest(zzub_wavelevel_t * level, int channel, float *mindigest, float *maxdigest, float *ampdigest, int digestsize) {
+void zzub_wavelevel_get_samples_digest(zzub_wavelevel_t * level, int channel, int start, int end, float *mindigest, float *maxdigest, float *ampdigest, int digestsize) {
 	unsigned char *samples = (unsigned char*)level->wave->get_sample_ptr(level->level);
 	int bitsps = level->wave->get_bits_per_sample(level->level);
 	int bps = bitsps / 8;
 	float scaler = 1.0f / (1<<(bitsps-1));
 	int samplecount = zzub_wavelevel_get_sample_count(level);
+	int samplerange = end - start;
+	assert((start >= 0) && (start < samplecount));
+	assert((end > start) && (end <= samplecount));
+	assert(samplerange > 0);
 	int channels = level->wave->get_stereo()?2:1;
-	float sps = (float)samplecount / (float)digestsize; // samples per sample
-	float blockstart = 0;
-	for (int i = 0; i < digestsize; ++i) {
-		float blockend = std::min(blockstart + sps, (float)samplecount);
-		float minsample = 1.0f;
-		float maxsample = -1.0f;
-		float amp = 0.0f;
-		for (int s = (int)blockstart; s < (int)blockend; ++s) {
+	float sps = (float)samplerange / (float)digestsize; // samples per sample
+	float blockstart = (float)start;
+	if (sps > 1)
+	{
+		for (int i = 0; i < digestsize; ++i) {
+			float blockend = std::min(blockstart + sps, (float)end);
+			float minsample = 1.0f;
+			float maxsample = -1.0f;
+			float amp = 0.0f;
+			for (int s = (int)blockstart; s < (int)blockend; ++s) {
+				int offset = (s*channels + channel)*bps;
+				int isample = 0;
+		  switch (bps) {
+			case 1: isample = *(char*)&samples[offset]; break;
+			case 2: isample = *(short*)&samples[offset]; break;
+			case 3: isample = *(int*)&samples[offset]; break; // TODO
+			case 4: isample = *(int*)&samples[offset]; break;
+		  }
+				float sample = (float)(isample) * scaler;
+				minsample = std::min(minsample, sample);
+				maxsample = std::max(maxsample, sample);
+				amp += sample*sample;
+			}
+			if (mindigest)
+				mindigest[i] = minsample;
+			if (maxdigest)
+				maxdigest[i] = maxsample;
+			if (ampdigest)
+				ampdigest[i] = sqrtf(amp / (blockend - blockstart));
+			blockstart = blockend;
+		}
+	}
+	else
+	{
+		for (int i = 0; i < digestsize; ++i) {
+			int s = (int)(blockstart + i * sps + 0.5f);
 			int offset = (s*channels + channel)*bps;
 			int isample = 0;
-      switch (bps) {
-        case 1: isample = *(char*)&samples[offset]; break;
-        case 2: isample = *(short*)&samples[offset]; break;
-        case 3: isample = *(int*)&samples[offset]; break; // TODO
-        case 4: isample = *(int*)&samples[offset]; break;
-      }
+			switch (bps) {
+				case 1: isample = *(char*)&samples[offset]; break;
+				case 2: isample = *(short*)&samples[offset]; break;
+				case 3: isample = *(int*)&samples[offset]; break; // TODO
+				case 4: isample = *(int*)&samples[offset]; break;
+			}
 			float sample = (float)(isample) * scaler;
-			minsample = std::min(minsample, sample);
-			maxsample = std::max(maxsample, sample);
-			amp += sample*sample;
+			if (mindigest)
+				mindigest[i] = sample;
+			if (maxdigest)
+				maxdigest[i] = sample;
+			if (ampdigest)
+				ampdigest[i] = std::abs(sample);
 		}
-		if (mindigest)
-			mindigest[i] = minsample;
-		if (maxdigest)
-			maxdigest[i] = maxsample;
-		if (ampdigest)
-			ampdigest[i] = sqrtf(amp / (blockend - blockstart));
-		blockstart = blockend;
 	}
 }
 
