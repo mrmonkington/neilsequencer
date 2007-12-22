@@ -782,6 +782,11 @@ class LCD(gtk.DrawingArea):
 	def set_brightness(self, brightness):
 		self.brightness = brightness
 		self.refresh()
+		
+	def set_border(self, border):
+		self.border = border
+		self.calc_size()
+		self.refresh()
 			
 	def set_contrast(self, contrast):
 		self.contrast = contrast

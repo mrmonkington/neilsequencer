@@ -63,6 +63,8 @@ from interface import IRootWindow
 
 import os, sys
 
+import audiogui
+
 app = None
 
 def get_stock_bmp(artid):
@@ -1613,14 +1615,22 @@ class TransportPanel(gtk.HBox):
 			c1.set_markup("<b>%s</b>" % name)
 			c1.set_alignment(1, 0.5)
 			c2 = gtk.Label()
-			c2.set_alignment(1, 0.5)
+			lcd = audiogui.LCD()
+			#~ lcd.set_fg_color(0.4, 0.5, 1.0)
+			#~ lcd.set_bg_color(0.4, 0.05, 1.0)
+			#~ lcd.set_contrast(0.05)
+			#~ lcd.set_brightness(0.8)
+			lcd.set_dimensions(9,1)
+			lcd.set_border(2)
+			#~ lcd.set_text("Slider 2\n 41 CC12  1  U12")
+			#~ c2.set_alignment(1, 0.5)
 			hbox = gtk.HBox(False, MARGIN)
 			hbox.pack_start(c1, expand=False)
-			hbox.pack_start(c2, expand=False)
+			hbox.pack_start(lcd, expand=False)
 			sg1.add_widget(c1)
-			sg2.add_widget(c2)
+			sg2.add_widget(lcd)
 			vbox.add(hbox)
-			return c2
+			return lcd
 		self.elapsed = add_row("Elapsed")
 		self.current = add_row("Current")
 		self.loop = add_row("Loop")
@@ -1705,8 +1715,8 @@ class TransportPanel(gtk.HBox):
 		lb,le = player.get_song_loop()		
 		l = format_time(ticks_to_time(le-lb,bpm,tpb))
 		for text,control in [(e,self.elapsed),(c,self.current),(l,self.loop)]:
-			if text != control.get_text():
-				control.set_text(text)
+			#~ if text != control.get_text():
+			control.set_text(text)
 		return True
 
 	def on_player_callback(self, player, plugin, data):
