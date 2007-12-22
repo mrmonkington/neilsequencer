@@ -5,14 +5,12 @@
 #include "psy2zzub.h"
 #include <sstream>
 
-#if defined __unix__
+#if defined _WIN64 || defined _WIN32
+	#include <windows.h>
+#else
 	#include <dlfcn.h>
 	#include <sys/stat.h>
 	#include <dirent.h>
-#elif defined _WIN64 || defined _WIN32
-	#include <windows.h>
-#else
-	#error unsupported platform
 #endif
 #include <iostream>
 #include <sstream>

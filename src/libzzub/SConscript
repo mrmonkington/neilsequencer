@@ -82,7 +82,12 @@ if win32:
 	localenv.Append(CCFLAGS=[
 		'-D_CRT_SECURE_NO_DEPRECATE',
 	])
-	
+
+if mac:
+	localenv.Append(CCFLAGS = [ 
+		'-fno-common',
+	])
+
 localenv.Append(LIBS=[
 	'FLAC',
 	'z',
@@ -145,6 +150,10 @@ if posix:
 			'-framework', 'CoreMIDI',
 			'-framework', 'CoreFoundation',
 			'-framework', 'CoreAudio'
+		])
+		localenv.Append(CCFLAGS=[
+			'-DPM_CHECK_ERRORS',
+			'-DNEWBUFFER'
 		])
 	else:
 		files += [
@@ -243,11 +252,6 @@ if posix:
 #######################################
 # targets
 #######################################
-
-# add fink paths for OS X
-if mac:
-	localenv.Append(CPPPATH=['/sw/include'])
-	localenv.Append(LIBPATH=['/sw/lib'])
 
 if win32:
 	libzzub_static = localenv.Library('${LIB_BUILD_PATH}/zzub_static',files)

@@ -103,7 +103,7 @@ namespace zzub { namespace plugins { namespace psycle_to_zzub {
 							*reinterpret_cast<unsigned short int *>(&data[index[n]]);
 					}
 				
-				private:
+				public:
 					unsigned char * data;
 					int * index;
 					char * size;
