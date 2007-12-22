@@ -54,6 +54,7 @@ class WaveEditView(gtk.DrawingArea):
 		self.wavetable = wavetable
 		self.wave = None
 		self.level = None
+		self.dragging = False
 		gtk.DrawingArea.__init__(self)
 		self.add_events(gtk.gdk.ALL_EVENTS_MASK)
 		self.connect('button-press-event', self.on_left_down)
@@ -72,6 +73,15 @@ class WaveEditView(gtk.DrawingArea):
 	def get_client_size(self):
 		rect = self.get_allocation()
 		return rect.width, rect.height
+		
+	def delete_range(self):
+		if self.selection:
+			begin,end = self.selection
+			self.level.remove_range(begin,end)
+			self.selection = None
+			begin,end = self.range
+			self.set_range(begin,end)
+			self.redraw()
 
 	def redraw(self):
 		if self.window:
@@ -84,11 +94,24 @@ class WaveEditView(gtk.DrawingArea):
 		self.range = [begin, end]
 		self.redraw()
 		
+	def set_selection(self, begin, end):
+		begin = max(min(begin, self.level.get_sample_count()-1), 0)
+		end = max(min(end, self.level.get_sample_count()), begin+1)
+		self.selection = [begin, end]
+		print self.selection
+		self.redraw()
+		
 	def client_to_sample(self, x, y):
 		w,h = self.get_client_size()
 		sample = self.range[0] + (float(x) / float(w)) * (self.range[1] - self.range[0])
 		amp = (float(y) / float(h)) * 2.0 - 1.0
 		return int(sample+0.5),amp
+		
+	def sample_to_client(self, s, a):
+		w,h = self.get_client_size()
+		x = ((float(s) - self.range[0]) / (self.range[1] - self.range[0])) * w
+		y = (a + 1.0) * float(h) / 2.0
+		return x,y
 			
 	def on_mousewheel(self, widget, event):
 		"""
@@ -99,10 +122,10 @@ class WaveEditView(gtk.DrawingArea):
 		b,e = self.range
 		diffl = s - b
 		diffr = e - s
-		if event.direction == gtk.gdk.SCROLL_UP:
+		if event.direction == gtk.gdk.SCROLL_DOWN:
 			diffl *= 2
 			diffr *= 2
-		elif event.direction == gtk.gdk.SCROLL_DOWN:
+		elif event.direction == gtk.gdk.SCROLL_UP:
 			diffl /= 2
 			diffr /= 2
 		self.set_range(s - diffl, s + diffr)
@@ -125,7 +148,17 @@ class WaveEditView(gtk.DrawingArea):
 		"""
 		Callback that responds to left mouse down over the wave view.
 		"""
+		self.dragging = True
 		mx,my = int(event.x), int(event.y)
+		s,a = self.client_to_sample(mx,my)
+		if self.selection:
+			begin,end = self.selection
+			if abs(s - begin) < abs(s - end):
+				self.startpos = end
+			else:
+				self.startpos = begin
+		else:
+			self.startpos = s
 		self.grab_add()
 		self.redraw()
 
@@ -133,8 +166,16 @@ class WaveEditView(gtk.DrawingArea):
 		"""
 		Callback that responds to left mouse up over the wave view.
 		"""
-		self.grab_remove()
-		self.redraw()
+		if self.dragging == True:
+			self.dragging = False
+			self.grab_remove()
+			mx,my = int(event.x), int(event.y)
+			s,a = self.client_to_sample(mx,my)
+			if s < self.startpos:
+				self.set_selection(s, self.startpos)
+			else:
+				self.set_selection(self.startpos, s)
+			self.redraw()
 
 	def on_motion(self, widget, event):		
 		"""
@@ -142,17 +183,27 @@ class WaveEditView(gtk.DrawingArea):
 		"""
 		mx,my,state = self.window.get_pointer()
 		mx,my = int(mx),int(my)
-		self.redraw()
+		if self.dragging == True:
+			mx,my = int(event.x), int(event.y)
+			s,a = self.client_to_sample(mx,my)
+			if s < self.startpos:
+				self.set_selection(s, self.startpos)
+			else:
+				self.set_selection(self.startpos, s)
+			self.redraw()
 
 	def update(self):
 		"""
 		Updates the envelope view based on the sample selected in the sample list.		
 		"""
 		sel = self.wavetable.get_sample_selection()
+		self.wave = None
+		self.level = None
 		if sel:
 			self.wave = player.get_wave(sel[0])
 			self.level = self.wave.get_level(0)
 			self.range = [0,self.level.get_sample_count()]
+			self.selection = None
 		self.redraw()
 		
 	def set_sensitive(self, enable):
@@ -171,12 +222,16 @@ class WaveEditView(gtk.DrawingArea):
 		pen = cfg.get_float_color('WE Line')
 		brush = cfg.get_float_color('WE Fill')
 		gridpen = cfg.get_float_color('WE Grid')
+		selbrush = cfg.get_float_color('WE Selection')
 		
 		ctx.translate(0.5,0.5)
 		ctx.set_source_rgb(*bgbrush)
 		ctx.rectangle(0,0,w,h)
 		ctx.fill()
 		ctx.set_line_width(1)
+		
+		if self.level == None:
+			return
 		
 		minbuffer, maxbuffer, ampbuffer = self.level.get_samples_digest(0, self.range[0], self.range[1],  w)
 
@@ -198,6 +253,16 @@ class WaveEditView(gtk.DrawingArea):
 		ctx.fill_preserve()
 		ctx.set_source_rgb(*pen)
 		ctx.stroke()
+		
+		if self.selection:
+			begin, end = self.selection
+			x1 = self.sample_to_client(begin, 0.0)[0]
+			x2 = self.sample_to_client(end, 0.0)[0]
+			print begin, end, x1, x2
+			if (x2 >= 0) and (x1 <= w):
+				ctx.set_source_rgba(*selbrush + (0.3,))
+				ctx.rectangle(x1, 0, x2-x1, h)
+				ctx.fill()
 
 if __name__ == '__main__':
 	import sys, utils

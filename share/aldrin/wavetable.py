@@ -184,6 +184,11 @@ class WavetablePanel(gtk.Notebook):
 		waveedsection.set_border_width(MARGIN)
 		self.waveedscrollwin = add_scrollbars(self.waveedit)
 		waveedsection.pack_start(self.waveedscrollwin)
+		waveedbuttons = gtk.HBox(False, MARGIN)
+		self.btndelrange = new_image_button(filepath("res/clear.png"), "Delete Range", self.tooltips)
+		waveedbuttons.pack_start(self.btndelrange, expand=False)
+		waveedsection.pack_end(waveedbuttons, expand=False)
+		
 		nbsampleprops.append_page(waveedsection, gtk.Label("Sample Editor"))
 		sampleprops.pack_start(nbsampleprops)
 		self.instrpanel.add1(samplesel)
@@ -214,6 +219,8 @@ class WavetablePanel(gtk.Notebook):
 		self.chkpingpong.connect('clicked', self.on_check_pingpong)
 		self.chkenable.connect('clicked', self.on_check_envdisabled)
 		
+		self.btndelrange.connect('clicked', self.on_delete_range)
+		
 		self.edloopstart.connect('focus-out-event', self.on_loop_start_apply)
 		self.edloopstart.connect('activate', self.on_loop_start_apply)
 		self.edloopend.connect('focus-out-event', self.on_loop_end_apply)
@@ -221,6 +228,7 @@ class WavetablePanel(gtk.Notebook):
 		self.edsamplerate.connect('focus-out-event', self.on_samplerate_apply)
 		self.edsamplerate.connect('activate', self.on_samplerate_apply)
 		
+
 		self.libpanel.connect('key-press-event', self.on_filelist_key_down)
 		self.libpanel.connect('file-activated', self.on_load_sample)
 		self.libpanel.connect('selection-changed', self.on_libpanel_selection_changed)
@@ -858,6 +866,10 @@ class WavetablePanel(gtk.Notebook):
 			self.subsamplelist.SetStringItem(i, 2, prepstr("%i" % level.get_samples_per_second()), -1)
 			self.subsamplelist.SetStringItem(i, 3, prepstr("%i" % level.get_loop_start()), -1)
 			self.subsamplelist.SetStringItem(i, 4, prepstr("%i" % level.get_loop_end()), -1)
+			
+	def on_delete_range(self, widget):
+		self.waveedit.delete_range()
+		self.update_sampleprops()
 				
 	def update_sampleprops(self):
 		"""
@@ -884,6 +896,7 @@ class WavetablePanel(gtk.Notebook):
 		self.cbmachine.set_sensitive(iswave)
 		self.cbenvelope.set_sensitive(iswave)
 		self.chkenable.set_sensitive(iswave)
+		self.btndelrange.set_sensitive(iswave)
 		self.btnadsr.set_sensitive(iswave)
 		self.btnfitloop.set_sensitive(iswave)
 		self.btnclear.set_sensitive(iswave)

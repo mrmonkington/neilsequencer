@@ -110,6 +110,7 @@ DEFAULT_THEME = {
 	'WE Line': 0x6060c0,
 	'WE Fill': 0xe0e0ff,
 	'WE Grid': 0xe0e0e0,
+	'WE Selection': 0xff0000,
 }
 
 class AldrinConfig(ConfigParser.ConfigParser):
