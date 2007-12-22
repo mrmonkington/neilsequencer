@@ -623,8 +623,12 @@ class RouteView(gtk.DrawingArea):
 		self.connect("expose_event", self.expose)
 		self.connect('key-press-event', self.on_key_jazz, None)	
 		self.connect('key-release-event', self.on_key_jazz_release, None)		
+		self.connect('visibility-notify-event', self.on_visibility_notify)
 		gobject.timeout_add(100, self.on_draw_led_timer)
 		#~ wx.EVT_SET_FOCUS(self, self.on_focus)
+		
+	def on_visibility_notify(self, widget, event):
+		self.drawrequest = self.DRAW_ALL | self.DRAW_LEDS
 		
 	def update_colors(self):
 		"""
@@ -1343,17 +1347,16 @@ class RouteView(gtk.DrawingArea):
 		if self.rootwindow.index != self.rootwindow.PAGE_ROUTE:
 			return True
 		if self.window:
-			#~ self.drawrequest |= self.DRAW_LEDS
-			#~ rect = self.get_allocation()
-			#~ w,h = rect.width,rect.height
-			#~ cx,cy = w*0.5,h*0.5
-			#~ def get_pixelpos(x,y):
-				#~ return cx * (1+x), cy * (1+y)
-			#~ PW, PH = PLUGINWIDTH / 2, PLUGINHEIGHT / 2
-			#~ for mp,(rx,ry) in ((mp,get_pixelpos(*mp.get_position())) for mp in player.get_plugin_list()):
-				#~ rx,ry = rx - PW, ry - PH
-				#~ self.window.invalidate_rect((int(rx),int(ry),PLUGINWIDTH,PLUGINHEIGHT), False)
-			self.draw_leds()
+			self.drawrequest |= self.DRAW_LEDS
+			rect = self.get_allocation()
+			w,h = rect.width, rect.height
+			cx,cy = w*0.5,h*0.5
+			def get_pixelpos(x,y):
+				return cx * (1+x), cy * (1+y)
+			PW, PH = PLUGINWIDTH / 2, PLUGINHEIGHT / 2
+			for mp,(rx,ry) in ((mp,get_pixelpos(*mp.get_position())) for mp in player.get_plugin_list()):
+				rx,ry = rx - PW, ry - PH
+				self.window.invalidate_rect((int(rx),int(ry),PLUGINWIDTH,PLUGINHEIGHT), False)
 		return True
 			
 	def expose(self, widget, event):
@@ -1388,10 +1391,11 @@ class RouteView(gtk.DrawingArea):
 		pluginpenselected = cm.alloc_color(cfg.get_color("MV Machine Border Selected"))
 		#font = wx.Font(8, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
 		PW, PH = PLUGINWIDTH / 2, PLUGINHEIGHT / 2
-		cpu = min(player.audiodriver_get_cpu_load(), 100.0)
-		player.lock_tick()
-		cpu_loads = {}
+
 		pluginlist = player.get_plugin_list()
+
+		cpu = min(player.audiodriver_get_cpu_load(), 100.0)
+		cpu_loads = {}
 		biggestload = 0
 		try:
 			for mp in pluginlist:
@@ -1401,20 +1405,16 @@ class RouteView(gtk.DrawingArea):
 		except:
 			import traceback
 			traceback.print_exc()
-		player.unlock_tick()
 		total_workload = max(sum(cpu_loads.values()),0.001)
 		cputreshold = 0.75
+	
 		for mp,(rx,ry) in ((mp,get_pixelpos(*mp.get_position())) for mp in pluginlist):
 			rx,ry = rx - PW, ry - PH
 			pi = common.get_plugin_infos().get(mp)
 			if not pi:
-				continue
+				continue			
 			if not pi.plugingfx:
 				pi.plugingfx = gtk.gdk.Pixmap(self.window, PLUGINWIDTH, PLUGINHEIGHT, -1)
-				#~ pctx = pi.plugingfx.cairo_create()
-				#~ pctx.save()
-				#~ pctx.translate(0.5,0.5)
-				#~ pctx.set_line_width(1)
 				# adjust colour for muted plugins
 				if pi.muted:
 					gc.set_foreground(cm.alloc_color(self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK, self.flags2brushes[GENERATOR_PLUGIN_FLAGS])[self.COLOR_MUTED]))
@@ -1422,12 +1422,10 @@ class RouteView(gtk.DrawingArea):
 					gc.set_foreground(cm.alloc_color(self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK, self.flags2brushes[GENERATOR_PLUGIN_FLAGS])[self.COLOR_DEFAULT]))
 				pi.plugingfx.draw_rectangle(gc, True, -1,-1,PLUGINWIDTH+1,PLUGINHEIGHT+1)
 				if mp == self.selected_plugin:
-					#~ pctx.set_dash([4.0,5.0], 0.5)
 					gc.set_foreground(pluginpenselected)
 				else:
 					gc.set_foreground(pluginpen)
 				pi.plugingfx.draw_rectangle(gc, False, 0, 0, PLUGINWIDTH-1,PLUGINHEIGHT-1)
-				#~ pctx.set_dash([], 0.0)
 				if self.solo_plugin and self.solo_plugin != mp and is_generator(mp):
 					title = prepstr('[' + mp.get_name() + ']')
 				elif pi.muted:
@@ -1532,12 +1530,16 @@ class RouteView(gtk.DrawingArea):
 			ctx.set_source_rgb(*linepen)
 			ctx.stroke()
 		
-		for mp,(rx,ry) in mplist:
-			for conn in mp.get_input_connection_list():
-				#~ if not (conn.get_input().get_pluginloader().get_flags() & zzub.plugin_flag_no_output):
-				crx, cry = get_pixelpos(*conn.get_input().get_position())
-				draw_line_arrow(arrowcolors[conn.get_type()],int(crx),int(cry),int(rx),int(ry))
-		self.draw_leds()
+		if self.drawrequest & self.DRAW_ALL:
+			self.drawrequest = self.drawrequest ^ (self.drawrequest & self.DRAW_ALL)
+			for mp,(rx,ry) in mplist:
+				for conn in mp.get_input_connection_list():
+					#~ if not (conn.get_input().get_pluginloader().get_flags() & zzub.plugin_flag_no_output):
+					crx, cry = get_pixelpos(*conn.get_input().get_position())
+					draw_line_arrow(arrowcolors[conn.get_type()],int(crx),int(cry),int(rx),int(ry))
+		if self.drawrequest & self.DRAW_LEDS:
+			self.drawrequest = self.drawrequest ^ (self.drawrequest & self.DRAW_LEDS)
+			self.draw_leds()
 		if self.connecting:
 			crx, cry = get_pixelpos(*self.current_plugin.get_position())
 			rx,ry= self.connectpos
