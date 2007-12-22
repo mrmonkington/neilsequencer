@@ -1360,6 +1360,10 @@ class _Wavelevel(object):
 	def __ne__(self,other):
 		return self._hash != hash(other)
 
+	def get_format(self):
+		assert self._handle
+		return zzub_wavelevel_get_format(self._handle)
+	
 	def get_loop_end(self):
 		assert self._handle
 		return zzub_wavelevel_get_loop_end(self._handle)
@@ -1388,6 +1392,14 @@ class _Wavelevel(object):
 		assert self._handle
 		return zzub_wavelevel_get_samples_per_second(self._handle)
 	
+	def insert(self, start, sampleData, channels, waveFormat, numSamples):
+		assert self._handle
+		return zzub_wavelevel_insert(self._handle,start,sampleData,channels,waveFormat,numSamples)
+	
+	def remove_range(self, start, end):
+		assert self._handle
+		return zzub_wavelevel_remove_range(self._handle,start,end)
+	
 	def set_loop_end(self, loopend):
 		assert self._handle
 		zzub_wavelevel_set_loop_end(self._handle,loopend)
@@ -1404,27 +1416,31 @@ class _Wavelevel(object):
 		assert self._handle
 		zzub_wavelevel_set_samples_per_second(self._handle,samplespersecond)
 	
+	def silence_range(self, start, end):
+		assert self._handle
+		return zzub_wavelevel_silence_range(self._handle,start,end)
+	
 
 # you can override these
-Wave = _Wave
+Wavelevel = _Wavelevel
+EventConnectionBinding = _EventConnectionBinding
 Plugincollection = _Plugincollection
 Pluginloader = _Pluginloader
-Plugin = _Plugin
-EventConnectionBinding = _EventConnectionBinding
-Wavelevel = _Wavelevel
-Postprocess = _Postprocess
-Sequencer = _Sequencer
-Attribute = _Attribute
-Archive = _Archive
-Pattern = _Pattern
-AudioConnection = _AudioConnection
-Connection = _Connection
-Patterntrack = _Patterntrack
-Parameter = _Parameter
-Envelope = _Envelope
-Player = _Player
-Midimapping = _Midimapping
 Sequence = _Sequence
-EventConnection = _EventConnection
-Input = _Input
+Pattern = _Pattern
+Archive = _Archive
+Envelope = _Envelope
+Midimapping = _Midimapping
+Connection = _Connection
+Attribute = _Attribute
+Postprocess = _Postprocess
+Wave = _Wave
+Plugin = _Plugin
+Parameter = _Parameter
+Player = _Player
 Output = _Output
+EventConnection = _EventConnection
+Sequencer = _Sequencer
+Input = _Input
+Patterntrack = _Patterntrack
+AudioConnection = _AudioConnection

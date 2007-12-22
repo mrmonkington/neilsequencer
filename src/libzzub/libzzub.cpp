@@ -1618,8 +1618,8 @@ int zzub_wavelevel_get_sample_count(zzub_wavelevel_t * level) {
 	return level->wave->get_sample_count(level->level); 
 }
 
-short *zzub_wavelevel_get_samples(zzub_wavelevel_t * level) {
-	return (short*)level->wave->get_sample_ptr(level->level);
+void *zzub_wavelevel_get_samples(zzub_wavelevel_t * level) {
+	return level->wave->get_sample_ptr(level->level);
 }
 
 int zzub_wavelevel_get_root_note(zzub_wavelevel_t * level) {
@@ -1672,6 +1672,22 @@ void zzub_wavelevel_set_loop_start(zzub_wavelevel_t * level, int loopstart) {
 }
 void zzub_wavelevel_set_loop_end(zzub_wavelevel_t * level, int loopend) {
 	level->wave->set_loop_end(level->level, loopend);
+}
+
+int zzub_wavelevel_silence_range(zzub_wavelevel_t * level, int start, int end) {
+	return level->wave->silence_wave_range(level->level, (size_t)start, (size_t)(end - start))?0:-1;
+}
+
+int zzub_wavelevel_remove_range(zzub_wavelevel_t * level, int start, int end) {
+	level->wave->remove_wave_range(level->level, (size_t)start, (size_t)(end - start))?0:-1;
+}
+
+int zzub_wavelevel_insert(zzub_wavelevel_t * level, int start, void* sampleData, int channels, int waveFormat, int numSamples) {
+	level->wave->insert_wave_at(level->level, (size_t)start, sampleData, (size_t)channels, waveFormat, (size_t)numSamples)?0:-1;
+}
+
+int zzub_wavelevel_get_format(zzub_wavelevel_t * level) {
+	return level->wave->get_wave_format(level->level);
 }
 
 // envelopes

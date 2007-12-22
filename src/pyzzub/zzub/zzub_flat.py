@@ -150,7 +150,7 @@ class zzub_event_data_unknown(Structure):
 
 zzub_event_data_unknown_t = zzub_event_data_unknown
 
-class union__9cb258f1(Union):
+class union__b5b0fe8b(Union):
 	_fields_ = [
 		('new_plugin', zzub_event_data_new_plugin_t),
 		('delete_plugin', zzub_event_data_delete_plugin_t),
@@ -173,7 +173,7 @@ class union__9cb258f1(Union):
 class zzub_event_data(Structure):
 	_fields_ = [
 		('type', c_int),
-		('', union__9cb258f1),
+		('', union__b5b0fe8b),
 	]
 
 zzub_event_data_t = zzub_event_data
@@ -620,7 +620,7 @@ zzub_wave_set_flags                      = dlsym(libzzub, 'zzub_wave_set_flags' 
 zzub_wave_get_envelope_count             = dlsym(libzzub, 'zzub_wave_get_envelope_count'          , c_int, ('wave'    ,POINTER(zzub_wave_t)))
 zzub_wave_get_envelope                   = dlsym(libzzub, 'zzub_wave_get_envelope'                , POINTER(zzub_envelope_t), ('wave'    ,POINTER(zzub_wave_t)),('index'   ,c_int     ))
 zzub_wavelevel_get_sample_count          = dlsym(libzzub, 'zzub_wavelevel_get_sample_count'       , c_int, ('level'   ,POINTER(zzub_wavelevel_t)))
-zzub_wavelevel_get_samples               = dlsym(libzzub, 'zzub_wavelevel_get_samples'            , POINTER(c_short), ('level'   ,POINTER(zzub_wavelevel_t)))
+zzub_wavelevel_get_samples               = dlsym(libzzub, 'zzub_wavelevel_get_samples'            , c_void_p, ('level'   ,POINTER(zzub_wavelevel_t)))
 zzub_wavelevel_get_samples_digest        = dlsym(libzzub, 'zzub_wavelevel_get_samples_digest'     , None, ('level'   ,POINTER(zzub_wavelevel_t)),('channel' ,c_int     ),('start'   ,c_int     ),('end'     ,c_int     ),('mindigest',POINTER(c_float)),('maxdigest',POINTER(c_float)),('ampdigest',POINTER(c_float)),('digestsize',c_int     ))
 zzub_wavelevel_get_root_note             = dlsym(libzzub, 'zzub_wavelevel_get_root_note'          , c_int, ('level'   ,POINTER(zzub_wavelevel_t)))
 zzub_wavelevel_get_samples_per_second    = dlsym(libzzub, 'zzub_wavelevel_get_samples_per_second' , c_int, ('level'   ,POINTER(zzub_wavelevel_t)))
@@ -630,6 +630,10 @@ zzub_wavelevel_set_root_note             = dlsym(libzzub, 'zzub_wavelevel_set_ro
 zzub_wavelevel_set_samples_per_second    = dlsym(libzzub, 'zzub_wavelevel_set_samples_per_second' , None, ('level'   ,POINTER(zzub_wavelevel_t)),('samplespersecond',c_int     ))
 zzub_wavelevel_set_loop_start            = dlsym(libzzub, 'zzub_wavelevel_set_loop_start'         , None, ('level'   ,POINTER(zzub_wavelevel_t)),('loopstart',c_int     ))
 zzub_wavelevel_set_loop_end              = dlsym(libzzub, 'zzub_wavelevel_set_loop_end'           , None, ('level'   ,POINTER(zzub_wavelevel_t)),('loopend' ,c_int     ))
+zzub_wavelevel_silence_range             = dlsym(libzzub, 'zzub_wavelevel_silence_range'          , c_int, ('level'   ,POINTER(zzub_wavelevel_t)),('start'   ,c_int     ),('end'     ,c_int     ))
+zzub_wavelevel_remove_range              = dlsym(libzzub, 'zzub_wavelevel_remove_range'           , c_int, ('level'   ,POINTER(zzub_wavelevel_t)),('start'   ,c_int     ),('end'     ,c_int     ))
+zzub_wavelevel_insert                    = dlsym(libzzub, 'zzub_wavelevel_insert'                 , c_int, ('level'   ,POINTER(zzub_wavelevel_t)),('start'   ,c_int     ),('sampleData',c_void_p  ),('channels',c_int     ),('waveFormat',c_int     ),('numSamples',c_int     ))
+zzub_wavelevel_get_format                = dlsym(libzzub, 'zzub_wavelevel_get_format'             , c_int, ('level'   ,POINTER(zzub_wavelevel_t)))
 zzub_envelope_get_attack                 = dlsym(libzzub, 'zzub_envelope_get_attack'              , c_ushort, ('env'     ,POINTER(zzub_envelope_t)))
 zzub_envelope_get_decay                  = dlsym(libzzub, 'zzub_envelope_get_decay'               , c_ushort, ('env'     ,POINTER(zzub_envelope_t)))
 zzub_envelope_get_sustain                = dlsym(libzzub, 'zzub_envelope_get_sustain'             , c_ushort, ('env'     ,POINTER(zzub_envelope_t)))
