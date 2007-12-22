@@ -1484,6 +1484,41 @@ class RouteView(gtk.DrawingArea):
 		bgbrush = cfg.get_float_color("MV Background")
 		linepen = cfg.get_float_color("MV Line")
 		
+		cx,cy = w*0.5,h*0.5
+		def get_pixelpos(x,y):
+			return cx * (1+x), cy * (1+y)
+		
+		def draw_line(bmpctx,crx,cry,rx,ry):
+			vx, vy = (rx-crx), (ry-cry)
+			length = (vx*vx+vy*vy)**0.5
+			vx, vy = vx/length, vy/length
+			bmpctx.move_to(crx,cry)
+			bmpctx.line_to(rx,ry)
+			bmpctx.set_source_rgb(*linepen)
+			bmpctx.stroke()
+		def draw_line_arrow(bmpctx,clr,crx,cry,rx,ry):
+			vx, vy = (rx-crx), (ry-cry)
+			length = (vx*vx+vy*vy)**0.5
+			if not length:
+				return
+			vx, vy = vx/length, vy/length
+			bmpctx.move_to(crx,cry)
+			bmpctx.line_to(rx,ry)
+			bmpctx.set_source_rgb(*linepen)
+			bmpctx.stroke()
+			cpx,cpy = crx + vx * (length * 0.5), cry + vy * (length * 0.5)
+			t1 = (int(cpx - vx * ARROWRADIUS + vy * ARROWRADIUS), int(cpy - vy * ARROWRADIUS - vx * ARROWRADIUS))
+			t2 = (int(cpx + vx * ARROWRADIUS), int(cpy + vy * ARROWRADIUS))
+			t3 = (int(cpx - vx * ARROWRADIUS - vy * ARROWRADIUS), int(cpy - vy * ARROWRADIUS + vx * ARROWRADIUS))
+			bmpctx.move_to(*t1)
+			bmpctx.line_to(*t2)
+			bmpctx.line_to(*t3)
+			bmpctx.close_path()
+			bmpctx.set_source_rgb(*clr)
+			bmpctx.fill_preserve()
+			bmpctx.set_source_rgb(*linepen)
+			bmpctx.stroke()
+
 		if not self.routebitmap:
 			self.routebitmap = gtk.gdk.Pixmap(self.window, w, h, -1)
 			bmpctx = self.routebitmap.cairo_create()
@@ -1493,54 +1528,21 @@ class RouteView(gtk.DrawingArea):
 			bmpctx.fill()
 			bmpctx.set_line_width(1)
 			
-			cx,cy = w*0.5,h*0.5
-			def get_pixelpos(x,y):
-				return cx * (1+x), cy * (1+y)
 			mplist = [(mp,get_pixelpos(*mp.get_position())) for mp in player.get_plugin_list()]
-			
-			def draw_line(crx,cry,rx,ry):
-				vx, vy = (rx-crx), (ry-cry)
-				length = (vx*vx+vy*vy)**0.5
-				vx, vy = vx/length, vy/length
-				bmpctx.move_to(crx,cry)
-				bmpctx.line_to(rx,ry)
-				bmpctx.set_source_rgb(*linepen)
-				bmpctx.stroke()
-			def draw_line_arrow(clr,crx,cry,rx,ry):
-				vx, vy = (rx-crx), (ry-cry)
-				length = (vx*vx+vy*vy)**0.5
-				if not length:
-					return
-				vx, vy = vx/length, vy/length
-				bmpctx.move_to(crx,cry)
-				bmpctx.line_to(rx,ry)
-				bmpctx.set_source_rgb(*linepen)
-				bmpctx.stroke()
-				cpx,cpy = crx + vx * (length * 0.5), cry + vy * (length * 0.5)
-				t1 = (int(cpx - vx * ARROWRADIUS + vy * ARROWRADIUS), int(cpy - vy * ARROWRADIUS - vx * ARROWRADIUS))
-				t2 = (int(cpx + vx * ARROWRADIUS), int(cpy + vy * ARROWRADIUS))
-				t3 = (int(cpx - vx * ARROWRADIUS - vy * ARROWRADIUS), int(cpy - vy * ARROWRADIUS + vx * ARROWRADIUS))
-				bmpctx.move_to(*t1)
-				bmpctx.line_to(*t2)
-				bmpctx.line_to(*t3)
-				bmpctx.close_path()
-				bmpctx.set_source_rgb(*clr)
-				bmpctx.fill_preserve()
-				bmpctx.set_source_rgb(*linepen)
-				bmpctx.stroke()
 			
 			for mp,(rx,ry) in mplist:
 				for conn in mp.get_input_connection_list():
 					#~ if not (conn.get_input().get_pluginloader().get_flags() & zzub.plugin_flag_no_output):
 					crx, cry = get_pixelpos(*conn.get_input().get_position())
-					draw_line_arrow(arrowcolors[conn.get_type()],int(crx),int(cry),int(rx),int(ry))
+					draw_line_arrow(bmpctx,arrowcolors[conn.get_type()],int(crx),int(cry),int(rx),int(ry))
 		gc = self.window.new_gc()
 		self.window.draw_drawable(gc, self.routebitmap, 0, 0, 0, 0, -1, -1)
-		self.draw_leds()
 		if self.connecting:
+			ctx.set_line_width(1)
 			crx, cry = get_pixelpos(*self.current_plugin.get_position())
 			rx,ry= self.connectpos
-			draw_line(int(crx),int(cry),int(rx),int(ry))
+			draw_line(ctx,int(crx),int(cry),int(rx),int(ry))
+		self.draw_leds()
 	
 	def on_key_jazz(self, widget, event, plugin):
 		if not plugin:			
