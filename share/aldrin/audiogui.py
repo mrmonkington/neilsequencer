@@ -717,14 +717,15 @@ class LCD(gtk.DrawingArea):
 		self.rows = 2
 		self.columns = 16
 		self.border = 6
+		self.scale = 1
 		self.calc_size()
 		self.connect('expose-event', self.on_expose)
 		self.connect('realize', self.on_realize)
 		
 	def calc_size(self):
 		self.clear_text()
-		self.charwidth = LCD_CHARWIDTH
-		self.charheight = LCD_CHARHEIGHT
+		self.charwidth = LCD_CHARWIDTH*self.scale
+		self.charheight = LCD_CHARHEIGHT*self.scale
 		self.panelwidth = self.columns*(self.charwidth+1)-1
 		self.panelheight = self.rows*(self.charheight+1)-1
 		self.set_size_request(
@@ -742,10 +743,10 @@ class LCD(gtk.DrawingArea):
 		self.chars = []
 		BITMASK = lcdfont.BITMASK
 		for i in xrange(256):
-			pm = gtk.gdk.Pixmap(self.window, self.charwidth, self.charheight, -1)
+			x,y,w,h = 0, 0, self.charwidth, self.charheight
+			pm = gtk.gdk.Pixmap(self.window, w, h, -1)
 			self.chars.append(pm)
 			ctx = pm.cairo_create()
-			x,y,w,h = 0, 0, self.charwidth, self.charheight
 			ctx.set_source_rgb(*hls_to_rgb(*self.bg_hls))
 			ctx.paint()
 			tbgcolor = hls_to_rgb(*self.fg_hls) + (self.contrast,)
@@ -757,14 +758,15 @@ class LCD(gtk.DrawingArea):
 				bm = self.font[i]
 				for cx in xrange(LCD_CHARWIDTH):
 					if bm & (BITMASK>>(cy+(8*cx))):
-						ctx.set_source_rgba(*tcolor)
+						color = tcolor
 					else:
-						ctx.set_source_rgba(*tbgcolor)
-					ctx.rectangle(0,0,1,1)
+						color = tbgcolor
+					ctx.set_source_rgba(*color)
+					ctx.rectangle(0,0,self.scale,self.scale)
 					ctx.fill()
-					ctx.translate(1,0)
+					ctx.translate(self.scale,0)
 				ctx.restore()
-				ctx.translate(0,1)
+				ctx.translate(0,self.scale)
 			ctx.restore()
 			ctx.pop_group_to_source()
 			ctx.paint_with_alpha(self.brightness)
@@ -781,6 +783,11 @@ class LCD(gtk.DrawingArea):
 			
 	def set_brightness(self, brightness):
 		self.brightness = brightness
+		self.refresh()
+		
+	def set_scale(self, scale):
+		self.scale = scale
+		self.calc_size()
 		self.refresh()
 		
 	def set_border(self, border):
@@ -989,6 +996,7 @@ if __name__ == '__main__':
 	lcd = LCD()
 	lcd.set_fg_color(0.4, 0.5, 1.0)
 	lcd.set_bg_color(0.4, 0.05, 1.0)
+	lcd.set_scale(4)
 	lcd.set_contrast(0.05)
 	lcd.set_brightness(0.8)
 	lcd.set_text("Slider 2\n 41 CC12  1  U12")
