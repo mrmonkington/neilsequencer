@@ -89,16 +89,18 @@ class WaveEditView(gtk.DrawingArea):
 			self.window.invalidate_rect((0,0,w,h), False)
 			
 	def set_range(self, begin, end):
+		print "set_range"
 		begin = max(min(begin, self.level.get_sample_count()-1), 0)
 		end = max(min(end, self.level.get_sample_count()), begin+1)
 		self.range = [begin, end]
+		w,h = self.get_client_size()
+		self.minbuffer, self.maxbuffer, self.ampbuffer = self.level.get_samples_digest(0, self.range[0], self.range[1],  w)
 		self.redraw()
 		
 	def set_selection(self, begin, end):
 		begin = max(min(begin, self.level.get_sample_count()-1), 0)
 		end = max(min(end, self.level.get_sample_count()), begin+1)
 		self.selection = [begin, end]
-		print self.selection
 		self.redraw()
 		
 	def client_to_sample(self, x, y):
@@ -199,11 +201,12 @@ class WaveEditView(gtk.DrawingArea):
 		sel = self.wavetable.get_sample_selection()
 		self.wave = None
 		self.level = None
+		self.selection = None
 		if sel:
 			self.wave = player.get_wave(sel[0])
-			self.level = self.wave.get_level(0)
-			self.range = [0,self.level.get_sample_count()]
-			self.selection = None
+			if self.wave.get_level_count() >= 1:
+				self.level = self.wave.get_level(0)
+				self.set_range(0,self.level.get_sample_count())
 		self.redraw()
 		
 	def set_sensitive(self, enable):
@@ -233,7 +236,7 @@ class WaveEditView(gtk.DrawingArea):
 		if self.level == None:
 			return
 		
-		minbuffer, maxbuffer, ampbuffer = self.level.get_samples_digest(0, self.range[0], self.range[1],  w)
+		minbuffer, maxbuffer, ampbuffer = self.minbuffer, self.maxbuffer, self.ampbuffer
 
 		ctx.set_source_rgb(*gridpen)
 		ctx.move_to(0, h-1)
@@ -258,7 +261,6 @@ class WaveEditView(gtk.DrawingArea):
 			begin, end = self.selection
 			x1 = self.sample_to_client(begin, 0.0)[0]
 			x2 = self.sample_to_client(end, 0.0)[0]
-			print begin, end, x1, x2
 			if (x2 >= 0) and (x1 <= w):
 				ctx.set_source_rgba(*selbrush + (0.3,))
 				ctx.rectangle(x1, 0, x2-x1, h)
