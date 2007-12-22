@@ -574,11 +574,6 @@ class RouteView(gtk.DrawingArea):
 	dragoffset = 0,0
 	contextmenupos = 0,0
 	
-	DRAW_ALL = 1
-	DRAW_LEDS = 2
-	
-	drawrequest = 0
-	
 	# 0 = default
 	# 1 = muted
 	# 2 = led off
@@ -623,12 +618,8 @@ class RouteView(gtk.DrawingArea):
 		self.connect("expose_event", self.expose)
 		self.connect('key-press-event', self.on_key_jazz, None)	
 		self.connect('key-release-event', self.on_key_jazz_release, None)		
-		self.connect('visibility-notify-event', self.on_visibility_notify)
 		gobject.timeout_add(100, self.on_draw_led_timer)
 		#~ wx.EVT_SET_FOCUS(self, self.on_focus)
-		
-	def on_visibility_notify(self, widget, event):
-		self.drawrequest = self.DRAW_ALL | self.DRAW_LEDS
 		
 	def update_colors(self):
 		"""
@@ -1347,7 +1338,6 @@ class RouteView(gtk.DrawingArea):
 		if self.rootwindow.index != self.rootwindow.PAGE_ROUTE:
 			return True
 		if self.window:
-			self.drawrequest |= self.DRAW_LEDS
 			rect = self.get_allocation()
 			w,h = rect.width, rect.height
 			cx,cy = w*0.5,h*0.5
@@ -1366,7 +1356,6 @@ class RouteView(gtk.DrawingArea):
 		
 	def redraw(self):
 		if self.window:
-			self.drawrequest |= self.DRAW_ALL | self.DRAW_LEDS
 			rect = self.get_allocation()
 			self.window.invalidate_rect((0,0,rect.width,rect.height), False)
 		
@@ -1530,16 +1519,12 @@ class RouteView(gtk.DrawingArea):
 			ctx.set_source_rgb(*linepen)
 			ctx.stroke()
 		
-		if self.drawrequest & self.DRAW_ALL:
-			self.drawrequest = self.drawrequest ^ (self.drawrequest & self.DRAW_ALL)
-			for mp,(rx,ry) in mplist:
-				for conn in mp.get_input_connection_list():
-					#~ if not (conn.get_input().get_pluginloader().get_flags() & zzub.plugin_flag_no_output):
-					crx, cry = get_pixelpos(*conn.get_input().get_position())
-					draw_line_arrow(arrowcolors[conn.get_type()],int(crx),int(cry),int(rx),int(ry))
-		if self.drawrequest & self.DRAW_LEDS:
-			self.drawrequest = self.drawrequest ^ (self.drawrequest & self.DRAW_LEDS)
-			self.draw_leds()
+		for mp,(rx,ry) in mplist:
+			for conn in mp.get_input_connection_list():
+				#~ if not (conn.get_input().get_pluginloader().get_flags() & zzub.plugin_flag_no_output):
+				crx, cry = get_pixelpos(*conn.get_input().get_position())
+				draw_line_arrow(arrowcolors[conn.get_type()],int(crx),int(cry),int(rx),int(ry))
+		self.draw_leds()
 		if self.connecting:
 			crx, cry = get_pixelpos(*self.current_plugin.get_position())
 			rx,ry= self.connectpos
