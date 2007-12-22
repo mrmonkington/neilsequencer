@@ -1679,11 +1679,11 @@ int zzub_wavelevel_silence_range(zzub_wavelevel_t * level, int start, int end) {
 }
 
 int zzub_wavelevel_remove_range(zzub_wavelevel_t * level, int start, int end) {
-	level->wave->remove_wave_range(level->level, (size_t)start, (size_t)(end - start))?0:-1;
+	return level->wave->remove_wave_range(level->level, (size_t)start, (size_t)(end - start))?0:-1;
 }
 
 int zzub_wavelevel_insert(zzub_wavelevel_t * level, int start, void* sampleData, int channels, int waveFormat, int numSamples) {
-	level->wave->insert_wave_at(level->level, (size_t)start, sampleData, (size_t)channels, waveFormat, (size_t)numSamples)?0:-1;
+	return level->wave->insert_wave_at(level->level, (size_t)start, sampleData, (size_t)channels, waveFormat, (size_t)numSamples)?0:-1;
 }
 
 int zzub_wavelevel_get_format(zzub_wavelevel_t * level) {
