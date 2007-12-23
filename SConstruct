@@ -75,6 +75,7 @@ opts.Add("SSE2", "Support SSE2 instructions", False, None, bool_converter)
 opts.Add("MP3", "Support loading of MP3 samples", linux, None, bool_converter)
 opts.Add("LADSPA", "Support LADSPA plugins", False, None, bool_converter)
 opts.Add("DSSI", "Support DSSI plugins", False, None, bool_converter)
+opts.Add("JOBS", "Number of threads to compile with", '2') 
 
 env = Environment(ENV = os.environ, options = opts)
 
@@ -109,6 +110,8 @@ env['ROOTPATH'] = os.getcwd()
 
 env.Append(CCFLAGS=['-D__SCONS__'])
 env.Append(LIBPATH=['${ROOTPATH}/lib'])
+
+SetOption('num_jobs', env['JOBS'].replace('-j', '')) 
 
 if posix:
 	env.Append(CCFLAGS=[
@@ -161,6 +164,7 @@ if gcc:
 			'-funroll-loops',
 			'-DNDEBUG',
 		])
+		env.Append(CCFLAGS=ARGUMENTS.get('CCFLAGS')) 
 	else:
 		env.Append(CCFLAGS=[
 			'-g',
