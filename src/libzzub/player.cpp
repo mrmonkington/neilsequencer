@@ -1088,11 +1088,11 @@ bool isNotePlaying(zzub::metaplugin* plugin, const std::vector<zzub::keyjazz_not
 
 
 void player::playMachineNote(zzub::metaplugin* plugin, int note, int prevNote, int _velocity) {
-	// create a blank 1-row pattern we're going to play
-	
-	if (note == note_value_off && !isNotePlaying(plugin, keyjazz, prevNote)) return ;
-	if (note != note_value_off && isNotePlaying(plugin, keyjazz, note)) return ;
 
+	// ignore note-off when prevNote wasnt already playing
+	if (note == note_value_off && !isNotePlaying(plugin, keyjazz, prevNote)) return ;
+
+	// create a blank 1-row pattern we're going to play
 	zzub::pattern* p = new zzub::pattern(plugin->loader->plugin_info, plugin->getConnections(), plugin->getTracks(), 1);
 
 	bool multiChannel;
