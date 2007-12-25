@@ -20,12 +20,14 @@ if win32:
 		'-D__WINDOWS_SILENT__',
 	])
 	files += [
-		'asio/asio.cpp',
-		'asio/asiodrivers.cpp',
-		'asio/asiolist.cpp',
-		'asio/iasiothiscallresolver.cpp',
+		'include/asio.cpp',
+		'include/asiodrivers.cpp',
+		'include/asiolist.cpp',
+		'include/iasiothiscallresolver.cpp',
 	]
 	
+localenv.Append(CCFLAGS=['-Isrc/rtaudio/include'])
+
 if localenv['COREAUDIO'] == True: localenv.Append(CCFLAGS=['-D__MACOSX_CORE__'])
 if localenv['ALSA'] == True: localenv.Append(CCFLAGS=['-D__LINUX_ALSA__'])
 if localenv['JACK'] == True: localenv.Append(CCFLAGS=['-D__UNIX_JACK__'])

@@ -42,7 +42,7 @@
   \file RtAudio.h
  */
 
-// RtAudio: Version 4.0
+// RtAudio: Version 4.0.3
 
 #ifndef __RTAUDIO_H
 #define __RTAUDIO_H
@@ -794,6 +794,8 @@ public:
 
   private:
 
+  std::vector<RtAudio::DeviceInfo> devices_;
+  void saveDeviceInfo( void );
   bool coInitialized_;
   bool probeDeviceOpen( unsigned int device, StreamMode mode, unsigned int channels, 
                         unsigned int firstChannel, unsigned int sampleRate,
