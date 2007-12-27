@@ -19,6 +19,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "common.h"
 #include <float.h>
 #include <cmath>
+#include <sstream>
+#include <iomanip>
 #include "pattern.h"
 #include "bmxreader.h"
 #include "bmxwriter.h"
@@ -839,10 +841,26 @@ std::string metaplugin::describeValue(size_t param, int value) {
 
 std::string metaplugin::describeValue(size_t group, size_t param, int value) {
 	if (group == 0) {
-		char pc[16];
-		// buzz writes this as "-X.Y dB (Z%)"
-		sprintf(pc, "%04x", value);
-		return pc;
+		if (param == 0) {
+			// buzz writes this as "-X.Y dB (Z%)"
+			float dB = linear_to_dB((float)value / 0x4000) ;
+			std::stringstream strm;
+			if (dB > -100) 
+				strm << std::setprecision(2) << std::fixed << dB << " dB"; else
+				strm << "-inf dB";
+			strm << " (" << (int)(((float)value / 0x4000) * 100) << "%)";
+			return strm.str();
+		} else {
+			std::stringstream strm;
+			if (value == 0) 
+				strm << "Left"; else
+			if (value == 0x4000)
+				strm << "Center"; else
+			if (value == 0x8000)
+				strm << "Right"; else
+				strm << value - 0x4000;
+			return strm.str();
+		}
 	}
 	if (group == 3) {
 		return "";

@@ -94,27 +94,31 @@ void Amp(float *pout, int numsamples, float amp) {
 	}
 }
 
+float linear_to_dB(float val) { 
+	return(20.0f * log10(val)); 
+}
+
 float dB_to_linear(float val) {
 	if (val == 0.0) return(1.0);
 	return (float)(pow(10.0f, val / 20.0f));
 }
 
 double square(double v) {
-		double sqmod=fmod(v, 2.0f*PI);
-		return sqmod<PI?-1:1;
+		double sqmod=fmod(v, 2.0f*M_PI);
+		return sqmod<M_PI?-1:1;
 	}
 
 double sawtooth(double v) {
-	return (fmod(v, 2.0f*PI) / PI)-1;
+	return (fmod(v, 2.0f*M_PI) / M_PI)-1;
 }
 
 double triangle(double v) {
-	double sqmod=fmod(v, 2.0f*PI);
+	double sqmod=fmod(v, 2.0f*M_PI);
 
-	if (sqmod<PI) {
-		return sqmod/PI;
+	if (sqmod<M_PI) {
+		return sqmod/M_PI;
 	} else
-		return (PI-(sqmod-PI)) / PI;
+		return (M_PI-(sqmod-M_PI)) / M_PI;
 }
 
 

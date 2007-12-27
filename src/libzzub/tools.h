@@ -18,8 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #pragma once
 
-#define PI 3.14
-
+float linear_to_dB(float val);
 float dB_to_linear(float val);
 void handleError(std::string errorTitle);
 

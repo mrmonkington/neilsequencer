@@ -97,7 +97,7 @@ enum LoadProgressType {
 	#undef max
 #endif
 
-
+#define _USE_MATH_DEFINES
 #include <cmath>
 #include <list>
 #include <map>

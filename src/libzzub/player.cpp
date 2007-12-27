@@ -102,13 +102,13 @@ void player::generateOscillatorTables() {
 		int tabOfs=zzub::get_oscillator_table_offset(tabLevel);
 		for (int i=0; i<tabSize; i++) {
 			double dx=(double)i/tabSize;
-			oscTables[zzub::oscillator_type_sine][tabOfs+i]=(short)(sin(dx*2.0f*PI)*32000);
-			oscTables[zzub::oscillator_type_sawtooth][tabOfs+i]=(short)(sawtooth(dx*2.0f*PI)*32000);
-			oscTables[zzub::oscillator_type_pulse][tabOfs+i]=(short)(square(dx*2.0f*PI)*32000);
-			oscTables[zzub::oscillator_type_triangle][tabOfs+i]=(short)(triangle(dx*2.0f*PI)*32000);
+			oscTables[zzub::oscillator_type_sine][tabOfs+i]=(short)(sin(dx*2.0f*M_PI)*32000);
+			oscTables[zzub::oscillator_type_sawtooth][tabOfs+i]=(short)(sawtooth(dx*2.0f*M_PI)*32000);
+			oscTables[zzub::oscillator_type_pulse][tabOfs+i]=(short)(square(dx*2.0f*M_PI)*32000);
+			oscTables[zzub::oscillator_type_triangle][tabOfs+i]=(short)(triangle(dx*2.0f*M_PI)*32000);
 			oscTables[zzub::oscillator_type_noise][tabOfs+i]=(short) (((float)rand()/(float)RAND_MAX)*64000.f - 32000);
-			oscTables[zzub::oscillator_type_sawtooth_303][tabOfs+i]=(short)(sawtooth(dx*2.0f*PI)*32000);
-			oscTables[6][tabOfs+i]=(short)(sin(dx*2.0f*PI)*32000);
+			oscTables[zzub::oscillator_type_sawtooth_303][tabOfs+i]=(short)(sawtooth(dx*2.0f*M_PI)*32000);
+			oscTables[6][tabOfs+i]=(short)(sin(dx*2.0f*M_PI)*32000);
 		}
 		tabSize/=2;
 	}
