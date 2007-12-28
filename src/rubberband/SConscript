@@ -10,7 +10,25 @@ import glob
 localenv = env.Copy()
 
 files = [
+"src/RubberBandStretcher.cpp",
+"src/ConstantAudioCurve.cpp",
+"src/HighFrequencyAudioCurve.cpp",
+"src/PercussiveAudioCurve.cpp",
+"src/AudioCurve.cpp",
+"src/Resampler.cpp",
+"src/SpectralDifferenceAudioCurve.cpp",
+"src/StretchCalculator.cpp",
+"src/StretcherImpl.cpp",
+"src/StretcherProcess.cpp",
+"src/StretcherChannelData.cpp",
+"src/FFT.cpp",
+"src/Thread.cpp",
+"src/sysutils.cpp"
 ]
+
+localenv.Append(CPPPATH=[
+	'rubberband',
+])
 
 #~ if cl:
 	#~ localenv.Append(CCFLAGS=[

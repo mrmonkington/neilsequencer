@@ -127,7 +127,7 @@ if localenv['RUBBERBAND']:
 		'rubberband_static',
 	])
 	localenv.Append(CPPPATH=[
-		'../rubberband/src',
+		'../rubberband',
 	])
 	localenv.Append(CCFLAGS=[
 		'-DUSE_RUBBERBAND',
