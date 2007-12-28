@@ -224,6 +224,7 @@ class WaveEditView(gtk.DrawingArea):
 		bgbrush = cfg.get_float_color('WE BG')
 		pen = cfg.get_float_color('WE Line')
 		brush = cfg.get_float_color('WE Fill')
+		brush2 = cfg.get_float_color('WE Peak Fill')
 		gridpen = cfg.get_float_color('WE Grid')
 		selbrush = cfg.get_float_color('WE Selection')
 		
@@ -236,9 +237,35 @@ class WaveEditView(gtk.DrawingArea):
 		if self.level == None:
 			return
 		
+		ctx.set_source_rgb(*gridpen)
+		rb,re = self.range
+		rsize = re - rb
+		spb = (60.0 * float(self.level.get_samples_per_second())) / float(player.get_bpm()) # samples per beat
+		ppb = (float(w) * spb)/ rsize # pixels begin
+		l = 0
+		while True:
+			tb = int((rb / spb)) * spb
+			te = int((re / spb)+1) * spb
+			xp = tb
+			a = 0.2
+			ctx.set_source_rgba(*(gridpen + (a,)))
+			while xp < te:
+				x1 = self.sample_to_client(xp, 0.0)[0]
+				ctx.move_to(x1, 0)
+				ctx.line_to(x1, h)
+				ctx.stroke()
+				xp += spb
+			spb *= 0.5
+			ppb *= 0.5
+			l += 1
+			if (l > 5) or (ppb < 16):
+				break
+		
+		#ctx.move_to(
+		
 		minbuffer, maxbuffer, ampbuffer = self.minbuffer, self.maxbuffer, self.ampbuffer
 
-		ctx.set_source_rgb(*gridpen)
+		ctx.set_source_rgba(*(brush2 + (0.5,)))
 		ctx.move_to(0, h-1)
 		for x in xrange(w):
 			a = 1.0 + linear2db(ampbuffer[x],-80.0) / 80.0
