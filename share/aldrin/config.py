@@ -112,6 +112,7 @@ DEFAULT_THEME = {
 	'WE Peak Fill': 0xe0e0e0,
 	'WE Grid': 0x008000,
 	'WE Selection': 0xff0000,
+	'WE Stretch Cue': 0x00ff00,
 }
 
 class AldrinConfig(ConfigParser.ConfigParser):

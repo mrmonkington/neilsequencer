@@ -49,7 +49,7 @@ class WaveEditPanel(gtk.VBox):
 		self.waveedscrollwin = add_scrollbars(self.view)
 		self.pack_start(self.waveedscrollwin)
 		waveedbuttons = gtk.HBox(False, MARGIN)
-		self.btndelrange = new_image_button(filepath("res/clear.png"), "Delete Range", self.wavetable.tooltips)
+		self.btndelrange = new_image_button(filepath("res/clear.png"), "Delete Range", self.wavetable.tooltips)		
 		waveedbuttons.pack_start(self.btndelrange, expand=False)
 		self.pack_end(waveedbuttons, expand=False)
 		self.btndelrange.connect('clicked', self.on_delete_range)
@@ -76,6 +76,7 @@ class WaveEditView(gtk.DrawingArea):
 		self.wave = None
 		self.level = None
 		self.dragging = False
+		self.stretching = False
 		gtk.DrawingArea.__init__(self)
 		self.add_events(gtk.gdk.ALL_EVENTS_MASK)
 		self.connect('button-press-event', self.on_left_down)
@@ -171,25 +172,50 @@ class WaveEditView(gtk.DrawingArea):
 		"""
 		Callback that responds to left mouse down over the wave view.
 		"""
-		self.dragging = True
 		mx,my = int(event.x), int(event.y)
-		s,a = self.client_to_sample(mx,my)
-		if self.selection:
-			begin,end = self.selection
-			if abs(s - begin) < abs(s - end):
-				self.startpos = end
+		if (event.button == 1):
+			s,a = self.client_to_sample(mx,my)
+			if (event.state & gtk.gdk.SHIFT_MASK):
+				if self.selection:
+					begin,end = self.selection
+					self.stretching = True
+					self.stretchbegin = max(min(s, end),begin)
+					self.stretchend = self.stretchbegin
+					self.grab_add()
+					self.redraw()
+			elif (event.type == gtk.gdk._2BUTTON_PRESS):
+				self.selection = None
+				self.dragging = False
+				self.redraw()
 			else:
-				self.startpos = begin
-		else:
-			self.startpos = s
-		self.grab_add()
-		self.redraw()
+				self.dragging = True
+				if self.selection:
+					begin,end = self.selection
+					if abs(s - begin) < abs(s - end):
+						self.startpos = end
+					else:
+						self.startpos = begin
+				else:
+					self.startpos = s
+				self.grab_add()
+				self.redraw()
 
 	def on_left_up(self, widget, event):
 		"""
 		Callback that responds to left mouse up over the wave view.
 		"""
-		if self.dragging == True:
+		if self.stretching == True:
+			self.grab_remove()
+			self.stretching = False
+			begin,end = self.selection
+			xo,xn = self.stretchbegin, self.stretchend # old pos, new pos
+			if xo != xn:
+				if begin < xo:					
+					self.level.stretch_range(begin,xo,xn - begin)
+				if end > xo:
+					self.level.stretch_range(xo,end,end - xn)
+			self.redraw()
+		elif self.dragging == True:
 			self.dragging = False
 			self.grab_remove()
 			mx,my = int(event.x), int(event.y)
@@ -204,11 +230,14 @@ class WaveEditView(gtk.DrawingArea):
 		"""
 		Callback that responds to mouse motion over the wave view.
 		"""
-		mx,my,state = self.window.get_pointer()
-		mx,my = int(mx),int(my)
-		if self.dragging == True:
-			mx,my = int(event.x), int(event.y)
-			s,a = self.client_to_sample(mx,my)
+		mx,my = int(event.x), int(event.y)
+		s,a = self.client_to_sample(mx,my)
+		if self.stretching == True:
+			if self.selection:
+				begin,end = self.selection
+				self.stretchend = max(min(s, end),begin)
+				self.redraw()
+		elif self.dragging == True:
 			if s < self.startpos:
 				self.set_selection(s, self.startpos)
 			else:
@@ -248,6 +277,7 @@ class WaveEditView(gtk.DrawingArea):
 		brush2 = cfg.get_float_color('WE Peak Fill')
 		gridpen = cfg.get_float_color('WE Grid')
 		selbrush = cfg.get_float_color('WE Selection')
+		stretchbrush = cfg.get_float_color('WE Stretch Cue')
 		
 		ctx.translate(0.5,0.5)
 		ctx.set_source_rgb(*bgbrush)
@@ -313,6 +343,21 @@ class WaveEditView(gtk.DrawingArea):
 				ctx.set_source_rgba(*selbrush + (0.3,))
 				ctx.rectangle(x1, 0, x2-x1, h)
 				ctx.fill()
+				
+		if self.stretching:
+			x1 = self.sample_to_client(self.stretchbegin, 0.0)[0]
+			x2 = self.sample_to_client(self.stretchend, 0.0)[0]
+			ctx.set_source_rgb(*stretchbrush)
+			if (x1 >= 0) and (x1 <= w):
+				ctx.move_to(x1, 0)
+				ctx.line_to(x1, h)
+				ctx.stroke()
+			if (x2 >= 0) and (x2 <= w):
+				ctx.move_to(x2, 0)
+				ctx.line_to(x2, h)
+				ctx.stroke()
+				ctx.rectangle(x2-4, (h/2)-4, 8, 8)
+				ctx.stroke()
 
 if __name__ == '__main__':
 	import sys, utils
