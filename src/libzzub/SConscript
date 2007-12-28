@@ -121,6 +121,18 @@ if localenv['SNDFILE']:
 		'-DUSE_SNDFILE',
 	])
 
+if localenv['RUBBERBAND']:
+	localenv.SConscript('../rubberband/SConscript')
+	localenv.Append(LIBS=[
+		'rubberband_static',
+	])
+	localenv.Append(CPPPATH=[
+		'../rubberband/src',
+	])
+	localenv.Append(CCFLAGS=[
+		'-DUSE_RUBBERBAND',
+	])
+
 if localenv['BUZZ2ZZUB'] == True:
 	localenv.Append(CCFLAGS=[
 		'-DBUZZ2ZZUB',

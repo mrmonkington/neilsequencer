@@ -74,6 +74,7 @@ opts.Add("SSE", "Support SSE instructions", False, None, bool_converter)
 opts.Add("SSE2", "Support SSE2 instructions", False, None, bool_converter)
 opts.Add("MP3", "Support loading of MP3 samples", linux, None, bool_converter)
 opts.Add("LADSPA", "Support LADSPA plugins", False, None, bool_converter)
+opts.Add("RUBBERBAND", "Support timestretching with librubberband", False, None, bool_converter)
 opts.Add("DSSI", "Support DSSI plugins", False, None, bool_converter)
 opts.Add("JOBS", "Number of threads to compile with", '2') 
 
@@ -300,6 +301,7 @@ env['PORTMIDI_SRC_PATH'] = '${ROOTPATH}/src/portmidi'
 env['LIBZZUB_SRC_PATH'] = '${ROOTPATH}/src/libzzub'
 env['MINIZIP_SRC_PATH'] = '${ROOTPATH}/src/minizip'
 env['PLUGINS_SRC_PATH'] = '${ROOTPATH}/src/plugins'
+env['RUBBERBAND_SRC_PATH'] = '${ROOTPATH}/src/rubberband'
 env['CCMPLAYER_SRC_PATH'] = '${ROOTPATH}/src/ccmplayer'
 env['BMPCCM_SRC_PATH'] = '${ROOTPATH}/src/bmp-ccm'
 env['LUNAR_SCRIPT_PATH'] = '${ROOTPATH}/share/zzub/lunar'
@@ -468,6 +470,7 @@ if (not is_cleaning()) and ('configure' in COMMAND_LINE_TARGETS):
 	print "OSS:".rjust(30),yesno[env['OSS'] == True]
 	print "Use SSE CPU Extension:".rjust(30),yesno[env['SSE'] == True]
 	print "Use SSE2 CPU Extension:".rjust(30),yesno[env['SSE2'] == True]
+	print "Use Timestretching:".rjust(30),yesno[env['RUBBERBAND'] == True]
 	print
 	print "=== Components ===".center(50)
 	print "Lunar DSP Host:".rjust(30),yesno[env['LUNAR'] == True]
