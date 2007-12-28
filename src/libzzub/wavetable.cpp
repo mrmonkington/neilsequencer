@@ -303,6 +303,9 @@ bool wave_info_ex::remove_wave_range(size_t level, size_t fromSample, size_t num
 	return true;
 }
 
+bool wave_info_ex::stretch_wave_range(size_t level, size_t fromSample, size_t numSamples, size_t newSize) {
+	return true;
+}
 
 size_t waveFormatToBitSize(int waveFormat) {
 	switch (waveFormat) {

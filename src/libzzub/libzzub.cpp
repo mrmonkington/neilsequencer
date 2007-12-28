@@ -1682,6 +1682,10 @@ int zzub_wavelevel_remove_range(zzub_wavelevel_t * level, int start, int end) {
 	return level->wave->remove_wave_range(level->level, (size_t)start, (size_t)(end - start))?0:-1;
 }
 
+int zzub_wavelevel_stretch_range(zzub_wavelevel_t * level, int start, int end, int newsize) {
+	return level->wave->stretch_wave_range(level->level, (size_t)start, (size_t)(end - start), (size_t)newsize)?0:-1;
+}
+
 int zzub_wavelevel_insert(zzub_wavelevel_t * level, int start, void* sampleData, int channels, int waveFormat, int numSamples) {
 	return level->wave->insert_wave_at(level->level, (size_t)start, sampleData, (size_t)channels, waveFormat, (size_t)numSamples)?0:-1;
 }

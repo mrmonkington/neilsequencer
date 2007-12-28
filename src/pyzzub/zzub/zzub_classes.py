@@ -1420,27 +1420,31 @@ class _Wavelevel(object):
 		assert self._handle
 		return zzub_wavelevel_silence_range(self._handle,start,end)
 	
+	def stretch_range(self, start, end, newsize):
+		assert self._handle
+		return zzub_wavelevel_stretch_range(self._handle,start,end,newsize)
+	
 
 # you can override these
-Wavelevel = _Wavelevel
-EventConnectionBinding = _EventConnectionBinding
-Plugincollection = _Plugincollection
-Pluginloader = _Pluginloader
+Postprocess = _Postprocess
+Player = _Player
+Wave = _Wave
 Sequence = _Sequence
+Output = _Output
+EventConnectionBinding = _EventConnectionBinding
 Pattern = _Pattern
+Patterntrack = _Patterntrack
+AudioConnection = _AudioConnection
+EventConnection = _EventConnection
+Wavelevel = _Wavelevel
+Input = _Input
+Plugincollection = _Plugincollection
+Connection = _Connection
+Attribute = _Attribute
+Sequencer = _Sequencer
+Plugin = _Plugin
+Parameter = _Parameter
 Archive = _Archive
 Envelope = _Envelope
 Midimapping = _Midimapping
-Connection = _Connection
-Attribute = _Attribute
-Postprocess = _Postprocess
-Wave = _Wave
-Plugin = _Plugin
-Parameter = _Parameter
-Player = _Player
-Output = _Output
-EventConnection = _EventConnection
-Sequencer = _Sequencer
-Input = _Input
-Patterntrack = _Patterntrack
-AudioConnection = _AudioConnection
+Pluginloader = _Pluginloader

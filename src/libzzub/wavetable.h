@@ -42,6 +42,7 @@ struct wave_info_ex : wave_info {
 	bool create_wave_range(size_t level, size_t fromSample, size_t numSamples, void** sampleData);
 	bool silence_wave_range(size_t level, size_t fromSample, size_t numSamples);
 	bool remove_wave_range(size_t level, size_t fromSample, size_t numSamples);
+	bool stretch_wave_range(size_t level, size_t fromSample, size_t numSamples, size_t newSize);
 	bool insert_wave_at(size_t level, size_t atSample, void* sampleData, size_t channels, int waveFormat, size_t numSamples);
 	size_t get_level_index(wave_level* level);
 	void set_looping(bool state);
