@@ -25,7 +25,7 @@ Provides dialogs, classes and controls to display/load/save envelopes
 from gtkimport import gtk
 import os, sys
 from utils import prepstr, db2linear, linear2db, note2str
-from utils import read_int, write_int
+from utils import read_int, write_int, add_scrollbars, new_image_button, filepath
 import zzub
 import config
 import common
@@ -39,6 +39,27 @@ DOTSIZE = 8
 # matches existing points exactly or approximately
 EXACT = 0
 NEXT = 1
+
+class WaveEditPanel(gtk.VBox):
+	def __init__(self, wavetable):
+		gtk.VBox.__init__(self, False, MARGIN)
+		self.wavetable = wavetable
+		self.view = WaveEditView(wavetable)
+		self.set_border_width(MARGIN)
+		self.waveedscrollwin = add_scrollbars(self.view)
+		self.pack_start(self.waveedscrollwin)
+		waveedbuttons = gtk.HBox(False, MARGIN)
+		self.btndelrange = new_image_button(filepath("res/clear.png"), "Delete Range", self.wavetable.tooltips)
+		waveedbuttons.pack_start(self.btndelrange, expand=False)
+		self.pack_end(waveedbuttons, expand=False)
+		self.btndelrange.connect('clicked', self.on_delete_range)
+		
+	def update(self):
+		self.view.update()
+
+	def on_delete_range(self, widget):
+		self.view.delete_range()
+		self.wavetable.update_sampleprops()
 
 class WaveEditView(gtk.DrawingArea):
 	"""
@@ -253,8 +274,8 @@ class WaveEditView(gtk.DrawingArea):
 				x1 = self.sample_to_client(xp, 0.0)[0]
 				ctx.move_to(x1, 0)
 				ctx.line_to(x1, h)
-				ctx.stroke()
 				xp += spb
+			ctx.stroke()
 			spb *= 0.5
 			ppb *= 0.5
 			l += 1

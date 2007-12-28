@@ -30,7 +30,7 @@ import utils
 import zzub
 import config
 from envelope import EnvelopeView, ADSRPanel
-from waveedit import WaveEditView
+from waveedit import WaveEditPanel
 import freesound
 import popen2
 import common
@@ -142,7 +142,7 @@ class WavetablePanel(gtk.Notebook):
 		self.cbenvelope = gtk.combo_box_new_text()
 		self.chkenable = gtk.CheckButton("Use Envelope")
 		self.envelope = EnvelopeView(self)
-		self.waveedit = WaveEditView(self)
+		self.waveedit = WaveEditPanel(self)
 
 		samplebuttons = gtk.HBox(False, MARGIN)
 		samplebuttons.pack_start(self.btnstoresample, expand=False)
@@ -179,17 +179,7 @@ class WavetablePanel(gtk.Notebook):
 		self.envscrollwin = add_scrollbars(self.envelope)
 		envsection.pack_start(self.envscrollwin)
 		nbsampleprops.append_page(envsection, gtk.Label("Envelopes"))
-		
-		waveedsection = gtk.VBox(False, MARGIN)
-		waveedsection.set_border_width(MARGIN)
-		self.waveedscrollwin = add_scrollbars(self.waveedit)
-		waveedsection.pack_start(self.waveedscrollwin)
-		waveedbuttons = gtk.HBox(False, MARGIN)
-		self.btndelrange = new_image_button(filepath("res/clear.png"), "Delete Range", self.tooltips)
-		waveedbuttons.pack_start(self.btndelrange, expand=False)
-		waveedsection.pack_end(waveedbuttons, expand=False)
-		
-		nbsampleprops.append_page(waveedsection, gtk.Label("Sample Editor"))
+		nbsampleprops.append_page(self.waveedit, gtk.Label("Sample Editor"))
 		sampleprops.pack_start(nbsampleprops)
 		self.instrpanel.add1(samplesel)
 		self.instrpanel.add2(sampleprops)
@@ -219,8 +209,7 @@ class WavetablePanel(gtk.Notebook):
 		self.chkpingpong.connect('clicked', self.on_check_pingpong)
 		self.chkenable.connect('clicked', self.on_check_envdisabled)
 		
-		self.btndelrange.connect('clicked', self.on_delete_range)
-		
+	
 		self.edloopstart.connect('focus-out-event', self.on_loop_start_apply)
 		self.edloopstart.connect('activate', self.on_loop_start_apply)
 		self.edloopend.connect('focus-out-event', self.on_loop_end_apply)
@@ -866,10 +855,6 @@ class WavetablePanel(gtk.Notebook):
 			self.subsamplelist.SetStringItem(i, 2, prepstr("%i" % level.get_samples_per_second()), -1)
 			self.subsamplelist.SetStringItem(i, 3, prepstr("%i" % level.get_loop_start()), -1)
 			self.subsamplelist.SetStringItem(i, 4, prepstr("%i" % level.get_loop_end()), -1)
-			
-	def on_delete_range(self, widget):
-		self.waveedit.delete_range()
-		self.update_sampleprops()
 				
 	def update_sampleprops(self):
 		"""
@@ -896,7 +881,6 @@ class WavetablePanel(gtk.Notebook):
 		self.cbmachine.set_sensitive(iswave)
 		self.cbenvelope.set_sensitive(iswave)
 		self.chkenable.set_sensitive(iswave)
-		self.btndelrange.set_sensitive(iswave)
 		self.btnadsr.set_sensitive(iswave)
 		self.btnfitloop.set_sensitive(iswave)
 		self.btnclear.set_sensitive(iswave)

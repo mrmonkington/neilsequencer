@@ -570,6 +570,7 @@ class PatternView(gtk.DrawingArea):
 		self.toolbar = None
 		self.statusbar = None
 		self.patternsize = 16
+		self.index = None
 		self.pattern = None
 		self.plugin = None
 		self.row = 0
