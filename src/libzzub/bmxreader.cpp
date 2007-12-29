@@ -93,6 +93,8 @@ all_ok:
 	player->lock();
 	player->playerState=player_state_stopped;
 	player->resetMachines();
+	// when pasting machines into a song, new tracks must inherit the current play position
+	player->setSequencerPosition(player->getSequencerPosition());
 	player->unlock();
 
 	return returnValue;
