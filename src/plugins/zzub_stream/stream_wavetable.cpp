@@ -112,8 +112,11 @@ bool stream_wavetable::process_stereo(float **pin, float **pout, int numsamples,
 		return false;
 	}
     
+	bool looping = wave->flags&zzub::wave_flag_loop?true:false;
+	unsigned int sample_count = wave->get_sample_count(level);
+
 	int maxread = numsamples;
-	if (currentPosition + maxread > wave->get_sample_count(level)) 
+	if (!looping && currentPosition + maxread > sample_count) 
 		maxread = wave->get_sample_count(level) - currentPosition;
 	
 	if (maxread<=0) {
@@ -139,8 +142,14 @@ bool stream_wavetable::process_stereo(float **pin, float **pout, int numsamples,
 			pout[1][i] = sample_scale(format, sample_ptrc) * amp;
 			sample_ptrc += bytes_per_sample;
 		}
+
+		if (looping && currentPosition >= wave->get_loop_end(level) - 1) {
+			currentPosition = wave->get_loop_start(level);
+			sample_ptrc = (char*)wave->get_sample_ptr(level);
+			sample_ptrc += (bytes_per_sample * channels) * currentPosition;
+		} else
+			currentPosition++;
 	}
-	currentPosition += maxread;
 
 	return true;
 }
