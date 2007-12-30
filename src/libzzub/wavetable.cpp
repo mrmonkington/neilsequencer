@@ -19,6 +19,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <algorithm>
 #include "common.h"
 #include "tools.h"
+#if defined(USE_RUBBERBAND)
+#include "rubberband/RubberBandStretcher.h"
+#endif
 
 namespace zzub {
 
@@ -304,6 +307,123 @@ bool wave_info_ex::remove_wave_range(size_t level, size_t fromSample, size_t num
 }
 
 bool wave_info_ex::stretch_wave_range(size_t level, size_t fromSample, size_t numSamples, size_t newSize) {
+	size_t size = get_sample_count(level);
+	size_t channels = get_stereo()?2:1;
+	int format = get_wave_format(level);
+	int samplerate = get_level(level)->samples_per_second;
+	
+	
+	int newsize = (int)size - (int)numSamples + (int)newSize;
+	int lastrangesize = (int)size - (int)fromSample - (int)numSamples;
+	
+	assert(newsize > 0);
+	assert(lastrangesize >= 0);
+	assert(fromSample < size);
+	assert((fromSample + numSamples) <= size);
+
+	void* oldrange = 0; // part to sample
+	void* lastrange = 0; // rest of sample
+	
+	create_wave_range(level, fromSample, numSamples, &oldrange);
+	if (lastrangesize)
+		create_wave_range(level, fromSample+numSamples, lastrangesize, &lastrange);
+
+	reallocate_level(level, newsize);
+
+#if defined(USE_RUBBERBAND)
+	{
+		using namespace RubberBand;
+		double ratio = (double)newSize / (double)numSamples;
+		RubberBand::RubberBandStretcher stretcher(samplerate, channels,
+			RubberBandStretcher::OptionProcessOffline 
+			| RubberBandStretcher::OptionStretchElastic 
+			| RubberBandStretcher::OptionTransientsCrisp 
+			| RubberBandStretcher::OptionPhaseAdaptive
+			| RubberBandStretcher::OptionThreadingAuto 
+			| RubberBandStretcher::OptionWindowStandard, ratio);
+		stretcher.setExpectedInputDuration(numSamples);
+		//stretcher.setMaxProcessSize(1024);
+		
+		const int BLOCKSIZE = 1024;
+		
+		float audio[2][BLOCKSIZE];		
+		float *buf[] = { &audio[0][0], &audio[1][0] };
+		
+		int toprocess = (int)numSamples;
+		int processed = 0;
+		
+		// first, study
+		while (toprocess > 0) {
+			int blocksize = std::min(toprocess, BLOCKSIZE);
+			for (int i = 0; i < channels; ++i) {
+				CopySamples(oldrange, &audio[i][0], blocksize, format, zzub::wave_buffer_type_f32, channels, 1, processed*channels+i, 0);
+			}
+			std::cout << "studying " << blocksize << " blocks at @" << processed << " (" << channels << " channels, final = " << (toprocess == blocksize) << ")" << std::endl;
+			stretcher.study(buf, blocksize, toprocess == blocksize);
+			toprocess -= blocksize;
+			processed += blocksize;
+		}
+		
+		toprocess = (int)numSamples;
+		processed = 0;
+		int written = 0;
+		int startpos = (int)fromSample;
+		
+		void *targetptr = get_sample_ptr(level);
+		
+		while (true)
+		{
+			if (stretcher.available() == -1) {
+				std::cout << "stretch is done." << std::endl;
+				break;
+			}
+			while (stretcher.getSamplesRequired())
+			{
+				int blocksize = std::min(toprocess, std::min((int)stretcher.getSamplesRequired(), BLOCKSIZE));
+				for (int i = 0; i < channels; ++i) {
+					CopySamples(oldrange, &audio[i][0], blocksize, format, zzub::wave_buffer_type_f32, channels, 1, processed*channels+i, 0);
+				}
+				std::cout << "processing " << blocksize << " blocks at @" << processed << " (" << channels << " channels, final = " << (toprocess == blocksize) << ")" << std::endl;
+				stretcher.process(buf, blocksize, toprocess == blocksize);
+				toprocess -= blocksize;
+				processed += blocksize;				
+			}
+			while (stretcher.available() > 0)
+			{
+				int blocksize = std::min(stretcher.available(), BLOCKSIZE);
+				std::cout << "retrieving " << blocksize << " blocks at @" << written << " (" << channels << " channels, final = " << (stretcher.available() == blocksize) << ")" << std::endl;
+				stretcher.retrieve(buf, blocksize);
+				for (int i = 0; i < channels; ++i) {
+					CopySamples(&audio[i][0], targetptr, blocksize, zzub::wave_buffer_type_f32, format, 1, channels, 0, startpos*channels+i);
+				}
+				written += blocksize;
+				startpos += blocksize;
+			}
+		}
+
+		std::cout << "old selection size is " << numSamples << " samples, new size is " << newSize << " samples." << std::endl;
+		std::cout << "processed " << processed << " samples, retrieved " << written << " samples." << std::endl;
+		std::cout << "old wave size was " << size << ", new size is " << newsize << std::endl;
+		
+	}
+#else
+	{
+		insert_wave_at(level, fromSample, oldrange, channels, format, newSize);
+	}	
+#endif
+
+	//~ delete[] (char*)oldrange;
+	if (lastrangesize)
+	{
+		insert_wave_at(level, fromSample + newSize, lastrange, channels, format, lastrangesize);
+		//~ delete[] (char*)lastrange;
+	}
+
+	// adjust end looping point
+	size_t loopEnd = get_loop_end(level);
+	if (loopEnd > newsize)
+		set_loop_end(level, newsize);
+	
 	return true;
 }
 

@@ -256,51 +256,99 @@ void CopyMonoToStereoEx(void* srcbuf, void* targetbuf, size_t numSamples, int wa
 void CopyStereoToMonoEx(void* srcbuf, void* targetbuf, size_t numSamples, int waveFormat) {
 }
 
-
 // from 16 bit conversion
-void Copy16To24(void* srcbuf, void* targetbuf, size_t numSamples) {
+void Copy16To24(void* srcbuf, void* targetbuf, size_t numSamples, size_t srcstep, size_t dststep, size_t srcoffset, size_t dstoffset) {
+	CopySamplesT((short*)srcbuf, (S24*)targetbuf, numSamples, srcstep, dststep, srcoffset, dstoffset);
 }
 
-void Copy16ToS32(void* srcbuf, void* targetbuf, size_t numSamples) {
+void Copy16ToS32(void* srcbuf, void* targetbuf, size_t numSamples, size_t srcstep, size_t dststep, size_t srcoffset, size_t dstoffset) {
+	CopySamplesT((short*)srcbuf, (int*)targetbuf, numSamples, srcstep, dststep, srcoffset, dstoffset);
 }
 
-void Copy16ToF32(void* srcbuf, void* targetbuf, size_t numSamples) {
+void Copy16ToF32(void* srcbuf, void* targetbuf, size_t numSamples, size_t srcstep, size_t dststep, size_t srcoffset, size_t dstoffset) {
+	CopySamplesT((short*)srcbuf, (float*)targetbuf, numSamples, srcstep, dststep, srcoffset, dstoffset);
 }
 
 
 // from 32 bit floating point conversion
-void CopyF32To16(void* srcbuf, void* targetbuf, size_t numSamples) {
+void CopyF32To16(void* srcbuf, void* targetbuf, size_t numSamples, size_t srcstep, size_t dststep, size_t srcoffset, size_t dstoffset) {
+	CopySamplesT((float*)srcbuf, (short*)targetbuf, numSamples, srcstep, dststep, srcoffset, dstoffset);
 }
 
-void CopyF32To24(void* srcbuf, void* targetbuf, size_t numSamples) {
+void CopyF32To24(void* srcbuf, void* targetbuf, size_t numSamples, size_t srcstep, size_t dststep, size_t srcoffset, size_t dstoffset) {
+	CopySamplesT((float*)srcbuf, (S24*)targetbuf, numSamples, srcstep, dststep, srcoffset, dstoffset);
 }
 
-void CopyF32ToS32(void* srcbuf, void* targetbuf, size_t numSamples) {
+void CopyF32ToS32(void* srcbuf, void* targetbuf, size_t numSamples, size_t srcstep, size_t dststep, size_t srcoffset, size_t dstoffset) {
+	CopySamplesT((float*)srcbuf, (float*)targetbuf, numSamples, srcstep, dststep, srcoffset, dstoffset);
 }
 
 
 // from 32 bit integer conversion
-void CopyS32To16(void* srcbuf, void* targetbuf, size_t numSamples) {
+void CopyS32To16(void* srcbuf, void* targetbuf, size_t numSamples, size_t srcstep, size_t dststep, size_t srcoffset, size_t dstoffset) {
+	CopySamplesT((int*)srcbuf, (short*)targetbuf, numSamples, srcstep, dststep, srcoffset, dstoffset);
 }
 
-void CopyS32To24(void* srcbuf, void* targetbuf, size_t numSamples) {
+void CopyS32To24(void* srcbuf, void* targetbuf, size_t numSamples, size_t srcstep, size_t dststep, size_t srcoffset, size_t dstoffset) {
+	CopySamplesT((int*)srcbuf, (S24*)targetbuf, numSamples, srcstep, dststep, srcoffset, dstoffset);
 }
 
-void CopyS32ToF32(void* srcbuf, void* targetbuf, size_t numSamples) {
+void CopyS32ToF32(void* srcbuf, void* targetbuf, size_t numSamples, size_t srcstep, size_t dststep, size_t srcoffset, size_t dstoffset) {
+	CopySamplesT((int*)srcbuf, (float*)targetbuf, numSamples, srcstep, dststep, srcoffset, dstoffset);
 }
 
 
 // from 24 bit integer conversion
-void Copy24To16(void* srcbuf, void* targetbuf, size_t numSamples) {
+void Copy24To16(void* srcbuf, void* targetbuf, size_t numSamples, size_t srcstep, size_t dststep, size_t srcoffset, size_t dstoffset) {
+	CopySamplesT((S24*)srcbuf, (short*)targetbuf, numSamples, srcstep, dststep, srcoffset, dstoffset);
 }
 
-void Copy24ToF32(void* srcbuf, void* targetbuf, size_t numSamples) {
+void Copy24ToF32(void* srcbuf, void* targetbuf, size_t numSamples, size_t srcstep, size_t dststep, size_t srcoffset, size_t dstoffset) {
+	CopySamplesT((S24*)srcbuf, (float*)targetbuf, numSamples, srcstep, dststep, srcoffset, dstoffset);
 }
 
-void Copy24ToS32(void* srcbuf, void* targetbuf, size_t numSamples) {
+void Copy24ToS32(void* srcbuf, void* targetbuf, size_t numSamples, size_t srcstep, size_t dststep, size_t srcoffset, size_t dstoffset) {
+	CopySamplesT((S24*)srcbuf, (int*)targetbuf, numSamples, srcstep, dststep, srcoffset, dstoffset);
 }
 
+void Copy16(void* srcbuf, void* targetbuf, size_t numSamples, size_t srcstep, size_t dststep, size_t srcoffset, size_t dstoffset) {
+	CopySamplesT((short*)srcbuf, (short*)targetbuf, numSamples, srcstep, dststep, srcoffset, dstoffset);
+}
 
+void Copy24(void* srcbuf, void* targetbuf, size_t numSamples, size_t srcstep, size_t dststep, size_t srcoffset, size_t dstoffset) {
+	CopySamplesT((S24*)srcbuf, (S24*)targetbuf, numSamples, srcstep, dststep, srcoffset, dstoffset);
+}
+
+void CopyS32(void* srcbuf, void* targetbuf, size_t numSamples, size_t srcstep, size_t dststep, size_t srcoffset, size_t dstoffset) {
+	CopySamplesT((int*)srcbuf, (int*)targetbuf, numSamples, srcstep, dststep, srcoffset, dstoffset);
+}
+
+void CopyF32(void* srcbuf, void* targetbuf, size_t numSamples, size_t srcstep, size_t dststep, size_t srcoffset, size_t dstoffset) {
+	CopySamplesT((float*)srcbuf, (float*)targetbuf, numSamples, srcstep, dststep, srcoffset, dstoffset);
+}
+
+    //~ zzub_wave_buffer_type_si16	= 0,    // signed int 16bit
+    //~ zzub_wave_buffer_type_f32	= 1,    // float 32bit
+    //~ zzub_wave_buffer_type_si32	= 2,    // signed int 32bit
+    //~ zzub_wave_buffer_type_si24	= 3,    // signed int 24bit
+
+typedef void (*CopySamplesPtr)(void *, void *, size_t, size_t, size_t, size_t, size_t);
+
+CopySamplesPtr CopySamplesMatrix[4][4] = {
+	// si16 -> si16, f32, si32, si24
+	Copy16, Copy16ToF32, Copy16ToS32, Copy16To24,
+	// f32 -> si16, f32, si32, si24
+	CopyF32To16, CopyF32, CopyF32ToS32, CopyF32To24,
+	// si32 -> si16, f32, si32, si24
+	CopyS32To16, CopyS32ToF32, CopyS32, CopyS32To24,
+	// si24 -> si16, f32, si32, si24
+	Copy24To16, Copy24ToF32, Copy24ToS32, Copy24,
+};
+
+// auto select based on waveformat
+void CopySamples(void *srcbuf, void *targetbuf, size_t numSamples, int srcWaveFormat, int dstWaveFormat, size_t srcstep, size_t dststep, size_t srcoffset, size_t dstoffset) {
+	CopySamplesMatrix[srcWaveFormat][dstWaveFormat](srcbuf, targetbuf, numSamples, srcstep, dststep, srcoffset, dstoffset);
+}
 
 // found the trims in one of the comments at http://www.codeproject.com/vcpp/stl/stdstringtrim.asp
 

@@ -42,24 +42,76 @@ void CopyMonoToStereoEx(void* srcbuf, void* targetbuf, size_t numSamples, int wa
 void CopyStereoToMonoEx(void* srcbuf, void* targetbuf, size_t numSamples, int waveFormat);
 
 // from 16 bit conversion
-void Copy16To24(void* srcbuf, void* targetbuf, size_t numSamples);
-void Copy16ToS32(void* srcbuf, void* targetbuf, size_t numSamples);
-void Copy16ToF32(void* srcbuf, void* targetbuf, size_t numSamples);
+void Copy16To24(void* srcbuf, void* targetbuf, size_t numSamples, size_t srcstep=1, size_t dststep=1, size_t srcoffset=0, size_t dstoffset=0);
+void Copy16ToS32(void* srcbuf, void* targetbuf, size_t numSamples, size_t srcstep=1, size_t dststep=1, size_t srcoffset=0, size_t dstoffset=0);
+void Copy16ToF32(void* srcbuf, void* targetbuf, size_t numSamples, size_t srcstep=1, size_t dststep=1, size_t srcoffset=0, size_t dstoffset=0);
 
 // from 32 bit floating point conversion
-void CopyF32To16(void* srcbuf, void* targetbuf, size_t numSamples);
-void CopyF32To24(void* srcbuf, void* targetbuf, size_t numSamples);
-void CopyF32ToS32(void* srcbuf, void* targetbuf, size_t numSamples);
+void CopyF32To16(void* srcbuf, void* targetbuf, size_t numSamples, size_t srcstep=1, size_t dststep=1, size_t srcoffset=0, size_t dstoffset=0);
+void CopyF32To24(void* srcbuf, void* targetbuf, size_t numSamples, size_t srcstep=1, size_t dststep=1, size_t srcoffset=0, size_t dstoffset=0);
+void CopyF32ToS32(void* srcbuf, void* targetbuf, size_t numSamples, size_t srcstep=1, size_t dststep=1, size_t srcoffset=0, size_t dstoffset=0);
 
 // from 32 bit integer conversion
-void CopyS32To16(void* srcbuf, void* targetbuf, size_t numSamples);
-void CopyS32To24(void* srcbuf, void* targetbuf, size_t numSamples);
-void CopyS32ToF32(void* srcbuf, void* targetbuf, size_t numSamples);
+void CopyS32To16(void* srcbuf, void* targetbuf, size_t numSamples, size_t srcstep=1, size_t dststep=1, size_t srcoffset=0, size_t dstoffset=0);
+void CopyS32To24(void* srcbuf, void* targetbuf, size_t numSamples, size_t srcstep=1, size_t dststep=1, size_t srcoffset=0, size_t dstoffset=0);
+void CopyS32ToF32(void* srcbuf, void* targetbuf, size_t numSamples, size_t srcstep=1, size_t dststep=1, size_t srcoffset=0, size_t dstoffset=0);
 
 // from 24 bit integer conversion
-void Copy24To16(void* srcbuf, void* targetbuf, size_t numSamples);
-void Copy24ToF32(void* srcbuf, void* targetbuf, size_t numSamples);
-void Copy24ToS32(void* srcbuf, void* targetbuf, size_t numSamples);
+void Copy24To16(void* srcbuf, void* targetbuf, size_t numSamples, size_t srcstep=1, size_t dststep=1, size_t srcoffset=0, size_t dstoffset=0);
+void Copy24ToF32(void* srcbuf, void* targetbuf, size_t numSamples, size_t srcstep=1, size_t dststep=1, size_t srcoffset=0, size_t dstoffset=0);
+void Copy24ToS32(void* srcbuf, void* targetbuf, size_t numSamples, size_t srcstep=1, size_t dststep=1, size_t srcoffset=0, size_t dstoffset=0);
+
+// trivial conversions
+void Copy16(void* srcbuf, void* targetbuf, size_t numSamples, size_t srcstep=1, size_t dststep=1, size_t srcoffset=0, size_t dstoffset=0);
+void Copy24(void* srcbuf, void* targetbuf, size_t numSamples, size_t srcstep=1, size_t dststep=1, size_t srcoffset=0, size_t dstoffset=0);
+void CopyS32(void* srcbuf, void* targetbuf, size_t numSamples, size_t srcstep=1, size_t dststep=1, size_t srcoffset=0, size_t dstoffset=0);
+void CopyF32(void* srcbuf, void* targetbuf, size_t numSamples, size_t srcstep=1, size_t dststep=1, size_t srcoffset=0, size_t dstoffset=0);
+
+struct S24 {
+	union {
+		struct {
+			char c3[3];
+		};
+		struct {
+			short s;
+			char c;
+		};
+	};
+};
+
+// auto select based on waveformat
+void CopySamples(void *srcbuf, void *targetbuf, size_t numSamples, int srcWaveFormat, int dstWaveFormat, size_t srcstep=1, size_t dststep=1, size_t srcoffset=0, size_t dstoffset=0);
+
+inline void ConvertSample(const short &src, short &dst) { dst = src; }
+inline void ConvertSample(const short &src, S24 &dst) { dst.s = src; dst.c = 0; }
+inline void ConvertSample(const short &src, int &dst) { dst = (int)src * (1<<16); }
+inline void ConvertSample(const short &src, float &dst) { dst = (float)src / 32767.0f; }
+
+inline void ConvertSample(const S24 &src, short &dst) { dst = src.s; }
+inline void ConvertSample(const S24 &src, S24 &dst) { dst = src; }
+inline void ConvertSample(const S24 &src, int &dst) { assert(0); }
+inline void ConvertSample(const S24 &src, float &dst) { assert(0); }
+
+inline void ConvertSample(const int &src, short &dst) { dst = (short)(src / (1<<16)); }
+inline void ConvertSample(const int &src, S24 &dst) { assert(0); }
+inline void ConvertSample(const int &src, int &dst) { dst = src; }
+inline void ConvertSample(const int &src, float &dst) { dst = (float)src / 2147483648.0f; }
+
+inline void ConvertSample(const float &src, short &dst) { dst = (short)(src * 32767.0f); }
+inline void ConvertSample(const float &src, S24 &dst) { assert(0); }
+inline void ConvertSample(const float &src, int &dst) { dst = (int)(src * 2147483648.0f); }
+inline void ConvertSample(const float &src, float &dst) { dst = src; }
+
+template <typename srctype, typename dsttype>
+inline void CopySamplesT(const srctype *src, dsttype *dst, size_t numSamples, size_t srcstep=1, size_t dststep=1, size_t srcoffset=0, size_t dstoffset=0) {
+	src += srcoffset;
+	dst += dstoffset;
+	while (numSamples--) {
+		ConvertSample(*src, *dst);
+		src += srcstep;
+		dst += dststep;
+	}
+}
 
 // this is a wrapper for quick GCC support, since GCC's transform() doesnt accept regular tolower
 char backslashToSlash(char c);
