@@ -210,10 +210,14 @@ class WaveEditView(gtk.DrawingArea):
 			begin,end = self.selection
 			xo,xn = self.stretchbegin, self.stretchend # old pos, new pos
 			if xo != xn:
-				if begin < xo:					
-					self.level.stretch_range(begin,xo,xn - begin)
+				print "begin=%i, end=%i, xo=%i, xn=%i" % (begin,end,xo,xn)
 				if end > xo:
+					print "stretch 2nd part (from %i to %i (%i -> %i)" % (xo,end,end-xo,end-xn)
 					self.level.stretch_range(xo,end,end - xn)
+				if begin < xo:					
+					print "stretch 1st part (from %i to %i (%i -> %i)" % (begin,xo,xo - begin, xn - begin)
+					self.level.stretch_range(begin,xo,xn - begin)
+				#~ self.level.stretch_range(self.range[0],self.range[1],(self.range[1] - self.range[0])*2)
 			self.redraw()
 		elif self.dragging == True:
 			self.dragging = False
