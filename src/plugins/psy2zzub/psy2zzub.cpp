@@ -279,7 +279,7 @@ namespace zzub { namespace plugins { namespace psycle_to_zzub {
 
 					if(psycle_info->numParameters > 0 && psycle_info->Parameters) {
 						const int n = psycle_info->numParameters;
-						zzub_info->psy_param.reserve(n);
+						zzub_info->psy_param.resize(n);
 						for(int i(0) ; i < n; ++i) {
 							zzub::parameter & zzub_param(zzub_info->add_global_parameter());
 							const psycle::plugin_interface::CMachineParameter & psycle_param(*psycle_info->Parameters[i]);

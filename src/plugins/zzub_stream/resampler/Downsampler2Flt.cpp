@@ -42,12 +42,20 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #include	<cassert>
 
-
-
 namespace rspl
 {
 
+#pragma optimize("", off)
 
+inline void _normalize(float* y, int c, int s) {
+	for (int i = 0; i < c; i += s) {
+		y[i] += ANTI_DENORMAL_FLT;
+	}
+	for (int i = 0; i < c; i += s) {
+		y[i] -= ANTI_DENORMAL_FLT;
+	}
+}
+#pragma optimize("", on)
 
 /*\\\ PUBLIC \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*/
 
@@ -158,27 +166,8 @@ void	Downsampler2Flt::downsample_block (float dest_ptr [], const float src_ptr [
 	while (pos < nbr_spl);
 
 	// Kills denormals, if any.
-
-	_y_arr [0] += ANTI_DENORMAL_FLT;
-	_y_arr [1] += ANTI_DENORMAL_FLT;
-	_y_arr [2] += ANTI_DENORMAL_FLT;
-	_y_arr [3] += ANTI_DENORMAL_FLT;
-	_y_arr [4] += ANTI_DENORMAL_FLT;
-	_y_arr [5] += ANTI_DENORMAL_FLT;
-	_y_arr [6] += ANTI_DENORMAL_FLT;
-	_y_arr [7] += ANTI_DENORMAL_FLT;
-
-	_y_arr [0] -= ANTI_DENORMAL_FLT;
-	_y_arr [1] -= ANTI_DENORMAL_FLT;
-	_y_arr [2] -= ANTI_DENORMAL_FLT;
-	_y_arr [3] -= ANTI_DENORMAL_FLT;
-	_y_arr [4] -= ANTI_DENORMAL_FLT;
-	_y_arr [5] -= ANTI_DENORMAL_FLT;
-	_y_arr [6] -= ANTI_DENORMAL_FLT;
-	_y_arr [7] -= ANTI_DENORMAL_FLT;
+	_normalize(_y_arr, 8, 1);
 }
-
-
 
 /*
 ==============================================================================
@@ -216,15 +205,8 @@ void	Downsampler2Flt::phase_block (float dest_ptr [], const float src_ptr [], lo
 
 	// Kills denormals on path 0, if any. Theoretically we just need to do it
 	// on results of multiplications with coefficients < 0.5.
-	_y_arr [0] += ANTI_DENORMAL_FLT;
-	_y_arr [2] += ANTI_DENORMAL_FLT;
-	_y_arr [4] += ANTI_DENORMAL_FLT;
-	_y_arr [6] += ANTI_DENORMAL_FLT;
 
-	_y_arr [0] -= ANTI_DENORMAL_FLT;
-	_y_arr [2] -= ANTI_DENORMAL_FLT;
-	_y_arr [4] -= ANTI_DENORMAL_FLT;
-	_y_arr [6] -= ANTI_DENORMAL_FLT;
+	_normalize(_y_arr, 8, 2);
 }
 
 

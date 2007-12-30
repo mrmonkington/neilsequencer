@@ -117,7 +117,7 @@ bool stream_wavetable::process_stereo(float **pin, float **pout, int numsamples,
 
 	int maxread = numsamples;
 	if (!looping && currentPosition + maxread > sample_count) 
-		maxread = wave->get_sample_count(level) - currentPosition;
+		maxread = sample_count - currentPosition;
 	
 	if (maxread<=0) {
 		return false;
