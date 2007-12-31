@@ -74,7 +74,7 @@ opts.Add("SSE", "Support SSE instructions", False, None, bool_converter)
 opts.Add("SSE2", "Support SSE2 instructions", False, None, bool_converter)
 opts.Add("MP3", "Support loading of MP3 samples", linux, None, bool_converter)
 opts.Add("LADSPA", "Support LADSPA plugins", False, None, bool_converter)
-opts.Add("RUBBERBAND", "Support timestretching with librubberband", False, None, bool_converter)
+opts.Add("RUBBERBAND", "Support timestretching with librubberband", True, None, bool_converter)
 opts.Add("DSSI", "Support DSSI plugins", False, None, bool_converter)
 opts.Add("JOBS", "Number of threads to compile with", '2') 
 
