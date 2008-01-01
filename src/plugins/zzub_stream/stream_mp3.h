@@ -43,6 +43,7 @@ struct stream_mp3 : stream_plugin {
 
 	virtual void process_events();
 	virtual bool process_stereo(float **pin, float **pout, int numsamples, int mode);
+	virtual bool process_offline(float **pin, float **pout, int *numsamples, int *channels, int *samplerate) { return false; }
 	virtual void command(int);
 	virtual void stop();
 

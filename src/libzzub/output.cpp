@@ -51,6 +51,7 @@ struct output_plugin : plugin {
 		attributes_changed();
 	}
 	virtual void process_controller_events() {}
+	virtual bool process_offline(float **pin, float **pout, int *numsamples, int *channels, int *samplerate) { return false; }
 	virtual bool process_stereo(float **pin, float **pout, int numsamples, int mode) {
 		if( (mode&zzub::process_mode_write)==0 )
 			return false;

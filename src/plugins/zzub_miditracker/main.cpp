@@ -110,6 +110,7 @@ struct miditracker : public zzub::plugin {
 	virtual void save(zzub::archive*);
 	virtual void process_events();
 	virtual bool process_stereo(float **pin, float **pout, int numsamples, int mode);
+	virtual bool process_offline(float **pin, float **pout, int *numsamples, int *channels, int *samplerate) { return false; }
 	virtual const char * describe_value(int param, int value); 
 	virtual void get_sub_menu(int, zzub::outstream*);
 	virtual void set_track_count(int i);

@@ -410,6 +410,7 @@ public:
 	virtual void load(zzub::archive *arc) {}
 	virtual void save(zzub::archive *arc);	// Called to save any extra settings
 	virtual bool process_stereo(float **pin, float **pout, int numsamples, int mode);	// Stereo
+	virtual bool process_offline(float **pin, float **pout, int *numsamples, int *channels, int *samplerate) { return false; }
 	virtual const char * describe_value(int param, int value);
 	virtual void set_track_count(int n);
 	virtual void stop();

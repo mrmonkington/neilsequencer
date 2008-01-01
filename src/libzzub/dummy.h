@@ -30,6 +30,7 @@ struct dummy_plugin : public plugin {
 	virtual void process_controller_events() {}
 	//virtual bool process_audio(float *psamples, int numsamples, int const mode);
 	virtual bool process_stereo(float **pin, float **pout, int numsamples, int mode);
+	virtual bool process_offline(float **pin, float **pout, int *numsamples, int *channels, int *samplerate) { return false; }
 	
 	// ::zzub::plugin methods
 	virtual void destroy() { /* delete this; */ }

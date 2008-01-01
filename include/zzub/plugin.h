@@ -164,6 +164,7 @@ enum plugin_flag {
 	plugin_flag_has_audio_output = zzub_plugin_flag_has_audio_output,
 	plugin_flag_has_event_input = zzub_plugin_flag_has_event_input,
 	plugin_flag_has_event_output = zzub_plugin_flag_has_event_output,
+	plugin_flag_offline = zzub_plugin_flag_offline, 
 };
 
 enum state_flag {
@@ -806,6 +807,7 @@ struct plugin {
 	virtual void process_events() = 0;//{}
 	virtual void process_controller_events() = 0;//{}
 	virtual bool process_stereo(float **pin, float **pout, int numsamples, int mode) = 0;//{ return false; }
+	virtual bool process_offline(float **pin, float **pout, int *numsamples, int *channels, int *samplerate) = 0;//{ return false; }
 	virtual void stop() = 0;//{}
 	virtual void load(zzub::archive *arc) = 0;//{}
 	virtual void save(zzub::archive *arc) = 0;//{}

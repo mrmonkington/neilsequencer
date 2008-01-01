@@ -59,6 +59,7 @@ namespace zzub { namespace plugins { namespace psycle_to_zzub {
 				virtual void process_controller_events() {}
 				void process_events();
 				bool process_stereo(float **pin,float **pout,int numsamples,int mode);
+				virtual bool process_offline(float **pin, float **pout, int *numsamples, int *channels, int *samplerate) { return false; }
 				void stop() { if(psycle_plugin) psycle_plugin->Stop(); }
 				void attributes_changed() {}
 				void command(int index);

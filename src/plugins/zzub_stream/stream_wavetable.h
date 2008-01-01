@@ -13,6 +13,7 @@ struct stream_wavetable : stream_plugin {
 	virtual void save(zzub::archive*);
 	virtual void process_events();
 	virtual bool process_stereo(float **pin, float **pout, int numsamples, int mode);
+	virtual bool process_offline(float **pin, float **pout, int *numsamples, int *channels, int *samplerate) { return false; }
 	virtual void command(int);
 	virtual void stop();
 	virtual void get_sub_menu(int, zzub::outstream*);

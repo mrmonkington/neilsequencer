@@ -44,6 +44,7 @@ struct streamtrack {
 	void init(stream_tracker_plugin* plugin, int index);
 	void process_events();
 	bool process_stereo(float **pin, float **pout, int numsamples, int mode);
+	virtual bool process_offline(float **pin, float **pout, int *numsamples, int *channels, int *samplerate) { return false; }
 	void stop();
 	void destroy();
 
@@ -68,6 +69,7 @@ struct stream_tracker_plugin : zzub::plugin {
 	virtual void set_track_count(int i);
 	virtual void process_events();
 	virtual bool process_stereo(float **pin, float **pout, int numsamples, int mode);
+	virtual bool process_offline(float **pin, float **pout, int *numsamples, int *channels, int *samplerate) { return false; }
 	virtual void command(int);
 	virtual void stop();
 	virtual void destroy();

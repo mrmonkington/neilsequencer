@@ -65,6 +65,7 @@ struct stream_resampler {
 	void fill_resampler();
 	void set_pitch(long pitch);
 	bool process_stereo(float** pout, int numsamples);
+	virtual bool process_offline(float **pin, float **pout, int *numsamples, int *channels, int *samplerate) { return false; }
 	void set_stream_pos(unsigned int ofs);
 
 	void crossfade(float** pout, int numsamples);

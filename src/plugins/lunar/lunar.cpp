@@ -1210,6 +1210,8 @@ struct dspplugin : zzub::plugin {
 			fxcopy.process_controller_events(fx);
 		}
 	}
+	
+	virtual bool process_offline(float **pin, float **pout, int *numsamples, int *channels, int *samplerate) { return false; }
 
 	virtual bool process_stereo(float **pin, float **pout, int numsamples, int mode) {
 		check_masterinfo_changed();

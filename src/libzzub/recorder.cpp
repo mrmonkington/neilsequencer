@@ -381,6 +381,7 @@ struct recorder_wavetable_plugin : plugin {
 		rec.process_stereo(pin, numsamples);
 		return true;
 	}
+	virtual bool process_offline(float **pin, float **pout, int *numsamples, int *channels, int *samplerate) { return false; }
 	virtual void stop() {}
 	virtual void load(zzub::archive *arc) {}
 	virtual void save(zzub::archive *arc) {}
@@ -448,6 +449,7 @@ struct recorder_file_plugin : plugin {
 		}
 		rec.process_events();
 	}
+	virtual bool process_offline(float **pin, float **pout, int *numsamples, int *channels, int *samplerate) { return false; }
 	virtual void process_controller_events() {}
 	virtual bool process_stereo(float **pin, float **pout, int numsamples, int mode) {
 		rec.process_stereo(pin, numsamples);

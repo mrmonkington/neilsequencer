@@ -260,6 +260,8 @@ enum zzub_plugin_flag {
 	zzub_plugin_flag_has_audio_output = (1 << 18), // for audio generators and effects
 	zzub_plugin_flag_has_event_input = (1 << 19), // for event effects
 	zzub_plugin_flag_has_event_output = (1 << 20), // for event generators and effects
+	
+	zzub_plugin_flag_offline = (1 << 21), // works on fixed ranges of data, no realtime processing
 };
 
 enum zzub_state_flag {

@@ -393,7 +393,8 @@ struct dssidapter : plugin, event_handler
 		} 
 		return 0; 
 	}
-	
+
+	virtual bool process_offline(float **pin, float **pout, int *numsamples, int *channels, int *samplerate) { return false; }	
 		
 	virtual bool process_stereo(float **pin, float **pout, int numsamples, int const mode)
 	{

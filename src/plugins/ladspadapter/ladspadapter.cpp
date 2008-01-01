@@ -253,6 +253,8 @@ struct ladspadapter : plugin
 		return 0; 
 	}
 	
+	virtual bool process_offline(float **pin, float **pout, int *numsamples, int *channels, int *samplerate) { return false; }
+	
 	virtual bool process_stereo(float **pin, float **pout, int numsamples, int const mode)
 	{
 		if (mode == zzub::process_mode_no_io)

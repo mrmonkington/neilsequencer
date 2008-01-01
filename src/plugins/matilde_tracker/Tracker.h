@@ -46,6 +46,7 @@ public:
 #ifndef MONO
 	virtual bool process_stereo(float **pin, float **pout, int numsamples, int mode);
 #endif
+	virtual bool process_offline(float **pin, float **pout, int *numsamples, int *channels, int *samplerate) { return false; }
 	virtual void save(zzub::archive *po);
 	virtual void attributes_changed();
 	virtual void command(int index);

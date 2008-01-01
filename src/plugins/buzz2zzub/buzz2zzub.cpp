@@ -260,6 +260,8 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 		}
 
 	}
+	
+	virtual bool process_offline(float **pin, float **pout, int *numsamples, int *channels, int *samplerate) { return false; }
 
 	virtual bool process_stereo(float **pin, float **pout, int numsamples, int mode)
 	{

@@ -551,6 +551,7 @@ public:
 		virtual void process_controller_events() {}
         virtual void process_events();
 		virtual bool process_stereo(float **pin, float **pout, int numsamples, int mode);
+		virtual bool process_offline(float **pin, float **pout, int *numsamples, int *channels, int *samplerate) { return false; }
         virtual void set_track_count(int n) { numTracks = n; }
         virtual void stop();
         virtual const char * describe_value(int param, int value);
