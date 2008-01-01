@@ -150,7 +150,7 @@ class zzub_event_data_unknown(Structure):
 
 zzub_event_data_unknown_t = zzub_event_data_unknown
 
-class union__ebd7897a(Union):
+class union__c7fd76b1(Union):
 	_fields_ = [
 		('new_plugin', zzub_event_data_new_plugin_t),
 		('delete_plugin', zzub_event_data_delete_plugin_t),
@@ -173,7 +173,7 @@ class union__ebd7897a(Union):
 class zzub_event_data(Structure):
 	_fields_ = [
 		('type', c_int),
-		('', union__ebd7897a),
+		('', union__c7fd76b1),
 	]
 
 zzub_event_data_t = zzub_event_data
@@ -364,6 +364,7 @@ zzub_plugin_flag_has_audio_input = 131072
 zzub_plugin_flag_has_audio_output = 262144
 zzub_plugin_flag_has_event_input = 524288
 zzub_plugin_flag_has_event_output = 1048576
+zzub_plugin_flag_offline = 2097152
 
 # enumeration zzub_state_flag
 zzub_state_flag_playing = 1
@@ -613,6 +614,7 @@ zzub_wave_get_volume                     = dlsym(libzzub, 'zzub_wave_get_volume'
 zzub_wave_clear                          = dlsym(libzzub, 'zzub_wave_clear'                       , None, ('wave'    ,POINTER(zzub_wave_t)))
 zzub_wave_load_sample                    = dlsym(libzzub, 'zzub_wave_load_sample'                 , c_int, ('wave'    ,POINTER(zzub_wave_t)),('level'   ,c_int     ),('path'    ,c_char_p  ))
 zzub_wave_save_sample                    = dlsym(libzzub, 'zzub_wave_save_sample'                 , c_int, ('wave'    ,POINTER(zzub_wave_t)),('level'   ,c_int     ),('path'    ,c_char_p  ))
+zzub_wave_save_sample_range              = dlsym(libzzub, 'zzub_wave_save_sample_range'           , c_int, ('wave'    ,POINTER(zzub_wave_t)),('level'   ,c_int     ),('path'    ,c_char_p  ),('start'   ,c_int     ),('end'     ,c_int     ))
 zzub_wave_set_volume                     = dlsym(libzzub, 'zzub_wave_set_volume'                  , None, ('wave'    ,POINTER(zzub_wave_t)),('volume'  ,c_float   ))
 zzub_wave_set_path                       = dlsym(libzzub, 'zzub_wave_set_path'                    , None, ('wave'    ,POINTER(zzub_wave_t)),('path'    ,c_char_p  ))
 zzub_wave_set_name                       = dlsym(libzzub, 'zzub_wave_set_name'                    , None, ('wave'    ,POINTER(zzub_wave_t)),('name'    ,c_char_p  ))

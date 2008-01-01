@@ -355,6 +355,7 @@ float zzub_wave_get_volume(zzub_wave_t* wave);
 void zzub_wave_clear(zzub_wave_t* wave);
 int zzub_wave_load_sample(zzub_wave_t* wave, int level, const char *path);
 int zzub_wave_save_sample(zzub_wave_t* wave, int level, const char *path);
+int zzub_wave_save_sample_range(zzub_wave_t* wave, int level, const char *path, int start, int end);
 void zzub_wave_set_volume(zzub_wave_t* wave, float volume);
 void zzub_wave_set_path(zzub_wave_t* wave, const char *path);
 void zzub_wave_set_name(zzub_wave_t* wave, const char *name);

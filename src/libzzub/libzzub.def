@@ -224,6 +224,7 @@ EXPORTS
 	zzub_wave_clear
 	zzub_wave_load_sample	
 	zzub_wave_save_sample
+	zzub_wave_save_sample_range
 	zzub_wave_set_path
 	zzub_wave_set_name
 	zzub_wave_set_flags

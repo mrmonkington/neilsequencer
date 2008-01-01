@@ -1518,6 +1518,11 @@ int zzub_wave_load_sample(zzub_wave_t* wave, int level, const char *path) {
 }
 
 int zzub_wave_save_sample(zzub_wave_t* wave, int level, const char *path) {
+	zzub::wave_level* wavelevel = wave->get_level(level);
+	return zzub_wave_save_sample_range(wave, level, path, 0, wave->get_sample_count(level));
+}
+
+int zzub_wave_save_sample_range(zzub_wave_t* wave, int level, const char *path, int start, int end) {
 #if defined(USE_SNDFILE)
 	int result = -1;
 	SF_INFO sfinfo;
@@ -1539,7 +1544,7 @@ int zzub_wave_save_sample(zzub_wave_t* wave, int level, const char *path) {
 	if (!sf)
 		return -1;
 	zzub::wave_level* wavelevel = wave->get_level(level);
-	sf_writef_short(sf, wavelevel->samples, wave->get_sample_count(level));
+	sf_writef_short(sf, (short*)wave->get_sample_ptr(level, start), end - start);
 	sf_close(sf); // so close it
 	return 0;
 #else

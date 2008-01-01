@@ -1327,6 +1327,10 @@ class _Wave(object):
 		assert self._handle
 		return zzub_wave_save_sample(self._handle,level,path)
 	
+	def save_sample_range(self, level, path, start, end):
+		assert self._handle
+		return zzub_wave_save_sample_range(self._handle,level,path,start,end)
+	
 	def set_flags(self, flags):
 		assert self._handle
 		zzub_wave_set_flags(self._handle,flags)
@@ -1427,24 +1431,24 @@ class _Wavelevel(object):
 
 # you can override these
 Postprocess = _Postprocess
-Player = _Player
-Wave = _Wave
-Sequence = _Sequence
-Output = _Output
 EventConnectionBinding = _EventConnectionBinding
-Pattern = _Pattern
-Patterntrack = _Patterntrack
-AudioConnection = _AudioConnection
-EventConnection = _EventConnection
-Wavelevel = _Wavelevel
-Input = _Input
-Plugincollection = _Plugincollection
 Connection = _Connection
-Attribute = _Attribute
-Sequencer = _Sequencer
-Plugin = _Plugin
-Parameter = _Parameter
+Pattern = _Pattern
 Archive = _Archive
-Envelope = _Envelope
+Output = _Output
 Midimapping = _Midimapping
+Sequence = _Sequence
+Plugincollection = _Plugincollection
+Wave = _Wave
+Player = _Player
 Pluginloader = _Pluginloader
+Attribute = _Attribute
+Input = _Input
+Envelope = _Envelope
+Parameter = _Parameter
+Sequencer = _Sequencer
+AudioConnection = _AudioConnection
+Plugin = _Plugin
+Wavelevel = _Wavelevel
+EventConnection = _EventConnection
+Patterntrack = _Patterntrack

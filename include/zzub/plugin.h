@@ -422,14 +422,14 @@ struct wave_info {
 			flags = f;
 	}
 
-	void* get_sample_ptr(int level) const {
+	void* get_sample_ptr(int level, int offset=0) const {
 		wave_level* l = get_level(level);
 		if (!l) return 0;
-		
+		offset *= get_bytes_per_sample(level) * (get_stereo()?2:1);
 		if (get_extended()) {
-			return &l->samples[4];
+			return (char*)&l->samples[4] + offset;
 		} else
-			return l->samples;
+			return (char*)l->samples + offset;
 	}
 
 	int get_bits_per_sample(int level) const {
