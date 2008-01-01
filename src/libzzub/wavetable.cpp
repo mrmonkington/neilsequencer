@@ -336,8 +336,8 @@ bool wave_info_ex::stretch_wave_range(size_t level, size_t fromSample, size_t nu
 		double ratio = (double)newSize / (double)numSamples;
 		RubberBand::RubberBandStretcher stretcher(samplerate, channels,
 			RubberBandStretcher::OptionProcessOffline 
-			| RubberBandStretcher::OptionStretchElastic 
-			//~ | RubberBandStretcher::OptionStretchPrecise		
+			//~ | RubberBandStretcher::OptionStretchElastic 
+			| RubberBandStretcher::OptionStretchPrecise		
 			| RubberBandStretcher::OptionTransientsCrisp 
 			//~ | RubberBandStretcher::OptionTransientsSmooth 
 			| RubberBandStretcher::OptionPhaseAdaptive

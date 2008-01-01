@@ -97,9 +97,9 @@ inline void ConvertSample(const int &src, S24 &dst) { assert(0); }
 inline void ConvertSample(const int &src, int &dst) { dst = src; }
 inline void ConvertSample(const int &src, float &dst) { dst = (float)src / 2147483648.0f; }
 
-inline void ConvertSample(const float &src, short &dst) { dst = (short)(src * 32767.0f); }
+inline void ConvertSample(const float &src, short &dst) { dst = (short)(std::max(std::min(src,1.0f),-1.0f) * 32767.0f); }
 inline void ConvertSample(const float &src, S24 &dst) { assert(0); }
-inline void ConvertSample(const float &src, int &dst) { dst = (int)(src * 2147483648.0f); }
+inline void ConvertSample(const float &src, int &dst) { dst = (int)(std::max(std::min(src,1.0f),-1.0f) * 2147483648.0f); }
 inline void ConvertSample(const float &src, float &dst) { dst = src; }
 
 template <typename srctype, typename dsttype>
