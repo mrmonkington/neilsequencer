@@ -109,10 +109,13 @@ DEFAULT_THEME = {
 	'WE BG': 0xffffff,
 	'WE Line': 0x6060c0,
 	'WE Fill': 0xe0e0ff,
-	'WE Peak Fill': 0xe0e0e0,
+	'WE Peak Fill': 0x6060c0,
 	'WE Grid': 0x008000,
 	'WE Selection': 0xff0000,
 	'WE Stretch Cue': 0x00ff00,
+	'WE Split Bar': 0x800080,
+	'WE Wakeup Peaks': 0xff0080,
+	'WE Sleep Peaks': 0x8000ff,
 }
 
 class AldrinConfig(ConfigParser.ConfigParser):

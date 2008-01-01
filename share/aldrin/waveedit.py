@@ -75,6 +75,8 @@ class WaveEditView(gtk.DrawingArea):
 		self.wavetable = wavetable
 		self.wave = None
 		self.level = None
+		self.offpeak = 0.4
+		self.onpeak = 0.9
 		self.dragging = False
 		self.stretching = False
 		gtk.DrawingArea.__init__(self)
@@ -101,23 +103,26 @@ class WaveEditView(gtk.DrawingArea):
 			begin,end = self.selection
 			self.level.remove_range(begin,end)
 			self.selection = None
-			begin,end = self.range
-			self.set_range(begin,end)
-			self.redraw()
+			self.sample_changed()
 
 	def redraw(self):
 		if self.window:
 			w,h = self.get_client_size()
 			self.window.invalidate_rect((0,0,w,h), False)
 			
-	def set_range(self, begin, end):
-		print "set_range"
+	def update_digest(self):
+		w,h = self.get_client_size()
+		self.minbuffer, self.maxbuffer, self.ampbuffer = self.level.get_samples_digest(0, self.range[0], self.range[1],  w)
+		
+	def fix_range(self):
+		begin,end = self.range
 		begin = max(min(begin, self.level.get_sample_count()-1), 0)
 		end = max(min(end, self.level.get_sample_count()), begin+1)
 		self.range = [begin, end]
-		w,h = self.get_client_size()
-		self.minbuffer, self.maxbuffer, self.ampbuffer = self.level.get_samples_digest(0, self.range[0], self.range[1],  w)
-		self.redraw()
+			
+	def set_range(self, begin, end):
+		self.range = [begin,end]
+		self.view_changed()
 		
 	def set_selection(self, begin, end):
 		begin = max(min(begin, self.level.get_sample_count()-1), 0)
@@ -125,10 +130,13 @@ class WaveEditView(gtk.DrawingArea):
 		self.selection = [begin, end]
 		self.redraw()
 		
-	def client_to_sample(self, x, y):
+	def client_to_sample(self, x, y, db=False):
 		w,h = self.get_client_size()
 		sample = self.range[0] + (float(x) / float(w)) * (self.range[1] - self.range[0])
-		amp = (float(y) / float(h)) * 2.0 - 1.0
+		if db:
+			amp = 1.0 - (float(y) / float(h))
+		else:
+			amp = (float(y) / float(h)) * 2.0 - 1.0
 		return int(sample+0.5),amp
 		
 	def sample_to_client(self, s, a):
@@ -199,7 +207,24 @@ class WaveEditView(gtk.DrawingArea):
 					self.startpos = s
 				self.grab_add()
 				self.redraw()
+		elif (event.button == 2):
+			s,a = self.client_to_sample(mx,my,True)
+			if (event.state & gtk.gdk.SHIFT_MASK):
+				self.offpeak = a
+			else:
+				self.onpeak = a
+			self.update_peaks()
+			self.redraw()
+				
+	def sample_changed(self):
+		self.update_peaks()
+		self.view_changed()
 
+	def view_changed(self):
+		self.fix_range()		
+		self.update_digest()
+		self.redraw()
+		
 	def on_left_up(self, widget, event):
 		"""
 		Callback that responds to left mouse up over the wave view.
@@ -218,7 +243,7 @@ class WaveEditView(gtk.DrawingArea):
 					print "stretch 1st part (from %i to %i (%i -> %i)" % (begin,xo,xo - begin, xn - begin)
 					self.level.stretch_range(begin,xo,xn - begin)
 				#~ self.level.stretch_range(self.range[0],self.range[1],(self.range[1] - self.range[0])*2)
-			self.redraw()
+			self.sample_changed()
 		elif self.dragging == True:
 			self.dragging = False
 			self.grab_remove()
@@ -247,7 +272,7 @@ class WaveEditView(gtk.DrawingArea):
 			else:
 				self.set_selection(self.startpos, s)
 			self.redraw()
-
+			
 	def update(self):
 		"""
 		Updates the envelope view based on the sample selected in the sample list.		
@@ -260,8 +285,66 @@ class WaveEditView(gtk.DrawingArea):
 			self.wave = player.get_wave(sel[0])
 			if self.wave.get_level_count() >= 1:
 				self.level = self.wave.get_level(0)
-				self.set_range(0,self.level.get_sample_count())
+				self.range = [0,self.level.get_sample_count()]
+				self.sample_changed()
 		self.redraw()
+	
+	def update_peaks(self):
+		print "updating peaks..."
+		samplerate = int(self.level.get_samples_per_second())
+		blocksize = min(self.level.get_sample_count(), 44)
+		peaksize = self.level.get_sample_count() / blocksize
+		minbuf, maxbuf, ampbuf = self.level.get_samples_digest(0, 0, self.level.get_sample_count(), peaksize)
+		self.peaks = []
+		minpeak = 1.0
+		maxpeak = 0.0
+		mind = 1.0 # min delta
+		maxd = -1.0 # max delta
+		os = 0.0
+		power = 0
+		for s in ampbuf:
+			s = 1.0 + linear2db(s,-80.0) / 80.0
+			power += s
+			d = s - os
+			os = s
+			mind = min(mind, d)
+			maxd = max(maxd, d)
+			minpeak = min(minpeak, s)
+			maxpeak = max(maxpeak, s)
+		power = power / len(ampbuf)
+		t = 0.2
+		td = 0.01
+		li = 0
+		op = 0.0
+		falloff = 1.0 / ((0.075 * 44100.0) / blocksize) # go to 0 peak after 75ms
+		minb = (44100.0 / 20.0) / blocksize # dont divide below wavelengths of 20hz
+		p = 0.0
+		sleeping = True
+		center = (power - minpeak) / (maxpeak - minpeak)
+		peaktop = (self.onpeak - minpeak) / (maxpeak - minpeak)
+		peakbottom = (self.offpeak - minpeak) / (maxpeak - minpeak)
+		for i,s in enumerate(ampbuf):
+			s = 1.0 + linear2db(s,-80.0) / 80.0
+			# normalize peak sample
+			s = (s - minpeak) / (maxpeak - minpeak)
+			p = s#max(p - falloff, s)
+			if sleeping: # we are sleeping
+				if (p >= peaktop): # noise reaches threshold
+					sleeping = False # wake up
+					pos = max(i*blocksize - blocksize/2, 0)
+					minb, maxb, ampb = self.level.get_samples_digest(0, pos, pos+blocksize, blocksize)
+					bestmin = 1.0 + linear2db(ampb[0],-80.0) / 80.0
+					bestpos = 0
+					for j,t in enumerate(ampb):
+						t = 1.0 + linear2db(t,-80.0) / 80.0
+						if t < bestmin:
+							bestpos = j
+							bestmin = t
+					self.peaks.append(pos + bestpos)
+			else: # we are awake
+				if (p <= peakbottom): # noise goes below threshold
+					sleeping = True # sleep
+		print "done."
 		
 	def set_sensitive(self, enable):
 		gtk.DrawingArea.set_sensitive(self, enable)
@@ -282,6 +365,9 @@ class WaveEditView(gtk.DrawingArea):
 		gridpen = cfg.get_float_color('WE Grid')
 		selbrush = cfg.get_float_color('WE Selection')
 		stretchbrush = cfg.get_float_color('WE Stretch Cue')
+		splitbar = cfg.get_float_color('WE Split Bar')
+		onpeak = cfg.get_float_color('WE Wakeup Peaks')
+		offpeak = cfg.get_float_color('WE Sleep Peaks')
 		
 		ctx.translate(0.5,0.5)
 		ctx.set_source_rgb(*bgbrush)
@@ -327,6 +413,24 @@ class WaveEditView(gtk.DrawingArea):
 			ctx.line_to(x, h-1-(h*a))
 		ctx.line_to(w-1, h-1)
 		ctx.fill()
+
+		for x in self.peaks:
+			x1 = self.sample_to_client(x, 0.0)[0]
+			ctx.set_source_rgb(*splitbar)
+			if (x1 >= 0) and (x1 <= w):
+				ctx.move_to(x1, 0)
+				ctx.line_to(x1, h)
+				ctx.stroke()
+
+		minp, maxp = self.offpeak, self.onpeak
+		ctx.set_source_rgb(*offpeak)
+		ctx.move_to(0, h-1-(h*minp))
+		ctx.line_to(w-1, h-1-(h*minp))
+		ctx.stroke()
+		ctx.set_source_rgb(*onpeak)
+		ctx.move_to(0, h-1-(h*maxp))
+		ctx.line_to(w-1, h-1-(h*maxp))
+		ctx.stroke()
 
 		ctx.set_source_rgba(*(brush + (0.5,)))
 		hm = h/2
