@@ -390,7 +390,7 @@ bool wave_info_ex::stretch_wave_range(size_t level, size_t fromSample, size_t nu
 				toprocess -= blocksize;
 				processed += blocksize;				
 			}
-			if (stretcher.available() > 0)
+			while (stretcher.available() > 0)
 			{
 				int blocksize = std::min(stretcher.available(), BLOCKSIZE);
 				std::cout << "retrieving " << blocksize << " blocks at @" << written << " (" << channels << " channels, final = " << (stretcher.available() == blocksize) << ")" << std::endl;
