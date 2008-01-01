@@ -24,7 +24,7 @@ Provides dialogs, classes and controls to display/load/save envelopes
 
 from gtkimport import gtk
 import os, sys
-from utils import prepstr, db2linear, linear2db, note2str
+from utils import prepstr, db2linear, linear2db, note2str, file_filter
 from utils import read_int, write_int, add_scrollbars, new_image_button, filepath
 import zzub
 import config
@@ -51,11 +51,17 @@ class WaveEditPanel(gtk.VBox):
 		waveedbuttons = gtk.HBox(False, MARGIN)
 		self.btndelrange = new_image_button(filepath("res/clear.png"), "Delete Range", self.wavetable.tooltips)		
 		waveedbuttons.pack_start(self.btndelrange, expand=False)
+		self.btnstoresel = new_image_button(filepath("res/storesample.png"), "Save Selection or Slices", self.wavetable.tooltips)
+		waveedbuttons.pack_start(self.btnstoresel, expand=False)
 		self.pack_end(waveedbuttons, expand=False)
 		self.btndelrange.connect('clicked', self.on_delete_range)
+		self.btnstoresel.connect('clicked', self.on_store_range)
 		
 	def update(self):
 		self.view.update()
+		
+	def on_store_range(self, widget):
+		self.view.store_range()
 
 	def on_delete_range(self, widget):
 		self.view.delete_range()
@@ -125,9 +131,12 @@ class WaveEditView(gtk.DrawingArea):
 		self.view_changed()
 		
 	def set_selection(self, begin, end):
-		begin = max(min(begin, self.level.get_sample_count()-1), 0)
-		end = max(min(end, self.level.get_sample_count()), begin+1)
-		self.selection = [begin, end]
+		if begin == end:
+			self.selection = None
+		else:
+			begin = max(min(begin, self.level.get_sample_count()-1), 0)
+			end = max(min(end, self.level.get_sample_count()), begin+1)
+			self.selection = [begin, end]
 		self.redraw()
 		
 	def client_to_sample(self, x, y, db=False):
@@ -162,6 +171,46 @@ class WaveEditView(gtk.DrawingArea):
 			diffr /= 2
 		self.set_range(s - diffl, s + diffr)
 		self.redraw()
+		
+	def store_range(self):
+		w = self.wave
+		origpath = w.get_path().replace('/',os.sep).replace('\\',os.sep)
+		if origpath:
+			filename = os.path.splitext(os.path.basename(origpath))[0]
+		else:
+			filename = w.get_name()
+		if self.selection:
+			filename += '_selection'
+		else:
+			filename += '_slice'
+		filename += '.wav'
+		if self.selection:
+			title = "Export Selection"
+		else:
+			title = "Export Slices"
+		dlg = gtk.FileChooserDialog(title, parent=self.get_toplevel(), action=gtk.FILE_CHOOSER_ACTION_SAVE,
+			buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_SAVE, gtk.RESPONSE_OK))
+		dlg.set_current_name(filename)
+		dlg.set_do_overwrite_confirmation(True)
+		dlg.add_filter(file_filter('Wave Files (*.wav)', '*.wav'))
+		response = dlg.run()
+		filepath = dlg.get_filename()
+		dlg.destroy()
+		if response != gtk.RESPONSE_OK:
+			return
+		if self.selection:
+			begin,end = self.selection
+			self.wave.save_sample_range(0, filepath, begin, end)
+		else:
+			filename, fileext = os.path.splitext(filepath)
+			for i,x in enumerate(self.peaks):
+				if i == (len(self.peaks)-1):
+					end = self.level.get_sample_count()
+				else:
+					end = self.peaks[i+1]
+				filepath = "%s%03i%s" % (filename, i, fileext)
+				print filepath
+				self.wave.save_sample_range(0, filepath, x, end)
 			
 	def on_enter(self, widget, event):
 		"""
