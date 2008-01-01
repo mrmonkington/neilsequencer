@@ -344,7 +344,7 @@ bool wave_info_ex::stretch_wave_range(size_t level, size_t fromSample, size_t nu
 			| RubberBandStretcher::OptionThreadingAuto 
 			| RubberBandStretcher::OptionWindowStandard, ratio);
 		stretcher.setExpectedInputDuration(numSamples);
-		//stretcher.setMaxProcessSize(1024);
+		stretcher.setMaxProcessSize(1024);
 		
 		const int BLOCKSIZE = 1024;
 		
@@ -379,7 +379,7 @@ bool wave_info_ex::stretch_wave_range(size_t level, size_t fromSample, size_t nu
 				std::cout << "stretch is done." << std::endl;
 				break;
 			}
-			while (stretcher.getSamplesRequired())
+			if (stretcher.getSamplesRequired())
 			{
 				int blocksize = std::min(toprocess, std::min((int)stretcher.getSamplesRequired(), BLOCKSIZE));
 				for (int i = 0; i < channels; ++i) {
@@ -390,7 +390,7 @@ bool wave_info_ex::stretch_wave_range(size_t level, size_t fromSample, size_t nu
 				toprocess -= blocksize;
 				processed += blocksize;				
 			}
-			while (stretcher.available() > 0)
+			if (stretcher.available() > 0)
 			{
 				int blocksize = std::min(stretcher.available(), BLOCKSIZE);
 				std::cout << "retrieving " << blocksize << " blocks at @" << written << " (" << channels << " channels, final = " << (stretcher.available() == blocksize) << ")" << std::endl;
