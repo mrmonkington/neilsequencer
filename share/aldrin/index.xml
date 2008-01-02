@@ -16,6 +16,9 @@
 	<group label="Psycle Plugins"> 
 		<refs pattern="@psycle.sourceforge.net/*"/> 
 	</group> 
+	<group label="Streaming Plugins">
+		<refs pattern="@zzub.org/stream*"/>
+	</group>
 	<separator/>
 	<ref label="Lunar LFO (Experimental)" uri="@trac.zeitherrschaft.org/aldrin/lunar/controller/lfo;1"/>
 	<ref label="Lunar Transpose (Experimental)" uri="@trac.zeitherrschaft.org/aldrin/lunar/controller/transpose;1"/>
