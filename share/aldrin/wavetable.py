@@ -125,6 +125,7 @@ class WavetablePanel(gtk.Notebook):
 		self.btnclear = new_image_button(filepath("res/clear.png"), "Remove Instrument", self.tooltips)
 		self.btnadsr = new_image_toggle_button(filepath("res/adsr.png"), "Create ADSR Envelope", self.tooltips)
 		self.btnfitloop = new_image_button(filepath("res/fitloop.png"), "Fit Loop", self.tooltips)
+		self.btnstrloop = new_image_button(filepath("res/fitloop.png"), "Stretch Loop", self.tooltips)
 		self.samplename = gtk.Label("")
 		self.samplename.set_alignment(0, 0.5)
 		self.volumeslider = gtk.HScale()
@@ -158,6 +159,7 @@ class WavetablePanel(gtk.Notebook):
 		loopprops.pack_start(self.chkpingpong, expand=False)
 		loopprops.pack_start(self.edsamplerate, expand=False)
 		loopprops.pack_start(self.btnfitloop, expand=False)
+		loopprops.pack_start(self.btnstrloop, expand=False)
 		envprops = gtk.HBox(False, MARGIN)
 		envprops.pack_start(self.btnadsr, expand=False)
 		envprops.pack_start(self.cbmachine, expand=False)
@@ -203,6 +205,7 @@ class WavetablePanel(gtk.Notebook):
 		self.btnrename.connect('clicked', self.on_rename_instrument)
 		self.btnadsr.connect('clicked', self.on_show_adsr)
 		self.btnfitloop.connect('clicked', self.on_fit_loop)
+		self.btnstrloop.connect('clicked', self.on_stretch_loop)
 		self.volumeslider.connect('scroll-event', self.on_mousewheel)
 		self.volumeslider.connect('change-value', self.on_scroll_changed)
 		self.chkloop.connect('clicked', self.on_check_loop)
@@ -883,6 +886,7 @@ class WavetablePanel(gtk.Notebook):
 		self.chkenable.set_sensitive(iswave)
 		self.btnadsr.set_sensitive(iswave)
 		self.btnfitloop.set_sensitive(iswave)
+		self.btnstrloop.set_sensitive(iswave)
 		self.btnclear.set_sensitive(iswave)
 		self.btnstoresample.set_sensitive(iswave)
 		self.btnrename.set_sensitive(iswave)
@@ -960,6 +964,32 @@ class WavetablePanel(gtk.Notebook):
 		"""
 		Sets properties during initialization.
 		"""
+		
+	def on_stretch_loop(self, event):
+		"""
+		Stretches the sample so it fits the loop
+		"""
+		import math
+		bpm = player.get_bpm()
+		for sel in self.get_sample_selection():
+			w = player.get_wave(sel)
+			for i in range(w.get_level_count()):
+				level = w.get_level(i)
+				sps = level.get_samples_per_second()
+				# get sample length
+				ls = float(level.get_sample_count()) / float(sps)
+				# samples per beat
+				spb = 60.0/bpm
+				# get exponent
+				f = math.log(ls/spb) / math.log(2.0)
+				# new samplerate
+				newsps = sps * 2**(f-int(f+0.5))
+				# new size
+				newsize = int(((level.get_sample_count() * sps) / newsps)+0.5)
+				level.stretch_range(0,level.get_sample_count(),newsize)
+				self.waveedit.update()
+				#level.set_samples_per_second(int(sps+0.5))
+		self.update_sampleprops()
 		
 	def on_fit_loop(self, event):
 		"""
