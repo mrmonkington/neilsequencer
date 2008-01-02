@@ -1019,8 +1019,7 @@ class RouteView(gtk.DrawingArea):
 		"""
 		Event handler for plugin commands
 		"""
-		#need to implement this!
-		pass
+		plugin.command((subindex<<8) | index)
 	
 	def on_popup_set_target(self, widget, plugin):
 		"""
