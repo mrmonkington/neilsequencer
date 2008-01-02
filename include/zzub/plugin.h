@@ -165,6 +165,7 @@ enum plugin_flag {
 	plugin_flag_has_event_input = zzub_plugin_flag_has_event_input,
 	plugin_flag_has_event_output = zzub_plugin_flag_has_event_output,
 	plugin_flag_offline = zzub_plugin_flag_offline, 
+	plugin_flag_stream = zzub_plugin_flag_stream,
 };
 
 enum state_flag {

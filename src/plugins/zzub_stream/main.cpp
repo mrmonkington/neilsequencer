@@ -101,11 +101,15 @@ const zzub::parameter *paraOffsetHigh = 0;
 const zzub::parameter *paraOffsetLow = 0;
 const zzub::parameter *paraLengthHigh = 0;
 const zzub::parameter *paraLengthLow = 0;
+	
+const zzub::attribute *attrOffsetFromPlayPos = 0;
 
 }
 
 stream_machine_info::stream_machine_info() {
-	this->flags = zzub::plugin_flag_plays_waves | zzub::plugin_flag_has_audio_output;	// TODO: plugin_flag_stream
+	this->flags = zzub::plugin_flag_plays_waves 
+	| zzub::plugin_flag_has_audio_output
+	| zzub::plugin_flag_stream;
 	
 	// what about a 32bit parameter instead
 	paraOffsetLow = &add_global_parameter()
@@ -143,6 +147,12 @@ stream_machine_info::stream_machine_info() {
 		.set_value_max(0xFFFE)
 		.set_value_none(0xFFFF)
 		.set_value_default(0xFFFF);
+		
+	attrOffsetFromPlayPos = &add_attribute()
+		.set_name("Offset from Song")
+		.set_value_min(0)
+		.set_value_max(1)
+		.set_value_default(0);
 }
 
 
@@ -153,7 +163,7 @@ stream_machine_info::stream_machine_info() {
 ***/
 
 stream_plugin::stream_plugin() {
-	attributes = NULL;
+	attributes = (int*)&aval;
 	global_values = &gval;
 	track_values = 0;
 }

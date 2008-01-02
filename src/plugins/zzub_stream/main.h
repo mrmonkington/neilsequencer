@@ -21,6 +21,11 @@ struct gvals {
 	unsigned int length;
 };
 
+struct avals {
+	int offsetfromsong;
+};
+
+
 #pragma pack()
 
 /***
@@ -86,6 +91,7 @@ struct stream_plugin : zzub::plugin {
 protected:
 
 	gvals gval;
+	avals aval;
 };
 
 struct stream_machine_info : zzub::info {

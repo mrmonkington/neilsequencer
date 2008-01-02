@@ -262,6 +262,7 @@ enum zzub_plugin_flag {
 	zzub_plugin_flag_has_event_output = (1 << 20), // for event generators and effects
 	
 	zzub_plugin_flag_offline = (1 << 21), // works on fixed ranges of data, no realtime processing
+	zzub_plugin_flag_stream = (1 << 22), // stream plugin
 };
 
 enum zzub_state_flag {

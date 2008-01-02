@@ -1,5 +1,5 @@
 #include "main.h"
-
+#include <iostream>
 /***
 
 	streaming of sampledata in wavetable
@@ -60,6 +60,10 @@ void stream_wavetable::init(zzub::archive * const pi) {
 	this->currentPosition = 0;
 }
 
+void stream_wavetable::attributes_changed() {
+	
+}
+
 void stream_wavetable::load(zzub::archive * const pi) {
 	init(pi);
 }
@@ -76,6 +80,22 @@ void stream_wavetable::process_events() {
 		currentPosition = offset;
 		triggered = true;
 	}
+
+	if (aval.offsetfromsong) {
+		const zzub::wave_info* wave = _host->get_wave(index);
+		if (wave) {
+			zzub::wave_level* l = wave->get_level(level);
+			if (l) {
+				bool looping = wave->flags&zzub::wave_flag_loop?true:false;
+				unsigned int sample_count = wave->get_sample_count(level);
+				double samplespertick = (double)_master_info->samples_per_tick + (double)_master_info->samples_per_tick_frac;
+				double samplepos = (double)_host->get_play_position() * samplespertick;
+				currentPosition = (int)(samplepos+0.5f);
+				triggered = true;
+			}
+		}
+	}
+
 }
 
 inline float sample_scale(zzub::wave_buffer_type format, void* buffer) {
@@ -155,20 +175,28 @@ bool stream_wavetable::process_stereo(float **pin, float **pout, int numsamples,
 }
 
 void stream_wavetable::command(int index) {
+	std::cout << "command " << index << std::endl;
 	if (index >=256 && index<=512) {
-		int waveIndex = index-255;
-
-		const zzub::wave_info* wave = _host->get_wave(waveIndex);
-		if (!wave) return ;
-
-		zzub::wave_level* level = wave->get_level(0);
-		if (!level) return ;
-        
-		this->triggered = false;
-		this->index = waveIndex;
-		this->level = 0;
-		this->currentPosition = 0;
-		char pc[256];
+		index -= 255;
+		int selindex = 0;
+		for (int i = 0; i < 0xC8; ++i) {
+			const zzub::wave_info* wave = _host->get_wave(i+1);
+			if (wave->get_sample_count(0) > 0)
+			{
+				selindex++;
+				if (selindex == index) {
+					zzub::wave_level* level = wave->get_level(0);
+					std::cout << wave->name << std::endl;
+					if (!level) return ;
+					
+					this->triggered = false;
+					this->index = i+1;
+					this->level = 0;
+					this->currentPosition = 0;
+					char pc[256];
+				}
+			}
+		}
 	}
 }
 
@@ -177,10 +205,12 @@ void stream_wavetable::get_sub_menu(int index, zzub::outstream* outs) {
 	switch (index) {
 		case 0:
 			for (int i = 0; i<0xC8; i++) {
-				// TODO: list only waves where samples>0
 				const zzub::wave_info* wave = _host->get_wave(i+1);
-				string name = "Wave " + stringFromInt(i+1, 2, ' ') + (string)": " + wave->name;
-				outs->write(name.c_str());
+				if (wave->get_sample_count(0) > 0)
+				{
+					string name = "Wave " + stringFromInt(i+1, 2, ' ') + (string)": " + wave->name;
+					outs->write(name.c_str());
+				}
 			}
 			break;
 	}
