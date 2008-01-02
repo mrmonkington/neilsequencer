@@ -836,7 +836,7 @@ bool buzzplugininfo::init()
 		plugin_lib = new libwrap(buzzinfo->pLI);
 
 	// set flags from buzz2zzub.ini
-	std::map<std::string, std::vector<std::string> >::iterator it = unhack::patches.find(name);
+	std::map<std::string, std::vector<std::string> >::iterator it = unhack::patches.find(m_name);
 	if (it != unhack::patches.end())
 		for (size_t i = 0; i<it->second.size(); i++) {
 			if (it->second[i] == "lock-add-input") {
