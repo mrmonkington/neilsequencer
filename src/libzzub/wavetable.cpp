@@ -334,15 +334,18 @@ bool wave_info_ex::stretch_wave_range(size_t level, size_t fromSample, size_t nu
 	{
 		using namespace RubberBand;
 		double ratio = (double)newSize / (double)numSamples;
-		RubberBand::RubberBandStretcher stretcher(samplerate, channels,
-			RubberBandStretcher::OptionProcessOffline 
-			//~ | RubberBandStretcher::OptionStretchElastic 
-			| RubberBandStretcher::OptionStretchPrecise		
+		RubberBandStretcher::Options options = RubberBandStretcher::OptionProcessOffline 
 			| RubberBandStretcher::OptionTransientsCrisp 
 			//~ | RubberBandStretcher::OptionTransientsSmooth 
 			| RubberBandStretcher::OptionPhaseAdaptive
 			| RubberBandStretcher::OptionThreadingAuto 
-			| RubberBandStretcher::OptionWindowStandard, ratio);
+			| RubberBandStretcher::OptionWindowStandard;
+		if ((fromSample == 0) && (numSamples == size)) {
+			options |= RubberBandStretcher::OptionStretchElastic;
+		} else {
+			options |= RubberBandStretcher::OptionStretchPrecise;
+		}
+		RubberBand::RubberBandStretcher stretcher(samplerate, channels, options, ratio);
 		stretcher.setExpectedInputDuration(numSamples);
 		stretcher.setMaxProcessSize(1024);
 		
