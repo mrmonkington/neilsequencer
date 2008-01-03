@@ -1739,7 +1739,6 @@ class TransportPanel(gtk.HBox):
 				if (g,t) == (1,0):
 					if i == 1:
 						self.update_bpm()
-						#self.rootwindow.wavetableframe.waveedit.update_sampleprops()
 						try:
 							self.rootwindow.wavetableframe.waveedit.view.view_changed()
 						except AttributeError:
