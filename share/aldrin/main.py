@@ -321,8 +321,7 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		em = extman.get_extension_manager()
 		em.register_service(interface.SERVICE_ROOTWINDOW, self, interface.IRootWindow)
 		em.realize_extensions(self)
-		self.set_geometry_hints(self,600,400)
-		self.set_default_size(900,500)
+		self.set_geometry_hints(self,gtk.gdk.screen_width()*.8,gtk.gdk.screen_height()*.8)
 		audiotrouble = False
 		try:
 			driver.get_audiodriver().init()
