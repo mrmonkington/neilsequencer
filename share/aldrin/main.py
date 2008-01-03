@@ -321,8 +321,8 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		em = extman.get_extension_manager()
 		em.register_service(interface.SERVICE_ROOTWINDOW, self, interface.IRootWindow)
 		em.realize_extensions(self)
-
-		self.set_size_request(790,550)
+		self.set_geometry_hints(self,600,400)
+		self.set_default_size(900,500)
 		audiotrouble = False
 		try:
 			driver.get_audiodriver().init()
@@ -1739,6 +1739,12 @@ class TransportPanel(gtk.HBox):
 				if (g,t) == (1,0):
 					if i == 1:
 						self.update_bpm()
+						#self.rootwindow.wavetableframe.waveedit.update_sampleprops()
+						try:
+							self.rootwindow.wavetableframe.waveedit.view.view_changed()
+						except AttributeError:
+							pass
+					
 					elif i == 2:
 						self.update_tpb()
 		

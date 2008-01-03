@@ -990,6 +990,7 @@ class WavetablePanel(gtk.Notebook):
 				self.waveedit.update()
 				#level.set_samples_per_second(int(sps+0.5))
 		self.update_sampleprops()
+		#self.view_changed()
 		
 	def on_fit_loop(self, event):
 		"""
@@ -1013,6 +1014,7 @@ class WavetablePanel(gtk.Notebook):
 				sps = sps * 2**(f-int(f+0.5))
 				level.set_samples_per_second(int(sps+0.5))
 		self.update_sampleprops()
+		self.waveedit.view.view_changed()
 		#~ self.update_subsamplelist()
 
 class DataEntry(gtk.Dialog):
