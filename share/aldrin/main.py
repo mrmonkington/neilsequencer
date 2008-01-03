@@ -1623,7 +1623,7 @@ class TransportPanel(gtk.HBox):
 			lcd.set_contrast(0.1)
 			lcd.set_dimensions(9,1)
 			lcd.set_border(2)
-			lcd.set_scale(2)
+			#lcd.set_scale(2)
 			#~ lcd.set_text("Slider 2\n 41 CC12  1  U12")
 			#~ c2.set_alignment(1, 0.5)
 			hbox = gtk.HBox(False, MARGIN)
