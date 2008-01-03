@@ -1289,7 +1289,7 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		"""
 		player.stop()
 		if self.btnplay.get_active()==False:
-			player.set_position(max(self.seqframe.view.row,0))
+			player.set_position(0)
 		else:
 			self.btnplay.set_active(False)
 		self.mastertoolbar.button_up(1,1)
