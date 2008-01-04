@@ -1364,6 +1364,14 @@ class _Wavelevel(object):
 	def __ne__(self,other):
 		return self._hash != hash(other)
 
+	def add_slice(self, value):
+		assert self._handle
+		return zzub_wavelevel_add_slice(self._handle,value)
+	
+	def clear_slices(self):
+		assert self._handle
+		return zzub_wavelevel_clear_slices(self._handle)
+	
 	def get_format(self):
 		assert self._handle
 		return zzub_wavelevel_get_format(self._handle)
@@ -1395,6 +1403,14 @@ class _Wavelevel(object):
 	def get_samples_per_second(self):
 		assert self._handle
 		return zzub_wavelevel_get_samples_per_second(self._handle)
+	
+	def get_slice_count(self):
+		assert self._handle
+		return zzub_wavelevel_get_slice_count(self._handle)
+	
+	def get_slice_value(self, index):
+		assert self._handle
+		return zzub_wavelevel_get_slice_value(self._handle,index)
 	
 	def insert(self, start, sampleData, channels, waveFormat, numSamples):
 		assert self._handle
@@ -1430,25 +1446,25 @@ class _Wavelevel(object):
 	
 
 # you can override these
-Postprocess = _Postprocess
-EventConnectionBinding = _EventConnectionBinding
-Connection = _Connection
-Pattern = _Pattern
-Archive = _Archive
-Output = _Output
-Midimapping = _Midimapping
-Sequence = _Sequence
-Plugincollection = _Plugincollection
-Wave = _Wave
-Player = _Player
-Pluginloader = _Pluginloader
-Attribute = _Attribute
-Input = _Input
-Envelope = _Envelope
-Parameter = _Parameter
 Sequencer = _Sequencer
-AudioConnection = _AudioConnection
-Plugin = _Plugin
+Envelope = _Envelope
 Wavelevel = _Wavelevel
-EventConnection = _EventConnection
+Input = _Input
+Sequence = _Sequence
+Pattern = _Pattern
+Plugin = _Plugin
+Postprocess = _Postprocess
+Connection = _Connection
+Output = _Output
+AudioConnection = _AudioConnection
+Attribute = _Attribute
 Patterntrack = _Patterntrack
+Pluginloader = _Pluginloader
+Wave = _Wave
+Parameter = _Parameter
+Player = _Player
+Midimapping = _Midimapping
+EventConnectionBinding = _EventConnectionBinding
+Plugincollection = _Plugincollection
+Archive = _Archive
+EventConnection = _EventConnection

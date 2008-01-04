@@ -107,6 +107,7 @@ public:
 	float					m_fVolume;
 	float					m_fBaseVolume;
 	int						m_iSampleOffset;
+	int						m_iSlice;
 	bool					m_oMuted;
 	float					m_fBasePan;
 	float					m_fPan;

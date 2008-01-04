@@ -36,6 +36,7 @@ public:
 	virtual	long			GetSampleLength();
 	virtual	long			GetLoopStart();
 	virtual	long			GetLoopEnd();
+	virtual long			GetSliceOffset(int index);
 
 	virtual	bool			IsStillValid();
 

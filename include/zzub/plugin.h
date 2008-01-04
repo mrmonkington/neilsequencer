@@ -360,6 +360,7 @@ struct wave_level {
 
 	std::string stream_plugin_uri;
 	std::string stream_data_url;
+	std::vector<int> slices; // slice offsets in the wave
 	wave_info_ex* wave;
 	int level;
 

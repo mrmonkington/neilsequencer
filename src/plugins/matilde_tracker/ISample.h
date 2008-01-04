@@ -26,6 +26,7 @@ public:
 
 	virtual	void	*	GetSampleStart()=0;
 	virtual	long		GetSampleLength()=0;
+	virtual long		GetSliceOffset(int index)=0;
 	virtual	long		GetLoopStart()=0;
 	virtual	long		GetLoopEnd()=0;
 

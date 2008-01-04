@@ -68,6 +68,7 @@ void CTrack::Reset()
 	m_iTremoloType=0;
 
 	m_fBaseVolume=0;
+	m_iSlice=0;
 	m_iSampleOffset=0;
 	m_oMuted=0;
 	m_fPan=0.0f;
@@ -227,6 +228,7 @@ void	CTrack::Tick( CTrackVals &tv )
 
 		retrig|=RETRIG_VOLUME;
 		m_iSampleOffset=0;
+		m_iSlice = 0;
 		if( (m_iInstrument!=m_Vals.instrument) && NONOTE(m_Vals.note) )
 		{
 			retrig|=RETRIG_INS|RETRIG_INSLOOP;
@@ -353,6 +355,9 @@ void	CTrack::Tick( CTrackVals &tv )
 				break;
 			case 0x9:
 				m_iSampleOffset=argument==0?0x100:argument;
+				break;
+			case 0x39:
+				m_iSlice=argument;
 				break;
 			case 0x10:
 				m_iProbability=argument;
@@ -675,7 +680,12 @@ void	CTrack::ProcessRetrig( int retrig )
 				}
 
 				//m_pChannel->m_Resampler.m_iPosition=(m_iSampleOffset*m_pChannel->m_pWaveLevel->numSamples)>>8;
-				m_pChannel->m_Resampler.m_iPosition=(m_iSampleOffset*m_pSample->GetSampleLength())>>8;
+				m_pChannel->m_Resampler.m_iPosition = 0;
+				if (m_iSlice > 0)
+					m_pChannel->m_Resampler.m_iPosition += m_pSample->GetSliceOffset(m_iSlice-1);
+				m_pChannel->m_Resampler.m_iPosition += (m_iSampleOffset*m_pSample->GetSampleLength())>>8;
+				if (m_pChannel->m_Resampler.m_iPosition > m_pSample->GetSampleLength())
+					m_pChannel->m_Resampler.m_iPosition = m_pSample->GetSampleLength();
 				m_pChannel->m_Resampler.m_iFraction=0;
 				m_pChannel->m_Amp.Retrig();
 

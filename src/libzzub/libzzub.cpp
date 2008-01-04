@@ -1699,6 +1699,22 @@ int zzub_wavelevel_get_format(zzub_wavelevel_t * level) {
 	return level->wave->get_wave_format(level->level);
 }
 
+int zzub_wavelevel_get_slice_count(zzub_wavelevel_t *level) {
+}
+int zzub_wavelevel_get_slice_value(zzub_wavelevel_t *level, int index) {
+	if ((index < 0) || (index >= level->slices.size()))
+		return -1;
+	return level->slices[index];
+}
+int zzub_wavelevel_clear_slices(zzub_wavelevel_t *level) {
+	level->slices.clear();
+	return 0;
+}
+int zzub_wavelevel_add_slice(zzub_wavelevel_t *level, int value) {
+	level->slices.push_back(value);
+	return 0;
+}
+
 // envelopes
 
 unsigned short zzub_envelope_get_attack(zzub_envelope_t *env) {

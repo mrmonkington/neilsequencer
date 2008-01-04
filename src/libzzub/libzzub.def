@@ -247,6 +247,10 @@ EXPORTS
 	zzub_wavelevel_stretch_range
 	zzub_wavelevel_insert
 	zzub_wavelevel_get_format
+	zzub_wavelevel_get_slice_count
+	zzub_wavelevel_get_slice_value
+	zzub_wavelevel_clear_slices
+	zzub_wavelevel_add_slice
 	zzub_envelope_get_attack
 	zzub_envelope_get_decay
 	zzub_envelope_get_sustain

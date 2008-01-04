@@ -236,6 +236,9 @@ class Wavelevel(libzzub._Wavelevel):
 		ampdigest = (ctypes.c_float * digestsize)()
 		libzzub._Wavelevel.get_samples_digest(self,channel,start,end,mindigest,maxdigest,ampdigest,digestsize)
 		return mindigest,maxdigest,ampdigest
+		
+	def get_slices(self):
+		return [self.get_slice_value(index) for index in range(self.get_slice_count())]
 
 libzzub.Wavelevel = Wavelevel
 

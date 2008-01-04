@@ -380,6 +380,11 @@ int zzub_wavelevel_silence_range(zzub_wavelevel_t * level, int start, int end);
 int zzub_wavelevel_remove_range(zzub_wavelevel_t * level, int start, int end);
 int zzub_wavelevel_stretch_range(zzub_wavelevel_t * level, int start, int end, int newsize);
 int zzub_wavelevel_insert(zzub_wavelevel_t * level, int start, void* sampleData, int channels, int waveFormat, int numSamples);
+
+int zzub_wavelevel_get_slice_count(zzub_wavelevel_t *level);
+int zzub_wavelevel_get_slice_value(zzub_wavelevel_t *level, int index);
+int zzub_wavelevel_clear_slices(zzub_wavelevel_t *level);
+int zzub_wavelevel_add_slice(zzub_wavelevel_t *level, int value);
 	
 int zzub_wavelevel_get_format(zzub_wavelevel_t * level);
 

@@ -65,6 +65,16 @@ long		CBuzzSample::GetSampleLength()
 	return m_pWaveLevel->sample_count;
 }
 
+long		CBuzzSample::GetSliceOffset(int index)
+{
+	if ((index < 0)||(index >= m_pWaveLevel->slices.size()))
+		return 0;
+	long offset = m_pWaveLevel->slices[index];
+	if ((offset < 0)||(offset >= m_pWaveLevel->sample_count))
+		return 0;
+	return offset;
+}
+
 long		CBuzzSample::GetLoopStart()
 {
 	return m_pWaveLevel->loop_start;

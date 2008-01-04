@@ -965,6 +965,14 @@ xml_node CcmWriter::saveWave(xml_node &parent, zzub::wave_info_ex &info) {
 				levelnode.attribute("envelope") = true;
 			}
 			
+			xml_node slices = levelnode.append_child(node_element);
+			slices.name("slices");
+			for (size_t k = 0; k < level.slices.size(); k++) {
+				xml_node slice = slices.append_child(node_element);
+				slice.name("slice");
+				slice.attribute("value") = (long)level.slices[k];
+			}
+			
 			// flac can't store anything else than default samplerates,
 			// and most possibly the same goes for ogg vorbis as well
 			// so save the samplerate here instead.
@@ -1740,6 +1748,15 @@ bool CcmReader::loadInstruments(xml_node &instruments, zzub::player &player) {
 							info.set_loop_end(index, long(w->attribute("loopend")));
 							if (w->has_attribute("samplerate")) {
 								info.set_samples_per_sec(index, long(w->attribute("samplerate")));
+							}
+							wave_level &level = info.levels[index];
+							xml_node slices = w->first_element_by_name("slices");
+							if (!slices.empty()) {
+								for (xml_node::child_iterator s = slices.children_begin(); s != slices.children_end(); ++s) {
+									if (s->has_name("slice")) {
+										level.slices.push_back(long(s->attribute("value")));
+									}
+								}
 							}
 						}
 					}
