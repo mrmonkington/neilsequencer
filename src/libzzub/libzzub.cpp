@@ -1700,6 +1700,7 @@ int zzub_wavelevel_get_format(zzub_wavelevel_t * level) {
 }
 
 int zzub_wavelevel_get_slice_count(zzub_wavelevel_t *level) {
+	return level->slices.size();
 }
 int zzub_wavelevel_get_slice_value(zzub_wavelevel_t *level, int index) {
 	if ((index < 0) || (index >= level->slices.size()))
