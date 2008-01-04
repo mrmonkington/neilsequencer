@@ -31,6 +31,7 @@ from utils import prepstr, filepath, get_item_count, get_clipboard_text, set_cli
 import pickle
 import zzub
 import time
+import random
 import common
 player = common.get_player()
 from common import MARGIN, MARGIN2, MARGIN3, MARGIN0
@@ -678,7 +679,9 @@ class PatternView(gtk.DrawingArea):
 		menu.append(gtk.SeparatorMenuItem())
 		menu.append(make_menu_item("Transpose selection up", "", self.transpose_selection,1))
 		menu.append(make_menu_item("Transpose selection down", "", self.transpose_selection,-1))
-		menu.append(make_menu_item("Randomize selection", "", self.randomize_selection))
+		menu.append(make_menu_item("Randomize selection", "", self.randomize_selection, None))
+		menu.append(make_menu_item("Constrained randomize", "", self.randomize_selection, "constrain"))
+		menu.append(make_menu_item("Interpolate selection", "", self.interpolate_selection))
 		menu.append(gtk.SeparatorMenuItem())
 		issolo = self.rootwindow.routeframe.view.solo_plugin == self.get_plugin()
 		menu.append(make_check_item(issolo, "Solo Plugin", "Toggle solo", self.on_popup_solo))
@@ -1160,32 +1163,150 @@ class PatternView(gtk.DrawingArea):
 				else:
 					v = max(min(v+offset,p.get_value_max()),p.get_value_min())
 				self.pattern.set_value(r,g,t,i,v)
+		tmp_sel = self.selection
 		self.pattern_changed()
-		
-	def randomize_selection(self, widget):
-		"""
-		Fills the current selection with random values.
-		"""
-		import random
-		for r,g,t,i in self.selection_range():
-			if r>self.pattern.get_row_count()-1:
-				break
-			if r<0:
-				continue
-			p = self.plugin.get_parameter(g,i)
-			if (p.get_type() == 0):
-				v = mn2bn(random.randrange(0,120))
-			else:
-				v = random.randrange(p.get_value_min(),p.get_value_max()+1)
-			self.pattern.set_value(r,g,t,i,v)
-		self.pattern_changed()
+		self.selection = tmp_sel
 
-	def interpolate_selection(self):
+	def randomize_selection(self, widget=None, mode=None):
 		"""
-		Fills the current selection with values interpolated from selection start to selection end.
+		Fills the current selection with random values. If the
+		selection contains some values, only generate values
+		which themselves already appear ("shuffle"). This is
+		handy for notes, where we might want to randomise over
+		(eg) a chord or a scale, rather than chromatically.
+		Can be used to fill a column with a single value:
+		enter it at the top, Ctrl-B, go to the bottom, Ctrl-E,
+		then run this.
+
+		If mode="constrain" (ctrl-shift-r) only generate
+		values *between* min and max of those which already
+		appear. 
+
+		Generated values will be spaced in the pattern
+		according to row_step, so hit Ctrl-[1-9] to adjust it
+		first.
+
+		A nice use-case is to run this repeatedly, waiting for
+		a nice selection to appear. Repeat ctrl-X ctrl-R to
+		get unconstrained randomisation; repeat ctrl-R to keep
+		"shuffling"; repeat ctrl-shift-R to keep doing
+		constrained randomisation. Repeating either of the
+		latter two will eventually lead to a narrowing of the
+		range.
+		"""
+		if not self.selection:
+			return
+		if self.row_step == 0:
+			step = 1
+		else:
+			step = self.row_step
+		# Unlike the interpolate_selection method, we can't do
+		# this without looking at the whole selection first.
+		# So first, save the min and max and all vals present
+		# in each column of the selection.
+		minv = dict()
+		maxv = dict()
+		allv = dict()
+		for r, g, t, i in self.selection_range():
+			if r > self.pattern.get_row_count() - 1:
+				break
+			if r < 0:
+				continue
+			val = self.pattern.get_value(r, g, t, i)
+			p = self.plugin.get_parameter(g, i)
+			if val == p.get_value_none():
+				continue
+			# We're not guaranteed that (g, t, i) index a
+			# well-formed matrix (eg g=2, t=2 might exist
+			# even though g=0, t=2 does not), so can't use
+			# list-of-list-of-list: use dict.
+			key = (g, t, i)
+			if not allv.has_key(key):
+				# We don't need all the values, just
+				# the unique ones. Use set.
+				allv[key] = set([val])
+			else:
+				if not val in allv[key]:
+					allv[key].add(val)
+			if p.get_type() == 0 and val == zzub.zzub_note_value_off:
+				# Note type: many values (above midi
+				# note 120, but "below" note-off) are
+				# invalid! Therefore, can't blindly
+				# randomise between min and max, when
+				# max == note-off: so don't add
+				# note-off to minv and maxv.
+				continue
+			if not minv.has_key(key) or val < minv[key]:
+				minv[key] = val
+			if not maxv.has_key(key) or val > maxv[key]:
+				maxv[key] = val
+			
+		
+		# Go through the selection randomising each cell.
+		for r, g, t, i in self.selection_range():
+			if r > self.pattern.get_row_count() - 1:
+				break
+			if r < 0:
+				continue
+			p = self.plugin.get_parameter(g, i)
+			key = (g, t, i)
+			# If row_step > 1 clear some rows
+			if (r - self.selection.begin) % step != 0:
+				v = p.get_value_none()
+
+			elif mode == "constrain":
+				if allv.has_key(key):
+					v1, v2 = minv[key], maxv[key]
+					if p.get_type() == 0:
+						# Note type
+						v1 = bn2mn(v1)
+						v2 = bn2mn(v2)
+						if zzub.zzub_note_value_off in allv[key]:
+							# Hack to allow note-offs.
+							ir = random.randint(v1, v2 + 1)
+							if ir == v2 + 1:
+								v = zzub.zzub_note_value_off
+							else:
+								v = mn2bn(ir)
+						else:
+							ir = random.randint(v1, v2)
+							v = mn2bn(ir)
+							
+					else:
+						# Any other type
+						v = random.randint(v1, v2)
+				else:
+					v = p.get_value_none()
+
+			else:
+				if allv.has_key(key):
+					# Subset of existing values
+					v = random.choice(list(allv[key]))
+				else:
+					# No values exist: traditional randomize
+					if (p.get_type() == 0):
+						v = mn2bn(random.randrange(0, 120))
+					else:
+						v = random.randrange(p.get_value_min(),p.get_value_max()+1)
+						
+			self.pattern.set_value(r, g, t, i, v)
+		tmp_sel = self.selection
+		self.pattern_changed()
+		self.selection = tmp_sel
+
+	def interpolate_selection(self, widget=None):
+		"""
+		Fills the current selection with values interpolated
+		from selection start to selection end. Generated
+		values will be spaced in the pattern according to
+		row_step, so hit Ctrl-[1-9] to adjust it first.
 		"""
 		if not self.selection:
 			return		
+		if self.row_step == 0:
+			step = 1
+		else:
+			step = self.row_step
 		for r,g,t,i in self.selection_range():
 			if r>self.pattern.get_row_count()-1:
 				break
@@ -1197,15 +1318,27 @@ class PatternView(gtk.DrawingArea):
 			if (v1 != p.get_value_none()) and (v2 != p.get_value_none()):
 				if (p.get_type() == 0 and (v1 == zzub.zzub_note_value_off or v2 == zzub.zzub_note_value_off)):
 					continue
-				f = float(r - self.selection.begin) / float(self.selection.end - self.selection.begin - 1)
-				if (p.get_type() == 0):
-					v1 = bn2mn(v1)
-					v2 = bn2mn(v2)
-					v = mn2bn(roundint((v2 - v1) * f + v1))
+				# If row_step > 1, clear some rows.
+				# Sometimes this might prevent the
+				# interpolation from ever achieving
+				# the final value (v2), but the fix
+				# would be to add the final value to
+				# the last row, and this would disrupt
+				# the row_step-induced rhythm.
+				if (r - self.selection.begin) % step != 0:
+					v = p.get_value_none()
 				else:
-					v = roundint((v2 - v1) * f + v1)
+					f = float(r - self.selection.begin) / float(self.selection.end - self.selection.begin - 1)
+					if (p.get_type() == 0):
+						v1 = bn2mn(v1)
+						v2 = bn2mn(v2)
+						v = mn2bn(roundint((v2 - v1) * f + v1))
+					else:
+						v = roundint((v2 - v1) * f + v1)
 				self.pattern.set_value(r,g,t,i,v)
+		tmp_sel = self.selection
 		self.pattern_changed()
+		self.selection = tmp_sel
 
 	def cut(self):
 		"""
@@ -1574,6 +1707,9 @@ class PatternView(gtk.DrawingArea):
 		elif (mask & gtk.gdk.CONTROL_MASK) and (mask & gtk.gdk.SHIFT_MASK):
 			if k == 'Return':
 				self.on_popup_create_copy()
+			elif k == 'R':
+				# R, not r
+				self.randomize_selection(widget=None, mode="constrain")
 			else:
 				return False
 		elif k in ('Tab', 'ISO_Left_Tab'):
@@ -1678,7 +1814,7 @@ class PatternView(gtk.DrawingArea):
 			elif k == 'x':
 				self.cut()
 			elif k == 'r':
-				self.randomize_selection(self)
+				self.randomize_selection(widget=None, mode=None)
 			elif k == 'i':
 				self.interpolate_selection()
 			elif k == 'u':
@@ -2262,7 +2398,6 @@ class PatternView(gtk.DrawingArea):
 		Overriding a L{Canvas} method that paints onto an offscreen buffer.
 		Draws the pattern view graphics.
 		"""	
-		print "in PatternView.draw()"
 		st = time.time()
 		row=None
 		rows=None
