@@ -50,6 +50,30 @@ class PatternNotFoundException(Exception):
 	pass
 
 
+# TODO: This might be better as a ScrolledWindow rather than a ComboBox.
+class AddSequencerTrackDialog(gtk.Dialog):
+	"""
+	Sequencer Dialog Box.
+	
+	This dialog is used to create a new track for an existing machine.
+	"""
+	def __init__(self, parent, machines):
+		gtk.Dialog.__init__(self,
+			"Add track",
+			parent.get_toplevel(),
+			gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
+			None
+		)
+		self.btnok = self.add_button(gtk.STOCK_OK, gtk.RESPONSE_OK)
+		self.btncancel = self.add_button(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL)
+		self.combo = gtk.combo_box_new_text()
+		for machine in sorted(machines, lambda a,b: cmp(a.lower(), b.lower())):
+			self.combo.append_text(machine)
+		# Set a default.
+		self.combo.set_active(0)
+		self.vbox.add(self.combo)
+		self.show_all()
+
 class SequencerToolBar(gtk.HBox):
 	"""
 	Sequencer Toolbar
@@ -616,24 +640,20 @@ class SequencerView(gtk.DrawingArea):
 		self.rootwindow.select_page(self.rootwindow.PAGE_SEQUENCER)
 	
 	def show_plugin_dialog(self):
-		choices = []
-		for plugin in player.get_plugin_list():			
-			choices.append(prepstr(plugin.get_name()))
-		dlg = wx.SingleChoiceDialog(
-			self, 
-			'', 
-			'Select Plugin', 
-			choices,
-			style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER | wx.CENTRE)
-		#~ for child in dlg.GetChildren():
-			#~ if isinstance(child,wx.ListBox):
-				#~ child.SetFocus()
-				#~ break
-		if dlg.ShowModal() == wx.ID_OK:			
+		pmenu = []
+		for plugin in player.get_plugin_list():
+			pmenu.append(prepstr(plugin.get_name()))
+		dlg = AddSequencerTrackDialog(self, pmenu)
+		response = dlg.run()
+		dlg.hide_all()
+		if response == gtk.RESPONSE_OK:
 			seq = player.get_current_sequencer()
-			seq.create_track(player.get_plugin(dlg.GetSelection()))
-			self.ReDraw()
-		dlg.Destroy()
+			name = dlg.combo.get_active_text()
+			for plugin in player.get_plugin_list():
+				if plugin.get_name() == name:
+					seq.create_track(plugin)
+					break
+		dlg.destroy()
 		
 	def set_loop_start(self, event=None):
 		"""
