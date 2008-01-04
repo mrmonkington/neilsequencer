@@ -494,8 +494,8 @@ class AldrinConfig(ConfigParser.ConfigParser):
 		@rtype: (str,str,int,int)
 		"""
 		self.set_section('AudioDevice')
-		return self.read_value('InputName',''), self.read_value('OutputName','') or self.read_value('Name',''), self.read_int_value('SampleRate',44100), self.read_int_value('BufferSize',2048)
-		
+		return self.read_value('InputName',''), self.read_value('OutputName','') or self.read_value('Name',''), self.read_int_value('SampleRate',44100), self.read_int_value('BufferSize',2048)	
+	
 	def set_audiodriver_config(self, inputname, outputname, samplerate, buffersize):
 		"""
 		Stores audiodriver settings.
@@ -699,6 +699,27 @@ class AldrinConfig(ConfigParser.ConfigParser):
 		self.set_section('Global')
 		self.write_value('PatternFontName', fontname)
 
+	def get_led_draw(self): 
+		"""
+		Retrieves led draw option.
+		"""
+		self.set_section('Global')
+		value = self.read_value('LedDraw', 'true')
+		if value == 'true':
+			return True
+		else:
+			return False
+	
+	def set_led_draw(self, value):
+		"""
+		Stores the led draw option.
+		"""
+		self.set_section('Global')
+		if value:
+			self.write_value('LedDraw', 'true')
+		else:
+			self.write_value('LedDraw', 'false') 
+	
 	def load_window_pos(self, windowid, window):
 		"""
 		Retrieves a windows position from the config and applies it.

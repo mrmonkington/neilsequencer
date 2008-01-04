@@ -620,7 +620,8 @@ class RouteView(gtk.DrawingArea):
 		self.connect('key-press-event', self.on_key_jazz, None)	
 		self.connect('key-release-event', self.on_key_jazz_release, None)
 		self.connect('size-allocate', self.on_size_allocate)
-		gobject.timeout_add(100, self.on_draw_led_timer)
+		if config.get_config().get_led_draw()==True:
+			gobject.timeout_add(100, self.on_draw_led_timer)
 		#~ wx.EVT_SET_FOCUS(self, self.on_focus)
 		
 	def on_size_allocate(self, widget, requisition):
@@ -1430,43 +1431,44 @@ class RouteView(gtk.DrawingArea):
 				lw,lh = layout.get_pixel_size()
 				gc.set_foreground(textcolor)
 				pi.plugingfx.draw_layout(gc, PLUGINWIDTH/2 - lw/2, PLUGINHEIGHT/2 - lh/2, layout)
-				
-			maxl, maxr = mp.get_last_peak()
-			amp = min(max(maxl,maxr),1.0)
-			if amp != pi.amp:
-				if amp >= 1:
-					gc.set_foreground(cm.alloc_color(self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK, self.flags2brushes[GENERATOR_PLUGIN_FLAGS])[self.COLOR_LED_WARNING]))
-					pi.plugingfx.draw_rectangle(gc, True, LEDOFSX, LEDOFSY, LEDWIDTH-1, LEDHEIGHT-1)
-				else:
-					gc.set_foreground(cm.alloc_color(self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK, self.flags2brushes[GENERATOR_PLUGIN_FLAGS])[self.COLOR_LED_OFF]))
-					pi.plugingfx.draw_rectangle(gc, True, LEDOFSX, LEDOFSY, LEDWIDTH-1, LEDHEIGHT-1)
-					amp = 1.0 - (linear2db(amp,-76.0)/-76.0)
-					height = int((LEDHEIGHT-4)*amp + 0.5)
-					if (height > 0):
-						gc.set_foreground(cm.alloc_color(self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK, self.flags2brushes[GENERATOR_PLUGIN_FLAGS])[self.COLOR_LED_ON]))
-						pi.plugingfx.draw_rectangle(gc, True, LEDOFSX+2, LEDOFSY+LEDHEIGHT-height-2, LEDWIDTH-4, height)
-				gc.set_foreground(cm.alloc_color(self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK, self.flags2brushes[GENERATOR_PLUGIN_FLAGS])[self.COLOR_LED_BORDER]))
-				pi.plugingfx.draw_rectangle(gc, False, LEDOFSX, LEDOFSY, LEDWIDTH-1, LEDHEIGHT-1)
-				pi.amp = amp
-
-			try:
-				relperc = max(((cpu_loads[mp]*cpu) / (biggestload*100))*0.1 + pi.cpu*0.9, 0.0)
-			except ZeroDivisionError:
-				relperc = max(pi.cpu, 0.0)
-			if relperc != pi.cpu:
-				pi.cpu = relperc
-				gc.set_foreground(cm.alloc_color(self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK, self.flags2brushes[GENERATOR_PLUGIN_FLAGS])[self.COLOR_CPU_OFF]))
-				pi.plugingfx.draw_rectangle(gc, True, CPUOFSX, CPUOFSY, CPUWIDTH-1, CPUHEIGHT-1)
-				height = int((CPUHEIGHT-4)*relperc + 0.5)
-				if (height > 0):
-					if relperc >= cputreshold:
-						gc.set_foreground(cm.alloc_color(self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK, self.flags2brushes[GENERATOR_PLUGIN_FLAGS])[self.COLOR_CPU_WARNING]))
-					else:
-						gc.set_foreground(cm.alloc_color(self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK, self.flags2brushes[GENERATOR_PLUGIN_FLAGS])[self.COLOR_CPU_ON]))
-					pi.plugingfx.draw_rectangle(gc, True, CPUOFSX+2, CPUOFSY+CPUHEIGHT-height-2, CPUWIDTH-4, height)
-				gc.set_foreground(cm.alloc_color(self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK, self.flags2brushes[GENERATOR_PLUGIN_FLAGS])[self.COLOR_CPU_BORDER]))
-				pi.plugingfx.draw_rectangle(gc, False, CPUOFSX, CPUOFSY, CPUWIDTH-1, CPUHEIGHT-1)
 			
+			if config.get_config().get_led_draw()==True:		
+				maxl, maxr = mp.get_last_peak()
+				amp = min(max(maxl,maxr),1.0)
+				if amp != pi.amp:
+					if amp >= 1:
+						gc.set_foreground(cm.alloc_color(self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK, self.flags2brushes[GENERATOR_PLUGIN_FLAGS])[self.COLOR_LED_WARNING]))
+						pi.plugingfx.draw_rectangle(gc, True, LEDOFSX, LEDOFSY, LEDWIDTH-1, LEDHEIGHT-1)
+					else:
+						gc.set_foreground(cm.alloc_color(self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK, self.flags2brushes[GENERATOR_PLUGIN_FLAGS])[self.COLOR_LED_OFF]))
+						pi.plugingfx.draw_rectangle(gc, True, LEDOFSX, LEDOFSY, LEDWIDTH-1, LEDHEIGHT-1)
+						amp = 1.0 - (linear2db(amp,-76.0)/-76.0)
+						height = int((LEDHEIGHT-4)*amp + 0.5)
+						if (height > 0):
+							gc.set_foreground(cm.alloc_color(self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK, self.flags2brushes[GENERATOR_PLUGIN_FLAGS])[self.COLOR_LED_ON]))
+							pi.plugingfx.draw_rectangle(gc, True, LEDOFSX+2, LEDOFSY+LEDHEIGHT-height-2, LEDWIDTH-4, height)
+					gc.set_foreground(cm.alloc_color(self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK, self.flags2brushes[GENERATOR_PLUGIN_FLAGS])[self.COLOR_LED_BORDER]))
+					pi.plugingfx.draw_rectangle(gc, False, LEDOFSX, LEDOFSY, LEDWIDTH-1, LEDHEIGHT-1)
+					pi.amp = amp
+
+				try:
+					relperc = max(((cpu_loads[mp]*cpu) / (biggestload*100))*0.1 + pi.cpu*0.9, 0.0)
+				except ZeroDivisionError:
+					relperc = max(pi.cpu, 0.0)
+				if relperc != pi.cpu:
+					pi.cpu = relperc
+					gc.set_foreground(cm.alloc_color(self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK, self.flags2brushes[GENERATOR_PLUGIN_FLAGS])[self.COLOR_CPU_OFF]))
+					pi.plugingfx.draw_rectangle(gc, True, CPUOFSX, CPUOFSY, CPUWIDTH-1, CPUHEIGHT-1)
+					height = int((CPUHEIGHT-4)*relperc + 0.5)
+					if (height > 0):
+						if relperc >= cputreshold:
+							gc.set_foreground(cm.alloc_color(self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK, self.flags2brushes[GENERATOR_PLUGIN_FLAGS])[self.COLOR_CPU_WARNING]))
+						else:
+							gc.set_foreground(cm.alloc_color(self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK, self.flags2brushes[GENERATOR_PLUGIN_FLAGS])[self.COLOR_CPU_ON]))
+						pi.plugingfx.draw_rectangle(gc, True, CPUOFSX+2, CPUOFSY+CPUHEIGHT-height-2, CPUWIDTH-4, height)
+					gc.set_foreground(cm.alloc_color(self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK, self.flags2brushes[GENERATOR_PLUGIN_FLAGS])[self.COLOR_CPU_BORDER]))
+					pi.plugingfx.draw_rectangle(gc, False, CPUOFSX, CPUOFSY, CPUWIDTH-1, CPUHEIGHT-1)
+				
 			self.window.draw_drawable(gc, pi.plugingfx, 0, 0, int(rx), int(ry), -1, -1)
 		
 	def draw(self, ctx):
