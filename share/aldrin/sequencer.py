@@ -983,6 +983,10 @@ class SequencerView(gtk.DrawingArea):
 			return True
 		playpos = player.get_position()
 		if self.playpos != playpos:
+			if playpos==self.get_endrow():
+				self.startseqtime=playpos
+				self.redraw()
+				print "hihi"
 			self.draw_xor()
 			self.playpos = playpos
 			self.draw_xor()
