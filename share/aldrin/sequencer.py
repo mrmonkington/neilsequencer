@@ -986,7 +986,6 @@ class SequencerView(gtk.DrawingArea):
 			if playpos==self.get_endrow():
 				self.startseqtime=playpos
 				self.redraw()
-				print "hihi"
 			self.draw_xor()
 			self.playpos = playpos
 			self.draw_xor()
@@ -1006,9 +1005,6 @@ class SequencerView(gtk.DrawingArea):
 		self.redraw()
 		if self.starttrack != value:
 			self.starttrack = value
-			if self.track < self.starttrack:
-				while self.track < self.starttrack:
-					self.track += 1
 			self.redraw()
 		return True
 
@@ -1024,9 +1020,6 @@ class SequencerView(gtk.DrawingArea):
 		widget.set_value(value)
 		if self.startseqtime!=value*self.step:
 			self.startseqtime=value*self.step
-			if self.startseqtime>self.row:
-				while self.row < self.startseqtime:
-					self.row += self.step
 			self.redraw()
 		return True
 			
@@ -1099,8 +1092,9 @@ class SequencerView(gtk.DrawingArea):
 		track_count = seq.get_track_count()
 		# draw cursor
 		if track_count > 0:
-			x,y = self.track_row_to_pos((self.track,self.row))
-			drawable.draw_rectangle(gc,True,x,y+1,SEQROWSIZE-1,SEQTRACKSIZE-1)
+			if self.row>=self.startseqtime and self.track>=self.starttrack:
+				x,y = self.track_row_to_pos((self.track,self.row))
+				drawable.draw_rectangle(gc,True,x,y+1,SEQROWSIZE-1,SEQTRACKSIZE-1)
 		if self.playpos >= self.startseqtime:
 			# draw play cursor
 			x = SEQLEFTMARGIN + int((float(self.playpos - self.startseqtime) / self.step) * SEQROWSIZE)
