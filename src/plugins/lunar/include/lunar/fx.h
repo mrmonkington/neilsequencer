@@ -12,7 +12,7 @@ extern "C" {
 // at build time stating the platform,
 // catch it here with an ifdef and have different 
 // typedefs per platform.
-#if defined(__X86_64__) || defined(CONFIG_X86_64)
+#if defined(__X86_64__) || defined(CONFIG_X86_64) || defined(__APPLE__)
 typedef long unsigned int lunar_size_t;
 #else
 typedef unsigned int lunar_size_t;
