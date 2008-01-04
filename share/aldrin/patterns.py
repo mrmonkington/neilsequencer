@@ -1882,9 +1882,10 @@ class PatternView(gtk.DrawingArea):
 		if (k == 'Shift_L' or k=='Shift_R'):
 			self.shiftselect = None
 		try: 
-			o,n=key_to_note(kv) 
-			m = self.get_plugin()
-			m.set_parameter_value(self.group, self.track, self.index, zzub.zzub_note_value_off, 0)
+			if self.index==0:
+				o,n=key_to_note(kv) 
+				m = self.get_plugin()
+				m.set_parameter_value(self.group, self.track, self.index, zzub.zzub_note_value_off, 0)
 		except:
 			pass
 		
