@@ -49,19 +49,25 @@ class WaveEditPanel(gtk.VBox):
 		self.waveedscrollwin = add_scrollbars(self.view)
 		self.pack_start(self.waveedscrollwin)
 		waveedbuttons = gtk.HBox(False, MARGIN)
-		self.btndelrange = new_image_button(filepath("res/clear.png"), "Delete Range", self.wavetable.tooltips)		
+		self.btndelrange = gtk.Button("Delete Range")
 		waveedbuttons.pack_start(self.btndelrange, expand=False)
-		self.btnstoresel = new_image_button(filepath("res/storesample.png"), "Save Selection or Slices", self.wavetable.tooltips)
+		self.btnstoresel = gtk.Button("Save Sel/Slices")
 		waveedbuttons.pack_start(self.btnstoresel, expand=False)
+		self.btnapplyslices = gtk.Button("Apply Slices")
+		waveedbuttons.pack_start(self.btnapplyslices, expand=False)
 		self.pack_end(waveedbuttons, expand=False)
 		self.btndelrange.connect('clicked', self.on_delete_range)
 		self.btnstoresel.connect('clicked', self.on_store_range)
+		self.btnapplyslices.connect('clicked', self.on_apply_slices)
 		
 	def update(self):
 		self.view.update()
 		
 	def on_store_range(self, widget):
 		self.view.store_range()
+		
+	def on_apply_slices(self, widget):
+		self.view.apply_slices()
 
 	def on_delete_range(self, widget):
 		self.view.delete_range()
@@ -170,6 +176,13 @@ class WaveEditView(gtk.DrawingArea):
 			diffl /= 2
 			diffr /= 2
 		self.set_range(s - diffl, s + diffr)
+		self.redraw()
+		
+	def apply_slices(self):
+		self.level.clear_slices()
+		for i,x in enumerate(self.peaks):
+			res = self.level.add_slice(x)
+			assert res == 0
 		self.redraw()
 		
 	def store_range(self):
@@ -415,6 +428,7 @@ class WaveEditView(gtk.DrawingArea):
 		selbrush = cfg.get_float_color('WE Selection')
 		stretchbrush = cfg.get_float_color('WE Stretch Cue')
 		splitbar = cfg.get_float_color('WE Split Bar')
+		slicebar = cfg.get_float_color('WE Slice Bar')
 		onpeak = cfg.get_float_color('WE Wakeup Peaks')
 		offpeak = cfg.get_float_color('WE Sleep Peaks')
 		
@@ -466,6 +480,14 @@ class WaveEditView(gtk.DrawingArea):
 		for x in self.peaks:
 			x1 = self.sample_to_client(x, 0.0)[0]
 			ctx.set_source_rgb(*splitbar)
+			if (x1 >= 0) and (x1 <= w):
+				ctx.move_to(x1, 0)
+				ctx.line_to(x1, h)
+				ctx.stroke()
+
+		for x in self.level.get_slices():
+			x1 = self.sample_to_client(x, 0.0)[0]
+			ctx.set_source_rgb(*slicebar)
 			if (x1 >= 0) and (x1 <= w):
 				ctx.move_to(x1, 0)
 				ctx.line_to(x1, h)

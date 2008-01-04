@@ -114,6 +114,7 @@ DEFAULT_THEME = {
 	'WE Selection': 0xff0000,
 	'WE Stretch Cue': 0x00ff00,
 	'WE Split Bar': 0x800080,
+	'WE Slice Bar': 0xFF0080,
 	'WE Wakeup Peaks': 0xff0080,
 	'WE Sleep Peaks': 0x8000ff,
 }
