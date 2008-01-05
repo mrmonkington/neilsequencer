@@ -321,7 +321,7 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		em = extman.get_extension_manager()
 		em.register_service(interface.SERVICE_ROOTWINDOW, self, interface.IRootWindow)
 		em.realize_extensions(self)
-		self.set_geometry_hints(self,gtk.gdk.screen_width()*.8,gtk.gdk.screen_height()*.8)
+		self.set_geometry_hints(self,gtk.gdk.screen_width()*.75,gtk.gdk.screen_height()*.6)
 		self.set_position(gtk.WIN_POS_CENTER)
 		audiotrouble = False
 		try:
