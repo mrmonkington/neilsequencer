@@ -1589,8 +1589,8 @@ class RouteView(gtk.DrawingArea):
 		if kv<256:
 			octave = self.rootwindow.patternframe.view.octave
 			note = key_to_note(kv)
-			self.chordnotes.remove(note)
 			try:
+				self.chordnotes.remove(note)
 				n=((note[0]+octave)<<4|note[1]+1)
 				plugin.play_midi_note(zzub.zzub_note_value_off, n, 0)
 			except TypeError:
