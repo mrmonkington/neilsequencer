@@ -109,6 +109,7 @@ int audiodriver::getApiDevices(int apiId) {
 	try {
 		audio = new RtAudio((RtAudio::Api)apiId);
 		deviceCount = audio->getDeviceCount();
+		std::cout << "RtAudio reports " << deviceCount << "devices found." << std::endl;
 	} catch (RtError &error) {
 		error.printMessage();
 		return -1;
@@ -170,7 +171,8 @@ void audiodriver::initialize(audioworker *worker)
 		getApiDevices(RtAudio::LINUX_ALSA);
 #endif
 #if defined(__LINUX_OSS__)
-    getApiDevices(RtAudio::LINUX_OSS);
+	if (devices.size() == 0)
+		getApiDevices(RtAudio::LINUX_OSS);
 #endif
 #if defined(__MACOSX_CORE__)
       getApiDevices(RtAudio::RtAudio::MACOSX_CORE);
