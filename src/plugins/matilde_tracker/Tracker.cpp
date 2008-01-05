@@ -637,6 +637,9 @@ const char * CMatildeTrackerMachine::describe_value(int param, int value)
 			case	0x2E:
 				return "Fine slide rez down";
 				break;
+			case	0x39:
+				return "Set cue point";
+				break;
 			case	0xDC:
 				return "Note release";
 				break;
