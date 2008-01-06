@@ -168,6 +168,7 @@ class PatternToolBar(gtk.HBox):
 		self.wavelabel.set_text_with_mnemonic("_Instrument")
 		self.waveselect = gtk.combo_box_new_text()
 		self.waveselect.connect('changed', self.on_waveselect)
+		self.waveselect.connect('notify::popup-shown', self.on_waveselect_popup)
 		self.wavelabel.set_mnemonic_widget(self.waveselect)
 		self.octavelabel = gtk.Label()
 		self.octavelabel.set_text_with_mnemonic("_Base octave")
@@ -182,6 +183,7 @@ class PatternToolBar(gtk.HBox):
 		self.pattern = 0
 		self.wave = 0
 		self.cb2w = {} # combobox index to wave index
+		self.waveselect_tokens = []
 		
 		self.pack_start(self.pluginlabel, expand=False)
 		self.pack_start(self.pluginselect, expand=False)
@@ -219,6 +221,29 @@ class PatternToolBar(gtk.HBox):
 			return
 		self.pattern = widget.get_active()
 		self.view.pattern_changed()
+		
+	def on_waveselect_popup(self, widget, *args):
+		if widget.get_property('popup-shown'):
+			for win in gtk.window_list_toplevels():
+				if (len(win.get_children()) == 1) and (isinstance(win.get_children()[0],gtk.Menu)):
+					menu = win.get_children()[0]
+					if menu.get_attach_widget() == widget:
+						for index,item in enumerate(menu.get_children()):
+							self.waveselect_tokens.append((item,item.connect('select', self.on_waveselect_menu_activate,widget,index)))
+		else:
+			for item,token in self.waveselect_tokens:
+				item.disconnect(token)
+			self.waveselect_tokens = []
+		
+	def on_waveselect_menu_activate(self, item, widget, index):
+		wave = self.cb2w[index]
+		w = player.get_wave(wave)
+		if w.get_level_count() >= 1:
+			from utils import db2linear
+			vol = min(max(config.get_config().get_sample_preview_volume(),-76.0),0.0)
+			amp = db2linear(vol,limit=-76.0)
+			player.set_wave_amp(amp)
+			player.play_wave(w, 0, (4 << 4) + 1)
 		
 	def on_waveselect(self, widget):
 		"""
