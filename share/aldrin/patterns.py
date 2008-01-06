@@ -2042,12 +2042,14 @@ class PatternView(gtk.DrawingArea):
 		k = gtk.gdk.keyval_name(kv)
 		if (k == 'Shift_L' or k=='Shift_R'):
 			self.shiftselect = None 
-		if self.index==0 and self.subindex==0 and kv < 256:
-			o,n=key_to_note(kv) 
-			m = self.get_plugin()
-			m.set_parameter_value(self.group, self.track, self.index, zzub.zzub_note_value_off, 0)
-		
-		
+		# lr: definitely a dangerous check here. you need to make sure the parameter
+		# is indeed a note parameter, and remove the index check. else you will
+		# set invalid parameters on machines without a note parameter in the first row.
+		# i'm commenting this out for now.
+		#~ if (self.index==0) and (self.subindex==0) and kv and (kv < 256):
+			#~ o,n=key_to_note(kv) 
+			#~ m = self.get_plugin()
+			#~ m.set_parameter_value(self.group, self.track, self.index, zzub.zzub_note_value_off, 0)
 	
 	def on_char(self, event):
 		"""
