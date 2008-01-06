@@ -1188,7 +1188,10 @@ void zzub_pattern_get_bandwidth_digest(zzub_pattern_t* pattern, float *digest, i
 				}				
 			}
 		}
-		digest[i] = float(count) / float(total);
+		if (total)
+			digest[i] = float(count) / float(total);
+		else
+			digest[i] = 0.0f;
 		row = rowend;
 	}
 }
