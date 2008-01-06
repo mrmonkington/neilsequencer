@@ -1266,7 +1266,7 @@ class SequencerView(gtk.DrawingArea):
 						r,g,b = from_hsb(hue, 0.2, cb*bgb)
 						gc.set_foreground(cm.alloc_color('#%02X%02X%02X' % (int(r*255),int(g*255),int(b*255))))
 						bb.draw_rectangle(gc, True, 0,0, psize-2, SEQTRACKSIZE-2)
-						r,g,b = from_hsb(hue, 0.5, cb*bgb*0.9)
+						r,g,b = from_hsb(hue, 0.5, cb*bgb*0.5)
 						gc.set_foreground(cm.alloc_color('#%02X%02X%02X' % (int(r*255),int(g*255),int(b*255))))
 						pat = m.get_pattern(value-0x10)
 						group_track_count = [m.get_input_connection_count(), 1, m.get_track_count()]
@@ -1276,7 +1276,7 @@ class SequencerView(gtk.DrawingArea):
 						digest = pat.get_bandwidth_digest(bw)
 						for evx,evh in enumerate(digest):
 							if evh:
-								evh = max(int(bh * (evh) + 0.5), 1)
+								evh = max(int(bh * (0.5 + evh*0.5) + 0.5), 1)
 								bb.draw_rectangle(gc, True, 1+evx, 2+bh-evh, 1, evh )
 						r,g,b = from_hsb(hue, 1.0, cb*bgb*0.7)
 						gc.set_foreground(cm.alloc_color('#%02X%02X%02X' % (int(r*255),int(g*255),int(b*255))))
