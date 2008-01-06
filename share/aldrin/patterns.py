@@ -35,6 +35,7 @@ import random
 import common
 player = common.get_player()
 from common import MARGIN, MARGIN2, MARGIN3, MARGIN0
+from guievents import global_events
 
 from utils import NOTES, roundint
 PATLEFTMARGIN = 48
@@ -195,6 +196,11 @@ class PatternToolBar(gtk.HBox):
 		self.pack_start(self.octaveselect, expand=False)
 		self.pack_start(self.playnotes, expand=False)
 		
+		global_events.connect('pattern-removed', self.update_patternselect)
+		global_events.connect('pattern-created', self.update_patternselect)
+		global_events.connect('pattern-name-changed', self.update_patternselect)
+		global_events.connect('song-opened', self.update_all)
+		
 	def reset(self):
 		self.plugin = 0
 		self.pattern = 0
@@ -336,7 +342,7 @@ class PatternToolBar(gtk.HBox):
 		"""
 		self.select_pattern(self.pattern+1)
 			
-	def update_patternselect(self):
+	def update_patternselect(self, *args):
 		"""
 		Rebuilds and updates the patternselect list.
 		"""
@@ -425,7 +431,7 @@ class PatternPanel(gtk.VBox):
 			self.statusbar.pack_start(label, expand=False)
 			self.statusbar.pack_start(gtk.VSeparator(), expand=False)
 		self.view.statuslabels = self.statuslabels
-
+		
 	def on_player_callback(self, player, plugin, data):
 		"""
 		callback for ui events sent by zzub.
@@ -448,7 +454,7 @@ class PatternPanel(gtk.VBox):
 		"""
 		self.toolbar.reset()
 		
-	def update_all(self):
+	def update_all(self, *args):
 		"""
 		Updates the toolbar and the pattern view to reflect a pattern change.
 		"""

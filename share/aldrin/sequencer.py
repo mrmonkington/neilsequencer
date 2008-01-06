@@ -35,6 +35,7 @@ import zzub
 import config
 import time
 import common
+from guievents import global_events
 player = common.get_player()
 from common import MARGIN, MARGIN2, MARGIN3, MARGIN0
 
@@ -499,6 +500,7 @@ class SequencerView(gtk.DrawingArea):
 			name = get_new_pattern_name(m)
 			p = m.create_pattern(patternsize)
 			p.set_name(name)
+			global_events('pattern-created', p)
 			for i in xrange(m.get_pattern_count()):
 				if m.get_pattern(i) == p:
 					t.set_event(start[1], 0x10+i)
@@ -526,6 +528,7 @@ class SequencerView(gtk.DrawingArea):
 				name = get_new_pattern_name(m)
 				p = m.create_pattern(patternsize)
 				p.set_name(name)
+				global_events('pattern-created', p)
 				group_track_count = [m.get_input_connection_count(), 1, m.get_track_count()]
 				for time, pattern in eventlist:
 					t.remove_event_at(time)

@@ -21,9 +21,10 @@
 """
 Provides application class and controls used in the aldrin main window.
 """
-
 import errordlg
 errordlg.install()
+
+from guievents import global_events
 
 import sys, os
 from gtkimport import gtk
@@ -311,9 +312,9 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		self.init_lunar()
 		
 		playstarttime = time.time()
-
+		
 		self.event_handlers = []
-
+		
 		# begin wxGlade: AldrinFrame.__init__
 		gtk.Window.__init__(self, gtk.WINDOW_TOPLEVEL)
 		#~ self.toolsmenu.hide()
