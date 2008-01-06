@@ -697,6 +697,23 @@ def is_controller(plugin):
 def is_root(plugin):
 	return ((plugin.get_flags() & PLUGIN_FLAGS_MASK) == ROOT_PLUGIN_FLAGS)
 
+def get_new_pattern_name(plugin):
+	"""
+	Finds an unused pattern name.
+	"""
+	patternid = 0
+	while True:
+		s = "%02i" % patternid
+		found = False
+		for p in plugin.get_pattern_list():
+			if p.get_name() == s:
+				found = True
+				patternid += 1
+				break
+		if not found:
+			break
+	return s
+		
 __all__ = [
 'is_frozen',
 'get_root_folder_path',
@@ -741,6 +758,7 @@ __all__ = [
 'is_generator',
 'is_controller',
 'is_root',
+'get_new_pattern_name',
 ]
 
 if __name__ == '__main__':

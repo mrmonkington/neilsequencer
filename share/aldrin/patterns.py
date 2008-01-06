@@ -27,7 +27,7 @@ import os, sys
 from gtkimport import gtk
 import gobject
 import pango
-from utils import prepstr, filepath, get_item_count, get_clipboard_text, set_clipboard_text, question, error
+from utils import prepstr, filepath, get_item_count, get_clipboard_text, set_clipboard_text, question, error, get_new_pattern_name
 import pickle
 import zzub
 import time
@@ -739,20 +739,7 @@ class PatternView(gtk.DrawingArea):
 		"""
 		if not m:
 			m = self.get_plugin()
-		if not m:
-			return
-		patternid = 0
-		while True:
-			s = "%02i" % patternid
-			found = False
-			for p in m.get_pattern_list():
-				if p.get_name() == s:
-					found = True
-					patternid += 1
-					break
-			if not found:
-				break
-		return s
+		return get_new_pattern_name(m)
 		
 	def init_values(self):
 		"""

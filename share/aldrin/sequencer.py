@@ -28,7 +28,7 @@ import pango
 import gobject
 from utils import PLUGIN_FLAGS_MASK, ROOT_PLUGIN_FLAGS, GENERATOR_PLUGIN_FLAGS, EFFECT_PLUGIN_FLAGS, CONTROLLER_PLUGIN_FLAGS
 from utils import prepstr, from_hsb, to_hsb, get_item_count, get_clipboard_text, set_clipboard_text, add_scrollbars
-from utils import is_effect,is_generator,is_controller,is_root
+from utils import is_effect,is_generator,is_controller,is_root,get_new_pattern_name
 import random
 import ctypes
 import zzub
@@ -485,6 +485,25 @@ class SequencerView(gtk.DrawingArea):
 			data += "%04x%08x%04x" % (track, row - startrow, value)
 		set_clipboard_text(data)
 		
+	def on_popup_create_pattern(self, event=None):
+		seq = player.get_current_sequencer()
+		start = (min(self.selection_start[0], self.selection_end[0]), 
+					min(self.selection_start[1], self.selection_end[1]))
+		end = (max(self.selection_start[0], self.selection_end[0]), 
+					max(self.selection_start[1], self.selection_end[1]))
+		eventlist = []
+		for track in range(start[0], end[0]+1):
+			t = seq.get_track(track)
+			m = t.get_plugin()
+			patternsize = end[1]+self.step - start[1]
+			name = get_new_pattern_name(m)
+			p = m.create_pattern(patternsize)
+			p.set_name(name)
+			for i in xrange(m.get_pattern_count()):
+				if m.get_pattern(i) == p:
+					t.set_event(start[1], 0x10+i)
+					break
+		
 	def on_popup_merge(self, event=None):
 		seq = player.get_current_sequencer()
 		start = (min(self.selection_start[0], self.selection_end[0]), 
@@ -496,20 +515,17 @@ class SequencerView(gtk.DrawingArea):
 		for track in range(start[0], end[0]+1):
 			t = seq.get_track(track)
 			m = t.get_plugin()
-			name = ''
 			for time,value in t.get_event_list():
 				if (time >= start[1]) and (time < (end[1]+self.step)):
 					if value >= 0x10:
 						value -= 0x10
-						if name:
-							name += ' '
-						name += m.get_pattern(value).get_name()
 						# copy contents between patterns
 						eventlist.append((time, m.get_pattern(value)))
 						patternsize = max(patternsize, time - start[1] + m.get_pattern(value).get_row_count())						
 			if patternsize:
+				name = get_new_pattern_name(m)
 				p = m.create_pattern(patternsize)
-				p.set_name(name + ' (merged)')
+				p.set_name(name)
 				group_track_count = [m.get_input_connection_count(), 1, m.get_track_count()]
 				for time, pattern in eventlist:
 					t.remove_event_at(time)
@@ -618,8 +634,6 @@ class SequencerView(gtk.DrawingArea):
 		menu.append(make_submenu_item(pmenu, "Add track"))
 		menu.append(make_menu_item("Delete track", "", self.on_popup_delete_track))
 		menu.append(gtk.SeparatorMenuItem())
-		menu.append(make_menu_item("Add pattern", "", self.add_pattern))
-		menu.append(gtk.SeparatorMenuItem())
 		menu.append(make_menu_item("Set loop start", "", self.set_loop_start))
 		menu.append(make_menu_item("Set loop end", "", self.set_loop_end))
 		menu.append(gtk.SeparatorMenuItem())
@@ -630,14 +644,11 @@ class SequencerView(gtk.DrawingArea):
 		menu.append(make_menu_item("Paste", "", self.on_popup_paste))
 		menu.append(make_menu_item("Delete", "", self.on_popup_delete))
 		menu.append(gtk.SeparatorMenuItem())
-		menu.append(make_menu_item("Merge", "", self.on_popup_merge))
+		menu.append(make_menu_item("Create pattern from selection", "", self.on_popup_create_pattern))
+		menu.append(make_menu_item("Merge selected patterns", "", self.on_popup_merge))
 		menu.show_all()
 		menu.attach_to_widget(self, None)
 		menu.popup(None, None, None, event.button, event.time)
-		
-	def add_pattern(self, widget):
-		self.rootwindow.patternframe.view.on_popup_create_pattern(None, self.get_track().get_plugin())
-		self.rootwindow.select_page(self.rootwindow.PAGE_SEQUENCER)
 	
 	def show_plugin_dialog(self):
 		pmenu = []
