@@ -1589,6 +1589,14 @@ class RouteView(gtk.DrawingArea):
 		if kv<256:
 			octave = self.rootwindow.patternframe.view.octave
 			note = key_to_note(kv)
+			# lr: this is terrible code. please try to solve your problems
+			# without try/except. if key_to_note returns None, you should
+			# check for that case. if it returns invalid values, you need
+			# to fix key_to_note. the code you wrote below hides
+			# what you are really trying to do.
+			# using return values returned by a function without any
+			# sanity checks first in another function can cause all kinds
+			# of weird behaviour.
 			try:
 				self.chordnotes.remove(note)
 				n=((note[0]+octave)<<4|note[1]+1)
