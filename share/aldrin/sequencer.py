@@ -1085,7 +1085,7 @@ class SequencerView(gtk.DrawingArea):
 					pass
 			if w>self.wmax:
 				self.wmax=w
-		w=self.wmax/self.step+3
+		w = (max(self.wmax,player.get_song_end(), player.get_loop_end())/self.step)+3
 		return w,h
 
 
