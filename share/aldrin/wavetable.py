@@ -239,6 +239,7 @@ class WavetablePanel(gtk.Notebook):
 		"""
 		config.get_config().set_default('SampleBrowserPath', self.libpanel.get_current_folder())
 		filename = self.libpanel.get_preview_filename()
+		print "on_libpanel_selection_changed", filename
 		if filename and os.path.isfile(filename):
 			self.previewpath = filename
 			text = "Size: %s" % format_filesize(os.stat(filename)[stat.ST_SIZE])
@@ -507,14 +508,12 @@ class WavetablePanel(gtk.Notebook):
 		"""
 		self.working_directory = ''
 		self.stworkpath.SetLabel(self.working_directory)
-		self.update_filelist()
 		
 	def update_all(self):
 		"""
 		Updates all the components in the wave table.
 		"""
 		self.update_samplelist()
-		self.update_filelist()
 		self.update_sampleprops()
 		#~ self.update_subsamplelist()
 		self.envelope.update()
@@ -651,7 +650,6 @@ class WavetablePanel(gtk.Notebook):
 			self.working_directory = ''
 		else:
 			self.working_directory = os.path.abspath(os.path.join(self.working_directory,'..'))
-		self.update_filelist()
 		
 	def on_samplelist_dclick(self, widget, event):
 		"""
@@ -693,7 +691,6 @@ class WavetablePanel(gtk.Notebook):
 			if filepaths:
 				if os.path.isdir(filepaths[0]):
 					self.working_directory = filepaths[0]
-					self.update_filelist()
 					return True
 		return False
 		
@@ -706,7 +703,6 @@ class WavetablePanel(gtk.Notebook):
 			if filepaths:
 				if os.path.isdir(filepaths[0]):
 					self.working_directory = filepaths[0]
-					self.update_filelist()
 					return False
 				else:
 					self.preview_sample(filepaths[0])
@@ -751,9 +747,10 @@ class WavetablePanel(gtk.Notebook):
 				self.fspanel.edsearch.grab_focus()
 			else:
 				self.set_current_page(1)
-				self.libpanel.grab_focus()
 				if self.filetreeview:
 					self.filetreeview.grab_focus()
+				else:
+					self.libpanel.grab_focus()
 		else:
 			return False
 		return True
@@ -790,51 +787,6 @@ class WavetablePanel(gtk.Notebook):
 				break
 			yield item
 		
-	def update_filelist(self):
-		"""
-		Updates the file list to display the files in the current working directory.
-		"""
-		return
-		self.filestore.clear()
-		self.files = []
-		dirs = []
-		files = []
-		def cmp_nocase(a,b):
-			a = a[0]
-			b = b[0]
-			if a.lower() == b.lower():
-				return 0
-			if a.lower() < b.lower():
-				return -1
-			return 1
-		filelist = []
-		if not self.get_wavetable_paths():
-			self.filestore.append(["Go to Preferences/Wavetable, set the wave dirs and click 'Refresh'"])
-			return
-		if self.working_directory:
-			filelist = os.listdir(self.working_directory)
-		else:
-			filelist = self.get_wavetable_paths()
-		for filename in filelist:
-			if not filename.startswith('.'):
-				fullpath = os.path.join(self.working_directory,filename)
-				if os.path.isdir(fullpath):
-					dirs.append((filename,0,filename,'Folder',-1))
-				else:
-					base,ext = os.path.splitext(filename)
-					if ext.lower() in self.allowed_extensions:
-						files.append((filename,1,base,ext[1:].upper(),os.stat(fullpath)[stat.ST_SIZE]))
-		self.files = sorted(dirs,cmp_nocase) + sorted(files,cmp_nocase)
-		if self.files:
-			for name,ftype,friendlyname,ext,fsize in self.files:
-				if fsize == -1:
-					fsize = ''
-				else:
-					fsize = format_filesize(fsize)
-				self.filestore.append([prepstr(friendlyname), fsize, ext])
-			self.filelist.grab_focus()
-		self.stworkpath.set_label(self.working_directory)
-				
 	def update_subsamplelist(self):
 		"""
 		Updates the subsample list, containing specifics about the wave length, rate and loop range.

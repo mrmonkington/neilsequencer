@@ -485,6 +485,8 @@ class WaveEditView(gtk.DrawingArea):
 				ctx.line_to(x1, h)
 				ctx.stroke()
 
+		print self.level.get_slice_count()
+		print self.level.get_slices()
 		for x in self.level.get_slices():
 			x1 = self.sample_to_client(x, 0.0)[0]
 			ctx.set_source_rgb(*slicebar)
@@ -541,4 +543,4 @@ class WaveEditView(gtk.DrawingArea):
 if __name__ == '__main__':
 	import sys, utils
 	from main import run
-	run(sys.argv + [utils.filepath('demosongs/paniq-knark.ccm')])
+	run(sys.argv)# + [utils.filepath('demosongs/paniq-knark.ccm')])
