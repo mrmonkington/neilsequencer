@@ -58,6 +58,7 @@ void stream_wavetable::init(zzub::archive * const pi) {
 
 	this->triggered = false;
 	this->currentPosition = 0;
+	this->lastCurrentPosition = 0;
 }
 
 void stream_wavetable::attributes_changed() {
@@ -74,6 +75,8 @@ void stream_wavetable::save(zzub::archive* po) {
 }
 
 void stream_wavetable::process_events() {
+	lastCurrentPosition = currentPosition;
+	
 	if (gval.offset != 0xFFFFFFFF) {
 		unsigned int offset = get_offset();
 
@@ -91,7 +94,7 @@ void stream_wavetable::process_events() {
 				double samplespertick = (double)_master_info->samples_per_tick + (double)_master_info->samples_per_tick_frac;
 				double samplepos = (double)_host->get_play_position() * samplespertick;
 				currentPosition = (int)(samplepos+0.5f);
-				triggered = true;
+				triggered = (_host->get_state_flags() & zzub::state_flag_playing)?true:false;
 			}
 		}
 	}

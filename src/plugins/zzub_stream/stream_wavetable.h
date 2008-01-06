@@ -4,6 +4,7 @@ struct stream_wavetable : stream_plugin {
 	int index, level;
 	bool triggered;
 	unsigned int currentPosition;
+	unsigned int lastCurrentPosition;
 
 	stream_wavetable();
 	virtual ~stream_wavetable();
