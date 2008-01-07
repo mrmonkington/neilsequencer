@@ -1584,32 +1584,14 @@ class RouteView(gtk.DrawingArea):
 			else:
 				return
 		kv = event.keyval
-		k = gtk.gdk.keyval_name(kv)
-		info = common.get_plugin_infos().get(plugin)
 		if kv<256:
 			octave = self.rootwindow.patternframe.view.octave
 			note = key_to_note(kv)
-			# lr: this is terrible code. please try to solve your problems
-			# without try/except. if key_to_note returns None, you should
-			# check for that case. if it returns invalid values, you need
-			# to fix key_to_note. the code you wrote below hides
-			# what you are really trying to do.
-			# using return values returned by a function without any
-			# sanity checks first in another function can cause all kinds
-			# of weird behaviour.
-			try:
+			if note:
 				self.chordnotes.remove(note)
 				n=((note[0]+octave)<<4|note[1]+1)
 				plugin.play_midi_note(zzub.zzub_note_value_off, n, 0)
-			except TypeError:
-				pass
-			except ValueError:
-				pass
-			except:
-				import traceback 
-				traceback.print_exc()
-
-
+				
 __all__ = [
 'ParameterDialog',
 'AttributesDialog',
