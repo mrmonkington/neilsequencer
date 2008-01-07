@@ -1043,7 +1043,7 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		self.transport.update_all()
 		self.btnloop.set_active(player.get_loop_enabled())
 		self.btnrecord.set_active(player.get_automation())
-		self.seqframe.adjust_seqscrollbars()
+		self.seqframe.seqview.adjust_scrollbars()
 		self.select_page(self.framepanel.get_current_page())
 		
 	def update_title(self):

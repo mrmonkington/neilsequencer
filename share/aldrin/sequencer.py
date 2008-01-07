@@ -95,9 +95,12 @@ class SequencerToolBar(gtk.HBox):
 		self.steps = [1,2,4,8,12,16,20,24,28,32,36,40,44,48,52,56,60,64,96,128,192,256,512,1024]
 		self.stepselect.connect('changed', self.on_stepselect)
 		self.steplabel.set_mnemonic_widget(self.stepselect)
+		self.followsong = gtk.CheckButton("Follow Song Position")
+		self.followsong.set_active(False)
 
 		self.pack_start(self.steplabel, expand=False)
 		self.pack_start(self.stepselect, expand=False)
+		self.pack_start(self.followsong)
 		
 	def increase_step(self):
 		if self.parent.view.step < 1024:
@@ -236,9 +239,6 @@ class SequencerPanel(gtk.VBox):
 		if not self.splitter.window.is_visible():
 			return
 		config.get_config().save_window_pos("SequencerSplitter", self.splitter)
-		
-	def adjust_seqscrollbars(self):
-		self.seqview.adjust_scrollbars()
 		
 	def __set_properties(self):
 		"""
@@ -1017,9 +1017,10 @@ class SequencerView(gtk.DrawingArea):
 			return True
 		playpos = player.get_position()
 		if self.playpos != playpos:
-			if playpos==self.get_endrow():
-				self.startseqtime=playpos
-				self.redraw()
+			if self.panel.toolbar.followsong.get_active():
+				if playpos>=self.get_endrow() or playpos<self.startseqtime:
+					self.startseqtime=playpos
+					self.redraw()
 			self.draw_xor()
 			self.playpos = playpos
 			self.draw_xor()
