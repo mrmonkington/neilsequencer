@@ -620,7 +620,7 @@ class RouteView(gtk.DrawingArea):
 		self.connect('key-press-event', self.on_key_jazz, None)	
 		self.connect('key-release-event', self.on_key_jazz_release, None)
 		self.connect('size-allocate', self.on_size_allocate)
-		if config.get_config().get_led_draw()==True:
+		if config.get_config().get_led_draw() == True:
 			gobject.timeout_add(100, self.on_draw_led_timer)
 		#~ wx.EVT_SET_FOCUS(self, self.on_focus)
 		
@@ -1432,7 +1432,7 @@ class RouteView(gtk.DrawingArea):
 				gc.set_foreground(textcolor)
 				pi.plugingfx.draw_layout(gc, PLUGINWIDTH/2 - lw/2, PLUGINHEIGHT/2 - lh/2, layout)
 			
-			if config.get_config().get_led_draw()==True:		
+			if config.get_config().get_led_draw() == True:		
 				maxl, maxr = mp.get_last_peak()
 				amp = min(max(maxl,maxr),1.0)
 				if amp != pi.amp:

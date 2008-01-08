@@ -1289,7 +1289,7 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		@type event: wx.MenuEvent
 		"""
 		player.stop()
-		if self.btnplay.get_active()==False:
+		if self.btnplay.get_active() == False:
 			player.set_position(0)
 		else:
 			self.btnplay.set_active(False)

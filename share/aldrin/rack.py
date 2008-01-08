@@ -505,7 +505,7 @@ class ParameterView(gtk.VBox):
 				data = getattr(data,'').change_parameter				
 				g,t,i,v = data.group, data.track, data.param, data.value
 				p = self.pluginloader.get_parameter(g,i)
-				if p.get_flags() & zzub.zzub_parameter_flag_state and g>0:
+				if p.get_flags() & zzub.zzub_parameter_flag_state and g > 0:
 					nl,s,vl = self.pid2ctrls[(g,t,i)]
 					v = self.plugin.get_parameter_value(g,t,i)
 					s.set_value(v)

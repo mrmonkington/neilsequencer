@@ -2037,8 +2037,8 @@ class PatternView(gtk.DrawingArea):
 			self.shiftselect = None 
 		# Hopefully this is safer!
 		parameter_list = self.plugin.get_parameter_list(self.group)
-		if prepstr(parameter_list[self.index].get_description())=="Note" and kv<256:
-			on=key_to_note(kv)
+		if parameter_list[self.index].get_description() == "Note" and kv<256:
+			on = key_to_note(kv)
 			if on:
 				m = self.get_plugin()
 				m.set_parameter_value(self.group, self.track, self.index, zzub.zzub_note_value_off, 0)

@@ -1018,8 +1018,8 @@ class SequencerView(gtk.DrawingArea):
 		playpos = player.get_position()
 		if self.playpos != playpos:
 			if self.panel.toolbar.followsong.get_active():
-				if playpos>=self.get_endrow() or playpos<self.startseqtime:
-					self.startseqtime=playpos
+				if playpos >= self.get_endrow() or playpos < self.startseqtime:
+					self.startseqtime = playpos
 					self.redraw()
 			self.draw_xor()
 			self.playpos = playpos
@@ -1087,19 +1087,19 @@ class SequencerView(gtk.DrawingArea):
 		#Note: this way of discovering the last event in the sequence is relatively expensive.
 		#It would be better to call this once on song change, and update the value if an event is added with 
 		#a higher index.
-		self.wmax=0
-		maxtrack=0
-		w=1
+		self.wmax = 0
+		maxtrack = 0
+		w = 1
 		for i in range(h):
 			track=seq.get_track(i)
 			if track.get_event_count():
-				w,p=track.get_event(track.get_event_count()-1)
+				w,p = track.get_event(track.get_event_count()-1)
 				try:
-					w+=track.get_plugin().get_pattern(p-16).get_row_count()
+					w += track.get_plugin().get_pattern(p-16).get_row_count()
 				except AssertionError:
 					pass
-			if w>self.wmax:
-				self.wmax=w
+			if w > self.wmax:
+				self.wmax = w
 		w = (max(self.wmax,player.get_song_end(), player.get_loop_end())/self.step)+3
 		return w,h
 
@@ -1127,7 +1127,7 @@ class SequencerView(gtk.DrawingArea):
 		track_count = seq.get_track_count()
 		# draw cursor
 		if track_count > 0:
-			if self.row>=self.startseqtime and self.track>=self.starttrack:
+			if self.row >= self.startseqtime and self.track >= self.starttrack:
 				x,y = self.track_row_to_pos((self.track,self.row))
 				drawable.draw_rectangle(gc,True,x,y+1,SEQROWSIZE-1,SEQTRACKSIZE-1)
 		if self.playpos >= self.startseqtime:
