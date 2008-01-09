@@ -189,6 +189,7 @@ struct player :
 
 	zzub::metaplugin* midiNoteMachine;
 	std::vector<keyjazz_note> keyjazz;
+	bool midiSyncTransport;
 
 	player();
 	virtual ~player(void);

@@ -13,6 +13,15 @@
 #include "mdk.h"
 #include "mdkimpl.h"
 #include "dsplib.h"
+
+#ifdef min
+	#undef min
+#endif
+
+#ifdef max
+	#undef max
+#endif
+
 #include "../../libzzub/tools.h"
 
 using namespace std;

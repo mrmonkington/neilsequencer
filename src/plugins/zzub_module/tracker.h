@@ -30,6 +30,7 @@ struct module_plugin : zzub::plugin {
 
 	// ::zzub::plugin methods
 	virtual void process_controller_events() {}
+	virtual bool process_offline(float ** ,float ** ,int *,int *,int *) { return false; }
 	virtual void destroy() { delete this; }
 	virtual void stop() {}
 	virtual void load(zzub::archive*) {}

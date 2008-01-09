@@ -76,6 +76,7 @@ player::player()
 	editCommand = 0;
 	stopFlag = false;
 	midiNoteMachine = 0;
+	midiSyncTransport = false;
 }
 
 player::~player(void) {
@@ -392,7 +393,6 @@ sequencer* player::setCurrentlyPlayingSequencer(sequencer* newseq) {
 /*	\brief Set player state, used to start and stop playing. */
 
 void player::setPlayerState(player_state state) {
-	if (playerState==state) return;
 
 	lock();
 	resetMachines();
@@ -408,7 +408,9 @@ void player::setPlayerState(player_state state) {
 			stopFlag = false;
 			break;
 	}
-	
+
+	if (playerState==state) return;
+
 	// send event
 	zzub_event_data eventData={event_type_player_state_changed};
 	eventData.player_state_changed.player_state=(int)state;
@@ -429,6 +431,7 @@ void player::clear() {
 	waveTable.clear();
 
     midiInputMappings.clear();
+	keyjazz.clear();
 
 	// delete all machines except master and nonsongplugins
 	std::vector<zzub::metaplugin*> machinesCopy = machineInstances;
@@ -1070,6 +1073,28 @@ void player::midiEvent(unsigned short status, unsigned char data1, unsigned char
 		command = 0xb;
 		status = channel | (command << 4);
 		data1 = 128;
+	}
+
+	// midi sync
+	if (midiSyncTransport) {
+		if (status == 0xf2) {
+			// set song position pointer
+			int spp = data1 | (data2 << 7);
+			setSequencerPosition(getSongBeginLoop() + spp);
+		} else
+		if (status == 0xfa) {
+			// midi start
+			setSequencerPosition(0);
+			setPlayerState(player_state_playing);
+		} else
+		if (status == 0xfb) {
+			// midi continue
+			setPlayerState(player_state_playing);
+		} else
+		if (status == 0xfc) {
+			// midi stop
+			setPlayerState(player_state_stopped);
+		}
 	}
 
     zzub_event_data eventData={event_type_midi_control};
