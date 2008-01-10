@@ -301,6 +301,8 @@ void miditracker::process_events() {
 }
 
 void miditracker::stop() {
+	if (open_device == -1) return ;
+
 	int midi_device = _host->get_midi_device(devices[open_device].c_str());
 	if (midi_device == -1) return ;
 
