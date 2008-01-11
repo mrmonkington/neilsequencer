@@ -83,6 +83,7 @@ machine_info::machine_info() {
 		.set_value_max(0x02)
 		.set_value_none(0xFF)
 		.set_value_default(0x00);
+                
 
 	paraDirectionR = &add_global_parameter()
 		.set_byte()
@@ -164,7 +165,6 @@ bool freqshifter::process_stereo(float** pin, float** pout, int numsamples, int 
 				return false;
 	if (mode==zzub::process_mode_read)                        // <thru>
 				return true;
-	
 	float* psamples[2] = { pin[0], pin[1] };
 	float* rsamples[2] = { pout[0], pout[1] };
 	do
