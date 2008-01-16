@@ -633,7 +633,7 @@ class SequencerView(gtk.DrawingArea):
 		menu = gtk.Menu()
 		pmenu = gtk.Menu()
 		for plugin in sorted(player.get_plugin_list(), lambda a,b: cmp(a.get_name().lower(),b.get_name().lower())):
-			pmenu.append(make_menu_item(prepstr(plugin.get_name()), "", self.on_popup_add_track, plugin))
+			pmenu.append(make_menu_item(prepstr(plugin.get_name().replace("_","__")), "", self.on_popup_add_track, plugin))
 		menu.append(make_submenu_item(pmenu, "Add track"))
 		menu.append(make_menu_item("Delete track", "", self.on_popup_delete_track))
 		menu.append(gtk.SeparatorMenuItem())

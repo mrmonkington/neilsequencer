@@ -570,7 +570,8 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		if recent_files:
 			self.filemenu.append(gtk.SeparatorMenuItem())
 			for i,filename in enumerate(recent_files):
-					self.filemenu.append(make_menu_item("_%i %s" % (i+1,os.path.basename(filename)), "", self.open_recent_file, filename))
+					filetitle=os.path.basename(filename).replace("_","__")
+					self.filemenu.append(make_menu_item("_%i %s" % (i+1,filetitle), "", self.open_recent_file, filename))
 		self.filemenu.append(gtk.SeparatorMenuItem())
 		self.filemenu.append(make_stock_menu_item(gtk.STOCK_QUIT, self.on_exit))
 		self.filemenu.show_all()
