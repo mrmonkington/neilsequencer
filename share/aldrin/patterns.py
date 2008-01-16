@@ -1669,7 +1669,14 @@ class PatternView(gtk.DrawingArea):
 		m = self.get_plugin()		
 		m.set_track_count(m.get_track_count()+1)
 		self.pattern_changed()
-
+		dlg = self.rootwindow.routeframe.view.plugin_dialogs.get(m,None)
+		if dlg:
+			# If there's a parameter dialog, destroy and remake it.
+			dlg.hide()
+			dummy = None
+			dlg.paramview.on_destroy(dummy)
+			dlg.on_destroy(dummy)
+			self.rootwindow.routeframe.view.show_parameter_dialog(m)
 	
 	def on_popup_delete_track(self, event=None):
 		"""
