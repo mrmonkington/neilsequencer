@@ -40,12 +40,13 @@ def ZzubPlugin(self, target, source):
 # enables us to generate project files and the like.
 
 plugin_dir_path = ""
+base_plugin_path = ""
 pluginenv = None
-def build_plugin(localenv, libname, files, helpfiles=None, deffile='../zzub_plugin.def'):
+def build_plugin(localenv, libname, files, helpfiles=None, deffile='zzub_plugin.def'):
 	global vs_projects
 	files = [plugin_dir_path + "/" + filename for filename in files]
 	if win32:
-		files.append(deffile)
+		files.append(os.path.join(base_plugin_path, deffile))
 	plugin = ZzubPlugin(localenv, '${LIB_BUILD_PATH}/zzub/'+libname, files)
 	if hasattr(localenv, 'MSVSProject'):
 		localenv.MSVSProject(target = libname + localenv['MSVSPROJECTSUFFIX'],
@@ -63,6 +64,7 @@ def build_plugin(localenv, libname, files, helpfiles=None, deffile='../zzub_plug
 
 Export('build_plugin')
 
+base_plugin_path = os.getcwd()
 for filename in os.listdir('.'):
 	plugin_dir_path = os.path.abspath(filename)
 	if os.path.isfile(os.path.join(plugin_dir_path,'SConscript')):

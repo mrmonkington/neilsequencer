@@ -36,7 +36,7 @@ build_plugin(pluginenv, 'Geonik_DF_Filter', [
 	'BuzzMachines/DfFilter.cpp',
 ],
 	helpfiles=[
-		'Geonik_DF_Filter.html',
+		#'Geonik_DF_Filter.html',
 	]
 )
 
