@@ -117,14 +117,41 @@ class ParameterView(gtk.VBox):
 
 		rowgroup = gtk.VBox()
 		rowgroup.set_border_width(MARGIN)
-		
 		self.id2pid = {}
 		self.pid2ctrls = {}
+
+		self.create_sliders(rowgroup)
+
+		self.btnadd.connect('clicked', self.on_button_add)
+		self.btnremove.connect('clicked', self.on_button_remove)
+		self.btncopy.connect('clicked', self.on_button_copy)
+		self.btnrandom.connect('clicked', self.on_button_random)
+		self.btnhelp.connect('clicked', self.on_button_help)
+		self.connect('destroy', self.on_destroy)
+		if hasattr(rootwindow, 'routeframe') and rootwindow.routeframe:
+			routeview = rootwindow.routeframe.view
+			self.connect('key-press-event', routeview.on_key_jazz, self.plugin)		
+			self.connect('key-release-event', routeview.on_key_jazz_release, self.plugin)
+		self.connect('button-press-event', self.on_left_down)
+
+		self.presetbox.set_active(0)
+		self.presetbox.connect('changed', self.on_select_preset)
 		
+		scrollwindow.add_with_viewport(rowgroup)
+		self.scrollwindow = scrollwindow
+		self.rowgroup = rowgroup
+		toplevelgroup.add(scrollwindow)
+
+		self.add(toplevelgroup)		
+		self.rootwindow.event_handlers.append(self.on_callback)
+		self.update_preset_buttons()
+		
+	def create_sliders(self, rowgroup):
+		plugin = self.plugin
+		pl = self.pluginloader
 		snamegroup = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
 		sslidergroup = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
 		svaluegroup = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
-		
 		def add_controller(g,t,i):
 			p = pl.get_parameter(g,i)
 			name = "CC-%s" % prepstr(p.get_name())
@@ -232,30 +259,6 @@ class ParameterView(gtk.VBox):
 		# controllers
 		for i in range(pl.get_parameter_count(3)): # controllers
 			add_controller(3,0,i)
-				
-		self.btnadd.connect('clicked', self.on_button_add)
-		self.btnremove.connect('clicked', self.on_button_remove)
-		self.btncopy.connect('clicked', self.on_button_copy)
-		self.btnrandom.connect('clicked', self.on_button_random)
-		self.btnhelp.connect('clicked', self.on_button_help)
-		self.connect('destroy', self.on_destroy)
-		if hasattr(rootwindow, 'routeframe') and rootwindow.routeframe:
-			routeview = rootwindow.routeframe.view
-			self.connect('key-press-event', routeview.on_key_jazz, self.plugin)		
-			self.connect('key-release-event', routeview.on_key_jazz_release, self.plugin)
-		self.connect('button-press-event', self.on_left_down)
-
-		self.presetbox.set_active(0)
-		self.presetbox.connect('changed', self.on_select_preset)
-		
-		scrollwindow.add_with_viewport(rowgroup)
-		self.scrollwindow = scrollwindow
-		self.rowgroup = rowgroup
-		toplevelgroup.add(scrollwindow)
-
-		self.add(toplevelgroup)		
-		self.rootwindow.event_handlers.append(self.on_callback)
-		self.update_preset_buttons()
 	
 	def on_left_down(self, widget, event, data=None):
 		self.grab_focus()
