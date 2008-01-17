@@ -1,0 +1,37 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: ArpMan - Win32 Release--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating command line "rc.exe /l 0x409 /fo"c:\temp\buzz\arpman\release/ArpMan.res" /d "NDEBUG" "C:\Program Files\Jeskola\Buzz\Dev\ArpMan\ArpMan.rc"" 
+Creating temporary file "c:\windows\TEMP\RSPC0B4.TMP" with contents
+[
+/nologo /G5 /Gr /Zp4 /MD /W3 /GX /O2 /Ob2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /Fp"c:\temp\buzz\arpman\release/ArpMan.pch" /YX /Fo"c:\temp\buzz\arpman\release/" /Fd"c:\temp\buzz\arpman\release/" /FD /c 
+"C:\Program Files\Jeskola\Buzz\Dev\ArpMan\ArpMan.cpp"
+]
+Creating command line "cl.exe @c:\windows\TEMP\RSPC0B4.TMP" 
+Creating temporary file "c:\windows\TEMP\RSPC0B5.TMP" with contents
+[
+kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /incremental:no /pdb:"c:\temp\buzz\arpman\release/FSM ArpMan.pdb" /machine:I386 /out:"c:/Program Files/Jeskola/Buzz/gear/Generators/FSM ArpMan.dll" /implib:"c:\temp\buzz\arpman\release/FSM ArpMan.lib" 
+"\temp\buzz\arpman\release\ArpMan.obj"
+"\temp\buzz\arpman\release\ArpMan.res"
+]
+Creating command line "link.exe @c:\windows\TEMP\RSPC0B5.TMP"
+<h3>Output Window</h3>
+Compiling resources...
+Compiling...
+ArpMan.cpp
+C:\Program Files\Jeskola\Buzz\Dev\ArpMan\../WahMan3/DSPChips.h(1021) : warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+Linking...
+   Creating library c:\temp\buzz\arpman\release/FSM ArpMan.lib and object c:\temp\buzz\arpman\release/FSM ArpMan.exp
+
+
+
+<h3>Results</h3>
+FSM ArpMan.dll - 0 error(s), 1 warning(s)
+</pre>
+</body>
+</html>

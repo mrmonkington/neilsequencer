@@ -1,0 +1,13 @@
+BUGS ANd STUFF TO FIX:
+
+1. random rate affects offset length - pitch changes when changing offset paramterts. - MISTAKE NO UG
+
+2. 0 length is stupid - DONE
+
+3. make it possible for more than 1 grain per work call to be generated. DONE! :)
+
+4. Change offset End Paramter behavious 
+
+5. change waveslot parameter to a struct
+
+

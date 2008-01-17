@@ -1,0 +1,46 @@
+V1.06
+
+If you want to rename the project and workspace you need to this:
+1. Open all files (*.cpp, *.h, *.dsw and *.dsp) to a text editor
+2. Developer file naming:
+   - Replace all the references "ch_template" to your liking from all the files.
+   - This affects the way developer files are named
+3. .dll naming:
+   Replace all the references to "ch template" from ch_template.dsp to what your machine's filename to be
+   .dll will be added to the name.
+4. Save and close the files
+5. Rename files from ch_template to whatever you replaced ch_template in step 2.
+
+Open the project and change the output paths
+1. Alt-F7 / Link / General / Output file name
+
+the default output paths are designed for a directory setup like this:
+
+buzz\
+buzz\gear\effects\
+buzz\gear\generators\
+buzz\buzz.exe
+buzz\mydev\project
+buzz\mydev\buzz.exe
+buzz\mydev\gear\effects\
+buzz\mydev\gear\generators\
+
+By default debug builds go to buzz\mydev\gear\effects and
+Release builds to buzz\gear\effects
+This way the debug builds will stay in their own folder. You need
+a working Buzz setup in buzz\mydev\ to use buzz. It doesn't need to
+be a complete copy.
+
+How to code the plugin itself:
+
+1. Open the workspace
+2. Start with .h file, work from top to bottom
+3. Once you have the .h file done, move to .cpp file. Top to bottom again.
+4. When you reach the end of .cpp file you should have a working plugin.
+5. Compile and start Buzz
+6. Debug...
+7. Once you have the plugin finished, compile a release build
+
+Happy coding ;)
+
+-apo

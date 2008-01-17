@@ -69,3 +69,10 @@ for filename in os.listdir('.'):
 		pluginenv = env.Copy()
 		Export('plugin_dir_path','pluginenv')
 		env.SConscript(os.path.join(plugin_dir_path,'SConscript'))
+	elif filename == "buzz_ports":
+		for fname in os.listdir(os.path.abspath(filename)):
+			plugin_dir_path = os.path.join(os.path.abspath(filename), fname)
+			if os.path.isfile(os.path.join(plugin_dir_path,'SConscript')):
+				pluginenv = env.Copy()
+				Export('plugin_dir_path','pluginenv')
+				env.SConscript(os.path.join(plugin_dir_path,'SConscript'))

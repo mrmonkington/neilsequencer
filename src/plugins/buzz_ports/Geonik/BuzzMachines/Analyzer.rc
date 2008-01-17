@@ -1,0 +1,181 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "Analyzer.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Neutral resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
+#ifdef _WIN32
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+#pragma code_page(1253)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_MAIN DIALOG DISCARDABLE  0, 0, 158, 98
+STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Geonik's Analyzer"
+MENU IDR_MENU
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "Close",IDOK,103,79,50,14
+    LTEXT           "Rms Power",IDC_STATIC,11,24,37,8
+    RTEXT           "xx dB",IDC_RMS,60,24,38,8
+    GROUPBOX        "Amplitude",IDC_STATIC,5,5,148,52,BS_LEFT
+    LTEXT           "Amplitude",IDC_STATIC,11,34,32,8
+    RTEXT           "0%",IDC_AMP,60,34,38,8
+    RTEXT           "Current",IDC_STATIC,74,14,24,8
+    RTEXT           "xx dB",IDC_RMS10,107,24,38,8
+    RTEXT           "0%",IDC_AMP10,107,34,38,8
+    RTEXT           "Average",IDC_STATIC,117,14,28,8
+    PUSHBUTTON      "About",IDABOUT,48,79,50,14
+    LTEXT           "Dc Offset",IDC_STATIC,11,44,31,8
+    RTEXT           "0",IDC_DC,60,44,38,8
+    RTEXT           "0",IDC_DC10,107,44,38,8
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_MAIN, DIALOG
+    BEGIN
+        LEFTMARGIN, 5
+        RIGHTMARGIN, 153
+        TOPMARGIN, 5
+        BOTTOMMARGIN, 93
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MENU MENU DISCARDABLE 
+BEGIN
+    POPUP "&Options"
+    BEGIN
+        POPUP "&Refresh Rate"
+        BEGIN
+            MENUITEM "&1 Tick",                     ID_REFRESHRATE
+            MENUITEM "&2 Ticks",                    ID_MENUITEM40002
+            MENUITEM "&4 Ticks",                    ID_RRLAST
+        END
+        POPUP "Averaging"
+        BEGIN
+            MENUITEM "Low",                         ID_AVERAGING
+            MENUITEM "Medium",                      ID_MENUITEM40005
+            MENUITEM "High",                        ID_MENUITEM40006
+        END
+    END
+END
+
+#endif    // Neutral resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Greek resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ELL)
+#ifdef _WIN32
+LANGUAGE LANG_GREEK, SUBLANG_DEFAULT
+#pragma code_page(1253)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_INFO DIALOG DISCARDABLE  0, 0, 186, 95
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Info"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,129,74,50,14
+    CONTROL         "Custom1",IDC_CUSTOM1,"",WS_TABSTOP,7,7,172,60
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_INFO, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 88
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "Analyzer.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+#endif    // Greek resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

@@ -1,0 +1,26 @@
+5-point spline interpollation
+
+Type : interpollation
+References : Joshua Scholar, posted by David Waugh
+Code :
+//nMask = sizeofwavetable-1 where sizeofwavetable is a power of two.
+double interpolate(double* wavetable, int nMask, double location)
+{
+/* 5-point spline*/
+
+int nearest_sample = (int) location;
+double x = location - (double) nearest_sample;
+
+double p0=wavetable[(nearest_sample-2)&nMask];
+double p1=wavetable[(nearest_sample-1)&nMask];
+double p2=wavetable[nearest_sample];
+double p3=wavetable[(nearest_sample+1)&nMask];
+double p4=wavetable[(nearest_sample+2)&nMask];
+double p5=wavetable[(nearest_sample+3)&nMask];
+
+return p2 + 0.04166666666*x*((p3-p1)*16.0+(p0-p4)*2.0
++ x *((p3+p1)*16.0-p0-p2*30.0- p4
++ x *(p3*66.0-p2*70.0-p4*33.0+p1*39.0+ p5*7.0- p0*9.0
++ x *( p2*126.0-p3*124.0+p4*61.0-p1*64.0- p5*12.0+p0*13.0
++ x *((p3-p2)*50.0+(p1-p4)*25.0+(p5-p0)*5.0)))));
+};
