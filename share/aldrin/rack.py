@@ -60,7 +60,6 @@ class ParameterView(gtk.VBox):
 		('application/x-controller-slider-drop', gtk.TARGET_SAME_APP, DROP_TARGET_CTRL_SLIDER),
 	]
 
-	
 	def __init__(self, rootwindow, plugin):
 		"""
 		Initializer.
@@ -503,16 +502,18 @@ class ParameterView(gtk.VBox):
 		@param data: event data.
 		@type data: zzub_event_data_t
 		"""
-		if plugin == self.plugin:
-			if data.type == zzub.zzub_event_type_parameter_changed:
-				data = getattr(data,'').change_parameter				
-				g,t,i,v = data.group, data.track, data.param, data.value
-				p = self.pluginloader.get_parameter(g,i)
-				if p.get_flags() & zzub.zzub_parameter_flag_state and g > 0:
-					nl,s,vl = self.pid2ctrls[(g,t,i)]
-					v = self.plugin.get_parameter_value(g,t,i)
-					s.set_value(v)
-					self.update_valuelabel(g,t,i)
+		dlg = self.rootwindow.routeframe.view.plugin_dialogs.get(self.plugin,None)
+		if dlg:			
+			if plugin == self.plugin:
+				if data.type == zzub.zzub_event_type_parameter_changed:
+					data = getattr(data,'').change_parameter				
+					g,t,i,v = data.group, data.track, data.param, data.value
+					p = self.pluginloader.get_parameter(g,i)
+					if p.get_flags() & zzub.zzub_parameter_flag_state and g > 0:
+						nl,s,vl = self.pid2ctrls[(g,t,i)]
+						v = self.plugin.get_parameter_value(g,t,i)
+						s.set_value(v)
+						self.update_valuelabel(g,t,i)
 					
 	def update_presets(self):
 		"""
