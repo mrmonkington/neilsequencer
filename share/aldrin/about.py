@@ -42,6 +42,7 @@ AUTHORS = [
 'Pieter Holtzhausen <13682857@sun.ac.za>',
 'Anders Ervik <calvin@countzero.no>',
 'James Stone <jamesmstone@gmail.com>',
+'James McDermott <jamesmichaelmcdermott@gmail.com>',
 'Carsten Sørensen',
 'Joachim Michaelis <jm@binarywerks.dk>',
 'Aaron Oxford <aaron@hardwarehookups.com.au>',
