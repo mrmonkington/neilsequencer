@@ -240,6 +240,7 @@ class PatternToolBar(gtk.HBox):
 			for item,token in self.waveselect_tokens:
 				item.disconnect(token)
 			self.waveselect_tokens = []
+			player.stop_wave()
 		
 	def on_waveselect_menu_activate(self, item, widget, index):
 		wave = self.cb2w[index]
