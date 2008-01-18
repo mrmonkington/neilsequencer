@@ -53,7 +53,6 @@
         <ref label="Geoffroy NoteFilter" uri="jamesmichaelmcdermott@gmail.com/effect/notefilter;1"/>
         <ref label="FSM SprayMan (Granulation)" uri="jamesmichaelmcdermott@gmail.com/effect/sprayman;1"/>
 
-	<ref label="Moonzyn" uri="@nasca/generator/moonzyn;1"/>
 	<group label="LADSPA Plugins">
 		<group label="CAPS">
 			<ref label="CAPS: AmpIII - Tube amp emulation" uri="@zzub.org/ladspadapter/AmpIII"/>
