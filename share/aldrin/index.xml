@@ -5,18 +5,6 @@
 	<ref icon="lunar_kick" label="Lunar Kick" uri="@trac.zeitherrschaft.org/aldrin/lunar/generator/kick;1"/>
 	<ref icon="lunar_synth" label="Lunar MiniSynth" uri="@trac.zeitherrschaft.org/aldrin/lunar/generator/synth;1"/>
 	<ref icon="matilde" label="Matilde Tracker (Sampler)" uri="@rift.dk/generator/Matilde+Tracker;1.5"/>
-	<ref label="FSM Infector (Synthesizer)" uri="@krzysztof_foltman/generator/infector;1"/>
-	<ref label="Kibibu Green Milk (Synthesizer)" uri="@cameron_foale/generator/green_milk;1"/>
-	<ref label="Makk M4wII (Synthesizer)" uri="@makk.org/M4wII;1"/>
-        <ref label="Geonik PrimiFun (Synthesizer)" uri="jamesmichaelmcdermott@gmail.com/generator/primifun;1"/>
-        <ref label="Geonik PluckedString (Synthesizer)" uri="jamesmichaelmcdermott@gmail.com/generator/pluckedstring;1"/>
-        <ref label="Geonik Omega-1 (Synthesizer) [Warning: Bugs?]" uri="jamesmichaelmcdermott@gmail.com/generator/omega1;1"/>
-        <ref label="CyanPhase DTMF-1 (Telephone)" uri="jamesmichaelmcdermott@gmail.com/generator/DTMF_1;1"/>
-        <ref label="Jeskola Noise Generator" uri="jamesmichaelmcdermott@gmail.com/generator/Noise;1"/>
-        <ref label="MadBrain 4fm2f (FM Synth)" uri="jamesmichaelmcdermott@gmail.com/generator/4fm2f;1"/>
-        <ref label="MadBrain Dynamite6 (Waveguide Synth)" uri="jamesmichaelmcdermott@gmail.com/generator/dynamite6;1"/>
-        <ref label="FSM ArpMan (Arpeggiating Synth) [Warning: CPU]" uri="jamesmichaelmcdermott@gmail.com/generator/arpman;1"/>
-        <ref label="Intoxicat ACloud (Wavetable Granulation)" uri="jamesmichaelmcdermott@gmail.com/generator/acloud;1"/>	
 	<ref label="LiveJump" uri="@zzub.org/livejump;1"/>
 	<ref label="MidiTracker" uri="@zzub.org/miditracker;1"/>
 	<group label="DSSI Plugins">
@@ -27,6 +15,20 @@
 	</group> 
 	<group label="Streaming Plugins">
 		<refs pattern="@zzub.org/stream*"/>
+	</group>
+	<group label="Buzz Ports">
+		<ref label="FSM Infector (Synthesizer)" uri="@krzysztof_foltman/generator/infector;1"/>
+		<ref label="Kibibu Green Milk (Synthesizer)" uri="@cameron_foale/generator/green_milk;1"/>
+		<ref label="Makk M4wII (Synthesizer)" uri="@makk.org/M4wII;1"/>
+		<ref label="Geonik PrimiFun (Synthesizer)" uri="jamesmichaelmcdermott@gmail.com/generator/primifun;1"/>
+		<ref label="Geonik PluckedString (Synthesizer)" uri="jamesmichaelmcdermott@gmail.com/generator/pluckedstring;1"/>
+		<ref label="Geonik Omega-1 (Synthesizer) [Warning: Bugs?]" uri="jamesmichaelmcdermott@gmail.com/generator/omega1;1"/>
+		<ref label="CyanPhase DTMF-1 (Telephone)" uri="jamesmichaelmcdermott@gmail.com/generator/DTMF_1;1"/>
+		<ref label="Jeskola Noise Generator" uri="jamesmichaelmcdermott@gmail.com/generator/Noise;1"/>
+		<ref label="MadBrain 4fm2f (FM Synth)" uri="jamesmichaelmcdermott@gmail.com/generator/4fm2f;1"/>
+		<ref label="MadBrain Dynamite6 (Waveguide Synth)" uri="jamesmichaelmcdermott@gmail.com/generator/dynamite6;1"/>
+		<ref label="FSM ArpMan (Arpeggiating Synth) [Warning: CPU]" uri="jamesmichaelmcdermott@gmail.com/generator/arpman;1"/>
+		<ref label="Intoxicat ACloud (Wavetable Granulation)" uri="jamesmichaelmcdermott@gmail.com/generator/acloud;1"/>	
 	</group>
 	<separator/>
 	<ref label="Lunar LFO (Experimental)" uri="@trac.zeitherrschaft.org/aldrin/lunar/controller/lfo;1"/>
@@ -39,20 +41,20 @@
 	<ref icon="lunar_verb" label="Lunar Verb" uri="@trac.zeitherrschaft.org/aldrin/lunar/effect/reverb;1"/>
 	<ref icon="lunar_distortion" label="Lunar Distortion" uri="@trac.zeitherrschaft.org/aldrin/lunar/effect/distortion;1"/>
 	<ref icon="lunar_phaser" label="Lunar Phaser" uri="@trac.zeitherrschaft.org/aldrin/lunar/effect/phaser;1"/>
-	<ref label="FSM Philthy (Filter)" uri="@trac.zeitherrschaft.org/aldrin/lunar/effect/philthy;1"/>
-	<ref label="FireSledge ParamEQ (Equalizer)" uri="@FireSledge.org/ParamEQ;1"/>
-	<ref label="Frequency UnKnown O-Delay (Delay)" uri="@frequencyunknown.org/o-delay;1"/>
-	<ref label="Bigyo Frequency Shifter (Pitch Shifter)" uri="@bigyo/frequency+shifter;1"/>
-	<ref label="Graue SoftSat (Distortion)" uri="graue@oceanbase.org/effect/softsat;1"/>
-	<ref label="Joachims Multi (Mastering)" uri="@binarywerks.dk/multi-2;1"/>
-
-        <ref label="Geonik Gapper (Modulator)" uri="jamesmichaelmcdermott@gmail.com/effect/gapper;1"/>
-        <ref label="Geonik DF Filter (Non-linear filter)" uri="jamesmichaelmcdermott@gmail.com/effect/dffilter;1"/>
-        <ref label="Elenzil Modulator" uri="jamesmichaelmcdermott@gmail.com/effect/modulator;1"/>
-        <ref label="TicTac ShutUp aBuffer (Sample/Hold)" uri="jamesmichaelmcdermott@gmail.com/effect/abuffer;1"/>
-        <ref label="Geoffroy NoteFilter" uri="jamesmichaelmcdermott@gmail.com/effect/notefilter;1"/>
-        <ref label="FSM SprayMan (Granulation)" uri="jamesmichaelmcdermott@gmail.com/effect/sprayman;1"/>
-
+	<group label="Buzz Ports">
+		<ref label="FSM Philthy (Filter)" uri="@trac.zeitherrschaft.org/aldrin/lunar/effect/philthy;1"/>
+		<ref label="FireSledge ParamEQ (Equalizer)" uri="@FireSledge.org/ParamEQ;1"/>
+		<ref label="Frequency UnKnown O-Delay (Delay)" uri="@frequencyunknown.org/o-delay;1"/>
+		<ref label="Bigyo Frequency Shifter (Pitch Shifter)" uri="@bigyo/frequency+shifter;1"/>
+		<ref label="Graue SoftSat (Distortion)" uri="graue@oceanbase.org/effect/softsat;1"/>
+		<ref label="Joachims Multi (Mastering)" uri="@binarywerks.dk/multi-2;1"/>
+		<ref label="Geonik Gapper (Modulator)" uri="jamesmichaelmcdermott@gmail.com/effect/gapper;1"/>
+		<ref label="Geonik DF Filter (Non-linear filter)" uri="jamesmichaelmcdermott@gmail.com/effect/dffilter;1"/>
+		<ref label="Elenzil Modulator" uri="jamesmichaelmcdermott@gmail.com/effect/modulator;1"/>
+		<ref label="TicTac ShutUp aBuffer (Sample/Hold)" uri="jamesmichaelmcdermott@gmail.com/effect/abuffer;1"/>
+		<ref label="Geoffroy NoteFilter" uri="jamesmichaelmcdermott@gmail.com/effect/notefilter;1"/>
+		<ref label="FSM SprayMan (Granulation)" uri="jamesmichaelmcdermott@gmail.com/effect/sprayman;1"/>
+	</group>
 	<group label="LADSPA Plugins">
 		<group label="CAPS">
 			<ref label="CAPS: AmpIII - Tube amp emulation" uri="@zzub.org/ladspadapter/AmpIII"/>
