@@ -704,7 +704,7 @@ class SequencerView(gtk.DrawingArea):
 		if gtk.gdk.keyval_from_name('KP_0') <= kv <= gtk.gdk.keyval_from_name('KP_9'):
 			kv = kv - gtk.gdk.keyval_from_name('KP_0')  + gtk.gdk.keyval_from_name('0') 
 		k = gtk.gdk.keyval_name(event.keyval)
-		#~ print kv, k
+		print kv, k, event.keyval
 		arrow_down = k in ['Left', 'Right', 'Up', 'Down', 'KP_Left', 'KP_Right', 'KP_Up', 'KP_Down']	
 		is_selecting = arrow_down and (mask & gtk.gdk.SHIFT_MASK)		
 		if is_selecting:
@@ -713,10 +713,10 @@ class SequencerView(gtk.DrawingArea):
 				self.selection_start = (self.track, self.row)				
 		elif arrow_down:
 			self.deselect()
-		if mask & gtk.gdk.SHIFT_MASK and (k == 'KP_Add' or k == 'plus'):
+		if mask & gtk.gdk.SHIFT_MASK and (k in ('KP_Add','plus','asterisk')):
 			self.panel.toolbar.increase_step()
 			self.set_cursor_pos(self.track, self.row)
-		elif mask & gtk.gdk.SHIFT_MASK and (k == 'KP_Subtract' or k == 'underscore'):
+		elif mask & gtk.gdk.SHIFT_MASK and (k in ('KP_Subtract','underscore')):
 			self.panel.toolbar.decrease_step()
 			self.set_cursor_pos(self.track, self.row)
 		elif (mask & gtk.gdk.CONTROL_MASK):
