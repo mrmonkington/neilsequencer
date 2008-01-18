@@ -38,6 +38,7 @@
 	<ref icon="lunar_pan" label="Lunar Pan" uri="@trac.zeitherrschaft.org/aldrin/lunar/effect/panning;1"/>
 	<ref icon="lunar_verb" label="Lunar Verb" uri="@trac.zeitherrschaft.org/aldrin/lunar/effect/reverb;1"/>
 	<ref icon="lunar_distortion" label="Lunar Distortion" uri="@trac.zeitherrschaft.org/aldrin/lunar/effect/distortion;1"/>
+	<ref icon="lunar_phaser" label="Lunar Phaser" uri="@trac.zeitherrschaft.org/aldrin/lunar/effect/phaser;1"/>
 	<ref label="FSM Philthy (Filter)" uri="@trac.zeitherrschaft.org/aldrin/lunar/effect/philthy;1"/>
 	<ref label="FireSledge ParamEQ (Equalizer)" uri="@FireSledge.org/ParamEQ;1"/>
 	<ref label="Frequency UnKnown O-Delay (Delay)" uri="@frequencyunknown.org/o-delay;1"/>
@@ -52,7 +53,7 @@
         <ref label="Geoffroy NoteFilter" uri="jamesmichaelmcdermott@gmail.com/effect/notefilter;1"/>
         <ref label="FSM SprayMan (Granulation)" uri="jamesmichaelmcdermott@gmail.com/effect/sprayman;1"/>
 
-
+	<ref label="Moonzyn" uri="@nasca/generator/moonzyn;1"/>
 	<group label="LADSPA Plugins">
 		<group label="CAPS">
 			<ref label="CAPS: AmpIII - Tube amp emulation" uri="@zzub.org/ladspadapter/AmpIII"/>
