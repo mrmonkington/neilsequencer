@@ -721,6 +721,28 @@ class AldrinConfig(ConfigParser.ConfigParser):
 		else:
 			self.write_value('LedDraw', 'false') 
 	
+	def get_pattern_noteoff(self): 
+		"""
+		Retrieves pattern noteoff option.
+		"""
+		self.set_section('Global')
+		value = self.read_value('PatNoteOff', 'false')
+		if value == 'true':
+			return True
+		else:
+			return False
+	
+	def set_pattern_noteoff(self, value):
+		"""
+		Stores the pattern noteoff option.
+		"""
+		self.set_section('Global')
+		if value:
+			self.write_value('PatNoteOff', 'true')
+		else:
+			self.write_value('PatNoteOff', 'false') 	
+	
+	
 	def load_window_pos(self, windowid, window):
 		"""
 		Retrieves a windows position from the config and applies it.

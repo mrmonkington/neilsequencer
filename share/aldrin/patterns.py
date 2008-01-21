@@ -2048,17 +2048,18 @@ class PatternView(gtk.DrawingArea):
 		"""
 		Callback that responds to key release
 		"""
-		kv = event.keyval
-		k = gtk.gdk.keyval_name(kv)
-		if (k == 'Shift_L' or k=='Shift_R'):
-			self.shiftselect = None
-		if self.plugin:
-			parameter_list = self.plugin.get_parameter_list(self.group)
-			if parameter_list[self.index].get_description() == "Note" and kv<256:
-				on = key_to_note(kv)
-				if on:
-					m = self.get_plugin()
-					m.set_parameter_value(self.group, self.track, self.index, zzub.zzub_note_value_off, 0)
+		if config.get_config().get_pattern_noteoff():
+			kv = event.keyval
+			k = gtk.gdk.keyval_name(kv)
+			if (k == 'Shift_L' or k=='Shift_R'):
+				self.shiftselect = None
+			if self.plugin:
+				parameter_list = self.plugin.get_parameter_list(self.group)
+				if parameter_list[self.index].get_description() == "Note" and kv<256:
+					on = key_to_note(kv)
+					if on:
+						m = self.get_plugin()
+						m.set_parameter_value(self.group, self.track, self.index, zzub.zzub_note_value_off, 0)
 	
 	def on_char(self, event):
 		"""
