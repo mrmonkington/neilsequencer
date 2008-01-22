@@ -5,8 +5,8 @@
 	<ref icon="lunar_kick" label="Lunar Kick" uri="@trac.zeitherrschaft.org/aldrin/lunar/generator/kick;1"/>
 	<ref icon="lunar_synth" label="Lunar MiniSynth" uri="@trac.zeitherrschaft.org/aldrin/lunar/generator/synth;1"/>
 	<ref icon="matilde" label="Matilde Tracker (Sampler)" uri="@rift.dk/generator/Matilde+Tracker;1.5"/>
-	<ref label="LiveJump" uri="@zzub.org/livejump;1"/>
-	<ref label="MidiTracker" uri="@zzub.org/miditracker;1"/>
+	#<ref label="LiveJump" uri="@zzub.org/livejump;1"/>
+	#<ref label="MidiTracker" uri="@zzub.org/miditracker;1"/>
 	<group label="DSSI Plugins">
 		<refs pattern="@zzub.org/dssidapter/*"/>
 	</group>
@@ -22,12 +22,12 @@
 		<ref label="Makk M4wII (Synthesizer)" uri="@makk.org/M4wII;1"/>
 		<ref label="Geonik PrimiFun (Synthesizer)" uri="jamesmichaelmcdermott@gmail.com/generator/primifun;1"/>
 		<ref label="Geonik PluckedString (Synthesizer)" uri="jamesmichaelmcdermott@gmail.com/generator/pluckedstring;1"/>
-		<ref label="Geonik Omega-1 (Synthesizer) [Warning: Bugs?]" uri="jamesmichaelmcdermott@gmail.com/generator/omega1;1"/>
+		#<ref label="Geonik Omega-1 (Synthesizer) [Warning: Bugs?]" uri="jamesmichaelmcdermott@gmail.com/generator/omega1;1"/>
 		<ref label="CyanPhase DTMF-1 (Telephone)" uri="jamesmichaelmcdermott@gmail.com/generator/DTMF_1;1"/>
 		<ref label="Jeskola Noise Generator" uri="jamesmichaelmcdermott@gmail.com/generator/Noise;1"/>
 		<ref label="MadBrain 4fm2f (FM Synth)" uri="jamesmichaelmcdermott@gmail.com/generator/4fm2f;1"/>
 		<ref label="MadBrain Dynamite6 (Waveguide Synth)" uri="jamesmichaelmcdermott@gmail.com/generator/dynamite6;1"/>
-		<ref label="FSM ArpMan (Arpeggiating Synth) [Warning: CPU]" uri="jamesmichaelmcdermott@gmail.com/generator/arpman;1"/>
+		#<ref label="FSM ArpMan (Arpeggiating Synth) [Warning: CPU]" uri="jamesmichaelmcdermott@gmail.com/generator/arpman;1"/>
 		<ref label="Intoxicat ACloud (Wavetable Granulation)" uri="jamesmichaelmcdermott@gmail.com/generator/acloud;1"/>	
 	</group>
 	<separator/>
