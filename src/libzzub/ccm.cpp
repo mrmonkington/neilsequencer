@@ -1564,15 +1564,30 @@ bool CcmReader::loadPlugins(xml_node &plugins, zzub::player &player) {
 					
 				}
 			}
-		}
-		
-		// now that connections are set up, we can load the plugin default values
+		}		// now that connections are set up, we can load the plugin default values
 		if (!c->global.empty()) {
 			for (xml_node::child_iterator i = c->global.children_begin(); i != c->global.children_end(); ++i) {
 				if (i->has_name("n")) {
 					xml_node paraminfo = getNodeById(i->attribute("ref").value());
 					assert(!paraminfo.empty()); // not being able to deduce the index is fatal
-					c->target->setParameter(1, 0, long(paraminfo.attribute("index")), long(i->attribute("v")), false);
+
+					// test if the parameter names correspond with index position
+					int global_param_size = c->target->loader->plugin_info->global_parameters.size();
+					int index = long(paraminfo.attribute("index"));
+					const char* name = paraminfo.attribute("name").value();
+					if ((index < global_param_size) && 
+					!strcmp(trim(c->target->getMachineParameter(1, 0, index)->name).c_str(), name)) {
+						c->target->setParameter(1, 0, index, long(i->attribute("v")), false);
+					}
+					else {
+						// else search for a parameter name that matches
+						for (size_t pg = 0; pg != global_param_size; ++pg) {
+							if (!strcmp(c->target->getMachineParameter(1, 0, pg)->name, name)) {
+								c->target->setParameter(1, 0, pg, long(i->attribute("v")), false);
+								break;
+							}
+						}
+					}
 				}
 			}
 		}
@@ -1584,7 +1599,23 @@ bool CcmReader::loadPlugins(xml_node &plugins, zzub::player &player) {
 						if (j->has_name("n")) {
 							xml_node paraminfo = getNodeById(j->attribute("ref").value());
 							assert(!paraminfo.empty()); // not being able to deduce the index is fatal
-							c->target->setParameter(2, t, long(paraminfo.attribute("index")), long(j->attribute("v")), false);
+							// test if the parameter names correspond with index position
+							int track_param_size = c->target->loader->plugin_info->track_parameters.size();
+							int index = long(paraminfo.attribute("index"));
+							const char* name = paraminfo.attribute("name").value();
+							if ((index < track_param_size) && 
+							!strcmp(trim(c->target->getMachineParameter(2, t, index)->name).c_str(), name)) {
+								c->target->setParameter(2, t, index, long(j->attribute("v")), false);
+							}
+							else {
+								// else search for a parameter name that matches
+								for (size_t pt = 0; pt != track_param_size; ++pt) {
+									if (!strcmp(c->target->getMachineParameter(2, t, pt)->name, name)) {
+										c->target->setParameter(2, t, pt, long(j->attribute("v")), false);
+										break;
+									}
+								}
+							}
 						}
 					}
 				}
