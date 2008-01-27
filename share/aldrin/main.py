@@ -1103,6 +1103,7 @@ class AldrinFrame(gtk.Window, IRootWindow):
 			return
 		self.update_title()
 		config.get_config().add_recent_file_config(self.filename)
+		self.btnplay.set_active(False)
 		self.update_filemenu()
 		self.document_changed()
 		
