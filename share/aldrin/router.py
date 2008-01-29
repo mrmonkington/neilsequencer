@@ -38,6 +38,7 @@ import indexer
 import fnmatch
 import ctypes
 import time
+import random
 import extman, interface
 import Queue
 from preset import PresetCollection, Preset
@@ -306,133 +307,144 @@ class PluginBrowserDialog(gtk.Dialog):
 	"""
 	Displays all available plugins and some meta information.
 	"""
-	def __init__(self, *args, **kwds):
+	PBD_PTYPE = 0
+	PBD_PARAMS = 1
+	PBD_ATTRS = 2
+	PBD_NAME = 3
+	PBD_AUTHOR = 4
+	PBD_PLUGIN = 5
+	PBD_NATIVE = 6
+	def __init__(self, parent=None, *args, **kwds):
 		"""
 		Initializer.
 		"""
-		self.SetTitle("New Plugin")
-		self.treeview = wx.TreeCtrl(self, -1, style=wx.SUNKEN_BORDER | wx.TR_HIDE_ROOT | wx.TR_HAS_BUTTONS)
-		self.treeview.SetMinSize((400,300))
-		self.namelabel = wx.StaticText(self, -1, "Name:")
-		self.namevalue = wx.StaticText(self, -1)
-		self.authorlabel = wx.StaticText(self, -1, "Author:")
-		self.authorvalue = wx.StaticText(self, -1)
-		self.urilabel = wx.StaticText(self, -1, "URI:")
-		self.urivalue = wx.StaticText(self, -1)
-		rootnode = self.treeview.AddRoot("Plugins")
-		generatornode = self.treeview.AppendItem(rootnode, "Generators")
-		effectnode = self.treeview.AppendItem(rootnode, "Effects")
-		name2pl = {}
-		for pl in player.get_pluginloader_list():
-			name = pl.get_name()
-			name2pl[name] = pl
-		for name in sorted(name2pl, lambda a,b : cmp(a.lower(),b.lower())):
-			pl = name2pl[name]
-			if (pl.get_flags() & PLUGIN_FLAGS_MASK) == GENERATOR_PLUGIN_FLAGS:
-				node = generatornode
-			elif (pl.get_flags() & PLUGIN_FLAGS_MASK) == EFFECT_PLUGIN_FLAGS:
-				node = effectnode
+		self.routeview = parent
+		gtk.Dialog.__init__(self,
+                                    title="Add Plugins",
+                                    parent=parent.get_toplevel(),
+				    # If it's modal, the effect plugin racks that pop up can't be closed
+                                    flags=gtk.DIALOG_DESTROY_WITH_PARENT,
+                                    )
+		self.set_size_request(800, 500)
+		
+
+		self.search_entry = gtk.Entry()
+		self.search_entry.set_text("(Search)")
+		self.action_area.pack_start(self.search_entry, True, True, 0)
+		self.show_nonnative_button = gtk.CheckButton(label="Show Non-Native")
+		self.action_area.pack_start(self.show_nonnative_button, True, True, 0)
+		self.show_nonnative_button.set_active(False)
+		self.close_button = gtk.Button(stock=gtk.STOCK_CLOSE)
+		self.action_area.pack_start(self.close_button, True, True, 0)
+
+		col_names = ["Type", "Parameters", "Attributes", "Name", "Author"]
+		# The undisplayed columns are the pluginloader ref and a bool for whether it's native
+		self.store = gtk.ListStore(str, int, int, str, str, object, bool)
+                # create the TreeViewColumns to display the data
+                self.columns = [gtk.TreeViewColumn(name) for name in col_names]
+
+		# filter is derived from the ListStore: it holds a changeable subset of the rows.
+		self.filter = self.store.filter_new()
+		self.filter.set_visible_func(self.filter_fn, data=None)
+
+		# view is a widget displaying the rows in the filter.
+		self.view = gtk.TreeView(self.filter)
+		# We have custom search.
+		self.view.set_enable_search(False)
+		self.view.set_rules_hint(True)
+		# This is supposed to speed up display, but causes an error?
+		# self.view.set_fixed_height_mode(True)
+		self.view.set_hadjustment(gtk.Adjustment())
+		self.view.set_vadjustment(gtk.Adjustment())
+
+		for i, col in enumerate(self.columns):
+			# add column to view
+			self.view.append_column(col)
+			# create a CellRendererText to render the data
+			cell = gtk.CellRendererText()
+			# add the cell to the column. The bool indicates whether it's allowed to expand
+			col.pack_start(cell, [False, False, False, True, True][i])
+			# retrieve text from column i in self.store
+			col.add_attribute(cell, 'text', i)
+			col.set_sizing(gtk.TREE_VIEW_COLUMN_GROW_ONLY)
+
+		self.populate(self.routeview.plugin_tree)
+
+		self.scrollwindow = gtk.ScrolledWindow()
+                self.scrollwindow.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+		self.scrollwindow.add(self.view)
+		self.vbox.add(self.scrollwindow)
+
+		self.view.connect("row-activated", self.row_activated_cb)
+		self.search_entry.connect("changed", lambda x: self.filter.refilter())
+		self.show_nonnative_button.connect("toggled", lambda x: self.filter.refilter())
+		self.close_button.connect("clicked", lambda x: self.destroy())
+		
+		self.show_all()
+
+	def filter_fn(self, model, iter, data):
+		ptype = model.get(iter, PluginBrowserDialog.PBD_PTYPE)[0]
+		name = model.get(iter, PluginBrowserDialog.PBD_NAME)[0]
+		author = model.get(iter, PluginBrowserDialog.PBD_AUTHOR)[0]
+		native = model.get(iter, PluginBrowserDialog.PBD_NATIVE)[0]
+		if not (ptype and name and author):
+			return True
+		if not self.show_nonnative_button.get_active() and not native:
+			return False
+		search_txt = self.search_entry.get_text()
+		if "(Search)" in search_txt:
+			return True
+		name = name.lower()
+		author = author.lower()
+		ptype = ptype.lower()
+		for token in search_txt.lower().strip().split(" "):
+			if not (token in name or token in author or token in ptype):
+				return False
+		return True
+
+	def row_activated_cb(self, treeview, path, view_column):
+		iter = self.filter.get_iter(path)
+		pl = self.filter.get_value(iter, PluginBrowserDialog.PBD_PLUGIN)
+		if pl:
+			# User might add multiple plugins from this dialog, so can't use any fixed
+			# location. Generate a random location.
+			rect = self.routeview.get_allocation()
+			w,h = rect.width, rect.height
+			self.routeview.contextmenupos = (random.uniform(10, w-10), random.uniform(10, h-10))
+			self.routeview.on_popup_new_plugin(None, pl)
+
+	def populate(self, node):
+		def get_type_text(pl):
+			if is_generator(pl):
+				return "Generator"
+			elif is_effect(pl):
+				return "Effect"
+			elif is_controller(pl):
+				return "Controller"
+			elif is_root(pl):
+				return "Root"
 			else:
-				continue
-			n = self.treeview.AppendItem(node, prepstr(name))
-			self.treeview.SetPyData(n, pl)
-			def add_parameter_group(n, params):
-				for param in params:
-					paramnode = self.treeview.AppendItem(n, prepstr(param.get_name()))
-					type2name = {
-						zzub.zzub_parameter_type_note : 'note',
-						zzub.zzub_parameter_type_switch : 'switch',
-						zzub.zzub_parameter_type_byte : 'byte',
-						zzub.zzub_parameter_type_word : 'word',
-					}
-					self.treeview.AppendItem(paramnode, prepstr('description = "%s"' % param.get_description()))
-					self.treeview.AppendItem(paramnode, prepstr('minvalue = "%s"' % param.get_value_min()))
-					self.treeview.AppendItem(paramnode, prepstr('maxvalue = "%s"' % param.get_value_max()))
-					self.treeview.AppendItem(paramnode, prepstr('defvalue = "%s"' % param.get_value_default()))
-					self.treeview.AppendItem(paramnode, prepstr('novalue = "%s"' % param.get_value_none()))
-					flags = param.get_flags()
-					if flags & zzub.zzub_parameter_flag_wavetable_index:
-						self.treeview.AppendItem(paramnode, prepstr('waveindex = "true"'))
-					if flags & zzub.zzub_parameter_flag_state:
-						self.treeview.AppendItem(paramnode, prepstr('state = "true"'))
-					if flags & zzub.zzub_parameter_flag_event_on_edit:
-						self.treeview.AppendItem(paramnode, prepstr('editevent = "true"'))
-			if pl.get_parameter_count(1):
-				globalnode = self.treeview.AppendItem(n, "Global Parameters")
-				add_parameter_group(globalnode, pl.get_parameter_list(1))
-			if pl.get_parameter_count(2):
-				tracknode = self.treeview.AppendItem(n, "Track Parameters")
-				add_parameter_group(tracknode, pl.get_parameter_list(2))
-			if pl.get_attribute_count():
-				attribsnode = self.treeview.AppendItem(n, "Attributes")
-				for attrib in pl.get_attribute_list():
-					attribnode = self.treeview.AppendItem(attribsnode, prepstr(attrib.get_name()))
-					self.treeview.AppendItem(attribnode, prepstr('minvalue = "%s"' % attrib.get_value_min()))
-					self.treeview.AppendItem(attribnode, prepstr('maxvalue = "%s"' % attrib.get_value_max()))
-					self.treeview.AppendItem(attribnode, prepstr('defvalue = "%s"' % attrib.get_value_default()))
-			
-		sizer = wx.BoxSizer(wx.VERTICAL)
-		sizer.Add(self.treeview, 0, wx.EXPAND | wx.ALL, border=5)
-		gridsizer = wx.FlexGridSizer(3,2,5,5)
-		gridsizer.Add(self.namelabel, 0, wx.ALIGN_LEFT)
-		gridsizer.Add(self.namevalue, 0, wx.EXPAND)
-		gridsizer.Add(self.authorlabel, 0, wx.ALIGN_LEFT)
-		gridsizer.Add(self.authorvalue, 0, wx.EXPAND)
-		gridsizer.Add(self.urilabel, 0, wx.ALIGN_LEFT)
-		gridsizer.Add(self.urivalue, 0, wx.EXPAND)
-		sizer.Add(gridsizer, 0, wx.RIGHT | wx.LEFT | wx.BOTTOM, border=5)
-		self.SetAutoLayout(True)
-		self.SetSizer(sizer)
-		self.Layout()
-		self.Fit()
-		self.Centre()
-		wx.EVT_LEFT_DCLICK(self.treeview, self.on_treeview_dclick)
-		wx.EVT_TREE_SEL_CHANGED(self, self.treeview.GetId(), self.on_treeview_sel_changed)
-		self.action = None
+				return "Other"
+		for child in node.children:
+			if isinstance(child, indexer.Directory) and not child.is_empty():
+				self.populate(child)
+			elif isinstance(child, indexer.Reference):
+				if child.pluginloader:
+					pl = child.pluginloader
+					if "ladspa" in pl.get_loader_name().lower() or "dssi" in pl.get_loader_name().lower():
+						native = False
+					else:
+						native = True
+					self.store.append([get_type_text(pl),
+							   sum([pl.get_parameter_count(g) for g in range(1, 3)]),
+							   pl.get_attribute_count(),
+							   prepstr(pl.get_name()),
+							   prepstr(pl.get_author()),
+							   pl,
+							   native])
+			elif isinstance(child, indexer.Separator):
+				pass
 
-	def on_treeview_dclick(self, event):
-		"""
-		Callback that responds to double click in the tree. Same as "new plugin" event.
-		
-		@param event: MouseEvent event
-		@type event: wx.MouseEvent
-		"""
-		pl = self.treeview.GetPyData(self.treeview.GetSelection())
-		if pl:
-			self.pl = pl
-			self.EndModal(wx.ID_OK)
-		else:
-			event.Skip()
-
-	def on_treeview_sel_changed(self, event):
-		"""
-		Handles changes in the treeview. Updates meta information.
-		
-		@param event: Tree event.
-		@type event: wx.TreeEvent
-		"""
-		pl = self.treeview.GetPyData(event.GetItem())
-		if pl:
-			self.namevalue.SetLabel(prepstr(pl.get_short_name()))
-			self.authorvalue.SetLabel(prepstr(pl.get_author()))
-			self.urivalue.SetLabel(prepstr(pl.get_uri()))
-		else:
-			self.namevalue.SetLabel("")
-			self.authorvalue.SetLabel("")
-			self.urivalue.SetLabel("")
-
-def show_plugin_browser_dialog(parent):
-	"""
-	Shows the plugin browser dialog.
-	
-	@param parent: Parent window.
-	@type parent: wx.Window
-	"""
-	dlg = PluginBrowserDialog(parent)
-	if dlg.ShowModal() == wx.ID_OK:
-		return dlg.pl
-	dlg.Destroy()
-		
 class RoutePanel(gtk.VBox):
 	"""
 	Contains the view panel and manages parameter dialogs.
@@ -813,6 +825,16 @@ class RouteView(gtk.DrawingArea):
 		if not dlg:
 			dlg = ParameterDialog(self.rootwindow, plugin, self)
 		dlg.show_all()
+
+
+	def show_plugin_browser_dialog(self):
+		"""
+		Shows the plugin browser dialog.
+		
+		@param parent: Parent window.
+		@type parent: gtk.Window
+		"""
+		dlg = PluginBrowserDialog(self)
 
 	def on_popup_show_signalanalysis(self, widget, conn):
 		"""
@@ -1208,10 +1230,8 @@ class RouteView(gtk.DrawingArea):
 		mx,my = int(event.x), int(event.y)
 		res = self.get_plugin_at((mx,my))
 		if not res:
-		#	pl = show_plugin_browser_dialog(self)
-		#	if pl:
-		#		self.contextmenupos = mx,my
-		#		self.on_popup_new_plugin(None, pl)
+			# User adds plugins while browser stays open. Nothing to do when it's closed.
+			self.show_plugin_browser_dialog()
 			return
 		mp,(x,y),area = res
 		if area == AREA_ANY:
@@ -1545,7 +1565,15 @@ class RouteView(gtk.DrawingArea):
 			draw_line(ctx,int(crx),int(cry),int(rx),int(ry))
 		self.draw_leds()
 	
+	# This method is not *just* for key-jazz, it handles all key-events in router. Rename?
 	def on_key_jazz(self, widget, event, plugin):
+		mask = event.state
+		kv = event.keyval
+		k = gtk.gdk.keyval_name(kv)
+		if (mask & gtk.gdk.CONTROL_MASK):
+			if k == 'Return':
+				self.show_plugin_browser_dialog()
+				return
 		if not plugin:			
 			if self.selected_plugin:
 				plugin = self.selected_plugin
@@ -1553,8 +1581,6 @@ class RouteView(gtk.DrawingArea):
 				return
 		if self.rootwindow.on_key_down(widget, event):
 			return
-		kv = event.keyval
-		k = gtk.gdk.keyval_name(kv)
 		note = None
 		octave = self.rootwindow.patternframe.view.octave
 		if  k == 'KP_Multiply':			
@@ -1596,7 +1622,6 @@ __all__ = [
 'ParameterDialog',
 'AttributesDialog',
 'PluginBrowserDialog',
-'show_plugin_browser_dialog',
 'RoutePanel',
 'VolumeSlider',
 'RouteView',
