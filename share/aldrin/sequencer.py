@@ -1017,6 +1017,8 @@ class SequencerView(gtk.DrawingArea):
 			return True
 		playpos = player.get_position()
 		if self.playpos != playpos:
+			if playpos<self.playpos and player.get_loop_enabled()==False:
+				self.rootwindow.stop(None)
 			if self.panel.toolbar.followsong.get_active():
 				if playpos >= self.get_endrow() or playpos < self.startseqtime:
 					self.startseqtime = playpos
