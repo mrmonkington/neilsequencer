@@ -887,6 +887,9 @@ class AldrinFrame(gtk.Window, IRootWindow):
 			self._cbcalls = 0
 			self._hevcalls = 0
 			self._cbtime = t
+		#called only if loop pattern is off when song ends:
+		if player.get_state() != zzub.zzub_player_state_playing and self.btnplay.get_active():
+			self.btnplay.set_active(False)
 		return True
 		
 	def on_help_contents(self, event):
