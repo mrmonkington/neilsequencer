@@ -1082,25 +1082,7 @@ class SequencerView(gtk.DrawingArea):
 		"""
 		Returns the size in characters of the virtual view area.
 		"""
-		seq = player.get_current_sequencer()
-		h = seq.get_track_count()
-		#Note: this way of discovering the last event in the sequence is relatively expensive.
-		#It would be better to call this once on song change, and update the value if an event is added with 
-		#a higher index.
-		self.wmax = 0
-		maxtrack = 0
-		w = 1
-		for i in range(h):
-			track=seq.get_track(i)
-			if track.get_event_count():
-				w,p = track.get_event(track.get_event_count()-1)
-				try:
-					w += track.get_plugin().get_pattern(p-16).get_row_count()
-				except AssertionError:
-					pass
-			if w > self.wmax:
-				self.wmax = w
-		w = (max(self.wmax,player.get_song_end(), player.get_loop_end())/self.step)+3
+		w = (max(self.row,player.get_song_end(), player.get_loop_end())/self.step)+3
 		return w,h
 
 
