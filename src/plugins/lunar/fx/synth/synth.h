@@ -5,6 +5,7 @@
 extern "C" {
 #endif // __cplusplus
 typedef struct _lunar_globals {
+	float *waveform;
 	float *attack;
 	float *decay;
 	float *sustain;
@@ -15,6 +16,7 @@ typedef struct _lunar_globals {
 	float *amp;
 } lunar_globals_t;
 typedef struct _lunar_global_values {
+	float waveform;
 	float attack;
 	float decay;
 	float sustain;

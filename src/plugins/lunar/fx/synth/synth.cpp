@@ -14,6 +14,8 @@
 class synth : public lunar::fx<synth> {
 public:
 	float sawtab[TABSIZE];
+	float sqrtab[TABSIZE];
+	float sintab[TABSIZE];
 
 	float lattack, ldecay, lsustain, lrelease;
 	float scutoff, sreso, scutoff2;
@@ -28,6 +30,7 @@ public:
 		svf s;
 		float cutoff;
 		float volume;
+		float *curtab;
 		
 		inline void update_powtab(float scutoff) {
 			float c = min(cutoff+freq,20000);
@@ -62,13 +65,24 @@ public:
 		}
 	}
 
+	void update_waveform_tracks(float *tab) {
+		int t;
+		for(t = 0; t < MAX_TRACKS; t++) {
+			voices[t].curtab = tab;
+		}
+	}
+
 	void init() {
 		int index, size, i, t;
 		
 		amp = 1.0f;
+		update_waveform_tracks(sawtab);
 		
 		for (i = 0; i < TABSIZE; ++i) {
 			sawtab[i] = 1.0f - (float(i) / float(TABSIZE))*2.0f;
+			sqrtab[i] = ((i < (TABSIZE / 2)) ? -1.0f : 1.0f );
+			sintab[i] = sin(-M_PI + (M_PI * (float(i*2) / float(TABSIZE-1))));
+//			printf("I=%d: SAW=%f SQR=%f SIN=%f\n", i, sawtab[i], sqrtab[i], sintab[i]);
 		}
 	}
 
@@ -111,6 +125,20 @@ public:
 		}
 		if (globals->amp) {
 			amp = dbtoamp(*globals->amp, -48);
+		}
+		if ( globals->waveform ) {
+			switch((int)*globals->waveform) {
+			default:
+			case 0:
+				update_waveform_tracks(sawtab);
+				break;
+			case 1:
+				update_waveform_tracks(sqrtab);
+				break;
+			case 2:
+				update_waveform_tracks(sintab);
+				break;
+			}
 		}
 		
 		if (update_adsr) {
@@ -155,7 +183,7 @@ public:
 				while (count--) {
 					float adsr = v->a.process();
 					float c = v->powtab[int(adsr * float(POWTABSIZE-1))];
-					*b++ += v->s.envprocess(sawtab[int(v->phase)%TABSIZE],c,1) * vol * adsr;
+					*b++ += v->s.envprocess(v->curtab[int(v->phase)%TABSIZE],c,1) * vol * adsr;
 					v->phase += v->phasestep;
 					while (v->phase > TABSIZE)
 						v->phase -= TABSIZE;

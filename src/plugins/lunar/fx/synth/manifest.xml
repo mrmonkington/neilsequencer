@@ -11,7 +11,24 @@
 		author="Leonard Ritter"
 		email="contact at leonard-ritter+com">
 		<parameters>
+			<valuenamegroup>
+				<valuenames id="waveform_types">
+					<alias value="0" name="Saw"/>
+					<alias value="1" name="Square"/>
+					<alias value="2" name="Sine"/>
+				</valuenames>
+			</valuenamegroup>
 			<global>
+				<parameter
+					id="waveform"
+					name="Waveform"
+					description="Waveform used by the synthesizer."
+					type="byte"
+					minvalue="0"
+					maxvalue="2"
+					defvalue="0"
+					valuenames="waveform_types"
+					state="true"/>
 				<parameter
 					id="attack"
 					name="Attack (ms)"
