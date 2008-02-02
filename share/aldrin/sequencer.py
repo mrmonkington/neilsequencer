@@ -1082,6 +1082,8 @@ class SequencerView(gtk.DrawingArea):
 		"""
 		Returns the size in characters of the virtual view area.
 		"""
+		seq = player.get_current_sequencer()
+		h = seq.get_track_count()
 		w = (max(self.row,player.get_song_end(), player.get_loop_end())/self.step)+3
 		return w,h
 
