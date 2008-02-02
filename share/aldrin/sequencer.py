@@ -1085,7 +1085,6 @@ class SequencerView(gtk.DrawingArea):
 		w = (max(self.row,player.get_song_end(), player.get_loop_end())/self.step)+3
 		return w,h
 
-
 	def draw_xor(self):
 		"""
 		Overriding a L{Canvas} method that is called after painting is completed. 
