@@ -46,6 +46,13 @@ def bool_converter(value):
 	elif value in ('false','disabled','off','no','0'):
 		return False
 	return bool(value)
+	
+def audioengine_converter(value):
+	value = value.lower()
+	if not value in ('rtaudio','portaudio'):
+			print "invalid option for AUDIOENGINE:",value
+			Exit(1)
+	return value
 
 opts = Options( 'options.conf', ARGUMENTS )
 opts.Add("PREFIX", 'Set the install "prefix" ( /path/to/PREFIX )', "/usr/local")
@@ -67,6 +74,7 @@ opts.Add("LUNAR", 'Support Lunar plugins', posix or mac, None, bool_converter)
 opts.Add("LLVMGCCPATH", 'Path to llvm-gcc', '')
 opts.Add("COREAUDIO", 'Support CoreAudio', False, None, bool_converter)
 opts.Add("JACK", 'Support Jack Audio Connection Kit', False, None, bool_converter)
+opts.Add("AUDIOENGINE", 'Support Portaudio', "rtaudio", None, audioengine_converter)
 opts.Add("OSS", 'Support OSS', False, None, bool_converter)
 opts.Add("ALSA", 'Support ALSA', False, None, bool_converter)
 opts.Add("LUNARTARGET", 'Target for Lunar (llvm,gcc)', 'gcc')

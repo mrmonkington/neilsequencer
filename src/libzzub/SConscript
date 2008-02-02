@@ -34,7 +34,6 @@ files = [
 	'bmxwriter.cpp',
 	'compress.cpp',
 	'decompress.cpp',
-	'driver.cpp',
 	'dummy.cpp',
 	'host.cpp',
 	'libzzub.cpp',
@@ -211,58 +210,94 @@ elif win32:
 			'winmm'
 		])
 
+
+#######################################
+# portaudio
+#######################################
+
+if localenv['AUDIOENGINE'] == 'portaudio':
+	localenv.Append(CCFLAGS=[
+		'-DUSE_PORTAUDIO',
+	])
+	localenv['PORTAUDIO_SRC_PATH'] = '../portaudio'
+	# add portaudio dependencies
+	localenv.Append(CCFLAGS=[
+		'-DPA_LITTLE_ENDIAN', # set this to make sure amd64 is happy
+	])
+
+	files += [
+		'${PORTAUDIO_SRC_PATH}/src/common/pa_allocation.c',
+		'${PORTAUDIO_SRC_PATH}/src/common/pa_converters.c',
+		'${PORTAUDIO_SRC_PATH}/src/common/pa_cpuload.c',
+		#'${PORTAUDIO_SRC_PATH}/src/common/pa_debugprint.c',
+		'${PORTAUDIO_SRC_PATH}/src/common/pa_dither.c',
+		'${PORTAUDIO_SRC_PATH}/src/common/pa_front.c',
+		'${PORTAUDIO_SRC_PATH}/src/common/pa_process.c',
+		'${PORTAUDIO_SRC_PATH}/src/common/pa_skeleton.c',
+		'${PORTAUDIO_SRC_PATH}/src/common/pa_stream.c',
+		'${PORTAUDIO_SRC_PATH}/src/common/pa_trace.c',
+	]
+
 #######################################
 # rtaudio
 #######################################
 
-localenv.SConscript('../rtaudio/SConscript')
-localenv.Append(LIBS=[
-	'rtaudio_static',
-])
-localenv.Append(CPPPATH=[
-	'../rtaudio',
-])
+if localenv['AUDIOENGINE'] == 'rtaudio':
+	localenv.Append(CCFLAGS=[
+		'-DUSE_RTAUDIO',
+	])
+	files += [
+		'driver_rtaudio.cpp',
+	]	
 
-if env['MP3'] == True:
-	localenv.SConscript('../libmad/SConscript')
+	localenv.SConscript('../rtaudio/SConscript')
 	localenv.Append(LIBS=[
-		'libmad_static',
+		'rtaudio_static',
 	])
 	localenv.Append(CPPPATH=[
-		'../libmad',
-	])
-	localenv.Append(CCFLAGS=[
-		'-DUSE_LIBMAD',
+		'../rtaudio',
 	])
 
-if win32:
-	localenv.Append(CCFLAGS=[
-		'-D__WINDOWS_ASIO__',
-		'-D__WINDOWS_DS__',
-		'-D__WINDOWS_SILENT__',
-	])
-	localenv.Append(LIBS=[
-		'advapi32',
-		'ole32',
-		'dsound',
-	])
+	if env['MP3'] == True:
+		localenv.SConscript('../libmad/SConscript')
+		localenv.Append(LIBS=[
+			'libmad_static',
+		])
+		localenv.Append(CPPPATH=[
+			'../libmad',
+		])
+		localenv.Append(CCFLAGS=[
+			'-DUSE_LIBMAD',
+		])
 
-if localenv['COREAUDIO'] == True:
-	localenv.Append(CCFLAGS=['-D__MACOSX_CORE__'])
-if localenv['ALSA'] == True:
-	localenv.Append(CCFLAGS=['-D__LINUX_ALSA__'])
-	localenv.Append(LIBS=['asound'])
-if localenv['JACK'] == True:
-	localenv.Append(CCFLAGS=['-D__UNIX_JACK__'])
-	localenv.Append(LIBS=[ 'jack', localenv['LIB_RT'] ])
-if localenv['OSS'] == True:
-	localenv.Append(CCFLAGS=['-D__LINUX_OSS__'])
+	if win32:
+		localenv.Append(CCFLAGS=[
+			'-D__WINDOWS_ASIO__',
+			'-D__WINDOWS_DS__',
+			'-D__WINDOWS_SILENT__',
+		])
+		localenv.Append(LIBS=[
+			'advapi32',
+			'ole32',
+			'dsound',
+		])
 
-if posix:
-	localenv.Append(LIBS=[
-		'pthread',
-		'm',
-	])
+	if localenv['COREAUDIO'] == True:
+		localenv.Append(CCFLAGS=['-D__MACOSX_CORE__'])
+	if localenv['ALSA'] == True:
+		localenv.Append(CCFLAGS=['-D__LINUX_ALSA__'])
+		localenv.Append(LIBS=['asound'])
+	if localenv['JACK'] == True:
+		localenv.Append(CCFLAGS=['-D__UNIX_JACK__'])
+		localenv.Append(LIBS=[ 'jack', localenv['LIB_RT'] ])
+	if localenv['OSS'] == True:
+		localenv.Append(CCFLAGS=['-D__LINUX_OSS__'])
+
+	if posix:
+		localenv.Append(LIBS=[
+			'pthread',
+			'm',
+		])
 
 #######################################
 # targets

@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <iostream>
 #include <RtAudio.h>
 #include <cassert>
-#include "driver.h"
+#include "driver_rtaudio.h"
 
 using namespace std;
 
