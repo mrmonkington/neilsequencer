@@ -37,6 +37,7 @@ files = [
 	'dummy.cpp',
 	'host.cpp',
 	'libzzub.cpp',
+	'driver.cpp',
 	'master.cpp',
 	'metaplugin.cpp',
 	'pattern.cpp',
@@ -246,9 +247,6 @@ if localenv['AUDIOENGINE'] == 'rtaudio':
 	localenv.Append(CCFLAGS=[
 		'-DUSE_RTAUDIO',
 	])
-	files += [
-		'driver_rtaudio.cpp',
-	]	
 
 	localenv.SConscript('../rtaudio/SConscript')
 	localenv.Append(LIBS=[

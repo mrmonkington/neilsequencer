@@ -22,9 +22,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "timer.h"
 #include "waveplayer.h"
 #include "wavetable.h"
-#if defined(USE_RTAUDIO)
-#include "driver_rtaudio.h"
-#endif
+#include "driver.h"
 #include "midi.h"
 #include "input.h"
 #include "output.h"
