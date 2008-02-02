@@ -58,7 +58,6 @@ public:
 	
 	void update_buffer() {
 		int rbsize = (int)min(transport->samples_per_tick * transport->ticks_per_beat * delay_in_beats + 0.5f, MAX_DELAY_LENGTH);
-		printf("delay = %f, rbsize = %i\n", delay_in_beats, rbsize);
 		rb_setup(&rb[0], rbsize);
 		rb_setup(&rb[1], rbsize);
 	}

@@ -230,14 +230,79 @@ if localenv['AUDIOENGINE'] == 'portaudio':
 		'${PORTAUDIO_SRC_PATH}/src/common/pa_allocation.c',
 		'${PORTAUDIO_SRC_PATH}/src/common/pa_converters.c',
 		'${PORTAUDIO_SRC_PATH}/src/common/pa_cpuload.c',
-		#'${PORTAUDIO_SRC_PATH}/src/common/pa_debugprint.c',
+		'${PORTAUDIO_SRC_PATH}/src/common/pa_debugprint.c',
 		'${PORTAUDIO_SRC_PATH}/src/common/pa_dither.c',
 		'${PORTAUDIO_SRC_PATH}/src/common/pa_front.c',
 		'${PORTAUDIO_SRC_PATH}/src/common/pa_process.c',
 		'${PORTAUDIO_SRC_PATH}/src/common/pa_skeleton.c',
 		'${PORTAUDIO_SRC_PATH}/src/common/pa_stream.c',
 		'${PORTAUDIO_SRC_PATH}/src/common/pa_trace.c',
+		'${PORTAUDIO_SRC_PATH}/src/common/pa_ringbuffer.c',
 	]
+		
+	if posix:
+		files += [
+			'${PORTAUDIO_SRC_PATH}/src/os/unix/pa_unix_hostapis.c',
+			'${PORTAUDIO_SRC_PATH}/src/os/unix/pa_unix_util.c',
+			'${PORTAUDIO_SRC_PATH}/src/hostapi/alsa/pa_linux_alsa.c',
+			'${PORTAUDIO_SRC_PATH}/src/hostapi/oss/pa_unix_oss.c',
+			'${PORTAUDIO_SRC_PATH}/src/hostapi/jack/pa_jack.c',
+		]
+		localenv.Append(LIBS=[
+			'asound',
+			'pthread',
+			'rt',
+			'm',
+			'jack',
+		])
+		localenv.Append(CPPPATH=[
+			'${PORTAUDIO_SRC_PATH}/include',
+			'${PORTAUDIO_SRC_PATH}/src/common',
+			'${PORTAUDIO_SRC_PATH}/src/os/unix',
+		])
+		localenv.Append(CCFLAGS=[
+			'-DPA_USE_ALSA',
+			'-DPA_USE_JACK',
+			'-DPA_USE_OSS',
+			'-DHAVE_LINUX_SOUNDCARD_H',
+		])
+		
+	elif win32:
+		files += [
+			'${PORTAUDIO_SRC_PATH}/src/os/win/pa_win_hostapis.c',
+			'${PORTAUDIO_SRC_PATH}/src/os/win/pa_win_util.c',
+			#'${PORTAUDIO_SRC_PATH}/src/os/win/pa_x86_plain_converters.c',
+			'${PORTAUDIO_SRC_PATH}/src/hostapi/wmme/pa_win_wmme.c',
+		]
+		localenv.Append(CPPPATH=[
+			'${PORTAUDIO_SRC_PATH}/include',
+			'${PORTAUDIO_SRC_PATH}/src/common',
+		])
+		localenv.Append(CCFLAGS=[
+			'-DPA_NO_DS',
+		])
+		
+		files += [
+			'${PORTAUDIO_SRC_PATH}/src/hostapi/asio/iasiothiscallresolver.cpp',
+			'${PORTAUDIO_SRC_PATH}/src/hostapi/asio/pa_asio.cpp',
+			'${ASIOSDK_SRC_PATH}/common/asio.cpp',
+			'${ASIOSDK_SRC_PATH}/host/asiodrivers.cpp',
+			'${ASIOSDK_SRC_PATH}/host/pc/asiolist.cpp',
+		]
+		
+		localenv.Append(CPPPATH=[
+			'${ASIOSDK_SRC_PATH}/common',
+			'${ASIOSDK_SRC_PATH}/host',
+			'${ASIOSDK_SRC_PATH}/host/pc',
+		])
+		
+		localenv.Append(LIBS=[
+			'advapi32',
+			'ole32',
+			'winmm',
+		])
+
+
 
 #######################################
 # rtaudio

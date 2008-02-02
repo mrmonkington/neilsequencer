@@ -20,9 +20,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
 #include <string>
-
-class RtAudio;
-
+#include <vector>
+#include "portaudio.h"
 
 namespace zzub {
 
@@ -46,14 +45,14 @@ struct audiodriver
 	};
 
 	audioworker *worker;
-	RtAudio *audio;
+	PaStream *stream;
 
 	int defaultDevice;
 	std::vector<audiodevice> devices;
 
 	audiodriver();
 
-	int getApiDevices(int apiId);
+	int getApiDevices(PaHostApiTypeId hostapiid);
 
 	virtual ~audiodriver();	
 	virtual void initialize(audioworker *worker);	
