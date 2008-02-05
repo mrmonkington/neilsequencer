@@ -448,12 +448,9 @@ class PatternPanel(gtk.VBox):
 			self.update_all()
 		elif data.type == zzub.zzub_event_type_new_plugin:
 			self.update_all()
-		elif data.type == zzub.zzub_event_type_parameter_changed and player.get_automation(): 
-			try: 
-				self.view.update_line(player.get_position()) 
-				self.view.redraw() 
-			except TypeError:
-				pass 
+		#elif data.type == zzub.zzub_event_type_parameter_changed and player.get_automation():
+		#	self.view.update_line(player.get_position()) 
+		#	self.view.redraw() 
 
 	def reset(self):
 		"""
