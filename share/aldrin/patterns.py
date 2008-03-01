@@ -180,7 +180,8 @@ class PatternToolBar(gtk.HBox):
 
 		self.playnotes.set_active(True)
 		
-		self.plugin = 0
+		self.plugin_index = 0
+		self.plugin_mapping = {}
 		self.pattern = 0
 		self.wave = 0
 		self.cb2w = {} # combobox index to wave index
@@ -202,7 +203,7 @@ class PatternToolBar(gtk.HBox):
 		global_events.connect('song-opened', self.update_all)
 		
 	def reset(self):
-		self.plugin = 0
+		self.plugin_index = 0
 		self.pattern = 0
 		self.wave = 0
 		
@@ -212,7 +213,7 @@ class PatternToolBar(gtk.HBox):
 		"""
 		if widget.get_active() == -1:
 			return
-		if self.plugin == widget.get_active():
+		if self.plugin_index == widget.get_active():
 			return
 		self.select_plugin(widget.get_active())
 		
@@ -278,12 +279,13 @@ class PatternToolBar(gtk.HBox):
 		"""
 		Updates the plugin selection box.
 		"""
-		self.plugin = min(max(self.plugin, 0), player.get_plugin_count()-1)
+		self.plugin_index = min(max(self.plugin_index, 0), player.get_plugin_count()-1)
 		self.pluginselect.get_model().clear()
-		for plugin in player.get_plugin_list():
+		for i, plugin in enumerate(sorted(player.get_plugin_list(), lambda a,b:cmp(a.get_name().lower(),b.get_name().lower()))):
+			self.plugin_mapping[i] = plugin
 			self.pluginselect.append_text(prepstr(plugin.get_name()))
-		if self.plugin != -1:
-			self.pluginselect.set_active(self.plugin)
+		if self.plugin_index != -1:
+			self.pluginselect.set_active(self.plugin_index)
 		
 	def next_wave(self):
 		"""
@@ -306,16 +308,24 @@ class PatternToolBar(gtk.HBox):
 		@param i: Plugin index.
 		@type i: int
 		"""
+		self.plugin_index = min(max(i, 0), player.get_plugin_count()-1)
 		self.view.selection = None
 		self.view.start_col = 0
-		self.plugin = min(max(i, 0), player.get_plugin_count()-1)
 		self.update_pluginselect()
 		self.update_patternselect()
 		self.view.pattern_changed()
-		try: self.view.show_cursor_right()
+		try: 
+			self.view.show_cursor_right()
 		except AttributeError:
 			pass
 
+	def get_combo_plugin(self, index):
+		"""
+		Retrieves plugin associated with selected combo box index
+		"""
+		return self.plugin_mapping[index]
+
+	
 	def select_pattern(self, i):
 		"""
 		Selects a pattern.
@@ -324,7 +334,7 @@ class PatternToolBar(gtk.HBox):
 		@type i: int
 		"""
 		if self.plugin != -1:
-			plugin = player.get_plugin(self.plugin)
+			plugin = self.get_combo_plugin(self.plugin_index)
 			self.pattern = min(max(i, 0),plugin.get_pattern_count()-1)
 		else:
 			self.pattern = -1
@@ -348,8 +358,8 @@ class PatternToolBar(gtk.HBox):
 		Rebuilds and updates the patternselect list.
 		"""
 		self.patternselect.get_model().clear()
-		if self.plugin != -1:
-			mp = player.get_plugin(self.plugin)
+		if self.plugin_index != -1:
+			mp = self.get_combo_plugin(self.plugin_index)
 			for p in mp.get_pattern_list():
 				self.patternselect.append_text(prepstr(p.get_name()))
 			self.pattern = min(max(self.pattern, 0),mp.get_pattern_count()-1)
@@ -2338,11 +2348,13 @@ class PatternView(gtk.DrawingArea):
 		@return: zzub plugin plugin.
 		@rtype: zzub.Plugin
 		"""	
-		toolbar = self.toolbar
-		mi = min(toolbar.plugin, player.get_plugin_count()-1)
-		if mi == -1:
+		if player.get_plugin_count() == 0:
 			return
-		return player.get_plugin(mi)
+		toolbar = self.toolbar
+		try:
+			return toolbar.get_combo_plugin(toolbar.plugin_index)
+		except KeyError:
+			return player.get_plugin(0)
 		
 	def get_datasource(self):
 		"""
