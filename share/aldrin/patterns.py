@@ -181,7 +181,8 @@ class PatternToolBar(gtk.HBox):
 		self.playnotes.set_active(True)
 		
 		self.plugin_index = 0
-		self.plugin_mapping = {}
+		self.index_to_plugin = {}
+		self.plugin_to_index = {}
 		self.pattern = 0
 		self.wave = 0
 		self.cb2w = {} # combobox index to wave index
@@ -282,8 +283,9 @@ class PatternToolBar(gtk.HBox):
 		self.plugin_index = min(max(self.plugin_index, 0), player.get_plugin_count()-1)
 		self.pluginselect.get_model().clear()
 		for i, plugin in enumerate(sorted(player.get_plugin_list(), lambda a,b:cmp(a.get_name().lower(),b.get_name().lower()))):
-			self.plugin_mapping[i] = plugin
+			self.index_to_plugin[i] = plugin
 			self.pluginselect.append_text(prepstr(plugin.get_name()))
+		self.plugin_to_index = dict([(v,k) for (k,v) in self.index_to_plugin.iteritems()])
 		if self.plugin_index != -1:
 			self.pluginselect.set_active(self.plugin_index)
 		
@@ -323,7 +325,7 @@ class PatternToolBar(gtk.HBox):
 		"""
 		Retrieves plugin associated with selected combo box index
 		"""
-		return self.plugin_mapping[index]
+		return self.index_to_plugin[index]
 
 	
 	def select_pattern(self, i):
@@ -333,7 +335,7 @@ class PatternToolBar(gtk.HBox):
 		@param i: Pattern index.
 		@type i: int
 		"""
-		if self.plugin != -1:
+		if self.plugin_index != -1:
 			plugin = self.get_combo_plugin(self.plugin_index)
 			self.pattern = min(max(i, 0),plugin.get_pattern_count()-1)
 		else:

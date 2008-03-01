@@ -478,6 +478,7 @@ class SequencerView(gtk.DrawingArea):
 		"""
 		Copies the current selection into the clipboard
 		"""
+		print self.selection_start, self.selection_end
 		if self.selection_start == None:
 			return
 		data = self.CLIPBOARD_SEQUENCER
@@ -561,6 +562,7 @@ class SequencerView(gtk.DrawingArea):
 		
 	def on_popup_delete(self, event):
 		seq = player.get_current_sequencer()
+		print self.selection_start
 		start = (min(self.selection_start[0], self.selection_end[0]), 
 			min(self.selection_start[1], self.selection_end[1]))
 		end = (max(self.selection_start[0], self.selection_end[0]), 
@@ -871,11 +873,12 @@ class SequencerView(gtk.DrawingArea):
 		mainwindow = self.panel.rootwindow
 		pf = mainwindow.patternframe
 		tb = pf.toolbar
-		tb.plugin = 0
+		tb.plugin_index = 0
 		tb.pattern = 0
 		for i in range(player.get_plugin_count()):
 			if player.get_plugin(i) == plugin:
-				tb.plugin = i
+				print tb.plugin_to_index
+				tb.plugin_index = tb.plugin_to_index[plugin]
 				break
 		tb.pattern = index
 		pf.update_all()
