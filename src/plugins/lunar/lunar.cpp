@@ -416,8 +416,9 @@ struct dspplugin : zzub::plugin {
 					if (minv == 0.0f)
 						v1 = -8; // -48dB or so
 					else
-						v1 = log(v1);
+						v1 = std::log(minv);
 					defv = std::min(std::max(std::pow((std::log(defv) - v1) / (std::log(maxv) - v1), 1.0f/mp.power),0.0f),1.0f);
+					//defv = std::min(std::max(std::pow((std::log(defv) - std::log(minv)) / (std::log(maxv) - std::log(minv)), 1.0f/mp.power),0.0f),1.0f);
 					param.set_value_default(param.scale(defv));
 				} else {
 					param.set_value_default(param.scale((defv - mp.offset) / mp.scalar));
