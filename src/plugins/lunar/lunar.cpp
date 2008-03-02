@@ -379,6 +379,7 @@ struct dspplugin : zzub::plugin {
 				float minv = 0.0f;
 				float maxv = 1.0f;
 				float defv = 1.0f;
+				float v1;
 				if (item.has_attribute("logarithmic")) {
 					mp.islog = bool(item.attribute("logarithmic"));
 					if (item.has_attribute("power")) {
@@ -412,7 +413,11 @@ struct dspplugin : zzub::plugin {
 				param.set_value_max(mp.get_good_value_max());
 				if (mp.islog) {
 					// uncalculate
-					defv = std::min(std::max(std::pow((std::log(defv) - std::log(minv)) / (std::log(maxv) - std::log(minv)), 1.0f/mp.power),0.0f),1.0f);
+					if (minv == 0.0f)
+						v1 = -8; // -48dB or so
+					else
+						v1 = log(v1);
+					defv = std::min(std::max(std::pow((std::log(defv) - v1) / (std::log(maxv) - v1), 1.0f/mp.power),0.0f),1.0f);
 					param.set_value_default(param.scale(defv));
 				} else {
 					param.set_value_default(param.scale((defv - mp.offset) / mp.scalar));
