@@ -33,7 +33,7 @@
 				<parameter
 					id="lfo_min"
 					name="LFO Minimum (Hz)"
-					description="LFO Minimum"
+					description="LFO minimum"
 					type="float"
 					minvalue="10"
 					maxvalue="20000"
@@ -43,7 +43,7 @@
 				<parameter
 					id="lfo_max"
 					name="LFO Maximum (Hz)"
-					description="LFO Maximum"
+					description="LFO maximum"
 					type="float"
 					minvalue="10"
 					maxvalue="20000"
@@ -53,18 +53,46 @@
 				<parameter
 					id="lfo_rate"
 					name="LFO rate (Hz)"
-					description="Cutoff frequency of filter"
+					description="LFO oscillation frequency"
 					type="float"
 					logarithmic="true"
 					power="0.7"
-					minvalue="0.01"
+					minvalue="0"
 					maxvalue="20000"
 					defvalue="0.05"
 					precision="0.01"
 					state="true"/>
+				<parameter
+					id="lfo_phase"
+					name="LFO phase"
+					description="Manual LFO phase"
+					type="float"
+					minvalue="0"
+					maxvalue="1"
+					precision="0.01"
+					defvalue="0"
+					state="true"/>
+				<parameter
+					id="stages"
+					name="Stages"
+					description="Phaser stages"
+					type="float"
+					minvalue="1"
+					maxvalue="64"
+					defvalue="6"
+					precision="1"
+					state="true"/>
+	<!--				<parameter
+					id="swirl"
+					name="Swirl"
+					description="Stereo swirl"
+					type="float"
+					minvalue="0.01"
+					maxvalue="2"
+					defvalue="1"
+					precision="0.01"
+					state="true"/>		-->			
 			</global>
-			<track>
-			</track>
 		</parameters>
 		<files>
 			<file ref="phaser.cpp"/>

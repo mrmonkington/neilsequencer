@@ -3,7 +3,7 @@
 #include <lunar/dsp.h>
 #define WAVESIZE 4096
 #define WAVEMASK 4095
-
+#define STAGES 65
 // retrieve sample with linear interpolation
 inline float get_interpolated_sample(float *samples, float phase, int mask)
 {
@@ -23,12 +23,19 @@ inline float float_mask(float phase, int mask)
 
 struct phaser_state {
 	float zm0, zm1, zm2, zm3, zm4, zm5, zm6;
+	float zm[STAGES];
 	float lfo_phase;
 	float swirl;
 	float init_feedback, feedback, drywet, n_drywet, a;
+	int stages;
 	phaser_state() {
-		zm0 = zm1 = zm2 = zm3 = zm4 = zm5 = zm6 = 0;
+		reset();
 		lfo_phase = 0;
+	}
+	
+	void reset() {
+		for (int i = 0; i <= STAGES; i++)
+			zm[i] = 0.0f;
 	}
 	
 	inline void set_delay(float value)
@@ -43,32 +50,18 @@ struct phaser_state {
 	inline float tick(float in)
 	{
 		float y;
-		float out = in + zm0 * feedback;
-		// 6
-		y = zm6 - out * a;
-		zm6 = y * a + out;
-		// 5
-		out = zm5 - y * a;
-		zm5 = out * a + y;
-		// 4
-		y = zm4 - out * a;
-		zm4 = y * a + out;
-		// 3
-		out = zm3 - y * a;
-		zm3 = out * a + y;
-		// 2
-		y = zm2 - out * a;
-		zm2 = y * a + out;
-		// 1
-		out = zm1 - y * a;
-		zm1 = out * a + y;
-		// 0
-		zm0 = out;
+		float out = in + zm[0] * feedback;
+		for (int i = stages; i > 0; i--) {
+			y = zm[i] - out*a;
+			zm[i] = y * a + out;
+			out = y;
+		}
+		zm[0] = y;
 		//  feedback damping to prevent spiking
-		if (abs(zm0) > 5) {
+		if (abs(zm[0]) > 5) {
 			feedback = 0.95*feedback;
 		}
-		return n_drywet * in + out * drywet;
+		return n_drywet * in + y * drywet;
 	}
 };
 
@@ -91,6 +84,8 @@ public:
 	}
 
 	void process_events() {
+		phaser_left.swirl = 0;
+		phaser_right.swirl = 20;
 		phaser_left.feedback = phaser_left.init_feedback;
 		phaser_right.feedback = phaser_right.init_feedback;
 		if (globals->feedback) {
@@ -111,6 +106,16 @@ public:
 			lfo_max =  *globals->lfo_max / transport->samples_per_second;
 		if (globals->lfo_rate)
 			lfo_increment = WAVESIZE * (*globals->lfo_rate / transport->samples_per_second);
+		if (globals->stages) {
+			phaser_left.stages = (int)*globals->stages;
+			phaser_right.stages = (int)*globals->stages;
+			phaser_left.reset();
+			phaser_right.reset();
+		}
+		if (globals->lfo_phase) {
+			phaser_left.lfo_phase = *globals->lfo_phase*WAVESIZE;
+			phaser_right.lfo_phase = *globals->lfo_phase*WAVESIZE;
+		}
 	}
 
 	void process(float *buffer, int size, phaser_state *phaser) {
@@ -118,10 +123,11 @@ public:
 		while (size--) {
 			delay = lfo_min + (lfo_max - lfo_min) *  (1.0 + get_interpolated_sample(wavetable, phaser->lfo_phase, WAVEMASK)) / 2;
 			phaser->set_delay(delay);
+			//phaser->lfo_phase = float_mask(phaser->lfo_phase + lfo_increment * phaser->swirl, WAVEMASK);
 			phaser->lfo_phase = float_mask(phaser->lfo_phase + lfo_increment, WAVEMASK);
 			in = *buffer;
 			out = phaser->tick(in);
-			*buffer++ = out;	
+			*buffer++ = out;
 		}
 	}
 

@@ -10,6 +10,8 @@ typedef struct _lunar_globals {
 	float *lfo_min;
 	float *lfo_max;
 	float *lfo_rate;
+	float *lfo_phase;
+	float *stages;
 } lunar_globals_t;
 typedef struct _lunar_global_values {
 	float drywet;
@@ -17,6 +19,8 @@ typedef struct _lunar_global_values {
 	float lfo_min;
 	float lfo_max;
 	float lfo_rate;
+	float lfo_phase;
+	float stages;
 } lunar_global_values_t;
 typedef struct _lunar_track {
 } lunar_track_t;
