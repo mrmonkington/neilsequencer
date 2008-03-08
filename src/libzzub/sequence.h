@@ -40,11 +40,13 @@ struct sequence {
 	inline zzub::pattern* getCurrentlyPlayingPattern() { return pattern; }
 	inline size_t getCurrentlyPlayingPatternPosition() { return patternPosition; }
 
+        void processSequenceEvent(sequence_event* event);
+        sequence_event* getValueDuring(size_t trackPosition, size_t *eventIndex, size_t *rowOffset);
 	sequence_event* getValueAt(size_t pos);
 	void setEvent(size_t pos, sequence_event_type type, zzub::pattern* value);
 	void setPosition(size_t pos);
 	size_t getPosition() { return trackPosition; }
-	sequence_event* getCurrentValue() const;
+	sequence_event* getCurrentValue();
 	size_t getEvents() { return events.size(); }
 	sequence_event* getEvent(size_t index) { return &events[index]; }
 

@@ -52,35 +52,7 @@ void sequence::iterateTick() {
 void sequence::advanceTick() {
 	if (machine) {
 		sequence_event* event = getCurrentValue();
-		if (event) {
-			if (event->type == sequence_event_type_mute) {
-				// Mute sequencer
-				machine->softMute();	// kaller vi stop() går det veldig galt
-				machine->_internal_seqCommand = 1;
-				pattern=0;
-			} else
-			if (event->type == sequence_event_type_break) {
-				// Break sequencer
-				machine->clearParameters();
-				machine->_internal_seqCommand = 0;
-				machine->softMuted = false;
-				pattern=0;
-			} else
-			if (event->type == sequence_event_type_thru) {
-				// Thru / bypass effect
-				machine->softBypass(true);
-				machine->_internal_seqCommand = 2;
-				machine->softMuted = false;
-				pattern = 0;
-			} else
-			if (event->type == sequence_event_type_pattern) {
-				machine->_internal_seqCommand = 0;
-				pattern=event->value;
-				patternPosition=0;
-				machine->softMuted = false;
-			}
-		}
-
+		processSequenceEvent(event);
 		if (pattern && patternPosition<pattern->getRows()) {
 			if (machine->isSoloMutePlaying()) machine->playPatternRow(pattern, (int)patternPosition, false);
 			patternPosition++;
@@ -90,18 +62,72 @@ void sequence::advanceTick() {
 	iterateTick();
 }
 
+void sequence::processSequenceEvent(sequence_event* event) {
+        if (event) {
+	        if (event->type == sequence_event_type_mute) {
+      		        // Mute sequencer
+                        machine->softMute();	// kaller vi stop() går det veldig galt
+			machine->_internal_seqCommand = 1;
+			pattern=0;
+		} else
+                if (event->type == sequence_event_type_break) {
+ 		        // Break sequencer
+                        machine->clearParameters();
+			machine->_internal_seqCommand = 0;
+			machine->softMuted = false;
+			pattern=0;
+		} else
+		if (event->type == sequence_event_type_thru) {
+		        // Thru / bypass effect
+                        machine->softBypass(true);
+			machine->_internal_seqCommand = 2;
+			machine->softMuted = false;
+			pattern = 0;
+		} else
+		if (event->type == sequence_event_type_pattern) {
+		        machine->_internal_seqCommand = 0;
+			pattern=event->value;
+			patternPosition=0;
+			machine->softMuted = false;
+		}
+	}
+}
+
+
+// Find a pattern which starts before the given trackPosition but ends
+// after. Returns the event and sets output parameters eventIndex
+// (index into events) and rowOffset (how many rows have passed
+// between start of the pattern and trackPosition).
+zzub::sequence_event* sequence::getValueDuring(size_t trackPosition, size_t *eventIndex, size_t *rowOffset) {
+        *eventIndex = 0;
+        *rowOffset = 0;
+	// It is possible that multiple patterns will overlap the trackPosition. We want the 
+        // *latest* of these, so count backwards. events.size() returns a size_t, but 
+	// comparing size_t >= 0 is dangerous, so use long int. 
+	for (long int i = events.size() - 1; i >= 0; i--) {
+                if (events[i].type == sequence_event_type_pattern) {
+                        zzub::pattern* p = events[i].value;
+                        if ((trackPosition >= events[i].pos) && (trackPosition < events[i].pos + p->getRows())) {
+                                // Pattern ongoing
+                        	*eventIndex = i;
+				*rowOffset = trackPosition - events[i].pos;
+				return &events[i];
+			}
+		}
+	}
+	// Tried all events
+	return NULL;
+}
+
 zzub::sequence_event* sequence::getValueAt(size_t valuePos) {
 
-	size_t tmpTrackPosition = trackPosition;
-	size_t tmpPositionIndex = positionIndex;
+        for (int i = 0; i < events.size(); i++) {
+                if (events[i].pos==valuePos) {
+                      return (sequence_event*)&events.at(i);
+		}
+	}
+	return 0;
 
-	setPosition(valuePos);
-	zzub::sequence_event* value = getCurrentValue();
-
-	trackPosition = tmpTrackPosition;
-	positionIndex = tmpPositionIndex;
-
-	return value;
 }
 
 void sequence::setEvent(size_t pos, sequence_event_type type, zzub::pattern* value) {
@@ -126,23 +152,38 @@ void sequence::setEvent(size_t pos, sequence_event_type type, zzub::pattern* val
 	}
 }
 
+// Only use setPosition() to genuinely set the song position. Don't use it
+// to set the indices, make some edits (eg moving events), and then reset
+// the indices to their saved values.
 void sequence::setPosition(size_t pos) {
 	trackPosition = pos;
 	size_t end = events.size();
 	if (end == 0) return;
-	for (positionIndex = 0, --end; positionIndex < end; ++positionIndex)
-		if (events[positionIndex].pos >= trackPosition)
-			break;
 
+	// What is happening at this new trackPosition?
+	zzub::sequence_event* event;
+	size_t eventIndex, rowOffset;
+	if (event = getValueAt(trackPosition)) {
+	        // There's an event *at this position*.
+	        processSequenceEvent(event);
+	} else if (event = getValueDuring(trackPosition, &eventIndex, &rowOffset)) {
+	        // There's an event (in fact a pattern) which started before this position 
+	        // but is still ongoing. Start that pattern (with rowOffset).
+	        processSequenceEvent(event);
+		if (event->type = sequence_event_type_pattern) {
+		        patternPosition = rowOffset;
+			positionIndex = eventIndex;
+		}
+	} else {
+	        // There's nothing at this trackPosition.
+	        pattern = NULL;
+		patternPosition = 0;
+		positionIndex = 0;
+	}
 }
 
-sequence_event* sequence::getCurrentValue() const {
-	if (positionIndex>=0 && positionIndex<events.size()) {
-		if (events[positionIndex].pos==trackPosition) {
-			return (sequence_event*)&events.at(positionIndex);
-		}
-	}
-	return 0;
+sequence_event* sequence::getCurrentValue() {
+        return getValueAt(trackPosition);
 }
 
 sequence* sequence::createCopy(size_t fromTime, size_t toTime) {
@@ -202,23 +243,20 @@ bool sequence::removeEvents(size_t fromPos, size_t toPos) {
 
 
 void sequence::moveEvents(size_t fromPosition, int delta) {
-	size_t pos=getPosition();
 
-	setPosition(fromPosition);
-
-	size_t startPosition=positionIndex;
-	if (events.size()==0) {
-		return ;
+        // Find the first event after fromPosition
+        vector<sequence_event>::iterator i = events.begin();
+	for ( ; i != events.end(); i++) {
+	        if (i->pos >= fromPosition) {
+		        break;
+		}
 	}
-	if (events[startPosition].pos<fromPosition)
-		startPosition++;
-
-	for (size_t i=startPosition; i<events.size(); i++) {
-		events[i].pos+=delta;
+	// For all remaining events, increment event->pos by delta.
+	for ( ; i != events.end(); i++) {
+	        i->pos += delta;
 	}
-	setPosition(pos);
-
 }
+
 
 // NOTE: serialize/deserialize are used by the BMX-exporter so beware of format changes!
 
