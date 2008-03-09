@@ -877,7 +877,6 @@ class SequencerView(gtk.DrawingArea):
 		tb.pattern = 0
 		for i in range(player.get_plugin_count()):
 			if player.get_plugin(i) == plugin:
-				print tb.plugin_to_index
 				tb.plugin_index = tb.plugin_to_index[plugin]
 				break
 		tb.pattern = index
@@ -929,8 +928,15 @@ class SequencerView(gtk.DrawingArea):
 		
 		@param event: Mouse event
 		@type event: wx.MouseEvent
-		"""		
-		if event.direction == gtk.gdk.SCROLL_UP:
+		"""	
+		if event.state & gtk.gdk.CONTROL_MASK:
+			if event.direction == gtk.gdk.SCROLL_DOWN:
+				self.panel.toolbar.increase_step()
+				self.set_cursor_pos(self.track, self.row)
+			elif event.direction == gtk.gdk.SCROLL_UP:
+				self.panel.toolbar.decrease_step()
+				self.set_cursor_pos(self.track, self.row)
+		elif event.direction == gtk.gdk.SCROLL_UP:
 			self.set_cursor_pos(self.track, self.row - self.step)
 		elif event.direction == gtk.gdk.SCROLL_DOWN:
 			self.set_cursor_pos(self.track, self.row + self.step)
