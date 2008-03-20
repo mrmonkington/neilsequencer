@@ -1878,9 +1878,9 @@ class PatternView(gtk.DrawingArea):
 			elif k in ('KP_Subtract','minus'):
 				self.on_popup_delete_track()
 			elif k == 'Up':
-				self.toolbar.select_plugin(self.toolbar.plugin-1)
+				self.toolbar.select_plugin(self.toolbar.plugin_index-1)
 			elif k == 'Down':
-				self.toolbar.select_plugin(self.toolbar.plugin+1)
+				self.toolbar.select_plugin(self.toolbar.plugin_index+1)
 			else:
 				return False
 		elif k == 'Left' or k == 'KP_Left':
