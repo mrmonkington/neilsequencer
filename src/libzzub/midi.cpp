@@ -33,6 +33,8 @@ namespace zzub {
 	\brief Base class for processing MIDI input.
 */
 const int BUFFER_EVENTS = 256;
+const int MIDI_IN = 0;
+const int MIDI_OUT = 1;
 
 mididriver::~mididriver() {
 	close();
@@ -45,9 +47,9 @@ void process_midi(PtTimestamp timestamp, void *userData) {
 	midi_time_message msg;
 
 	PmEvent event[BUFFER_EVENTS];
-	for (size_t i = 0; i < driver->devices.size(); i++) {
+	for (size_t i = 0; i < driver->devices.size(); i++) {	
 		if (driver->devices[i] == 0) continue;
-		if (TRUE == Pm_Poll(driver->devices[i])) {
+		if ((driver->device_type[i] == MIDI_IN) && (TRUE == Pm_Poll(driver->devices[i]))) {
 			int ret = Pm_Read(driver->devices[i], event, BUFFER_EVENTS);
 			if (ret<0) continue;
 			for (int j = 0; j < ret; j++) {
@@ -56,7 +58,7 @@ void process_midi(PtTimestamp timestamp, void *userData) {
 				Pm_Enqueue(driver->readQueue, &msg);
 				//worker->midiEvent(Pm_MessageStatus(event[j].message), Pm_MessageData1(event[j].message), Pm_MessageData2(event[j].message));
 			}
-		}
+		}		
 	}
 
 
@@ -87,7 +89,7 @@ bool mididriver::initialize(midiworker* worker) {
 	if (pmNoError!=Pm_Initialize()) return false;
 
 	devices.resize(getDevices());
-
+	device_type.resize(getDevices());
 	return true;
 }
 
@@ -98,10 +100,12 @@ bool mididriver::openDevice(size_t index) {
 	if (deviceInfo->input) {
 		if (pmNoError!=Pm_OpenInput(&stream, index, 0, BUFFER_EVENTS, 0, 0))
 			return false;
+		device_type[index]=MIDI_IN;
 	} else
 	if (deviceInfo->output) {
 		if (pmNoError!=Pm_OpenOutput(&stream, index, 0, BUFFER_EVENTS, 0, 0, 0))
 			return false;
+		device_type[index]=MIDI_OUT;
 	}
 
 	devices[index]=stream;
@@ -193,7 +197,7 @@ void mididriver::schedule_send(size_t index, int time_ms, unsigned int data) {
 bool mididriver::send(size_t index, unsigned int data) {
 	if (index >= devices.size()) return false;
 	if (devices[index] == 0) return false;
-
+	printf("send\n");
 	PmEvent event = { data, 0 };
 	Pm_Write(devices[index], &event, 1);
 	return true;

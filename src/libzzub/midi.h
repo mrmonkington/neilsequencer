@@ -55,9 +55,10 @@ struct mididriver : midi_io {
 	PmQueue* readQueue;
 
 	~mididriver();
-
+	
 	midiworker* worker;
 	std::vector<PortMidiStream*> devices;
+	std::vector<int> device_type;
 
 	bool initialize(midiworker*);
 
