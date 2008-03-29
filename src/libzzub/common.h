@@ -102,6 +102,7 @@ enum LoadProgressType {
 #include <list>
 #include <map>
 #include <vector>
+#include <cstring>
 #include <string>
 #include <iostream>
 #include <cassert>

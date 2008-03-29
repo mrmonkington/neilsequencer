@@ -18,6 +18,8 @@
 #include <stdarg.h>
 #include <cmath>
 #include <memory.h>
+#include <cstdlib>
+#include <cstdio>
 #include "zzub/plugin.h"
 #include "lunarstd.h"
 

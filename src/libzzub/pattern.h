@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 
 #ifndef SIZE_T_MAX
+    #include <limits.h> 
 	#define SIZE_T_MAX  UINT_MAX
 #endif
 

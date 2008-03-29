@@ -57,6 +57,7 @@ extern "C" {
 #include <cstdio>
 #include <cstdlib>
 #include <string>
+#include <cstring>
 #include <list>
 #include <algorithm>
 #include <map>
@@ -244,7 +245,7 @@ struct dspplugin : zzub::plugin {
 		
 		std::vector<metaparameter> gparamids;
 		std::vector<metaparameter> tparamids;
-    std::vector<metaparameter> cparamids;
+		std::vector<metaparameter> cparamids;
 		std::vector<std::string> attribids;
 		
 #if defined(LUNARTARGET_LLVM)
@@ -623,7 +624,7 @@ struct dspplugin : zzub::plugin {
 			add_symbol_func(M, "lunar_tan", (void*)&lunar_tan);
 			add_symbol_func(M, "lunar_sinh", (void*)&lunar_sinh);
 			add_symbol_func(M, "lunar_cosh", (void*)&lunar_cosh);
-			add_symbol_func(M, "lunar_atan", (void*)&lunar_atan);            
+			add_symbol_func(M, "lunar_atan", (void*)&lunar_atan);  
 			add_symbol_func(M, "lunar_sqrt", (void*)&lunar_sqrt);
 			add_symbol_func(M, "lunar_fabs", (void*)&lunar_fabs);
 			add_symbol_func(M, "lunar_floor", (void*)&lunar_floor);
@@ -775,10 +776,10 @@ struct dspplugin : zzub::plugin {
 	size_t global_size;
 	size_t track_size;
 	size_t track_count;
-  size_t controller_size;
+	size_t controller_size;
 	std::vector<size_t> global_offsets;
 	std::vector<size_t> track_offsets;
-  std::vector<size_t> controller_offsets;
+	std::vector<size_t> controller_offsets;
 	
 	std::vector<float> gvalues;
 	std::vector< std::vector<float> > tvalues;
@@ -786,7 +787,7 @@ struct dspplugin : zzub::plugin {
 
 	enum {
 		MAX_GPARAMS = 64,
-    MAX_CPARAMS = 64,
+		MAX_CPARAMS = 64,
 		MAX_TRACKS = 64,
 		MAX_TPARAMS = 16,
 	};
@@ -804,10 +805,10 @@ struct dspplugin : zzub::plugin {
 		} else if (group == 2) {
 			paraminfo = _info.track_parameters[param];
 			offset = &((char *)track_values)[track * track_size] + track_offsets[param];
-    } else if (group == 3) {
-      paraminfo = _info.controller_parameters[param];
-      offset = (char*)controller_values + controller_offsets[param];
-    }
+		} else if (group == 3) {
+			paraminfo = _info.controller_parameters[param];
+			offset = (char*)controller_values + controller_offsets[param];
+		}
 		unsigned char value = *(unsigned char *)offset;
 		switch(paraminfo->type) {
 			case zzub::parameter_type_note:
@@ -1040,7 +1041,7 @@ struct dspplugin : zzub::plugin {
 		global_size = 0;
 		track_size = 0;
 		track_count = _info.min_tracks;
-    controller_size = 0;
+		controller_size = 0;
 		char *offset = 0;
 		std::vector<const zzub::parameter *>::const_iterator i;
 		for (i = _info.global_parameters.begin(); i != _info.global_parameters.end(); ++i) {
@@ -1069,11 +1070,11 @@ struct dspplugin : zzub::plugin {
 				tvalues[t].resize(_info.track_parameters.size());
 			}
 		}
-    if (controller_size) {
-      assert(_info.controller_parameters.size() <= MAX_CPARAMS);
-      controller_values = new char[controller_size];
-      cvalues.resize(_info.controller_parameters.size());
-    }
+		if (controller_size) {
+			assert(_info.controller_parameters.size() <= MAX_CPARAMS);
+			controller_values = new char[controller_size];
+			cvalues.resize(_info.controller_parameters.size());
+		}
 		if (_info.attributes.size())
 			attributes = new int[_info.attributes.size()];
 		// initialize fx members
@@ -1306,14 +1307,14 @@ struct dspplugin : zzub::plugin {
 
 void digest_to_hex(const uint8_t digest[SHA1_DIGEST_SIZE], char *output)
 {
-    int i,j;
-    char *c = output;
-    
-    for (i = 0; i < SHA1_DIGEST_SIZE; i++) {
+	int i,j;
+	char *c = output;
+	
+	for (i = 0; i < SHA1_DIGEST_SIZE; i++) {
 		sprintf(c,"%02x", digest[i]);
-        c += 2;
-    }
-    *c = '\0';
+		c += 2;
+	}
+	*c = '\0';
 }
 
 std::string hash_name(const std::string &name) {

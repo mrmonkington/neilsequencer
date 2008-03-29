@@ -31,6 +31,8 @@
 #include <iostream>
 #include <ostream>
 #include <string>
+#include <cstring>
+#include <cstdlib>
 #include <iterator>
 #if defined(PUGOPT_MEMFIL) | defined(PUGOPT_NONSEG)
 #	include <assert.h>
