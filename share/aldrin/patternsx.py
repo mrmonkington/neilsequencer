@@ -27,7 +27,7 @@ import os, sys
 from gtkimport import gtk
 import gobject
 import pango
-from utils import prepstr, filepath, get_item_count, get_clipboard_text, set_clipboard_text, question, error, get_new_pattern_name
+from utils import prepstr, filepath, get_item_count, get_clipboard_text, set_clipboard_text, question, error, get_new_pattern_name, padded_partition
 import pickle
 import zzub
 import time
@@ -36,7 +36,7 @@ import common
 player = common.get_player()
 from common import MARGIN, MARGIN2, MARGIN3, MARGIN0
 from guievents import global_events
-
+import itertools
 from utils import NOTES, roundint
 PATLEFTMARGIN = 48
 CONN = 0
@@ -639,7 +639,7 @@ class PatternView(gtk.DrawingArea):
 		self.clickpos = None
 		self.track_width=[0,0,0]
 		self.plugin_info = common.get_plugin_infos()
-		self.resolution = 1
+		self.resolution = 8
 		gtk.DrawingArea.__init__(self)
 		#"Bitstream Vera Sans Mono"
 		self.update_font()
@@ -775,6 +775,7 @@ class PatternView(gtk.DrawingArea):
 		self.parameter_count = [0,0,0]
 		self.parameter_width = [[],[],[]]
 		self.lines = None
+		self.levels = {1:[], 2:[], 4:[], 8:[], 16:[]}
 		self.row_count = 0
 		self.parameter_type = None
 		self.subindex_count = None
@@ -1929,10 +1930,11 @@ class PatternView(gtk.DrawingArea):
 			self.adjust_scrollbars()
 			self.refresh_view()
 		elif k == 'Insert':
-			self.pattern.insert_row(self.group, self.track, -1, self.row)
-			del self.lines[self.group][self.track][-1]
-			self.lines[self.group][self.track].insert(self.row, "")
-			self.update_line(self.row)
+			for i in range(self.resolution):
+				self.pattern.insert_row(self.group, self.track, -1, self.row + i)
+				self.lines[self.group][self.track].insert(self.row + i, "")
+				self.update_line(self.row + i)
+			del self.lines[self.group][self.track][-self.resolution]
 			self.redraw()
 			plugin = self.get_plugin()
 			if plugin:
@@ -1944,10 +1946,11 @@ class PatternView(gtk.DrawingArea):
 			#	else:
 			#		self.pattern.delete_row(self.group, self.track, -1, self.row)
 			#else:
-			self.pattern.delete_row(self.group, self.track, -1, self.row)
-			del self.lines[self.group][self.track][self.row]
-			self.lines[self.group][self.track].append('')
-			self.update_line(self.row_count-1)
+			del self.lines[self.group][self.track][self.row:self.row+self.resolution]
+			for i in range(self.resolution):
+				self.pattern.delete_row(self.group, self.track, -1, self.row)
+				self.lines[self.group][self.track].append('')
+				self.update_line(self.row_count-self.resolution+i-1)
 			self.redraw()
 			plugin = self.get_plugin()
 			if plugin:
@@ -2410,15 +2413,19 @@ class PatternView(gtk.DrawingArea):
 	def update_col(self, group, track):
 		count = self.parameter_count[group]
 		cols = [None] * count
+		col_vals = [None] * count
 		for i in range(count):
 			param = self.plugin.get_parameter(group, i)
 			get_value = self.pattern.get_value
 			cols[i] = [get_str_from_param(param, get_value(row, group, track, i))
 				   for row in range(self.row_count)]
+			col_vals[i] = [get_value(row, group, track, i) != param.get_value_none()
+				   for row in range(self.row_count)]
+				   
+		self.levels[1][group][track] = [reduce(lambda x, y: x or y, r) for r in itertools.izip(*col_vals)]					
 		for row in range(self.row_count):
 			try:
-				self.lines[group][track][row] = \
-				    ' '.join([cols[i][row] for i in range(count)])
+				self.lines[group][track][row] =  ' '.join([cols[i][row] for i in range(count)])
 			except IndexError:
 				pass
 		
@@ -2427,21 +2434,40 @@ class PatternView(gtk.DrawingArea):
 		"""
 		Initializes a buffer to handle the current pattern data.
 		"""
-		#st = time.time()
+		st = time.time()
 		self.lines = [None]*3	
+		for key in self.levels.keys():
+			self.levels[key] = [None]*3
 		for group in range(3):
 			if self.parameter_count[group] > 0:
 				tc = self.group_track_count[group]
-				self.lines[group] = [None]*tc			
+				self.lines[group] = [None]*tc
+				for key in self.levels.keys():
+					self.levels[key][group] = [None]*tc
 				for track in range(tc):
 					self.lines[group][track] = [None]*self.row_count
+					self.levels[1][group][track] = [None]*self.row_count
 					self.update_col(group, track)
 			else:
 				self.lines[group] = []
-		#w,h=self.get_client_size()
-		#self.row=0
-		#for row in range(h/self.row_height):
-		#print "end of prepare_textbuffer %.2f" % ((time.time() - st) * 1000.0)
+		print 1, self.levels[1]
+		for i in range(4):			
+			for group in range(3):
+				tc = self.group_track_count[group]
+				for track in range(tc):
+					iterate = iter(self.levels[2**i][group][track])
+					print self.levels[2**i][group][track]
+					length = len(self.levels[2**i][group][track])
+					self.levels[2**(i+1)][group][track] = [sum(sub_list) for sub_list in padded_partition(iter(self.levels[2**i][group][track]), 2, pad_val=0)]
+#					[iterate.next() + iterate.next() for _ in range(max(length/2, 1))]
+
+		print 1, self.levels[1]
+		print 2, self.levels[2]
+		print 4, self.levels[4]
+		print 8, self.levels[8]
+		print 16, self.levels[16]
+		
+		print "end of prepare_textbuffer %.2f" % ((time.time() - st) * 1000.0)
 
 	def get_line_pattern(self):
 		master = player.get_plugin(0) 
@@ -2476,7 +2502,8 @@ class PatternView(gtk.DrawingArea):
 		drawable = self.window
 
 		bgbrush = cm.alloc_color(cfg.get_color('PE BG'))
-	
+		hiddenbrush =  cm.alloc_color('#FF0000')
+		 
 		fbrush1 = cm.alloc_color(cfg.get_color('PE BG Very Dark'))
 		fbrush2 = cm.alloc_color(cfg.get_color('PE BG Dark'))
 		selbrush = cm.alloc_color(cfg.get_color('PE Sel BG'))
@@ -2563,23 +2590,33 @@ class PatternView(gtk.DrawingArea):
 								drawable.draw_rectangle(gc,True,xs,clipy1, width, clipy1+num_rows*PATROWHEIGHT)
 								if xs + width > w:
 									break
+			b = bgbrush									
 			while (i < rows) and (y < h):
 				do_draw = False
 				for lp,lc in zip(reversed(linepattern), reversed(linecolors)):
 					if (i % lp) == 0:
 						gc.set_foreground(lc)
 						gc.set_background(lc)
+						b = lc
 						do_draw = True
-				if do_draw:
-					for g in CONN, GLOBAL, TRACK:
-						if self.track_width[g]:
-							for t in range(self.group_track_count[g]):
-								if ((g == start_group) and (t >= start_track)) or (g > start_group):
-									xs, fy = self.pattern_to_pos(row, g, t, 0)
-									width = (self.track_width[g]-1)*self.column_width
+				for g in CONN, GLOBAL, TRACK:
+					if self.track_width[g]:
+						for t in range(self.group_track_count[g]):
+							if ((g == start_group) and (t >= start_track)) or (g > start_group):
+								xs, fy = self.pattern_to_pos(row, g, t, 0)
+								width = (self.track_width[g]-1)*self.column_width
+								if do_draw:
+									gc.set_foreground(b)
 									drawable.draw_rectangle(gc,True,xs,y, width, self.row_height)
-									if xs + width > w:
-										break
+								if self.resolution > 1:
+									# check if a note is hidden, excluding the note displayed
+									print self.resolution, g, t, i / self.resolution, i
+									hidden = self.levels[self.resolution][g][t][i / self.resolution] -  self.levels[1][g][t][i]
+									if hidden:
+										gc.set_foreground(hiddenbrush)
+										drawable.draw_rectangle(gc,True,xs,y+self.row_height/2, width, self.row_height/2)
+								if xs + width > w:
+									break
 				i += self.resolution
 				y += PATROWHEIGHT
 			# draw selection

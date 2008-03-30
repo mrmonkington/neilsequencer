@@ -679,6 +679,28 @@ def diff(oldlist, newlist):
 	"""
 	return [x for x in newlist if x not in oldlist],[x for x in oldlist if x not in newlist] # add, remove
 
+from itertools import islice, chain, repeat
+
+def partition(iterable, part_len):
+	"""
+	Partitions a list into specified slices
+	"""
+	itr = iter(iterable)
+	while 1:
+		item = tuple(islice(itr, part_len))
+		if len(item) < part_len:
+			raise StopIteration
+		yield item
+
+def padded_partition(iterable, part_len, pad_val=None):
+	"""
+	Partitions a list, with optional padding character support.
+	"""
+	padding = repeat(pad_val, part_len-1)
+	itr = chain(iter(iterable), padding)
+	return partition(itr, part_len) 
+
+
 PLUGIN_FLAGS_MASK = zzub.zzub_plugin_flag_is_root|zzub.zzub_plugin_flag_has_audio_input|zzub.zzub_plugin_flag_has_audio_output|zzub.zzub_plugin_flag_has_event_output
 ROOT_PLUGIN_FLAGS = zzub.zzub_plugin_flag_is_root|zzub.zzub_plugin_flag_has_audio_input
 GENERATOR_PLUGIN_FLAGS = zzub.zzub_plugin_flag_has_audio_output

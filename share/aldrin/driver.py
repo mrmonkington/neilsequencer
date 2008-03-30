@@ -35,7 +35,7 @@ class MidiInitException(Exception):
 class MidiDriver:
 	def __init__(self):
 		self.enabled = False
-		
+
 	def destroy(self):
 		if not self.enabled:
 			return
@@ -51,11 +51,11 @@ class MidiDriver:
 		for i in range(player.mididriver_get_count()):
 			drivername = player.mididriver_get_name(i).strip() 
 			if player.mididriver_is_input(i) and drivername in midiinputs:
-				print "Opening MIDI device '%s'..." % drivername
+				print "Opening MIDI input device '%s'..." % drivername
 				if player.mididriver_open(i) != 0:
 					raise MidiInitException
 			elif player.mididriver_is_output(i) and drivername in midioutputs:
-				print "Opening MIDI device '%s'..." % drivername
+				print "Opening MIDI output device '%s'..." % drivername
 				if player.mididriver_open(i) != 0:
 					raise MidiInitException
 		self.enabled = True
