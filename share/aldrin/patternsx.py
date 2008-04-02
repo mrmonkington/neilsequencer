@@ -1504,9 +1504,13 @@ class PatternView(gtk.DrawingArea):
 		if mask & gtk.gdk.CONTROL_MASK:
 			if event.direction == gtk.gdk.SCROLL_UP:
 				self.resolution = max(1, self.resolution / 2)
+				self.row = self.row / self.resolution * self.resolution
+				self.start_row = self.start_row / self.resolution * self.resolution
 				self.redraw()
 			elif event.direction == gtk.gdk.SCROLL_DOWN:
 				self.resolution = min(16, self.resolution * 2)
+				self.row = self.row / self.resolution * self.resolution				
+				self.start_row = self.start_row / self.resolution * self.resolution				
 				self.redraw()
 		else:
 			if event.direction == gtk.gdk.SCROLL_UP:
@@ -2418,11 +2422,11 @@ class PatternView(gtk.DrawingArea):
 			param = self.plugin.get_parameter(group, i)
 			get_value = self.pattern.get_value
 			cols[i] = [get_str_from_param(param, get_value(row, group, track, i))
-				   for row in range(self.row_count)]
+				for row in range(self.row_count)]
 			col_vals[i] = [get_value(row, group, track, i) != param.get_value_none()
-				   for row in range(self.row_count)]
+				for row in range(self.row_count)]
 				   
-		self.levels[1][group][track] = [reduce(lambda x, y: x or y, r) for r in itertools.izip(*col_vals)]					
+		self.levels[1][group][track] = [any(r) for r in itertools.izip(*col_vals)]					
 		for row in range(self.row_count):
 			try:
 				self.lines[group][track][row] =  ' '.join([cols[i][row] for i in range(count)])
@@ -2450,23 +2454,17 @@ class PatternView(gtk.DrawingArea):
 					self.update_col(group, track)
 			else:
 				self.lines[group] = []
-		print 1, self.levels[1]
-		for i in range(4):			
-			for group in range(3):
-				tc = self.group_track_count[group]
-				for track in range(tc):
-					iterate = iter(self.levels[2**i][group][track])
-					print self.levels[2**i][group][track]
-					length = len(self.levels[2**i][group][track])
-					self.levels[2**(i+1)][group][track] = [sum(sub_list) for sub_list in padded_partition(iter(self.levels[2**i][group][track]), 2, pad_val=0)]
-#					[iterate.next() + iterate.next() for _ in range(max(length/2, 1))]
-
-		print 1, self.levels[1]
-		print 2, self.levels[2]
-		print 4, self.levels[4]
-		print 8, self.levels[8]
-		print 16, self.levels[16]
-		
+		for i in range(len(self.levels)-1):
+			for group in range(3):				
+				if self.parameter_count[group] > 0:
+					tc = self.group_track_count[group]
+					for track in range(tc):
+						self.levels[2**(i+1)][group][track] = [sum(sub_list) for sub_list in padded_partition(iter(self.levels[2**i][group][track]), 2, pad_val=0)]
+#		print 1, self.levels[1]
+#		print 2, self.levels[2]
+#		print 4, self.levels[4]
+#		print 8, self.levels[8]
+#		print 16, self.levels[16]		
 		print "end of prepare_textbuffer %.2f" % ((time.time() - st) * 1000.0)
 
 	def get_line_pattern(self):
@@ -2610,7 +2608,6 @@ class PatternView(gtk.DrawingArea):
 									drawable.draw_rectangle(gc,True,xs,y, width, self.row_height)
 								if self.resolution > 1:
 									# check if a note is hidden, excluding the note displayed
-									print self.resolution, g, t, i / self.resolution, i
 									hidden = self.levels[self.resolution][g][t][i / self.resolution] -  self.levels[1][g][t][i]
 									if hidden:
 										gc.set_foreground(hiddenbrush)
