@@ -1571,11 +1571,11 @@ class PatternView(gtk.DrawingArea):
 				self.selection.mode=SEL_COLUMN
 			self.show_row(row)
 			if row<self.clickpos[0]:
-				self.selection.end=self.clickpos[0]+1
+				self.selection.end=self.clickpos[0]+self.resolution
 				self.selection.begin=row
 			else:
 				self.selection.begin=self.clickpos[0]
-				self.selection.end = row+1
+				self.selection.end = row+self.resolution
 			self.adjust_selection()
 			self.redraw()
 				
@@ -2413,7 +2413,8 @@ class PatternView(gtk.DrawingArea):
 					level_row = row
 					for i in range(len(self.levels)-1):
 						level_row = int(level_row/2)
-						self.levels[2**(i+1)][g][t][level_row] = self.levels[2**i][g][t][level_row*2] or self.levels[2**i][g][t][level_row*2+1]
+						self.levels[2**(i+1)][g][t][level_row] = self.levels[2**i][g][t][level_row*2] + self.levels[2**i][g][t][level_row*2+1]
+						print row,  '[',2**(i+1), ']', level_row, ',', level_row*2, level_row*2 +1
 					try: 
 						self.lines[g][t][row] = s
 					except IndexError:
@@ -2472,7 +2473,7 @@ class PatternView(gtk.DrawingArea):
 #		print 4, self.levels[4]
 #		print 8, self.levels[8]
 #		print 16, self.levels[16]		
-		print "end of prepare_textbuffer %.2f" % ((time.time() - st) * 1000.0)
+#		print "end of prepare_textbuffer %.2f" % ((time.time() - st) * 1000.0)
 
 	def get_line_pattern(self):
 		master = player.get_plugin(0) 
