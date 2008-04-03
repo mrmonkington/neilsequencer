@@ -2407,11 +2407,18 @@ class PatternView(gtk.DrawingArea):
 					s = ' '.join([get_str_from_param(self.plugin.get_parameter(g, i),
 									 self.pattern.get_value(row, g, t, i))
 									for i in range(self.parameter_count[g])])
+					values = [self.pattern.get_value(row, g, t, i) != self.plugin.get_parameter(g, i).get_value_none()
+										for i in range(self.parameter_count[g])]
+					self.levels[1][g][t][row] = any(values)
+					level_row = row
+					for i in range(len(self.levels)-1):
+						level_row = int(level_row/2)
+						self.levels[2**(i+1)][g][t][level_row] = self.levels[2**i][g][t][level_row*2] or self.levels[2**i][g][t][level_row*2+1]
 					try: 
 						self.lines[g][t][row] = s
 					except IndexError:
 						pass
-
+				
 	# This does the same job as update_line, but if we need to
 	# update a lot of data at once, it's faster to use update_col.
 	def update_col(self, group, track):
