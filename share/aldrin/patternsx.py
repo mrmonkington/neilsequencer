@@ -2412,9 +2412,9 @@ class PatternView(gtk.DrawingArea):
 					self.levels[1][g][t][row] = any(values)
 					level_row = row
 					for i in range(len(self.levels)-1):
-						level_row = int(level_row/2)
-						self.levels[2**(i+1)][g][t][level_row] = self.levels[2**i][g][t][level_row*2] + self.levels[2**i][g][t][level_row*2+1]
-						print row,  '[',2**(i+1), ']', level_row, ',', level_row*2, level_row*2 +1
+						level_row = int(level_row/2)		
+						# sum two values of the previous level
+						self.levels[2**(i+1)][g][t][level_row] = sum(self.levels[2**i][g][t][level_row*2:level_row*2+2])
 					try: 
 						self.lines[g][t][row] = s
 					except IndexError:
@@ -2433,7 +2433,7 @@ class PatternView(gtk.DrawingArea):
 				for row in range(self.row_count)]
 			col_vals[i] = [get_value(row, group, track, i) != param.get_value_none()
 				for row in range(self.row_count)]
-				   
+		
 		self.levels[1][group][track] = [any(r) for r in itertools.izip(*col_vals)]					
 		for row in range(self.row_count):
 			try:
@@ -2467,7 +2467,7 @@ class PatternView(gtk.DrawingArea):
 				if self.parameter_count[group] > 0:
 					tc = self.group_track_count[group]
 					for track in range(tc):
-						self.levels[2**(i+1)][group][track] = [sum(sub_list) for sub_list in padded_partition(iter(self.levels[2**i][group][track]), 2, pad_val=0)]
+						self.levels[2**(i+1)][group][track] = [sum(sub_list) for sub_list in padded_partition(self.levels[2**i][group][track], 2, pad_val=0)]
 #		print 1, self.levels[1]
 #		print 2, self.levels[2]
 #		print 4, self.levels[4]
