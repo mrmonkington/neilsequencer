@@ -22,6 +22,7 @@
 VERSION = "0.2.4"
 
 import os, glob, sys, time, platform
+import distutils.sysconfig
 
 posix = os.name == 'posix'
 win32 = os.name == 'nt'
@@ -85,6 +86,7 @@ opts.Add("LADSPA", "Support LADSPA plugins", False, None, bool_converter)
 opts.Add("RUBBERBAND", "Support timestretching with librubberband", True, None, bool_converter)
 opts.Add("DSSI", "Support DSSI plugins", False, None, bool_converter)
 opts.Add("JOBS", "Number of threads to compile with", '2') 
+opts.Add("PYZZUB", "Support pyzzub",True,None,bool_converter)
 
 env = Environment(ENV = os.environ, options = opts)
 
@@ -278,6 +280,7 @@ binpath = "${DESTDIR}${PREFIX}/bin"
 libpath = "${DESTDIR}${PREFIX}${LIBDIR}"
 includepath = "${DESTDIR}${PREFIX}/include"
 pluginpath = "${DESTDIR}${PREFIX}${LIBDIR}/zzub"
+pyextpath = distutils.sysconfig.get_python_lib()
 
 def install(target, source, perm=None, symlink=False):
 	if not perm:
@@ -286,6 +289,7 @@ def install(target, source, perm=None, symlink=False):
 		return env.InstallPerm(dir=target, source=source, perm=perm)
 
 env.Alias(target='install', source=rootpath)
+env.Alias(target='install', source=pyextpath)
 
 def install_root(source):
 	return install(rootpath, source)
@@ -295,7 +299,8 @@ def install_lib(source):
 	if posix and (not mac) and (not env['DESTDIR']):
 		env.AddPostAction(result, env.LdConfig(libpath))
 	return result
-
+def install_python_extension(name,files):
+	return install(pyextpath + "/"+name, files)
 def install_bin(source):
 	return install(binpath, source)
 def install_plugin(source):
@@ -313,6 +318,7 @@ env['RUBBERBAND_SRC_PATH'] = '${ROOTPATH}/src/rubberband'
 env['CCMPLAYER_SRC_PATH'] = '${ROOTPATH}/src/ccmplayer'
 env['BMPCCM_SRC_PATH'] = '${ROOTPATH}/src/bmp-ccm'
 env['LUNAR_SCRIPT_PATH'] = '${ROOTPATH}/share/zzub/lunar'
+env['PYZZUB_SRC_PATH'] = '${ROOTPATH}/src/pyzzub'
 
 env['LIB_BUILD_PATH'] = '${ROOTPATH}/lib'
 env['BIN_BUILD_PATH'] = '${ROOTPATH}/bin'
@@ -497,6 +503,7 @@ if (not is_cleaning()) and ('configure' in COMMAND_LINE_TARGETS):
 	print "Lunar Target:".rjust(30),env['LUNARTARGET']
 	print "DSSI:".rjust(30),yesno[env['DSSI'] == True]
 	print "LADSPA:".rjust(30),yesno[env['LADSPA'] == True]
+	print "pyzzub (zubb for Python):".rjust(30),yesno[env['PYZZUB'] == True]
 	print
 	print "=== Directories ===".center(50)
 	if env['LUNARTARGET'] == 'llvm':
@@ -596,9 +603,13 @@ def build_buildconfig(target, source, env):
 		print >> ofile, '#define ZZUB_SHARE_DIR_PATH "%s"' % str(env.Dir("${DESTDIR}${PREFIX}/share/zzub"))
 		ofile.close()
 
+def build_python_extension(target, source, env):
+	pass
+
 builders = dict(
 	BuildConfig = Builder(action = build_buildconfig),
 	Signature = Builder(action = build_signature),
+	PyExtension = Builder(action = build_python_extension),
 )
 
 env['BUILDERS'].update(builders)
@@ -618,6 +629,7 @@ Export(
 	'install',
 	'install_root',
 	'install_plugin_help',
+	'install_python_extension',
 	
 	'gcc','cl',
 	
@@ -635,6 +647,7 @@ env.SConscript('${LIBZZUB_SRC_PATH}/SConscript')
 env.SConscript('${PLUGINS_SRC_PATH}/SConscript')
 env.SConscript('${CCMPLAYER_SRC_PATH}/SConscript')
 env.SConscript('${BMPCCM_SRC_PATH}/SConscript')
+env.SConscript('${PYZZUB_SRC_PATH}/SConscript')
 
 #######################################
 #
