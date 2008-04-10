@@ -403,6 +403,18 @@ if (not is_cleaning()) and ('configure' in COMMAND_LINE_TARGETS):
 			print "Error: no zlib development files seem to be installed."
 			print "zlib libraries and headers are required for building."
 			Exit(1)
+		if not conf.CheckCHeader('sndfile.h'):
+			print "Error: no libsndfile development files seem to be installed."
+			print "libsndfile libraries and headers are required for building."
+			Exit(1)
+		if not conf.CheckCHeader('samplerate.h'):
+			print "Error: no libsamplerate (libsrc) development files seem to be installed."
+			print "libsamplerate (libsrc) libraries and headers are required for building."
+			Exit(1)
+		if not conf.CheckCHeader('fftw3.h'):
+			print "Error: no libfftw3 development files seem to be installed."
+			print "libfftw3 libraries and headers are required for building."
+			Exit(1)
 		if conf.CheckCHeader('CoreAudio/CoreAudio.h'):
 			env['COREAUDIO'] = True
 		if conf.CheckCHeader('alsa/asoundlib.h'):
@@ -492,6 +504,8 @@ if (not is_cleaning()) and ('configure' in COMMAND_LINE_TARGETS):
 	print "Prefix:".rjust(30),env['PREFIX']
 	print "Install into:".rjust(30),env.Dir("${DESTDIR}${PREFIX}")
 	print "Library Directory:".rjust(30),env.Dir("${PREFIX}${LIBDIR}")
+	print
+	print "Generate Debug Info:".rjust(30),env['DEBUG']
 
 	env = conf.Finish()
 	env['CONFIGURED'] = True
