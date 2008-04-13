@@ -238,9 +238,9 @@ struct livejump_info : zzub::info {
 			.set_word()
 			.set_name("Tick Number Trigger")
 			.set_description("Tick Number Trigger")
-			.set_value_min(0x0001)
-			.set_value_max(0x0400)
-			.set_value_none(0x0401)
+			.set_value_min(0x0000)
+			.set_value_max(0xfffe)
+			.set_value_none(0xffff)
 			.set_value_default(0);
 
 		paraMode = &add_global_parameter()
