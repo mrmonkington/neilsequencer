@@ -8,17 +8,18 @@
     <authorgroup>
       <author>
         <firstname>Leonard</firstname>
-
         <surname>Ritter</surname>
+        <firstname>Pieter</firstname>
+        <surname>Holtzhausen</surname>
       </author>
     </authorgroup>
 
-    <date>02/04/2007</date>
+    <date>19/04/2008</date>
 
-    <releaseinfo>0.2.2</releaseinfo>
+    <releaseinfo>0.2.3</releaseinfo>
 
     <copyright>
-      <year>2007</year>
+      <year>2008</year>
 
       <holder>The libzzub Development Team</holder>
     </copyright>
@@ -40,8 +41,7 @@
 	multitrack sequencer, support for major soundcard API's and full compatibility
 	with Jeskola Buzz on the Windows platform.</para>
 
-    <para>libzzub is currently being utilized as a core part of <ulink url="http://aldrin.sf.net">Aldrin</ulink>,
-	<ulink url="http://trac.zeitherrschaft.org/buze">Buzé</ulink> and <ulink url="http://www.buzzrmx.com">Buzz RMX</ulink>.
+    <para>libzzub is currently being utilized as a core part of <ulink url="http://aldrin.sf.net">Aldrin</ulink> and <ulink url="http://trac.zeitherrschaft.org/buze">Buzé</ulink>.
 	A <ulink url="http://www.zzub.org">community website</ulink> revolving around these programs is currently being built.
 	</para>
 
@@ -51,6 +51,7 @@
       <title>Installation</title>
 	  <sect1 id="install_libzzub">
 	  <title>Building and installing libzzub</title>
+      <sect2 id="components"><title>Required Packages</title>
 	  <para>If you use a popular distribution of GNU/Linux,
       chances are that your local package manager already offers a libzzub
       package. If not, you will need to build libzzub yourself.</para>
@@ -64,10 +65,7 @@
 	  requirements. Some of these may already come with the distro that
 	  you are using, some are a bit exotic and require individual building.
 	  We have focused on keeping the number of dependencies small and to include
-	  as much as required in the distribution package itself. Lunar, the 
-	  DSP plugin host of libzzub, supports the latest version of LLVM,
-	  a JIT compiler suite that is presently not common in all distributions.
-	  This is an optional backend.</para>
+	  as much as required in the distribution package itself.</para>
 	  
 	  <para>In order to assist you with building libzzub, libzzub features an
 	  extensive configuration process that notifies you of missing dependencies.</para>
@@ -77,15 +75,14 @@
       your distribution of GNU/Linux. Please check with your distributions
       package manager documentation on how to search and install packages. You
       are going to need following packages:</para>
-
       <itemizedlist>
         <listitem>
-          <para><ulink url="http://www.python.org/">Python 2.4</ulink> or
+          <para><ulink url="http://www.python.org/">Python 2.5</ulink> or
           later.</para>
         </listitem>
 
         <listitem>
-          <para><ulink url="http://www.scons.org/">SCons 0.96.94</ulink> or
+          <para><ulink url="http://www.scons.org/">SCons 0.97</ulink> or
           later.</para>
         </listitem>
 
@@ -100,17 +97,13 @@
 		<listitem>
 		  <para><ulink url="http://www.mega-nerd.com/libsndfile/">libsndfile 1.0.17</ulink></para>
 		</listitem>
-
-        <listitem>
-          <para>(Optional) <ulink url="http://www.llvm.org/">LLVM 1.9</ulink>.</para>
-        </listitem>
-
-        <listitem>
-          <para>(Optional) <ulink url="http://www.llvm.org/">llvm-gcc 4.0.1</ulink> or later, built for LLVM 1.9.</para>
-        </listitem>
+		
+		<listitem>
+		  <para><ulink url="http://www.mega-nerd.com/SRC/">libsamplerate 0.1.3</ulink></para>
+		</listitem>		
 
       </itemizedlist>
-	  
+	
 	  <para>Depending on which sound API you wish to use, following libraries
 	  are required as well:</para>
 	  
@@ -122,17 +115,24 @@
           <para><ulink url="http://jackaudio.org/">Jack Audio Connection Kit</ulink> (libjack).</para>
         </listitem>
       </itemizedlist>
-	  
+	  </sect2>
+	  <sect2 id="ubuntu_packages"><title>Ubuntu and Debian</title>
 	  <para>On Debian-style distributions such as Ubuntu, you will require -dev packages additionally
-	  to regular library packages.</para>
+	  to regular library packages.
 	  
-      <para>libzzub packages can currently be downloaded from Aldrins SourceForge.net <ulink
+	  The following command fetches the Debian or Ubuntu packages required for compiling libzzub and running Aldrin:
+	  <screen>sudo apt-get install python python-ctypes python-gtk2 librsvg2-common scons libsndfile1-dev zlib1g-dev libasound2-dev jackd libjack-dev libsamplerate0-dev libfftw3-dev</screen></para>
+	  <para>Substitute fftw3-dev for libfftw3-dev if you are using Gutsy or earlier distributions of Ubuntu.</para>
+      </sect2>
+	  <sect2 id="instructions"><title>Downloading and Compiling</title>
+	  <para>libzzub packages can currently be downloaded from Aldrin's SourceForge.net <ulink
       url="http://aldrin.sf.net">project website</ulink>. You can either
-      download a release or build libzzub from the source repository. In this
-      guide, we are going to download a release.</para>
-
+      download a release or build libzzub from the source repository with the following command:
+      <screen>svn co http://svn.zeitherrschaft.org/zzub/trunk zzub</screen>
+       In this guide, we are going to download a release.
+	  </para>
       <orderedlist numeration="arabic">
-        <listitem>
+        <listitem> 
           <para>On the project website, click on
           <guilabel>Downloads</guilabel> to see available releases. You will
           see the downloads page on which one or more releases are
@@ -166,12 +166,17 @@ libzzub-x.x/LICENCE</screen>
 [paniq@aspera libzzub-x.x]$</prompt> <command>scons configure</command>
 scons: Reading SConscript files ...
 Checking for C header file zlib.h... yes
+Checking for C header file sndfile.h... yes
+Checking for C header file samplerate.h... yes
+Checking for C header file fftw3.h... yes
 Checking for C header file CoreAudio/CoreAudio.h... no
 Checking for C header file alsa/asoundlib.h... yes
 Checking for C header file jack/jack.h... yes
 Checking for C header file sys/soundcard.h... yes
-Checking for llvm-config in PATH... (cached) /usr/bin/llvm-config
-Checking for version of '/usr/bin/llvm-config --version'... (cached) 1.9
+Checking for C header file ladspa.h... yes
+Checking for C header file dssi.h... yes
+Checking for 'sse' CPU flag... (cached) yes
+Checking for 'sse2' CPU flag... (cached) yes
 Finished configuration.
 
                   === Using ===                   
@@ -179,21 +184,29 @@ Finished configuration.
                          JACK: yes
                          ALSA: yes
                           OSS: yes
-                         LLVM: yes
+        Use SSE CPU Extension: no
+       Use SSE2 CPU Extension: yes
+           Use Timestretching: yes
 
                 === Components ===                
                Lunar DSP Host: yes
+                 Lunar Target: gcc
+                         DSSI: yes
+                       LADSPA: yes
+     pyzzub (zubb for Python): yes
 
                === Directories ===                
-                     llvm-gcc: /home/paniq/llvm-gcc4-1.9-x86-linux-RHEL4/bin
                        Prefix: /usr/local
                  Install into: /usr/local
             Library Directory: /usr/local/lib
 
+          Generate Debug Info: False
+
 Please check if above settings reflect what you want, then build libzzub using
         scons
 To install scons, run
-        [sudo] scons install</screen>
+        [sudo] scons install
+</screen>
 		<para>You can configure scons to install into a different target folder than /usr/local, to prevent libzzub from installing system wide:</para>
 		<screen><prompt>[paniq@aspera libzzub-x.x]$</prompt> <command>scons configure PREFIX=<replaceable>/home/paniq/usr</replaceable></command></screen>
 		<para>scons saves all settings, so you never need to pass an option twice.</para>
@@ -226,32 +239,7 @@ scons: done building targets.</screen>
       </orderedlist>
 
       <para>libzzub is now installed.</para>
-	  </sect1>
-	  <sect1 id="install_pyzzub">
-	  <title>Building and installing pyzzub</title>
-	  <para>libzzub comes with bindings for the Python programming language, allowing you to use all of its
-	  functions within a Python script.</para>
-	  <para>In order to run pyzzub with Python 2.4, <ulink url="http://python.net/crew/theller/ctypes/">ctypes</ulink> is an additional requirement.</para>
-	  <para>pyzzub is contained within the libzzub source directory structure. To install pyzzub as a Python module, enter</para>
-	  <screen><prompt>[paniq@aspera libzzub-x.x]$</prompt> <command>cd src/pyzzub</command>
-<prompt>[paniq@aspera pyzzub]$</prompt> <command>python setup.py build</command>
-...
-copying zzub/zzub_classes.py -> build/lib/zzub
-copying zzub/library.py -> build/lib/zzub
-copying zzub/procwrap.py -> build/lib/zzub
-copying zzub/zzub_flat.py -> build/lib/zzub
-copying zzub/__init__.py -> build/lib/zzub
-...
-<prompt>[paniq@aspera pyzzub]$</prompt> <command>sudo python setup.py install</command></screen>
-	  <para>If everything went ok, you should be able to use pyzzub from within Python:</para>
-	  <screen><prompt>[paniq@aspera pyzzub]$</prompt> <command>python</command>
-Python 2.4.4c1 (#2, Oct 11 2006, 21:51:02) 
-[GCC 4.1.2 20060928 (prerelease) (Ubuntu 4.1.1-13ubuntu5)] on linux2
-Type "help", "copyright", "credits" or "license" for more information.
-<prompt>&gt;&gt;&gt;</prompt> <command>import zzub</command>
-<prompt>&gt;&gt;&gt;</prompt> <command>zzub.Player()</command>
-&lt;zzub.Player object at 0xb7dc758c&gt;</screen>
-	<para>pyzzub is now installed.</para>
+      </sect2>
 	  </sect1>
   </chapter>
 
