@@ -222,7 +222,6 @@ class PatternToolBar(gtk.HBox):
 		"""
 		Callback to handle selection of the patternselect list.
 		"""
-		print "on_patternselect"
 		if widget.get_active() == -1:
 			return
 		if self.pattern == widget.get_active():
@@ -639,7 +638,7 @@ class PatternView(gtk.DrawingArea):
 		self.clickpos = None
 		self.track_width=[0,0,0]
 		self.plugin_info = common.get_plugin_infos()
-		self.resolution = 8
+		self.resolution = 1
 		gtk.DrawingArea.__init__(self)
 		#"Bitstream Vera Sans Mono"
 		self.update_font()
@@ -775,7 +774,9 @@ class PatternView(gtk.DrawingArea):
 		self.parameter_count = [0,0,0]
 		self.parameter_width = [[],[],[]]
 		self.lines = None
-		self.levels = {1:[], 2:[], 4:[], 8:[], 16:[]}
+		self.levels = {}
+		self.factors = []
+		self.factor_sources = {}
 		self.row_count = 0
 		self.parameter_type = None
 		self.subindex_count = None
@@ -965,7 +966,6 @@ class PatternView(gtk.DrawingArea):
 		Loads and redraws the pattern view after the pattern has been changed.
 		"""
 		self.init_values()
-		#self.redraw() ## do i want this?
 		self.grab_focus()
 		plugin = self.get_plugin()
 		if plugin:
@@ -1495,7 +1495,17 @@ class PatternView(gtk.DrawingArea):
 			import traceback
 			traceback.print_exc()
 			error(self, "Couldn't paste.")
-	
+
+	# upward is True to increase, False to decrease
+	def change_resolution(self, upward):
+		if upward:
+			self.resolution = self.factors[max(0, self.factors.index(self.resolution) - 1)]
+		else:
+			self.resolution = self.factors[min(len(self.factors)-1, self.factors.index(self.resolution) + 1)]
+		self.row = self.row / self.resolution * self.resolution				
+		self.start_row = self.start_row / self.resolution * self.resolution				
+		self.redraw()
+
 	def on_mousewheel(self, widget, event):
 		"""
 		Callback that responds to mousewheeling in pattern view.
@@ -1503,15 +1513,9 @@ class PatternView(gtk.DrawingArea):
 		mask = event.state
 		if mask & gtk.gdk.CONTROL_MASK:
 			if event.direction == gtk.gdk.SCROLL_UP:
-				self.resolution = max(1, self.resolution / 2)
-				self.row = self.row / self.resolution * self.resolution
-				self.start_row = self.start_row / self.resolution * self.resolution
-				self.redraw()
+				self.change_resolution(True)
 			elif event.direction == gtk.gdk.SCROLL_DOWN:
-				self.resolution = min(16, self.resolution * 2)
-				self.row = self.row / self.resolution * self.resolution				
-				self.start_row = self.start_row / self.resolution * self.resolution				
-				self.redraw()
+				self.change_resolution(False)
 		else:
 			if event.direction == gtk.gdk.SCROLL_UP:
 				self.move_up(self.resolution)
@@ -1775,6 +1779,10 @@ class PatternView(gtk.DrawingArea):
 			elif k == 'R':
 				# R, not r
 				self.randomize_selection(widget=None, mode="constrain")
+			elif k in ('KP_Add','asterisk','plus'):
+				self.transpose_selection(None, 1)
+			elif k in ('KP_Subtract','minus','underscore'):
+				self.transpose_selection(None, -1)
 			else:
 				return False
 		elif k in ('Tab', 'ISO_Left_Tab'):
@@ -1793,9 +1801,9 @@ class PatternView(gtk.DrawingArea):
 					self.show_cursor_right()
 					self.refresh_view()
 		elif mask & gtk.gdk.SHIFT_MASK and (k in ('KP_Add','asterisk','plus')):
-			self.transpose_selection(None, 1)
+			self.change_resolution(True)
 		elif mask & gtk.gdk.SHIFT_MASK and (k in ('KP_Subtract','minus','underscore')):
-			self.transpose_selection(None, -1)
+			self.change_resolution(False)
 		elif mask & gtk.gdk.SHIFT_MASK and k == 'Down':
 			if not self.selection:
 				self.selection = self.Selection()
@@ -2373,6 +2381,7 @@ class PatternView(gtk.DrawingArea):
 		try:
 			return toolbar.get_combo_plugin(toolbar.plugin_index)
 		except KeyError:
+#			error(self.rootwindow, "Debug: toolbar -> plugin unsuccessful")
 			return player.get_plugin(0)
 		
 	def get_datasource(self):
@@ -2410,11 +2419,13 @@ class PatternView(gtk.DrawingArea):
 					values = [self.pattern.get_value(row, g, t, i) != self.plugin.get_parameter(g, i).get_value_none()
 										for i in range(self.parameter_count[g])]
 					self.levels[1][g][t][row] = any(values)
-					level_row = row
-					for i in range(len(self.levels)-1):
-						level_row = int(level_row/2)		
+					for n in self.factors[1:]:
+						source = self.factor_sources[n]
+						multiple = n / source
+						level_row = int(row/n)		
 						# sum two values of the previous level
-						self.levels[2**(i+1)][g][t][level_row] = sum(self.levels[2**i][g][t][level_row*2:level_row*2+2])
+						#print n, level_row, 'from', source, level_row*multiple, '..', (level_row+1)*multiple
+						self.levels[n][g][t][level_row] = sum(self.levels[source][g][t][level_row*multiple:(level_row+1)*multiple])
 					try: 
 						self.lines[g][t][row] = s
 					except IndexError:
@@ -2440,7 +2451,6 @@ class PatternView(gtk.DrawingArea):
 				self.lines[group][track][row] =  ' '.join([cols[i][row] for i in range(count)])
 			except IndexError:
 				pass
-		
 
 	def prepare_textbuffer(self):
 		"""
@@ -2448,8 +2458,26 @@ class PatternView(gtk.DrawingArea):
 		"""
 		st = time.time()
 		self.lines = [None]*3	
-		for key in self.levels.keys():
+		# generate zoom levels	
+		self.levels = {}
+		# find factors
+		tpb = player.get_plugin(0).get_parameter_value(1, 0, 2)
+		self.factors = [n for n in range(1, tpb/2+1) if tpb % n == 0]
+		self.factors.append(tpb)
+		if len(self.factors) > 3:
+			self.resolution = self.factors[-3]			
+		# find largest factor divisor of factor
+		self.factor_sources = {}
+		for i, factor in enumerate(self.factors):
+			largest_divisor = None
+			for k in range(i):
+				if factor % self.factors[k] == 0:
+					largest_divisor = self.factors[k]
+			self.factor_sources[factor] = largest_divisor
+				
+		for key in self.factors:
 			self.levels[key] = [None]*3
+		# update level 1
 		for group in range(3):
 			if self.parameter_count[group] > 0:
 				tc = self.group_track_count[group]
@@ -2462,18 +2490,23 @@ class PatternView(gtk.DrawingArea):
 					self.update_col(group, track)
 			else:
 				self.lines[group] = []
-		for i in range(len(self.levels)-1):
-			for group in range(3):				
+		
+		# update other levels				
+		for n in self.factors[1:]:
+			source = self.factor_sources[n]
+			multiple = n / source
+			for group in range(3):
 				if self.parameter_count[group] > 0:
 					tc = self.group_track_count[group]
 					for track in range(tc):
-						self.levels[2**(i+1)][group][track] = [sum(sub_list) for sub_list in padded_partition(self.levels[2**i][group][track], 2, pad_val=0)]
-#		print 1, self.levels[1]
-#		print 2, self.levels[2]
-#		print 4, self.levels[4]
-#		print 8, self.levels[8]
-#		print 16, self.levels[16]		
-#		print "end of prepare_textbuffer %.2f" % ((time.time() - st) * 1000.0)
+						self.levels[n][group][track] = [sum(sub_list) for sub_list in padded_partition(self.levels[source][group][track], multiple, pad_val=0)]
+#		for i in range(len(self.levels)-1):
+#			for group in range(3):				
+#				if self.parameter_count[group] > 0:
+#					tc = self.group_track_count[group]
+#					for track in range(tc):
+#						self.levels[2**(i+1)][group][track] = [sum(sub_list) for sub_list in padded_partition(self.levels[2**i][group][track], 2, pad_val=0)]
+		print "end of prepare_textbuffer %.2f" % ((time.time() - st) * 1000.0)
 
 	def get_line_pattern(self):
 		master = player.get_plugin(0) 
