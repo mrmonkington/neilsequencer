@@ -798,8 +798,6 @@ void metaplugin::tick() {
 	lastMidiState = false;
 
 	player_state state=player->getPlayState();
-	if (state==player_state_playing)
-		player->currentlyPlayingSequencer->advanceMachine((metaplugin*)this);
 
 	applyControlChanges();
 	processControllers();
@@ -827,6 +825,8 @@ void metaplugin::tick() {
 	}
 
 	copyChangedParameters();
+	if (state==player_state_playing)
+		player->currentlyPlayingSequencer->advanceMachine((metaplugin*)this);
 }
 
 zzub::player* metaplugin::getPlayer() {
