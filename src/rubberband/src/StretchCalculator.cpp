@@ -19,6 +19,7 @@
 #include <deque>
 #include <set>
 #include <cassert>
+#include <algorithm>
 
 namespace RubberBand
 {

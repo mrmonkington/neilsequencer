@@ -16,6 +16,7 @@
 #define _RUBBERBAND_RINGBUFFER_H_
 
 #include <sys/types.h>
+#include <cstring>
 
 #ifndef _WIN32
 #include <sys/mman.h>

@@ -15,6 +15,7 @@
 #include "Thread.h"
 
 #include <iostream>
+#include <cstdlib>
 
 #include <sys/time.h>
 #include <time.h>

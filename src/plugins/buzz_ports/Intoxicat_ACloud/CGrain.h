@@ -2,7 +2,7 @@
 //#define __CGRAIN_H__
 #include "gAHDEnv.h"
 #include "AHD4.h"
-
+#include <cstdlib>
 #include "mdk.h"
 #include <zzub/plugin.h>
 

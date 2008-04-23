@@ -18,6 +18,7 @@
 
 #include <fftw3.h>
 
+#include <cstdlib>
 #include <cmath>
 #include <iostream>
 #include <map>

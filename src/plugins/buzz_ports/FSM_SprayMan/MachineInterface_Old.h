@@ -323,12 +323,12 @@ struct CMachineInterface0
 public:
 	virtual FASTCALL void *ScalarDeletingDestructor(int foo, int flags) { void *th=this; if(flags&1) delete this; return th; }
 	virtual FASTCALL void Init(int poo, CMachineDataInput * const pi) {}
-	virtual FASTCALL void Tick() {}
+    // virtual FASTCALL void Tick() {}
 	virtual FASTCALL bool Work(int poo, float *psamples, int numsamples, int const mode) { return false; }
 	virtual FASTCALL bool WorkMonoToStereo(int poo, float *pin, float *pout, int numsamples, int const mode) { return false; }
-	virtual FASTCALL void Stop() {}
+    // virtual FASTCALL void Stop() {}
 	virtual FASTCALL void Save(int poo, CMachineDataOutput * const po) {}
-	virtual FASTCALL void AttributesChanged() {}
+    // virtual FASTCALL void AttributesChanged() {}
 	virtual FASTCALL void Command(int poo, int const i) {}
 
 	virtual FASTCALL void SetNumTracks(int poo, int const n) {}
