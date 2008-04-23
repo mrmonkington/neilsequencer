@@ -810,7 +810,7 @@ class SequencerView(gtk.DrawingArea):
 		elif k == 'Delete':
 			self.delete_at_cursor()
 			self.adjust_scrollbars()
-		elif k == 'Insert':
+		elif k == 'Insert' or  k == 'KP_Insert':
 			self.insert_at_cursor()
 			self.adjust_scrollbars()
 		elif k == 'period': # dot

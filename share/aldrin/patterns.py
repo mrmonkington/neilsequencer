@@ -1749,7 +1749,7 @@ class PatternView(gtk.DrawingArea):
 		if gtk.gdk.keyval_from_name('KP_0') <= kv <= gtk.gdk.keyval_from_name('KP_9'):
 			kv = kv - gtk.gdk.keyval_from_name('KP_0')  + gtk.gdk.keyval_from_name('0') 
 		k = gtk.gdk.keyval_name(kv)
-		#~ print mask,k,kv
+		print mask,k,kv
 		if k == 'less':
 			self.toolbar.prev_wave()
 		elif k == 'greater':
@@ -1918,7 +1918,7 @@ class PatternView(gtk.DrawingArea):
 			self.show_cursor_left()
 			self.adjust_scrollbars()
 			self.refresh_view()
-		elif k == 'Insert':
+		elif k == 'Insert' or k == 'KP_Insert':
 			self.pattern.insert_row(self.group, self.track, -1, self.row)
 			del self.lines[self.group][self.track][-1]
 			self.lines[self.group][self.track].insert(self.row, "")
