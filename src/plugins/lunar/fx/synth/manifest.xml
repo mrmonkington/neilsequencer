@@ -59,7 +59,7 @@
 					logarithmic="true"
 					minvalue="0"
 					maxvalue="100"
-					defvalue="11"
+					defvalue="0"
 					precision="0.1"
 					state="true"/>
 				<parameter

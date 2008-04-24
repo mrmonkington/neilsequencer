@@ -259,7 +259,7 @@ struct fukodelay_info : zzub::info {
 			.set_value_max(0x0190)
 			.set_value_none(0x0191)
 			.set_state_flag()
-			.set_value_default(0x00fa);
+			.set_value_default(0x00e1);
 
 		paraRDelay = &add_global_parameter()
 			.set_word()
@@ -279,7 +279,7 @@ struct fukodelay_info : zzub::info {
 			.set_value_max(0x0190)
 			.set_value_none(0x0191)
 			.set_state_flag()
-			.set_value_default(0x00fa);
+			.set_value_default(0x00e1);
 
 		paraDryAmt = &add_global_parameter()
 			.set_byte()
