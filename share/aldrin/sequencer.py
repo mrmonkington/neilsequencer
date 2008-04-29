@@ -489,10 +489,14 @@ class SequencerView(gtk.DrawingArea):
 		
 	def on_popup_create_pattern(self, event=None):
 		seq = player.get_current_sequencer()
-		start = (min(self.selection_start[0], self.selection_end[0]), 
-					min(self.selection_start[1], self.selection_end[1]))
-		end = (max(self.selection_start[0], self.selection_end[0]), 
-					max(self.selection_start[1], self.selection_end[1]))
+		try:
+			start = (min(self.selection_start[0], self.selection_end[0]), 
+				 min(self.selection_start[1], self.selection_end[1]))
+			end = (max(self.selection_start[0], self.selection_end[0]), 
+			       max(self.selection_start[1], self.selection_end[1]))
+		except TypeError:
+			# There is no selection.
+			return
 		eventlist = []
 		for track in range(start[0], end[0]+1):
 			t = seq.get_track(track)
@@ -509,10 +513,14 @@ class SequencerView(gtk.DrawingArea):
 		
 	def on_popup_merge(self, event=None):
 		seq = player.get_current_sequencer()
-		start = (min(self.selection_start[0], self.selection_end[0]), 
-					min(self.selection_start[1], self.selection_end[1]))
-		end = (max(self.selection_start[0], self.selection_end[0]), 
-					max(self.selection_start[1], self.selection_end[1]))
+		try:
+			start = (min(self.selection_start[0], self.selection_end[0]), 
+				 min(self.selection_start[1], self.selection_end[1]))
+			end = (max(self.selection_start[0], self.selection_end[0]), 
+			       max(self.selection_start[1], self.selection_end[1]))
+		except TypeError:
+			# There is no selection.
+			return
 		eventlist = []
 		patternsize = 0
 		for track in range(start[0], end[0]+1):
@@ -649,8 +657,14 @@ class SequencerView(gtk.DrawingArea):
 		menu.append(make_menu_item("Paste", "", self.on_popup_paste))
 		menu.append(make_menu_item("Delete", "", self.on_popup_delete))
 		menu.append(gtk.SeparatorMenuItem())
-		menu.append(make_menu_item("Create pattern from selection", "", self.on_popup_create_pattern))
-		menu.append(make_menu_item("Merge selected patterns", "", self.on_popup_merge))
+		m = make_menu_item("Create pattern from selection", "", self.on_popup_create_pattern)
+		if self.selection_start == None:
+			m.set_sensitive(False)
+		menu.append(m)
+		m = make_menu_item("Merge selected patterns", "", self.on_popup_merge)
+		if self.selection_start == None:
+			m.set_sensitive(False)
+		menu.append(m)
 		menu.show_all()
 		menu.attach_to_widget(self, None)
 		menu.popup(None, None, None, event.button, event.time)
