@@ -21,6 +21,18 @@ public:
 	float scutoff, sreso, scutoff2;
 	float amp;
 
+  struct lfo {
+    float phase;
+    float phasestep;
+    float amp;
+    
+    lfo() {
+      phase = 0.0f;
+      phasestep = 0.0f;
+      amp = 0.0f;
+    }
+  };
+
 	struct voice {
 		float powtab[POWTABSIZE];
 		float phasestep;
@@ -31,6 +43,7 @@ public:
 		float cutoff;
 		float volume;
 		float *curtab;
+    lfo pitch;
 		
 		inline void update_powtab(float scutoff) {
 			float c = min(cutoff+freq,20000);
@@ -149,6 +162,12 @@ public:
 		}
 		
 		for (int t = 0; t < track_count; ++t) {
+      if (globals->plfospeed) {
+        voices[t].pitch.phasestep = ((*globals->plfospeed)*float(TABSIZE)) / float(transport->samples_per_second);
+      }
+      if (globals->plfodepth) {
+        voices[t].pitch.amp = (*globals->plfodepth) * 12.0f / 100.0f;
+      }
 			if (tracks[t].note) {
 				if (*tracks[t].note == 0.0f) {
 					voices[t].a.off();
@@ -159,11 +178,13 @@ public:
 					voices[t].phasestep = ((*tracks[t].note)*float(TABSIZE)) / float(transport->samples_per_second);
 					voices[t].phase = 0.0f;
 					voices[t].cutoff = scutoff2;
-					voices[t].update_powtab(scutoff * 2.0f);
+					voices[t].update_powtab(scutoff * 2.0f);          
 				}
 			}
 			if (tracks[t].volume) {
 				voices[t].volume = float(*tracks[t].volume) / 128.0f;
+        if (voices[t].volume == 1.0f)
+          voices[t].pitch.phase = 0.0f;
 			}
 		}
 		
@@ -184,11 +205,24 @@ public:
 					float adsr = v->a.process();
 					float c = v->powtab[int(adsr * float(POWTABSIZE-1))];
 					*b++ += v->s.envprocess(v->curtab[int(v->phase)%TABSIZE],c,1) * vol * adsr;
-					v->phase += v->phasestep;
+          if (v->pitch.amp) {
+            float rp = v->pitch.amp * sintab[int(v->pitch.phase)%TABSIZE];
+            float scale = pow(2.0f, rp / 12.0f);
+            v->phase += v->phasestep * scale;
+          } else {					
+            v->phase += v->phasestep;
+          }
 					while (v->phase > TABSIZE)
 						v->phase -= TABSIZE;
+          v->pitch.phase += v->pitch.phasestep;
+          while (v->pitch.phase > TABSIZE)
+            v->pitch.phase -= TABSIZE;
 				}
-			}
+			} else {
+        v->pitch.phase += v->pitch.phasestep * (float)n;
+        while (v->pitch.phase > TABSIZE)
+          v->pitch.phase -= TABSIZE;
+      }
 		}
 		dsp_amp(outL, n, amp); 
 		dsp_clip(outL, n, 1);
