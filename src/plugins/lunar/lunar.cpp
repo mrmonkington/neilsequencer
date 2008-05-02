@@ -793,7 +793,7 @@ struct dspplugin : zzub::plugin {
 	};
 	
 	float* grefs[MAX_GPARAMS];
-	float* trefs[MAX_TRACKS][MAX_TPARAMS];
+	float* trefs[MAX_TRACKS * MAX_TPARAMS];
 	float* crefs[MAX_CPARAMS];
 	
 	int get_value(int group, int track, int param) {
@@ -843,11 +843,12 @@ struct dspplugin : zzub::plugin {
 
 	void on_track_parameter_changed(int track, int param, int value) {
 		const metaparameter &mp = _info.tparamids[param];
+    int trefindex = track * _info.track_parameters.size() + param;
 		if (value == -1) {
-			trefs[track][param] = 0;
+			trefs[trefindex] = 0;
 		} else {
 			tvalues[track][param] = mp.translate(value);
-			trefs[track][param] = &tvalues[track][param];
+			trefs[trefindex] = &tvalues[track][param];
 		}
 	}
 
