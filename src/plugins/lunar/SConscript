@@ -78,7 +78,7 @@ if pluginenv["LUNAR"] == True:
 			'lunar.cpp',
 			'sha1.c', # required by lunar
 		],
-		deffile="lunar.def")
+		deffile="lunar/lunar.def")
 
 	liblunarpath = os.path.dirname(str(plugin[0]))
 	Export('liblunarpath')
