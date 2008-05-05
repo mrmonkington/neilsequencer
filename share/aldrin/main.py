@@ -21,6 +21,10 @@
 """
 Provides application class and controls used in the aldrin main window.
 """
+
+import contextlog
+contextlog.init()
+
 import errordlg
 errordlg.install()
 
