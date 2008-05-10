@@ -116,6 +116,18 @@
 					precision="0.01"
 					state="true"/>
 				<parameter
+					id="pitchslide"
+					name="Pitch Slide (ms)"
+					description="How long the pitch slides from current to new note."
+					type="float"
+					logarithmic="true"
+					minvalue="0.1"
+					maxvalue="10000"
+					defvalue="0.1"
+					precision="1"
+					power="0.6"
+					state="true"/>
+				<parameter
 					id="plfospeed"
 					name="Pitch LFO Freq (Hz)"
 					description="Speed of the pitch LFO."
@@ -130,11 +142,11 @@
 					id="plfodepth"
 					name="Pitch LFO Depth (%)"
 					description="Depth of the pitch LFO."
-					type="byte"
+					type="float"
 					minvalue="0"
 					maxvalue="100"
 					defvalue="0"
-					precision="1"
+					precision="0.1"
 					state="true"/>
 			</global>
 			<track>
