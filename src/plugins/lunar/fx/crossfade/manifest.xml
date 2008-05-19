@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<zzub>
+	<plugin
+		uri="@trac.zeitherrschaft.org/aldrin/lunar/controller/crossfade;1"
+		name="Lunar CrossFade"
+		shortname="CrossFade"
+		type="effect"
+		description="Peer-control crossfading."
+		author="jmmcd (James McDermott)"
+		email="jamesmichaelmcdermott@gmail.com">
+		<parameters>
+			<global>
+				<parameter
+					id="crossfade"
+					name="Crossfade"
+					description="Crossfade Value"
+					type="float"
+					minvalue="0"
+					maxvalue="1.0"
+					defvalue="0.5"
+					precision="0.01"
+					state="true"/>
+
+			</global>
+			<track>
+			</track>
+			<controller>
+				<parameter
+					id="out1"
+					name="Out 1"
+					description="Output 1"
+					type="float"
+					minvalue="0"
+					maxvalue="1"
+					defvalue="0"
+					precision="0.01"/>
+				<parameter
+					id="out2"
+					name="Out 2"
+					description="Output 2"
+					type="float"
+					minvalue="0"
+					maxvalue="1"
+					defvalue="0"
+					precision="0.01"/>
+			</controller>
+		</parameters>
+		<attributes>
+		</attributes>
+		<files>
+			<file ref="crossfade.cpp"/>
+			<file ref="crossfade.h"/>
+		</files>
+		<modules>
+			<module id="crossfade">
+				<source language="c++" ref="crossfade.cpp" fxdef="crossfade.h"/>
+			</module>
+		</modules>
+	</plugin>
+</zzub>

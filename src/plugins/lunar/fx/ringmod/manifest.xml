@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<zzub>
+	<plugin
+		uri="@trac.zeitherrschaft.org/aldrin/lunar/effect/ringmod;1"
+		name="Lunar RingMod"
+		shortname="RingMod"
+		type="effect"
+		description="Ring modulation: multiplication of the
+		input signals."
+		author="jmmcd (James McDermott)"
+		email="jamesmichaelmcdermott@gmail.com">
+		<parameters>
+			<global>
+			</global>
+			<track>
+			</track>
+		</parameters>
+		<attributes>
+		</attributes>
+		<files>
+			<file ref="ringmod.cpp"/>
+			<file ref="ringmod.h"/>
+		</files>
+		<modules>
+			<module id="ringmod">
+				<source language="c++" ref="ringmod.cpp" fxdef="ringmod.h"/>
+			</module>
+		</modules>
+	</plugin>
+</zzub>
