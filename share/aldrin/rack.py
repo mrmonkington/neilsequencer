@@ -205,7 +205,15 @@ class ParameterView(gtk.VBox):
 			p = pl.get_parameter(g,i)
 			if not (p.get_flags() & zzub.zzub_parameter_flag_state):
 				return add_nonstate_param(g,t,i)
-			if g == 2:
+			if g == 0:
+				try:
+					conn = self.plugin.get_input_connection_list()[t]
+					in_machine_name = conn.get_input().get_name()
+				except:
+					in_machine_name = ""
+				volpanstr = ["Vol", "Pan"][i]
+				name = "%s-%i (%s)" % (volpanstr, t, prepstr(in_machine_name))
+			elif g == 2:
 				name = "%i-%s" % (t,prepstr(p.get_name()))
 			else:
 				name = prepstr(p.get_name())
@@ -248,15 +256,20 @@ class ParameterView(gtk.VBox):
 			slider.connect('key-press-event', self.on_key_down, (g,t,i))
 			self.update_valuelabel(g,t,i)
 			self.update_namelabel(g,t,i)
-			
-		for i in range(pl.get_parameter_count(1)): # globals
+
+		# input connections
+		for t in range(plugin.get_input_connection_count()):
+			for i in range(2): # volume and pan
+				add_slider(0, t, i)
+		# globals
+		for i in range(pl.get_parameter_count(1)):
 			add_slider(1,0,i)
 		# tracks
 		for t in range(plugin.get_track_count()):
 			for i in range(pl.get_parameter_count(2)):
 				add_slider(2,t,i)
 		# controllers
-		for i in range(pl.get_parameter_count(3)): # controllers
+		for i in range(pl.get_parameter_count(3)):
 			add_controller(3,0,i)
 	
 	def on_left_down(self, widget, event, data=None):
@@ -509,7 +522,7 @@ class ParameterView(gtk.VBox):
 					data = getattr(data,'').change_parameter				
 					g,t,i,v = data.group, data.track, data.param, data.value
 					p = self.pluginloader.get_parameter(g,i)
-					if p.get_flags() & zzub.zzub_parameter_flag_state and g > 0:
+					if p.get_flags() & zzub.zzub_parameter_flag_state:
 						nl,s,vl = self.pid2ctrls[(g,t,i)]
 						v = self.plugin.get_parameter_value(g,t,i)
 						s.set_value(v)

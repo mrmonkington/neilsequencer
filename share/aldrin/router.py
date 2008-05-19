@@ -48,6 +48,7 @@ from common import MARGIN, MARGIN2, MARGIN3
 from rack import ParameterView
 from presetbrowser import PresetView
 from patterns import key_to_note
+from guievents import global_events
 
 PLUGINWIDTH = 100
 PLUGINHEIGHT = 25
@@ -320,11 +321,11 @@ class PluginBrowserDialog(gtk.Dialog):
 		"""
 		self.routeview = parent
 		gtk.Dialog.__init__(self,
-                                    title="Add Plugins",
-                                    parent=parent.get_toplevel(),
-				    # If it's modal, the effect plugin racks that pop up can't be closed
-                                    flags=gtk.DIALOG_DESTROY_WITH_PARENT,
-                                    )
+				title="Add Plugins",
+				parent=parent.get_toplevel(),
+				# If it's modal, the effect plugin racks that pop up can't be closed
+				flags=gtk.DIALOG_DESTROY_WITH_PARENT,
+		)
 		self.set_size_request(800, 500)
 		
 
@@ -340,8 +341,8 @@ class PluginBrowserDialog(gtk.Dialog):
 		col_names = ["Type", "Parameters", "Attributes", "Name", "Author"]
 		# The undisplayed columns are the pluginloader ref and a bool for whether it's native
 		self.store = gtk.ListStore(str, int, int, str, str, object, bool)
-                # create the TreeViewColumns to display the data
-                self.columns = [gtk.TreeViewColumn(name) for name in col_names]
+		# create the TreeViewColumns to display the data
+		self.columns = [gtk.TreeViewColumn(name) for name in col_names]
 
 		# filter is derived from the ListStore: it holds a changeable subset of the rows.
 		self.filter = self.store.filter_new()
@@ -371,7 +372,7 @@ class PluginBrowserDialog(gtk.Dialog):
 		self.populate(self.routeview.plugin_tree)
 
 		self.scrollwindow = gtk.ScrolledWindow()
-                self.scrollwindow.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+		self.scrollwindow.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
 		self.scrollwindow.add(self.view)
 		self.vbox.add(self.scrollwindow)
 
@@ -812,6 +813,7 @@ class RouteView(gtk.DrawingArea):
 		@type event: wx.MenuEvent
 		"""
 		conn.get_output().delete_input(conn.get_input())
+		global_events('connection-changed')
 		self.redraw()
 		
 	def show_parameter_dialog(self, plugin):

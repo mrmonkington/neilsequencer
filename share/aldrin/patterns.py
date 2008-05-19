@@ -656,7 +656,8 @@ class PatternView(gtk.DrawingArea):
 		gobject.timeout_add(100, self.update_position)
 		self.hscroll.connect('change-value', self.on_hscroll_window)
 		self.vscroll.connect('change-value', self.on_vscroll_window)
-	
+		global_events.connect('connection-changed', self.pattern_changed)
+
 	def update_font(self):
 		pctx = self.get_pango_context()
 		desc = pango.FontDescription(config.get_config().get_pattern_font()) #.get_font_description()
@@ -2253,7 +2254,19 @@ class PatternView(gtk.DrawingArea):
 		if self.plugin:
 			if self.parameter_count[self.group] and self.group_track_count[self.group]:
 				# change status bar
-				self.statuslabels[0].set_label('Row %s, Track %s' % (self.row,self.track))
+				if self.group == 0:
+					try:
+						pl = self.get_plugin()
+						conn = pl.get_input_connection_list()[self.track]
+						in_machine_name = conn.get_input().get_name()
+					except:
+						in_machine_name = ""
+					self.statuslabels[0].set_label('Row %s, Incoming %s (%s)' % 
+								       (self.row,self.track,in_machine_name))
+				elif self.group == 1:
+					self.statuslabels[0].set_label('Row %s, Globals' % (self.row,))
+				else:
+					self.statuslabels[0].set_label('Row %s, Track %s' % (self.row,self.track))
 				parameter_list = self.plugin.get_parameter_list(self.group)
 				self.statuslabels[2].set_label(prepstr(parameter_list[self.index].get_description() or ""))
 				p = self.plugin.get_parameter(self.group,self.index)

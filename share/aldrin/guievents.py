@@ -53,6 +53,7 @@ class GuiEventManager:
 			'pattern-changed': [], # (pattern, ... ). called when the contents of a pattern have changed.
 			'pattern-size-changed': [], #(pattern, ...). called when a patterns size has changed.
 			'pattern-name-changed': [], #(pattern, ...). challed when a patterns name has changed.
+			'connection-changed': [], #() called when a connection between machines is deleted.
 		}
 		
 	def connect(self, idstr, func, *args):

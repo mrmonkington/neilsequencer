@@ -564,7 +564,6 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		@type event: wx.Event
 		"""
 		for item in self.filemenu:
-			print item
 			item.destroy()
 		self.filemenu.append(make_stock_menu_item(gtk.STOCK_NEW, self.new, frame=self, shortcut="<Control>N"))
 		self.filemenu.append(make_stock_menu_item(gtk.STOCK_OPEN, self.on_open, frame=self, shortcut="<Control>O"))
@@ -943,10 +942,8 @@ class AldrinFrame(gtk.Window, IRootWindow):
 			if self.framepanel.get_current_page() != self.index:
 				self.framepanel.set_current_page(self.index)
 			if hasattr(panel,'view'):
-				print "grab focus",panel.view
 				panel.view.grab_focus()
 			else:
-				print "not grab focus"
 				panel.grab_focus()
 		self.activated=0
 		
@@ -1282,7 +1279,6 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		@param event: menu event.
 		@type event: wx.MenuEvent
 		"""
-		print data
 		cfg = config.get_config()
 		if not data:
 			cfg.select_theme(None)
@@ -1664,7 +1660,6 @@ class TransportPanel(gtk.HBox):
 			for e in self.transport_buttons:
 				rc = e.get_allocation()
 				w = max(rc.width, rc.height)
-				print w
 				e.set_size_request(w,w)
 		self.connect('realize', on_realize)
 		
