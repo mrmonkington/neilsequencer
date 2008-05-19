@@ -33,6 +33,7 @@
 	<separator/>
 	<ref label="Lunar LFO (Experimental)" uri="@trac.zeitherrschaft.org/aldrin/lunar/controller/lfo;1"/>
 	<ref label="Lunar Transpose (Experimental)" uri="@trac.zeitherrschaft.org/aldrin/lunar/controller/transpose;1"/>
+	<ref icon="lunar_crossfade" label="Lunar Crossfade (Experimental)" uri="@trac.zeitherrschaft.org/aldrin/lunar/controller/crossfade;1"/>
 	<separator/>
 	<ref icon="lunar_delay" label="Lunar Delay" uri="@trac.zeitherrschaft.org/aldrin/lunar/effect/delay;1"/>
 	<ref icon="lunar_filter" label="Lunar Filter" uri="@trac.zeitherrschaft.org/aldrin/lunar/effect/filter;1"/>
@@ -41,6 +42,7 @@
 	<ref icon="lunar_verb" label="Lunar Verb" uri="@trac.zeitherrschaft.org/aldrin/lunar/effect/reverb;1"/>
 	<ref icon="lunar_distortion" label="Lunar Distortion" uri="@trac.zeitherrschaft.org/aldrin/lunar/effect/distortion;1"/>
 	<ref icon="lunar_phaser" label="Lunar Phaser" uri="@trac.zeitherrschaft.org/aldrin/lunar/effect/phaser;1"/>
+	<ref icon="lunar_ringmod" label="Lunar RingMod (Experimental)" uri="@trac.zeitherrschaft.org/aldrin/lunar/effect/ringmod;1"/>	
 	<group label="Buzz Ports">
 		<ref label="FSM Philthy (Filter)" uri="@trac.zeitherrschaft.org/aldrin/lunar/effect/philthy;1"/>
 		<ref label="FireSledge ParamEQ (Equalizer)" uri="@FireSledge.org/ParamEQ;1"/>
