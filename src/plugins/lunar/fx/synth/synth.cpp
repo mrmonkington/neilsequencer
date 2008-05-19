@@ -62,6 +62,7 @@ lfo() {
 			start_phasestep = 0.0f;
 			end_phasestep = 0.0f;
 			slide_step = 0.0f;
+			slide_length = 0.1/1000;
 			phasestep = 0.0f;
 			phase = 0.0f;
 			cutoff = 0.0f;
