@@ -27,6 +27,13 @@ import os, glob, re
 
 from utils import filepath
 import ConfigParser
+import new
+
+CONFIG_OPTIONS = dict(
+	Global = dict(
+		SamplePreviewVolume = dict(default=-12.0,doc="the volume with which samples shall be previewed.")
+	)
+)
 
 # the key of this dictionary is the language code associated with the keyboard. the 
 # value is a series of keyboard characters associated with each note, in the order 
@@ -119,7 +126,7 @@ DEFAULT_THEME = {
 	'WE Sleep Peaks': 0x8000ff,
 }
 
-class AldrinConfig(ConfigParser.ConfigParser):
+class AldrinConfig(object, ConfigParser.ConfigParser):
 	"""
 	Streamlines access to the applications configuration. You should
 	set all applications to and retrieve them from the config object.
@@ -144,6 +151,16 @@ class AldrinConfig(ConfigParser.ConfigParser):
 			import traceback
 			traceback.print_exc()
 			self.select_theme(None)
+			
+	def getter(self, section, option, vtype, defvalue):
+		self.set_section(section)
+		return vtype(self.read_value(option, defvalue))
+		
+	def setter(self, section, option, vtype, value):
+		assert type(value) == vtype
+		self.set_section(section)
+		self.write_value(option, str(value))
+		self.flush()
 			
 	def set_section(self, section):
 		self._section = section
@@ -191,14 +208,6 @@ class AldrinConfig(ConfigParser.ConfigParser):
 		
 	def flush(self):
 		self.write(file(self.filename,'w'))
-			
-	def get_sample_preview_volume(self):
-		"""
-		Returns the volume with which samples shall be previewed.
-		"""
-		self.set_section('Global')
-		vol = float(self.read_value('SamplePreviewVolume', '-12.0'))
-		return vol
 		
 	def get_plugin_icon_path(self, name):
 		"""
@@ -859,6 +868,44 @@ class AldrinConfig(ConfigParser.ConfigParser):
 			self.write_value("File%i" % i, recent_files[i])
 		self.flush()
 		
+
+def camelcase_to_unixstyle(s):
+	o = ''
+	for c in s:
+		if c.isupper() and o and not o.endswith('_'):
+			o += '_'
+		o += c.lower()
+	return o
+
+# build getters and setters based on the options map
+for section,options in CONFIG_OPTIONS.iteritems():
+	for option,kwargs in options.iteritems():
+		if 'default' in kwargs:
+			default = kwargs['default']
+			vtype = kwargs.get('vtype', type(default))
+			assert type(default) == vtype
+		else:
+			vtype = kwargs['vtype']
+			default = {float: 0.0, int:0, long:0, str:'', unicode:u'', bool:False}[vtype]
+		funcname = kwargs.get('func', camelcase_to_unixstyle(option))
+		doc = kwargs.get('doc', '')
+		if not doc:
+			doc = 'section %s, option %s, default %s, type %s.' % (section, option, default, vtype)
+		
+		getter = lambda self,defvalue=kwargs.get(default,False): self.getter(section,option,vtype,default)
+		getter.__name__ = 'get_' + funcname
+		getter.__doc__ = 'Returns ' + doc
+		setattr(AldrinConfig, 'get_' + funcname, getter)
+		
+		setter = lambda self,value: self.setter(section,option,vtype,value)
+		setter.__name__ = 'set_' + funcname
+		setter.__doc__ = 'Sets ' + doc
+		setattr(AldrinConfig, 'set_' + funcname, setter)
+		
+		# add a property
+		prop = property(getter, setter, doc=doc)
+		setattr(AldrinConfig, funcname, prop)
+
 config = None
 
 
@@ -902,6 +949,8 @@ def get_plugin_aliases():
 			sep = line.index('=')
 			yield line[:sep].strip(), line[sep+1:].strip()
 
+
+
 __all__ = [
 'AldrinConfig',
 'get_config',
@@ -911,8 +960,12 @@ __all__ = [
 if __name__ == '__main__':
 	cfg = get_config()
 	print cfg.get_plugin_icon_path("matilde")
-	print cfg.get_sample_preview_volume()
-	print cfg.get_midi_controllers()
+	cfg.set_sample_preview_volume(-6.0)
+	print "prop1:",cfg.sample_preview_volume
+	cfg.sample_preview_volume = -9.0
+	print "prop2:",cfg.sample_preview_volume
+	print "volume:",cfg.get_sample_preview_volume()
+	cfg.set_sample_preview_volume(-12.0)
 	print cfg.get_audiodriver_config()
 	print "DEFAULT_THEME = {"
 	for k in sorted(DEFAULT_THEME.keys()):
