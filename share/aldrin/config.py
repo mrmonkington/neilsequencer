@@ -154,10 +154,21 @@ class AldrinConfig(object, ConfigParser.ConfigParser):
 			
 	def getter(self, section, option, vtype, defvalue):
 		self.set_section(section)
-		return vtype(self.read_value(option, defvalue))
+		value = self.read_value(option, defvalue)
+		if vtype == bool:
+			if value == 'true':
+				value = True
+			elif value == 'false':
+				value = False
+		return value
 		
 	def setter(self, section, option, vtype, value):
 		assert type(value) == vtype
+		if vtype == bool:
+			if value:
+				value = 'true'
+			else:
+				value = 'false'
 		self.set_section(section)
 		self.write_value(option, str(value))
 		self.flush()
