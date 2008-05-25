@@ -35,7 +35,7 @@ import random
 import common
 player = common.get_player()
 from common import MARGIN, MARGIN2, MARGIN3, MARGIN0
-from guievents import global_events
+from eventbus import *
 import itertools
 from utils import NOTES, roundint
 PATLEFTMARGIN = 48
@@ -198,10 +198,10 @@ class PatternToolBar(gtk.HBox):
 		self.pack_start(self.octaveselect, expand=False)
 		self.pack_start(self.playnotes, expand=False)
 		
-		global_events.connect('pattern-removed', self.update_patternselect)
-		global_events.connect('pattern-created', self.update_patternselect)
-		global_events.connect('pattern-name-changed', self.update_patternselect)
-		global_events.connect('song-opened', self.update_all)
+		eventbus.pattern_removed += self.update_patternselect
+		eventbus.pattern_created += self.update_patternselect
+		eventbus.pattern_name_changed += self.update_patternselect
+		eventbus.song_opened += self.update_all
 		
 	def reset(self):
 		self.plugin_index = 0

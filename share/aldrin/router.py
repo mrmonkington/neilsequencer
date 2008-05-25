@@ -48,7 +48,7 @@ from common import MARGIN, MARGIN2, MARGIN3
 from rack import ParameterView
 from presetbrowser import PresetView
 from patterns import key_to_note
-from guievents import global_events
+from eventbus import *
 
 PLUGINWIDTH = 100
 PLUGINHEIGHT = 25
@@ -813,7 +813,7 @@ class RouteView(gtk.DrawingArea):
 		@type event: wx.MenuEvent
 		"""
 		conn.get_output().delete_input(conn.get_input())
-		global_events('connection-changed')
+		eventbus.connection_changed()
 		self.redraw()
 		
 	def show_parameter_dialog(self, plugin):

@@ -28,7 +28,7 @@ contextlog.init()
 import errordlg
 errordlg.install()
 
-from guievents import global_events
+from eventbus import *
 
 import sys, os
 from gtkimport import gtk
@@ -530,6 +530,8 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		self.document_changed()
 		self.show_all()
 		self.load_view()
+		
+		eventbus.print_mapping()
 
 		import sys
 		if len(app_args) > 1:
