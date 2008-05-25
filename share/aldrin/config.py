@@ -30,7 +30,43 @@ import ConfigParser
 import new
 
 CONFIG_OPTIONS = dict(
+	# insert all sections at this level, in the format
+	#
+	# <section name> = <descriptor dict>
 	Global = dict(
+		# insert options at this level, in the format
+		#
+		# <option name> = <descriptor dict>
+		#
+		# keys you can enter into the dict:
+		#
+		# func: name of the getter/setter/property values. if you pass none, 
+		#       the option name will be used in unix notation.
+		#
+		# default: default value to pass for get access if the value is not
+		#          yet stored in the configuration. if you pass none
+		#          a default will be deduced from the value type.
+		#
+		# vtype: value type. if you pass none, the type will be deduced from
+		#        the default value.
+		#
+		# doc: a doc string describing the meaning of the option. name it so that
+		#      it can be appended to "Returns ..." and "Sets ...". if you pass none,
+		#      a default will be used.
+		#
+		# onset: an optional function to be called before the value is written to
+		#        the configuration. the function should have the signature
+		#
+		#        def func(value): -> value
+		#
+		# onget: an optional function to be called before the value is returned
+		#        to the calling function.
+		#
+		#        def func(value): -> value
+		#
+		# for the setting below, SamplePreviewVolume, the default funcname is sample_preview_volume,
+		# and so you can access config.get_sample_preview_volume([default]), config.set_sample_preview_volume(value),
+		# and config.sample_preview_volume as a property.
 		SamplePreviewVolume = dict(default=-12.0,doc="the volume with which samples shall be previewed.")
 	)
 )
@@ -152,7 +188,7 @@ class AldrinConfig(object, ConfigParser.ConfigParser):
 			traceback.print_exc()
 			self.select_theme(None)
 			
-	def getter(self, section, option, vtype, defvalue):
+	def getter(self, section, option, vtype, onget, defvalue):
 		self.set_section(section)
 		value = self.read_value(option, defvalue)
 		if vtype == bool:
@@ -160,10 +196,14 @@ class AldrinConfig(object, ConfigParser.ConfigParser):
 				value = True
 			elif value == 'false':
 				value = False
+		if onget:
+			value = onget(value)
 		return value
 		
-	def setter(self, section, option, vtype, value):
-		assert type(value) == vtype
+	def setter(self, section, option, vtype, onset, value):
+		if onset:
+			value = onset(value)
+		assert type(value) == vtype		
 		if vtype == bool:
 			if value:
 				value = 'true'
@@ -903,12 +943,15 @@ for section,options in CONFIG_OPTIONS.iteritems():
 		if not doc:
 			doc = 'section %s, option %s, default %s, type %s.' % (section, option, default, vtype)
 		
-		getter = lambda self,defvalue=kwargs.get(default,False): self.getter(section,option,vtype,default)
+		onset = kwargs.get('onset', None)
+		onget = kwargs.get('onget', None)
+		
+		getter = lambda self,defvalue=kwargs.get(default,False): self.getter(section,option,vtype,onget,default)
 		getter.__name__ = 'get_' + funcname
 		getter.__doc__ = 'Returns ' + doc
 		setattr(AldrinConfig, 'get_' + funcname, getter)
 		
-		setter = lambda self,value: self.setter(section,option,vtype,value)
+		setter = lambda self,value: self.setter(section,option,vtype,onset,value)
 		setter.__name__ = 'set_' + funcname
 		setter.__doc__ = 'Sets ' + doc
 		setattr(AldrinConfig, 'set_' + funcname, setter)
