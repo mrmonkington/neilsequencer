@@ -117,8 +117,14 @@ env['ALDRIN_INSTALL_PATH'] = '${DESTDIR}${PREFIX}/share/aldrin'
 env['DOC_INSTALL_PATH'] = '${DESTDIR}${PREFIX}/share/doc'
 env['DOC_SRC_PATH'] = '${ROOTPATH}/share/doc'
 
-for f in glob.glob('share/aldrin/*.py'):
-	install(aldrinpath, f)
+def install_recursive(target, path, mask):
+	for f in glob.glob(os.path.join(path, mask)):
+		install(target, f)
+	for filename in os.listdir(path):
+		fullpath = os.path.join(path, filename)
+		if os.path.isdir(fullpath):
+			install_recursive(os.path.join(target,filename), fullpath, mask)
+install_recursive(aldrinpath, 'share/aldrin', '*.py')
 install(aldrinpath, 'share/aldrin/index.xml')
 install(aldrinpath, 'share/aldrin/blacklist.txt')
 install(aldrinpath, 'share/aldrin/aliases.txt')
