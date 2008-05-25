@@ -61,6 +61,8 @@ class PresetView(gtk.VBox):
 		scrollwindow.add_with_viewport(self.presetlist)
 		self.scrollwindow = scrollwindow		
 		self.pack_start(self.scrollwindow)		
+
+		self.presetlist.connect("row-activated", self.on_row_activate)
 		
 		buttonbox = gtk.HBox()
 		buttonbox.set_size_request(-1, 50)
@@ -133,6 +135,9 @@ class PresetView(gtk.VBox):
 				import traceback
 				print traceback.format_exc()			
 		
+	def on_row_activate(self, treeview, path, view_column):
+		preset = self.presets.presets[path[0]]
+		preset.apply(self.plugin)
 
 	def get_title(self):
 		name = prepstr(self.plugin.get_name())		
