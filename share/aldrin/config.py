@@ -40,18 +40,18 @@ CONFIG_OPTIONS = dict(
 		#
 		# keys you can enter into the dict:
 		#
-		# func: name of the getter/setter/property values. if you pass none, 
+		# func: name of the getter/setter/property values. if omitted, 
 		#       the option name will be used in unix notation.
 		#
 		# default: default value to pass for get access if the value is not
-		#          yet stored in the configuration. if you pass none
+		#          yet stored in the configuration. if omitted,
 		#          a default will be deduced from the value type.
 		#
-		# vtype: value type. if you pass none, the type will be deduced from
-		#        the default value.
+		# vtype: value type as type object. if omitted, the type will be deduced from
+		#        the default value. allowed types are int, bool, str, float.
 		#
 		# doc: a doc string describing the meaning of the option. name it so that
-		#      it can be appended to "Returns ..." and "Sets ...". if you pass none,
+		#      it can be appended to "Returns ..." and "Sets ...". if omitted,
 		#      a default will be used.
 		#
 		# onset: an optional function to be called before the value is written to
@@ -67,8 +67,18 @@ CONFIG_OPTIONS = dict(
 		# for the setting below, SamplePreviewVolume, the default funcname is sample_preview_volume,
 		# and so you can access config.get_sample_preview_volume([default]), config.set_sample_preview_volume(value),
 		# and config.sample_preview_volume as a property.
-		SamplePreviewVolume = dict(default=-12.0,doc="the volume with which samples shall be previewed.")
-	)
+		SamplePreviewVolume = dict(default=-12.0,doc="the volume with which samples shall be previewed."),
+		Theme = dict(func='active_theme',default=None,vtype=str,onget=lambda v:v or None,doc="the name of the currently active theme."),
+		KeymapLanguage = dict(default='en',onset=lambda s:s.lower(),onget=lambda s:s.lower(),doc="the current keymap language."),
+		AudioEditorCommand = dict(func='audioeditor_command',default='audacity',doc="the audio editor command."),
+		IncrementalSaving = dict(default=True,doc="the incremental saving option."),
+		PatternFontName = dict(func='pattern_font',default='Monospace Bold 8',doc="the font used in the pattern editor."),
+		LedDraw = dict(default=True,doc="the led draw option."),
+		PatNoteOff = dict(func='pattern_noteoff',default=False,doc="pattern noteoff option."),
+	),
+	Freesound = dict(
+		MaxSearchResults = dict(func='freesound_max_search_results',default=100,doc="the number of max search results in freesound."),
+	),
 )
 
 # the key of this dictionary is the language code associated with the keyboard. the 
@@ -290,19 +300,6 @@ class AldrinConfig(object, ConfigParser.ConfigParser):
 			os.makedirs(settingsfolder)
 		return settingsfolder
 		
-	def get_active_theme(self):
-		"""
-		Returns the name of the currently active theme.
-		
-		@return: name of theme or None, if default
-		@rtype: str or None
-		"""
-		self.set_section('Global')
-		name = self.read_value('Theme', '')
-		if not name:
-			return None
-		return name
-		
 	def select_theme(self, name):
 		"""
 		Selects a color theme with a specific name to be used.
@@ -310,10 +307,9 @@ class AldrinConfig(object, ConfigParser.ConfigParser):
 		@param name: name of theme as returned by get_theme_names.
 		@type name: str
 		"""
-		self.current_theme = dict(DEFAULT_THEME)		
+		self.current_theme = dict(DEFAULT_THEME)
 		if not name:
-			self.set_section('Global')
-			self.write_value('Theme', '')
+			self.active_theme = ''
 			return
 		re_theme_attrib = re.compile('^([\w\s]+\w)\s+(\w+)$')
 		for line in file(filepath('themes/'+name+'.col'),'r'):
@@ -325,30 +321,7 @@ class AldrinConfig(object, ConfigParser.ConfigParser):
 				value = int(m.group(2),16)
 				assert key in self.current_theme.keys(), "no such key: %s" % key
 				self.current_theme[key] = value
-		self.set_section('Global')
-		self.write_value('Theme', name)
-			
-	def get_brush(self, name):
-		"""
-		Returns a certain theme color as brush
-		
-		@param name: name of color theme key.
-		@type name: str
-		@return: brush
-		@rtype: wx.Brush
-		"""
-		return wx.Brush(self.get_color(name),wx.SOLID)
-			
-	def get_pen(self, name):
-		"""
-		Returns a certain theme color as brush
-		
-		@param name: name of color theme key.
-		@type name: str
-		@return: brush
-		@rtype: wx.Brush
-		"""
-		return wx.Pen(self.get_color(name), 1, wx.SOLID)
+		self.active_theme = name
 
 	def get_float_color(self, name):
 		"""
@@ -432,24 +405,6 @@ class AldrinConfig(object, ConfigParser.ConfigParser):
 		self.set_section('ExperimentalFeatures')
 		self.write_value(key, str(int(val)))
 		
-	def set_keymap_language(self, lang):
-		"""
-		Sets the current keymap language
-		
-		@param lang: Language ('en', 'de')
-		@type lang: str
-		"""
-		self.set_section('Global')
-		self.write_value('KeymapLanguage', lang.lower())
-		self.flush()
-		
-	def get_keymap_language(self):
-		"""
-		Returns the current keymap language
-		"""
-		self.set_section('Global')
-		return self.read_value('KeymapLanguage', 'en').lower()
-		
 	def get_keymap(self):
 		"""
 		returns a keymap for the pattern editor, to be used
@@ -463,36 +418,6 @@ class AldrinConfig(object, ConfigParser.ConfigParser):
 		"""
 		self.set_section('Credentials/'+service)
 		return self.read_value('Username'), self.read_value('Password')
-		
-	def set_audioeditor_command(self, cmd):
-		"""
-		Sets the audio editor command.
-		"""
-		self.set_section('Global')
-		self.write_value('AudioEditorCommand', cmd)
-		self.flush()
-
-	def get_audioeditor_command(self):
-		"""
-		Returns the audio editor command.
-		"""
-		self.set_section('Global')
-		return self.read_value('AudioEditorCommand', 'audacity')
-		
-	def set_freesound_max_search_results(self, count):
-		"""
-		Sets the number of max search results in freesound.
-		"""
-		self.set_section('Freesound')
-		self.write_int_value('MaxSearchResults', count)
-		self.flush()
-		
-	def get_freesound_max_search_results(self):
-		"""
-		Returns the number of max search results in freesound.
-		"""
-		self.set_section('Freesound')
-		return self.read_int_value('MaxSearchResults', 100)
 		
 	def set_credentials(self, service, username, password):
 		"""
@@ -724,84 +649,6 @@ class AldrinConfig(object, ConfigParser.ConfigParser):
 				visible = 'false'
 			self.write_value("Visible", visible)
 		self.flush()
-		
-	def get_incremental_saving(self):
-		"""
-		Retrieves the incremental saving option.
-		"""
-		self.set_section('Global')
-		value = self.read_value('IncrementalSaving', 'true')
-		if value == 'true':
-			return True
-		else:
-			return False
-		
-	def set_incremental_saving(self, value):
-		"""
-		Stores the incremental saving option.
-		"""
-		self.set_section('Global')
-		if value:
-			self.write_value('IncrementalSaving', 'true')
-		else:
-			self.write_value('IncrementalSaving', 'false')
-
-	def get_pattern_font(self):
-		"""
-		Retrieves the incremental saving option.
-		"""
-		self.set_section('Global')
-		return self.read_value('PatternFontName', 'Monospace Bold 8')
-		
-	def set_pattern_font(self, fontname):
-		"""
-		Stores the incremental saving option.
-		"""
-		self.set_section('Global')
-		self.write_value('PatternFontName', fontname)
-
-	def get_led_draw(self): 
-		"""
-		Retrieves led draw option.
-		"""
-		self.set_section('Global')
-		value = self.read_value('LedDraw', 'true')
-		if value == 'true':
-			return True
-		else:
-			return False
-	
-	def set_led_draw(self, value):
-		"""
-		Stores the led draw option.
-		"""
-		self.set_section('Global')
-		if value:
-			self.write_value('LedDraw', 'true')
-		else:
-			self.write_value('LedDraw', 'false') 
-	
-	def get_pattern_noteoff(self): 
-		"""
-		Retrieves pattern noteoff option.
-		"""
-		self.set_section('Global')
-		value = self.read_value('PatNoteOff', 'false')
-		if value == 'true':
-			return True
-		else:
-			return False
-	
-	def set_pattern_noteoff(self, value):
-		"""
-		Stores the pattern noteoff option.
-		"""
-		self.set_section('Global')
-		if value:
-			self.write_value('PatNoteOff', 'true')
-		else:
-			self.write_value('PatNoteOff', 'false') 	
-	
 	
 	def load_window_pos(self, windowid, window):
 		"""
@@ -928,38 +775,42 @@ def camelcase_to_unixstyle(s):
 		o += c.lower()
 	return o
 
-# build getters and setters based on the options map
-for section,options in CONFIG_OPTIONS.iteritems():
-	for option,kwargs in options.iteritems():
-		if 'default' in kwargs:
-			default = kwargs['default']
-			vtype = kwargs.get('vtype', type(default))
-			assert type(default) == vtype
-		else:
-			vtype = kwargs['vtype']
-			default = {float: 0.0, int:0, long:0, str:'', unicode:u'', bool:False}[vtype]
-		funcname = kwargs.get('func', camelcase_to_unixstyle(option))
-		doc = kwargs.get('doc', '')
-		if not doc:
-			doc = 'section %s, option %s, default %s, type %s.' % (section, option, default, vtype)
+def generate_config_method(section, option, kwargs):
+	if 'default' in kwargs:
+		default = kwargs['default']
+		vtype = kwargs.get('vtype', type(default))
+	else:
+		vtype = kwargs['vtype']
+		default = {float: 0.0, int:0, long:0, str:'', unicode:u'', bool:False}[vtype]
+	funcname = kwargs.get('func', camelcase_to_unixstyle(option))
+	doc = kwargs.get('doc', '')
+	if not doc:
+		doc = 'section %s, option %s, default %s, type %s.' % (section, option, default, vtype)
 		
-		onset = kwargs.get('onset', None)
-		onget = kwargs.get('onget', None)
-		
-		getter = lambda self,defvalue=kwargs.get(default,False): self.getter(section,option,vtype,onget,default)
-		getter.__name__ = 'get_' + funcname
-		getter.__doc__ = 'Returns ' + doc
-		setattr(AldrinConfig, 'get_' + funcname, getter)
-		
-		setter = lambda self,value: self.setter(section,option,vtype,onset,value)
-		setter.__name__ = 'set_' + funcname
-		setter.__doc__ = 'Sets ' + doc
-		setattr(AldrinConfig, 'set_' + funcname, setter)
-		
-		# add a property
-		prop = property(getter, setter, doc=doc)
-		setattr(AldrinConfig, funcname, prop)
+	onset = kwargs.get('onset', None)
+	onget = kwargs.get('onget', None)
+	
+	getter = lambda self,defvalue=kwargs.get(default,False): self.getter(section,option,vtype,onget,default)
+	getter.__name__ = 'get_' + funcname
+	getter.__doc__ = 'Returns ' + doc
+	setattr(AldrinConfig, 'get_' + funcname, getter)
+	
+	setter = lambda self,value: self.setter(section,option,vtype,onset,value)
+	setter.__name__ = 'set_' + funcname
+	setter.__doc__ = 'Sets ' + doc
+	setattr(AldrinConfig, 'set_' + funcname, setter)
+	
+	# add a property
+	prop = property(getter, setter, doc=doc)
+	setattr(AldrinConfig, funcname, prop)
 
+def generate_config_methods():
+	# build getters and setters based on the options map
+	for section,options in CONFIG_OPTIONS.iteritems():
+		for option,kwargs in options.iteritems():
+			generate_config_method(section, option, kwargs)
+
+generate_config_methods()
 config = None
 
 
@@ -1017,6 +868,7 @@ if __name__ == '__main__':
 	cfg.set_sample_preview_volume(-6.0)
 	print "prop1:",cfg.sample_preview_volume
 	cfg.sample_preview_volume = -9.0
+	print cfg.active_theme
 	print "prop2:",cfg.sample_preview_volume
 	print "volume:",cfg.get_sample_preview_volume()
 	cfg.set_sample_preview_volume(-12.0)
