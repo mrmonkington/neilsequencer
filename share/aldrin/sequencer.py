@@ -419,6 +419,19 @@ class SequencerView(gtk.DrawingArea):
 			return seq.get_track(self.track)
 		return None
 
+	def create_track(self, plugin):
+		# get sequencer and add the track
+		seq = player.get_current_sequencer()
+		track = seq.create_track(plugin)
+		# if it has no existing patterns, make one (even if it has no parameters, it might have incoming connections)
+		if plugin.get_pattern_count() == 0:
+			pattern = plugin.create_pattern(self.rootwindow.seqframe.view.step)
+			pattern.set_name('00')
+			# add a pattern trigger-event
+			track.set_event(0, 16)
+		self.adjust_scrollbars()
+		self.redraw()
+		
 	def insert_at_cursor(self, index = -1):
 		"""
 		Inserts a space at cursor.
@@ -604,10 +617,7 @@ class SequencerView(gtk.DrawingArea):
 		@param event: Menu event.
 		@type event: wx.CommandEvent
 		"""
-		seq = player.get_current_sequencer()
-		seq.create_track(plugin)
-		self.adjust_scrollbars()
-		self.redraw()
+		self.create_track(plugin)
 		
 	def on_popup_record_to_wave(self, widget, index):
 		print index
@@ -677,14 +687,13 @@ class SequencerView(gtk.DrawingArea):
 		response = dlg.run()
 		dlg.hide_all()
 		if response == gtk.RESPONSE_OK:
-			seq = player.get_current_sequencer()
 			name = dlg.combo.get_active_text()
 			for plugin in player.get_plugin_list():
 				if plugin.get_name() == name:
-					seq.create_track(plugin)
+					self.create_track(plugin)
 					break
 		dlg.destroy()
-		
+
 	def set_loop_start(self, event=None):
 		"""
 		Set loop startpoint
