@@ -1463,7 +1463,8 @@ class AmpView(gtk.DrawingArea):
 		vol=master.get_parameter_value(1, 0, 0)
 		self.amp = min(master.get_last_peak()[self.channel],1.0)
 		rect = self.get_allocation()
-		self.window.invalidate_rect((0,0,rect.width,rect.height), False)
+		if self.window:
+			self.window.invalidate_rect((0,0,rect.width,rect.height), False)
 		return True
 		
 	def draw(self, ctx):
