@@ -1338,6 +1338,8 @@ class PatternView(gtk.DrawingArea):
 		"""
 		if not self.selection:
 			return		
+		if self.selection.end == self.selection.begin + 1:
+			return
 		if self.row_step == 0:
 			step = 1
 		else:
@@ -1685,6 +1687,14 @@ class PatternView(gtk.DrawingArea):
 		"""
 		m = self.get_plugin()		
 		m.set_track_count(m.get_track_count()+1)
+		# Copy the values of the second-last track to the last.
+		pl = self.plugin
+		t = m.get_track_count()
+		for i in range(pl.get_parameter_count(2)):
+			p = pl.get_parameter(2, i)
+			if p.get_flags() & zzub.zzub_parameter_flag_state:
+				v = m.get_parameter_value(2, t - 2, i)
+				m.set_parameter_value(2, t - 1, i, v, 0)
 		self.pattern_changed()
 		# recreate sliders in parameter view
 		dlg = self.rootwindow.routeframe.view.plugin_dialogs.get(m,None)

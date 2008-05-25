@@ -98,20 +98,31 @@ class Preset:
 		@type plugin: zzub.Plugin
 		"""
 		pl = plugin.get_pluginloader()
-		params = list(reversed(self.params[:]))
+		idx = 0
 		for g in range(1,3):
 			if g == 1:
 				trackcount = 1
 			else:
 				trackcount = self.trackcount
-			for t in range(trackcount):
-					for i in range(pl.get_parameter_count(g)):
-						p = pl.get_parameter(g,i)
-						if p.get_flags() & zzub.zzub_parameter_flag_state:
-							v = params.pop()
-							assert v >= p.get_value_min() and v <= p.get_value_max()
-							if t < plugin.get_group_track_count(g):
-								plugin.set_parameter_value(g,t,i,v,0)
+			for t in range(plugin.get_group_track_count(g)):
+				state_param_count = 0
+				for i in range(pl.get_parameter_count(g)):
+					p = pl.get_parameter(g,i)
+					if p.get_flags() & zzub.zzub_parameter_flag_state:
+						v = self.params[idx]
+						idx += 1
+						state_param_count += 1
+						assert v >= p.get_value_min() and v <= p.get_value_max()
+						plugin.set_parameter_value(g,t,i,v,0)
+				if g == 2 and (t % trackcount) == trackcount - 1:
+					# We've written all the tracks in this preset: if there are further
+					# tracks in the plugin, reset to the beginning of the preset tracks
+					# and keep writing.
+					idx -= state_param_count * trackcount
+
+					
+					
+						
 								
 	def pickup(self, plugin):
 		"""
