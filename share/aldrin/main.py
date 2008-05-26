@@ -22,6 +22,8 @@
 Provides application class and controls used in the aldrin main window.
 """
 
+import sys, os
+
 import contextlog
 contextlog.init()
 
@@ -30,7 +32,6 @@ errordlg.install()
 
 from eventbus import *
 
-import sys, os
 from gtkimport import gtk
 import gobject
 gobject.threads_init()
