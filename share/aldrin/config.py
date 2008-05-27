@@ -76,10 +76,38 @@ CONFIG_OPTIONS = dict(
 		LedDraw = dict(default=True,doc="the led draw option."),
 		PatNoteOff = dict(func='pattern_noteoff',default=False,doc="pattern noteoff option."),
 	),
+	WavetablePaths = dict(
+		Path = dict(list=True,func='wavetable_paths',vtype=str,default=[],doc="the list of wavetable paths."),
+	),
 	Freesound = dict(
 		MaxSearchResults = dict(func='freesound_max_search_results',default=100,doc="the number of max search results in freesound."),
 	),
 )
+
+	#~ def get_wavetable_paths(self):
+		#~ """
+		#~ Returns the list of wavetable paths.
+		#~ @return: List of paths to directories containing samples.
+		#~ @rtype:[str,...]
+		#~ """
+		#~ self.set_section('WavetablePaths')
+		#~ pathlist = []
+		#~ for i,(name,value) in enumerate(config.get_values()):
+			#~ pathlist.append(value)
+		#~ return pathlist
+		
+	#~ def set_wavetable_paths(self, pathlist):
+		#~ """
+		#~ Sets the list of wavetable paths.
+		
+		#~ @param pathlist: List of paths to directories containing samples.
+		#~ @type pathlist: [str,...]
+		#~ """
+		#~ self.delete_section('WavetablePaths')
+		#~ self.set_section('WavetablePaths')
+		#~ for i in range(len(pathlist)):
+			#~ self.write_value('Path%i' % i, pathlist[i])
+		#~ self.flush()
 
 # the key of this dictionary is the language code associated with the keyboard. the 
 # value is a series of keyboard characters associated with each note, in the order 
@@ -221,6 +249,36 @@ class AldrinConfig(object, ConfigParser.ConfigParser):
 				value = 'false'
 		self.set_section(section)
 		self.write_value(option, str(value))
+		self.flush()
+		
+	def listgetter(self, section, option, vtype, onget):
+		self.set_section(section)
+		values = []
+		for i,(name,value) in enumerate(config.get_values()):
+			if name.lower().startswith(option.lower()):
+				if vtype == bool:
+					if value == 'true':
+						value = True
+					elif value == 'false':
+						value = False
+				if onget:
+					value = onget(value)
+				values.append(value)
+		return values
+		
+	def listsetter(self, section, option, vtype, onset, values):
+		self.delete_section(section)
+		self.set_section(section)
+		for i,value in enumerate(values):
+			if onset:
+				value = onset(value)
+			assert type(value) == vtype		
+			if vtype == bool:
+				if value:
+					value = 'true'
+				else:
+					value = 'false'
+			self.write_value('%s%04i' % (option,i), value)
 		self.flush()
 			
 	def set_section(self, section):
@@ -552,20 +610,6 @@ class AldrinConfig(object, ConfigParser.ConfigParser):
 			self.write_value('URI%i' % i, uris[i])
 		self.flush()
 		
-		
-	def set_wavetable_paths(self, pathlist):
-		"""
-		Sets the list of wavetable paths.
-		
-		@param pathlist: List of paths to directories containing samples.
-		@type pathlist: [str,...]
-		"""
-		self.delete_section('WavetablePaths')
-		self.set_section('WavetablePaths')
-		for i in range(len(pathlist)):
-			self.write_value('Path%i' % i, pathlist[i])
-		self.flush()
-		
 	def set_plugin_presets(self, pluginloader, presets):
 		"""
 		Stores a preset collection for the given pluginloader.
@@ -690,18 +734,6 @@ class AldrinConfig(object, ConfigParser.ConfigParser):
 				else:
 					window.hide()
 		
-	def get_wavetable_paths(self):
-		"""
-		Returns the list of wavetable paths.
-		@return: List of paths to directories containing samples.
-		@rtype:[str,...]
-		"""
-		self.set_section('WavetablePaths')
-		pathlist = []
-		for i,(name,value) in enumerate(config.get_values()):
-			pathlist.append(value)
-		return pathlist
-		
 	def set_midi_controllers(self, ctrllist):
 		"""
 		Sets the list of mapped midi controllers.
@@ -776,12 +808,6 @@ def camelcase_to_unixstyle(s):
 	return o
 
 def generate_config_method(section, option, kwargs):
-	if 'default' in kwargs:
-		default = kwargs['default']
-		vtype = kwargs.get('vtype', type(default))
-	else:
-		vtype = kwargs['vtype']
-		default = {float: 0.0, int:0, long:0, str:'', unicode:u'', bool:False}[vtype]
 	funcname = kwargs.get('func', camelcase_to_unixstyle(option))
 	doc = kwargs.get('doc', '')
 	if not doc:
@@ -790,12 +816,24 @@ def generate_config_method(section, option, kwargs):
 	onset = kwargs.get('onset', None)
 	onget = kwargs.get('onget', None)
 	
-	getter = lambda self,defvalue=kwargs.get(default,False): self.getter(section,option,vtype,onget,default)
+	if kwargs.get('list', False):
+		vtype = kwargs['vtype']
+		getter = lambda self: self.listgetter(section,option,vtype,onget)
+		setter = lambda self,value: self.listsetter(section,option,vtype,onset,value)
+	else:
+		if 'default' in kwargs:
+			default = kwargs['default']
+			vtype = kwargs.get('vtype', type(default))
+		else:
+			vtype = kwargs['vtype']
+			default = {float: 0.0, int:0, long:0, str:'', unicode:u'', bool:False}[vtype]
+		getter = lambda self,defvalue=kwargs.get(default,False): self.getter(section,option,vtype,onget,default)
+		setter = lambda self,value: self.setter(section,option,vtype,onset,value)
+	
 	getter.__name__ = 'get_' + funcname
 	getter.__doc__ = 'Returns ' + doc
 	setattr(AldrinConfig, 'get_' + funcname, getter)
 	
-	setter = lambda self,value: self.setter(section,option,vtype,onset,value)
 	setter.__name__ = 'set_' + funcname
 	setter.__doc__ = 'Sets ' + doc
 	setattr(AldrinConfig, 'set_' + funcname, setter)
