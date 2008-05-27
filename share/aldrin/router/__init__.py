@@ -451,6 +451,14 @@ class RoutePanel(gtk.VBox):
 	"""
 	Contains the view panel and manages parameter dialogs.
 	"""
+	__aldrin__ = dict(
+		id = 'aldrin.core.router.panel',
+		singleton = True,
+		categories = [
+			'aldrin.viewpanel',
+		]
+	)
+	
 	def __init__(self, rootwindow):
 		"""
 		Initializer.
@@ -460,7 +468,7 @@ class RoutePanel(gtk.VBox):
 		"""
 		self.rootwindow = rootwindow
 		gtk.VBox.__init__(self)
-		self.view = RouteView(rootwindow, self)
+		self.view = __aldrincom__.get('aldrin.core.router.view', rootwindow, self)
 		sizer_2 = gtk.HBox()
 		sizer_2.add(self.view)
 		self.add(sizer_2)
@@ -582,6 +590,13 @@ class RouteView(gtk.DrawingArea):
 	"""
 	Allows to monitor and control plugins and their connections.
 	"""	
+	__aldrin__ = dict(
+		id = 'aldrin.core.router.view',
+		singleton = True,
+		categories = [
+		]
+	)
+	
 	current_plugin = None
 	connecting = False
 	dragging = False
@@ -604,6 +619,7 @@ class RouteView(gtk.DrawingArea):
 	COLOR_CPU_ON = 7
 	COLOR_CPU_BORDER = 8
 	COLOR_CPU_WARNING = 9
+	
 	
 	def __init__(self, rootwindow, parent):
 		"""
@@ -1629,6 +1645,17 @@ __all__ = [
 'VolumeSlider',
 'RouteView',
 ]
+
+__aldrin__ = dict(
+	classes = [
+		ParameterDialog,
+		AttributesDialog,
+		PluginBrowserDialog,
+		RoutePanel,
+		VolumeSlider,
+		RouteView,
+	],
+)
 
 if __name__ == '__main__':
 	import testplayer, utils

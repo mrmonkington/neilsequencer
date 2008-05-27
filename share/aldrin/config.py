@@ -235,7 +235,7 @@ class AldrinConfig(object, ConfigParser.ConfigParser):
 	def listgetter(self, section, option, vtype, onget):
 		self.set_section(section)
 		values = []
-		for i,(name,value) in enumerate(config.get_values()):
+		for i,(name,value) in enumerate(self.get_values()):
 			if name.lower().startswith(option.lower()):
 				if vtype == bool:
 					if value == 'true':
@@ -494,7 +494,7 @@ class AldrinConfig(object, ConfigParser.ConfigParser):
 		"""
 		self.set_section('MIDI/Inputs')
 		inputlist = []
-		for i,(name,value) in enumerate(config.get_values()):
+		for i,(name,value) in enumerate(self.get_values()):
 			inputlist.append(value)
 		return inputlist
 		
@@ -548,7 +548,7 @@ class AldrinConfig(object, ConfigParser.ConfigParser):
 		"""
 		self.set_section('MIDI/Outputs')
 		outputlist = []
-		for i,(name,value) in enumerate(config.get_values()):
+		for i,(name,value) in enumerate(self.get_values()):
 			outputlist.append(value)
 		return outputlist
 		
@@ -804,8 +804,12 @@ def generate_config_methods():
 			generate_config_method(section, option, kwargs)
 
 generate_config_methods()
-config = None
 
+class AldrinConfigSingleton(AldrinConfig):
+	__aldrin__ = dict(
+		id = 'aldrin.core.config',
+		singleton = True,
+	)
 
 def get_config(*args):
 	"""
@@ -813,10 +817,8 @@ def get_config(*args):
 	
 	@rtype: {AldrinConfig}.
 	"""
-	global config
-	if not config:
-		config = AldrinConfig()
-	return config
+	import aldrincom
+	return aldrincom.com.get(AldrinConfigSingleton.__aldrin__['id'])
 
 def get_plugin_blacklist():
 	"""
@@ -850,15 +852,14 @@ def get_plugin_aliases():
 
 
 __all__ = [
-'AldrinConfig',
 'get_config',
 'get_plugin_aliases',
 ]
 
 __aldrin__ = dict(
-	services = {
-		'aldrin.core.config' : get_config,
-	},
+	classes = [
+		AldrinConfigSingleton,
+	],
 )
 
 if __name__ == '__main__':

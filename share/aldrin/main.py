@@ -71,6 +71,8 @@ import os, sys
 
 import audiogui
 
+from aldrincom import com
+
 app = None
 
 def get_stock_bmp(artid):
@@ -437,7 +439,9 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		self.aldrinframe_toolbar = gtk.Toolbar()
 		vbox.pack_start(self.aldrinframe_toolbar, expand=False)
 		
-		self.routeframe = RoutePanel(self)
+		panels = com.get_from_category('aldrin.viewpanel', self)
+		
+		self.routeframe = com.get('aldrin.core.router.panel')
 		self.seqframe = SequencerPanel(self)
 		self.patternframe = PatternPanel(self)
 		self.wavetableframe = WavetablePanel(self)
@@ -1815,6 +1819,7 @@ class AldrinApplication:
 		"""
 		Called when the main loop initializes.
 		"""
+		com.load_packages()
 		self.frame = AldrinFrame()
 		gtk.main()
 		return 1

@@ -22,63 +22,69 @@ from eventbus import *
 import config
 
 DEFAULT_PACKAGES = [
-	'router',
+	'aldrin.router',
 ]
 
-class Hub:
+# aldrin component object model
+class ComponentManager:
 	def __init__(self):
-		self.services = {}
-		self.svcfactories = {}
+		self.singletons = {}
 		self.factories = {}
 		self.categories = {}
 		self.register(config.__aldrin__)
 		
 	def load_packages(self):
-		packages = self.get_service('aldrin.core.config').packages
+		packages = self.get('aldrin.core.config').packages
 		for modulename in DEFAULT_PACKAGES + packages:
 			print "importing module %s" % modulename
 			module_ = __import__(modulename)
 			names = modulename.split('.')
 			for name in names[1:]:
 				module_ = getattr(module_, name)
+			if not hasattr(module_, '__aldrin__'):
+				continue
+			module_.__aldrincom__ = self
 			self.register(module_.__aldrin__)
 					
 	def register(self, pkginfo):
 		# enumerate class factories
 		for class_ in pkginfo.get('classes', []):
+			if not hasattr(class_, '__aldrin__'):
+				continue
 			classinfo = class_.__aldrin__
-			self.factories[classinfo['id']] = class_
+			id = classinfo['id']
+			self.factories[id] = class_
 			# register categories
 			for category in classinfo.get('categories', []):
 				catlist = self.categories.get(category, [])
-				catlist.append(class_)
-				self.categories[category]= catlist
-		# enumerate service factories
-		for serviceid,class_ in pkginfo.get('services', {}).iteritems():
-			if not self.svcfactories.has_key(serviceid):
-				self.svcfactories[serviceid] = class_
+				catlist.append(id)
+				self.categories[category] = catlist
 					
-	def create_instance(self, id):
+	def get(self, id, *args, **kwargs):
+		# try to get a singleton first
+		instance = self.singletons.get(id, None)
+		if instance:
+			return instance
+		# create a new object
 		class_ = self.factories.get(id, None)
 		if not class_:
 			return None
-		return class_(self)
+		obj = class_(*args,**kwargs)
+		if class_.__aldrin__.get('singleton',False):
+			self.singletons[id] = obj # register as singleton
+		return obj
 		
-	def get_category_ids(self, category):
-		return [class_.__aldrin__['id'] for class_ in self.categories.get(category,[])]
+	def get_ids_from_category(self, category):
+		return self.categories.get(category,[])
 		
-	def create_category_instances(self, category):
-		return [class_(self) for class_ in self.categories.get(category,[]) if class_]
-		
-	def get_service(self, serviceid):
-		if not serviceid in self.services:
-			class_ = self.svcfactories.get(serviceid, None)
-			if not class_:
-				return None
-			self.services[serviceid] = class_(self)
-		return self.services.get(serviceid, None)
+	def get_from_category(self, category, *args, **kwargs):
+		return [self.get(id, *args, **kwargs) for id in self.categories.get(category,[])]
 
-hub = Hub()
+com = ComponentManager()
+
+__all__ = [
+	'com',
+]
 
 if __name__ == '__main__':
 	class MyClass:
@@ -93,24 +99,32 @@ if __name__ == '__main__':
 		def __repr__(self):
 			return '<%s>' % repr(self.x)
 		
-		def __init__(self, hub):
+		def __init__(self, y=0):
 			import random
-			self.x = random.random()
+			self.x = y or random.random()
+			
+	class MyClass2(MyClass):
+		__aldrin__ = dict(
+			id = 'aldrin.hub.myclass.singleton',
+			singleton = True,
+			categories = [
+				'uselessclass',
+				'uselessclass2',
+			]
+		)
 	
 	pkginfo = dict(
 		classes = [
 			MyClass,
+			MyClass2,
 		],
-		services = {
-			'randomnumber' : MyClass,
-		},
 	)
-	hub.register(pkginfo)
-	print hub.get_service('randomnumber').x
-	print hub.create_instance('aldrin.hub.myclass').x
-	print hub.get_service('randomnumber').x
-	print hub.create_instance('aldrin.hub.myclass').x
-	print hub.get_service('randomnumber').x
-	print hub.create_instance('aldrin.hub.myclass').x
-	print hub.create_category_instances('uselessclass')
+	com.register(pkginfo)
+	print com.get('aldrin.hub.myclass').x
+	print com.get('aldrin.hub.myclass').x
+	print com.get('aldrin.hub.myclass').x
+	print com.get('aldrin.hub.myclass.singleton').x
+	print com.get('aldrin.hub.myclass.singleton').x
+	print com.get('aldrin.hub.myclass.singleton').x
+	print com.get_from_category('uselessclass')
 	
