@@ -2,7 +2,7 @@
 
 # Aldrin
 # Modular Sequencer
-# Copyright (C) 2006 The Aldrin Development Team
+# Copyright (C) 2006,2007,2008 The Aldrin Development Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -77,37 +77,18 @@ CONFIG_OPTIONS = dict(
 		PatNoteOff = dict(func='pattern_noteoff',default=False,doc="pattern noteoff option."),
 	),
 	WavetablePaths = dict(
-		Path = dict(list=True,func='wavetable_paths',vtype=str,default=[],doc="the list of wavetable paths."),
+		Path = dict(list=True,func='wavetable_paths',vtype=str,doc="the list of wavetable paths."),
+	),
+	Extensions = dict(
+		URI = dict(list=True,func='enabled_extensions',vtype=str,doc="the current list of enabled extension uris."),
+	),
+	Packages = dict(
+		package = dict(list=True,func='packages',vtype=str,doc="the list of python packages to be loaded."),
 	),
 	Freesound = dict(
 		MaxSearchResults = dict(func='freesound_max_search_results',default=100,doc="the number of max search results in freesound."),
 	),
 )
-
-	#~ def get_wavetable_paths(self):
-		#~ """
-		#~ Returns the list of wavetable paths.
-		#~ @return: List of paths to directories containing samples.
-		#~ @rtype:[str,...]
-		#~ """
-		#~ self.set_section('WavetablePaths')
-		#~ pathlist = []
-		#~ for i,(name,value) in enumerate(config.get_values()):
-			#~ pathlist.append(value)
-		#~ return pathlist
-		
-	#~ def set_wavetable_paths(self, pathlist):
-		#~ """
-		#~ Sets the list of wavetable paths.
-		
-		#~ @param pathlist: List of paths to directories containing samples.
-		#~ @type pathlist: [str,...]
-		#~ """
-		#~ self.delete_section('WavetablePaths')
-		#~ self.set_section('WavetablePaths')
-		#~ for i in range(len(pathlist)):
-			#~ self.write_value('Path%i' % i, pathlist[i])
-		#~ self.flush()
 
 # the key of this dictionary is the language code associated with the keyboard. the 
 # value is a series of keyboard characters associated with each note, in the order 
@@ -584,32 +565,6 @@ class AldrinConfig(object, ConfigParser.ConfigParser):
 			self.write_value('Name%i' % i, outputlist[i])
 		self.flush()
 		
-	def get_enabled_extensions(self):
-		"""
-		Returns the current list of enabled extension uris.
-		
-		@return: List of uris.
-		@rtype: [str,...]
-		"""
-		self.set_section('Extensions')
-		uris = []
-		for i,(name,value) in enumerate(config.get_values()):
-			uris.append(value)
-		return uris
-		
-	def set_enabled_extensions(self, uris):
-		"""
-		Stores the current list of enabled extension uris.
-		
-		@param uris: List of uris
-		@type uris: [str,...]
-		"""
-		self.delete_section('Extensions')
-		self.set_section('Extensions')
-		for i in range(len(uris)):
-			self.write_value('URI%i' % i, uris[i])
-		self.flush()
-		
 	def set_plugin_presets(self, pluginloader, presets):
 		"""
 		Stores a preset collection for the given pluginloader.
@@ -852,7 +807,7 @@ generate_config_methods()
 config = None
 
 
-def get_config():
+def get_config(*args):
 	"""
 	Returns the global object singleton.
 	
@@ -900,9 +855,17 @@ __all__ = [
 'get_plugin_aliases',
 ]
 
+__aldrin__ = dict(
+	services = {
+		'aldrin.core.config' : get_config,
+	},
+)
+
 if __name__ == '__main__':
 	cfg = get_config()
+	print cfg.get_enabled_extensions()
 	print cfg.get_plugin_icon_path("matilde")
+	print cfg.packages
 	cfg.set_sample_preview_volume(-6.0)
 	print "prop1:",cfg.sample_preview_volume
 	cfg.sample_preview_volume = -9.0

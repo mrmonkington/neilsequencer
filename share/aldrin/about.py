@@ -2,7 +2,7 @@
 
 # Aldrin
 # Modular Sequencer
-# Copyright (C) 2006 The Aldrin Development Team
+# Copyright (C) 2006,2007,2008 The Aldrin Development Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -26,8 +26,8 @@ import sys
 from utils import prepstr
 
 NAME = "Aldrin"
-VERSION = "0.12 (Luna)"
-COPYRIGHT = "Copyright (C) 2006, 2007 The Aldrin Development Team"
+VERSION = "0.13 (Mars)"
+COPYRIGHT = "Copyright (C) 2006, 2007, 2008 The Aldrin Development Team"
 COMMENTS = '"no insult, but i think you\'re too weird to really make the best music app ever created." -- rpfr'
 
 LICENSE = """This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
