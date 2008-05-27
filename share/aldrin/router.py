@@ -22,34 +22,34 @@
 Provides dialogs and controls to render the plugin view/router and its associated components.
 """
 
-from aldrin.gtkimport import gtk
+from gtkimport import gtk
 import gobject
 import cairo
 import pangocairo
-from aldrin.utils import PLUGIN_FLAGS_MASK, ROOT_PLUGIN_FLAGS, GENERATOR_PLUGIN_FLAGS, EFFECT_PLUGIN_FLAGS, CONTROLLER_PLUGIN_FLAGS
-from aldrin.utils import is_effect,is_generator,is_controller,is_root
-from aldrin.utils import prepstr, filepath, db2linear, linear2db, is_debug, filenameify, \
+from utils import PLUGIN_FLAGS_MASK, ROOT_PLUGIN_FLAGS, GENERATOR_PLUGIN_FLAGS, EFFECT_PLUGIN_FLAGS, CONTROLLER_PLUGIN_FLAGS
+from utils import is_effect,is_generator,is_controller,is_root
+from utils import prepstr, filepath, db2linear, linear2db, is_debug, filenameify, \
 	get_item_count, question, error, new_listview, add_scrollbars, get_clipboard_text, set_clipboard_text, \
 	gettext, new_stock_image_button
-import aldrin.config as config
+import config as config
 import zzub
 import sys,os
-import aldrin.indexer as indexer
+import indexer as indexer
 import fnmatch
 import ctypes
 import time
 import random
-import aldrin.extman as extman
-import aldrin.interface as interface
+import extman as extman
+import interface as interface
 import Queue
-from aldrin.preset import PresetCollection, Preset
-import aldrin.common as common
+from preset import PresetCollection, Preset
+import common as common
 player = common.get_player()
-from aldrin.common import MARGIN, MARGIN2, MARGIN3
-from aldrin.rack import ParameterView
-from aldrin.presetbrowser import PresetView
-from aldrin.patterns import key_to_note
-from aldrin.eventbus import *
+from common import MARGIN, MARGIN2, MARGIN3
+from rack import ParameterView
+from presetbrowser import PresetView
+from patterns import key_to_note
+from eventbus import *
 
 PLUGINWIDTH = 100
 PLUGINHEIGHT = 25

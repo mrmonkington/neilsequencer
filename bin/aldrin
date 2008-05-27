@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
-import os, sys
+import os, sys, imp
+
 if '--debug' in sys.argv:
 	sys.argv.remove('--debug')
 	os.system('gdb --eval-command=run --args python "%s"$*' % sys.argv[0])
 	raise SystemExit, 0
-parent_path = os.path.abspath(os.path.join(os.path.dirname(__file__),'..','share'))
-if not parent_path in sys.path:
-	sys.path += [parent_path]
-import aldrin
-aldrin.run(sys.argv)
+sourcepath = os.path.abspath(os.path.join(os.path.dirname(__file__),'..','share','aldrin'))
+os.chdir(sourcepath)
+main = imp.load_source('aldrin', os.path.join(sourcepath, 'main.py'))
+main.run(sys.argv)

@@ -22,7 +22,8 @@ from eventbus import *
 import config
 
 DEFAULT_PACKAGES = [
-	'aldrin.router',
+	'router',
+	'mainwindow',
 ]
 
 # aldrin component object model

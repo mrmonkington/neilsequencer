@@ -23,6 +23,11 @@ Provides application class and controls used in the aldrin main window.
 """
 
 import sys, os
+# add the directory that the main module resides in to the python path,
+# if its not already contained
+modulepath = os.path.dirname(__file__)
+if not modulepath in sys.path:
+	sys.path = [modulepath] + sys.path
 
 import contextlog
 contextlog.init()
@@ -505,6 +510,8 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		#self.framepanel.set_show_tabs(False)
 		for k in sorted(self.pages):
 			panel,stockid = self.pages[k]
+			if not panel:
+				continue
 			panel.show_all()
 			self.framepanel.append_page(panel, gtk.image_new_from_stock(stockid, gtk.ICON_SIZE_SMALL_TOOLBAR))
 		
@@ -946,6 +953,8 @@ class AldrinFrame(gtk.Window, IRootWindow):
 			self.activated=1
 			self.index=index
 			panel, stockid = self.pages[self.index]
+			if not panel:
+				return
 			if self.framepanel.get_current_page() != self.index:
 				self.framepanel.set_current_page(self.index)
 			if hasattr(panel,'view'):
@@ -1039,12 +1048,14 @@ class AldrinFrame(gtk.Window, IRootWindow):
 		there are specialized handlers in the panel classes.
 		"""
 		common.get_plugin_infos().update()
-		self.routeframe.update_all()
+		if self.routeframe:
+			self.routeframe.update_all()
 		self.infoframe.update_all()
 		if config.get_config().get_experimental('RackPanel'):
 			self.rackframe.update_all()
-		self.routeframe.view.update_colors()
-		self.routeframe.view.redraw()
+		if self.routeframe:
+			self.routeframe.view.update_colors()
+			self.routeframe.view.redraw()
 		self.seqframe.seqview.set_cursor_pos(0,0)
 		self.seqframe.seqview.adjust_scrollbars()
 		self.seqframe.seqview.redraw()
@@ -1586,6 +1597,8 @@ class MasterPanel(gtk.HBox):
 		"""
 		page=self.rootwindow.framepanel.get_current_page()
 		panel, stockid = self.rootwindow.pages[page]
+		if not panel:
+			return
 		try: panel.view.grab_focus()
 		except: panel.grab_focus()
 
