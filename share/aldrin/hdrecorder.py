@@ -27,8 +27,8 @@ from gtkimport import gtk
 import gobject
 import utils, os, stat
 import common
+from aldrincom import com
 from common import MARGIN, MARGIN2, MARGIN3
-player = common.get_player()
 
 class HDRecorderDialog(gtk.Dialog):
 	"""
@@ -46,6 +46,7 @@ class HDRecorderDialog(gtk.Dialog):
 		#self.add_button(gtk.STOCK_CLOSE, gtk.RESPONSE_CLOSE)
 		#self.set_size_request(250,-1)
 		self.set_resizable(False)
+		player = com.get('aldrin.core.player')
 		self.master = player.get_plugin(0)
 		btnsaveas = gtk.Button(stock=gtk.STOCK_SAVE_AS)
 		btnsaveas.connect("clicked", self.on_saveas)

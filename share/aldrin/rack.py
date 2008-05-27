@@ -36,12 +36,10 @@ import indexer
 import fnmatch
 import ctypes
 import time
-import extman, interface
 import Queue
 from preset import PresetCollection, Preset
 from patterns import key_to_note
 import common
-player = common.get_player()
 from common import MARGIN, MARGIN2, MARGIN3, MARGIN0
 import cPickle
 

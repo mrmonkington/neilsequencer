@@ -39,17 +39,16 @@ import fnmatch
 import ctypes
 import time
 import random
-import extman as extman
-import interface as interface
 import Queue
 from preset import PresetCollection, Preset
 import common as common
-player = common.get_player()
 from common import MARGIN, MARGIN2, MARGIN3
 from rack import ParameterView
 from presetbrowser import PresetView
 from patterns import key_to_note
 from eventbus import *
+
+from aldrincom import com
 
 PLUGINWIDTH = 100
 PLUGINHEIGHT = 25
@@ -468,7 +467,7 @@ class RoutePanel(gtk.VBox):
 		"""
 		self.rootwindow = rootwindow
 		gtk.VBox.__init__(self)
-		self.view = __aldrincom__.get('aldrin.core.router.view', rootwindow, self)
+		self.view = com.get('aldrin.core.router.view', rootwindow, self)
 		sizer_2 = gtk.HBox()
 		sizer_2.add(self.view)
 		self.add(sizer_2)
@@ -640,7 +639,7 @@ class RouteView(gtk.DrawingArea):
 		self.update_colors()
 		gtk.DrawingArea.__init__(self)
 		self.volume_slider = VolumeSlider()		
-		self.plugin_tree = indexer.parse_index(player, config.get_config().get_index_path())
+		self.plugin_tree = indexer.parse_index(com.get('aldrin.core.player'), config.get_config().get_index_path())
 		self.add_events(gtk.gdk.ALL_EVENTS_MASK)
 		self.set_property('can-focus', True)
 		self.connect('button-press-event', self.on_left_down)
@@ -1198,6 +1197,7 @@ class RouteView(gtk.DrawingArea):
 		@return: A connection item or None.
 		@rtype: zzub.Connection or None
 		"""
+		player = com.get('aldrin.core.player')
 		rect = self.get_allocation()
 		w,h = rect.width, rect.height
 		cx,cy = w*0.5, h * 0.5
@@ -1233,6 +1233,7 @@ class RouteView(gtk.DrawingArea):
 		mx, my = x,y
 		PW, PH = PLUGINWIDTH / 2, PLUGINHEIGHT / 2
 		area = AREA_ANY
+		player = com.get('aldrin.core.player')
 		for mp in reversed(player.get_plugin_list()):
 			x,y = mp.get_position()
 			x,y = int(cx * (1+x)), int(cy * (1+y))
@@ -1246,6 +1247,7 @@ class RouteView(gtk.DrawingArea):
 		Event handler for left doubleclicks. If the doubleclick
 		hits a plugin, the parameter window is being shown.
 		"""
+		player = com.get('aldrin.core.player')
 		mx,my = int(event.x), int(event.y)
 		res = self.get_plugin_at((mx,my))
 		if not res:
@@ -1382,6 +1384,7 @@ class RouteView(gtk.DrawingArea):
 		if self.rootwindow.index != self.rootwindow.PAGE_ROUTE:
 			return True
 		if self.window:
+			player = com.get('aldrin.core.player')
 			rect = self.get_allocation()
 			w,h = rect.width, rect.height
 			cx,cy = w*0.5,h*0.5
@@ -1408,6 +1411,7 @@ class RouteView(gtk.DrawingArea):
 		"""
 		Draws only the leds into the offscreen buffer.
 		"""
+		player = com.get('aldrin.core.player')
 		gc = self.window.new_gc()
 		cm = gc.get_colormap()
 		cfg = config.get_config()
@@ -1514,6 +1518,7 @@ class RouteView(gtk.DrawingArea):
 		"""
 		Draws plugins, connections and arrows to an offscreen buffer.
 		"""
+		player = com.get('aldrin.core.player')
 		cfg = config.get_config()
 		rect = self.get_allocation()
 		w,h = rect.width,rect.height
@@ -1567,7 +1572,6 @@ class RouteView(gtk.DrawingArea):
 			bmpctx.rectangle(0,0,w,h)
 			bmpctx.fill()
 			bmpctx.set_line_width(1)
-			
 			mplist = [(mp,get_pixelpos(*mp.get_position())) for mp in player.get_plugin_list()]
 			
 			for mp,(rx,ry) in mplist:

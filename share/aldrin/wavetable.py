@@ -35,8 +35,8 @@ import freesound
 import popen2
 import common
 from common import MARGIN, MARGIN2, MARGIN3
-player = common.get_player()
 from fspanel import FreesoundPanel
+from aldrincom import com
 
 class WavetablePanel(gtk.Notebook):
 	"""
@@ -901,6 +901,7 @@ class WavetablePanel(gtk.Notebook):
 		# XXX: preserve selections across updates
 		# update sample list
 		self.samplestore.clear()
+		player = com.get('aldrin.core.player')
 		for i in range(player.get_wave_count()):
 			w = player.get_wave(i)
 			self.samplestore.append(["%02X." % (i+1), prepstr(w.get_name())])

@@ -26,7 +26,7 @@ from gtkimport import gtk
 import common
 from utils import add_scrollbars
 from common import MARGIN, MARGIN0, MARGIN2, MARGIN3
-player = common.get_player()
+from aldrincom import com
 
 LICENSES = [
 	dict(
@@ -135,6 +135,7 @@ class InfoView(gtk.TextView):
 		"""
 		Updates the view.
 		"""
+		player = com.get('aldrin.core.player')
 		text = player.get_infotext()
 		#~ if not text:
 			#~ text = "Composed with Aldrin.\n\nThe revolution will not be televised."

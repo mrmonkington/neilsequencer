@@ -18,3 +18,1272 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+import sys, os
+from gtkimport import gtk
+from utils import format_time, ticks_to_time, prepstr, linear2db, db2linear, filepath, \
+	is_debug, question, error, add_scrollbars, file_filter, new_stock_image_toggle_button, \
+	new_stock_image_button, message
+import zzub
+import gobject
+import time
+import common
+import config
+import errordlg
+from common import MARGIN, MARGIN2, MARGIN3, MARGIN0
+import driver
+import sequencer, router, patterns, wavetable, preferences, hdrecorder, cpumonitor, info, common, rack
+from utils import make_submenu_item, make_stock_menu_item, make_stock_tool_item, make_stock_toggle_item, \
+	make_stock_radio_item, make_menu_item, make_check_item, make_radio_item
+
+from sequencer import SequencerPanel
+from router import RoutePanel
+from patterns import PatternPanel
+from wavetable import WavetablePanel
+from rack import RackPanel
+from info import InfoPanel
+from preferences import show_preferences
+
+from config import get_plugin_aliases, get_plugin_blacklist
+
+STOCK_PATTERNS = "aldrin-patterns"
+STOCK_ROUTER = "aldrin-router"
+STOCK_SEQUENCER = "aldrin-sequencer"
+STOCK_LOOP = "aldrin-loop"
+STOCK_SOUNDLIB = "aldrin-soundlib"
+STOCK_INFO = "aldrin-info"
+STOCK_RACK = "aldrin-rack"
+STOCK_PANIC = "aldrin-panic"
+
+from aldrincom import com
+from eventbus import *
+
+class AldrinFrame(gtk.Window):
+	"""
+	The application main window class.
+	"""
+	
+	__aldrin__ = dict(
+		id = 'aldrin.core.window.root',
+		singleton = True,
+		categories = [
+			'rootwindow',
+		],
+	)
+
+	OPEN_SONG_FILTER = [
+		file_filter("All songs (*.ccm,*.bmw,*.bmx)", "*.ccm", "*.bmw", "*.bmx"),
+		file_filter("CCM Songs (*.ccm)", "*.ccm"),
+		file_filter("BMX Songs with waves (*.bmx)","*.bmx"),
+		file_filter("BMX Songs without waves (*.bmw)","*.bmw"),
+	]
+	
+	SAVE_SONG_FILTER = [
+		file_filter("CCM Songs (*.ccm)","*.ccm"),
+	]
+	
+	DEFAULT_EXTENSION = '.ccm'
+	
+	PAGE_PATTERN = 0
+	PAGE_ROUTE = 1
+	PAGE_SEQUENCER = 2
+	PAGE_WAVETABLE = 3
+	PAGE_INFO = 4
+	PAGE_RACK = 5
+	
+	style_rc = """
+	#gtk-button-images=0
+	gtk-icon-sizes="gtk-menu=16,16:gtk-button=16,16:gtk-small-toolbar=16,16:gtk-large-toolbar=16,16:panel-menu=16,16"
+	"""
+	
+	gtk.rc_parse_string(style_rc)
+	
+	iconfactory = gtk.IconFactory()
+	iconfactory.add_default()
+	def make_iconset(path):
+		return gtk.IconSet(gtk.gdk.pixbuf_new_from_file(path))
+
+	iconfactory.add(gtk.STOCK_NEW, make_iconset(filepath('res/document-new.png')))
+	iconfactory.add(gtk.STOCK_OPEN, make_iconset(filepath('res/document-open.png')))
+	iconfactory.add(gtk.STOCK_SAVE, make_iconset(filepath('res/document-save.png')))
+
+	iconfactory.add(gtk.STOCK_SAVE, make_iconset(filepath('res/document-save.png')))
+
+	iconfactory.add(gtk.STOCK_MEDIA_PLAY, make_iconset(filepath('res/media-playback-start.png')))
+	iconfactory.add(gtk.STOCK_MEDIA_RECORD, make_iconset(filepath('res/media-record.png')))
+	iconfactory.add(gtk.STOCK_MEDIA_STOP, make_iconset(filepath('res/media-playback-stop.png')))
+
+	iconfactory.add(STOCK_PATTERNS, make_iconset(filepath('res/patterns.png')))
+	iconfactory.add(STOCK_ROUTER, make_iconset(filepath('res/machines.png')))
+	iconfactory.add(STOCK_SEQUENCER, make_iconset(filepath('res/sequencer.png')))
+	iconfactory.add(STOCK_LOOP, make_iconset(filepath('res/media-playlist-repeat.png')))
+	iconfactory.add(STOCK_SOUNDLIB, make_iconset(filepath('res/wavetable.png')))
+	iconfactory.add(STOCK_INFO, make_iconset(filepath('res/text-x-generic.png')))
+	iconfactory.add(STOCK_PANIC, make_iconset(filepath('res/process-stop.png')))
+	iconfactory.add(STOCK_RACK, make_iconset(filepath('res/rack.png')))
+	
+	gtk.stock_add((
+		(STOCK_PATTERNS, "Pattern", 0, gtk.gdk.keyval_from_name('F2'), 'aldrin'),
+		(STOCK_ROUTER, "Router", 0, gtk.gdk.keyval_from_name('F3'), 'aldrin'),
+		(STOCK_SEQUENCER, "Sequencer", 0, gtk.gdk.keyval_from_name('F4'), 'aldrin'),
+		(STOCK_LOOP, "Loop", 0, gtk.gdk.keyval_from_name('F8'), 'aldrin'),
+		(STOCK_SOUNDLIB, "Sound Library", 0, gtk.gdk.keyval_from_name('F9'), 'aldrin'),
+		(STOCK_INFO, "Info", 0, gtk.gdk.keyval_from_name('F10'), 'aldrin'),
+		(STOCK_RACK, "Rack", 0, gtk.gdk.keyval_from_name('F11'), 'aldrin'),
+		(STOCK_PANIC, "Panic", 0, gtk.gdk.keyval_from_name('F12'), 'aldrin'),
+	))
+	
+	title = "Aldrin"
+	filename = ""
+
+	event_to_name = dict([(getattr(zzub,x),x) for x in dir(zzub) if x.startswith('zzub_event_type_')])
+	
+	# IRootWindow.refresh_view
+	def refresh_view(self, target):
+		"""
+		Refreshes a view.
+		
+		@param target: The uri of the target.
+		@type target: str
+		"""
+		if target == interface.UIVIEW_ALL:
+			self.document_changed()
+
+		
+	def __init__(self):
+		"""
+		Initializer.
+		"""
+		self._cbtime = time.time()
+		self._cbcalls = 0
+		self._hevcalls = 0
+		self._hevtimes = 0
+		global playstarttime
+		player = com.get('aldrin.core.player')
+		player.set_callback(self.player_callback)
+		# load blacklist file and add blacklist entries
+		for name in get_plugin_blacklist():
+			player.blacklist_plugin(name)
+		# load aliases file and add aliases
+		for name,uri in get_plugin_aliases():
+			player.add_plugin_alias(name, uri)
+		pluginpath = os.environ.get('ALDRIN_PLUGIN_PATH',None)
+		if pluginpath:
+			pluginpaths = pluginpath.split(os.pathsep)
+		else:
+			pluginpaths = []
+			paths = os.environ.get('LD_LIBRARY_PATH',None) # todo or PATH on mswindows
+			if paths: paths = paths.split(os.pathsep)
+			else: paths = []
+			paths.extend([
+					'/usr/local/lib64',
+					'/usr/local/lib',
+					'/usr/lib64',
+					'/usr/lib',
+				])
+			for path in [os.path.join(path, 'zzub') for path in paths]:
+				if os.path.exists(path) and not path in pluginpaths: pluginpaths.append(path)
+		for pluginpath in pluginpaths:
+			print 'plugin path:', pluginpath
+			player.add_plugin_path(pluginpath + os.sep)
+		inputname, outputname, samplerate, buffersize = config.get_config().get_audiodriver_config()
+		player.initialize(samplerate)
+		self.init_lunar()
+		
+		playstarttime = time.time()
+		
+		self.event_handlers = []
+		
+		# begin wxGlade: AldrinFrame.__init__
+		gtk.Window.__init__(self, gtk.WINDOW_TOPLEVEL)
+		#~ self.toolsmenu.hide()
+		errordlg.install(self)
+		self.set_geometry_hints(self,600,400)
+		self.set_position(gtk.WIN_POS_CENTER)
+		audiotrouble = False
+		try:
+			driver.get_audiodriver().init()
+		except driver.AudioInitException:
+			import traceback
+			traceback.print_exc()
+			audiotrouble = True
+		miditrouble = False
+		try:
+			driver.get_mididriver().init()
+		except driver.MidiInitException:
+			import traceback
+			traceback.print_exc()
+			miditrouble = True
+		
+		self.cpumonitor = cpumonitor.CPUMonitorDialog(self)
+		self.cpumonitor.connect('delete-event', self.on_close_cpumonitor)
+		self.cpumonitor.realize()
+		self.hdrecorder = hdrecorder.HDRecorderDialog(self)
+		self.hdrecorder.connect('delete-event', self.on_close_hdrecorder)
+		self.hdrecorder.realize()
+
+		self.open_dlg = gtk.FileChooserDialog(title="Open", parent=self, action=gtk.FILE_CHOOSER_ACTION_OPEN,
+			buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_OPEN, gtk.RESPONSE_OK)
+		)
+		self.open_dlg.add_shortcut_folder(filepath('demosongs'))
+		for filter in self.OPEN_SONG_FILTER:
+			self.open_dlg.add_filter(filter)
+		self.save_dlg = gtk.FileChooserDialog(title="Save", parent=self, action=gtk.FILE_CHOOSER_ACTION_SAVE,
+			buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_SAVE, gtk.RESPONSE_OK)
+		)
+		self.save_dlg.set_do_overwrite_confirmation(True)
+		for filter in self.SAVE_SONG_FILTER:
+			self.save_dlg.add_filter(filter)
+
+		vbox = gtk.VBox()
+		self.add(vbox)
+
+
+		self.accelerators = gtk.AccelGroup()
+		self.add_accel_group(self.accelerators)		
+		
+		# Menu Bar
+		self.aldrinframe_menubar = gtk.MenuBar()
+		vbox.pack_start(self.aldrinframe_menubar, expand=False)
+		self.filemenu = gtk.Menu()
+		self.aldrinframe_menubar.append(make_submenu_item(self.filemenu, "_File"))
+		self.update_filemenu()
+		
+		wxglade_tmp_menu = gtk.Menu()
+		wxglade_tmp_menu.append(make_stock_menu_item(gtk.STOCK_CUT, self.on_cut))
+		wxglade_tmp_menu.append(make_stock_menu_item(gtk.STOCK_COPY, self.on_copy))
+		wxglade_tmp_menu.append(make_stock_menu_item(gtk.STOCK_PASTE, self.on_paste))
+		wxglade_tmp_menu.append(gtk.SeparatorMenuItem())
+		wxglade_tmp_menu.append(make_stock_menu_item(gtk.STOCK_PREFERENCES, self.on_preferences))
+		self.aldrinframe_menubar.append(make_submenu_item(wxglade_tmp_menu, "_Edit"))
+		wxglade_tmp_menu = gtk.Menu()
+		self.item_cpumon = make_check_item("_CPU monitor", "Show or hide CPU Monitor", self.on_toggle_cpu_monitor)
+		wxglade_tmp_menu.append(self.item_cpumon)
+		self.item_hdrec = make_check_item("Hard Disk Recorder", "Show or hide Hard Disk Recorder", self.on_toggle_hard_disk_recorder)
+		wxglade_tmp_menu.append(self.item_hdrec)
+		self.item_master = make_check_item("_Master", "Show or hide Master", self.on_toggle_mastertoolbar)
+		wxglade_tmp_menu.append(self.item_master)
+		self.item_transport = make_check_item("_Transport", "Show or hide transport bar", self.on_toggle_transport)
+		wxglade_tmp_menu.append(self.item_transport)
+		self.item_statusbar = make_check_item("_Status Bar", "Show or hide the status bar", self.on_toggle_statusbar)
+		wxglade_tmp_menu.append(self.item_statusbar)
+		wxglade_tmp_menu.append(make_check_item("S_kins", "Show or hide custom machine skins", None))
+		self.item_standard = make_check_item("_Standard", "Show or hide the standard toolbar", self.on_toggle_toolbar)
+		wxglade_tmp_menu.append(self.item_standard)
+		self.viewmenu = wxglade_tmp_menu
+		wxglade_tmp_menu_sub = gtk.Menu()
+		defaultitem = gtk.RadioMenuItem(label="Default")
+		wxglade_tmp_menu_sub.append(defaultitem)
+		self.thememenu = wxglade_tmp_menu_sub
+		cfg = config.get_config()
+		if not cfg.get_active_theme():
+			defaultitem.set_active(True)
+		defaultitem.connect('toggled', self.on_select_theme, None)
+		for name in sorted(cfg.get_theme_names()):
+			item = gtk.RadioMenuItem(label=prepstr(name), group=defaultitem)
+			if name == cfg.get_active_theme():
+				item.set_active(True)
+			item.connect('toggled', self.on_select_theme, name)
+			wxglade_tmp_menu_sub.append(item)
+		wxglade_tmp_menu.append(make_submenu_item(wxglade_tmp_menu_sub, "Themes"))
+		self.aldrinframe_menubar.append(make_submenu_item(wxglade_tmp_menu, "_View"))
+		self.toolsmenu = gtk.Menu()
+		item = make_submenu_item(self.toolsmenu, "_Tools")
+		self.aldrinframe_menubar.append(item)
+		added = False
+		toolitems = com.get_from_category('menuitem.tool', self.toolsmenu)
+		if not toolitems:
+			item.destroy()
+		wxglade_tmp_menu = gtk.Menu()
+		wxglade_tmp_menu.append(make_stock_menu_item(gtk.STOCK_HELP, self.on_help_contents))
+		wxglade_tmp_menu.append(gtk.SeparatorMenuItem())
+		wxglade_tmp_menu.append(make_stock_menu_item(gtk.STOCK_ABOUT, self.on_about))
+		self.aldrinframe_menubar.append(make_submenu_item(wxglade_tmp_menu, "_Help"))
+		#~ # Menu Bar end
+
+		# Tool Bar
+		def def_bmp(i):
+			return get_stock_bmp(i)
+		self.aldrinframe_toolbar = gtk.Toolbar()
+		vbox.pack_start(self.aldrinframe_toolbar, expand=False)
+		
+		panels = com.get_from_category('aldrin.viewpanel', self)
+		
+		self.routeframe = com.get('aldrin.core.router.panel')
+		self.seqframe = SequencerPanel(self)
+		self.patternframe = PatternPanel(self)
+		self.wavetableframe = WavetablePanel(self)
+		self.infoframe = InfoPanel(self)
+		self.pages = {
+			self.PAGE_PATTERN : (
+				self.patternframe,
+				STOCK_PATTERNS,
+			),
+			self.PAGE_ROUTE : (
+				self.routeframe,
+				STOCK_ROUTER,
+			),
+			self.PAGE_SEQUENCER : (
+				self.seqframe,
+				STOCK_SEQUENCER,
+			),
+			self.PAGE_WAVETABLE : (
+				self.wavetableframe,
+				STOCK_SOUNDLIB,
+			),
+			self.PAGE_INFO : (
+				self.infoframe,
+				STOCK_INFO,
+			),
+		}
+		if config.get_config().get_experimental('RackPanel'):
+			self.rackframe = RackPanel(self)
+			self.pages.update({
+				self.PAGE_RACK : (
+					self.rackframe,
+					STOCK_RACK,
+				),
+			})
+		self.aldrinframe_toolbar.insert(make_stock_tool_item(gtk.STOCK_NEW, self.new),-1)
+		self.aldrinframe_toolbar.insert(make_stock_tool_item(gtk.STOCK_OPEN, self.on_open),-1)
+		self.aldrinframe_toolbar.insert(make_stock_tool_item(gtk.STOCK_SAVE, self.on_save),-1)
+		extrasep = gtk.SeparatorToolItem()
+		self.aldrinframe_toolbar.insert(extrasep,-1)
+		if not com.get_from_category('menuitem.toolbar', self.aldrinframe_toolbar):
+			extrasep.destroy()
+
+		self.mastertoolbar = com.get('aldrin.core.panel.master', self)
+		self.transport = com.get('aldrin.core.panel.transport', self)
+		
+		for name in ('btnplay','btnrecord','btnstop','btnloop','btnpanic'):
+			setattr(self, name, getattr(self.transport, name))
+			
+		self.btnplay.connect('clicked', self.play)
+		self.btnrecord.connect('clicked', self.on_toggle_automation)
+		self.btnstop.connect('clicked', self.stop)
+		self.btnloop.connect('clicked', self.on_toggle_loop)
+		self.btnpanic.connect('clicked', self.on_toggle_panic)
+
+		self.framepanel = gtk.Notebook()
+		self.framepanel.set_tab_pos(gtk.POS_LEFT)
+		self.framepanel.set_show_border(False)
+		#self.framepanel.set_show_tabs(False)
+		for k in sorted(self.pages):
+			panel,stockid = self.pages[k]
+			if not panel:
+				continue
+			panel.show_all()
+			self.framepanel.append_page(panel, gtk.image_new_from_stock(stockid, gtk.ICON_SIZE_SMALL_TOOLBAR))
+		
+		hbox = gtk.HBox()
+		hbox.add(self.framepanel)
+		hbox.pack_end(self.mastertoolbar, expand=False)
+		vbox.add(hbox)
+	
+		self.aldrinframe_statusbar = gtk.Statusbar()
+		
+		vbox.pack_start(self.transport, expand=False)
+		vbox.pack_end(self.aldrinframe_statusbar, expand=False)
+
+		self.__set_properties()
+		self.__do_layout()
+
+		self.connect('key-press-event', self.on_key_down)
+		self.connect('destroy', self.on_destroy)
+		self.connect('delete-event', self.on_close)
+
+		self.framepanel.set_current_page(self.PAGE_ROUTE)
+		
+		gobject.timeout_add(1000/25, self.on_handle_events)
+		self.framepanel.connect('switch-page', self.on_activate_page)
+		self.framepanel.connect('button-release-event', self.button_up)
+		self.activated=0
+		
+		self.document_changed()
+		self.show_all()
+		self.load_view()
+		
+		eventbus.print_mapping()
+
+		import sys
+		options, args = com.get('aldrin.core.options').get_options_args()
+		if len(args) > 1:
+			self.open_file(args[1])
+		if audiotrouble:
+			error(self, "<b><big>Aldrin tried to guess an audio driver but that didn't work.</big></b>\n\nYou need to select your own. Hit OK to show the preferences dialog.")
+			show_preferences(self,self)
+
+	def init_lunar(self):
+		"""
+		Initializes the lunar dsp scripting system
+		"""
+		player = com.get('aldrin.core.player')
+		pc = player.get_plugincollection_by_uri("@zzub.org/plugincollections/lunar")
+
+		# return if lunar is missing
+		if not pc._handle:
+			print >> sys.stderr, "not supporting lunar."
+			return
+
+		from xml.dom.minidom import parse
+		userlunarpath = os.path.join(config.get_config().get_settings_folder(),'lunar')
+		if not os.path.isdir(userlunarpath):
+			print "folder %s does not exist, creating..." % userlunarpath
+			os.makedirs(userlunarpath)
+		pc.configure("local_storage_dir", userlunarpath)
+
+	def update_filemenu(self, event=None):
+		"""
+		Updates the most recent files in the file menu.
+		
+		@param event: Event.
+		@type event: wx.Event
+		"""
+		for item in self.filemenu:
+			item.destroy()
+		self.filemenu.append(make_stock_menu_item(gtk.STOCK_NEW, self.new, frame=self, shortcut="<Control>N"))
+		self.filemenu.append(make_stock_menu_item(gtk.STOCK_OPEN, self.on_open, frame=self, shortcut="<Control>O"))
+		self.filemenu.append(make_stock_menu_item(gtk.STOCK_SAVE, self.on_save, frame=self, shortcut="<Control>S"))
+		self.filemenu.append(make_stock_menu_item(gtk.STOCK_SAVE_AS, self.on_save_as))
+		recent_files = config.get_config().get_recent_files_config()
+		if recent_files:
+			self.filemenu.append(gtk.SeparatorMenuItem())
+			for i,filename in enumerate(recent_files):
+					filetitle=os.path.basename(filename).replace("_","__")
+					self.filemenu.append(make_menu_item("_%i %s" % (i+1,filetitle), "", self.open_recent_file, filename))
+		self.filemenu.append(gtk.SeparatorMenuItem())
+		self.filemenu.append(make_stock_menu_item(gtk.STOCK_QUIT, self.on_exit))
+		self.filemenu.show_all()
+
+	def player_callback(self, player, plugin, data):
+		"""
+		Default callback for ui events sent by zzub.
+		
+		@param player: player instance.
+		@type player: zzub.Player
+		@param plugin: plugin instance
+		@type plugin: zzub.Plugin
+		@param data: event data.
+		@type data: zzub_event_data_t
+		"""
+		result = False
+		for handler in self.event_handlers:
+			result = handler(player,plugin,data) or result
+		if data.type == zzub.zzub_event_type_player_state_changed:
+			state = getattr(data,'').player_state_changed.player_state
+			if state == zzub.zzub_player_state_playing:
+				self.btnplay.set_active(True)
+			else:
+				self.btnplay.set_active(False)
+		self._cbcalls += 1
+		return result
+		
+	def get_active_view(self):
+		"""
+		Returns the active panel view.
+		"""
+		for pindex,(ctrlid,(panel,menuitem)) in self.pages.iteritems():
+			if panel.window and panel.window.is_visible() and hasattr(panel,'view'):
+				return getattr(panel,'view')
+
+	def on_copy(self, event):
+		"""
+		Sent when the copy function is selected from the menu.
+		
+		@param event: Menu event.
+		@type event: wx.MenuEvent
+		"""
+		view = self.get_active_view()
+		if view and hasattr(view, 'on_copy'):
+			view.on_copy(event)
+
+	def on_cut(self, event):
+		"""
+		Sent when the cut function is selected from the menu.
+		
+		@param event: Menu event.
+		@type event: wx.MenuEvent
+		"""
+		view = self.get_active_view()
+		if view and hasattr(view, 'on_cut'):
+			view.on_cut(event)
+
+	def on_paste(self, event):
+		"""
+		Sent when the paste function is selected from the menu.
+		
+		@param event: Menu event.
+		@type event: wx.MenuEvent
+		"""
+		view = self.get_active_view()
+		if view and hasattr(view, 'on_paste'):
+			view.on_paste(event)
+		
+	def load_view(self):
+		"""
+		Called to load view settings from config
+		"""
+		cfg = config.get_config()
+		cfg.load_window_pos("MainFrameWindow", self)
+		cfg.load_window_pos("Toolbar", self.aldrinframe_toolbar)
+		cfg.load_window_pos("MasterToolbar", self.mastertoolbar)
+		cfg.load_window_pos("Transport", self.transport)
+		cfg.load_window_pos("StatusBar", self.aldrinframe_statusbar)
+		
+		self.update_view()
+		
+	def save_view(self):
+		"""
+		Called to store view settings to config
+		"""
+		cfg = config.get_config()
+		cfg.save_window_pos("MainFrameWindow", self)
+		cfg.save_window_pos("Toolbar", self.aldrinframe_toolbar)
+		cfg.save_window_pos("MasterToolbar", self.mastertoolbar)
+		cfg.save_window_pos("Transport", self.transport)
+		cfg.save_window_pos("StatusBar", self.aldrinframe_statusbar)
+		
+	def update_view(self):
+		"""
+		Called to update all viewstates.
+		"""
+		self.item_hdrec.set_active(self.hdrecorder.get_property('visible'))
+		self.item_cpumon.set_active(self.cpumonitor.get_property('visible'))
+		self.item_master.set_active(self.mastertoolbar.get_property('visible'))
+		self.item_statusbar.set_active(self.aldrinframe_statusbar.get_property('visible'))
+		self.item_standard.set_active(self.aldrinframe_toolbar.get_property('visible'))
+		self.item_transport.set_active(self.transport.get_property('visible'))
+		self.save_view()
+		
+	def on_close_cpumonitor(self, widget, event):
+		"""
+		Called when the cpu monitor is closed manually.
+		
+		@param event: event.
+		@type event: wx.Event
+		"""
+		self.cpumonitor.hide_all()
+		self.update_view()
+		return True
+		
+	def on_close_hdrecorder(self, widget, event):
+		"""
+		Called when the hd recorder is closed manually.
+		"""
+		self.hdrecorder.hide_all()
+		self.update_view()
+		return True
+		
+	def on_toggle_cpu_monitor(self, widget):
+		"""
+		Handler triggered by the "Toggle CPU Monitor" menu option.
+		Shows and hides the CPU Monitor panel.
+		"""
+		if widget.get_active():
+			self.cpumonitor.show_all()
+		else:
+			self.cpumonitor.hide_all()
+
+	def on_toggle_hard_disk_recorder(self, widget):
+		"""
+		Handler triggered by the "Toggle Hard Disk Recorder" menu option.
+		Shows and hides the Hard Disk Recorder panel.
+		"""
+		if widget.get_active():
+			self.hdrecorder.show_all()
+		else:
+			self.hdrecorder.hide_all()
+
+	def show_toolbar(self, enable):
+		"""
+		Shows or hides the toolbar.
+		
+		@param enable: If True, toolbar will be shown.
+		@type enable: bool
+		"""
+		if enable:
+			self.aldrinframe_toolbar.show_all()
+		else:
+			self.aldrinframe_toolbar.hide_all()
+		self.update_view()
+		
+	def on_toggle_toolbar(self, widget):
+		"""
+		Handler triggered by the "Toggle Default" menu option.
+		Shows and hides the toolbar.
+		
+		@param event: command event.
+		@type event: wx.CommandEvent
+		"""
+		self.show_toolbar(widget.get_active())
+
+	def show_statusbar(self, enable):
+		"""
+		Shows or hides the status bar.
+		
+		@param enable: If True, status bar will be shown.
+		@type enable: bool
+		"""
+		if enable:
+			self.aldrinframe_statusbar.show_all()
+		else:
+			self.aldrinframe_statusbar.hide_all()
+		self.update_view()
+		
+	def on_toggle_statusbar(self, widget):
+		"""
+		Handler triggered by the "Toggle Status Bar" menu option.
+		Shows and hides the status bar.
+		
+		@param event: command event.
+		@type event: wx.CommandEvent
+		"""
+		self.show_statusbar(widget.get_active())
+
+	def show_mastertoolbar(self, enable):
+		"""
+		Shows or hides the mastertoolbar.
+		
+		@param enable: If True, toolbar will be shown.
+		@type enable: bool
+		"""
+		if enable:
+			self.mastertoolbar.show_all()
+		else:
+			self.mastertoolbar.hide_all()
+		self.update_view()
+		
+	def on_toggle_transport(self, widget):
+		"""
+		Handler triggered by the "Toggle Master Toolbar" menu option.
+		Shows and hides the master toolbar.
+		
+		@param event: command event.
+		@type event: wx.CommandEvent
+		"""
+		if widget.get_active():
+			self.transport.show_all()
+		else:
+			self.transport.hide_all()
+		self.update_view()
+
+	def on_toggle_mastertoolbar(self, widget):
+		"""
+		Handler triggered by the "Toggle Master Toolbar" menu option.
+		Shows and hides the master toolbar.
+		
+		@param event: command event.
+		@type event: wx.CommandEvent
+		"""
+		self.show_mastertoolbar(widget.get_active())
+		
+	def on_toggle_automation(self, widget):
+		"""
+		handler triggered by the record toolbar button. Decides whether
+		changes to parameters are recorded or not.
+		
+		@param event: Command event.
+		@type event: wx.CommandEvent
+		"""
+		player = com.get('aldrin.core.player')
+		if widget.get_active():
+			player.set_automation(1)
+		else:
+			player.set_automation(0)
+		self.mastertoolbar.button_up(1,1)
+
+	def on_toggle_automation_accel(self, event):
+		"""
+		Handler triggered by the f7 accellerator. Enables/disables
+		automation.
+		
+		@param event command event.
+		@type event: wx.CommandEvent
+		"""
+		player = com.get('aldrin.core.player')
+		if not self.aldrinframe_toolbar.GetToolState(self.RECORD):
+			self.aldrinframe_toolbar.ToggleTool(self.RECORD, True)
+			player.set_automation(1)
+		else:
+			self.aldrinframe_toolbar.ToggleTool(self.RECORD, False)
+			player.set_automation(0)
+		
+	def on_toggle_loop(self, widget):
+		"""
+		Handler triggered by the loop toolbar button. Decides whether
+		the song loops or not.
+		
+		@param event command event.
+		@type event: wx.CommandEvent
+		"""
+		player = com.get('aldrin.core.player')
+		if widget.get_active():
+			player.set_loop_enabled(1)
+		else:
+			player.set_loop_enabled(0)
+		self.mastertoolbar.button_up(1,1)
+			
+	def on_toggle_panic(self, widget):
+		"""
+		Handler triggered by the mute toolbar button. Deinits/reinits
+		sound device.
+		
+		@param event command event.
+		@type event: wx.CommandEvent
+		"""
+		player = com.get('aldrin.core.player')
+		if widget.get_active():
+			player.audiodriver_enable(0)
+		else:
+			player.audiodriver_enable(1)
+		self.mastertoolbar.button_up(1,1)
+
+	def on_toggle_panic_accel(self, event):
+		"""
+		Handler triggered by the f12 accellerator. Deinits/reinits
+		sound device.
+		
+		@param event command event.
+		@type event: wx.CommandEvent
+		"""
+		player = com.get('aldrin.core.player')
+		if not self.aldrinframe_toolbar.GetToolState(self.PANIC):
+			self.aldrinframe_toolbar.ToggleTool(self.PANIC, True)
+			player.audiodriver_enable(0)
+		else:
+			self.aldrinframe_toolbar.ToggleTool(self.PANIC, False)
+			player.audiodriver_enable(1)
+
+
+	def on_handle_events(self):
+		"""
+		Handler triggered by the default timer. Calls player.handle_events()
+		to work off the players message queue.
+		"""
+		player = com.get('aldrin.core.player')
+		t1 = time.time()
+		player.handle_events()
+		t2 = time.time() - t1
+		self._hevtimes = (self._hevtimes * 0.9) + (t2 * 0.1)
+		self._hevcalls += 1
+		t = time.time()
+		if (t - self._cbtime) > 1:
+			#print self._hevcalls, self._cbcalls, "%.2fms" % (self._hevtimes*1000)
+			self._cbcalls = 0
+			self._hevcalls = 0
+			self._cbtime = t
+		#called only if loop pattern is off when song ends:
+		if player.get_state() != zzub.zzub_player_state_playing and self.btnplay.get_active():
+			self.btnplay.set_active(False)
+		return True
+		
+	def on_help_contents(self, event):
+		"""
+		Event handler triggered by the help menu option.
+		
+		@param event: menu event.
+		@type event: wx.MenuEvent
+		"""
+		import webbrowser		
+		webbrowser.open_new(filepath('../doc/aldrin/html/index.html'))
+			
+	def on_about(self, event):
+		"""
+		Event handler triggered by the "About" menu option.
+		
+		@param event: menu event.
+		@type event: wx.MenuEvent
+		"""
+		com.get('aldrin.core.dialog.about', self).show()
+			
+	def on_framepanel_size(self, event):
+		"""
+		Event handler that resizes the client panels, when the main window
+		is being resized.
+		
+		@param event: size event.
+		@type event: wx.SizeEvent
+		"""
+		#~ x,y,w,h = self.framepanel.GetClientRect()
+		#~ for ctrlid, panel in self.pages.values():
+			#~ panel.SetRect((x,y,w,h))
+			
+	def select_page(self, index):
+		"""
+		Selects a client panel. If the client panel has a view attribute,
+		that view attribute is being interpreted as a window and will be
+		focused, else the panel itself will be focused.
+		
+		@param index: Index of the panel (use one of the self.PAGE_* constants)
+		@type index: int
+		"""
+		if not(self.activated):
+			self.activated=1
+			self.index=index
+			panel, stockid = self.pages[self.index]
+			if not panel:
+				return
+			if self.framepanel.get_current_page() != self.index:
+				self.framepanel.set_current_page(self.index)
+			if hasattr(panel,'view'):
+				panel.view.grab_focus()
+			else:
+				panel.grab_focus()
+		self.activated=0
+		
+	def button_up(self, widget, event):
+		"""
+		selects panel after button up
+		"""
+		page=self.framepanel.get_current_page()
+		panel, stockid = self.pages[page]
+		if page==0 or page==2:
+			if hasattr(panel,'view'):
+				if page==0:
+					try:
+						panel.view.show_cursor_right()
+					except AttributeError: #no pattern in current machine
+						pass
+				panel.view.grab_focus()
+			else:
+				panel.grab_focus()
+		
+			
+			
+	def on_preferences(self, event):
+		"""
+		Event handler triggered by the "Preferences" menu option.
+		
+		@param event: menu event.
+		@type event: wx.MenuEvent
+		"""
+		show_preferences(self,self)
+
+	def on_key_down(self, widget, event):
+		"""
+		Event handler for key events.
+		"""
+		kv = event.keyval
+		k = gtk.gdk.keyval_name(event.keyval)
+		if k == 'F3':
+			self.select_page(self.PAGE_ROUTE)
+		elif k == 'F2':
+			self.select_page(self.PAGE_PATTERN)
+		elif k == 'F4':
+			self.select_page(self.PAGE_SEQUENCER)
+		elif k == 'F5':
+			self.btnplay.set_active(True)
+		elif k == 'F6':
+			self.play_from_cursor(event)
+		elif k == 'F7':
+			self.btnrecord.set_active(not self.btnrecord.get_active())
+		elif k == 'F8':
+			self.stop(event)
+		elif k == 'F9':
+			self.select_page(self.PAGE_WAVETABLE)
+		elif k == 'F10':
+			self.select_page(self.PAGE_INFO)
+		elif k == 'F11':
+			if config.get_config().get_experimental('RackPanel'):
+				self.select_page(self.PAGE_RACK)
+		elif k == 'F12':
+			self.btnpanic.set_active(not self.btnpanic.get_active())
+		else:
+			return False
+		return True
+			
+	def on_activate_page(self, notebook, page, page_num):
+		self.select_page(page_num)
+			
+
+	def open_recent_file(self, widget, filename):
+		"""
+		Event handler triggered by recent file menu options.
+		
+		@param event: menu event.
+		@type event: wx.MenuEvent
+		"""
+		try:
+			self.save_changes()
+			self.open_file(filename)
+		except CancelException:
+			pass
+
+	def document_changed(self):
+		"""
+		Event handler triggered when the document has changed. You should
+		call this on occasions where the entire document has changed, else
+		there are specialized handlers in the panel classes.
+		"""
+		common.get_plugin_infos().update()
+		if self.routeframe:
+			self.routeframe.update_all()
+		self.infoframe.update_all()
+		if config.get_config().get_experimental('RackPanel'):
+			self.rackframe.update_all()
+		if self.routeframe:
+			self.routeframe.view.update_colors()
+			self.routeframe.view.redraw()
+		self.seqframe.seqview.set_cursor_pos(0,0)
+		self.seqframe.seqview.adjust_scrollbars()
+		self.seqframe.seqview.redraw()
+		self.seqframe.update_list()
+		self.patternframe.update_all()
+		self.wavetableframe.update_all()
+		self.mastertoolbar.update_all()
+		self.transport.update_all()
+		player = com.get('aldrin.core.player')
+		self.btnloop.set_active(player.get_loop_enabled())
+		self.btnrecord.set_active(player.get_automation())
+		self.seqframe.seqview.adjust_scrollbars()
+		self.select_page(self.framepanel.get_current_page())
+		
+	def update_title(self):
+		"""
+		Updates the title to display the filename of the currently
+		loaded document.
+		"""
+		self.set_title("%s - %s" % (self.title, os.path.basename(self.filename)))
+		
+	def open_file(self, filename):
+		"""
+		Loads a song from disk. The old document will be wiped, and
+		the song will be added to the recent file list.
+		
+		@param filename: Path to song.
+		@type filename: str
+		"""
+		if not os.path.isfile(filename):
+			return
+		self.clear()
+		self.filename = filename
+		base,ext = os.path.splitext(self.filename)
+		if ext.lower() in ('.bmx','.bmw'):
+			#~ progress = wx.ProgressDialog("Aldrin", "Loading BMX Song...")
+			#~ wx.Yield()
+			player.load_bmx(self.filename)
+			#~ wx.Yield()
+			#~ progress.Update(100)
+		elif ext.lower() in ('.ccm'):
+			# XXX: TODO
+			dlg = gtk.Dialog('Aldrin', flags=gtk.DIALOG_MODAL)
+			progBar = gtk.ProgressBar()
+			progBar.set_text('Loading CCM Song...')
+			progBar.set_size_request(300, 40)
+			progBar.set_fraction(0)
+			progBar.show()
+			dlg.vbox.pack_start(progBar)			
+			dlg.show()
+			while gtk.events_pending():
+				gtk.main_iteration()
+			def progress_callback():	
+				progBar.pulse()
+				while gtk.events_pending():
+					gtk.main_iteration()
+				return  progBar.get_fraction() == 1.0
+			progBar.pulse()
+			while gtk.events_pending():
+				gtk.main_iteration()
+			gobject.timeout_add(1000/25, progress_callback)
+			progBar.pulse()
+			player.load_ccm(self.filename)
+			progBar.set_fraction(1.0)
+			dlg.destroy()
+		else:
+			message(self, "'%s' is not a supported file format." % ext)
+			return
+		self.update_title()
+		config.get_config().add_recent_file_config(self.filename)
+		self.btnplay.set_active(False)
+		self.update_filemenu()
+		self.document_changed()
+		
+	def save_file(self, filename):
+		"""
+		Saves a song to disk. The document will also be added to the
+		recent file list.
+		
+		@param filename: Path to song.
+		@type filename: str
+		"""
+		try:
+			if not os.path.splitext(filename)[1]:
+				filename += self.DEFAULT_EXTENSION
+			self.filename = filename
+			if os.path.isfile(filename):
+				if config.get_config().get_incremental_saving():
+					# rename incremental
+					path,basename = os.path.split(filename)
+					basename,ext = os.path.splitext(basename)
+					i = 0
+					while True:
+						newpath = os.path.join(path,"%s%s.%03i.bak" % (basename,ext,i))
+						if not os.path.isfile(newpath):
+							break
+						i += 1
+					print '%s => %s' % (filename, newpath)
+					os.rename(filename, newpath)
+				else:
+					# store one backup copy
+					path,basename = os.path.split(filename)
+					basename,ext = os.path.splitext(basename)
+					newpath = os.path.join(path,"%s%s.bak" % (basename,ext))
+					if os.path.isfile(newpath):
+						os.remove(newpath)
+					print '%s => %s' % (filename, newpath)
+					os.rename(filename, newpath)
+			base,ext = os.path.splitext(self.filename)
+			#~ progress = wx.ProgressDialog("Aldrin", "Saving '%s'..." % prepstr(self.filename))
+			#~ wx.Yield()
+			assert player.save_ccm(self.filename) == 0
+		except:
+			import traceback
+			text = traceback.format_exc()
+			traceback.print_exc()
+			error(self, "<b><big>Error saving file:</big></b>\n\n%s" % text)
+		#~ progress.Update(100)
+		self.update_title()
+		config.get_config().add_recent_file_config(self.filename)
+		self.update_filemenu()
+		
+	def on_open(self, event):
+		"""
+		Event handler triggered by the "Open File" menu option.
+		
+		@param event: menu event.
+		@type event: wx.MenuEvent
+		"""
+		try:
+			self.save_changes()
+			self.open()
+		except CancelException:
+			pass
+
+	def open(self):
+		"""
+		Shows the open file dialog and if successful, loads the
+		selected song from disk.
+		"""
+		response = self.open_dlg.run()
+		self.open_dlg.hide()
+		if response == gtk.RESPONSE_OK:
+			self.open_file(self.open_dlg.get_filename())
+			
+	def on_save(self, event):
+		"""
+		Event handler triggered by the "Save" menu option.
+		"""
+		try:
+			self.save()
+		except CancelException:
+			pass
+			
+	def save(self):
+		"""
+		Shows a save file dialog if filename is unknown and saves the file.
+		"""
+		if not self.filename:
+			self.save_as()
+		else:
+			self.save_file(self.filename)
+		
+	def save_as(self):
+		"""
+		Shows a save file dialog and saves the file.
+		"""
+		self.save_dlg.set_filename(self.filename)
+		response = self.save_dlg.run()
+		self.save_dlg.hide()
+		if response == gtk.RESPONSE_OK:
+			filepath = self.save_dlg.get_filename()
+			self.save_file(filepath)
+		else:
+			raise CancelException
+		
+	def on_save_as(self, event):
+		"""
+		Event handler triggered by the "Save As" menu option.
+		
+		@param event: menu event.
+		@type event: wx.MenuEvent
+		"""
+		try:
+			self.save_as()
+		except CancelException:
+			pass
+		
+	def clear(self):
+		"""
+		Clears the current document.
+		"""
+		self.filename = ""
+		common.get_plugin_infos().reset()
+		self.routeframe.reset()
+		self.patternframe.reset()
+		self.infoframe.reset()
+		player.clear()
+		player.set_loop_start(0)
+		player.set_loop_end(self.seqframe.view.step)
+		player.get_plugin(0).set_parameter_value(1, 0, 1, config.get_config().get_default_int('BPM', 126), 1)
+		player.get_plugin(0).set_parameter_value(1, 0, 2, config.get_config().get_default_int('TPB', 4), 1)
+		self.document_changed()
+		self.update_title()
+		
+	def play(self, widget):
+		"""
+		Event handler triggered by the "Play" toolbar button.
+		
+		@param event: menu event.
+		@type event: wx.MenuEvent
+		"""
+		global playstarttime
+		if self.btnplay.get_active():
+			playstarttime = time.time()
+			player.play()
+		elif player.get_state() == zzub.zzub_player_state_playing:
+			# keep on
+			self.btnplay.set_active(True)
+		self.mastertoolbar.button_up(1,1)
+
+	def play_from_cursor(self, event):
+		"""
+		Event handler triggered by the F6 key.
+		
+		@param event: menu event.
+		@type event: wx.MenuEvent
+		"""
+		global playstarttime
+		playstarttime = time.time()
+		if not self.btnplay.get_active():
+			self.btnplay.set_active(True)
+		player.set_position(max(self.seqframe.view.row,0))
+		player.play()		
+		
+	def on_select_theme(self, widget, data):
+		"""
+		Event handler for theme radio menu items.
+		
+		@param event: menu event.
+		@type event: wx.MenuEvent
+		"""
+		cfg = config.get_config()
+		if not data:
+			cfg.select_theme(None)
+		else:
+			cfg.select_theme(data)
+		self.document_changed()
+		
+	def stop(self, event):
+		"""
+		Event handler triggered by the "Stop" toolbar button.
+		
+		@param event: menu event.
+		@type event: wx.MenuEvent
+		"""
+		player.stop()
+		if self.btnplay.get_active() == False:
+			player.set_position(0)
+		else:
+			self.btnplay.set_active(False)
+		self.mastertoolbar.button_up(1,1)
+		
+	def save_changes(self):
+		"""
+		Asks whether to save changes or not. Throws a {CancelException} if
+		cancelled.
+		"""
+		if self.filename:
+			text = "<big><b>Save changes to <i>%s</i>?</b></big>" % os.path.basename(self.filename)
+		else:
+			text = "<big><b>Save changes?</b></big>"
+		response = question(self, text)
+		if response == int(gtk.RESPONSE_CANCEL) or response == int(gtk.RESPONSE_DELETE_EVENT):
+			raise CancelException
+		elif response == int(gtk.RESPONSE_YES):
+			self.save()
+
+	def new(self, event):
+		"""
+		Event handler triggered by the "New" menu option.
+		
+		@param event: menu event.
+		@type event: wx.MenuEvent
+		"""
+		try:
+			self.save_changes()
+			self.set_title(self.title)
+			self.clear()
+		except CancelException:
+			pass
+			
+	def on_destroy(self, widget):
+		"""
+		Event handler triggered when the window is being destroyed.
+		"""
+		gtk.main_quit()
+			
+	def on_exit(self, widget):
+		"""
+		Event handler triggered by the "Exit" menu option.
+		
+		@param event: menu event.
+		@type event: wx.MenuEvent
+		"""
+		if not self.on_close(None, None):
+			self.destroy()
+			
+	def on_close(self, widget, event):
+		"""
+		Event handler triggered when the window is being closed.
+		"""
+		self.save_view()
+		try:
+			self.save_changes()
+			self.hide_all()
+			return False
+		except CancelException:
+			return True
+					
+	def __set_properties(self):
+		"""
+		Assigns properties to dialog controls.
+		"""
+		# begin wxGlade: AldrinFrame.__set_properties
+		self.set_title(self.title)
+		gtk.window_set_default_icon_list(
+			gtk.gdk.pixbuf_new_from_file(filepath("../icons/hicolor/48x48/apps/aldrin.png")),
+			gtk.gdk.pixbuf_new_from_file(filepath("../icons/hicolor/32x32/apps/aldrin.png")),
+			gtk.gdk.pixbuf_new_from_file(filepath("../icons/hicolor/24x24/apps/aldrin.png")),
+			gtk.gdk.pixbuf_new_from_file(filepath("../icons/hicolor/22x22/apps/aldrin.png")),
+			gtk.gdk.pixbuf_new_from_file(filepath("../icons/hicolor/16x16/apps/aldrin.png")))
+		self.resize(750, 550)
+		# statusbar fields
+		self.aldrinframe_statusbar.push(0, "Ready to rok again")
+		# end wxGlade
+
+	def __do_layout(self):
+		"""
+		Layouts available controls.
+		"""
+
+	#########################
+	# IMainFrame interface
+	#########################
+	
+	def get_window(self):
+		"""
+		Returns the window object associated with the mainframe.
+		
+		@return: Window object.
+		@rtype: wx.Window
+		"""
+		return self
+
+
+__aldrin__ = dict(
+	classes = [
+		AldrinFrame,
+	],
+)
+
+if __name__ == '__main__':
+	pass

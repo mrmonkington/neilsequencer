@@ -36,7 +36,6 @@ from envelope import EnvelopeView, ADSRPanel
 import freesound
 import common
 from common import MARGIN, MARGIN2, MARGIN3
-player = common.get_player()
 
 def get_node(item, path):
 	for element in path.split('/'):

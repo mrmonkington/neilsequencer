@@ -28,7 +28,6 @@ from utils import prepstr, add_scrollbars
 import utils, os, stat
 import common
 from common import MARGIN, MARGIN2, MARGIN3
-player = common.get_player()
 
 class CPUMonitorDialog(gtk.Dialog):
 	"""

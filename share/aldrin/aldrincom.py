@@ -24,6 +24,12 @@ import config
 DEFAULT_PACKAGES = [
 	'router',
 	'mainwindow',
+	'about',
+	'masterpanel',
+	'transportpanel',
+	'player',
+	'options',
+	'pkgbrowser',
 ]
 
 # aldrin component object model
@@ -35,8 +41,8 @@ class ComponentManager:
 		self.register(config.__aldrin__)
 		
 	def load_packages(self):
-		packages = self.get('aldrin.core.config').packages
-		for modulename in DEFAULT_PACKAGES + packages:
+		self.packages = DEFAULT_PACKAGES + self.get('aldrin.core.config').packages
+		for modulename in self.packages:
 			print "importing module %s" % modulename
 			module_ = __import__(modulename)
 			names = modulename.split('.')
@@ -44,7 +50,6 @@ class ComponentManager:
 				module_ = getattr(module_, name)
 			if not hasattr(module_, '__aldrin__'):
 				continue
-			module_.__aldrincom__ = self
 			self.register(module_.__aldrin__)
 					
 	def register(self, pkginfo):

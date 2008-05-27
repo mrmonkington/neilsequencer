@@ -34,8 +34,6 @@ import zzub
 import sys,os
 from preset import PresetCollection, Preset
 import common
-player = common.get_player()
-
 
 class PresetView(gtk.VBox):
 	"""

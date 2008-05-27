@@ -33,7 +33,6 @@ import zzub
 import time
 import random
 import common
-player = common.get_player()
 from common import MARGIN, MARGIN2, MARGIN3, MARGIN0
 from eventbus import *
 import itertools

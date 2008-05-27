@@ -736,6 +736,68 @@ def get_new_pattern_name(plugin):
 			break
 	return s
 		
+def get_stock_bmp(artid):
+	fullpath = filepath('res/'+artid+'.png')
+	if os.path.isfile(fullpath):
+		return wx.Bitmap(fullpath, wx.BITMAP_TYPE_ANY)
+	return wx.NullBitmap
+
+class CancelException(Exception):
+	"""
+	Is being thrown when the user hits cancel in a sequence of
+	modal UI dialogs.
+	"""
+
+def make_submenu_item(submenu, name):
+	item = gtk.MenuItem(label=name)
+	item.set_submenu(submenu)
+	return item
+
+def make_stock_menu_item(stockid, func, frame=None, shortcut=None, *args):
+	item = gtk.ImageMenuItem(stockid)
+	if frame and shortcut:
+		key, modifier = gtk.accelerator_parse(shortcut)
+		item.add_accelerator("activate", frame.accelerators,  key,  modifier, gtk.ACCEL_VISIBLE)
+	if func:
+		item.connect('activate', func, *args)
+	return item
+
+def make_stock_tool_item(stockid, func, *args):
+	item = gtk.ToolButton(stockid)
+	if func:
+		item.connect('clicked', func, *args)
+	return item
+
+def make_stock_toggle_item(stockid, func, *args):
+	item = gtk.ToggleToolButton(stockid)
+	if func:
+		item.connect('toggled', func, *args)
+	return item
+
+def make_stock_radio_item(stockid, func, *args):
+	item = gtk.RadioToolButton(stock_id=stockid)
+	if func:
+		item.connect('toggled', func, *args)
+	return item
+
+def make_menu_item(label, desc, func, *args):
+	item = gtk.MenuItem(label=label)
+	if func:
+		item.connect('activate', func, *args)
+	return item
+
+def make_check_item(label, desc, func, *args):
+	item = gtk.CheckMenuItem(label=label)
+	if func:
+		item.connect('toggled', func, *args)
+	return item
+
+def make_radio_item(label, desc, func, *args):
+	item = gtk.RadioMenuItem(label=label)
+	if func:
+		item.connect('toggled', func, *args)
+	return item
+
 __all__ = [
 'is_frozen',
 'get_root_folder_path',

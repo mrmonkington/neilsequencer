@@ -36,8 +36,8 @@ import config
 import time
 import common
 from eventbus import *
-player = common.get_player()
 from common import MARGIN, MARGIN2, MARGIN3, MARGIN0
+from aldrincom import com
 
 SEQKEYS = '0123456789abcdefghijklmnopqrstuvwxyz'
 SEQKEYMAP = dict(zip(SEQKEYS,range(0x10,len(SEQKEYS)+0x10)))
@@ -285,6 +285,7 @@ class SequencerView(gtk.DrawingArea):
 
 		self.rootwindow = rootwindow
 		self.plugin_info = common.get_plugin_infos()
+		player = com.get('aldrin.core.player')
 		self.playpos = player.get_position()
 		self.row = 0
 		self.track = 0
@@ -374,6 +375,7 @@ class SequencerView(gtk.DrawingArea):
 		@param row: Row index.
 		@type row: int
 		"""
+		player = com.get('aldrin.core.player')
 		seq = player.get_current_sequencer()
 		track = max(min(track, seq.get_track_count()-1),0)
 		row = max(row,0)
@@ -414,6 +416,7 @@ class SequencerView(gtk.DrawingArea):
 		self.redraw()
 		
 	def get_track(self):
+		player = com.get('aldrin.core.player')
 		seq = player.get_current_sequencer()
 		if (self.track != -1) and (self.track < seq.get_track_count()):
 			return seq.get_track(self.track)
@@ -1047,6 +1050,7 @@ class SequencerView(gtk.DrawingArea):
 		"""
 		if self.rootwindow.index != self.rootwindow.PAGE_SEQUENCER:
 			return True
+		player = com.get('aldrin.core.player')
 		playpos = player.get_position()
 		if self.playpos != playpos:
 			if self.panel.toolbar.followsong.get_active():
@@ -1114,6 +1118,7 @@ class SequencerView(gtk.DrawingArea):
 		"""
 		Returns the size in characters of the virtual view area.
 		"""
+		player = com.get('aldrin.core.player')
 		seq = player.get_current_sequencer()
 		h = seq.get_track_count()
 		w = (max(self.row,player.get_song_end(), player.get_loop_end())/self.step)+3
@@ -1129,6 +1134,7 @@ class SequencerView(gtk.DrawingArea):
 		"""
 		if not self.window:
 			return
+		player = com.get('aldrin.core.player')
 		gc = self.window.new_gc()
 		cm = gc.get_colormap()
 		drawable = self.window
@@ -1166,6 +1172,7 @@ class SequencerView(gtk.DrawingArea):
 		Overriding a L{Canvas} method that paints onto an offscreen buffer.
 		Draws the pattern view graphics.
 		"""	
+		player = com.get('aldrin.core.player')
 		st = time.time()
 		w,h = self.get_client_size()
 		gc = self.window.new_gc()

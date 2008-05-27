@@ -24,7 +24,8 @@ Contains tool functions to deal with audio and midi drivers.
 
 import config
 import common
-player = common.get_player()
+
+from aldrincom import com
 
 class AudioInitException(Exception):
 	pass
@@ -40,6 +41,7 @@ class MidiDriver:
 		if not self.enabled:
 			return
 		print "uninitializing midi driver..."
+		player = com.get('aldrin.core.player')
 		player.mididriver_close_all()
 		self.enabled = False
 		
@@ -48,6 +50,7 @@ class MidiDriver:
 			self.destroy()
 		midiinputs = config.get_config().get_mididriver_inputs()
 		midioutputs = config.get_config().get_mididriver_outputs()
+		player = com.get('aldrin.core.player')
 		for i in range(player.mididriver_get_count()):
 			drivername = player.mididriver_get_name(i).strip() 
 			if player.mididriver_is_input(i) and drivername in midiinputs:
@@ -70,6 +73,7 @@ class AudioDriver:
 		if not self.enabled:
 			return
 		print "uninitializing audio driver..."
+		player = com.get('aldrin.core.player')
 		player.audiodriver_destroy()
 		self.enabled = False
 		
@@ -80,6 +84,7 @@ class AudioDriver:
 		if self.enabled:
 			self.destroy()
 		inputname, outputname, samplerate, buffersize = config.get_config().get_audiodriver_config()
+		player = com.get('aldrin.core.player')
 		if not player.audiodriver_get_count():
 			raise AudioInitException
 		print "available drivers:"

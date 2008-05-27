@@ -25,7 +25,6 @@ Contains panels and dialogs related to application preferences.
 import sys, os
 from gtkimport import gtk
 import zzub
-import extman
 import webbrowser
 
 from utils import prepstr, buffersize_to_latency, filepath, error, add_scrollbars, new_listview
@@ -33,7 +32,6 @@ import utils
 import config
 import common
 from common import MARGIN, MARGIN2, MARGIN3
-player = common.get_player()
 
 from controller import learn_controller
 

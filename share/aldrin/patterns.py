@@ -33,9 +33,9 @@ import zzub
 import time
 import random
 import common
-player = common.get_player()
 from common import MARGIN, MARGIN2, MARGIN3, MARGIN0
 from eventbus import *
+from aldrincom import com
 
 from utils import NOTES, roundint
 PATLEFTMARGIN = 48
@@ -280,6 +280,7 @@ class PatternToolBar(gtk.HBox):
 		"""
 		Updates the plugin selection box.
 		"""
+		player = com.get('aldrin.core.player')
 		self.plugin_index = min(max(self.plugin_index, 0), player.get_plugin_count()-1)
 		self.pluginselect.get_model().clear()
 		for i, plugin in enumerate(sorted(player.get_plugin_list(), lambda a,b:cmp(a.get_name().lower(),b.get_name().lower()))):
@@ -376,6 +377,7 @@ class PatternToolBar(gtk.HBox):
 		self.waveselect.get_model().clear()
 		count = 0
 		wi = 0
+		player = com.get('aldrin.core.player')
 		for i in range(player.get_wave_count()):
 			w = player.get_wave(i)
 			if w.get_level_count() >= 1:
@@ -749,6 +751,7 @@ class PatternView(gtk.DrawingArea):
 		"""
 		if self.rootwindow.index != self.rootwindow.PAGE_PATTERN:
 			return True
+		player = com.get('aldrin.core.player')
 		playpos = player.get_position()
 		if self.playpos != playpos:
 			self.draw_playpos_xor()
@@ -2372,7 +2375,8 @@ class PatternView(gtk.DrawingArea):
 		
 		@return: zzub plugin plugin.
 		@rtype: zzub.Plugin
-		"""	
+		"""
+		player = com.get('aldrin.core.player')		
 		if player.get_plugin_count() == 0:
 			return
 		toolbar = self.toolbar

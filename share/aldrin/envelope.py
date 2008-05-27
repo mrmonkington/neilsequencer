@@ -30,7 +30,6 @@ import zzub
 import config
 import common
 from common import MARGIN, MARGIN2, MARGIN3
-player = common.get_player()
 
 # size of border
 BORDER = 5

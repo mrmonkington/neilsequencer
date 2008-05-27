@@ -23,6 +23,7 @@ Provides information used by all ui sections.
 """
 
 import zzub
+from aldrincom import com
 
 MARGIN0 = 3
 MARGIN = 6
@@ -90,20 +91,13 @@ class PluginInfoCollection:
 	def update(self):
 		previous = dict(self.plugin_info)
 		self.plugin_info.clear()
-		for mp in player.get_plugin_list():
+		for mp in com.get('aldrin.core.player').get_plugin_list():
 			if mp in previous:
 				self.plugin_info[mp] = previous[mp]
 			else:
 				self.plugin_info[mp] = PluginInfo(mp)
 
 collection = None
-player = None
-
-def get_player():
-	global player # i like this
-	if not player:
-		player = zzub.Player()
-	return player
 
 def get_plugin_infos():
 	global collection
@@ -112,6 +106,6 @@ def get_plugin_infos():
 	return collection
 
 if __name__ == '__main__':
-	get_player()
+	com.load_packages()
 	col = PluginInfoCollection()
 	del col[5]
