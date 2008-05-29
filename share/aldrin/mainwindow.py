@@ -958,6 +958,7 @@ class AldrinFrame(gtk.Window):
 		self.clear()
 		self.filename = filename
 		base,ext = os.path.splitext(self.filename)
+		player = com.get('aldrin.core.player')
 		if ext.lower() in ('.bmx','.bmw'):
 			#~ progress = wx.ProgressDialog("Aldrin", "Loading BMX Song...")
 			#~ wx.Yield()
@@ -1006,6 +1007,7 @@ class AldrinFrame(gtk.Window):
 		@param filename: Path to song.
 		@type filename: str
 		"""
+		player = com.get('aldrin.core.player')
 		try:
 			if not os.path.splitext(filename)[1]:
 				filename += self.DEFAULT_EXTENSION
@@ -1121,6 +1123,7 @@ class AldrinFrame(gtk.Window):
 		self.routeframe.reset()
 		self.patternframe.reset()
 		self.infoframe.reset()
+		player = com.get('aldrin.core.player')
 		player.clear()
 		player.set_loop_start(0)
 		player.set_loop_end(self.seqframe.view.step)
@@ -1137,6 +1140,7 @@ class AldrinFrame(gtk.Window):
 		@type event: wx.MenuEvent
 		"""
 		global playstarttime
+		player = com.get('aldrin.core.player')
 		if self.btnplay.get_active():
 			playstarttime = time.time()
 			player.play()
@@ -1156,6 +1160,7 @@ class AldrinFrame(gtk.Window):
 		playstarttime = time.time()
 		if not self.btnplay.get_active():
 			self.btnplay.set_active(True)
+		player = com.get('aldrin.core.player')
 		player.set_position(max(self.seqframe.view.row,0))
 		player.play()		
 		
@@ -1180,6 +1185,7 @@ class AldrinFrame(gtk.Window):
 		@param event: menu event.
 		@type event: wx.MenuEvent
 		"""
+		player = com.get('aldrin.core.player')
 		player.stop()
 		if self.btnplay.get_active() == False:
 			player.set_position(0)
