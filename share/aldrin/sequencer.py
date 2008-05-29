@@ -424,6 +424,7 @@ class SequencerView(gtk.DrawingArea):
 
 	def create_track(self, plugin):
 		# get sequencer and add the track
+		player = com.get('aldrin.core.player')
 		seq = player.get_current_sequencer()
 		track = seq.create_track(plugin)
 		# if it has no existing patterns, make one (even if it has no parameters, it might have incoming connections)
@@ -439,6 +440,7 @@ class SequencerView(gtk.DrawingArea):
 		"""
 		Inserts a space at cursor.
 		"""
+		player = com.get('aldrin.core.player')
 		seq = player.get_current_sequencer()
 		t = self.get_track()
 		if not t:
@@ -452,8 +454,9 @@ class SequencerView(gtk.DrawingArea):
 		
 	def delete_at_cursor(self):
 		"""
-		Deletes pattern at cursor.
+		Deletes pattern at cursor.		
 		"""		
+		player = com.get('aldrin.core.player')
 		seq = player.get_current_sequencer()
 		t = seq.get_track(self.track)
 		t.remove_event_at(self.row)
@@ -461,6 +464,7 @@ class SequencerView(gtk.DrawingArea):
 		self.redraw()
 	
 	def selection_range(self):
+		player = com.get('aldrin.core.player')
 		seq = player.get_current_sequencer()		
 		start = (min(self.selection_start[0], self.selection_end[0]), 
 					min(self.selection_start[1], self.selection_end[1]))
@@ -504,6 +508,7 @@ class SequencerView(gtk.DrawingArea):
 		set_clipboard_text(data)
 		
 	def on_popup_create_pattern(self, event=None):
+		player = com.get('aldrin.core.player')
 		seq = player.get_current_sequencer()
 		try:
 			start = (min(self.selection_start[0], self.selection_end[0]), 
@@ -528,6 +533,7 @@ class SequencerView(gtk.DrawingArea):
 					break
 		
 	def on_popup_merge(self, event=None):
+		player = com.get('aldrin.core.player')
 		seq = player.get_current_sequencer()
 		try:
 			start = (min(self.selection_start[0], self.selection_end[0]), 
@@ -573,6 +579,7 @@ class SequencerView(gtk.DrawingArea):
 		self.on_popup_delete(event)
 		
 	def on_popup_paste(self, event=None):	
+		player = com.get('aldrin.core.player')
 		seq = player.get_current_sequencer()
 		data = get_clipboard_text()
 		for track,row,value in self.unpack_clipboard_data(data.strip()):
@@ -585,6 +592,7 @@ class SequencerView(gtk.DrawingArea):
 		self.redraw()
 		
 	def on_popup_delete(self, event):
+		player = com.get('aldrin.core.player')
 		seq = player.get_current_sequencer()
 		print self.selection_start
 		start = (min(self.selection_start[0], self.selection_end[0]), 
@@ -604,6 +612,7 @@ class SequencerView(gtk.DrawingArea):
 		@param event: Menu event.
 		@type event: wx.CommandEvent
 		"""
+		player = com.get('aldrin.core.player')
 		seq = player.get_current_sequencer()
 		seq.remove_track(self.track)
 		track_count = seq.get_track_count()
@@ -632,6 +641,7 @@ class SequencerView(gtk.DrawingArea):
 		@param event: Menu event.
 		@type event: wx.CommandEvent
 		"""
+		player = com.get('aldrin.core.player')
 		seq = player.get_current_sequencer()
 		x, y = int(event.x), int(event.y)
 		track, row = self.pos_to_track_row((x,y))
@@ -684,6 +694,7 @@ class SequencerView(gtk.DrawingArea):
 	
 	def show_plugin_dialog(self):
 		pmenu = []
+		player = com.get('aldrin.core.player')
 		for plugin in player.get_plugin_list():
 			pmenu.append(prepstr(plugin.get_name()))
 		dlg = AddSequencerTrackDialog(self, pmenu)
@@ -701,12 +712,14 @@ class SequencerView(gtk.DrawingArea):
 		"""
 		Set loop startpoint
 		"""
+		player = com.get('aldrin.core.player')
 		player.set_loop_start(self.row)
 		if player.get_loop_end() <= self.row:
 			player.set_loop_end(self.row + self.step)
 		self.redraw()
 		
 	def set_loop_end(self, event=None):
+		player = com.get('aldrin.core.player')
 		pos = self.row# + self.step
 		if player.get_loop_end() != pos:
 			player.set_loop_end(pos)
@@ -725,6 +738,7 @@ class SequencerView(gtk.DrawingArea):
 		@param event: Key event
 		@type event: wx.KeyEvent
 		"""
+		player = com.get('aldrin.core.player')
 		seq = player.get_current_sequencer()
 		mask = event.state
 		kv = event.keyval		
@@ -901,6 +915,7 @@ class SequencerView(gtk.DrawingArea):
 		tb = pf.toolbar
 		tb.plugin_index = 0
 		tb.pattern = 0
+		player = com.get('aldrin.core.player')
 		for i in range(player.get_plugin_count()):
 			if player.get_plugin(i) == plugin:
 				tb.plugin_index = tb.plugin_to_index[plugin]
@@ -920,6 +935,7 @@ class SequencerView(gtk.DrawingArea):
 		@return: Tuple containing plugin and pattern index.
 		@rtype: (zzub.Plugin, int)		
 		"""		
+		player = com.get('aldrin.core.player')
 		seq = player.get_current_sequencer()
 		track = self.get_track()
 		if not track:
@@ -974,6 +990,7 @@ class SequencerView(gtk.DrawingArea):
 		@param event: Mouse event
 		@type event: wx.MouseEvent
 		"""
+		player = com.get('aldrin.core.player')
 		self.grab_focus()
 		if event.button == 1:
 			seq = player.get_current_sequencer()
@@ -1010,6 +1027,7 @@ class SequencerView(gtk.DrawingArea):
 			if self.selection_start == None:				
 				self.selection_start = (self.track, self.row)
 			if self.selection_start:
+				player = com.get('aldrin.core.player')
 				seq = player.get_current_sequencer()
 				select_track = min(seq.get_track_count()-1, max(select_track, 0))
 				select_row = max(select_row, 0)

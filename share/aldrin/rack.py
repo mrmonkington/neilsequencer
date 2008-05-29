@@ -43,6 +43,7 @@ import common
 from common import MARGIN, MARGIN2, MARGIN3, MARGIN0
 import cPickle
 
+from aldrincom import com
 
 class ParameterView(gtk.VBox):
 	"""
@@ -410,6 +411,7 @@ class ParameterView(gtk.VBox):
 		return result
 		
 	def update_namelabel(self, g,t,i):
+		player = com.get('aldrin.core.player')
 		nl,s,vl = self.pid2ctrls[(g,t,i)]
 		markup = "<b>%s</b>" % nl._default_name
 		if self.get_event_connection_bindings(g,t,i):
@@ -428,6 +430,7 @@ class ParameterView(gtk.VBox):
 		@param event: event.
 		@type event: wx.Event
 		"""
+		player = com.get('aldrin.core.player')
 		if event.button == 1:
 			nl,s,vl = self.pid2ctrls[(g,t,i)]
 			s.grab_focus()

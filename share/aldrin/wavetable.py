@@ -323,6 +323,7 @@ class WavetablePanel(gtk.Notebook):
 		"""
 		Renames currently selected sample.
 		"""
+		player = com.get('aldrin.core.player')
 		selects = self.get_sample_selection()
 		if not(selects) or len(selects)>1:
 			return
@@ -364,6 +365,7 @@ class WavetablePanel(gtk.Notebook):
 			v = min(max(int(self.edsamplerate.get_text()),50),200000)
 		except ValueError:
 			return
+		player = com.get('aldrin.core.player')
 		for i in self.get_sample_selection():
 			w = player.get_wave(i)
 			if w.get_level_count() >= 1:
@@ -383,6 +385,7 @@ class WavetablePanel(gtk.Notebook):
 		except ValueError:
 			print "invalid value."
 			return
+		player = com.get('aldrin.core.player')
 		for i in self.get_sample_selection():
 			w = player.get_wave(i)
 			if w.get_level_count() >= 1:
@@ -403,6 +406,7 @@ class WavetablePanel(gtk.Notebook):
 		except ValueError:
 			print "invalid value."
 			return
+		player = com.get('aldrin.core.player')
 		for i in self.get_sample_selection():
 			w = player.get_wave(i)
 			if w.get_level_count() >= 1:
@@ -415,6 +419,7 @@ class WavetablePanel(gtk.Notebook):
 		"""
 		Callback of checkbox that enables or disables bidirectional looping for the selected sample.
 		"""
+		player = com.get('aldrin.core.player')
 		for i in self.get_sample_selection():
 			w = player.get_wave(i)
 			flags = w.get_flags()
@@ -429,6 +434,7 @@ class WavetablePanel(gtk.Notebook):
 		"""
 		Callback of checkbox that enables or disables looping for the selected sample.
 		"""
+		player = com.get('aldrin.core.player')
 		for i in self.get_sample_selection():
 			w = player.get_wave(i)
 			flags = w.get_flags()
@@ -443,6 +449,7 @@ class WavetablePanel(gtk.Notebook):
 		"""
 		Callback of checkbox that enables or disables the envelope for the selected sample.
 		"""
+		player = com.get('aldrin.core.player')
 		for i in self.get_sample_selection():
 			w = player.get_wave(i)
 			if w.get_envelope_count():				
@@ -460,6 +467,7 @@ class WavetablePanel(gtk.Notebook):
 		@param event: CommandEvent event
 		@type event: wx.CommandEvent		
 		"""
+		player = com.get('aldrin.core.player')
 		vol = db2linear(int(value) / 100.0)		
 		for i in self.get_sample_selection():
 			w = player.get_wave(i)
@@ -492,6 +500,7 @@ class WavetablePanel(gtk.Notebook):
 				return
 		elif question(self, '<b><big>Really delete instrument?</big></b>',False) != gtk.RESPONSE_YES:
 			return
+		player = com.get('aldrin.core.player')
 		for i in sel:
 			player.get_wave(i).clear()
 		self.update_samplelist()
@@ -525,6 +534,7 @@ class WavetablePanel(gtk.Notebook):
 		"""
 		# master = player.get_plugin(0)
 		# vol = -76.0 * (master.get_parameter_value(1, 0, 0) / 16384.0)
+		player = com.get('aldrin.core.player')
 		vol = min(max(config.get_config().get_sample_preview_volume(),-76.0),0.0)
 		amp = db2linear(vol,limit=-76.0)
 		player.set_wave_amp(amp)
@@ -539,6 +549,7 @@ class WavetablePanel(gtk.Notebook):
 		"""
 		Callback of a button that plays the currently selected sample in the sample list.
 		"""		
+		player = com.get('aldrin.core.player')
 		selects = self.get_sample_selection()
 		if selects:
 			w = player.get_wave(selects[0])
@@ -550,6 +561,7 @@ class WavetablePanel(gtk.Notebook):
 		"""
 		Callback of a button that stops playback of a wave file that is currently playing.
 		"""
+		player = com.get('aldrin.core.player')
 		player.stop_wave()
 		
 	def on_save_sample(self, widget):
@@ -560,6 +572,7 @@ class WavetablePanel(gtk.Notebook):
 		@param event: Command event
 		@type event: wx.CommandEvent
 		"""
+		player = com.get('aldrin.core.player')
 		selects = self.get_sample_selection()
 		for s in selects:
 			w = player.get_wave(s)
@@ -599,6 +612,7 @@ class WavetablePanel(gtk.Notebook):
 		elif len(selects) > len(samplepaths):
 			selects = selects[:len(samplepaths)]
 		assert len(selects) == len(samplepaths)
+		player = com.get('aldrin.core.player')
 		for source,target in zip(samplepaths, selects):
 			print "loading %s => %s" % (source,target)
 			try:
@@ -667,6 +681,7 @@ class WavetablePanel(gtk.Notebook):
 		Previews a sample from the filesystem.
 		"""
 		base,ext = os.path.splitext(path)
+		player = com.get('aldrin.core.player')
 		player.lock()
 		try:
 			w = player.get_wave(-1) # get preview wave
@@ -802,6 +817,7 @@ class WavetablePanel(gtk.Notebook):
 		sel = self.get_sample_selection()
 		if not sel:
 			return
+		player = com.get('aldrin.core.player')
 		w = player.get_wave(sel[0])
 		for i in range(w.get_level_count()):
 			level = w.get_level(i)
@@ -816,6 +832,7 @@ class WavetablePanel(gtk.Notebook):
 		Updates the sample property checkboxes and sample editing fields.
 		Includes volume slider and looping properties.
 		"""
+		player = com.get('aldrin.core.player')
 		sel = self.get_sample_selection()
 		if not sel:
 			sel = -1
@@ -923,6 +940,7 @@ class WavetablePanel(gtk.Notebook):
 		Stretches the sample so it fits the loop
 		"""
 		import math
+		player = com.get('aldrin.core.player')
 		bpm = player.get_bpm()
 		for sel in self.get_sample_selection():
 			w = player.get_wave(sel)
@@ -950,6 +968,7 @@ class WavetablePanel(gtk.Notebook):
 		the loop.
 		"""
 		import math
+		player = com.get('aldrin.core.player')
 		bpm = player.get_bpm()
 		for sel in self.get_sample_selection():
 			w = player.get_wave(sel)

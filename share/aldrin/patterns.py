@@ -231,6 +231,7 @@ class PatternToolBar(gtk.HBox):
 		self.view.pattern_changed()
 		
 	def on_waveselect_popup(self, widget, *args):
+		player = com.get('aldrin.core.player')
 		if widget.get_property('popup-shown'):
 			for win in gtk.window_list_toplevels():
 				if (len(win.get_children()) == 1) and (isinstance(win.get_children()[0],gtk.Menu)):
@@ -246,6 +247,7 @@ class PatternToolBar(gtk.HBox):
 		
 	def on_waveselect_menu_activate(self, item, widget, index):
 		wave = self.cb2w[index]
+		player = com.get('aldrin.core.player')
 		w = player.get_wave(wave)
 		if w.get_level_count() >= 1:
 			from utils import db2linear
@@ -311,6 +313,7 @@ class PatternToolBar(gtk.HBox):
 		@param i: Plugin index.
 		@type i: int
 		"""
+		player = com.get('aldrin.core.player')
 		self.plugin_index = min(max(i, 0), player.get_plugin_count()-1)
 		self.view.selection = None
 		self.view.start_col = 0
@@ -2055,6 +2058,7 @@ class PatternView(gtk.DrawingArea):
 		"""
 		Plays entered note
 		"""
+		player = com.get('aldrin.core.player')
 		if playtrack and self.toolbar.playnotes.get_active():
 			m = self.get_plugin()
 			player.lock_tick()
@@ -2343,6 +2347,7 @@ class PatternView(gtk.DrawingArea):
 			self.create_xor_gc()
 		gc = self.xor_gc
 		# draw play cursor
+		player = com.get('aldrin.core.player')
 		current_position = self.playpos
 		seq = player.get_current_sequencer()
 		for i in range(seq.get_track_count()):
@@ -2461,6 +2466,7 @@ class PatternView(gtk.DrawingArea):
 		#print "end of prepare_textbuffer %.2f" % ((time.time() - st) * 1000.0)
 
 	def get_line_pattern(self):
+		player = com.get('aldrin.core.player')
 		master = player.get_plugin(0) 
 		tpb = master.get_parameter_value(1, 0, 2)
 		return {

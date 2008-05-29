@@ -896,6 +896,7 @@ class RouteView(gtk.DrawingArea):
 		"""
 		Event handler for "new plugin" context menu options.
 		"""
+		player = com.get('aldrin.core.player')
 		basename = pluginloader.get_short_name()
 		name = pluginloader.get_short_name()
 		basenumber = 2
@@ -1050,6 +1051,7 @@ class RouteView(gtk.DrawingArea):
 		"""
 		Event handler for unmute all menu option
 		"""
+		player = com.get('aldrin.core.player')
 		for mp in reversed(player.get_plugin_list()):
 			info = common.get_plugin_infos().get(mp)
 			info.muted=False
@@ -1127,7 +1129,7 @@ class RouteView(gtk.DrawingArea):
 						menu.append(make_submenu_item(submenu, prepstr(cmd[1:])))
 					else:
 						menu.append(make_menu_item(prepstr(cmd), "", self.on_popup_command, mp, 0, index))
-			extman.get_extension_manager().extend_menu(interface.UIOBJECT_ROUTE_MENU_PLUGIN, menu, plugin=mp)
+			com.get_from_category('menuitem.plugin', menu, plugin=mp)
 		else:
 			try:
 				conn, index = self.get_connection_at((mx,my))
@@ -1145,10 +1147,10 @@ class RouteView(gtk.DrawingArea):
 					mi = conn.get_input()
 					for param in mi.get_pluginloader().get_parameter_list(3):
 						print param
-				extman.get_extension_manager().extend_menu(interface.UIOBJECT_ROUTE_MENU_CONNECTION, menu, connection=conn)
+				com.get_from_category('menuitem.connection', menu, connection=conn)
 			else:
 				menu = self.get_plugin_menu()
-				extman.get_extension_manager().extend_menu(interface.UIOBJECT_ROUTE_MENU, menu)
+				com.get_from_category('menuitem.route', menu)
 		
 		menu.show_all()
 		menu.attach_to_widget(self, None)
@@ -1269,6 +1271,7 @@ class RouteView(gtk.DrawingArea):
 		@param event: Mouse event.
 		@type event: wx.MouseEvent
 		"""
+		player = com.get('aldrin.core.player')
 		if (event.button == 3):
 			return self.on_context_menu(widget, event)
 		if not event.button in (1,2):

@@ -26,6 +26,8 @@ import urllib, urlparse, urllib2, cookielib, config
 import xml.dom.minidom
 import os,sys
 
+from aldrincom import com
+
 class Freesound:
 	BASE_URL = "http://freesound.iua.upf.edu/"
 	LOGIN_URL = urlparse.urljoin(BASE_URL, "forum/login.php")

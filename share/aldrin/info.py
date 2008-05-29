@@ -123,6 +123,7 @@ class InfoView(gtk.TextView):
 		@param event: Event
 		@type event: wx.Event
 		"""
+		player = com.get('aldrin.core.player')
 		player.set_infotext(self.get_buffer().get_property('text'))
 		
 	def reset(self):

@@ -31,6 +31,8 @@ import config
 import common
 from common import MARGIN, MARGIN2, MARGIN3
 
+from aldrincom import com
+
 # size of border
 BORDER = 5
 # size of the envelope dots
@@ -342,6 +344,7 @@ class WaveEditView(gtk.DrawingArea):
 		self.wave = None
 		self.level = None
 		self.selection = None
+		player = com.get('aldrin.core.player')
 		if sel:
 			self.wave = player.get_wave(sel[0])
 			if self.wave.get_level_count() >= 1:
@@ -440,6 +443,7 @@ class WaveEditView(gtk.DrawingArea):
 		if self.level == None:
 			return
 		
+		player = com.get('aldrin.core.player')
 		ctx.set_source_rgb(*gridpen)
 		rb,re = self.range
 		rsize = re - rb

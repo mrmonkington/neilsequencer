@@ -31,6 +31,8 @@ import config
 import common
 from common import MARGIN, MARGIN2, MARGIN3
 
+from aldrincom import com
+
 # size of border
 BORDER = 5
 # size of the envelope dots
@@ -303,6 +305,7 @@ class EnvelopeView(gtk.DrawingArea):
 		self.envelope = None
 		sel = self.wavetable.get_sample_selection()
 		if sel:
+			player = com.get('aldrin.core.player')
 			w = player.get_wave(sel[0])
 			if w.get_envelope_count():
 				self.envelope = w.get_envelope(0)
@@ -498,6 +501,7 @@ class ADSRPanel(gtk.VBox):
 		Update slider values from presets.
 		"""
 		iswave = False
+		player = com.get('aldrin.core.player')
 		sel = self.wavetable.get_sample_selection()
 		if sel:
 			w = player.get_wave(sel[0])
@@ -525,6 +529,7 @@ class ADSRPanel(gtk.VBox):
 		Updates the envelope from current slider values.
 		"""
 		sel = self.wavetable.get_sample_selection()
+		player = com.get('aldrin.core.player')
 		if sel:
 			w = player.get_wave(sel[0])
 			if w.get_envelope_count():

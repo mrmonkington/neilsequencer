@@ -43,6 +43,7 @@ from rack import RackPanel
 from info import InfoPanel
 from preferences import show_preferences
 
+from utils import CancelException
 from config import get_plugin_aliases, get_plugin_blacklist
 
 STOCK_PATTERNS = "aldrin-patterns"
