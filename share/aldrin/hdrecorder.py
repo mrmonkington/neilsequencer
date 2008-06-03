@@ -113,6 +113,7 @@ class HDRecorderDialog(gtk.Dialog):
 		dlg = gtk.FileChooserDialog(title="Save", parent=self, action=gtk.FILE_CHOOSER_ACTION_SAVE,
 			buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_SAVE, gtk.RESPONSE_OK)
 		)
+		player = com.get('aldrin.core.player')
 		dlg.set_do_overwrite_confirmation(True)
 		ffwav = gtk.FileFilter()
 		ffwav.set_name("PCM Waves (*.wav)")
