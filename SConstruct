@@ -19,7 +19,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
 # MA  02110-1301, USA.
 
-VERSION = "0.2.4"
+VERSION = "0.2.5"
 
 import os, glob, sys, time, platform
 import distutils.sysconfig

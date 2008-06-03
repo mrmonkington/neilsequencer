@@ -1,9 +1,8 @@
-#!/usr/bin/python
 #encoding: latin-1
 
-# pyzzub
-# Python bindings for libzzub
-# Copyright (C) 2006 The libzzub Development Team
+# libzzub, Buzé, Aldrin
+# Modular Sequencer
+# Copyright (C) 2006 The Aldrin Development Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -19,12 +18,11 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from distutils.core import setup
-setup(name='pyzzub',
-		version='0.8.1',
-		description = "Python Bindings For libzzub",
-		author= "Leonard Ritter",
-		author_email = "contact@leonard-ritter.com",
-		url = "http://trac.zeitherrschaft.org/zzub",
-		packages=['zzub'],
-		)
+Import('pluginenv', 'build_plugin')
+
+build_plugin(pluginenv, 'btdsys_ringmod', files=[
+		'ringmod.cpp',
+	],
+	helpfiles=[
+		'index.html',
+	])

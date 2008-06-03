@@ -1446,25 +1446,25 @@ class _Wavelevel(object):
 	
 
 # you can override these
-Sequencer = _Sequencer
-Envelope = _Envelope
-Wavelevel = _Wavelevel
-Input = _Input
-Sequence = _Sequence
-Pattern = _Pattern
-Plugin = _Plugin
-Postprocess = _Postprocess
-Connection = _Connection
-Output = _Output
-AudioConnection = _AudioConnection
-Attribute = _Attribute
-Patterntrack = _Patterntrack
 Pluginloader = _Pluginloader
-Wave = _Wave
-Parameter = _Parameter
-Player = _Player
+EventConnection = _EventConnection
+Patterntrack = _Patterntrack
 Midimapping = _Midimapping
+Player = _Player
+Postprocess = _Postprocess
+Wave = _Wave
+Output = _Output
+Plugin = _Plugin
+Parameter = _Parameter
 EventConnectionBinding = _EventConnectionBinding
 Plugincollection = _Plugincollection
+Attribute = _Attribute
+AudioConnection = _AudioConnection
+Connection = _Connection
+Sequence = _Sequence
+Wavelevel = _Wavelevel
+Input = _Input
 Archive = _Archive
-EventConnection = _EventConnection
+Sequencer = _Sequencer
+Envelope = _Envelope
+Pattern = _Pattern

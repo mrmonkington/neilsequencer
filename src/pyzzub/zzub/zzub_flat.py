@@ -150,7 +150,7 @@ class zzub_event_data_unknown(Structure):
 
 zzub_event_data_unknown_t = zzub_event_data_unknown
 
-class union__26360874(Union):
+class union__2e8863f1(Union):
 	_fields_ = [
 		('new_plugin', zzub_event_data_new_plugin_t),
 		('delete_plugin', zzub_event_data_delete_plugin_t),
@@ -173,7 +173,7 @@ class union__26360874(Union):
 class zzub_event_data(Structure):
 	_fields_ = [
 		('type', c_int),
-		('', union__26360874),
+		('', union__2e8863f1),
 	]
 
 zzub_event_data_t = zzub_event_data
@@ -392,7 +392,7 @@ zzub_process_mode_read_write = 3
 zzub_connection_type_audio = 0
 zzub_connection_type_event = 1
 
-libzzub = dlopen('zzub',version='0.2.4')
+libzzub = dlopen('zzub',version='0.2.5')
 zzub_audiodriver_get_count               = dlsym(libzzub, 'zzub_audiodriver_get_count'            , c_int, ('player'  ,POINTER(zzub_player_t)))
 zzub_audiodriver_get_name                = dlsym(libzzub, 'zzub_audiodriver_get_name'             , c_int, ('player'  ,POINTER(zzub_player_t)),('index'   ,c_int     ),('name'    ,c_char_p  ),('maxLen'  ,c_int     ))
 zzub_audiodriver_create                  = dlsym(libzzub, 'zzub_audiodriver_create'               , c_int, ('player'  ,POINTER(zzub_player_t)),('input_index',c_int     ),('output_index',c_int     ))
