@@ -158,7 +158,6 @@ class AldrinFrame(gtk.Window):
 		self._cbcalls = 0
 		self._hevcalls = 0
 		self._hevtimes = 0
-		global playstarttime
 		player = com.get('aldrin.core.player')
 		player.set_callback(self.player_callback)
 		# load blacklist file and add blacklist entries
@@ -190,7 +189,7 @@ class AldrinFrame(gtk.Window):
 		player.initialize(samplerate)
 		self.init_lunar()
 		
-		playstarttime = time.time()
+		player.playstarttime = time.time()
 		
 		self.event_handlers = []
 		
@@ -1139,10 +1138,9 @@ class AldrinFrame(gtk.Window):
 		@param event: menu event.
 		@type event: wx.MenuEvent
 		"""
-		global playstarttime
 		player = com.get('aldrin.core.player')
 		if self.btnplay.get_active():
-			playstarttime = time.time()
+			player.playstarttime = time.time()
 			player.play()
 		elif player.get_state() == zzub.zzub_player_state_playing:
 			# keep on
@@ -1156,11 +1154,10 @@ class AldrinFrame(gtk.Window):
 		@param event: menu event.
 		@type event: wx.MenuEvent
 		"""
-		global playstarttime
-		playstarttime = time.time()
 		if not self.btnplay.get_active():
 			self.btnplay.set_active(True)
 		player = com.get('aldrin.core.player')
+		player.playstarttime = time.time()
 		player.set_position(max(self.seqframe.view.row,0))
 		player.play()		
 		

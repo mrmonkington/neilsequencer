@@ -180,7 +180,7 @@ class TransportPanel(gtk.HBox):
 		tpb = m.get_parameter_value(1, 0, 2)
 		time.time() - self.starttime
 		if player.get_state() == 0: # playing
-			e = format_time(time.time() - playstarttime)
+			e = format_time(time.time() - player.playstarttime)
 		else:
 			e = format_time(0.0)
 		c = format_time(ticks_to_time(p,bpm,tpb))
@@ -225,6 +225,7 @@ class TransportPanel(gtk.HBox):
 		@param event: event.
 		@type event: wx.Event
 		"""
+		player = com.get('aldrin.core.player')
 		player.get_plugin(0).set_parameter_value(1, 0, 1, int(self.bpm.get_value()), 1)
 		config.get_config().set_default_int('BPM', int(self.bpm.get_value()))
 
@@ -235,6 +236,7 @@ class TransportPanel(gtk.HBox):
 		@param event: event.
 		@type event: wx.Event
 		"""
+		player = com.get('aldrin.core.player')
 		player.get_plugin(0).set_parameter_value(1, 0, 2, int(self.tpb.get_value()), 1)
 		config.get_config().set_default_int('TPB', int(self.tpb.get_value()))
 		

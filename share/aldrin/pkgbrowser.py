@@ -97,6 +97,7 @@ class PackageBrowserDialog(gtk.Dialog):
 		returns a cleaned up epydoc-compatible docstring suitable
 		for output in an editbox.
 		"""
+		assert docstr != None
 		def wrap(lines):
 			if lines and not lines[0]:
 				del lines[0]
@@ -163,10 +164,11 @@ class PackageBrowserDialog(gtk.Dialog):
 		paramc = 'style="italic"'
 		funcc = 'underline="single"'
 		defvc = 'style="italic"'
+		docstr = ""
 		if inspect.ismethod(obj):
 			docstr = ""
 			if hasattr(obj, '__doc__'):
-				docstr = obj.__doc__
+				docstr = obj.__doc__ or ""
 			markup += '<span %s>def</span> ' % keyw
 			args,varargs,varkw,defaults = inspect.getargspec(obj)
 			if not defaults:
@@ -186,8 +188,8 @@ class PackageBrowserDialog(gtk.Dialog):
 		elif inspect.isclass(obj):
 			docstr = ""
 			if hasattr(obj, '__doc__'):
-				docstr = obj.__doc__
-			markup += '<span %s>interface</span> %s:\n\n' % (keyw, obj.__name__)
+				docstr = obj.__doc__ or ""
+			markup += '<span %s>class</span> %s:\n\n' % (keyw, obj.__name__)
 		else:
 			return
 		desc,params = self.cleanup_docstr(docstr)

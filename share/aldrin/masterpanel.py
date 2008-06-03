@@ -142,6 +142,7 @@ class MasterPanel(gtk.HBox):
 		@param event: event.
 		@type event: wx.Event
 		"""
+		player = com.get('aldrin.core.player')
 		vol = int(min(max(value,0), 16384) + 0.5)
 		master = player.get_plugin(0)
 		master.set_parameter_value(1, 0, 0, 16384 - vol, 1)

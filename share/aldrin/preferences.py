@@ -34,6 +34,7 @@ import common
 from common import MARGIN, MARGIN2, MARGIN3
 
 from controller import learn_controller
+from aldrincom import com
 
 samplerates = [96000,48000,44100]
 buffersizes = [32768,16384,8192,4096,2048,1024,512,256,128,64,32,16]
@@ -131,6 +132,7 @@ class DriverPanel(gtk.VBox):
 			row.pack_start(c2)
 			return row
 			
+		player = com.get('aldrin.core.player')
 		sizer1 = gtk.Frame("Audio Output")
 		vbox = gtk.VBox(False, MARGIN)
 		vbox.pack_start(add_row(gtk.Label("Driver"), self.cboutput), expand=False)
@@ -175,6 +177,7 @@ class DriverPanel(gtk.VBox):
 			error(self, "You did not select a valid output device.")
 			raise CancelException
 		iname = ""
+		player = com.get('aldrin.core.player')
 		oname = player.audiodriver_get_name(o)
 		inputname, outputname, samplerate, buffersize = config.get_config().get_audiodriver_config()
 		if (oname != outputname) or (samplerate != sr) or (bs != buffersize):
@@ -397,6 +400,7 @@ class MidiPanel(gtk.VBox):
 		])
 		self.idevicelist.set_property('headers-visible', False)
 		inputlist = config.get_config().get_mididriver_inputs()
+		player = com.get('aldrin.core.player')
 		for i in range(player.mididriver_get_count()):
 			if player.mididriver_is_input(i):
 				name = prepstr(player.mididriver_get_name(i))
@@ -485,7 +489,6 @@ class ExtensionsPanel(gtk.VBox):
 		gtk.VBox.__init__(self, False, MARGIN)
 		self.set_border_width(MARGIN)
 		#~ self.extlist = ExtensionListBox(self, -1, style=wx.SUNKEN_BORDER)
-		self.extman = extman.get_extension_manager()
 		self.cfg = config.get_config()
 		self.extlist, self.extstore, columns = new_listview([
 			("Use", bool),
@@ -493,15 +496,15 @@ class ExtensionsPanel(gtk.VBox):
 		])
 		self.extlist.set_property('headers-visible', False)
 		exts = config.get_config().get_enabled_extensions()
-		for ext in self.extman.extensions:
-			name = prepstr(ext.name)
-			checked = ext.uri in exts
-			markup = ''
-			markup += '<b><big>%s</big></b>\n' % ext.name
-			markup += '<i>Version %s, by %s</i>\n' % (ext.version, ext.author)
-			markup += '\n'
-			markup += '%s\n' % ext.description
-			self.extstore.append([checked,markup])
+		#~ for ext in self.extman.extensions:
+			#~ name = prepstr(ext.name)
+			#~ checked = ext.uri in exts
+			#~ markup = ''
+			#~ markup += '<b><big>%s</big></b>\n' % ext.name
+			#~ markup += '<i>Version %s, by %s</i>\n' % (ext.version, ext.author)
+			#~ markup += '\n'
+			#~ markup += '%s\n' % ext.description
+			#~ self.extstore.append([checked,markup])
 		self.pack_start(add_scrollbars(self.extlist))
 		label = gtk.Label("Click OK and restart Aldrin to apply changes.")
 		label.set_alignment(0, 0.5)
@@ -514,27 +517,29 @@ class ExtensionsPanel(gtk.VBox):
 		@param event: Event.
 		@type event: wx.Event
 		"""
-		ext = self.extman.extensions[event.GetSelection()]
-		out = """<html><head></head>
-		<style type="text/css">
-		body {
-			font-size: 8pt;
-		}
-		</style>
-		<body><font size="-4">"""
-		out += "</font></body></html>"
-		self.htmldesc.SetPage(out)
+		pass
+		#~ ext = self.extman.extensions[event.GetSelection()]
+		#~ out = """<html><head></head>
+		#~ <style type="text/css">
+		#~ body {
+			#~ font-size: 8pt;
+		#~ }
+		#~ </style>
+		#~ <body><font size="-4">"""
+		#~ out += "</font></body></html>"
+		#~ self.htmldesc.SetPage(out)
 		
 	def apply(self):
 		"""
 		Updates the config object with the currently selected extensions.
 		"""
-		exts = []
-		for i,row in enumerate(self.extstore):
-			if row[0]:
-				ext = self.extman.extensions[i]
-				exts.append(ext.uri)
-		config.get_config().set_enabled_extensions(exts)
+		#~ exts = []
+		#~ for i,row in enumerate(self.extstore):
+			#~ if row[0]:
+				#~ ext = self.extman.extensions[i]
+				#~ exts.append(ext.uri)
+		#~ config.get_config().set_enabled_extensions(exts)
+		pass
 
 class PreferencesDialog(gtk.Dialog):
 	"""
