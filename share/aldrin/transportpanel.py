@@ -28,6 +28,7 @@ import time
 import config
 from aldrincom import com
 import zzub
+import common
 
 STOCK_PATTERNS = "aldrin-patterns"
 STOCK_ROUTER = "aldrin-router"

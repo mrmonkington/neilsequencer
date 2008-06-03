@@ -56,6 +56,7 @@
 		<ref label="TicTac ShutUp aBuffer (Sample/Hold)" uri="jamesmichaelmcdermott@gmail.com/effect/abuffer;1"/>
 		<ref label="Geoffroy NoteFilter" uri="jamesmichaelmcdermott@gmail.com/effect/notefilter;1"/>
 		<ref label="FSM SprayMan (Granulation)" uri="jamesmichaelmcdermott@gmail.com/effect/sprayman;1"/>
+		<ref label="BTDSys RingMod (Ring Modulator)" uri="jamesmichaelmcdermott@gmail.com/effect/btdsys_ringmod;1"/>
 	</group>
 	<group label="LADSPA Plugins">
 		<group label="CAPS">
