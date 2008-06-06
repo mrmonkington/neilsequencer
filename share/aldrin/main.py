@@ -22,6 +22,9 @@
 Provides application class and controls used in the aldrin main window.
 """
 
+import gobject
+gobject.threads_init()
+
 import sys, os
 # add the directory that the main module resides in to the python path,
 # if its not already contained
@@ -38,8 +41,6 @@ errordlg.install()
 from eventbus import *
 
 from gtkimport import gtk
-import gobject
-gobject.threads_init()
 import time
 
 from utils import format_time, ticks_to_time, prepstr, linear2db, db2linear, filepath, \

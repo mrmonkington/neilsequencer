@@ -91,33 +91,20 @@ class AldrinFrame(gtk.Window):
 	PAGE_INFO = 4
 	PAGE_RACK = 5
 	
-	style_rc = """
-	#gtk-button-images=0
-	gtk-icon-sizes="gtk-menu=16,16:gtk-button=16,16:gtk-small-toolbar=16,16:gtk-large-toolbar=16,16:panel-menu=16,16"
-	"""
-	
-	gtk.rc_parse_string(style_rc)
-	
 	iconfactory = gtk.IconFactory()
 	iconfactory.add_default()
 	def make_iconset(path):
-		return gtk.IconSet(gtk.gdk.pixbuf_new_from_file(path))
+		iconsource = gtk.IconSource()
+		iconsource.set_filename(path)
+		iconset = gtk.IconSet()
+		iconset.add_source(iconsource)
+		return iconset
 
-	iconfactory.add(gtk.STOCK_NEW, make_iconset(filepath('res/document-new.png')))
-	iconfactory.add(gtk.STOCK_OPEN, make_iconset(filepath('res/document-open.png')))
-	iconfactory.add(gtk.STOCK_SAVE, make_iconset(filepath('res/document-save.png')))
-
-	iconfactory.add(gtk.STOCK_SAVE, make_iconset(filepath('res/document-save.png')))
-
-	iconfactory.add(gtk.STOCK_MEDIA_PLAY, make_iconset(filepath('res/media-playback-start.png')))
-	iconfactory.add(gtk.STOCK_MEDIA_RECORD, make_iconset(filepath('res/media-record.png')))
-	iconfactory.add(gtk.STOCK_MEDIA_STOP, make_iconset(filepath('res/media-playback-stop.png')))
-
-	iconfactory.add(STOCK_PATTERNS, make_iconset(filepath('res/patterns.png')))
-	iconfactory.add(STOCK_ROUTER, make_iconset(filepath('res/machines.png')))
-	iconfactory.add(STOCK_SEQUENCER, make_iconset(filepath('res/sequencer.png')))
+	iconfactory.add(STOCK_PATTERNS, make_iconset(filepath('icons/aldrin_pattern.svg')))
+	iconfactory.add(STOCK_ROUTER, make_iconset(filepath('icons/aldrin_router.svg')))
+	iconfactory.add(STOCK_SEQUENCER, make_iconset(filepath('icons/aldrin_sequencer.svg')))
 	iconfactory.add(STOCK_LOOP, make_iconset(filepath('res/media-playlist-repeat.png')))
-	iconfactory.add(STOCK_SOUNDLIB, make_iconset(filepath('res/wavetable.png')))
+	iconfactory.add(STOCK_SOUNDLIB, make_iconset(filepath('icons/aldrin_samplebank.svg')))
 	iconfactory.add(STOCK_INFO, make_iconset(filepath('res/text-x-generic.png')))
 	iconfactory.add(STOCK_PANIC, make_iconset(filepath('res/process-stop.png')))
 	iconfactory.add(STOCK_RACK, make_iconset(filepath('res/rack.png')))
