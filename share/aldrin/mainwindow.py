@@ -101,41 +101,11 @@ class AldrinFrame(gtk.Window):
 		self._cbtime = time.time()
 		self._cbcalls = 0
 		self._hevcalls = 0
-		self._hevtimes = 0
+		self._hevtimes = 0		
+		self.event_handlers = []
+		
 		player = com.get('aldrin.core.player')
 		player.set_callback(self.player_callback)
-		# load blacklist file and add blacklist entries
-		for name in get_plugin_blacklist():
-			player.blacklist_plugin(name)
-		# load aliases file and add aliases
-		for name,uri in get_plugin_aliases():
-			player.add_plugin_alias(name, uri)
-		pluginpath = os.environ.get('ALDRIN_PLUGIN_PATH',None)
-		if pluginpath:
-			pluginpaths = pluginpath.split(os.pathsep)
-		else:
-			pluginpaths = []
-			paths = os.environ.get('LD_LIBRARY_PATH',None) # todo or PATH on mswindows
-			if paths: paths = paths.split(os.pathsep)
-			else: paths = []
-			paths.extend([
-					'/usr/local/lib64',
-					'/usr/local/lib',
-					'/usr/lib64',
-					'/usr/lib',
-				])
-			for path in [os.path.join(path, 'zzub') for path in paths]:
-				if os.path.exists(path) and not path in pluginpaths: pluginpaths.append(path)
-		for pluginpath in pluginpaths:
-			print 'plugin path:', pluginpath
-			player.add_plugin_path(pluginpath + os.sep)
-		inputname, outputname, samplerate, buffersize = config.get_config().get_audiodriver_config()
-		player.initialize(samplerate)
-		self.init_lunar()
-		
-		player.playstarttime = time.time()
-		
-		self.event_handlers = []
 		
 		# begin wxGlade: AldrinFrame.__init__
 		gtk.Window.__init__(self, gtk.WINDOW_TOPLEVEL)
@@ -347,25 +317,6 @@ class AldrinFrame(gtk.Window):
 		if audiotrouble:
 			error(self, "<b><big>Aldrin tried to guess an audio driver but that didn't work.</big></b>\n\nYou need to select your own. Hit OK to show the preferences dialog.")
 			show_preferences(self,self)
-
-	def init_lunar(self):
-		"""
-		Initializes the lunar dsp scripting system
-		"""
-		player = com.get('aldrin.core.player')
-		pc = player.get_plugincollection_by_uri("@zzub.org/plugincollections/lunar")
-
-		# return if lunar is missing
-		if not pc._handle:
-			print >> sys.stderr, "not supporting lunar."
-			return
-
-		from xml.dom.minidom import parse
-		userlunarpath = os.path.join(config.get_config().get_settings_folder(),'lunar')
-		if not os.path.isdir(userlunarpath):
-			print "folder %s does not exist, creating..." % userlunarpath
-			os.makedirs(userlunarpath)
-		pc.configure("local_storage_dir", userlunarpath)
 
 	def update_filemenu(self, event=None):
 		"""

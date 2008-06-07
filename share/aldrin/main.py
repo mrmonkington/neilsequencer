@@ -51,14 +51,6 @@ import zzub
 player = None
 playstarttime = None
 
-import sequencer, router, patterns, wavetable, preferences, hdrecorder, cpumonitor, info, common, rack
-from sequencer import SequencerPanel
-from router import RoutePanel
-from patterns import PatternPanel
-from wavetable import WavetablePanel
-from rack import RackPanel
-from info import InfoPanel
-from preferences import show_preferences
 import config
 import about
 import envelope
