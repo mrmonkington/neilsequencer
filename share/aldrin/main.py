@@ -48,8 +48,6 @@ import utils
 
 from zzub import Player
 import zzub
-player = None
-playstarttime = None
 
 import config
 import about
@@ -81,10 +79,10 @@ class AldrinApplication:
 def main():
 	global app
 	app = AldrinApplication()
+	player = com.get('aldrin.core.player')
 	app.main()
-	if player:
-		driver.get_mididriver().destroy()
-		driver.get_audiodriver().destroy()
+	driver.get_mididriver().destroy()
+	driver.get_audiodriver().destroy()
 
 def run(argv):
 	"""

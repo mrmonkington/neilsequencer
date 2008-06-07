@@ -735,7 +735,8 @@ class ParameterView(gtk.VBox):
 		Handles destroy events.
 		"""
 		print "rack:on_destroy"
-		self.rootwindow.event_handlers.remove(self.on_callback)
+		if self.on_callback in self.rootwindow.event_handlers:
+			self.rootwindow.event_handlers.remove(self.on_callback)
 		
 	def on_mousewheel(self, widget, event, (g,t,i)):
 		"""
