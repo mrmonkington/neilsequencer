@@ -91,35 +91,6 @@ class AldrinFrame(gtk.Window):
 	PAGE_INFO = 4
 	PAGE_RACK = 5
 	
-	iconfactory = gtk.IconFactory()
-	iconfactory.add_default()
-	def make_iconset(path):
-		iconsource = gtk.IconSource()
-		iconsource.set_filename(path)
-		iconset = gtk.IconSet()
-		iconset.add_source(iconsource)
-		return iconset
-
-	iconfactory.add(STOCK_PATTERNS, make_iconset(filepath('icons/aldrin_pattern.svg')))
-	iconfactory.add(STOCK_ROUTER, make_iconset(filepath('icons/aldrin_router.svg')))
-	iconfactory.add(STOCK_SEQUENCER, make_iconset(filepath('icons/aldrin_sequencer.svg')))
-	iconfactory.add(STOCK_LOOP, make_iconset(filepath('res/media-playlist-repeat.png')))
-	iconfactory.add(STOCK_SOUNDLIB, make_iconset(filepath('icons/aldrin_samplebank.svg')))
-	iconfactory.add(STOCK_INFO, make_iconset(filepath('res/text-x-generic.png')))
-	iconfactory.add(STOCK_PANIC, make_iconset(filepath('res/process-stop.png')))
-	iconfactory.add(STOCK_RACK, make_iconset(filepath('res/rack.png')))
-	
-	gtk.stock_add((
-		(STOCK_PATTERNS, "Pattern", 0, gtk.gdk.keyval_from_name('F2'), 'aldrin'),
-		(STOCK_ROUTER, "Router", 0, gtk.gdk.keyval_from_name('F3'), 'aldrin'),
-		(STOCK_SEQUENCER, "Sequencer", 0, gtk.gdk.keyval_from_name('F4'), 'aldrin'),
-		(STOCK_LOOP, "Loop", 0, gtk.gdk.keyval_from_name('F8'), 'aldrin'),
-		(STOCK_SOUNDLIB, "Sound Library", 0, gtk.gdk.keyval_from_name('F9'), 'aldrin'),
-		(STOCK_INFO, "Info", 0, gtk.gdk.keyval_from_name('F10'), 'aldrin'),
-		(STOCK_RACK, "Rack", 0, gtk.gdk.keyval_from_name('F11'), 'aldrin'),
-		(STOCK_PANIC, "Panic", 0, gtk.gdk.keyval_from_name('F12'), 'aldrin'),
-	))
-	
 	title = "Aldrin"
 	filename = ""
 
@@ -141,6 +112,16 @@ class AldrinFrame(gtk.Window):
 		"""
 		Initializer.
 		"""
+		icons = com.get("aldrin.core.icons")
+		icons.register_single(stockid=STOCK_PATTERNS, label="Pattern", key='F2', iconset='aldrin_pattern')
+		icons.register_single(stockid=STOCK_ROUTER, label="Router", key='F3', iconset='aldrin_router')
+		icons.register_single(stockid=STOCK_SEQUENCER, label="Sequencer", key='F4', iconset='aldrin_sequencer')
+		icons.register_single(stockid=STOCK_LOOP, label="Loop", key='F8', iconset='media-playlist-repeat')
+		icons.register_single(stockid=STOCK_SOUNDLIB, label="Sound Library", key='F9', iconset='aldrin_samplebank')
+		icons.register_single(stockid=STOCK_INFO, label="Info", key='F10', iconset='aldrin_info')
+		icons.register_single(stockid=STOCK_RACK, label="Rack", key='F11', iconset='rack')
+		icons.register_single(stockid=STOCK_PANIC, label="Panic", key='F12', iconset='process-stop')
+		
 		self._cbtime = time.time()
 		self._cbcalls = 0
 		self._hevcalls = 0

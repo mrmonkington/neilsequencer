@@ -30,6 +30,7 @@ DEFAULT_PACKAGES = [
 	'player',
 	'options',
 	'pkgbrowser',
+	'iconfactory',
 ]
 
 # aldrin component object model
