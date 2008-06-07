@@ -255,8 +255,6 @@ class AldrinFrame(gtk.Window):
 			b_order = (hasattr(b, '__view__') and b.__view__.get('order',0)) or 0
 			return cmp(a_order, b_order)
 		self.pages = sorted(com.get_from_category('aldrin.viewpanel', self), cmp=cmp_panel)
-		self.wavetableframe = com.get('aldrin.core.wavetablepanel')
-		self.infoframe = com.get('aldrin.core.infopanel')
 		self.rackframe = com.get('aldrin.core.rackpanel')
 		self.aldrinframe_toolbar.insert(make_stock_tool_item(gtk.STOCK_NEW, self.new),-1)
 		self.aldrinframe_toolbar.insert(make_stock_tool_item(gtk.STOCK_OPEN, self.on_open),-1)
@@ -845,7 +843,6 @@ class AldrinFrame(gtk.Window):
 		for panel in self.pages:
 			if hasattr(panel, 'update_all'):
 				panel.update_all()
-		self.infoframe.update_all()
 		self.rackframe.update_all()		
 		self.mastertoolbar.update_all()
 		self.transport.update_all()
@@ -1039,7 +1036,6 @@ class AldrinFrame(gtk.Window):
 		for panel in self.pages:
 			if hasattr(panel, 'reset'):
 				panel.reset()
-		self.infoframe.reset()
 		player = com.get('aldrin.core.player')
 		player.clear()
 		player.set_loop_start(0)
