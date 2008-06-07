@@ -985,7 +985,7 @@ class RouteView(gtk.DrawingArea):
 				print traceback.format_exc()
 		self.rootwindow.document_changed()
 		# selects the plugin in the pattern view
-		plugintoolbar = self.rootwindow.patternframe.toolbar
+		plugintoolbar = com.get('aldrin.core.patternpanel').toolbar
 		plugintoolbar.select_plugin(get_item_count(plugintoolbar.pluginselect.get_model())-1)
 		# add plugin information
 		common.get_plugin_infos().add_plugin(mp)
@@ -993,7 +993,7 @@ class RouteView(gtk.DrawingArea):
 		if is_effect(mp):
 			self.show_parameter_dialog(mp)
 		#tab to first note column on adding a new machine
-		patternframe=self.rootwindow.patternframe.view
+		patternframe=com.get('aldrin.core.patternpanel').view
 		if patternframe.move_track_right():
 				patternframe.set_index(0)
 				patternframe.set_subindex(0)
@@ -1315,12 +1315,11 @@ class RouteView(gtk.DrawingArea):
 					if self.selected_plugin==mp:
 						break
 					i+=1
-				if hasattr(self.rootwindow,'patternframe'):
-					self.rootwindow.patternframe.toolbar.pluginselect.set_active(i)
+				com.get('aldrin.core.patternpanel').toolbar.pluginselect.set_active(i)
 				common.get_plugin_infos().get(self.selected_plugin).reset_plugingfx()									
 			if last:
 				common.get_plugin_infos().get(last).reset_plugingfx()
-			if hasattr(self.rootwindow, 'select_page'):
+			if hasattr(self.rootwindow, 'select_panel'):
 				self.rootwindow.select_panel(com.get('aldrin.core.routerpanel'))
 		else:
 			try:
@@ -1619,15 +1618,15 @@ class RouteView(gtk.DrawingArea):
 		if self.rootwindow.on_key_down(widget, event):
 			return
 		note = None
-		octave = self.rootwindow.patternframe.view.octave
+		octave = com.get('aldrin.core.patternpanel').view.octave
 		if  k == 'KP_Multiply':			
 			octave = min(max(octave+1,0), 9)
 		elif k ==  'KP_Divide':
 			octave = min(max(octave-1,0), 9)
 		elif kv < 256:
 			note = key_to_note(kv)
-		self.rootwindow.patternframe.view.octave=octave
-		self.rootwindow.patternframe.view.toolbar.update_octaves()
+		com.get('aldrin.core.patternpanel').view.octave=octave
+		com.get('aldrin.core.patternpanel').view.toolbar.update_octaves()
 		if note:
 			if note not in self.chordnotes:
 				self.chordnotes.append(note)
@@ -1648,7 +1647,7 @@ class RouteView(gtk.DrawingArea):
 				return
 		kv = event.keyval
 		if kv<256:
-			octave = self.rootwindow.patternframe.view.octave
+			octave = com.get('aldrin.core.patternpanel').view.octave
 			note = key_to_note(kv)
 			if note in self.chordnotes:
 				self.chordnotes.remove(note)

@@ -357,7 +357,7 @@ class WavetablePanel(gtk.Notebook):
 		data_entry.destroy()
 		self.update_samplelist()
 		self.update_sampleprops()
-		self.rootwindow.patternframe.update_all()
+		com.get('aldrin.core.patternpanel').update_all()
 	
 	def on_edit_file(self, widget):
 		files = [path for path in self.libpanel.get_filenames() if os.path.isfile(path)]
@@ -523,7 +523,7 @@ class WavetablePanel(gtk.Notebook):
 		self.update_samplelist()
 		self.update_sampleprops()
 		#~ self.update_subsamplelist()
-		self.rootwindow.patternframe.update_all()
+		com.get('aldrin.core.patternpanel').update_all()
 		
 	def on_refresh(self, event):
 		"""
@@ -647,7 +647,7 @@ class WavetablePanel(gtk.Notebook):
 				w.set_name(os.path.splitext(os.path.basename(source))[0])
 		self.update_samplelist()
 		self.update_sampleprops()
-		self.rootwindow.patternframe.update_all()
+		com.get('aldrin.core.patternpanel').update_all()
 		self.set_current_page(0)
 		self.samplelist.grab_focus()
 		self.samplelist.set_cursor(selects[0])

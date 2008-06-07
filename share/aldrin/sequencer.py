@@ -934,7 +934,7 @@ class SequencerView(gtk.DrawingArea):
 		@type index: int
 		"""
 		mainwindow = self.panel.rootwindow
-		pf = mainwindow.patternframe
+		pf = com.get('aldrin.core.patternpanel')
 		tb = pf.toolbar
 		tb.plugin_index = 0
 		tb.pattern = 0
