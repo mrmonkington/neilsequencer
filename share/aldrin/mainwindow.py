@@ -847,7 +847,6 @@ class AldrinFrame(gtk.Window):
 				panel.update_all()
 		self.infoframe.update_all()
 		self.rackframe.update_all()		
-		self.wavetableframe.update_all()
 		self.mastertoolbar.update_all()
 		self.transport.update_all()
 		player = com.get('aldrin.core.player')

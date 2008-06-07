@@ -212,7 +212,7 @@ class TransportPanel(gtk.HBox):
 					if i == 1:
 						self.update_bpm()
 						try:
-							self.rootwindow.wavetableframe.waveedit.view.view_changed()
+							com.get('aldrin.core.wavetablepanel').waveedit.view.view_changed()
 						except AttributeError:
 							pass
 					
