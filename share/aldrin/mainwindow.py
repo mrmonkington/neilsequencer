@@ -291,6 +291,7 @@ class AldrinFrame(gtk.Window):
 		defaultpanelindex = -1
 		for index,panel in enumerate(self.pages):
 			if not hasattr(panel, '__view__'):
+				print "panel",panel,"misses attribute __view__"
 				continue
 			options = panel.__view__
 			stockid = options['stockid']
@@ -300,7 +301,17 @@ class AldrinFrame(gtk.Window):
 				defaultpanelindex = index
 			icons.register_single(stockid=stockid, label=label, key=key, iconset=stockid)
 			panel.show_all()
-			self.framepanel.append_page(panel, gtk.image_new_from_stock(stockid, gtk.ICON_SIZE_SMALL_TOOLBAR))
+			header = gtk.VBox()
+			labelwidget = gtk.Label(label)
+			labelwidget.set_angle(90)
+			header.pack_start(labelwidget)
+			header.pack_start(gtk.image_new_from_stock(stockid, gtk.ICON_SIZE_SMALL_TOOLBAR))
+			header.show_all()
+			if key:
+				header.set_tooltip_text("%s (%s)" % (label, key))
+			else:
+				header.set_tooltip_text(label)
+			self.framepanel.append_page(panel, header)
 		
 		hbox = gtk.HBox()
 		hbox.add(self.framepanel)
