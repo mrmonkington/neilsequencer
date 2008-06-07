@@ -38,8 +38,6 @@ contextlog.init()
 import errordlg
 errordlg.install()
 
-from eventbus import *
-
 from gtkimport import gtk
 import time
 

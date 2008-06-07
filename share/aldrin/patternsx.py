@@ -34,7 +34,6 @@ import time
 import random
 import common
 from common import MARGIN, MARGIN2, MARGIN3, MARGIN0
-from eventbus import *
 import itertools
 from utils import NOTES, roundint
 PATLEFTMARGIN = 48
@@ -197,6 +196,7 @@ class PatternToolBar(gtk.HBox):
 		self.pack_start(self.octaveselect, expand=False)
 		self.pack_start(self.playnotes, expand=False)
 		
+		eventbus = com.get('aldrin.core.eventbus')
 		eventbus.pattern_removed += self.update_patternselect
 		eventbus.pattern_created += self.update_patternselect
 		eventbus.pattern_name_changed += self.update_patternselect

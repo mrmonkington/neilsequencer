@@ -109,15 +109,23 @@ class EventBus(object):
 			handlerlist = getattr(self, idstr)
 			handlerlist.print_mapping()
 
-class GlobalEventBus(EventBus):
+class AldrinEventBus(EventBus):
+	__aldrin__ = dict(
+		id = 'aldrin.core.eventbus',
+		singleton = True,
+	)	
+	
 	names = EVENTS
 
-eventbus = GlobalEventBus()
-
 __all__ = [
-'EventBus',
-'eventbus',
+'GlobalEventBus',
 ]
+
+__aldrin__ = dict(
+	classes = [
+		AldrinEventBus,
+	],
+)
 
 if __name__ == '__main__':
 	class MyHandler:

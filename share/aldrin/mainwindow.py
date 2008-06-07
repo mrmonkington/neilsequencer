@@ -56,7 +56,6 @@ STOCK_RACK = "aldrin-rack"
 STOCK_PANIC = "aldrin-panic"
 
 from aldrincom import com
-from eventbus import *
 
 class AldrinFrame(gtk.Window):
 	"""
@@ -370,6 +369,7 @@ class AldrinFrame(gtk.Window):
 		self.show_all()
 		self.load_view()
 		
+		eventbus = com.get('aldrin.core.eventbus')
 		eventbus.print_mapping()
 
 		import sys

@@ -34,7 +34,6 @@ import time
 import random
 import common
 from common import MARGIN, MARGIN2, MARGIN3, MARGIN0
-from eventbus import *
 from aldrincom import com
 
 from utils import NOTES, roundint
@@ -198,6 +197,7 @@ class PatternToolBar(gtk.HBox):
 		self.pack_start(self.octaveselect, expand=False)
 		self.pack_start(self.playnotes, expand=False)
 		
+		eventbus = com.get('aldrin.core.eventbus')
 		eventbus.pattern_removed += self.update_patternselect
 		eventbus.pattern_created += self.update_patternselect
 		eventbus.pattern_name_changed += self.update_patternselect
@@ -661,6 +661,7 @@ class PatternView(gtk.DrawingArea):
 		gobject.timeout_add(100, self.update_position)
 		self.hscroll.connect('change-value', self.on_hscroll_window)
 		self.vscroll.connect('change-value', self.on_vscroll_window)
+		eventbus = com.get('aldrin.core.eventbus')
 		eventbus.connection_changed += self.pattern_changed
 
 	def update_font(self):

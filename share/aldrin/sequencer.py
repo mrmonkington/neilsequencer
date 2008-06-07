@@ -35,7 +35,6 @@ import zzub
 import config
 import time
 import common
-from eventbus import *
 from common import MARGIN, MARGIN2, MARGIN3, MARGIN0
 from aldrincom import com
 
@@ -519,6 +518,7 @@ class SequencerView(gtk.DrawingArea):
 			# There is no selection.
 			return
 		eventlist = []
+		eventbus = com.get('aldrin.core.eventbus')
 		for track in range(start[0], end[0]+1):
 			t = seq.get_track(track)
 			m = t.get_plugin()
@@ -545,6 +545,7 @@ class SequencerView(gtk.DrawingArea):
 			return
 		eventlist = []
 		patternsize = 0
+		eventbus = com.get('aldrin.core.eventbus')
 		for track in range(start[0], end[0]+1):
 			t = seq.get_track(track)
 			m = t.get_plugin()

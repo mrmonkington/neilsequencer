@@ -46,7 +46,6 @@ from common import MARGIN, MARGIN2, MARGIN3
 from rack import ParameterView
 from presetbrowser import PresetView
 from patterns import key_to_note
-from eventbus import *
 
 from aldrincom import com
 
@@ -829,6 +828,7 @@ class RouteView(gtk.DrawingArea):
 		@type event: wx.MenuEvent
 		"""
 		conn.get_output().delete_input(conn.get_input())
+		eventbus = com.get('aldrin.core.eventbus')
 		eventbus.connection_changed()
 		self.redraw()
 		
