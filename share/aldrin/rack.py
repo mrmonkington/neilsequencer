@@ -829,6 +829,22 @@ class RackPanel(gtk.VBox):
 	
 	Displays controls for individual plugins.
 	"""
+	
+	__aldrin__ = dict(
+		id = 'aldrin.core.rackpanel',
+		singleton = True,
+		categories = [
+			'aldrin.viewpanel',
+		]
+	)
+	
+	__view__ = dict(
+			label = "Rack",
+			stockid = "rack",
+			shortcut = 'F11',
+			order = 11,
+	)
+	
 	def __init__(self, rootwindow):
 		"""
 		Initialization.
@@ -845,6 +861,9 @@ class RackPanel(gtk.VBox):
 		self.connect('realize', self.on_realize)
 		self.add(self.scrollwindow)
 		self.rootwindow.event_handlers.append(self.on_player_callback)
+		
+	def handle_focus(self):
+		self.scrollwindow.grab_focus()
 
 	def on_player_callback(self, player, plugin, data):
 		"""
@@ -879,6 +898,12 @@ class RackPanel(gtk.VBox):
 			self.panels[plugin] = view
 			self.rowgroup.pack_start(view, expand=False)
 			#~ view.set_size_request(*view.get_best_size())
+
+__aldrin__ = dict(
+	classes = [
+		RackPanel,
+	],
+)
 
 if __name__ == '__main__':
 	import testplayer, utils

@@ -74,51 +74,6 @@ from aldrincom import com
 
 app = None
 
-
-
-# end of class AldrinFrame
-import random
-
-import Queue, time
-
-class EventPlayer:
-	"""
-	replays timed events.
-	"""
-	def __init__(self):
-		self.reset()
-		
-	def reset(self):
-		self.offset = None
-		self.starttime = None
-		self.queue = []
-		
-	def put(self, v, t):
-		if (not self.offset) or (self.offset > t):
-			self.offset = t #+ driver.get_audiodriver().get_latency()
-			self.starttime = time.time()
-			self.lasttime = t
-		t -= self.offset
-		ts = self.starttime + t
-		if len(self.queue) > 100:
-			self.reset()
-			return
-		self.queue.insert(0, (ts,v))
-	
-	def get_next(self):
-		if not len(self.queue):
-			self.reset()
-			return
-		r = 0.0
-		while len(self.queue):
-			ct = time.time()
-			t,v = self.queue[-1]
-			if t >= ct:
-				break
-			r = max(r,self.queue.pop()[1])
-		return r
-
-
 class AldrinApplication:
 	"""
 	Application class. This one will be instantiated as a singleton.

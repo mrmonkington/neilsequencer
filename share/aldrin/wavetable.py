@@ -46,7 +46,21 @@ class WavetablePanel(gtk.Notebook):
 	It contains controls to transfer files between the song and the file system, and components that facilitate
 	sample editing for example loops and envelopes.
 	"""
-
+	__aldrin__ = dict(
+		id = 'aldrin.core.wavetablepanel',
+		singleton = True,
+		categories = [
+			'aldrin.viewpanel',
+		]
+	)	
+	
+	__view__ = dict(
+			label = "Sound Library",
+			stockid = "aldrin_samplebank",
+			shortcut = 'F9',
+			order = 9,
+	)
+	
 	def __init__(self, rootwindow):
 		"""
 		Initialization.
@@ -232,6 +246,9 @@ class WavetablePanel(gtk.Notebook):
 				self.libpanel.set_current_folder(currentpath)
 			except:
 				print "couldn't set current sample browser path: '%s'." % currentpath
+				
+	def handle_focus(self):
+		self.view.grab_focus()
 		
 	def on_libpanel_selection_changed(self, widget):
 		"""
@@ -1021,6 +1038,14 @@ __all__ = [
 	'EnvelopeView',
 	'WavetablePanel',
 ]
+
+__aldrin__ = dict(
+	classes = [
+		EnvelopeView,
+		WavetablePanel,
+	],
+)
+
 
 if __name__ == '__main__':
 	import sys, utils

@@ -147,6 +147,21 @@ class SequencerPanel(gtk.VBox):
 	
 	Displays all the patterns available for the current track.
 	"""
+	__aldrin__ = dict(
+		id = 'aldrin.core.sequencerpanel',
+		singleton = True,
+		categories = [
+			'aldrin.viewpanel',
+		]
+	)	
+	
+	__view__ = dict(
+			label = "Sequencer",
+			stockid = "aldrin_sequencer",
+			shortcut = 'F4',
+			order = 4,
+	)
+	
 	def __init__(self, rootwindow):
 		"""
 		Initialization.
@@ -203,6 +218,9 @@ class SequencerPanel(gtk.VBox):
 		self.update_list()
 		self.toolbar.update_all()
 		self.seqview.connect('size-allocate', self.on_sash_pos_changed)
+		
+	def handle_focus(self):
+		self.view.grab_focus()
 		
 	def update_all(self):
 		"""
@@ -923,7 +941,7 @@ class SequencerView(gtk.DrawingArea):
 				break
 		tb.pattern = index
 		pf.update_all()
-		mainwindow.select_page(mainwindow.PAGE_PATTERN)
+		mainwindow.select_panel(com.get('aldrin.core.patternpanel'))
 		
 	def get_pattern_at(self, track, row, includespecial=False):
 		"""
@@ -1067,7 +1085,7 @@ class SequencerView(gtk.DrawingArea):
 		"""
 		Updates the position.
 		"""
-		if self.rootwindow.index != self.rootwindow.PAGE_SEQUENCER:
+		if self.rootwindow.get_current_panel() != self:
 			return True
 		player = com.get('aldrin.core.player')
 		playpos = player.get_position()
@@ -1378,10 +1396,16 @@ class SequencerView(gtk.DrawingArea):
 
 __all__ = [
 'PatternNotFoundException',
-'PluginDialog',
 'SequencerPanel',
 'SequencerView',
 ]
+
+__aldrin__ = dict(
+	classes = [
+		SequencerPanel,
+		SequencerView,
+	],
+)
 
 if __name__ == '__main__':
 	import testplayer, utils, zzub

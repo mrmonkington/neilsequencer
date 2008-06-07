@@ -23,6 +23,11 @@ import config
 DEFAULT_PACKAGES = [
 	'eventbus',
 	'router',
+	'patterns',
+	'sequencer',
+	'wavetable',
+	'rack',
+	'info',
 	'mainwindow',
 	'about',
 	'masterpanel',
@@ -75,6 +80,7 @@ class ComponentManager:
 		# create a new object
 		class_ = self.factories.get(id, None)
 		if not class_:
+			print "no factory found for classid '%s'" % id
 			return None
 		obj = class_(*args,**kwargs)
 		if class_.__aldrin__.get('singleton',False):

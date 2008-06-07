@@ -65,6 +65,21 @@ class InfoPanel(gtk.VBox):
 	"""
 	Contains the info view.
 	"""
+	__aldrin__ = dict(
+		id = 'aldrin.core.infopanel',
+		singleton = True,
+		categories = [
+			'aldrin.viewpanel',
+		]
+	)		
+
+	__view__ = dict(
+			label = "Info",
+			stockid = "aldrin_info",
+			shortcut = 'F10',
+			order = 10,
+	)
+
 	def __init__(self, rootwindow, *args, **kwds):
 		"""
 		Initializer.
@@ -88,6 +103,9 @@ class InfoPanel(gtk.VBox):
 		self.view = InfoView(rootwindow)
 		self.pack_start(hbox, expand=False)
 		self.pack_start(add_scrollbars(self.view))
+		
+	def handle_focus(self):
+		self.view.grab_focus()
 		
 	def reset(self):
 		"""
@@ -147,6 +165,14 @@ _all__ = [
 	'InfoPanel',
 	'InfoView',
 ]
+
+__aldrin__ = dict(
+	classes = [
+		InfoPanel,
+		InfoView,
+	],
+)
+
 
 if __name__ == '__main__':
 	import sys

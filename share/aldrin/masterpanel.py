@@ -180,9 +180,7 @@ class MasterPanel(gtk.HBox):
 		refocus panel
 		"""
 		page=self.rootwindow.framepanel.get_current_page()
-		panel, stockid = self.rootwindow.pages[page]
-		if not panel:
-			return
+		panel = self.rootwindow.pages[page]
 		try: panel.view.grab_focus()
 		except: panel.grab_focus()
 

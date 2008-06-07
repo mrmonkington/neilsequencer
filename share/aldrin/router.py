@@ -450,11 +450,19 @@ class RoutePanel(gtk.VBox):
 	Contains the view panel and manages parameter dialogs.
 	"""
 	__aldrin__ = dict(
-		id = 'aldrin.core.router.panel',
+		id = 'aldrin.core.routerpanel',
 		singleton = True,
 		categories = [
 			'aldrin.viewpanel',
 		]
+	)
+	
+	__view__ = dict(
+			label = "Router",
+			stockid = "aldrin_router",
+			shortcut = 'F3',
+			default = True,
+			order = 3,
 	)
 	
 	def __init__(self, rootwindow):
@@ -470,6 +478,9 @@ class RoutePanel(gtk.VBox):
 		sizer_2 = gtk.HBox()
 		sizer_2.add(self.view)
 		self.add(sizer_2)
+		
+	def handle_focus(self):
+		self.view.grab_focus()
 		
 	def reset(self):
 		"""
@@ -1310,7 +1321,7 @@ class RouteView(gtk.DrawingArea):
 			if last:
 				common.get_plugin_infos().get(last).reset_plugingfx()
 			if hasattr(self.rootwindow, 'select_page'):
-				self.rootwindow.select_page(self.rootwindow.PAGE_ROUTE)
+				self.rootwindow.select_panel(com.get('aldrin.core.routerpanel'))
 		else:
 			try:
 				conn, index = self.get_connection_at((mx,my))
@@ -1384,7 +1395,7 @@ class RouteView(gtk.DrawingArea):
 		"""
 		Timer event that only updates the plugin leds.
 		"""
-		if self.rootwindow.index != self.rootwindow.PAGE_ROUTE:
+		if self.rootwindow.get_current_panel() != self:
 			return True
 		if self.window:
 			player = com.get('aldrin.core.player')
@@ -1670,8 +1681,6 @@ if __name__ == '__main__':
 	player.load_ccm(utils.filepath('demosongs/paniq-knark.ccm'))
 	window = testplayer.TestWindow()
 	window.add(RoutePanel(window))
-	# update_position() needs the index to be set:
-	# (main.AldrinFrame.PAGE_ROUTE = 1)
 	window.PAGE_ROUTE = 1
 	window.index = 1
 	window.show_all()

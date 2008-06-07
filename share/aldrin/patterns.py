@@ -415,6 +415,21 @@ class PatternPanel(gtk.VBox):
 	"""
 	Panel containing the pattern toolbar and pattern view.
 	"""
+	__aldrin__ = dict(
+		id = 'aldrin.core.patternpanel',
+		singleton = True,
+		categories = [
+			'aldrin.viewpanel',
+		]
+	)
+	
+	__view__ = dict(
+			label = "Patterns",
+			stockid = "aldrin_pattern",
+			shortcut = 'F2',
+			order = 2,
+	)
+	
 	def __init__(self, rootwindow):
 		"""
 		Initialization.
@@ -449,6 +464,13 @@ class PatternPanel(gtk.VBox):
 			self.statusbar.pack_start(label, expand=False)
 			self.statusbar.pack_start(gtk.VSeparator(), expand=False)
 		self.view.statuslabels = self.statuslabels
+		
+	def handle_focus(self):
+		try:
+			self.view.show_cursor_right()
+		except AttributeError: #no pattern in current machine
+			pass
+		self.view.grab_focus()
 		
 	def on_player_callback(self, player, plugin, data):
 		"""
@@ -753,7 +775,7 @@ class PatternView(gtk.DrawingArea):
 		"""
 		Updates the position.
 		"""
-		if self.rootwindow.index != self.rootwindow.PAGE_PATTERN:
+		if self.rootwindow.get_current_panel() != self:
 			return True
 		player = com.get('aldrin.core.player')
 		playpos = player.get_position()
@@ -1962,7 +1984,7 @@ class PatternView(gtk.DrawingArea):
 				self.plugin_info.get(plugin).reset_patterngfx()
 		elif k == 'Return':
 			mainwindow = self.rootwindow
-			mainwindow.select_page(mainwindow.PAGE_SEQUENCER)
+			mainwindow.select_panel(com.get('aldrin.core.sequencerpanel'))
 		elif k in ('KP_Add','plus'):			
 			self.toolbar.next_pattern()
 		elif k in ('KP_Subtract','minus'):
@@ -2675,6 +2697,16 @@ __all__ = [
 'get_subindexoffsets_from_param',
 'PatternView',
 ]
+
+__aldrin__ = dict(
+	classes = [
+		PatternDialog,
+		PatternToolBar,
+		PatternPanel,
+		PatternView,
+	],
+)
+
 
 if __name__ == '__main__':
 	import testplayer, utils

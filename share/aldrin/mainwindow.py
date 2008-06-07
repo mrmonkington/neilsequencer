@@ -46,13 +46,7 @@ from preferences import show_preferences
 from utils import CancelException
 from config import get_plugin_aliases, get_plugin_blacklist
 
-STOCK_PATTERNS = "aldrin-patterns"
-STOCK_ROUTER = "aldrin-router"
-STOCK_SEQUENCER = "aldrin-sequencer"
 STOCK_LOOP = "aldrin-loop"
-STOCK_SOUNDLIB = "aldrin-soundlib"
-STOCK_INFO = "aldrin-info"
-STOCK_RACK = "aldrin-rack"
 STOCK_PANIC = "aldrin-panic"
 
 from aldrincom import com
@@ -83,13 +77,6 @@ class AldrinFrame(gtk.Window):
 	
 	DEFAULT_EXTENSION = '.ccm'
 	
-	PAGE_PATTERN = 0
-	PAGE_ROUTE = 1
-	PAGE_SEQUENCER = 2
-	PAGE_WAVETABLE = 3
-	PAGE_INFO = 4
-	PAGE_RACK = 5
-	
 	title = "Aldrin"
 	filename = ""
 
@@ -111,16 +98,6 @@ class AldrinFrame(gtk.Window):
 		"""
 		Initializer.
 		"""
-		icons = com.get("aldrin.core.icons")
-		icons.register_single(stockid=STOCK_PATTERNS, label="Pattern", key='F2', iconset='aldrin_pattern')
-		icons.register_single(stockid=STOCK_ROUTER, label="Router", key='F3', iconset='aldrin_router')
-		icons.register_single(stockid=STOCK_SEQUENCER, label="Sequencer", key='F4', iconset='aldrin_sequencer')
-		icons.register_single(stockid=STOCK_LOOP, label="Loop", key='F8', iconset='media-playlist-repeat')
-		icons.register_single(stockid=STOCK_SOUNDLIB, label="Sound Library", key='F9', iconset='aldrin_samplebank')
-		icons.register_single(stockid=STOCK_INFO, label="Info", key='F10', iconset='aldrin_info')
-		icons.register_single(stockid=STOCK_RACK, label="Rack", key='F11', iconset='rack')
-		icons.register_single(stockid=STOCK_PANIC, label="Panic", key='F12', iconset='process-stop')
-		
 		self._cbtime = time.time()
 		self._cbcalls = 0
 		self._hevcalls = 0
@@ -273,43 +250,18 @@ class AldrinFrame(gtk.Window):
 		self.aldrinframe_toolbar = gtk.Toolbar()
 		vbox.pack_start(self.aldrinframe_toolbar, expand=False)
 		
-		panels = com.get_from_category('aldrin.viewpanel', self)
+		def cmp_panel(a,b):
+			a_order = (hasattr(a, '__view__') and a.__view__.get('order',0)) or 0
+			b_order = (hasattr(b, '__view__') and b.__view__.get('order',0)) or 0
+			return cmp(a_order, b_order)
+		self.pages = sorted(com.get_from_category('aldrin.viewpanel', self), cmp=cmp_panel)
 		
-		self.routeframe = com.get('aldrin.core.router.panel')
-		self.seqframe = SequencerPanel(self)
-		self.patternframe = PatternPanel(self)
-		self.wavetableframe = WavetablePanel(self)
-		self.infoframe = InfoPanel(self)
-		self.pages = {
-			self.PAGE_PATTERN : (
-				self.patternframe,
-				STOCK_PATTERNS,
-			),
-			self.PAGE_ROUTE : (
-				self.routeframe,
-				STOCK_ROUTER,
-			),
-			self.PAGE_SEQUENCER : (
-				self.seqframe,
-				STOCK_SEQUENCER,
-			),
-			self.PAGE_WAVETABLE : (
-				self.wavetableframe,
-				STOCK_SOUNDLIB,
-			),
-			self.PAGE_INFO : (
-				self.infoframe,
-				STOCK_INFO,
-			),
-		}
-		if config.get_config().get_experimental('RackPanel'):
-			self.rackframe = RackPanel(self)
-			self.pages.update({
-				self.PAGE_RACK : (
-					self.rackframe,
-					STOCK_RACK,
-				),
-			})
+		self.routeframe = com.get('aldrin.core.routerpanel')
+		self.seqframe = com.get('aldrin.core.sequencerpanel')
+		self.patternframe = com.get('aldrin.core.patternpanel')
+		self.wavetableframe = com.get('aldrin.core.wavetablepanel')
+		self.infoframe = com.get('aldrin.core.infopanel')
+		self.rackframe = com.get('aldrin.core.rackpanel')
 		self.aldrinframe_toolbar.insert(make_stock_tool_item(gtk.STOCK_NEW, self.new),-1)
 		self.aldrinframe_toolbar.insert(make_stock_tool_item(gtk.STOCK_OPEN, self.on_open),-1)
 		self.aldrinframe_toolbar.insert(make_stock_tool_item(gtk.STOCK_SAVE, self.on_save),-1)
@@ -334,10 +286,21 @@ class AldrinFrame(gtk.Window):
 		self.framepanel.set_tab_pos(gtk.POS_LEFT)
 		self.framepanel.set_show_border(False)
 		#self.framepanel.set_show_tabs(False)
-		for k in sorted(self.pages):
-			panel,stockid = self.pages[k]
-			if not panel:
+		
+		icons = com.get("aldrin.core.icons")
+		icons.register_single(stockid=STOCK_LOOP, label="Loop", key='F8', iconset='media-playlist-repeat')
+		icons.register_single(stockid=STOCK_PANIC, label="Panic", key='F12', iconset='process-stop')
+		defaultpanelindex = -1
+		for index,panel in enumerate(self.pages):
+			if not hasattr(panel, '__view__'):
 				continue
+			options = panel.__view__
+			stockid = options['stockid']
+			label = options['label']
+			key = options.get('shortcut', '')			
+			if options.get('default'):
+				defaultpanelindex = index
+			icons.register_single(stockid=stockid, label=label, key=key, iconset=stockid)
 			panel.show_all()
 			self.framepanel.append_page(panel, gtk.image_new_from_stock(stockid, gtk.ICON_SIZE_SMALL_TOOLBAR))
 		
@@ -358,7 +321,8 @@ class AldrinFrame(gtk.Window):
 		self.connect('destroy', self.on_destroy)
 		self.connect('delete-event', self.on_close)
 
-		self.framepanel.set_current_page(self.PAGE_ROUTE)
+		if defaultpanelindex != -1:
+			self.framepanel.set_current_page(defaultpanelindex)
 		
 		gobject.timeout_add(1000/25, self.on_handle_events)
 		self.framepanel.connect('switch-page', self.on_activate_page)
@@ -775,6 +739,15 @@ class AldrinFrame(gtk.Window):
 		#~ for ctrlid, panel in self.pages.values():
 			#~ panel.SetRect((x,y,w,h))
 			
+	def get_current_panel(self):
+		return self.pages[self.framepanel.get_current_page()]
+		
+	def select_panel(self, panel):
+		for index,page in enumerate(self.pages):
+			if page == panel:
+				self.select_page(index)
+				return
+			
 	def select_page(self, index):
 		"""
 		Selects a client panel. If the client panel has a view attribute,
@@ -787,35 +760,18 @@ class AldrinFrame(gtk.Window):
 		if not(self.activated):
 			self.activated=1
 			self.index=index
-			panel, stockid = self.pages[self.index]
-			if not panel:
-				return
+			panel = self.pages[self.index]
 			if self.framepanel.get_current_page() != self.index:
 				self.framepanel.set_current_page(self.index)
-			if hasattr(panel,'view'):
-				panel.view.grab_focus()
-			else:
-				panel.grab_focus()
+			panel.handle_focus()
 		self.activated=0
 		
 	def button_up(self, widget, event):
 		"""
 		selects panel after button up
 		"""
-		page=self.framepanel.get_current_page()
-		panel, stockid = self.pages[page]
-		if page==0 or page==2:
-			if hasattr(panel,'view'):
-				if page==0:
-					try:
-						panel.view.show_cursor_right()
-					except AttributeError: #no pattern in current machine
-						pass
-				panel.view.grab_focus()
-			else:
-				panel.grab_focus()
-		
-			
+		panel = self.get_current_panel()		
+		panel.handle_focus()
 			
 	def on_preferences(self, event):
 		"""
@@ -832,13 +788,16 @@ class AldrinFrame(gtk.Window):
 		"""
 		kv = event.keyval
 		k = gtk.gdk.keyval_name(event.keyval)
-		if k == 'F3':
-			self.select_page(self.PAGE_ROUTE)
-		elif k == 'F2':
-			self.select_page(self.PAGE_PATTERN)
-		elif k == 'F4':
-			self.select_page(self.PAGE_SEQUENCER)
-		elif k == 'F5':
+		for index,panel in enumerate(self.pages):
+			if not hasattr(panel, '__view__'):
+				continue
+			shortcut = panel.__view__.get('shortcut', '')
+			if not shortcut:
+				continue
+			if k == shortcut:
+				self.select_page(index)
+				return True
+		if k == 'F5':
 			self.btnplay.set_active(True)
 		elif k == 'F6':
 			self.play_from_cursor(event)
@@ -846,13 +805,6 @@ class AldrinFrame(gtk.Window):
 			self.btnrecord.set_active(not self.btnrecord.get_active())
 		elif k == 'F8':
 			self.stop(event)
-		elif k == 'F9':
-			self.select_page(self.PAGE_WAVETABLE)
-		elif k == 'F10':
-			self.select_page(self.PAGE_INFO)
-		elif k == 'F11':
-			if config.get_config().get_experimental('RackPanel'):
-				self.select_page(self.PAGE_RACK)
 		elif k == 'F12':
 			self.btnpanic.set_active(not self.btnpanic.get_active())
 		else:
