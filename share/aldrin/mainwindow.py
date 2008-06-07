@@ -286,8 +286,15 @@ class AldrinFrame(gtk.Window):
 		vbox.pack_start(self.transport, expand=False)
 		vbox.pack_end(self.aldrinframe_statusbar, expand=False)
 
-		self.__set_properties()
-		self.__do_layout()
+		self.set_title(self.title)
+		gtk.window_set_default_icon_list(
+			gtk.gdk.pixbuf_new_from_file(filepath("../icons/hicolor/48x48/apps/aldrin.png")),
+			gtk.gdk.pixbuf_new_from_file(filepath("../icons/hicolor/32x32/apps/aldrin.png")),
+			gtk.gdk.pixbuf_new_from_file(filepath("../icons/hicolor/24x24/apps/aldrin.png")),
+			gtk.gdk.pixbuf_new_from_file(filepath("../icons/hicolor/22x22/apps/aldrin.png")),
+			gtk.gdk.pixbuf_new_from_file(filepath("../icons/hicolor/16x16/apps/aldrin.png")))
+		self.resize(750, 550)
+		self.aldrinframe_statusbar.push(0, "Ready to rok again")
 
 		self.connect('key-press-event', self.on_key_down)
 		self.connect('destroy', self.on_destroy)
@@ -1108,27 +1115,6 @@ class AldrinFrame(gtk.Window):
 		except CancelException:
 			return True
 					
-	def __set_properties(self):
-		"""
-		Assigns properties to dialog controls.
-		"""
-		# begin wxGlade: AldrinFrame.__set_properties
-		self.set_title(self.title)
-		gtk.window_set_default_icon_list(
-			gtk.gdk.pixbuf_new_from_file(filepath("../icons/hicolor/48x48/apps/aldrin.png")),
-			gtk.gdk.pixbuf_new_from_file(filepath("../icons/hicolor/32x32/apps/aldrin.png")),
-			gtk.gdk.pixbuf_new_from_file(filepath("../icons/hicolor/24x24/apps/aldrin.png")),
-			gtk.gdk.pixbuf_new_from_file(filepath("../icons/hicolor/22x22/apps/aldrin.png")),
-			gtk.gdk.pixbuf_new_from_file(filepath("../icons/hicolor/16x16/apps/aldrin.png")))
-		self.resize(750, 550)
-		# statusbar fields
-		self.aldrinframe_statusbar.push(0, "Ready to rok again")
-		# end wxGlade
-
-	def __do_layout(self):
-		"""
-		Layouts available controls.
-		"""
 
 	#########################
 	# IMainFrame interface
