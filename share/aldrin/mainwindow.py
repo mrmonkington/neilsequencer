@@ -255,7 +255,6 @@ class AldrinFrame(gtk.Window):
 			b_order = (hasattr(b, '__view__') and b.__view__.get('order',0)) or 0
 			return cmp(a_order, b_order)
 		self.pages = sorted(com.get_from_category('aldrin.viewpanel', self), cmp=cmp_panel)
-		self.seqframe = com.get('aldrin.core.sequencerpanel')
 		self.patternframe = com.get('aldrin.core.patternpanel')
 		self.wavetableframe = com.get('aldrin.core.wavetablepanel')
 		self.infoframe = com.get('aldrin.core.infopanel')
@@ -849,10 +848,6 @@ class AldrinFrame(gtk.Window):
 				panel.update_all()
 		self.infoframe.update_all()
 		self.rackframe.update_all()
-		self.seqframe.seqview.set_cursor_pos(0,0)
-		self.seqframe.seqview.adjust_scrollbars()
-		self.seqframe.seqview.redraw()
-		self.seqframe.update_list()
 		self.patternframe.update_all()
 		self.wavetableframe.update_all()
 		self.mastertoolbar.update_all()
@@ -860,7 +855,6 @@ class AldrinFrame(gtk.Window):
 		player = com.get('aldrin.core.player')
 		self.btnloop.set_active(player.get_loop_enabled())
 		self.btnrecord.set_active(player.get_automation())
-		self.seqframe.seqview.adjust_scrollbars()
 		self.select_page(self.framepanel.get_current_page())
 		
 	def update_title(self):
@@ -1053,7 +1047,7 @@ class AldrinFrame(gtk.Window):
 		player = com.get('aldrin.core.player')
 		player.clear()
 		player.set_loop_start(0)
-		player.set_loop_end(self.seqframe.view.step)
+		player.set_loop_end(com.get('aldrin.core.sequencerpanel').view.step)
 		player.get_plugin(0).set_parameter_value(1, 0, 1, config.get_config().get_default_int('BPM', 126), 1)
 		player.get_plugin(0).set_parameter_value(1, 0, 2, config.get_config().get_default_int('TPB', 4), 1)
 		self.document_changed()
@@ -1086,7 +1080,7 @@ class AldrinFrame(gtk.Window):
 			self.btnplay.set_active(True)
 		player = com.get('aldrin.core.player')
 		player.playstarttime = time.time()
-		player.set_position(max(self.seqframe.view.row,0))
+		player.set_position(max(com.get('aldrin.core.sequencerpanel').view.row,0))
 		player.play()		
 		
 	def on_select_theme(self, widget, data):

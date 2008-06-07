@@ -231,6 +231,10 @@ class SequencerPanel(gtk.VBox):
 		for k,v in self.view.plugin_info.iteritems():
 			v.patterngfx = {}
 		self.view.update()
+		self.seqview.set_cursor_pos(0,0)
+		self.seqview.adjust_scrollbars()
+		self.seqview.redraw()
+		self.seqview.adjust_scrollbars()
 		
 	def update_list(self):
 		"""
@@ -446,7 +450,7 @@ class SequencerView(gtk.DrawingArea):
 		track = seq.create_track(plugin)
 		# if it has no existing patterns, make one (even if it has no parameters, it might have incoming connections)
 		if plugin.get_pattern_count() == 0:
-			pattern = plugin.create_pattern(self.rootwindow.seqframe.view.step)
+			pattern = plugin.create_pattern(com.get('aldrin.core.sequencerpanel').view.step)
 			pattern.set_name('00')
 			# add a pattern trigger-event
 			track.set_event(0, 16)
