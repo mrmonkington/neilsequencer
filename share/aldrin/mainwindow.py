@@ -107,9 +107,7 @@ class AldrinFrame(gtk.Window):
 		player = com.get('aldrin.core.player')
 		player.set_callback(self.player_callback)
 		
-		# begin wxGlade: AldrinFrame.__init__
 		gtk.Window.__init__(self, gtk.WINDOW_TOPLEVEL)
-		#~ self.toolsmenu.hide()
 		errordlg.install(self)
 		self.set_geometry_hints(self,600,400)
 		self.set_position(gtk.WIN_POS_CENTER)
@@ -162,32 +160,32 @@ class AldrinFrame(gtk.Window):
 		self.aldrinframe_menubar.append(make_submenu_item(self.filemenu, "_File"))
 		self.update_filemenu()
 		
-		wxglade_tmp_menu = gtk.Menu()
-		wxglade_tmp_menu.append(make_stock_menu_item(gtk.STOCK_CUT, self.on_cut))
-		wxglade_tmp_menu.append(make_stock_menu_item(gtk.STOCK_COPY, self.on_copy))
-		wxglade_tmp_menu.append(make_stock_menu_item(gtk.STOCK_PASTE, self.on_paste))
-		wxglade_tmp_menu.append(gtk.SeparatorMenuItem())
-		wxglade_tmp_menu.append(make_stock_menu_item(gtk.STOCK_PREFERENCES, self.on_preferences))
-		self.aldrinframe_menubar.append(make_submenu_item(wxglade_tmp_menu, "_Edit"))
-		wxglade_tmp_menu = gtk.Menu()
+		tempmenu = gtk.Menu()
+		tempmenu.append(make_stock_menu_item(gtk.STOCK_CUT, self.on_cut))
+		tempmenu.append(make_stock_menu_item(gtk.STOCK_COPY, self.on_copy))
+		tempmenu.append(make_stock_menu_item(gtk.STOCK_PASTE, self.on_paste))
+		tempmenu.append(gtk.SeparatorMenuItem())
+		tempmenu.append(make_stock_menu_item(gtk.STOCK_PREFERENCES, self.on_preferences))
+		self.aldrinframe_menubar.append(make_submenu_item(tempmenu, "_Edit"))
+		tempmenu = gtk.Menu()
 		self.item_cpumon = make_check_item("_CPU monitor", "Show or hide CPU Monitor", self.on_toggle_cpu_monitor)
-		wxglade_tmp_menu.append(self.item_cpumon)
+		tempmenu.append(self.item_cpumon)
 		self.item_hdrec = make_check_item("Hard Disk Recorder", "Show or hide Hard Disk Recorder", self.on_toggle_hard_disk_recorder)
-		wxglade_tmp_menu.append(self.item_hdrec)
+		tempmenu.append(self.item_hdrec)
 		self.item_master = make_check_item("_Master", "Show or hide Master", self.on_toggle_mastertoolbar)
-		wxglade_tmp_menu.append(self.item_master)
+		tempmenu.append(self.item_master)
 		self.item_transport = make_check_item("_Transport", "Show or hide transport bar", self.on_toggle_transport)
-		wxglade_tmp_menu.append(self.item_transport)
+		tempmenu.append(self.item_transport)
 		self.item_statusbar = make_check_item("_Status Bar", "Show or hide the status bar", self.on_toggle_statusbar)
-		wxglade_tmp_menu.append(self.item_statusbar)
-		wxglade_tmp_menu.append(make_check_item("S_kins", "Show or hide custom machine skins", None))
+		tempmenu.append(self.item_statusbar)
+		tempmenu.append(make_check_item("S_kins", "Show or hide custom machine skins", None))
 		self.item_standard = make_check_item("_Standard", "Show or hide the standard toolbar", self.on_toggle_toolbar)
-		wxglade_tmp_menu.append(self.item_standard)
-		self.viewmenu = wxglade_tmp_menu
-		wxglade_tmp_menu_sub = gtk.Menu()
+		tempmenu.append(self.item_standard)
+		self.viewmenu = tempmenu
+		tempsubmenu = gtk.Menu()
 		defaultitem = gtk.RadioMenuItem(label="Default")
-		wxglade_tmp_menu_sub.append(defaultitem)
-		self.thememenu = wxglade_tmp_menu_sub
+		tempsubmenu.append(defaultitem)
+		self.thememenu = tempsubmenu
 		cfg = config.get_config()
 		if not cfg.get_active_theme():
 			defaultitem.set_active(True)
@@ -197,9 +195,9 @@ class AldrinFrame(gtk.Window):
 			if name == cfg.get_active_theme():
 				item.set_active(True)
 			item.connect('toggled', self.on_select_theme, name)
-			wxglade_tmp_menu_sub.append(item)
-		wxglade_tmp_menu.append(make_submenu_item(wxglade_tmp_menu_sub, "Themes"))
-		self.aldrinframe_menubar.append(make_submenu_item(wxglade_tmp_menu, "_View"))
+			tempsubmenu.append(item)
+		tempmenu.append(make_submenu_item(tempsubmenu, "Themes"))
+		self.aldrinframe_menubar.append(make_submenu_item(tempmenu, "_View"))
 		self.toolsmenu = gtk.Menu()
 		item = make_submenu_item(self.toolsmenu, "_Tools")
 		self.aldrinframe_menubar.append(item)
@@ -207,11 +205,11 @@ class AldrinFrame(gtk.Window):
 		toolitems = com.get_from_category('menuitem.tool', self.toolsmenu)
 		if not toolitems:
 			item.destroy()
-		wxglade_tmp_menu = gtk.Menu()
-		wxglade_tmp_menu.append(make_stock_menu_item(gtk.STOCK_HELP, self.on_help_contents))
-		wxglade_tmp_menu.append(gtk.SeparatorMenuItem())
-		wxglade_tmp_menu.append(make_stock_menu_item(gtk.STOCK_ABOUT, self.on_about))
-		self.aldrinframe_menubar.append(make_submenu_item(wxglade_tmp_menu, "_Help"))
+		tempmenu = gtk.Menu()
+		tempmenu.append(make_stock_menu_item(gtk.STOCK_HELP, self.on_help_contents))
+		tempmenu.append(gtk.SeparatorMenuItem())
+		tempmenu.append(make_stock_menu_item(gtk.STOCK_ABOUT, self.on_about))
+		self.aldrinframe_menubar.append(make_submenu_item(tempmenu, "_Help"))
 		#~ # Menu Bar end
 
 		# Tool Bar
@@ -323,7 +321,7 @@ class AldrinFrame(gtk.Window):
 		Updates the most recent files in the file menu.
 		
 		@param event: Event.
-		@type event: wx.Event
+		@type event: Event
 		"""
 		for item in self.filemenu:
 			item.destroy()
@@ -377,7 +375,7 @@ class AldrinFrame(gtk.Window):
 		Sent when the copy function is selected from the menu.
 		
 		@param event: Menu event.
-		@type event: wx.MenuEvent
+		@type event: MenuEvent
 		"""
 		view = self.get_active_view()
 		if view and hasattr(view, 'on_copy'):
@@ -388,7 +386,7 @@ class AldrinFrame(gtk.Window):
 		Sent when the cut function is selected from the menu.
 		
 		@param event: Menu event.
-		@type event: wx.MenuEvent
+		@type event: MenuEvent
 		"""
 		view = self.get_active_view()
 		if view and hasattr(view, 'on_cut'):
@@ -399,7 +397,7 @@ class AldrinFrame(gtk.Window):
 		Sent when the paste function is selected from the menu.
 		
 		@param event: Menu event.
-		@type event: wx.MenuEvent
+		@type event: MenuEvent
 		"""
 		view = self.get_active_view()
 		if view and hasattr(view, 'on_paste'):
@@ -446,7 +444,7 @@ class AldrinFrame(gtk.Window):
 		Called when the cpu monitor is closed manually.
 		
 		@param event: event.
-		@type event: wx.Event
+		@type event: Event
 		"""
 		self.cpumonitor.hide_all()
 		self.update_view()
@@ -499,7 +497,7 @@ class AldrinFrame(gtk.Window):
 		Shows and hides the toolbar.
 		
 		@param event: command event.
-		@type event: wx.CommandEvent
+		@type event: CommandEvent
 		"""
 		self.show_toolbar(widget.get_active())
 
@@ -522,7 +520,7 @@ class AldrinFrame(gtk.Window):
 		Shows and hides the status bar.
 		
 		@param event: command event.
-		@type event: wx.CommandEvent
+		@type event: CommandEvent
 		"""
 		self.show_statusbar(widget.get_active())
 
@@ -545,7 +543,7 @@ class AldrinFrame(gtk.Window):
 		Shows and hides the master toolbar.
 		
 		@param event: command event.
-		@type event: wx.CommandEvent
+		@type event: CommandEvent
 		"""
 		if widget.get_active():
 			self.transport.show_all()
@@ -559,7 +557,7 @@ class AldrinFrame(gtk.Window):
 		Shows and hides the master toolbar.
 		
 		@param event: command event.
-		@type event: wx.CommandEvent
+		@type event: CommandEvent
 		"""
 		self.show_mastertoolbar(widget.get_active())
 		
@@ -569,7 +567,7 @@ class AldrinFrame(gtk.Window):
 		changes to parameters are recorded or not.
 		
 		@param event: Command event.
-		@type event: wx.CommandEvent
+		@type event: CommandEvent
 		"""
 		player = com.get('aldrin.core.player')
 		if widget.get_active():
@@ -584,7 +582,7 @@ class AldrinFrame(gtk.Window):
 		automation.
 		
 		@param event command event.
-		@type event: wx.CommandEvent
+		@type event: CommandEvent
 		"""
 		player = com.get('aldrin.core.player')
 		if not self.aldrinframe_toolbar.GetToolState(self.RECORD):
@@ -600,7 +598,7 @@ class AldrinFrame(gtk.Window):
 		the song loops or not.
 		
 		@param event command event.
-		@type event: wx.CommandEvent
+		@type event: CommandEvent
 		"""
 		player = com.get('aldrin.core.player')
 		if widget.get_active():
@@ -615,7 +613,7 @@ class AldrinFrame(gtk.Window):
 		sound device.
 		
 		@param event command event.
-		@type event: wx.CommandEvent
+		@type event: CommandEvent
 		"""
 		player = com.get('aldrin.core.player')
 		if widget.get_active():
@@ -630,7 +628,7 @@ class AldrinFrame(gtk.Window):
 		sound device.
 		
 		@param event command event.
-		@type event: wx.CommandEvent
+		@type event: CommandEvent
 		"""
 		player = com.get('aldrin.core.player')
 		if not self.aldrinframe_toolbar.GetToolState(self.PANIC):
@@ -668,7 +666,7 @@ class AldrinFrame(gtk.Window):
 		Event handler triggered by the help menu option.
 		
 		@param event: menu event.
-		@type event: wx.MenuEvent
+		@type event: MenuEvent
 		"""
 		import webbrowser		
 		webbrowser.open_new(filepath('../doc/aldrin/html/index.html'))
@@ -678,7 +676,7 @@ class AldrinFrame(gtk.Window):
 		Event handler triggered by the "About" menu option.
 		
 		@param event: menu event.
-		@type event: wx.MenuEvent
+		@type event: MenuEvent
 		"""
 		com.get('aldrin.core.dialog.about', self).show()
 			
@@ -688,7 +686,7 @@ class AldrinFrame(gtk.Window):
 		is being resized.
 		
 		@param event: size event.
-		@type event: wx.SizeEvent
+		@type event: SizeEvent
 		"""
 		#~ x,y,w,h = self.framepanel.GetClientRect()
 		#~ for ctrlid, panel in self.pages.values():
@@ -733,7 +731,7 @@ class AldrinFrame(gtk.Window):
 		Event handler triggered by the "Preferences" menu option.
 		
 		@param event: menu event.
-		@type event: wx.MenuEvent
+		@type event: MenuEvent
 		"""
 		show_preferences(self,self)
 
@@ -775,7 +773,7 @@ class AldrinFrame(gtk.Window):
 		Event handler triggered by recent file menu options.
 		
 		@param event: menu event.
-		@type event: wx.MenuEvent
+		@type event: MenuEvent
 		"""
 		try:
 			self.save_changes()
@@ -822,10 +820,10 @@ class AldrinFrame(gtk.Window):
 		base,ext = os.path.splitext(self.filename)
 		player = com.get('aldrin.core.player')
 		if ext.lower() in ('.bmx','.bmw'):
-			#~ progress = wx.ProgressDialog("Aldrin", "Loading BMX Song...")
-			#~ wx.Yield()
+			#~ progress = ProgressDialog("Aldrin", "Loading BMX Song...")
+			#~ Yield()
 			player.load_bmx(self.filename)
-			#~ wx.Yield()
+			#~ Yield()
 			#~ progress.Update(100)
 		elif ext.lower() in ('.ccm'):
 			# XXX: TODO
@@ -897,8 +895,8 @@ class AldrinFrame(gtk.Window):
 					print '%s => %s' % (filename, newpath)
 					os.rename(filename, newpath)
 			base,ext = os.path.splitext(self.filename)
-			#~ progress = wx.ProgressDialog("Aldrin", "Saving '%s'..." % prepstr(self.filename))
-			#~ wx.Yield()
+			#~ progress = ProgressDialog("Aldrin", "Saving '%s'..." % prepstr(self.filename))
+			#~ Yield()
 			assert player.save_ccm(self.filename) == 0
 		except:
 			import traceback
@@ -915,7 +913,7 @@ class AldrinFrame(gtk.Window):
 		Event handler triggered by the "Open File" menu option.
 		
 		@param event: menu event.
-		@type event: wx.MenuEvent
+		@type event: MenuEvent
 		"""
 		try:
 			self.save_changes()
@@ -969,7 +967,7 @@ class AldrinFrame(gtk.Window):
 		Event handler triggered by the "Save As" menu option.
 		
 		@param event: menu event.
-		@type event: wx.MenuEvent
+		@type event: MenuEvent
 		"""
 		try:
 			self.save_as()
@@ -999,7 +997,7 @@ class AldrinFrame(gtk.Window):
 		Event handler triggered by the "Play" toolbar button.
 		
 		@param event: menu event.
-		@type event: wx.MenuEvent
+		@type event: MenuEvent
 		"""
 		player = com.get('aldrin.core.player')
 		if self.btnplay.get_active():
@@ -1015,7 +1013,7 @@ class AldrinFrame(gtk.Window):
 		Event handler triggered by the F6 key.
 		
 		@param event: menu event.
-		@type event: wx.MenuEvent
+		@type event: MenuEvent
 		"""
 		if not self.btnplay.get_active():
 			self.btnplay.set_active(True)
@@ -1029,7 +1027,7 @@ class AldrinFrame(gtk.Window):
 		Event handler for theme radio menu items.
 		
 		@param event: menu event.
-		@type event: wx.MenuEvent
+		@type event: MenuEvent
 		"""
 		cfg = config.get_config()
 		if not data:
@@ -1043,7 +1041,7 @@ class AldrinFrame(gtk.Window):
 		Event handler triggered by the "Stop" toolbar button.
 		
 		@param event: menu event.
-		@type event: wx.MenuEvent
+		@type event: MenuEvent
 		"""
 		player = com.get('aldrin.core.player')
 		player.stop()
@@ -1073,7 +1071,7 @@ class AldrinFrame(gtk.Window):
 		Event handler triggered by the "New" menu option.
 		
 		@param event: menu event.
-		@type event: wx.MenuEvent
+		@type event: MenuEvent
 		"""
 		try:
 			self.save_changes()
@@ -1093,7 +1091,7 @@ class AldrinFrame(gtk.Window):
 		Event handler triggered by the "Exit" menu option.
 		
 		@param event: menu event.
-		@type event: wx.MenuEvent
+		@type event: MenuEvent
 		"""
 		if not self.on_close(None, None):
 			self.destroy()
@@ -1141,7 +1139,7 @@ class AldrinFrame(gtk.Window):
 		Returns the window object associated with the mainframe.
 		
 		@return: Window object.
-		@rtype: wx.Window
+		@rtype: Window
 		"""
 		return self
 
