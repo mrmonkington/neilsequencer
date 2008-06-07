@@ -444,7 +444,7 @@ class PatternPanel(gtk.VBox):
 		self.statusbar.set_border_width(MARGIN0)
 		vscroll = gtk.VScrollbar()
 		hscroll = gtk.HScrollbar()
-		self.view = PatternView(rootwindow, hscroll, vscroll)
+		self.view = PatternView(rootwindow, self, hscroll, vscroll)
 		self.toolbar = PatternToolBar(self.view)
 		self.view.toolbar = self.toolbar
 		self.view.statusbar = self.statusbar
@@ -632,7 +632,7 @@ class PatternView(gtk.DrawingArea):
 		index = 0
 		mode = SEL_COLUMN
 	
-	def __init__(self, rootwindow, hscroll, vscroll):
+	def __init__(self, rootwindow, panel, hscroll, vscroll):
 		"""
 		Initialization.
 		
@@ -640,6 +640,7 @@ class PatternView(gtk.DrawingArea):
 		@type rootwindow: main.AldrinFrame
 		"""
 		self.rootwindow = rootwindow
+		self.panel = panel
 		self.hscroll = hscroll
 		self.vscroll = vscroll
 		self.toolbar = None
@@ -759,7 +760,7 @@ class PatternView(gtk.DrawingArea):
 		menu.append(make_menu_item("Constrained randomize", "", self.randomize_selection, "constrain"))
 		menu.append(make_menu_item("Interpolate selection", "", self.interpolate_selection))
 		menu.append(gtk.SeparatorMenuItem())
-		issolo = self.rootwindow.routeframe.view.solo_plugin == self.get_plugin()
+		issolo = com.get('aldrin.core.routerpanel').view.solo_plugin == self.get_plugin()
 		menu.append(make_check_item(issolo, "Solo Plugin", "Toggle solo", self.on_popup_solo))
 		menu.append(gtk.SeparatorMenuItem())
 		menu.append(make_menu_item("Cut", "", self.on_popup_cut))
@@ -775,7 +776,7 @@ class PatternView(gtk.DrawingArea):
 		"""
 		Updates the position.
 		"""
-		if self.rootwindow.get_current_panel() != self:
+		if self.rootwindow.get_current_panel() != self.panel:
 			return True
 		player = com.get('aldrin.core.player')
 		playpos = player.get_position()
@@ -1692,7 +1693,7 @@ class PatternView(gtk.DrawingArea):
 		Callback that solos current plugin.
 		"""		
 		plugin = self.get_plugin()
-		self.rootwindow.routeframe.view.solo(plugin)
+		com.get('aldrin.core.routerpanel').view.solo(plugin)
 		
 	def on_popup_properties(self, event=None):
 		"""
@@ -1726,7 +1727,7 @@ class PatternView(gtk.DrawingArea):
 				m.set_parameter_value(2, t - 1, i, v, 0)
 		self.pattern_changed()
 		# recreate sliders in parameter view
-		dlg = self.rootwindow.routeframe.view.plugin_dialogs.get(m,None)
+		dlg = com.get('aldrin.core.routerpanel').view.plugin_dialogs.get(m,None)
 		if dlg:			
 			pv = dlg.paramview
 			for child in pv.rowgroup.get_children():
@@ -1744,7 +1745,7 @@ class PatternView(gtk.DrawingArea):
 			m.set_track_count(m.get_track_count()-1)
 			self.pattern_changed()
 			# recreate sliders in parameter view
-			dlg = self.rootwindow.routeframe.view.plugin_dialogs.get(m,None)
+			dlg = com.get('aldrin.core.routerpanel').view.plugin_dialogs.get(m,None)
 			if dlg:			
 				pv = dlg.paramview
 				for child in pv.rowgroup.get_children():

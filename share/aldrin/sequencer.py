@@ -794,7 +794,7 @@ class SequencerView(gtk.DrawingArea):
 				t = self.get_track()
 				if t:
 					mp = t.get_plugin()
-					self.rootwindow.routeframe.view.solo(mp)
+					com.get('aldrin.core.routerpanel').view.solo(mp)
 					self.redraw()
 			elif k == 'i':
 				for track in seq.get_track_list():
@@ -1021,7 +1021,7 @@ class SequencerView(gtk.DrawingArea):
 					player.set_position(max(row,0))
 				elif row == -1:
 					mp = seq.get_track(track).get_plugin()				
-					self.rootwindow.routeframe.view.toggle_mute(mp)
+					com.get('aldrin.core.routerpanel').view.toggle_mute(mp)
 					self.redraw()
 				else:
 					self.set_cursor_pos(track,row)
@@ -1085,7 +1085,7 @@ class SequencerView(gtk.DrawingArea):
 		"""
 		Updates the position.
 		"""
-		if self.rootwindow.get_current_panel() != self:
+		if self.rootwindow.get_current_panel() != self.panel:
 			return True
 		player = com.get('aldrin.core.player')
 		playpos = player.get_position()
@@ -1271,10 +1271,7 @@ class SequencerView(gtk.DrawingArea):
 		drawable.draw_line(gc, 0, y, w, y)
 		endrow = self.startseqtime + (w / SEQROWSIZE) * self.step
 		tracklist = seq.get_track_list()
-		if hasattr(self.rootwindow, 'routeframe'):
-			solo_plugin = self.rootwindow.routeframe.view.solo_plugin
-		else:
-			solo_plugin = None
+		solo_plugin = com.get('aldrin.core.routerpanel').view.solo_plugin
 		sel = False
 		if self.selection_start != None and self.selection_end != None:
 			sel = True

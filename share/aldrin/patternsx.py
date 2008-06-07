@@ -729,7 +729,7 @@ class PatternView(gtk.DrawingArea):
 		menu.append(make_menu_item("Constrained randomize", "", self.randomize_selection, "constrain"))
 		menu.append(make_menu_item("Interpolate selection", "", self.interpolate_selection))
 		menu.append(gtk.SeparatorMenuItem())
-		issolo = self.rootwindow.routeframe.view.solo_plugin == self.get_plugin()
+		issolo = com.get('aldrin.core.routerpanel').view.solo_plugin == self.get_plugin()
 		menu.append(make_check_item(issolo, "Solo Plugin", "Toggle solo", self.on_popup_solo))
 		menu.append(gtk.SeparatorMenuItem())
 		menu.append(make_menu_item("Cut", "", self.on_popup_cut))
@@ -1678,7 +1678,7 @@ class PatternView(gtk.DrawingArea):
 		Callback that solos current plugin.
 		"""		
 		plugin = self.get_plugin()
-		self.rootwindow.routeframe.view.solo(plugin)
+		com.get('aldrin.core.routerpanel').view.solo(plugin)
 		
 	def on_popup_properties(self, event=None):
 		"""
@@ -1704,7 +1704,7 @@ class PatternView(gtk.DrawingArea):
 		m.set_track_count(m.get_track_count()+1)
 		self.pattern_changed()
 		# recreate sliders in parameter view
-		dlg = self.rootwindow.routeframe.view.plugin_dialogs.get(m,None)
+		dlg = com.get('aldrin.core.routerpanel').view.plugin_dialogs.get(m,None)
 		if dlg:			
 			pv = dlg.paramview
 			for child in pv.rowgroup.get_children():
@@ -1722,7 +1722,7 @@ class PatternView(gtk.DrawingArea):
 			m.set_track_count(m.get_track_count()-1)
 			self.pattern_changed()
 			# recreate sliders in parameter view
-			dlg = self.rootwindow.routeframe.view.plugin_dialogs.get(m,None)
+			dlg = com.get('aldrin.core.routerpanel').view.plugin_dialogs.get(m,None)
 			if dlg:			
 				pv = dlg.paramview
 				for child in pv.rowgroup.get_children():

@@ -126,10 +126,9 @@ class ParameterView(gtk.VBox):
 		self.btnrandom.connect('clicked', self.on_button_random)
 		self.btnhelp.connect('clicked', self.on_button_help)
 		self.connect('destroy', self.on_destroy)
-		if hasattr(rootwindow, 'routeframe') and rootwindow.routeframe:
-			routeview = rootwindow.routeframe.view
-			self.connect('key-press-event', routeview.on_key_jazz, self.plugin)		
-			self.connect('key-release-event', routeview.on_key_jazz_release, self.plugin)
+		routeview = com.get('aldrin.core.routerpanel').view
+		self.connect('key-press-event', routeview.on_key_jazz, self.plugin)		
+		self.connect('key-release-event', routeview.on_key_jazz_release, self.plugin)
 		self.connect('button-press-event', self.on_left_down)
 
 		self.presetbox.set_active(0)
@@ -516,7 +515,7 @@ class ParameterView(gtk.VBox):
 		@param data: event data.
 		@type data: zzub_event_data_t
 		"""
-		dlg = self.rootwindow.routeframe.view.plugin_dialogs.get(self.plugin,None)
+		dlg = com.get('aldrin.core.routerpanel').view.plugin_dialogs.get(self.plugin,None)
 		if dlg:			
 			if plugin == self.plugin:
 				if data.type == zzub.zzub_event_type_parameter_changed:

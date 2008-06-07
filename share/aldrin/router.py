@@ -490,8 +490,8 @@ class RoutePanel(gtk.VBox):
 		self.view.reset()
 		
 	def update_all(self):		
+		self.view.update_colors()
 		self.view.redraw()
-		
 		
 class VolumeSlider(gtk.Window):
 	"""
@@ -1395,7 +1395,7 @@ class RouteView(gtk.DrawingArea):
 		"""
 		Timer event that only updates the plugin leds.
 		"""
-		if self.rootwindow.get_current_panel() != self:
+		if self.rootwindow.get_current_panel() != self.panel:
 			return True
 		if self.window:
 			player = com.get('aldrin.core.player')

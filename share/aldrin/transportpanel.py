@@ -245,7 +245,7 @@ class TransportPanel(gtk.HBox):
 		"""
 		Event handler triggered when tbp and bpm get focus
 		"""
-		routeview=self.rootwindow.routeframe.view
+		routeview=com.get('aldrin.core.routerpanel').view
 		if routeview.selected_plugin:
 			last = routeview.selected_plugin
 			routeview.selected_plugin = None			
