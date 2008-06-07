@@ -551,8 +551,9 @@ class PreferencesDialog(gtk.Dialog):
 			"Preferences",
 			parent,
 			gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT)
-		nb = gtk.Notebook()
-		nb.set_border_width(MARGIN)
+		self.nb = gtk.Notebook()
+		self.nb.set_show_tabs(False)
+		self.nb.set_border_width(MARGIN)
 		self.generalpanel = GeneralPanel()
 		self.driverpanel = DriverPanel()
 		self.wavetablepanel = WavetablePanel()
@@ -560,14 +561,26 @@ class PreferencesDialog(gtk.Dialog):
 		self.controllerpanel = ControllerPanel(rootwindow)
 		self.keyboardpanel = KeyboardPanel()
 		self.extensionspanel = ExtensionsPanel()
-		nb.append_page(self.driverpanel, gtk.Label("Audio"))
-		nb.append_page(self.midipanel, gtk.Label("MIDI"))
-		nb.append_page(self.controllerpanel, gtk.Label("Controllers"))
-		nb.append_page(self.keyboardpanel, gtk.Label("Keyboard"))
-		nb.append_page(self.wavetablepanel, gtk.Label("Sound Library"))
-		nb.append_page(self.generalpanel, gtk.Label("General"))
-		nb.append_page(self.extensionspanel, gtk.Label("Extensions"))
-		self.vbox.add(nb)
+		self.nb.append_page(self.driverpanel, gtk.Label("Audio"))
+		self.nb.append_page(self.midipanel, gtk.Label("MIDI"))
+		self.nb.append_page(self.controllerpanel, gtk.Label("Controllers"))
+		self.nb.append_page(self.keyboardpanel, gtk.Label("Keyboard"))
+		self.nb.append_page(self.wavetablepanel, gtk.Label("Sound Library"))
+		self.nb.append_page(self.generalpanel, gtk.Label("General"))
+		self.nb.append_page(self.extensionspanel, gtk.Label("Extensions"))
+		self.tab_list, self.tab_list_store, columns = new_listview([('Name', str),])
+		self.tab_list.set_headers_visible(False)
+		self.tab_list.set_size_request(120, 100)
+		# iterate through all tabs and add to tab list
+		for i in range(self.nb.get_n_pages()):
+			tab_label = self.nb.get_tab_label(self.nb.get_nth_page(i)).get_label()
+			self.tab_list_store.append([tab_label])
+		self.tab_list.connect('cursor-changed', self.on_tab_list_change)
+		self.splitter = gtk.HPaned()
+		self.splitter.pack1(add_scrollbars(self.tab_list))
+		self.splitter.pack2(self.nb)
+		self.vbox.add(self.splitter)
+		
 		
 		btnok = self.add_button(gtk.STOCK_OK, gtk.RESPONSE_OK)
 		self.add_button(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL)
@@ -584,6 +597,9 @@ class PreferencesDialog(gtk.Dialog):
 			self.on_apply()
 		else:
 			self.destroy()
+
+	def on_tab_list_change(self, treeview):
+		self.nb.set_current_page(treeview.get_cursor()[0][0])
 		
 	def apply(self):
 		"""
