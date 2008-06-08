@@ -25,7 +25,8 @@ Contains all classes and functions needed to render the wavetable editor and the
 from gtkimport import gtk
 import os, sys, stat
 from utils import prepstr, db2linear, linear2db, note2str, filepath, new_listview, \
-	new_image_button, add_scrollbars, file_filter, question, new_image_toggle_button, format_filesize, error
+	new_image_button, add_scrollbars, file_filter, question, new_image_toggle_button, format_filesize, error, \
+	new_stock_image_button
 import utils
 import zzub
 import config
@@ -75,11 +76,11 @@ class WavetablePanel(gtk.Notebook):
 		self.libpanel = gtk.FileChooserWidget() #gtk.VBox() # wx.Panel(self.notebook, -1)
 		preview = gtk.VBox(False, MARGIN)
 		preview.set_size_request(200,-1)
-		btnopen = new_image_button(filepath("res/loadsample.png"), "Add/Insert Instrument", self.tooltips)
+		btnopen = new_stock_image_button(gtk.STOCK_ADD, "Add/Insert Instrument", self.tooltips)
 		btnopen.connect('clicked', self.on_load_sample)
-		btndeletefile = new_image_button(filepath("res/clear.png"), "Delete File", self.tooltips)
+		btndeletefile = new_stock_image_button(gtk.STOCK_DELETE, "Delete File", self.tooltips)
 		btndeletefile.connect('clicked', self.on_delete_file)
-		btnrenamefile = new_image_button(filepath("res/rename.png"), "Rename File", self.tooltips)
+		btnrenamefile = new_stock_image_button(gtk.STOCK_BOLD, "Rename File", self.tooltips)
 		btnrenamefile.connect('clicked', self.on_rename_file)
 		btneditfile= gtk.Button("Edit")
 		self.tooltips.set_tip(btneditfile, "Open Sample in External Editor")
@@ -96,9 +97,9 @@ class WavetablePanel(gtk.Notebook):
 		self.libpanel.set_extra_widget(hbox)
 		self.previewdesc = gtk.Label()
 		self.previewdesc.set_alignment(0, 0)
-		btnpreviewplay = new_image_button(filepath("res/control_play.png"), "Preview Sample", self.tooltips)
+		btnpreviewplay = new_stock_image_button(gtk.STOCK_MEDIA_PLAY, "Preview Sample", self.tooltips)
 		btnpreviewplay.connect('clicked', self.on_play_filelist_wave)
-		btnpreviewstop = new_image_button(filepath("res/control_stop.png"), "Stop Preview", self.tooltips)
+		btnpreviewstop = new_stock_image_button(gtk.STOCK_MEDIA_STOP, "Stop Preview", self.tooltips)
 		btnpreviewstop.connect('clicked', self.on_stop_wave)
 		hbox = gtk.HBox(False, MARGIN)
 		hbox.pack_start(btnpreviewplay, expand=False)
@@ -132,11 +133,11 @@ class WavetablePanel(gtk.Notebook):
 		#~ imglist = wx.ImageList(16,16)
 		#~ self.IMG_SAMPLE_WAVE = imglist.Add(wx.Bitmap(filepath("res/wave.png"), wx.BITMAP_TYPE_ANY))
 		#~ self.samplelist.AssignImageList(imglist, wx.IMAGE_LIST_SMALL)
-		self.btnstoresample = new_image_button(filepath("res/storesample.png"), "Save Instrument", self.tooltips)
-		self.btnstop = new_image_button(filepath("res/control_stop.png"), "Stop Preview", self.tooltips)
-		self.btnplay = new_image_button(filepath("res/control_play.png"), "Preview Sample", self.tooltips)
-		self.btnrename = new_image_button(filepath("res/rename.png"), "Rename Instrument", self.tooltips)
-		self.btnclear = new_image_button(filepath("res/clear.png"), "Remove Instrument", self.tooltips)
+		self.btnstoresample = new_stock_image_button(gtk.STOCK_SAVE_AS, "Save Instrument", self.tooltips)
+		self.btnstop = new_stock_image_button(gtk.STOCK_MEDIA_STOP, "Stop Preview", self.tooltips)
+		self.btnplay = new_stock_image_button(gtk.STOCK_MEDIA_PLAY, "Preview Sample", self.tooltips)
+		self.btnrename = new_stock_image_button(gtk.STOCK_BOLD, "Rename Instrument", self.tooltips)
+		self.btnclear = new_stock_image_button(gtk.STOCK_REMOVE, "Remove Instrument", self.tooltips)
 		self.btnadsr = new_image_toggle_button(filepath("res/adsr.png"), "Create ADSR Envelope", self.tooltips)
 		self.btnfitloop = new_image_button(filepath("res/fitloop.png"), "Fit Loop", self.tooltips)
 		self.btnstrloop = new_image_button(filepath("res/fitloop.png"), "Stretch Loop", self.tooltips)
