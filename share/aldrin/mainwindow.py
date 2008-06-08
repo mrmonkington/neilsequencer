@@ -46,8 +46,6 @@ from preferences import show_preferences
 from utils import CancelException
 from config import get_plugin_aliases, get_plugin_blacklist
 
-STOCK_PANIC = "aldrin-panic"
-
 from aldrincom import com
 
 class AldrinFrame(gtk.Window):
@@ -248,8 +246,6 @@ class AldrinFrame(gtk.Window):
 		#self.framepanel.set_show_tabs(False)
 		
 		icons = com.get("aldrin.core.icons")
-		#icons.register_single(stockid=STOCK_LOOP, label="Loop", key='F8', iconset='media-playlist-repeat')
-		icons.register_single(stockid=STOCK_PANIC, label="Panic", key='F12', iconset='process-stop')
 		defaultpanelindex = -1
 		for index,panel in enumerate(self.pages):
 			if not hasattr(panel, '__view__'):

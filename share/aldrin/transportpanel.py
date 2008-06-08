@@ -30,14 +30,6 @@ from aldrincom import com
 import zzub
 import common
 
-STOCK_PATTERNS = "aldrin-patterns"
-STOCK_ROUTER = "aldrin-router"
-STOCK_SEQUENCER = "aldrin-sequencer"
-STOCK_SOUNDLIB = "aldrin-soundlib"
-STOCK_INFO = "aldrin-info"
-STOCK_RACK = "aldrin-rack"
-STOCK_PANIC = "aldrin-panic"
-
 class TransportPanel(gtk.HBox):
 	"""
 	A panel containing the BPM/TPB spin controls.
@@ -73,7 +65,7 @@ class TransportPanel(gtk.HBox):
 		self.btnrecord = new_stock_image_toggle_button(gtk.STOCK_MEDIA_RECORD, "Record (F7)")
 		self.btnstop = new_stock_image_button(gtk.STOCK_MEDIA_STOP, "Stop (F8)")
 		self.btnloop = new_theme_image_toggle_button('media-playlist-repeat', "Repeat")
-		self.btnpanic = new_stock_image_toggle_button(STOCK_PANIC, "Panic (F12)")
+		self.btnpanic = new_theme_image_toggle_button('stop', "Panic (F12)")
 		
 		vbox = gtk.VBox(False, 0)
 		sg1 = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
