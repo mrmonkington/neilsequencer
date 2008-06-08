@@ -1538,8 +1538,16 @@ class RouteView(gtk.DrawingArea):
 		rect = self.get_allocation()
 		w,h = rect.width,rect.height
 		arrowcolors = {
-			zzub.zzub_connection_type_audio : cfg.get_float_color("MV Arrow"),
-			zzub.zzub_connection_type_event : cfg.get_float_color("MV Controller Arrow")
+			zzub.zzub_connection_type_audio : [
+				cfg.get_float_color("MV Arrow"),
+				cfg.get_float_color("MV Arrow Border In"),
+				cfg.get_float_color("MV Arrow Border Out"),
+			],
+			zzub.zzub_connection_type_event : [
+				cfg.get_float_color("MV Controller Arrow"),
+				cfg.get_float_color("MV Controller Arrow Border In"),
+				cfg.get_float_color("MV Controller Arrow Border Out"),
+			],
 		}
 		bgbrush = cfg.get_float_color("MV Background")
 		linepen = cfg.get_float_color("MV Line")
@@ -1567,16 +1575,22 @@ class RouteView(gtk.DrawingArea):
 			bmpctx.set_source_rgb(*linepen)
 			bmpctx.stroke()
 			cpx,cpy = crx + vx * (length * 0.5), cry + vy * (length * 0.5)
-			t1 = (int(cpx - vx * ARROWRADIUS + vy * ARROWRADIUS), int(cpy - vy * ARROWRADIUS - vx * ARROWRADIUS))
-			t2 = (int(cpx + vx * ARROWRADIUS), int(cpy + vy * ARROWRADIUS))
-			t3 = (int(cpx - vx * ARROWRADIUS - vy * ARROWRADIUS), int(cpy - vy * ARROWRADIUS + vx * ARROWRADIUS))
-			bmpctx.move_to(*t1)
-			bmpctx.line_to(*t2)
-			bmpctx.line_to(*t3)
-			bmpctx.close_path()
-			bmpctx.set_source_rgb(*clr)
-			bmpctx.fill_preserve()
-			bmpctx.set_source_rgb(*linepen)
+			def draw_triangle(radius):
+				t1 = (int(cpx - vx * radius + vy * radius), int(cpy - vy * radius - vx * radius))
+				t2 = (int(cpx + vx * radius), int(cpy + vy * radius))
+				t3 = (int(cpx - vx * radius - vy * radius), int(cpy - vy * radius + vx * radius))
+				bmpctx.move_to(*t1)
+				bmpctx.line_to(*t2)
+				bmpctx.line_to(*t3)
+				bmpctx.close_path()
+			draw_triangle(ARROWRADIUS)
+			bmpctx.set_source_rgb(*clr[0])
+			bmpctx.fill()
+			draw_triangle(ARROWRADIUS-1)
+			bmpctx.set_source_rgb(*clr[1])
+			bmpctx.stroke()
+			draw_triangle(ARROWRADIUS)
+			bmpctx.set_source_rgb(*clr[2])
 			bmpctx.stroke()
 
 		if not self.routebitmap:
