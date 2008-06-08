@@ -1491,10 +1491,7 @@ class RouteView(gtk.DrawingArea):
 				else:
 					gc.set_foreground(cm.alloc_color(brushes[self.COLOR_DEFAULT]))
 				pi.plugingfx.draw_rectangle(gc, True, -1,-1,PLUGINWIDTH+1,PLUGINHEIGHT+1)
-				if mp == self.selected_plugin:
-					gc.set_foreground(cm.alloc_color(brushes[self.COLOR_BORDER_SELECT]))
-				else:
-					gc.set_foreground(cm.alloc_color(brushes[self.COLOR_BORDER_OUT]))
+				gc.set_foreground(cm.alloc_color(brushes[self.COLOR_BORDER_OUT]))
 				pi.plugingfx.draw_rectangle(gc, False, 0, 0, PLUGINWIDTH-1,PLUGINHEIGHT-1)
 				gc.set_foreground(cm.alloc_color(brushes[self.COLOR_BORDER_IN]))
 				pi.plugingfx.draw_rectangle(gc, False, 1, 1, PLUGINWIDTH-3,PLUGINHEIGHT-3)
@@ -1506,6 +1503,9 @@ class RouteView(gtk.DrawingArea):
 					title = prepstr(mp.get_name())
 				layout.set_text(title)
 				lw,lh = layout.get_pixel_size()
+				if mp == self.selected_plugin:
+					gc.set_foreground(cm.alloc_color(brushes[self.COLOR_BORDER_SELECT]))
+					pi.plugingfx.draw_rectangle(gc, False, PLUGINWIDTH/2 - lw/2 - 3, PLUGINHEIGHT/2 - lh/2, lw + 6, lh)
 				gc.set_foreground(cm.alloc_color(brushes[self.COLOR_TEXT]))
 				pi.plugingfx.draw_layout(gc, PLUGINWIDTH/2 - lw/2, PLUGINHEIGHT/2 - lh/2, layout)
 			
