@@ -633,9 +633,10 @@ def new_theme_image_toggle_button(name, tooltip=None, tooltips_object=None):
 	Creates a toggle button with a default icon theme image.
 	"""
 	theme = gtk.icon_theme_get_default()
-	pixbuf = theme.load_icon(name, gtk.ICON_SIZE_BUTTON, 0)
 	image = gtk.Image()
-	image.set_from_pixbuf(pixbuf)
+	if theme.has_icon(name):
+		pixbuf = theme.load_icon(name, gtk.ICON_SIZE_BUTTON, 0)
+		image.set_from_pixbuf(pixbuf)
 	button = gtk.ToggleButton()
 	if tooltips_object:
 		tooltips_object.set_tip(button, tooltip)
