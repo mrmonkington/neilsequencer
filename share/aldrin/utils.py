@@ -636,7 +636,7 @@ def new_theme_image_toggle_button(name, tooltip=None, tooltips_object=None):
 	icons = com.get("aldrin.core.icons")
 	theme = gtk.icon_theme_get_default()
 	image = gtk.Image()
-	if not theme.has_icon(name):
+	if theme.has_icon(name):
 		pixbuf = theme.load_icon(name, gtk.ICON_SIZE_BUTTON, 0)
 		image.set_from_pixbuf(pixbuf)
 	else:
