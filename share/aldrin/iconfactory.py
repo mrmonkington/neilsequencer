@@ -66,7 +66,10 @@ class IconLibrary:
 					iconsource = gtk.IconSource()
 					iconsource.set_filename(filename)
 					iconset.add_source(iconsource)
-		
+					
+	def get_icon(self, iconset):
+		return self.iconsets.get(iconset,None)
+	
 	def register_single(self, stockid, label, key='', iconset=None):
 		if iconset:
 			self.iconfactory.add(stockid, self.iconsets[iconset])
