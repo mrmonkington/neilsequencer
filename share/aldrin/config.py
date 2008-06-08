@@ -379,8 +379,10 @@ class AldrinConfig(object, ConfigParser.ConfigParser):
 				assert m, "invalid line for theme %s: %s" % (name,line)
 				key = m.group(1)
 				value = int(m.group(2),16)
-				assert key in self.current_theme.keys(), "no such key: %s" % key
-				self.current_theme[key] = value
+				if key in self.current_theme.keys():
+					self.current_theme[key] = value
+				else:
+					print "no such key: %s" % key
 		self.active_theme = name
 
 	def get_float_color(self, name):
