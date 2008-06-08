@@ -72,9 +72,9 @@ class AmpView(gtk.DrawingArea):
 		else:
 			y = 0
 			p = cairo.LinearGradient(0.0, 0.0, 0, h)
-			p.add_color_stop_rgb(self.stops[0],1,0,0)
-			p.add_color_stop_rgb(self.stops[1],1,1,0)
-			p.add_color_stop_rgb(self.stops[2],0,1,0)
+			p.add_color_stop_rgb(self.stops[0],0.937,0.161,0.161)
+			p.add_color_stop_rgb(self.stops[1],0.988,0.914,0.31)
+			p.add_color_stop_rgb(self.stops[2],0.541,0.886,0.204)
 			ctx.set_source(p)
 			ctx.rectangle(0, 0, w, h)
 			ctx.fill()
