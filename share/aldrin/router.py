@@ -51,10 +51,10 @@ from aldrincom import com
 
 PLUGINWIDTH = 100
 PLUGINHEIGHT = 25
-LEDWIDTH,LEDHEIGHT = 8,PLUGINHEIGHT-4 # size of LED
-LEDOFSX,LEDOFSY = 2,2 # offset of LED
-CPUWIDTH,CPUHEIGHT = 8,PLUGINHEIGHT-4 # size of LED
-CPUOFSX,CPUOFSY = PLUGINWIDTH-CPUWIDTH-2,2 # offset of LED
+LEDWIDTH,LEDHEIGHT = 8,PLUGINHEIGHT-6 # size of LED
+LEDOFSX,LEDOFSY = 3,3 # offset of LED
+CPUWIDTH,CPUHEIGHT = 8,PLUGINHEIGHT-6 # size of LED
+CPUOFSX,CPUOFSY = PLUGINWIDTH-CPUWIDTH-3,3 # offset of LED
 
 ARROWRADIUS = 8
 
@@ -628,7 +628,10 @@ class RouteView(gtk.DrawingArea):
 	COLOR_CPU_ON = 7
 	COLOR_CPU_BORDER = 8
 	COLOR_CPU_WARNING = 9
-	
+	COLOR_BORDER_IN = 10
+	COLOR_BORDER_OUT = 11
+	COLOR_BORDER_SELECT = 12
+	COLOR_TEXT = 13
 	
 	def __init__(self, rootwindow, parent):
 		"""
@@ -671,16 +674,32 @@ class RouteView(gtk.DrawingArea):
 		Updates the routers color scheme.
 		"""
 		cfg = config.get_config()
-		flags2brushnames = {
-			ROOT_PLUGIN_FLAGS: ('MV Master', 'MV Master', 'MV Master LED Off', 'MV Master LED On', 'MV Master LED Border', 'MV Machine LED Warning', 'MV CPU LED Off', 'MV CPU LED On', 'MV CPU LED Border', 'MV CPU LED Warning'),
-			GENERATOR_PLUGIN_FLAGS: ('MV Generator', 'MV Generator Mute', 'MV Generator LED Off', 'MV Generator LED On', 'MV Generator LED Border', 'MV Machine LED Warning', 'MV CPU LED Off', 'MV CPU LED On', 'MV CPU LED Border', 'MV CPU LED Warning'),
-			EFFECT_PLUGIN_FLAGS: ('MV Effect', 'MV Effect Mute', 'MV Effect LED Off', 'MV Effect LED On', 'MV Effect LED Border', 'MV Machine LED Warning', 'MV CPU LED Off', 'MV CPU LED On', 'MV CPU LED Border', 'MV CPU LED Warning'),
-			CONTROLLER_PLUGIN_FLAGS: ('MV Controller', 'MV Controller Mute', 'MV Controller LED Off', 'MV Controller LED On', 'MV Controller LED Border', 'MV Machine LED Warning', 'MV CPU LED Off', 'MV CPU LED On', 'MV CPU LED Border', 'MV CPU LED Warning'),
-		}
+		names = [
+			'MV ${PLUGIN}', 
+			'MV ${PLUGIN} Mute', 
+			'MV ${PLUGIN} LED Off', 
+			'MV ${PLUGIN} LED On', 
+			'MV ${PLUGIN} LED Border', 
+			'MV ${PLUGIN} LED Warning', 
+			'MV CPU LED Off', 
+			'MV CPU LED On', 
+			'MV CPU LED Border', 
+			'MV CPU LED Warning',
+			'MV ${PLUGIN} Border In',
+			'MV ${PLUGIN} Border Out',
+			'MV ${PLUGIN} Border Selected',
+			'MV ${PLUGIN} Text',
+		]
+		flagids = [
+			(ROOT_PLUGIN_FLAGS, 'Master'),
+			(GENERATOR_PLUGIN_FLAGS, 'Generator'),
+			(EFFECT_PLUGIN_FLAGS, 'Effect'),
+			(CONTROLLER_PLUGIN_FLAGS, 'Controller'),
+		]
 		self.flags2brushes = {}
-		for flags,names in flags2brushnames.iteritems():
+		for flags,name in flagids:
 			brushes = []
-			for name in names:
+			for name in [x.replace('${PLUGIN}',name) for x in names]:
 				brushes.append(cfg.get_color(name))
 			self.flags2brushes[flags] = brushes
 		common.get_plugin_infos().reset_plugingfx()
@@ -1439,9 +1458,6 @@ class RouteView(gtk.DrawingArea):
 		cx,cy = w*0.5,h*0.5
 		def get_pixelpos(x,y):
 			return cx * (1+x), cy * (1+y)
-		textcolor = cm.alloc_color(cfg.get_color("MV Machine Text"))
-		pluginpen = cm.alloc_color(cfg.get_color("MV Machine Border"))
-		pluginpenselected = cm.alloc_color(cfg.get_color("MV Machine Border Selected"))
 		#font = wx.Font(8, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
 		PW, PH = PLUGINWIDTH / 2, PLUGINHEIGHT / 2
 
@@ -1466,19 +1482,22 @@ class RouteView(gtk.DrawingArea):
 			pi = common.get_plugin_infos().get(mp)
 			if not pi:
 				continue			
+			brushes = self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK, self.flags2brushes[GENERATOR_PLUGIN_FLAGS])
 			if not pi.plugingfx:
 				pi.plugingfx = gtk.gdk.Pixmap(self.window, PLUGINWIDTH, PLUGINHEIGHT, -1)
 				# adjust colour for muted plugins
 				if pi.muted:
-					gc.set_foreground(cm.alloc_color(self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK, self.flags2brushes[GENERATOR_PLUGIN_FLAGS])[self.COLOR_MUTED]))
+					gc.set_foreground(cm.alloc_color(brushes[self.COLOR_MUTED]))
 				else:
-					gc.set_foreground(cm.alloc_color(self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK, self.flags2brushes[GENERATOR_PLUGIN_FLAGS])[self.COLOR_DEFAULT]))
+					gc.set_foreground(cm.alloc_color(brushes[self.COLOR_DEFAULT]))
 				pi.plugingfx.draw_rectangle(gc, True, -1,-1,PLUGINWIDTH+1,PLUGINHEIGHT+1)
 				if mp == self.selected_plugin:
-					gc.set_foreground(pluginpenselected)
+					gc.set_foreground(cm.alloc_color(brushes[self.COLOR_BORDER_SELECT]))
 				else:
-					gc.set_foreground(pluginpen)
+					gc.set_foreground(cm.alloc_color(brushes[self.COLOR_BORDER_OUT]))
 				pi.plugingfx.draw_rectangle(gc, False, 0, 0, PLUGINWIDTH-1,PLUGINHEIGHT-1)
+				gc.set_foreground(cm.alloc_color(brushes[self.COLOR_BORDER_IN]))
+				pi.plugingfx.draw_rectangle(gc, False, 1, 1, PLUGINWIDTH-3,PLUGINHEIGHT-3)
 				if self.solo_plugin and self.solo_plugin != mp and is_generator(mp):
 					title = prepstr('[' + mp.get_name() + ']')
 				elif pi.muted:
@@ -1487,7 +1506,7 @@ class RouteView(gtk.DrawingArea):
 					title = prepstr(mp.get_name())
 				layout.set_text(title)
 				lw,lh = layout.get_pixel_size()
-				gc.set_foreground(textcolor)
+				gc.set_foreground(cm.alloc_color(brushes[self.COLOR_TEXT]))
 				pi.plugingfx.draw_layout(gc, PLUGINWIDTH/2 - lw/2, PLUGINHEIGHT/2 - lh/2, layout)
 			
 			if config.get_config().get_led_draw() == True:		
@@ -1495,17 +1514,17 @@ class RouteView(gtk.DrawingArea):
 				amp = min(max(maxl,maxr),1.0)
 				if amp != pi.amp:
 					if amp >= 1:
-						gc.set_foreground(cm.alloc_color(self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK, self.flags2brushes[GENERATOR_PLUGIN_FLAGS])[self.COLOR_LED_WARNING]))
+						gc.set_foreground(cm.alloc_color(brushes[self.COLOR_LED_WARNING]))
 						pi.plugingfx.draw_rectangle(gc, True, LEDOFSX, LEDOFSY, LEDWIDTH-1, LEDHEIGHT-1)
 					else:
-						gc.set_foreground(cm.alloc_color(self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK, self.flags2brushes[GENERATOR_PLUGIN_FLAGS])[self.COLOR_LED_OFF]))
+						gc.set_foreground(cm.alloc_color(brushes[self.COLOR_LED_OFF]))
 						pi.plugingfx.draw_rectangle(gc, True, LEDOFSX, LEDOFSY, LEDWIDTH-1, LEDHEIGHT-1)
 						amp = 1.0 - (linear2db(amp,-76.0)/-76.0)
 						height = int((LEDHEIGHT-4)*amp + 0.5)
 						if (height > 0):
-							gc.set_foreground(cm.alloc_color(self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK, self.flags2brushes[GENERATOR_PLUGIN_FLAGS])[self.COLOR_LED_ON]))
+							gc.set_foreground(cm.alloc_color(brushes[self.COLOR_LED_ON]))
 							pi.plugingfx.draw_rectangle(gc, True, LEDOFSX+2, LEDOFSY+LEDHEIGHT-height-2, LEDWIDTH-4, height)
-					gc.set_foreground(cm.alloc_color(self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK, self.flags2brushes[GENERATOR_PLUGIN_FLAGS])[self.COLOR_LED_BORDER]))
+					gc.set_foreground(cm.alloc_color(brushes[self.COLOR_LED_BORDER]))
 					pi.plugingfx.draw_rectangle(gc, False, LEDOFSX, LEDOFSY, LEDWIDTH-1, LEDHEIGHT-1)
 					pi.amp = amp
 
@@ -1515,16 +1534,16 @@ class RouteView(gtk.DrawingArea):
 					relperc = max(pi.cpu, 0.0)
 				if relperc != pi.cpu:
 					pi.cpu = relperc
-					gc.set_foreground(cm.alloc_color(self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK, self.flags2brushes[GENERATOR_PLUGIN_FLAGS])[self.COLOR_CPU_OFF]))
+					gc.set_foreground(cm.alloc_color(brushes[self.COLOR_CPU_OFF]))
 					pi.plugingfx.draw_rectangle(gc, True, CPUOFSX, CPUOFSY, CPUWIDTH-1, CPUHEIGHT-1)
 					height = int((CPUHEIGHT-4)*relperc + 0.5)
 					if (height > 0):
 						if relperc >= cputreshold:
-							gc.set_foreground(cm.alloc_color(self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK, self.flags2brushes[GENERATOR_PLUGIN_FLAGS])[self.COLOR_CPU_WARNING]))
+							gc.set_foreground(cm.alloc_color(brushes[self.COLOR_CPU_WARNING]))
 						else:
-							gc.set_foreground(cm.alloc_color(self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK, self.flags2brushes[GENERATOR_PLUGIN_FLAGS])[self.COLOR_CPU_ON]))
+							gc.set_foreground(cm.alloc_color(brushes[self.COLOR_CPU_ON]))
 						pi.plugingfx.draw_rectangle(gc, True, CPUOFSX+2, CPUOFSY+CPUHEIGHT-height-2, CPUWIDTH-4, height)
-					gc.set_foreground(cm.alloc_color(self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK, self.flags2brushes[GENERATOR_PLUGIN_FLAGS])[self.COLOR_CPU_BORDER]))
+					gc.set_foreground(cm.alloc_color(brushes[self.COLOR_LED_BORDER]))
 					pi.plugingfx.draw_rectangle(gc, False, CPUOFSX, CPUOFSY, CPUWIDTH-1, CPUHEIGHT-1)
 				
 			self.window.draw_drawable(gc, pi.plugingfx, 0, 0, int(rx), int(ry), -1, -1)
@@ -1575,21 +1594,25 @@ class RouteView(gtk.DrawingArea):
 			bmpctx.set_source_rgb(*linepen)
 			bmpctx.stroke()
 			cpx,cpy = crx + vx * (length * 0.5), cry + vy * (length * 0.5)
-			def draw_triangle(radius):
+			def make_triangle(radius):
 				t1 = (int(cpx - vx * radius + vy * radius), int(cpy - vy * radius - vx * radius))
 				t2 = (int(cpx + vx * radius), int(cpy + vy * radius))
 				t3 = (int(cpx - vx * radius - vy * radius), int(cpy - vy * radius + vx * radius))
+				return t1,t2,t3
+			def draw_triangle(t1,t2,t3):
 				bmpctx.move_to(*t1)
 				bmpctx.line_to(*t2)
 				bmpctx.line_to(*t3)
 				bmpctx.close_path()
-			draw_triangle(ARROWRADIUS)
+			tri1 = make_triangle(ARROWRADIUS)
+			tri2 = make_triangle(ARROWRADIUS-1)
+			draw_triangle(*tri1)
 			bmpctx.set_source_rgb(*clr[0])
 			bmpctx.fill()
-			draw_triangle(ARROWRADIUS-1)
+			draw_triangle(*tri2)
 			bmpctx.set_source_rgb(*clr[1])
 			bmpctx.stroke()
-			draw_triangle(ARROWRADIUS)
+			draw_triangle(*tri1)
 			bmpctx.set_source_rgb(*clr[2])
 			bmpctx.stroke()
 
