@@ -1378,7 +1378,9 @@ class RouteView(gtk.DrawingArea):
 			res = self.get_plugin_at((mx,my))
 			if res:
 				mp,(x,y),area = res
-				if is_controller(self.current_plugin):
+				if self.current_plugin == mp:
+					pass
+				elif is_controller(self.current_plugin):
 					#mp.add_event_input(self.current_plugin)
 					pass
 				else:
