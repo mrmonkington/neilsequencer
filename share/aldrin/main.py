@@ -72,17 +72,12 @@ class AldrinApplication:
 		"""
 		Called when the main loop initializes.
 		"""
+		player = com.get('aldrin.core.player')
 		rootwindows = com.get_from_category('rootwindow')
 		gtk.main()
+		driver.get_mididriver().destroy()
+		driver.get_audiodriver().destroy()
 		return 1
-
-def main():
-	global app
-	app = AldrinApplication()
-	player = com.get('aldrin.core.player')
-	app.main()
-	driver.get_mididriver().destroy()
-	driver.get_audiodriver().destroy()
 
 def run(argv):
 	"""
@@ -100,7 +95,9 @@ def run(argv):
 		import cProfile
 		cProfile.runctx('main()', globals(), locals(), app_options.profile)
 	else:
-		main()
+		global app
+		app = AldrinApplication()
+		app.main()
 
 __all__ = [
 'CancelException',
