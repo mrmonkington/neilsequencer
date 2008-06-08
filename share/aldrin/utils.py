@@ -586,7 +586,7 @@ def new_image_button(path, tooltip, tooltips_object):
 	button.set_image(image)
 	return button
 	
-def new_stock_image_button(stockid):
+def new_stock_image_button(stockid, tooltip=None, tooltips_object=None):
 	"""
 	Creates a button with a stock image.
 	"""
@@ -594,9 +594,13 @@ def new_stock_image_button(stockid):
 	image.set_from_stock(stockid, gtk.ICON_SIZE_BUTTON)
 	button = gtk.Button()
 	button.set_image(image)
+	if tooltips_object:
+		tooltips_object.set_tip(button, tooltip)
+	elif tooltip:
+		button.set_tooltip_text(tooltip)
 	return button
 
-def new_stock_image_toggle_button(stockid):
+def new_stock_image_toggle_button(stockid, tooltip=None, tooltips_object=None):
 	"""
 	Creates a toggle button with a stock image.
 	"""
@@ -604,16 +608,39 @@ def new_stock_image_toggle_button(stockid):
 	image.set_from_stock(stockid, gtk.ICON_SIZE_BUTTON)
 	button = gtk.ToggleButton()
 	button.set_image(image)
+	if tooltips_object:
+		tooltips_object.set_tip(button, tooltip)
+	elif tooltip:
+		button.set_tooltip_text(tooltip)
 	return button
 
-def new_image_toggle_button(path, tooltip, tooltips_object):
+def new_image_toggle_button(path, tooltip=None, tooltips_object=None):
 	"""
 	Creates a toggle button with a single image.
 	"""
 	image = gtk.Image()
 	image.set_from_pixbuf(gtk.gdk.pixbuf_new_from_file(path))
 	button = gtk.ToggleButton()
-	tooltips_object.set_tip(button, tooltip)
+	if tooltips_object:
+		tooltips_object.set_tip(button, tooltip)
+	elif tooltip:
+		button.set_tooltip_text(tooltip)
+	button.set_image(image)
+	return button
+	
+def new_theme_image_toggle_button(name, tooltip=None, tooltips_object=None):
+	"""
+	Creates a toggle button with a default icon theme image.
+	"""
+	theme = gtk.icon_theme_get_default()
+	pixbuf = theme.load_icon(name, gtk.ICON_SIZE_BUTTON, 0)
+	image = gtk.Image()
+	image.set_from_pixbuf(pixbuf)
+	button = gtk.ToggleButton()
+	if tooltips_object:
+		tooltips_object.set_tip(button, tooltip)
+	elif tooltip:
+		button.set_tooltip_text(tooltip)
 	button.set_image(image)
 	return button
 

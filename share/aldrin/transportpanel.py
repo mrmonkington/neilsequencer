@@ -22,7 +22,7 @@ from gtkimport import gtk
 from common import MARGIN, MARGIN2, MARGIN3, MARGIN0
 import gobject
 from utils import new_stock_image_toggle_button, new_stock_image_button, format_time, \
-	ticks_to_time
+	ticks_to_time, new_theme_image_toggle_button
 import audiogui
 import time
 import config
@@ -33,7 +33,6 @@ import common
 STOCK_PATTERNS = "aldrin-patterns"
 STOCK_ROUTER = "aldrin-router"
 STOCK_SEQUENCER = "aldrin-sequencer"
-STOCK_LOOP = "aldrin-loop"
 STOCK_SOUNDLIB = "aldrin-soundlib"
 STOCK_INFO = "aldrin-info"
 STOCK_RACK = "aldrin-rack"
@@ -70,11 +69,11 @@ class TransportPanel(gtk.HBox):
 		self.tpb.set_range(1,32)
 		self.tpb.set_value(4)
 		self.tpb.set_increments(1, 2)
-		self.btnplay = new_stock_image_toggle_button(gtk.STOCK_MEDIA_PLAY)
-		self.btnrecord = new_stock_image_toggle_button(gtk.STOCK_MEDIA_RECORD)
-		self.btnstop = new_stock_image_button(gtk.STOCK_MEDIA_STOP)
-		self.btnloop = new_stock_image_toggle_button(STOCK_LOOP)
-		self.btnpanic = new_stock_image_toggle_button(STOCK_PANIC)
+		self.btnplay = new_stock_image_toggle_button(gtk.STOCK_MEDIA_PLAY, "Play (F5/F6)")
+		self.btnrecord = new_stock_image_toggle_button(gtk.STOCK_MEDIA_RECORD, "Record (F7)")
+		self.btnstop = new_stock_image_button(gtk.STOCK_MEDIA_STOP, "Stop (F8)")
+		self.btnloop = new_theme_image_toggle_button('media-playlist-repeat', "Repeat")
+		self.btnpanic = new_stock_image_toggle_button(STOCK_PANIC, "Panic (F12)")
 		
 		vbox = gtk.VBox(False, 0)
 		sg1 = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
