@@ -52,27 +52,30 @@ class IconLibrary:
 	)	
 	
 	def __init__(self):
-		self.iconfactory = gtk.IconFactory()
-		self.iconfactory.add_default()
-		self.iconsets = {}
+		sizes = {}
+		sizenames = [
+			gtk.ICON_SIZE_MENU,
+			gtk.ICON_SIZE_SMALL_TOOLBAR,
+			gtk.ICON_SIZE_LARGE_TOOLBAR,
+			gtk.ICON_SIZE_BUTTON,
+			gtk.ICON_SIZE_DND,
+			gtk.ICON_SIZE_DIALOG,
+		]
+		for size in sizenames:
+			w,h = gtk.icon_size_lookup(size)
+			sizes[(w,h)] = size
+			print w,h,size
 		for searchpath in ICON_SEARCHPATH:
 			for ext in ICON_EXTENSIONS:
 				mask = filepath(searchpath) + '/*' + ext
 				for filename in glob.glob(mask):
 					key = os.path.splitext(os.path.basename(filename))[0]
-					if not key in self.iconsets:
-						self.iconsets[key] = gtk.IconSet()
-					iconset = self.iconsets[key]
-					iconsource = gtk.IconSource()
-					iconsource.set_filename(filename)
-					iconset.add_source(iconsource)
+					pixbuf = gtk.gdk.pixbuf_new_from_file(filename)
+					w,h = pixbuf.get_width(),pixbuf.get_height()
+					if (w,h) in sizes:
+						gtk.icon_theme_add_builtin_icon(key, sizes[(w,h)], pixbuf)
 					
-	def get_icon(self, iconset):
-		return self.iconsets.get(iconset,None)
-	
-	def register_single(self, stockid, label, key='', iconset=None):
-		if iconset:
-			self.iconfactory.add(stockid, self.iconsets[iconset])
+	def register_single(self, stockid, label, key=''):
 		if key:
 			key = gtk.gdk.keyval_from_name(key)
 		else:

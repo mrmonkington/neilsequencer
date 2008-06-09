@@ -639,11 +639,6 @@ def new_theme_image_toggle_button(name, tooltip=None, tooltips_object=None):
 	if theme.has_icon(name):
 		pixbuf = theme.load_icon(name, gtk.ICON_SIZE_BUTTON, 0)
 		image.set_from_pixbuf(pixbuf)
-	else:
-		iconset = icons.get_icon(name)
-		if iconset:
-			pixbuf = iconset.render_icon(gtk.Style(), gtk.TEXT_DIR_NONE, gtk.STATE_NORMAL, gtk.ICON_SIZE_BUTTON, None, None)
-			image.set_from_pixbuf(pixbuf)
 	button = gtk.ToggleButton()
 	if tooltips_object:
 		tooltips_object.set_tip(button, tooltip)

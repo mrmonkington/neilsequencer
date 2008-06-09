@@ -257,13 +257,13 @@ class AldrinFrame(gtk.Window):
 			key = options.get('shortcut', '')			
 			if options.get('default'):
 				defaultpanelindex = index
-			icons.register_single(stockid=stockid, label=label, key=key, iconset=stockid)
+			icons.register_single(stockid=stockid, label=label, key=key)
 			panel.show_all()
 			header = gtk.VBox()
 			labelwidget = gtk.Label(label)
 			labelwidget.set_angle(90)
 			header.pack_start(labelwidget)
-			header.pack_start(gtk.image_new_from_stock(stockid, gtk.ICON_SIZE_SMALL_TOOLBAR))
+			header.pack_start(gtk.image_new_from_stock(stockid, gtk.ICON_SIZE_MENU))
 			header.show_all()
 			if key:
 				header.set_tooltip_text("%s (%s)" % (label, key))
