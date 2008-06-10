@@ -22,6 +22,7 @@ from gtkimport import gtk
 import cairo
 from common import MARGIN, MARGIN2, MARGIN3, MARGIN0
 import gobject
+from utils import filepath
 import utils
 from aldrincom import com
 import driver
@@ -39,10 +40,11 @@ class AmpView(gtk.DrawingArea):
 		self.range = 76
 		self.amp = 0.0
 		self.channel = channel
+		self.pixbuf = gtk.gdk.pixbuf_new_from_file(filepath('res/vubar.svg'))
 		self.stops = (0.0, 6.0 / self.range, 12.0 / self.range) # red, yellow, green
 		self.index = 0
 		gtk.DrawingArea.__init__(self)
-		self.set_size_request(MARGIN,100)
+		self.set_size_request(self.pixbuf.get_width(),self.pixbuf.get_height())
 		self.connect("expose_event", self.expose)
 		gobject.timeout_add(100, self.on_update)
 	
@@ -71,15 +73,11 @@ class AmpView(gtk.DrawingArea):
 			ctx.fill()
 		else:
 			y = 0
-			p = cairo.LinearGradient(0.0, 0.0, 0, h)
-			p.add_color_stop_rgb(self.stops[0],0.937,0.161,0.161)
-			p.add_color_stop_rgb(self.stops[1],0.988,0.914,0.31)
-			p.add_color_stop_rgb(self.stops[2],0.541,0.886,0.204)
-			ctx.set_source(p)
+			ctx.set_source_pixbuf(self.pixbuf, 0,0)
 			ctx.rectangle(0, 0, w, h)
 			ctx.fill()
 			bh = int((h * (utils.linear2db(self.amp,limit=-self.range) + self.range)) / self.range)
-			ctx.set_source_rgb(0,0,0)
+			ctx.set_source_rgba(0,0,0,0.6)
 			ctx.rectangle(0, 0, w, h - bh)
 			ctx.fill()
 
@@ -88,7 +86,7 @@ class AmpView(gtk.DrawingArea):
 		self.draw(self.context)
 		return False
 
-class MasterPanel(gtk.HBox):
+class MasterPanel(gtk.VBox):
 	"""
 	A panel containing the master machine controls.
 	"""
@@ -98,8 +96,7 @@ class MasterPanel(gtk.HBox):
 	)
 	
 	def __init__(self, rootwindow):
-		gtk.HBox.__init__(self)
-		self.set_border_width(MARGIN)
+		gtk.VBox.__init__(self)
 		self.latency = 0
 		self.rootwindow = rootwindow
 		self.rootwindow.event_handlers.append(self.on_player_callback)
@@ -114,9 +111,12 @@ class MasterPanel(gtk.HBox):
 		self.masterslider.connect('button-release-event', self.button_up)
 		self.ampl = AmpView(self, 0)
 		self.ampr = AmpView(self, 1)
-		self.add(self.ampl)
-		self.add(self.masterslider)
-		self.add(self.ampr)
+		hbox = gtk.HBox()
+		hbox.set_border_width(MARGIN)
+		hbox.pack_start(self.ampl)
+		hbox.pack_start(self.masterslider)
+		hbox.pack_start(self.ampr)
+		self.pack_start(hbox, expand=False, fill=False)
 		self.update_all()
 
 	def on_player_callback(self, player, plugin, data):
