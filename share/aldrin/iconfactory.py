@@ -52,7 +52,6 @@ class IconLibrary:
 	)	
 	
 	def __init__(self):
-		sizes = {}
 		sizenames = [
 			gtk.ICON_SIZE_MENU,
 			gtk.ICON_SIZE_SMALL_TOOLBAR,
@@ -61,10 +60,7 @@ class IconLibrary:
 			gtk.ICON_SIZE_DND,
 			gtk.ICON_SIZE_DIALOG,
 		]
-		for size in sizenames:
-			w,h = gtk.icon_size_lookup(size)
-			sizes[(w,h)] = size
-			print w,h,size
+		icons = {}
 		for searchpath in ICON_SEARCHPATH:
 			for ext in ICON_EXTENSIONS:
 				mask = filepath(searchpath) + '/*' + ext
@@ -72,8 +68,27 @@ class IconLibrary:
 					key = os.path.splitext(os.path.basename(filename))[0]
 					pixbuf = gtk.gdk.pixbuf_new_from_file(filename)
 					w,h = pixbuf.get_width(),pixbuf.get_height()
-					if (w,h) in sizes:
-						gtk.icon_theme_add_builtin_icon(key, sizes[(w,h)], pixbuf)
+					iconsizes = icons.get(key, {})
+					iconsizes[(w,h)] = pixbuf
+					icons[key] = iconsizes
+		for key,iconsizes in icons.iteritems():
+			for size in sizenames:
+				w,h = gtk.icon_size_lookup(size)
+				if (w,h) in iconsizes:
+					pixbuf = iconsizes[(w,h)]
+				else:
+					bestw = 999999
+					pixbuf = None
+					c = w*w + h*h
+					for (iw,ih),icon in iconsizes.iteritems():
+						l = iw*iw + ih*ih
+						d = abs(l - c)
+						if d < bestw:
+							bestw = d
+							pixbuf = icon
+					#pixbuf = pixbuf.scale_simple(w,h,gtk.gdk.INTERP_HYPER)
+				print "new icon: %s (%r = %i,%i ~ %i,%i)" % (key,size,w,h,pixbuf.get_width(),pixbuf.get_height())
+				gtk.icon_theme_add_builtin_icon(key, size, pixbuf)
 					
 	def register_single(self, stockid, label, key=''):
 		if key:

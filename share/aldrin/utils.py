@@ -628,17 +628,19 @@ def new_image_toggle_button(path, tooltip=None, tooltips_object=None):
 	button.set_image(image)
 	return button
 	
+def new_theme_image(name,size):
+	theme = gtk.icon_theme_get_default()
+	image = gtk.Image()
+	if theme.has_icon(name):
+		pixbuf = theme.load_icon(name, size, 0)
+		image.set_from_pixbuf(pixbuf)
+	return image
+	
 def new_theme_image_toggle_button(name, tooltip=None, tooltips_object=None):
 	"""
 	Creates a toggle button with a default icon theme image.
 	"""
-	from aldrincom import com
-	icons = com.get("aldrin.core.icons")
-	theme = gtk.icon_theme_get_default()
-	image = gtk.Image()
-	if theme.has_icon(name):
-		pixbuf = theme.load_icon(name, gtk.ICON_SIZE_BUTTON, 0)
-		image.set_from_pixbuf(pixbuf)
+	image = new_theme_image(name,gtk.ICON_SIZE_BUTTON)
 	button = gtk.ToggleButton()
 	if tooltips_object:
 		tooltips_object.set_tip(button, tooltip)
@@ -873,6 +875,7 @@ __all__ = [
 'is_controller',
 'is_root',
 'get_new_pattern_name',
+'new_theme_image',
 ]
 
 if __name__ == '__main__':

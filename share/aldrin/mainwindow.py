@@ -33,7 +33,7 @@ from common import MARGIN, MARGIN2, MARGIN3, MARGIN0
 import driver
 import sequencer, router, patterns, wavetable, preferences, hdrecorder, cpumonitor, info, common, rack
 from utils import make_submenu_item, make_stock_menu_item, make_stock_tool_item, make_stock_toggle_item, \
-	make_stock_radio_item, make_menu_item, make_check_item, make_radio_item
+	make_stock_radio_item, make_menu_item, make_check_item, make_radio_item, new_theme_image
 
 from sequencer import SequencerPanel
 from router import RoutePanel
@@ -245,7 +245,7 @@ class AldrinFrame(gtk.Window):
 		self.framepanel.set_show_border(False)
 		#self.framepanel.set_show_tabs(False)
 		
-		icons = com.get("aldrin.core.icons")
+		icons = com.get("aldrin.core.icons") # make sure theme icons are loaded
 		defaultpanelindex = -1
 		for index,panel in enumerate(self.pages):
 			if not hasattr(panel, '__view__'):
@@ -257,13 +257,12 @@ class AldrinFrame(gtk.Window):
 			key = options.get('shortcut', '')			
 			if options.get('default'):
 				defaultpanelindex = index
-			icons.register_single(stockid=stockid, label=label, key=key)
 			panel.show_all()
 			header = gtk.VBox()
 			labelwidget = gtk.Label(label)
 			labelwidget.set_angle(90)
 			header.pack_start(labelwidget)
-			header.pack_start(gtk.image_new_from_stock(stockid, gtk.ICON_SIZE_MENU))
+			header.pack_start(new_theme_image(stockid, gtk.ICON_SIZE_MENU))
 			header.show_all()
 			if key:
 				header.set_tooltip_text("%s (%s)" % (label, key))
