@@ -29,7 +29,7 @@ import os,sys
 from aldrincom import com
 
 class Freesound:
-	BASE_URL = "http://freesound.iua.upf.edu/"
+	BASE_URL = "http://www.freesound.org/"
 	LOGIN_URL = urlparse.urljoin(BASE_URL, "forum/login.php")
 	SEARCH_URL = urlparse.urljoin(BASE_URL, "searchTextXML.php")
 	FILEINFO_URL = urlparse.urljoin(BASE_URL, "samplesViewSingleXML.php")
