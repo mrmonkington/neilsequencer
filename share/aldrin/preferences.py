@@ -257,7 +257,7 @@ class WavetablePanel(gtk.HBox):
 		self.add(frame2)
 		#~ self.btnadd.connect('clicked', self.on_add_path)
 		#~ self.btnremove.connect('clicked', self.on_remove_path)
-		fsvisit.connect('clicked', lambda widget: webbrowser.open("http://freesound.iua.upf.edu/"))
+		fsvisit.connect('clicked', lambda widget: webbrowser.open("http://www.freesound.org/"))
 		#~ for path in config.get_config().get_wavetable_paths():
 			#~ self.pathstore.append([path])
 
