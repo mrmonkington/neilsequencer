@@ -1,3 +1,31 @@
-export LD_LIBRARY_PATH=../lib
-export LIBRARY_LOAD_NONE=true
-rm -rf aldrinapi && epydoc --html -n "Aldrin API" -o ./aldrinapi --debug --css ./style.css ../aldrin
+#!/usr/bin/env python
+
+import os,sys
+
+os.environ['LD_LIBRARY_PATH'] = '../lib'
+os.environ['LIBRARY_LOAD_NONE'] = 'true'
+
+os.system('rm -rf aldrinapi')
+
+command = [
+'epydoc',
+'-v',
+'--html',
+'-n',
+'"Aldrin API"',
+'-o',
+'./aldrinapi',
+'--debug',
+'--css',
+'./style.css',
+]
+
+basepath = '../aldrin'
+for filename in os.listdir(basepath):
+	if filename.endswith('.py'):
+		filename = os.path.join(basepath,filename)
+		command.append(filename)
+
+cmd = ' '.join(command)
+print cmd
+os.system(cmd)
