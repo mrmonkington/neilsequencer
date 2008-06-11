@@ -1,0 +1,366 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>player</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >Aldrin API</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        Module&nbsp;player
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="player-pysrc.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<h1 class="epydoc">Source Code for <a href="player-module.html">Module player</a></h1>
+<pre class="py-src">
+<a name="L1"></a><tt class="py-lineno"> 1</tt>  <tt class="py-line"><tt class="py-comment">#encoding: latin-1</tt> </tt>
+<a name="L2"></a><tt class="py-lineno"> 2</tt>  <tt class="py-line"><tt class="py-comment"></tt> </tt>
+<a name="L3"></a><tt class="py-lineno"> 3</tt>  <tt class="py-line"><tt class="py-comment"># Aldrin</tt> </tt>
+<a name="L4"></a><tt class="py-lineno"> 4</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># Modular Sequencer</tt> </tt>
+<a name="L5"></a><tt class="py-lineno"> 5</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># Copyright (C) 2006,2007,2008 The Aldrin Development Team</tt> </tt>
+<a name="L6"></a><tt class="py-lineno"> 6</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment">#</tt> </tt>
+<a name="L7"></a><tt class="py-lineno"> 7</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># This program is free software; you can redistribute it and/or</tt> </tt>
+<a name="L8"></a><tt class="py-lineno"> 8</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># modify it under the terms of the GNU General Public License</tt> </tt>
+<a name="L9"></a><tt class="py-lineno"> 9</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># as published by the Free Software Foundation; either version 2</tt> </tt>
+<a name="L10"></a><tt class="py-lineno">10</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># of the License, or (at your option) any later version.</tt> </tt>
+<a name="L11"></a><tt class="py-lineno">11</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment">#</tt> </tt>
+<a name="L12"></a><tt class="py-lineno">12</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># This program is distributed in the hope that it will be useful,</tt> </tt>
+<a name="L13"></a><tt class="py-lineno">13</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># but WITHOUT ANY WARRANTY; without even the implied warranty of</tt> </tt>
+<a name="L14"></a><tt class="py-lineno">14</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</tt> </tt>
+<a name="L15"></a><tt class="py-lineno">15</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># GNU General Public License for more details.</tt> </tt>
+<a name="L16"></a><tt class="py-lineno">16</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment">#</tt> </tt>
+<a name="L17"></a><tt class="py-lineno">17</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># You should have received a copy of the GNU General Public License</tt> </tt>
+<a name="L18"></a><tt class="py-lineno">18</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># along with this program; if not, write to the Free Software</tt> </tt>
+<a name="L19"></a><tt class="py-lineno">19</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.</tt> </tt>
+<a name="L20"></a><tt class="py-lineno">20</tt>  <tt class="py-line"><tt class="py-comment"></tt> </tt>
+<a name="L21"></a><tt class="py-lineno">21</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">zzub</tt> <tt class="py-keyword">import</tt> <tt class="py-name">Player</tt> </tt>
+<a name="L22"></a><tt class="py-lineno">22</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt id="link-0" class="py-name" targets="Module aldrincom=aldrincom-module.html"><a title="aldrincom" class="py-name" href="#" onclick="return doclink('link-0', 'aldrincom', 'link-0');">aldrincom</a></tt> <tt class="py-keyword">import</tt> <tt id="link-1" class="py-name" targets="Variable aldrincom.com=aldrincom-module.html#com"><a title="aldrincom.com" class="py-name" href="#" onclick="return doclink('link-1', 'com', 'link-1');">com</a></tt> </tt>
+<a name="L23"></a><tt class="py-lineno">23</tt>  <tt class="py-line"> </tt>
+<a name="L24"></a><tt class="py-lineno">24</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">os</tt><tt class="py-op">,</tt><tt class="py-name">sys</tt>  </tt>
+<a name="L25"></a><tt class="py-lineno">25</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">time</tt> </tt>
+<a name="L26"></a><tt class="py-lineno">26</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt id="link-2" class="py-name" targets="Module config=config-module.html"><a title="config" class="py-name" href="#" onclick="return doclink('link-2', 'config', 'link-2');">config</a></tt> <tt class="py-keyword">import</tt> <tt id="link-3" class="py-name" targets="Function config.get_plugin_aliases()=config-module.html#get_plugin_aliases"><a title="config.get_plugin_aliases" class="py-name" href="#" onclick="return doclink('link-3', 'get_plugin_aliases', 'link-3');">get_plugin_aliases</a></tt><tt class="py-op">,</tt> <tt id="link-4" class="py-name" targets="Function config.get_plugin_blacklist()=config-module.html#get_plugin_blacklist"><a title="config.get_plugin_blacklist" class="py-name" href="#" onclick="return doclink('link-4', 'get_plugin_blacklist', 'link-4');">get_plugin_blacklist</a></tt> </tt>
+<a name="L27"></a><tt class="py-lineno">27</tt>  <tt class="py-line"> </tt>
+<a name="AldrinPlayer"></a><div id="AldrinPlayer-def"><a name="L28"></a><tt class="py-lineno">28</tt> <a class="py-toggle" href="#" id="AldrinPlayer-toggle" onclick="return toggle('AldrinPlayer');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="player.AldrinPlayer-class.html">AldrinPlayer</a><tt class="py-op">(</tt><tt class="py-base-class">Player</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="AldrinPlayer-collapsed" style="display:none;" pad="++" indent="++++"></div><div id="AldrinPlayer-expanded"><a name="L29"></a><tt class="py-lineno">29</tt>  <tt class="py-line">        <tt id="link-5" class="py-name" targets="Variable about.AboutDialog.__aldrin__=about.AboutDialog-class.html#__aldrin__,Variable about.__aldrin__=about-module.html#__aldrin__,Variable config.AldrinConfigSingleton.__aldrin__=config.AldrinConfigSingleton-class.html#__aldrin__,Variable config.__aldrin__=config-module.html#__aldrin__,Variable eventbus.AldrinEventBus.__aldrin__=eventbus.AldrinEventBus-class.html#__aldrin__,Variable eventbus.__aldrin__=eventbus-module.html#__aldrin__,Variable iconfactory.IconLibrary.__aldrin__=iconfactory.IconLibrary-class.html#__aldrin__,Variable iconfactory.__aldrin__=iconfactory-module.html#__aldrin__,Variable info.InfoPanel.__aldrin__=info.InfoPanel-class.html#__aldrin__,Variable info.__aldrin__=info-module.html#__aldrin__,Variable mainwindow.AldrinFrame.__aldrin__=mainwindow.AldrinFrame-class.html#__aldrin__,Variable mainwindow.__aldrin__=mainwindow-module.html#__aldrin__,Variable masterpanel.MasterPanel.__aldrin__=masterpanel.MasterPanel-class.html#__aldrin__,Variable masterpanel.__aldrin__=masterpanel-module.html#__aldrin__,Variable options.OptionParser.__aldrin__=options.OptionParser-class.html#__aldrin__,Variable options.__aldrin__=options-module.html#__aldrin__,Variable patterns.PatternPanel.__aldrin__=patterns.PatternPanel-class.html#__aldrin__,Variable patterns.__aldrin__=patterns-module.html#__aldrin__,Variable pkgbrowser.PackageBrowserDialog.__aldrin__=pkgbrowser.PackageBrowserDialog-class.html#__aldrin__,Variable pkgbrowser.PackageBrowserMenuItem.__aldrin__=pkgbrowser.PackageBrowserMenuItem-class.html#__aldrin__,Variable pkgbrowser.__aldrin__=pkgbrowser-module.html#__aldrin__,Variable player.AldrinPlayer.__aldrin__=player.AldrinPlayer-class.html#__aldrin__,Variable player.__aldrin__=player-module.html#__aldrin__,Variable rack.RackPanel.__aldrin__=rack.RackPanel-class.html#__aldrin__,Variable rack.__aldrin__=rack-module.html#__aldrin__,Variable router.RoutePanel.__aldrin__=router.RoutePanel-class.html#__aldrin__,Variable router.RouteView.__aldrin__=router.RouteView-class.html#__aldrin__,Variable router.__aldrin__=router-module.html#__aldrin__,Variable sequencer.SequencerPanel.__aldrin__=sequencer.SequencerPanel-class.html#__aldrin__,Variable sequencer.__aldrin__=sequencer-module.html#__aldrin__,Variable transportpanel.TransportPanel.__aldrin__=transportpanel.TransportPanel-class.html#__aldrin__,Variable transportpanel.__aldrin__=transportpanel-module.html#__aldrin__,Variable wavetable.WavetablePanel.__aldrin__=wavetable.WavetablePanel-class.html#__aldrin__,Variable wavetable.__aldrin__=wavetable-module.html#__aldrin__"><a title="about.AboutDialog.__aldrin__
+about.__aldrin__
+config.AldrinConfigSingleton.__aldrin__
+config.__aldrin__
+eventbus.AldrinEventBus.__aldrin__
+eventbus.__aldrin__
+iconfactory.IconLibrary.__aldrin__
+iconfactory.__aldrin__
+info.InfoPanel.__aldrin__
+info.__aldrin__
+mainwindow.AldrinFrame.__aldrin__
+mainwindow.__aldrin__
+masterpanel.MasterPanel.__aldrin__
+masterpanel.__aldrin__
+options.OptionParser.__aldrin__
+options.__aldrin__
+patterns.PatternPanel.__aldrin__
+patterns.__aldrin__
+pkgbrowser.PackageBrowserDialog.__aldrin__
+pkgbrowser.PackageBrowserMenuItem.__aldrin__
+pkgbrowser.__aldrin__
+player.AldrinPlayer.__aldrin__
+player.__aldrin__
+rack.RackPanel.__aldrin__
+rack.__aldrin__
+router.RoutePanel.__aldrin__
+router.RouteView.__aldrin__
+router.__aldrin__
+sequencer.SequencerPanel.__aldrin__
+sequencer.__aldrin__
+transportpanel.TransportPanel.__aldrin__
+transportpanel.__aldrin__
+wavetable.WavetablePanel.__aldrin__
+wavetable.__aldrin__" class="py-name" href="#" onclick="return doclink('link-5', '__aldrin__', 'link-5');">__aldrin__</a></tt> <tt class="py-op">=</tt> <tt class="py-name">dict</tt><tt class="py-op">(</tt> </tt>
+<a name="L30"></a><tt class="py-lineno">30</tt>  <tt class="py-line">                <tt class="py-name">id</tt> <tt class="py-op">=</tt> <tt class="py-string">'aldrin.core.player'</tt><tt class="py-op">,</tt> </tt>
+<a name="L31"></a><tt class="py-lineno">31</tt>  <tt class="py-line">                <tt class="py-name">singleton</tt> <tt class="py-op">=</tt> <tt class="py-name">True</tt><tt class="py-op">,</tt> </tt>
+<a name="L32"></a><tt class="py-lineno">32</tt>  <tt class="py-line">        <tt class="py-op">)</tt> </tt>
+<a name="L33"></a><tt class="py-lineno">33</tt>  <tt class="py-line">         </tt>
+<a name="AldrinPlayer.__init__"></a><div id="AldrinPlayer.__init__-def"><a name="L34"></a><tt class="py-lineno">34</tt> <a class="py-toggle" href="#" id="AldrinPlayer.__init__-toggle" onclick="return toggle('AldrinPlayer.__init__');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="player.AldrinPlayer-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="AldrinPlayer.__init__-collapsed" style="display:none;" pad="++" indent="++++++++++++"></div><div id="AldrinPlayer.__init__-expanded"><a name="L35"></a><tt class="py-lineno">35</tt>  <tt class="py-line">                <tt class="py-name">Player</tt><tt class="py-op">.</tt><tt id="link-6" class="py-name" targets="Method about.AboutDialog.__init__()=about.AboutDialog-class.html#__init__,Method aldrincom.ComponentManager.__init__()=aldrincom.ComponentManager-class.html#__init__,Method audiogui.DecoBox.__init__()=audiogui.DecoBox-class.html#__init__,Method audiogui.Knob.__init__()=audiogui.Knob-class.html#__init__,Method audiogui.KnobTooltip.__init__()=audiogui.KnobTooltip-class.html#__init__,Method audiogui.LCD.__init__()=audiogui.LCD-class.html#__init__,Method common.PluginInfo.__init__()=common.PluginInfo-class.html#__init__,Method common.PluginInfoCollection.__init__()=common.PluginInfoCollection-class.html#__init__,Method config.AldrinConfig.__init__()=config.AldrinConfig-class.html#__init__,Method contextlog.StdOutAnnotator.__init__()=contextlog.StdOutAnnotator-class.html#__init__,Method controller.SelectControllerDialog.__init__()=controller.SelectControllerDialog-class.html#__init__,Method cpumonitor.CPUMonitorDialog.__init__()=cpumonitor.CPUMonitorDialog-class.html#__init__,Method driver.AudioDriver.__init__()=driver.AudioDriver-class.html#__init__,Method driver.MidiDriver.__init__()=driver.MidiDriver-class.html#__init__,Method envelope.ADSRPanel.__init__()=envelope.ADSRPanel-class.html#__init__,Method envelope.EnvelopeView.__init__()=envelope.EnvelopeView-class.html#__init__,Method eventbus.EventBus.__init__()=eventbus.EventBus-class.html#__init__,Method eventbus.EventHandlerList.__init__()=eventbus.EventHandlerList-class.html#__init__,Method freesound.Freesound.__init__()=freesound.Freesound-class.html#__init__,Method fspanel.FreesoundPanel.__init__()=fspanel.FreesoundPanel-class.html#__init__,Method glcanvas.GLCanvas.__init__()=glcanvas.GLCanvas-class.html#__init__,Method glcanvas.GLClientDC.__init__()=glcanvas.GLClientDC-class.html#__init__,Method hdrecorder.HDRecorderDialog.__init__()=hdrecorder.HDRecorderDialog-class.html#__init__,Method iconfactory.IconLibrary.__init__()=iconfactory.IconLibrary-class.html#__init__,Method indexer.Directory.__init__()=indexer.Directory-class.html#__init__,Method info.InfoPanel.__init__()=info.InfoPanel-class.html#__init__,Method info.InfoView.__init__()=info.InfoView-class.html#__init__,Method mainwindow.AldrinFrame.__init__()=mainwindow.AldrinFrame-class.html#__init__,Method masterpanel.AmpView.__init__()=masterpanel.AmpView-class.html#__init__,Method masterpanel.MasterPanel.__init__()=masterpanel.MasterPanel-class.html#__init__,Method options.OptionParser.__init__()=options.OptionParser-class.html#__init__,Method patterns.PatternDialog.__init__()=patterns.PatternDialog-class.html#__init__,Method patterns.PatternPanel.__init__()=patterns.PatternPanel-class.html#__init__,Method patterns.PatternToolBar.__init__()=patterns.PatternToolBar-class.html#__init__,Method patterns.PatternView.__init__()=patterns.PatternView-class.html#__init__,Method patternsx.PatternDialog.__init__()=patternsx.PatternDialog-class.html#__init__,Method patternsx.PatternPanel.__init__()=patternsx.PatternPanel-class.html#__init__,Method patternsx.PatternToolBar.__init__()=patternsx.PatternToolBar-class.html#__init__,Method patternsx.PatternView.__init__()=patternsx.PatternView-class.html#__init__,Method pkgbrowser.PackageBrowserDialog.__init__()=pkgbrowser.PackageBrowserDialog-class.html#__init__,Method pkgbrowser.PackageBrowserMenuItem.__init__()=pkgbrowser.PackageBrowserMenuItem-class.html#__init__,Method player.AldrinPlayer.__init__()=player.AldrinPlayer-class.html#__init__,Method preferences.ControllerPanel.__init__()=preferences.ControllerPanel-class.html#__init__,Method preferences.DriverPanel.__init__()=preferences.DriverPanel-class.html#__init__,Method preferences.ExtensionsPanel.__init__()=preferences.ExtensionsPanel-class.html#__init__,Method preferences.GeneralPanel.__init__()=preferences.GeneralPanel-class.html#__init__,Method preferences.KeyboardPanel.__init__()=preferences.KeyboardPanel-class.html#__init__,Method preferences.MidiPanel.__init__()=preferences.MidiPanel-class.html#__init__,Method preferences.PreferencesDialog.__init__()=preferences.PreferencesDialog-class.html#__init__,Method preferences.WavetablePanel.__init__()=preferences.WavetablePanel-class.html#__init__,Method preset.Preset.__init__()=preset.Preset-class.html#__init__,Method preset.PresetCollection.__init__()=preset.PresetCollection-class.html#__init__,Method presetbrowser.PresetView.__init__()=presetbrowser.PresetView-class.html#__init__,Method rack.DataEntry.__init__()=rack.DataEntry-class.html#__init__,Method rack.ParameterView.__init__()=rack.ParameterView-class.html#__init__,Method rack.RackPanel.__init__()=rack.RackPanel-class.html#__init__,Method router.AttributesDialog.__init__()=router.AttributesDialog-class.html#__init__,Method router.OscillatorView.__init__()=router.OscillatorView-class.html#__init__,Method router.ParameterDialog.__init__()=router.ParameterDialog-class.html#__init__,Method router.PluginBrowserDialog.__init__()=router.PluginBrowserDialog-class.html#__init__,Method router.PresetDialog.__init__()=router.PresetDialog-class.html#__init__,Method router.RoutePanel.__init__()=router.RoutePanel-class.html#__init__,Method router.RouteView.__init__()=router.RouteView-class.html#__init__,Method router.SignalAnalysisDialog.__init__()=router.SignalAnalysisDialog-class.html#__init__,Method router.VolumeSlider.__init__()=router.VolumeSlider-class.html#__init__,Method sequencer.AddSequencerTrackDialog.__init__()=sequencer.AddSequencerTrackDialog-class.html#__init__,Method sequencer.SequencerPanel.__init__()=sequencer.SequencerPanel-class.html#__init__,Method sequencer.SequencerToolBar.__init__()=sequencer.SequencerToolBar-class.html#__init__,Method sequencer.SequencerView.__init__()=sequencer.SequencerView-class.html#__init__,Method testplayer.TestWindow.__init__()=testplayer.TestWindow-class.html#__init__,Method transportpanel.TransportPanel.__init__()=transportpanel.TransportPanel-class.html#__init__,Method waveedit.WaveEditPanel.__init__()=waveedit.WaveEditPanel-class.html#__init__,Method waveedit.WaveEditView.__init__()=waveedit.WaveEditView-class.html#__init__,Method wavetable.DataEntry.__init__()=wavetable.DataEntry-class.html#__init__,Method wavetable.WavetablePanel.__init__()=wavetable.WavetablePanel-class.html#__init__"><a title="about.AboutDialog.__init__
+aldrincom.ComponentManager.__init__
+audiogui.DecoBox.__init__
+audiogui.Knob.__init__
+audiogui.KnobTooltip.__init__
+audiogui.LCD.__init__
+common.PluginInfo.__init__
+common.PluginInfoCollection.__init__
+config.AldrinConfig.__init__
+contextlog.StdOutAnnotator.__init__
+controller.SelectControllerDialog.__init__
+cpumonitor.CPUMonitorDialog.__init__
+driver.AudioDriver.__init__
+driver.MidiDriver.__init__
+envelope.ADSRPanel.__init__
+envelope.EnvelopeView.__init__
+eventbus.EventBus.__init__
+eventbus.EventHandlerList.__init__
+freesound.Freesound.__init__
+fspanel.FreesoundPanel.__init__
+glcanvas.GLCanvas.__init__
+glcanvas.GLClientDC.__init__
+hdrecorder.HDRecorderDialog.__init__
+iconfactory.IconLibrary.__init__
+indexer.Directory.__init__
+info.InfoPanel.__init__
+info.InfoView.__init__
+mainwindow.AldrinFrame.__init__
+masterpanel.AmpView.__init__
+masterpanel.MasterPanel.__init__
+options.OptionParser.__init__
+patterns.PatternDialog.__init__
+patterns.PatternPanel.__init__
+patterns.PatternToolBar.__init__
+patterns.PatternView.__init__
+patternsx.PatternDialog.__init__
+patternsx.PatternPanel.__init__
+patternsx.PatternToolBar.__init__
+patternsx.PatternView.__init__
+pkgbrowser.PackageBrowserDialog.__init__
+pkgbrowser.PackageBrowserMenuItem.__init__
+player.AldrinPlayer.__init__
+preferences.ControllerPanel.__init__
+preferences.DriverPanel.__init__
+preferences.ExtensionsPanel.__init__
+preferences.GeneralPanel.__init__
+preferences.KeyboardPanel.__init__
+preferences.MidiPanel.__init__
+preferences.PreferencesDialog.__init__
+preferences.WavetablePanel.__init__
+preset.Preset.__init__
+preset.PresetCollection.__init__
+presetbrowser.PresetView.__init__
+rack.DataEntry.__init__
+rack.ParameterView.__init__
+rack.RackPanel.__init__
+router.AttributesDialog.__init__
+router.OscillatorView.__init__
+router.ParameterDialog.__init__
+router.PluginBrowserDialog.__init__
+router.PresetDialog.__init__
+router.RoutePanel.__init__
+router.RouteView.__init__
+router.SignalAnalysisDialog.__init__
+router.VolumeSlider.__init__
+sequencer.AddSequencerTrackDialog.__init__
+sequencer.SequencerPanel.__init__
+sequencer.SequencerToolBar.__init__
+sequencer.SequencerView.__init__
+testplayer.TestWindow.__init__
+transportpanel.TransportPanel.__init__
+waveedit.WaveEditPanel.__init__
+waveedit.WaveEditView.__init__
+wavetable.DataEntry.__init__
+wavetable.WavetablePanel.__init__" class="py-name" href="#" onclick="return doclink('link-6', '__init__', 'link-6');">__init__</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">)</tt> </tt>
+<a name="L36"></a><tt class="py-lineno">36</tt>  <tt class="py-line">                <tt class="py-comment"># load blacklist file and add blacklist entries</tt> </tt>
+<a name="L37"></a><tt class="py-lineno">37</tt>  <tt class="py-line"><tt class="py-comment"></tt>                <tt class="py-keyword">for</tt> <tt id="link-7" class="py-name" targets="Variable indexer.Reference.name=indexer.Reference-class.html#name,Variable path.path.name=path.path-class.html#name"><a title="indexer.Reference.name
+path.path.name" class="py-name" href="#" onclick="return doclink('link-7', 'name', 'link-7');">name</a></tt> <tt class="py-keyword">in</tt> <tt id="link-8" class="py-name"><a title="config.get_plugin_blacklist" class="py-name" href="#" onclick="return doclink('link-8', 'get_plugin_blacklist', 'link-4');">get_plugin_blacklist</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L38"></a><tt class="py-lineno">38</tt>  <tt class="py-line">                        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">blacklist_plugin</tt><tt class="py-op">(</tt><tt id="link-9" class="py-name"><a title="indexer.Reference.name
+path.path.name" class="py-name" href="#" onclick="return doclink('link-9', 'name', 'link-7');">name</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L39"></a><tt class="py-lineno">39</tt>  <tt class="py-line">                <tt class="py-comment"># load aliases file and add aliases</tt> </tt>
+<a name="L40"></a><tt class="py-lineno">40</tt>  <tt class="py-line"><tt class="py-comment"></tt>                <tt class="py-keyword">for</tt> <tt id="link-10" class="py-name"><a title="indexer.Reference.name
+path.path.name" class="py-name" href="#" onclick="return doclink('link-10', 'name', 'link-7');">name</a></tt><tt class="py-op">,</tt><tt id="link-11" class="py-name" targets="Variable indexer.Reference.uri=indexer.Reference-class.html#uri"><a title="indexer.Reference.uri" class="py-name" href="#" onclick="return doclink('link-11', 'uri', 'link-11');">uri</a></tt> <tt class="py-keyword">in</tt> <tt id="link-12" class="py-name"><a title="config.get_plugin_aliases" class="py-name" href="#" onclick="return doclink('link-12', 'get_plugin_aliases', 'link-3');">get_plugin_aliases</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L41"></a><tt class="py-lineno">41</tt>  <tt class="py-line">                        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">add_plugin_alias</tt><tt class="py-op">(</tt><tt id="link-13" class="py-name"><a title="indexer.Reference.name
+path.path.name" class="py-name" href="#" onclick="return doclink('link-13', 'name', 'link-7');">name</a></tt><tt class="py-op">,</tt> <tt id="link-14" class="py-name"><a title="indexer.Reference.uri" class="py-name" href="#" onclick="return doclink('link-14', 'uri', 'link-11');">uri</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L42"></a><tt class="py-lineno">42</tt>  <tt class="py-line">                <tt id="link-15" class="py-name"><a title="config" class="py-name" href="#" onclick="return doclink('link-15', 'config', 'link-2');">config</a></tt> <tt class="py-op">=</tt> <tt id="link-16" class="py-name"><a title="aldrincom.com" class="py-name" href="#" onclick="return doclink('link-16', 'com', 'link-1');">com</a></tt><tt class="py-op">.</tt><tt id="link-17" class="py-name" targets="Method aldrincom.ComponentManager.get()=aldrincom.ComponentManager-class.html#get,Method common.PluginInfoCollection.get()=common.PluginInfoCollection-class.html#get,Method freesound.Freesound.get()=freesound.Freesound-class.html#get"><a title="aldrincom.ComponentManager.get
+common.PluginInfoCollection.get
+freesound.Freesound.get" class="py-name" href="#" onclick="return doclink('link-17', 'get', 'link-17');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'aldrin.core.config'</tt><tt class="py-op">)</tt> </tt>
+<a name="L43"></a><tt class="py-lineno">43</tt>  <tt class="py-line">                <tt class="py-name">pluginpath</tt> <tt class="py-op">=</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">environ</tt><tt class="py-op">.</tt><tt id="link-18" class="py-name"><a title="aldrincom.ComponentManager.get
+common.PluginInfoCollection.get
+freesound.Freesound.get" class="py-name" href="#" onclick="return doclink('link-18', 'get', 'link-17');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'ALDRIN_PLUGIN_PATH'</tt><tt class="py-op">,</tt><tt class="py-name">None</tt><tt class="py-op">)</tt> </tt>
+<a name="L44"></a><tt class="py-lineno">44</tt>  <tt class="py-line">                <tt class="py-keyword">if</tt> <tt class="py-name">pluginpath</tt><tt class="py-op">:</tt> </tt>
+<a name="L45"></a><tt class="py-lineno">45</tt>  <tt class="py-line">                        <tt class="py-name">pluginpaths</tt> <tt class="py-op">=</tt> <tt class="py-name">pluginpath</tt><tt class="py-op">.</tt><tt class="py-name">split</tt><tt class="py-op">(</tt><tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">pathsep</tt><tt class="py-op">)</tt> </tt>
+<a name="L46"></a><tt class="py-lineno">46</tt>  <tt class="py-line">                <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L47"></a><tt class="py-lineno">47</tt>  <tt class="py-line">                        <tt class="py-name">pluginpaths</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt> </tt>
+<a name="L48"></a><tt class="py-lineno">48</tt>  <tt class="py-line">                        <tt class="py-name">paths</tt> <tt class="py-op">=</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">environ</tt><tt class="py-op">.</tt><tt id="link-19" class="py-name"><a title="aldrincom.ComponentManager.get
+common.PluginInfoCollection.get
+freesound.Freesound.get" class="py-name" href="#" onclick="return doclink('link-19', 'get', 'link-17');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'LD_LIBRARY_PATH'</tt><tt class="py-op">,</tt><tt class="py-name">None</tt><tt class="py-op">)</tt> <tt class="py-comment"># todo or PATH on mswindows</tt> </tt>
+<a name="L49"></a><tt class="py-lineno">49</tt>  <tt class="py-line">                        <tt class="py-keyword">if</tt> <tt class="py-name">paths</tt><tt class="py-op">:</tt> <tt class="py-name">paths</tt> <tt class="py-op">=</tt> <tt class="py-name">paths</tt><tt class="py-op">.</tt><tt class="py-name">split</tt><tt class="py-op">(</tt><tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">pathsep</tt><tt class="py-op">)</tt> </tt>
+<a name="L50"></a><tt class="py-lineno">50</tt>  <tt class="py-line">                        <tt class="py-keyword">else</tt><tt class="py-op">:</tt> <tt class="py-name">paths</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt> </tt>
+<a name="L51"></a><tt class="py-lineno">51</tt>  <tt class="py-line">                        <tt class="py-name">paths</tt><tt class="py-op">.</tt><tt class="py-name">extend</tt><tt class="py-op">(</tt><tt class="py-op">[</tt> </tt>
+<a name="L52"></a><tt class="py-lineno">52</tt>  <tt class="py-line">                                        <tt class="py-string">'/usr/local/lib64'</tt><tt class="py-op">,</tt> </tt>
+<a name="L53"></a><tt class="py-lineno">53</tt>  <tt class="py-line">                                        <tt class="py-string">'/usr/local/lib'</tt><tt class="py-op">,</tt> </tt>
+<a name="L54"></a><tt class="py-lineno">54</tt>  <tt class="py-line">                                        <tt class="py-string">'/usr/lib64'</tt><tt class="py-op">,</tt> </tt>
+<a name="L55"></a><tt class="py-lineno">55</tt>  <tt class="py-line">                                        <tt class="py-string">'/usr/lib'</tt><tt class="py-op">,</tt> </tt>
+<a name="L56"></a><tt class="py-lineno">56</tt>  <tt class="py-line">                                <tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
+<a name="L57"></a><tt class="py-lineno">57</tt>  <tt class="py-line">                        <tt class="py-keyword">for</tt> <tt id="link-20" class="py-name" targets="Module path=path-module.html,Class path.path=path.path-class.html"><a title="path
+path.path" class="py-name" href="#" onclick="return doclink('link-20', 'path', 'link-20');">path</a></tt> <tt class="py-keyword">in</tt> <tt class="py-op">[</tt><tt class="py-name">os</tt><tt class="py-op">.</tt><tt id="link-21" class="py-name"><a title="path
+path.path" class="py-name" href="#" onclick="return doclink('link-21', 'path', 'link-20');">path</a></tt><tt class="py-op">.</tt><tt class="py-name">join</tt><tt class="py-op">(</tt><tt id="link-22" class="py-name"><a title="path
+path.path" class="py-name" href="#" onclick="return doclink('link-22', 'path', 'link-20');">path</a></tt><tt class="py-op">,</tt> <tt class="py-string">'zzub'</tt><tt class="py-op">)</tt> <tt class="py-keyword">for</tt> <tt id="link-23" class="py-name"><a title="path
+path.path" class="py-name" href="#" onclick="return doclink('link-23', 'path', 'link-20');">path</a></tt> <tt class="py-keyword">in</tt> <tt class="py-name">paths</tt><tt class="py-op">]</tt><tt class="py-op">:</tt> </tt>
+<a name="L58"></a><tt class="py-lineno">58</tt>  <tt class="py-line">                                <tt class="py-keyword">if</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt id="link-24" class="py-name"><a title="path
+path.path" class="py-name" href="#" onclick="return doclink('link-24', 'path', 'link-20');">path</a></tt><tt class="py-op">.</tt><tt class="py-name">exists</tt><tt class="py-op">(</tt><tt id="link-25" class="py-name"><a title="path
+path.path" class="py-name" href="#" onclick="return doclink('link-25', 'path', 'link-20');">path</a></tt><tt class="py-op">)</tt> <tt class="py-keyword">and</tt> <tt class="py-keyword">not</tt> <tt id="link-26" class="py-name"><a title="path
+path.path" class="py-name" href="#" onclick="return doclink('link-26', 'path', 'link-20');">path</a></tt> <tt class="py-keyword">in</tt> <tt class="py-name">pluginpaths</tt><tt class="py-op">:</tt> <tt class="py-name">pluginpaths</tt><tt class="py-op">.</tt><tt class="py-name">append</tt><tt class="py-op">(</tt><tt id="link-27" class="py-name"><a title="path
+path.path" class="py-name" href="#" onclick="return doclink('link-27', 'path', 'link-20');">path</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L59"></a><tt class="py-lineno">59</tt>  <tt class="py-line">                <tt class="py-keyword">for</tt> <tt class="py-name">pluginpath</tt> <tt class="py-keyword">in</tt> <tt class="py-name">pluginpaths</tt><tt class="py-op">:</tt> </tt>
+<a name="L60"></a><tt class="py-lineno">60</tt>  <tt class="py-line">                        <tt class="py-keyword">print</tt> <tt class="py-string">'plugin path:'</tt><tt class="py-op">,</tt> <tt class="py-name">pluginpath</tt> </tt>
+<a name="L61"></a><tt class="py-lineno">61</tt>  <tt class="py-line">                        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">add_plugin_path</tt><tt class="py-op">(</tt><tt class="py-name">pluginpath</tt> <tt class="py-op">+</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">sep</tt><tt class="py-op">)</tt> </tt>
+<a name="L62"></a><tt class="py-lineno">62</tt>  <tt class="py-line">                <tt class="py-name">inputname</tt><tt class="py-op">,</tt> <tt class="py-name">outputname</tt><tt class="py-op">,</tt> <tt class="py-name">samplerate</tt><tt class="py-op">,</tt> <tt class="py-name">buffersize</tt> <tt class="py-op">=</tt> <tt id="link-28" class="py-name"><a title="config" class="py-name" href="#" onclick="return doclink('link-28', 'config', 'link-2');">config</a></tt><tt class="py-op">.</tt><tt id="link-29" class="py-name" targets="Method config.AldrinConfig.get_audiodriver_config()=config.AldrinConfig-class.html#get_audiodriver_config"><a title="config.AldrinConfig.get_audiodriver_config" class="py-name" href="#" onclick="return doclink('link-29', 'get_audiodriver_config', 'link-29');">get_audiodriver_config</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L63"></a><tt class="py-lineno">63</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">initialize</tt><tt class="py-op">(</tt><tt class="py-name">samplerate</tt><tt class="py-op">)</tt> </tt>
+<a name="L64"></a><tt class="py-lineno">64</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-30" class="py-name" targets="Method player.AldrinPlayer.init_lunar()=player.AldrinPlayer-class.html#init_lunar"><a title="player.AldrinPlayer.init_lunar" class="py-name" href="#" onclick="return doclink('link-30', 'init_lunar', 'link-30');">init_lunar</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt>                </tt>
+<a name="L65"></a><tt class="py-lineno">65</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">playstarttime</tt> <tt class="py-op">=</tt> <tt class="py-name">time</tt><tt class="py-op">.</tt><tt class="py-name">time</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L66"></a><tt class="py-lineno">66</tt>  <tt class="py-line">                 </tt>
+<a name="AldrinPlayer.init_lunar"></a><div id="AldrinPlayer.init_lunar-def"><a name="L67"></a><tt class="py-lineno">67</tt> <a class="py-toggle" href="#" id="AldrinPlayer.init_lunar-toggle" onclick="return toggle('AldrinPlayer.init_lunar');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="player.AldrinPlayer-class.html#init_lunar">init_lunar</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="AldrinPlayer.init_lunar-collapsed" style="display:none;" pad="++" indent="++++++++++++"></div><div id="AldrinPlayer.init_lunar-expanded"><a name="L68"></a><tt class="py-lineno">68</tt>  <tt class="py-line">                <tt class="py-docstring">"""</tt> </tt>
+<a name="L69"></a><tt class="py-lineno">69</tt>  <tt class="py-line"><tt class="py-docstring">                Initializes the lunar dsp scripting system</tt> </tt>
+<a name="L70"></a><tt class="py-lineno">70</tt>  <tt class="py-line"><tt class="py-docstring">                """</tt> </tt>
+<a name="L71"></a><tt class="py-lineno">71</tt>  <tt class="py-line">                <tt class="py-name">pc</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">get_plugincollection_by_uri</tt><tt class="py-op">(</tt><tt class="py-string">"@zzub.org/plugincollections/lunar"</tt><tt class="py-op">)</tt> </tt>
+<a name="L72"></a><tt class="py-lineno">72</tt>  <tt class="py-line"> </tt>
+<a name="L73"></a><tt class="py-lineno">73</tt>  <tt class="py-line">                <tt class="py-comment"># return if lunar is missing</tt> </tt>
+<a name="L74"></a><tt class="py-lineno">74</tt>  <tt class="py-line"><tt class="py-comment"></tt>                <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt class="py-name">pc</tt><tt class="py-op">.</tt><tt class="py-name">_handle</tt><tt class="py-op">:</tt> </tt>
+<a name="L75"></a><tt class="py-lineno">75</tt>  <tt class="py-line">                        <tt class="py-keyword">print</tt> <tt class="py-op">&gt;&gt;</tt> <tt class="py-name">sys</tt><tt class="py-op">.</tt><tt class="py-name">stderr</tt><tt class="py-op">,</tt> <tt class="py-string">"not supporting lunar."</tt> </tt>
+<a name="L76"></a><tt class="py-lineno">76</tt>  <tt class="py-line">                        <tt class="py-keyword">return</tt> </tt>
+<a name="L77"></a><tt class="py-lineno">77</tt>  <tt class="py-line"> </tt>
+<a name="L78"></a><tt class="py-lineno">78</tt>  <tt class="py-line">                <tt id="link-31" class="py-name"><a title="config" class="py-name" href="#" onclick="return doclink('link-31', 'config', 'link-2');">config</a></tt> <tt class="py-op">=</tt> <tt id="link-32" class="py-name"><a title="aldrincom.com" class="py-name" href="#" onclick="return doclink('link-32', 'com', 'link-1');">com</a></tt><tt class="py-op">.</tt><tt id="link-33" class="py-name"><a title="aldrincom.ComponentManager.get
+common.PluginInfoCollection.get
+freesound.Freesound.get" class="py-name" href="#" onclick="return doclink('link-33', 'get', 'link-17');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'aldrin.core.config'</tt><tt class="py-op">)</tt> </tt>
+<a name="L79"></a><tt class="py-lineno">79</tt>  <tt class="py-line">                <tt class="py-name">userlunarpath</tt> <tt class="py-op">=</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt id="link-34" class="py-name"><a title="path
+path.path" class="py-name" href="#" onclick="return doclink('link-34', 'path', 'link-20');">path</a></tt><tt class="py-op">.</tt><tt class="py-name">join</tt><tt class="py-op">(</tt><tt id="link-35" class="py-name"><a title="config" class="py-name" href="#" onclick="return doclink('link-35', 'config', 'link-2');">config</a></tt><tt class="py-op">.</tt><tt id="link-36" class="py-name" targets="Method config.AldrinConfig.get_settings_folder()=config.AldrinConfig-class.html#get_settings_folder"><a title="config.AldrinConfig.get_settings_folder" class="py-name" href="#" onclick="return doclink('link-36', 'get_settings_folder', 'link-36');">get_settings_folder</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">,</tt><tt class="py-string">'lunar'</tt><tt class="py-op">)</tt> </tt>
+<a name="L80"></a><tt class="py-lineno">80</tt>  <tt class="py-line">                <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt id="link-37" class="py-name"><a title="path
+path.path" class="py-name" href="#" onclick="return doclink('link-37', 'path', 'link-20');">path</a></tt><tt class="py-op">.</tt><tt class="py-name">isdir</tt><tt class="py-op">(</tt><tt class="py-name">userlunarpath</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L81"></a><tt class="py-lineno">81</tt>  <tt class="py-line">                        <tt class="py-keyword">print</tt> <tt class="py-string">"folder %s does not exist, creating..."</tt> <tt class="py-op">%</tt> <tt class="py-name">userlunarpath</tt> </tt>
+<a name="L82"></a><tt class="py-lineno">82</tt>  <tt class="py-line">                        <tt class="py-name">os</tt><tt class="py-op">.</tt><tt id="link-38" class="py-name" targets="Method path.path.makedirs()=path.path-class.html#makedirs"><a title="path.path.makedirs" class="py-name" href="#" onclick="return doclink('link-38', 'makedirs', 'link-38');">makedirs</a></tt><tt class="py-op">(</tt><tt class="py-name">userlunarpath</tt><tt class="py-op">)</tt> </tt>
+<a name="L83"></a><tt class="py-lineno">83</tt>  <tt class="py-line">                <tt class="py-name">pc</tt><tt class="py-op">.</tt><tt class="py-name">configure</tt><tt class="py-op">(</tt><tt class="py-string">"local_storage_dir"</tt><tt class="py-op">,</tt> <tt class="py-name">userlunarpath</tt><tt class="py-op">)</tt> </tt>
+</div></div><a name="L84"></a><tt class="py-lineno">84</tt>  <tt class="py-line">                 </tt>
+<a name="L85"></a><tt class="py-lineno">85</tt>  <tt class="py-line"> </tt>
+<a name="L86"></a><tt class="py-lineno">86</tt>  <tt class="py-line"><tt id="link-39" class="py-name"><a title="about.AboutDialog.__aldrin__
+about.__aldrin__
+config.AldrinConfigSingleton.__aldrin__
+config.__aldrin__
+eventbus.AldrinEventBus.__aldrin__
+eventbus.__aldrin__
+iconfactory.IconLibrary.__aldrin__
+iconfactory.__aldrin__
+info.InfoPanel.__aldrin__
+info.__aldrin__
+mainwindow.AldrinFrame.__aldrin__
+mainwindow.__aldrin__
+masterpanel.MasterPanel.__aldrin__
+masterpanel.__aldrin__
+options.OptionParser.__aldrin__
+options.__aldrin__
+patterns.PatternPanel.__aldrin__
+patterns.__aldrin__
+pkgbrowser.PackageBrowserDialog.__aldrin__
+pkgbrowser.PackageBrowserMenuItem.__aldrin__
+pkgbrowser.__aldrin__
+player.AldrinPlayer.__aldrin__
+player.__aldrin__
+rack.RackPanel.__aldrin__
+rack.__aldrin__
+router.RoutePanel.__aldrin__
+router.RouteView.__aldrin__
+router.__aldrin__
+sequencer.SequencerPanel.__aldrin__
+sequencer.__aldrin__
+transportpanel.TransportPanel.__aldrin__
+transportpanel.__aldrin__
+wavetable.WavetablePanel.__aldrin__
+wavetable.__aldrin__" class="py-name" href="#" onclick="return doclink('link-39', '__aldrin__', 'link-5');">__aldrin__</a></tt> <tt class="py-op">=</tt> <tt class="py-name">dict</tt><tt class="py-op">(</tt> </tt>
+<a name="L87"></a><tt class="py-lineno">87</tt>  <tt class="py-line">        <tt class="py-name">classes</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt> </tt>
+<a name="L88"></a><tt class="py-lineno">88</tt>  <tt class="py-line">                <tt id="link-40" class="py-name" targets="Class player.AldrinPlayer=player.AldrinPlayer-class.html"><a title="player.AldrinPlayer" class="py-name" href="#" onclick="return doclink('link-40', 'AldrinPlayer', 'link-40');">AldrinPlayer</a></tt><tt class="py-op">,</tt> </tt>
+<a name="L89"></a><tt class="py-lineno">89</tt>  <tt class="py-line">        <tt class="py-op">]</tt><tt class="py-op">,</tt> </tt>
+<a name="L90"></a><tt class="py-lineno">90</tt>  <tt class="py-line"><tt class="py-op">)</tt> </tt>
+<a name="L91"></a><tt class="py-lineno">91</tt>  <tt class="py-line"> </tt><script type="text/javascript">
+<!--
+expandto(location.href);
+// -->
+</script>
+</pre>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >Aldrin API</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0beta1 on Wed Jun 11 23:20:24 2008
+    </td>
+    <td align="right" class="footer">
+      <a href="http://epydoc.sourceforge.net">http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie()
+  // -->
+</script>
+  
+</body>
+</html>

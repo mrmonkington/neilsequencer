@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>common</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >Aldrin API</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        Module&nbsp;common
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="common-pysrc.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<h1 class="epydoc">Source Code for <a href="common-module.html">Module common</a></h1>
+<pre class="py-src">
+<a name="L1"></a><tt class="py-lineno">  1</tt>  <tt class="py-line"><tt class="py-comment">#encoding: latin-1</tt> </tt>
+<a name="L2"></a><tt class="py-lineno">  2</tt>  <tt class="py-line"><tt class="py-comment"></tt> </tt>
+<a name="L3"></a><tt class="py-lineno">  3</tt>  <tt class="py-line"><tt class="py-comment"># Aldrin</tt> </tt>
+<a name="L4"></a><tt class="py-lineno">  4</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># Modular Sequencer</tt> </tt>
+<a name="L5"></a><tt class="py-lineno">  5</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># Copyright (C) 2006,2007,2008 The Aldrin Development Team</tt> </tt>
+<a name="L6"></a><tt class="py-lineno">  6</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment">#</tt> </tt>
+<a name="L7"></a><tt class="py-lineno">  7</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># This program is free software; you can redistribute it and/or</tt> </tt>
+<a name="L8"></a><tt class="py-lineno">  8</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># modify it under the terms of the GNU General Public License</tt> </tt>
+<a name="L9"></a><tt class="py-lineno">  9</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># as published by the Free Software Foundation; either version 2</tt> </tt>
+<a name="L10"></a><tt class="py-lineno"> 10</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># of the License, or (at your option) any later version.</tt> </tt>
+<a name="L11"></a><tt class="py-lineno"> 11</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment">#</tt> </tt>
+<a name="L12"></a><tt class="py-lineno"> 12</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># This program is distributed in the hope that it will be useful,</tt> </tt>
+<a name="L13"></a><tt class="py-lineno"> 13</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># but WITHOUT ANY WARRANTY; without even the implied warranty of</tt> </tt>
+<a name="L14"></a><tt class="py-lineno"> 14</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</tt> </tt>
+<a name="L15"></a><tt class="py-lineno"> 15</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># GNU General Public License for more details.</tt> </tt>
+<a name="L16"></a><tt class="py-lineno"> 16</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment">#</tt> </tt>
+<a name="L17"></a><tt class="py-lineno"> 17</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># You should have received a copy of the GNU General Public License</tt> </tt>
+<a name="L18"></a><tt class="py-lineno"> 18</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># along with this program; if not, write to the Free Software</tt> </tt>
+<a name="L19"></a><tt class="py-lineno"> 19</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.</tt> </tt>
+<a name="L20"></a><tt class="py-lineno"> 20</tt>  <tt class="py-line"><tt class="py-comment"></tt> </tt>
+<a name="L21"></a><tt class="py-lineno"> 21</tt>  <tt class="py-line"><tt class="py-docstring">"""</tt> </tt>
+<a name="L22"></a><tt class="py-lineno"> 22</tt>  <tt class="py-line"><tt class="py-docstring">Provides information used by all ui sections.</tt> </tt>
+<a name="L23"></a><tt class="py-lineno"> 23</tt>  <tt class="py-line"><tt class="py-docstring">"""</tt> </tt>
+<a name="L24"></a><tt class="py-lineno"> 24</tt>  <tt class="py-line"> </tt>
+<a name="L25"></a><tt class="py-lineno"> 25</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">zzub</tt> </tt>
+<a name="L26"></a><tt class="py-lineno"> 26</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt id="link-0" class="py-name" targets="Module aldrincom=aldrincom-module.html"><a title="aldrincom" class="py-name" href="#" onclick="return doclink('link-0', 'aldrincom', 'link-0');">aldrincom</a></tt> <tt class="py-keyword">import</tt> <tt id="link-1" class="py-name" targets="Variable aldrincom.com=aldrincom-module.html#com"><a title="aldrincom.com" class="py-name" href="#" onclick="return doclink('link-1', 'com', 'link-1');">com</a></tt> </tt>
+<a name="L27"></a><tt class="py-lineno"> 27</tt>  <tt class="py-line"> </tt>
+<a name="L28"></a><tt class="py-lineno"> 28</tt>  <tt class="py-line"><tt id="link-2" class="py-name" targets="Variable common.MARGIN0=common-module.html#MARGIN0"><a title="common.MARGIN0" class="py-name" href="#" onclick="return doclink('link-2', 'MARGIN0', 'link-2');">MARGIN0</a></tt> <tt class="py-op">=</tt> <tt class="py-number">3</tt> </tt>
+<a name="L29"></a><tt class="py-lineno"> 29</tt>  <tt class="py-line"><tt id="link-3" class="py-name" targets="Variable common.MARGIN=common-module.html#MARGIN,Variable pkgbrowser.MARGIN=pkgbrowser-module.html#MARGIN"><a title="common.MARGIN
+pkgbrowser.MARGIN" class="py-name" href="#" onclick="return doclink('link-3', 'MARGIN', 'link-3');">MARGIN</a></tt> <tt class="py-op">=</tt> <tt class="py-number">6</tt> </tt>
+<a name="L30"></a><tt class="py-lineno"> 30</tt>  <tt class="py-line"><tt id="link-4" class="py-name" targets="Variable common.MARGIN2=common-module.html#MARGIN2"><a title="common.MARGIN2" class="py-name" href="#" onclick="return doclink('link-4', 'MARGIN2', 'link-4');">MARGIN2</a></tt> <tt class="py-op">=</tt> <tt class="py-number">12</tt> </tt>
+<a name="L31"></a><tt class="py-lineno"> 31</tt>  <tt class="py-line"><tt id="link-5" class="py-name" targets="Variable common.MARGIN3=common-module.html#MARGIN3"><a title="common.MARGIN3" class="py-name" href="#" onclick="return doclink('link-5', 'MARGIN3', 'link-5');">MARGIN3</a></tt> <tt class="py-op">=</tt> <tt class="py-number">18</tt> </tt>
+<a name="L32"></a><tt class="py-lineno"> 32</tt>  <tt class="py-line"> </tt>
+<a name="PluginInfo"></a><div id="PluginInfo-def"><a name="L33"></a><tt class="py-lineno"> 33</tt> <a class="py-toggle" href="#" id="PluginInfo-toggle" onclick="return toggle('PluginInfo');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="common.PluginInfo-class.html">PluginInfo</a><tt class="py-op">(</tt><tt class="py-base-class">object</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="PluginInfo-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="PluginInfo-expanded"><a name="L34"></a><tt class="py-lineno"> 34</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L35"></a><tt class="py-lineno"> 35</tt>  <tt class="py-line"><tt class="py-docstring">        Encapsulates data associated with a plugin.</tt> </tt>
+<a name="L36"></a><tt class="py-lineno"> 36</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="PluginInfo.__init__"></a><div id="PluginInfo.__init__-def"><a name="L37"></a><tt class="py-lineno"> 37</tt> <a class="py-toggle" href="#" id="PluginInfo.__init__-toggle" onclick="return toggle('PluginInfo.__init__');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="common.PluginInfo-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">plugin</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="PluginInfo.__init__-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="PluginInfo.__init__-expanded"><a name="L38"></a><tt class="py-lineno"> 38</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">plugin</tt> <tt class="py-op">=</tt> <tt class="py-name">plugin</tt> </tt>
+<a name="L39"></a><tt class="py-lineno"> 39</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">muted</tt> <tt class="py-op">=</tt> <tt class="py-name">False</tt> </tt>
+<a name="L40"></a><tt class="py-lineno"> 40</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">cpu</tt> <tt class="py-op">=</tt> <tt class="py-op">-</tt><tt class="py-number">9999.0</tt> </tt>
+<a name="L41"></a><tt class="py-lineno"> 41</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">pattern_position</tt> <tt class="py-op">=</tt> <tt class="py-op">(</tt><tt class="py-number">0</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
+<a name="L42"></a><tt class="py-lineno"> 42</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">selection</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt> </tt>
+<a name="L43"></a><tt class="py-lineno"> 43</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">plugingfx</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt> </tt>
+<a name="L44"></a><tt class="py-lineno"> 44</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">patterngfx</tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt> </tt>
+<a name="L45"></a><tt class="py-lineno"> 45</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">amp</tt> <tt class="py-op">=</tt> <tt class="py-op">-</tt><tt class="py-number">9999.0</tt> </tt>
+<a name="L46"></a><tt class="py-lineno"> 46</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">octave</tt> <tt class="py-op">=</tt> <tt class="py-number">3</tt> </tt>
+</div><a name="L47"></a><tt class="py-lineno"> 47</tt>  <tt class="py-line">                 </tt>
+<a name="PluginInfo.reset_patterngfx"></a><div id="PluginInfo.reset_patterngfx-def"><a name="L48"></a><tt class="py-lineno"> 48</tt> <a class="py-toggle" href="#" id="PluginInfo.reset_patterngfx-toggle" onclick="return toggle('PluginInfo.reset_patterngfx');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="common.PluginInfo-class.html#reset_patterngfx">reset_patterngfx</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="PluginInfo.reset_patterngfx-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="PluginInfo.reset_patterngfx-expanded"><a name="L49"></a><tt class="py-lineno"> 49</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">patterngfx</tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt> </tt>
+</div><a name="L50"></a><tt class="py-lineno"> 50</tt>  <tt class="py-line">                 </tt>
+<a name="PluginInfo.reset_plugingfx"></a><div id="PluginInfo.reset_plugingfx-def"><a name="L51"></a><tt class="py-lineno"> 51</tt> <a class="py-toggle" href="#" id="PluginInfo.reset_plugingfx-toggle" onclick="return toggle('PluginInfo.reset_plugingfx');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="common.PluginInfo-class.html#reset_plugingfx">reset_plugingfx</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="PluginInfo.reset_plugingfx-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="PluginInfo.reset_plugingfx-expanded"><a name="L52"></a><tt class="py-lineno"> 52</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">plugingfx</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt> </tt>
+<a name="L53"></a><tt class="py-lineno"> 53</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">amp</tt> <tt class="py-op">=</tt> <tt class="py-op">-</tt><tt class="py-number">9999.0</tt> </tt>
+<a name="L54"></a><tt class="py-lineno"> 54</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">cpu</tt> <tt class="py-op">=</tt> <tt class="py-op">-</tt><tt class="py-number">9999.0</tt> </tt>
+</div></div><a name="L55"></a><tt class="py-lineno"> 55</tt>  <tt class="py-line">                 </tt>
+<a name="PluginInfoCollection"></a><div id="PluginInfoCollection-def"><a name="L56"></a><tt class="py-lineno"> 56</tt> <a class="py-toggle" href="#" id="PluginInfoCollection-toggle" onclick="return toggle('PluginInfoCollection');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="common.PluginInfoCollection-class.html">PluginInfoCollection</a><tt class="py-op">:</tt> </tt>
+</div><div id="PluginInfoCollection-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="PluginInfoCollection-expanded"><a name="L57"></a><tt class="py-lineno"> 57</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L58"></a><tt class="py-lineno"> 58</tt>  <tt class="py-line"><tt class="py-docstring">        Manages plugin infos.</tt> </tt>
+<a name="L59"></a><tt class="py-lineno"> 59</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="PluginInfoCollection.__init__"></a><div id="PluginInfoCollection.__init__-def"><a name="L60"></a><tt class="py-lineno"> 60</tt> <a class="py-toggle" href="#" id="PluginInfoCollection.__init__-toggle" onclick="return toggle('PluginInfoCollection.__init__');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="common.PluginInfoCollection-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="PluginInfoCollection.__init__-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="PluginInfoCollection.__init__-expanded"><a name="L61"></a><tt class="py-lineno"> 61</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">plugin_info</tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt> </tt>
+<a name="L62"></a><tt class="py-lineno"> 62</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-6" class="py-name" targets="Method common.PluginInfoCollection.update()=common.PluginInfoCollection-class.html#update,Method controller.SelectControllerDialog.update()=controller.SelectControllerDialog-class.html#update,Method envelope.ADSRPanel.update()=envelope.ADSRPanel-class.html#update,Method envelope.EnvelopeView.update()=envelope.EnvelopeView-class.html#update,Method info.InfoView.update()=info.InfoView-class.html#update,Method sequencer.SequencerView.update()=sequencer.SequencerView-class.html#update,Method waveedit.WaveEditPanel.update()=waveedit.WaveEditPanel-class.html#update,Method waveedit.WaveEditView.update()=waveedit.WaveEditView-class.html#update"><a title="common.PluginInfoCollection.update
+controller.SelectControllerDialog.update
+envelope.ADSRPanel.update
+envelope.EnvelopeView.update
+info.InfoView.update
+sequencer.SequencerView.update
+waveedit.WaveEditPanel.update
+waveedit.WaveEditView.update" class="py-name" href="#" onclick="return doclink('link-6', 'update', 'link-6');">update</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L63"></a><tt class="py-lineno"> 63</tt>  <tt class="py-line">                 </tt>
+<a name="PluginInfoCollection.reset"></a><div id="PluginInfoCollection.reset-def"><a name="L64"></a><tt class="py-lineno"> 64</tt> <a class="py-toggle" href="#" id="PluginInfoCollection.reset-toggle" onclick="return toggle('PluginInfoCollection.reset');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="common.PluginInfoCollection-class.html#reset">reset</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="PluginInfoCollection.reset-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="PluginInfoCollection.reset-expanded"><a name="L65"></a><tt class="py-lineno"> 65</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">plugin_info</tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt> </tt>
+</div><a name="L66"></a><tt class="py-lineno"> 66</tt>  <tt class="py-line">                 </tt>
+<a name="PluginInfoCollection.__getitem__"></a><div id="PluginInfoCollection.__getitem__-def"><a name="L67"></a><tt class="py-lineno"> 67</tt> <a class="py-toggle" href="#" id="PluginInfoCollection.__getitem__-toggle" onclick="return toggle('PluginInfoCollection.__getitem__');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="common.PluginInfoCollection-class.html#__getitem__">__getitem__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">k</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="PluginInfoCollection.__getitem__-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="PluginInfoCollection.__getitem__-expanded"><a name="L68"></a><tt class="py-lineno"> 68</tt>  <tt class="py-line">                <tt class="py-keyword">return</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">plugin_info</tt><tt class="py-op">.</tt><tt id="link-7" class="py-name" targets="Method common.PluginInfoCollection.__getitem__()=common.PluginInfoCollection-class.html#__getitem__"><a title="common.PluginInfoCollection.__getitem__" class="py-name" href="#" onclick="return doclink('link-7', '__getitem__', 'link-7');">__getitem__</a></tt><tt class="py-op">(</tt><tt class="py-name">k</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L69"></a><tt class="py-lineno"> 69</tt>  <tt class="py-line">                 </tt>
+<a name="PluginInfoCollection.__delitem__"></a><div id="PluginInfoCollection.__delitem__-def"><a name="L70"></a><tt class="py-lineno"> 70</tt> <a class="py-toggle" href="#" id="PluginInfoCollection.__delitem__-toggle" onclick="return toggle('PluginInfoCollection.__delitem__');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="common.PluginInfoCollection-class.html#__delitem__">__delitem__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">k</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="PluginInfoCollection.__delitem__-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="PluginInfoCollection.__delitem__-expanded"><a name="L71"></a><tt class="py-lineno"> 71</tt>  <tt class="py-line">                <tt class="py-keyword">return</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">plugin_info</tt><tt class="py-op">.</tt><tt id="link-8" class="py-name" targets="Method common.PluginInfoCollection.__delitem__()=common.PluginInfoCollection-class.html#__delitem__"><a title="common.PluginInfoCollection.__delitem__" class="py-name" href="#" onclick="return doclink('link-8', '__delitem__', 'link-8');">__delitem__</a></tt><tt class="py-op">(</tt><tt class="py-name">k</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L72"></a><tt class="py-lineno"> 72</tt>  <tt class="py-line">                 </tt>
+<a name="PluginInfoCollection.keys"></a><div id="PluginInfoCollection.keys-def"><a name="L73"></a><tt class="py-lineno"> 73</tt> <a class="py-toggle" href="#" id="PluginInfoCollection.keys-toggle" onclick="return toggle('PluginInfoCollection.keys');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="common.PluginInfoCollection-class.html#keys">keys</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="PluginInfoCollection.keys-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="PluginInfoCollection.keys-expanded"><a name="L74"></a><tt class="py-lineno"> 74</tt>  <tt class="py-line">                <tt class="py-keyword">return</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">plugin_info</tt><tt class="py-op">.</tt><tt id="link-9" class="py-name" targets="Method common.PluginInfoCollection.keys()=common.PluginInfoCollection-class.html#keys"><a title="common.PluginInfoCollection.keys" class="py-name" href="#" onclick="return doclink('link-9', 'keys', 'link-9');">keys</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L75"></a><tt class="py-lineno"> 75</tt>  <tt class="py-line">                 </tt>
+<a name="PluginInfoCollection.get"></a><div id="PluginInfoCollection.get-def"><a name="L76"></a><tt class="py-lineno"> 76</tt> <a class="py-toggle" href="#" id="PluginInfoCollection.get-toggle" onclick="return toggle('PluginInfoCollection.get');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="common.PluginInfoCollection-class.html#get">get</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">k</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="PluginInfoCollection.get-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="PluginInfoCollection.get-expanded"><a name="L77"></a><tt class="py-lineno"> 77</tt>  <tt class="py-line">                <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt class="py-name">k</tt> <tt class="py-keyword">in</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">plugin_info</tt><tt class="py-op">:</tt> </tt>
+<a name="L78"></a><tt class="py-lineno"> 78</tt>  <tt class="py-line">                        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-10" class="py-name" targets="Method common.PluginInfoCollection.add_plugin()=common.PluginInfoCollection-class.html#add_plugin"><a title="common.PluginInfoCollection.add_plugin" class="py-name" href="#" onclick="return doclink('link-10', 'add_plugin', 'link-10');">add_plugin</a></tt><tt class="py-op">(</tt><tt class="py-name">k</tt><tt class="py-op">)</tt> </tt>
+<a name="L79"></a><tt class="py-lineno"> 79</tt>  <tt class="py-line">                <tt class="py-keyword">return</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">plugin_info</tt><tt class="py-op">.</tt><tt id="link-11" class="py-name"><a title="common.PluginInfoCollection.__getitem__" class="py-name" href="#" onclick="return doclink('link-11', '__getitem__', 'link-7');">__getitem__</a></tt><tt class="py-op">(</tt><tt class="py-name">k</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L80"></a><tt class="py-lineno"> 80</tt>  <tt class="py-line">                 </tt>
+<a name="PluginInfoCollection.iteritems"></a><div id="PluginInfoCollection.iteritems-def"><a name="L81"></a><tt class="py-lineno"> 81</tt> <a class="py-toggle" href="#" id="PluginInfoCollection.iteritems-toggle" onclick="return toggle('PluginInfoCollection.iteritems');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="common.PluginInfoCollection-class.html#iteritems">iteritems</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="PluginInfoCollection.iteritems-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="PluginInfoCollection.iteritems-expanded"><a name="L82"></a><tt class="py-lineno"> 82</tt>  <tt class="py-line">                <tt class="py-keyword">return</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">plugin_info</tt><tt class="py-op">.</tt><tt id="link-12" class="py-name" targets="Method common.PluginInfoCollection.iteritems()=common.PluginInfoCollection-class.html#iteritems"><a title="common.PluginInfoCollection.iteritems" class="py-name" href="#" onclick="return doclink('link-12', 'iteritems', 'link-12');">iteritems</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L83"></a><tt class="py-lineno"> 83</tt>  <tt class="py-line">                 </tt>
+<a name="PluginInfoCollection.reset_plugingfx"></a><div id="PluginInfoCollection.reset_plugingfx-def"><a name="L84"></a><tt class="py-lineno"> 84</tt> <a class="py-toggle" href="#" id="PluginInfoCollection.reset_plugingfx-toggle" onclick="return toggle('PluginInfoCollection.reset_plugingfx');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="common.PluginInfoCollection-class.html#reset_plugingfx">reset_plugingfx</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="PluginInfoCollection.reset_plugingfx-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="PluginInfoCollection.reset_plugingfx-expanded"><a name="L85"></a><tt class="py-lineno"> 85</tt>  <tt class="py-line">                <tt class="py-keyword">for</tt> <tt class="py-name">k</tt><tt class="py-op">,</tt><tt class="py-name">v</tt> <tt class="py-keyword">in</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">plugin_info</tt><tt class="py-op">.</tt><tt id="link-13" class="py-name"><a title="common.PluginInfoCollection.iteritems" class="py-name" href="#" onclick="return doclink('link-13', 'iteritems', 'link-12');">iteritems</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L86"></a><tt class="py-lineno"> 86</tt>  <tt class="py-line">                        <tt class="py-name">v</tt><tt class="py-op">.</tt><tt id="link-14" class="py-name" targets="Method common.PluginInfo.reset_plugingfx()=common.PluginInfo-class.html#reset_plugingfx,Method common.PluginInfoCollection.reset_plugingfx()=common.PluginInfoCollection-class.html#reset_plugingfx"><a title="common.PluginInfo.reset_plugingfx
+common.PluginInfoCollection.reset_plugingfx" class="py-name" href="#" onclick="return doclink('link-14', 'reset_plugingfx', 'link-14');">reset_plugingfx</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L87"></a><tt class="py-lineno"> 87</tt>  <tt class="py-line">                         </tt>
+<a name="PluginInfoCollection.add_plugin"></a><div id="PluginInfoCollection.add_plugin-def"><a name="L88"></a><tt class="py-lineno"> 88</tt> <a class="py-toggle" href="#" id="PluginInfoCollection.add_plugin-toggle" onclick="return toggle('PluginInfoCollection.add_plugin');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="common.PluginInfoCollection-class.html#add_plugin">add_plugin</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">mp</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="PluginInfoCollection.add_plugin-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="PluginInfoCollection.add_plugin-expanded"><a name="L89"></a><tt class="py-lineno"> 89</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">plugin_info</tt><tt class="py-op">[</tt><tt class="py-name">mp</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt id="link-15" class="py-name" targets="Class common.PluginInfo=common.PluginInfo-class.html"><a title="common.PluginInfo" class="py-name" href="#" onclick="return doclink('link-15', 'PluginInfo', 'link-15');">PluginInfo</a></tt><tt class="py-op">(</tt><tt class="py-name">mp</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L90"></a><tt class="py-lineno"> 90</tt>  <tt class="py-line"> </tt>
+<a name="PluginInfoCollection.update"></a><div id="PluginInfoCollection.update-def"><a name="L91"></a><tt class="py-lineno"> 91</tt> <a class="py-toggle" href="#" id="PluginInfoCollection.update-toggle" onclick="return toggle('PluginInfoCollection.update');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="common.PluginInfoCollection-class.html#update">update</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="PluginInfoCollection.update-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="PluginInfoCollection.update-expanded"><a name="L92"></a><tt class="py-lineno"> 92</tt>  <tt class="py-line">                <tt class="py-name">previous</tt> <tt class="py-op">=</tt> <tt class="py-name">dict</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">plugin_info</tt><tt class="py-op">)</tt> </tt>
+<a name="L93"></a><tt class="py-lineno"> 93</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">plugin_info</tt><tt class="py-op">.</tt><tt id="link-16" class="py-name" targets="Method mainwindow.AldrinFrame.clear()=mainwindow.AldrinFrame-class.html#clear"><a title="mainwindow.AldrinFrame.clear" class="py-name" href="#" onclick="return doclink('link-16', 'clear', 'link-16');">clear</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L94"></a><tt class="py-lineno"> 94</tt>  <tt class="py-line">                <tt class="py-keyword">for</tt> <tt class="py-name">mp</tt> <tt class="py-keyword">in</tt> <tt id="link-17" class="py-name"><a title="aldrincom.com" class="py-name" href="#" onclick="return doclink('link-17', 'com', 'link-1');">com</a></tt><tt class="py-op">.</tt><tt id="link-18" class="py-name" targets="Method aldrincom.ComponentManager.get()=aldrincom.ComponentManager-class.html#get,Method common.PluginInfoCollection.get()=common.PluginInfoCollection-class.html#get,Method freesound.Freesound.get()=freesound.Freesound-class.html#get"><a title="aldrincom.ComponentManager.get
+common.PluginInfoCollection.get
+freesound.Freesound.get" class="py-name" href="#" onclick="return doclink('link-18', 'get', 'link-18');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'aldrin.core.player'</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt class="py-name">get_plugin_list</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L95"></a><tt class="py-lineno"> 95</tt>  <tt class="py-line">                        <tt class="py-keyword">if</tt> <tt class="py-name">mp</tt> <tt class="py-keyword">in</tt> <tt class="py-name">previous</tt><tt class="py-op">:</tt> </tt>
+<a name="L96"></a><tt class="py-lineno"> 96</tt>  <tt class="py-line">                                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">plugin_info</tt><tt class="py-op">[</tt><tt class="py-name">mp</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">previous</tt><tt class="py-op">[</tt><tt class="py-name">mp</tt><tt class="py-op">]</tt> </tt>
+<a name="L97"></a><tt class="py-lineno"> 97</tt>  <tt class="py-line">                        <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L98"></a><tt class="py-lineno"> 98</tt>  <tt class="py-line">                                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">plugin_info</tt><tt class="py-op">[</tt><tt class="py-name">mp</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt id="link-19" class="py-name"><a title="common.PluginInfo" class="py-name" href="#" onclick="return doclink('link-19', 'PluginInfo', 'link-15');">PluginInfo</a></tt><tt class="py-op">(</tt><tt class="py-name">mp</tt><tt class="py-op">)</tt> </tt>
+</div></div><a name="L99"></a><tt class="py-lineno"> 99</tt>  <tt class="py-line"> </tt>
+<a name="L100"></a><tt class="py-lineno">100</tt>  <tt class="py-line"><tt id="link-20" class="py-name" targets="Variable common.collection=common-module.html#collection"><a title="common.collection" class="py-name" href="#" onclick="return doclink('link-20', 'collection', 'link-20');">collection</a></tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt> </tt>
+<a name="L101"></a><tt class="py-lineno">101</tt>  <tt class="py-line"> </tt>
+<a name="get_plugin_infos"></a><div id="get_plugin_infos-def"><a name="L102"></a><tt class="py-lineno">102</tt> <a class="py-toggle" href="#" id="get_plugin_infos-toggle" onclick="return toggle('get_plugin_infos');">-</a><tt class="py-line"><tt class="py-keyword">def</tt> <a class="py-def-name" href="common-module.html#get_plugin_infos">get_plugin_infos</a><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="get_plugin_infos-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="get_plugin_infos-expanded"><a name="L103"></a><tt class="py-lineno">103</tt>  <tt class="py-line">        <tt class="py-keyword">global</tt> <tt id="link-21" class="py-name"><a title="common.collection" class="py-name" href="#" onclick="return doclink('link-21', 'collection', 'link-20');">collection</a></tt> </tt>
+<a name="L104"></a><tt class="py-lineno">104</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt id="link-22" class="py-name"><a title="common.collection" class="py-name" href="#" onclick="return doclink('link-22', 'collection', 'link-20');">collection</a></tt><tt class="py-op">:</tt> </tt>
+<a name="L105"></a><tt class="py-lineno">105</tt>  <tt class="py-line">                <tt id="link-23" class="py-name"><a title="common.collection" class="py-name" href="#" onclick="return doclink('link-23', 'collection', 'link-20');">collection</a></tt> <tt class="py-op">=</tt> <tt id="link-24" class="py-name" targets="Class common.PluginInfoCollection=common.PluginInfoCollection-class.html"><a title="common.PluginInfoCollection" class="py-name" href="#" onclick="return doclink('link-24', 'PluginInfoCollection', 'link-24');">PluginInfoCollection</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L106"></a><tt class="py-lineno">106</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt id="link-25" class="py-name"><a title="common.collection" class="py-name" href="#" onclick="return doclink('link-25', 'collection', 'link-20');">collection</a></tt> </tt>
+</div><a name="L107"></a><tt class="py-lineno">107</tt>  <tt class="py-line"> </tt>
+<a name="L108"></a><tt class="py-lineno">108</tt>  <tt class="py-line"><tt class="py-keyword">if</tt> <tt class="py-name">__name__</tt> <tt class="py-op">==</tt> <tt class="py-string">'__main__'</tt><tt class="py-op">:</tt> </tt>
+<a name="L109"></a><tt class="py-lineno">109</tt>  <tt class="py-line">        <tt id="link-26" class="py-name"><a title="aldrincom.com" class="py-name" href="#" onclick="return doclink('link-26', 'com', 'link-1');">com</a></tt><tt class="py-op">.</tt><tt id="link-27" class="py-name" targets="Method aldrincom.ComponentManager.load_packages()=aldrincom.ComponentManager-class.html#load_packages"><a title="aldrincom.ComponentManager.load_packages" class="py-name" href="#" onclick="return doclink('link-27', 'load_packages', 'link-27');">load_packages</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L110"></a><tt class="py-lineno">110</tt>  <tt class="py-line">        <tt class="py-name">col</tt> <tt class="py-op">=</tt> <tt id="link-28" class="py-name"><a title="common.PluginInfoCollection" class="py-name" href="#" onclick="return doclink('link-28', 'PluginInfoCollection', 'link-24');">PluginInfoCollection</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L111"></a><tt class="py-lineno">111</tt>  <tt class="py-line">        <tt class="py-keyword">del</tt> <tt class="py-name">col</tt><tt class="py-op">[</tt><tt class="py-number">5</tt><tt class="py-op">]</tt> </tt>
+<a name="L112"></a><tt class="py-lineno">112</tt>  <tt class="py-line"> </tt><script type="text/javascript">
+<!--
+expandto(location.href);
+// -->
+</script>
+</pre>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >Aldrin API</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0beta1 on Wed Jun 11 23:20:27 2008
+    </td>
+    <td align="right" class="footer">
+      <a href="http://epydoc.sourceforge.net">http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie()
+  // -->
+</script>
+  
+</body>
+</html>

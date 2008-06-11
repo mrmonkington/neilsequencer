@@ -1,0 +1,597 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>masterpanel</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >Aldrin API</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        Module&nbsp;masterpanel
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="masterpanel-pysrc.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<h1 class="epydoc">Source Code for <a href="masterpanel-module.html">Module masterpanel</a></h1>
+<pre class="py-src">
+<a name="L1"></a><tt class="py-lineno">  1</tt>  <tt class="py-line"><tt class="py-comment">#encoding: latin-1</tt> </tt>
+<a name="L2"></a><tt class="py-lineno">  2</tt>  <tt class="py-line"><tt class="py-comment"></tt> </tt>
+<a name="L3"></a><tt class="py-lineno">  3</tt>  <tt class="py-line"><tt class="py-comment"># Aldrin</tt> </tt>
+<a name="L4"></a><tt class="py-lineno">  4</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># Modular Sequencer</tt> </tt>
+<a name="L5"></a><tt class="py-lineno">  5</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># Copyright (C) 2006,2007,2008 The Aldrin Development Team</tt> </tt>
+<a name="L6"></a><tt class="py-lineno">  6</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment">#</tt> </tt>
+<a name="L7"></a><tt class="py-lineno">  7</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># This program is free software; you can redistribute it and/or</tt> </tt>
+<a name="L8"></a><tt class="py-lineno">  8</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># modify it under the terms of the GNU General Public License</tt> </tt>
+<a name="L9"></a><tt class="py-lineno">  9</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># as published by the Free Software Foundation; either version 2</tt> </tt>
+<a name="L10"></a><tt class="py-lineno"> 10</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># of the License, or (at your option) any later version.</tt> </tt>
+<a name="L11"></a><tt class="py-lineno"> 11</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment">#</tt> </tt>
+<a name="L12"></a><tt class="py-lineno"> 12</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># This program is distributed in the hope that it will be useful,</tt> </tt>
+<a name="L13"></a><tt class="py-lineno"> 13</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># but WITHOUT ANY WARRANTY; without even the implied warranty of</tt> </tt>
+<a name="L14"></a><tt class="py-lineno"> 14</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</tt> </tt>
+<a name="L15"></a><tt class="py-lineno"> 15</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># GNU General Public License for more details.</tt> </tt>
+<a name="L16"></a><tt class="py-lineno"> 16</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment">#</tt> </tt>
+<a name="L17"></a><tt class="py-lineno"> 17</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># You should have received a copy of the GNU General Public License</tt> </tt>
+<a name="L18"></a><tt class="py-lineno"> 18</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># along with this program; if not, write to the Free Software</tt> </tt>
+<a name="L19"></a><tt class="py-lineno"> 19</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.</tt> </tt>
+<a name="L20"></a><tt class="py-lineno"> 20</tt>  <tt class="py-line"><tt class="py-comment"></tt> </tt>
+<a name="L21"></a><tt class="py-lineno"> 21</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt id="link-0" class="py-name" targets="Module gtkimport=gtkimport-module.html"><a title="gtkimport" class="py-name" href="#" onclick="return doclink('link-0', 'gtkimport', 'link-0');">gtkimport</a></tt> <tt class="py-keyword">import</tt> <tt class="py-name">gtk</tt> </tt>
+<a name="L22"></a><tt class="py-lineno"> 22</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">cairo</tt> </tt>
+<a name="L23"></a><tt class="py-lineno"> 23</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt id="link-1" class="py-name" targets="Module common=common-module.html"><a title="common" class="py-name" href="#" onclick="return doclink('link-1', 'common', 'link-1');">common</a></tt> <tt class="py-keyword">import</tt> <tt id="link-2" class="py-name" targets="Variable common.MARGIN=common-module.html#MARGIN,Variable pkgbrowser.MARGIN=pkgbrowser-module.html#MARGIN"><a title="common.MARGIN
+pkgbrowser.MARGIN" class="py-name" href="#" onclick="return doclink('link-2', 'MARGIN', 'link-2');">MARGIN</a></tt><tt class="py-op">,</tt> <tt id="link-3" class="py-name" targets="Variable common.MARGIN2=common-module.html#MARGIN2"><a title="common.MARGIN2" class="py-name" href="#" onclick="return doclink('link-3', 'MARGIN2', 'link-3');">MARGIN2</a></tt><tt class="py-op">,</tt> <tt id="link-4" class="py-name" targets="Variable common.MARGIN3=common-module.html#MARGIN3"><a title="common.MARGIN3" class="py-name" href="#" onclick="return doclink('link-4', 'MARGIN3', 'link-4');">MARGIN3</a></tt><tt class="py-op">,</tt> <tt id="link-5" class="py-name" targets="Variable common.MARGIN0=common-module.html#MARGIN0"><a title="common.MARGIN0" class="py-name" href="#" onclick="return doclink('link-5', 'MARGIN0', 'link-5');">MARGIN0</a></tt> </tt>
+<a name="L24"></a><tt class="py-lineno"> 24</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">gobject</tt> </tt>
+<a name="L25"></a><tt class="py-lineno"> 25</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt id="link-6" class="py-name" targets="Module utils=utils-module.html"><a title="utils" class="py-name" href="#" onclick="return doclink('link-6', 'utils', 'link-6');">utils</a></tt> <tt class="py-keyword">import</tt> <tt id="link-7" class="py-name" targets="Function utils.filepath()=utils-module.html#filepath"><a title="utils.filepath" class="py-name" href="#" onclick="return doclink('link-7', 'filepath', 'link-7');">filepath</a></tt> </tt>
+<a name="L26"></a><tt class="py-lineno"> 26</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt id="link-8" class="py-name"><a title="utils" class="py-name" href="#" onclick="return doclink('link-8', 'utils', 'link-6');">utils</a></tt> </tt>
+<a name="L27"></a><tt class="py-lineno"> 27</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt id="link-9" class="py-name" targets="Module aldrincom=aldrincom-module.html"><a title="aldrincom" class="py-name" href="#" onclick="return doclink('link-9', 'aldrincom', 'link-9');">aldrincom</a></tt> <tt class="py-keyword">import</tt> <tt id="link-10" class="py-name" targets="Variable aldrincom.com=aldrincom-module.html#com"><a title="aldrincom.com" class="py-name" href="#" onclick="return doclink('link-10', 'com', 'link-10');">com</a></tt> </tt>
+<a name="L28"></a><tt class="py-lineno"> 28</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt id="link-11" class="py-name" targets="Module driver=driver-module.html"><a title="driver" class="py-name" href="#" onclick="return doclink('link-11', 'driver', 'link-11');">driver</a></tt> </tt>
+<a name="L29"></a><tt class="py-lineno"> 29</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">zzub</tt> </tt>
+<a name="L30"></a><tt class="py-lineno"> 30</tt>  <tt class="py-line"> </tt>
+<a name="AmpView"></a><div id="AmpView-def"><a name="L31"></a><tt class="py-lineno"> 31</tt> <a class="py-toggle" href="#" id="AmpView-toggle" onclick="return toggle('AmpView');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="masterpanel.AmpView-class.html">AmpView</a><tt class="py-op">(</tt><tt class="py-base-class">gtk</tt><tt class="py-op">.</tt><tt class="py-base-class">DrawingArea</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="AmpView-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="AmpView-expanded"><a name="L32"></a><tt class="py-lineno"> 32</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L33"></a><tt class="py-lineno"> 33</tt>  <tt class="py-line"><tt class="py-docstring">        A simple control rendering a Buzz-like master VU bar.</tt> </tt>
+<a name="L34"></a><tt class="py-lineno"> 34</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="AmpView.__init__"></a><div id="AmpView.__init__-def"><a name="L35"></a><tt class="py-lineno"> 35</tt> <a class="py-toggle" href="#" id="AmpView.__init__-toggle" onclick="return toggle('AmpView.__init__');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="masterpanel.AmpView-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">parent</tt><tt class="py-op">,</tt> <tt class="py-param">channel</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="AmpView.__init__-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="AmpView.__init__-expanded"><a name="L36"></a><tt class="py-lineno"> 36</tt>  <tt class="py-line">                <tt class="py-docstring">"""</tt> </tt>
+<a name="L37"></a><tt class="py-lineno"> 37</tt>  <tt class="py-line"><tt class="py-docstring">                Initializer.</tt> </tt>
+<a name="L38"></a><tt class="py-lineno"> 38</tt>  <tt class="py-line"><tt class="py-docstring">                """</tt> </tt>
+<a name="L39"></a><tt class="py-lineno"> 39</tt>  <tt class="py-line">                <tt class="py-keyword">import</tt> <tt class="py-name">Queue</tt> </tt>
+<a name="L40"></a><tt class="py-lineno"> 40</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">range</tt> <tt class="py-op">=</tt> <tt class="py-number">76</tt> </tt>
+<a name="L41"></a><tt class="py-lineno"> 41</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">amp</tt> <tt class="py-op">=</tt> <tt class="py-number">0.0</tt> </tt>
+<a name="L42"></a><tt class="py-lineno"> 42</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">channel</tt> <tt class="py-op">=</tt> <tt class="py-name">channel</tt> </tt>
+<a name="L43"></a><tt class="py-lineno"> 43</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">pixbuf</tt> <tt class="py-op">=</tt> <tt class="py-name">gtk</tt><tt class="py-op">.</tt><tt class="py-name">gdk</tt><tt class="py-op">.</tt><tt class="py-name">pixbuf_new_from_file</tt><tt class="py-op">(</tt><tt id="link-12" class="py-name"><a title="utils.filepath" class="py-name" href="#" onclick="return doclink('link-12', 'filepath', 'link-7');">filepath</a></tt><tt class="py-op">(</tt><tt class="py-string">'res/vubar.svg'</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L44"></a><tt class="py-lineno"> 44</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">stops</tt> <tt class="py-op">=</tt> <tt class="py-op">(</tt><tt class="py-number">0.0</tt><tt class="py-op">,</tt> <tt class="py-number">6.0</tt> <tt class="py-op">/</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">range</tt><tt class="py-op">,</tt> <tt class="py-number">12.0</tt> <tt class="py-op">/</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">range</tt><tt class="py-op">)</tt> <tt class="py-comment"># red, yellow, green</tt> </tt>
+<a name="L45"></a><tt class="py-lineno"> 45</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-13" class="py-name" targets="Variable patterns.PatternView.Selection.index=patterns.PatternView.Selection-class.html#index,Variable patternsx.PatternView.Selection.index=patternsx.PatternView.Selection-class.html#index"><a title="patterns.PatternView.Selection.index
+patternsx.PatternView.Selection.index" class="py-name" href="#" onclick="return doclink('link-13', 'index', 'link-13');">index</a></tt> <tt class="py-op">=</tt> <tt class="py-number">0</tt> </tt>
+<a name="L46"></a><tt class="py-lineno"> 46</tt>  <tt class="py-line">                <tt class="py-name">gtk</tt><tt class="py-op">.</tt><tt class="py-name">DrawingArea</tt><tt class="py-op">.</tt><tt id="link-14" class="py-name" targets="Method about.AboutDialog.__init__()=about.AboutDialog-class.html#__init__,Method aldrincom.ComponentManager.__init__()=aldrincom.ComponentManager-class.html#__init__,Method audiogui.DecoBox.__init__()=audiogui.DecoBox-class.html#__init__,Method audiogui.Knob.__init__()=audiogui.Knob-class.html#__init__,Method audiogui.KnobTooltip.__init__()=audiogui.KnobTooltip-class.html#__init__,Method audiogui.LCD.__init__()=audiogui.LCD-class.html#__init__,Method common.PluginInfo.__init__()=common.PluginInfo-class.html#__init__,Method common.PluginInfoCollection.__init__()=common.PluginInfoCollection-class.html#__init__,Method config.AldrinConfig.__init__()=config.AldrinConfig-class.html#__init__,Method contextlog.StdOutAnnotator.__init__()=contextlog.StdOutAnnotator-class.html#__init__,Method controller.SelectControllerDialog.__init__()=controller.SelectControllerDialog-class.html#__init__,Method cpumonitor.CPUMonitorDialog.__init__()=cpumonitor.CPUMonitorDialog-class.html#__init__,Method driver.AudioDriver.__init__()=driver.AudioDriver-class.html#__init__,Method driver.MidiDriver.__init__()=driver.MidiDriver-class.html#__init__,Method envelope.ADSRPanel.__init__()=envelope.ADSRPanel-class.html#__init__,Method envelope.EnvelopeView.__init__()=envelope.EnvelopeView-class.html#__init__,Method eventbus.EventBus.__init__()=eventbus.EventBus-class.html#__init__,Method eventbus.EventHandlerList.__init__()=eventbus.EventHandlerList-class.html#__init__,Method freesound.Freesound.__init__()=freesound.Freesound-class.html#__init__,Method fspanel.FreesoundPanel.__init__()=fspanel.FreesoundPanel-class.html#__init__,Method glcanvas.GLCanvas.__init__()=glcanvas.GLCanvas-class.html#__init__,Method glcanvas.GLClientDC.__init__()=glcanvas.GLClientDC-class.html#__init__,Method hdrecorder.HDRecorderDialog.__init__()=hdrecorder.HDRecorderDialog-class.html#__init__,Method iconfactory.IconLibrary.__init__()=iconfactory.IconLibrary-class.html#__init__,Method indexer.Directory.__init__()=indexer.Directory-class.html#__init__,Method info.InfoPanel.__init__()=info.InfoPanel-class.html#__init__,Method info.InfoView.__init__()=info.InfoView-class.html#__init__,Method mainwindow.AldrinFrame.__init__()=mainwindow.AldrinFrame-class.html#__init__,Method masterpanel.AmpView.__init__()=masterpanel.AmpView-class.html#__init__,Method masterpanel.MasterPanel.__init__()=masterpanel.MasterPanel-class.html#__init__,Method options.OptionParser.__init__()=options.OptionParser-class.html#__init__,Method patterns.PatternDialog.__init__()=patterns.PatternDialog-class.html#__init__,Method patterns.PatternPanel.__init__()=patterns.PatternPanel-class.html#__init__,Method patterns.PatternToolBar.__init__()=patterns.PatternToolBar-class.html#__init__,Method patterns.PatternView.__init__()=patterns.PatternView-class.html#__init__,Method patternsx.PatternDialog.__init__()=patternsx.PatternDialog-class.html#__init__,Method patternsx.PatternPanel.__init__()=patternsx.PatternPanel-class.html#__init__,Method patternsx.PatternToolBar.__init__()=patternsx.PatternToolBar-class.html#__init__,Method patternsx.PatternView.__init__()=patternsx.PatternView-class.html#__init__,Method pkgbrowser.PackageBrowserDialog.__init__()=pkgbrowser.PackageBrowserDialog-class.html#__init__,Method pkgbrowser.PackageBrowserMenuItem.__init__()=pkgbrowser.PackageBrowserMenuItem-class.html#__init__,Method player.AldrinPlayer.__init__()=player.AldrinPlayer-class.html#__init__,Method preferences.ControllerPanel.__init__()=preferences.ControllerPanel-class.html#__init__,Method preferences.DriverPanel.__init__()=preferences.DriverPanel-class.html#__init__,Method preferences.ExtensionsPanel.__init__()=preferences.ExtensionsPanel-class.html#__init__,Method preferences.GeneralPanel.__init__()=preferences.GeneralPanel-class.html#__init__,Method preferences.KeyboardPanel.__init__()=preferences.KeyboardPanel-class.html#__init__,Method preferences.MidiPanel.__init__()=preferences.MidiPanel-class.html#__init__,Method preferences.PreferencesDialog.__init__()=preferences.PreferencesDialog-class.html#__init__,Method preferences.WavetablePanel.__init__()=preferences.WavetablePanel-class.html#__init__,Method preset.Preset.__init__()=preset.Preset-class.html#__init__,Method preset.PresetCollection.__init__()=preset.PresetCollection-class.html#__init__,Method presetbrowser.PresetView.__init__()=presetbrowser.PresetView-class.html#__init__,Method rack.DataEntry.__init__()=rack.DataEntry-class.html#__init__,Method rack.ParameterView.__init__()=rack.ParameterView-class.html#__init__,Method rack.RackPanel.__init__()=rack.RackPanel-class.html#__init__,Method router.AttributesDialog.__init__()=router.AttributesDialog-class.html#__init__,Method router.OscillatorView.__init__()=router.OscillatorView-class.html#__init__,Method router.ParameterDialog.__init__()=router.ParameterDialog-class.html#__init__,Method router.PluginBrowserDialog.__init__()=router.PluginBrowserDialog-class.html#__init__,Method router.PresetDialog.__init__()=router.PresetDialog-class.html#__init__,Method router.RoutePanel.__init__()=router.RoutePanel-class.html#__init__,Method router.RouteView.__init__()=router.RouteView-class.html#__init__,Method router.SignalAnalysisDialog.__init__()=router.SignalAnalysisDialog-class.html#__init__,Method router.VolumeSlider.__init__()=router.VolumeSlider-class.html#__init__,Method sequencer.AddSequencerTrackDialog.__init__()=sequencer.AddSequencerTrackDialog-class.html#__init__,Method sequencer.SequencerPanel.__init__()=sequencer.SequencerPanel-class.html#__init__,Method sequencer.SequencerToolBar.__init__()=sequencer.SequencerToolBar-class.html#__init__,Method sequencer.SequencerView.__init__()=sequencer.SequencerView-class.html#__init__,Method testplayer.TestWindow.__init__()=testplayer.TestWindow-class.html#__init__,Method transportpanel.TransportPanel.__init__()=transportpanel.TransportPanel-class.html#__init__,Method waveedit.WaveEditPanel.__init__()=waveedit.WaveEditPanel-class.html#__init__,Method waveedit.WaveEditView.__init__()=waveedit.WaveEditView-class.html#__init__,Method wavetable.DataEntry.__init__()=wavetable.DataEntry-class.html#__init__,Method wavetable.WavetablePanel.__init__()=wavetable.WavetablePanel-class.html#__init__"><a title="about.AboutDialog.__init__
+aldrincom.ComponentManager.__init__
+audiogui.DecoBox.__init__
+audiogui.Knob.__init__
+audiogui.KnobTooltip.__init__
+audiogui.LCD.__init__
+common.PluginInfo.__init__
+common.PluginInfoCollection.__init__
+config.AldrinConfig.__init__
+contextlog.StdOutAnnotator.__init__
+controller.SelectControllerDialog.__init__
+cpumonitor.CPUMonitorDialog.__init__
+driver.AudioDriver.__init__
+driver.MidiDriver.__init__
+envelope.ADSRPanel.__init__
+envelope.EnvelopeView.__init__
+eventbus.EventBus.__init__
+eventbus.EventHandlerList.__init__
+freesound.Freesound.__init__
+fspanel.FreesoundPanel.__init__
+glcanvas.GLCanvas.__init__
+glcanvas.GLClientDC.__init__
+hdrecorder.HDRecorderDialog.__init__
+iconfactory.IconLibrary.__init__
+indexer.Directory.__init__
+info.InfoPanel.__init__
+info.InfoView.__init__
+mainwindow.AldrinFrame.__init__
+masterpanel.AmpView.__init__
+masterpanel.MasterPanel.__init__
+options.OptionParser.__init__
+patterns.PatternDialog.__init__
+patterns.PatternPanel.__init__
+patterns.PatternToolBar.__init__
+patterns.PatternView.__init__
+patternsx.PatternDialog.__init__
+patternsx.PatternPanel.__init__
+patternsx.PatternToolBar.__init__
+patternsx.PatternView.__init__
+pkgbrowser.PackageBrowserDialog.__init__
+pkgbrowser.PackageBrowserMenuItem.__init__
+player.AldrinPlayer.__init__
+preferences.ControllerPanel.__init__
+preferences.DriverPanel.__init__
+preferences.ExtensionsPanel.__init__
+preferences.GeneralPanel.__init__
+preferences.KeyboardPanel.__init__
+preferences.MidiPanel.__init__
+preferences.PreferencesDialog.__init__
+preferences.WavetablePanel.__init__
+preset.Preset.__init__
+preset.PresetCollection.__init__
+presetbrowser.PresetView.__init__
+rack.DataEntry.__init__
+rack.ParameterView.__init__
+rack.RackPanel.__init__
+router.AttributesDialog.__init__
+router.OscillatorView.__init__
+router.ParameterDialog.__init__
+router.PluginBrowserDialog.__init__
+router.PresetDialog.__init__
+router.RoutePanel.__init__
+router.RouteView.__init__
+router.SignalAnalysisDialog.__init__
+router.VolumeSlider.__init__
+sequencer.AddSequencerTrackDialog.__init__
+sequencer.SequencerPanel.__init__
+sequencer.SequencerToolBar.__init__
+sequencer.SequencerView.__init__
+testplayer.TestWindow.__init__
+transportpanel.TransportPanel.__init__
+waveedit.WaveEditPanel.__init__
+waveedit.WaveEditView.__init__
+wavetable.DataEntry.__init__
+wavetable.WavetablePanel.__init__" class="py-name" href="#" onclick="return doclink('link-14', '__init__', 'link-14');">__init__</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">)</tt> </tt>
+<a name="L47"></a><tt class="py-lineno"> 47</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">set_size_request</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">pixbuf</tt><tt class="py-op">.</tt><tt class="py-name">get_width</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">,</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">pixbuf</tt><tt class="py-op">.</tt><tt class="py-name">get_height</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L48"></a><tt class="py-lineno"> 48</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">connect</tt><tt class="py-op">(</tt><tt class="py-string">"expose_event"</tt><tt class="py-op">,</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-15" class="py-name" targets="Method envelope.EnvelopeView.expose()=envelope.EnvelopeView-class.html#expose,Method masterpanel.AmpView.expose()=masterpanel.AmpView-class.html#expose,Method patterns.PatternView.expose()=patterns.PatternView-class.html#expose,Method patternsx.PatternView.expose()=patternsx.PatternView-class.html#expose,Method router.RouteView.expose()=router.RouteView-class.html#expose,Method router.VolumeSlider.expose()=router.VolumeSlider-class.html#expose,Method sequencer.SequencerView.expose()=sequencer.SequencerView-class.html#expose,Method waveedit.WaveEditView.expose()=waveedit.WaveEditView-class.html#expose"><a title="envelope.EnvelopeView.expose
+masterpanel.AmpView.expose
+patterns.PatternView.expose
+patternsx.PatternView.expose
+router.RouteView.expose
+router.VolumeSlider.expose
+sequencer.SequencerView.expose
+waveedit.WaveEditView.expose" class="py-name" href="#" onclick="return doclink('link-15', 'expose', 'link-15');">expose</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L49"></a><tt class="py-lineno"> 49</tt>  <tt class="py-line">                <tt class="py-name">gobject</tt><tt class="py-op">.</tt><tt class="py-name">timeout_add</tt><tt class="py-op">(</tt><tt class="py-number">100</tt><tt class="py-op">,</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-16" class="py-name" targets="Method masterpanel.AmpView.on_update()=masterpanel.AmpView-class.html#on_update"><a title="masterpanel.AmpView.on_update" class="py-name" href="#" onclick="return doclink('link-16', 'on_update', 'link-16');">on_update</a></tt><tt class="py-op">)</tt> </tt>
+</div><a name="L50"></a><tt class="py-lineno"> 50</tt>  <tt class="py-line">         </tt>
+<a name="AmpView.on_update"></a><div id="AmpView.on_update-def"><a name="L51"></a><tt class="py-lineno"> 51</tt> <a class="py-toggle" href="#" id="AmpView.on_update-toggle" onclick="return toggle('AmpView.on_update');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="masterpanel.AmpView-class.html#on_update">on_update</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="AmpView.on_update-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="AmpView.on_update-expanded"><a name="L52"></a><tt class="py-lineno"> 52</tt>  <tt class="py-line">                <tt class="py-docstring">"""</tt> </tt>
+<a name="L53"></a><tt class="py-lineno"> 53</tt>  <tt class="py-line"><tt class="py-docstring">                Event handler triggered by a 25fps timer event.</tt> </tt>
+<a name="L54"></a><tt class="py-lineno"> 54</tt>  <tt class="py-line"><tt class="py-docstring">                """</tt> </tt>
+<a name="L55"></a><tt class="py-lineno"> 55</tt>  <tt class="py-line">                <tt id="link-17" class="py-name" targets="Module player=player-module.html"><a title="player" class="py-name" href="#" onclick="return doclink('link-17', 'player', 'link-17');">player</a></tt> <tt class="py-op">=</tt> <tt id="link-18" class="py-name"><a title="aldrincom.com" class="py-name" href="#" onclick="return doclink('link-18', 'com', 'link-10');">com</a></tt><tt class="py-op">.</tt><tt id="link-19" class="py-name" targets="Method aldrincom.ComponentManager.get()=aldrincom.ComponentManager-class.html#get,Method common.PluginInfoCollection.get()=common.PluginInfoCollection-class.html#get,Method freesound.Freesound.get()=freesound.Freesound-class.html#get"><a title="aldrincom.ComponentManager.get
+common.PluginInfoCollection.get
+freesound.Freesound.get" class="py-name" href="#" onclick="return doclink('link-19', 'get', 'link-19');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'aldrin.core.player'</tt><tt class="py-op">)</tt> </tt>
+<a name="L56"></a><tt class="py-lineno"> 56</tt>  <tt class="py-line">                <tt class="py-name">master</tt> <tt class="py-op">=</tt> <tt id="link-20" class="py-name"><a title="player" class="py-name" href="#" onclick="return doclink('link-20', 'player', 'link-17');">player</a></tt><tt class="py-op">.</tt><tt id="link-21" class="py-name" targets="Method patterns.PatternView.get_plugin()=patterns.PatternView-class.html#get_plugin,Method patternsx.PatternView.get_plugin()=patternsx.PatternView-class.html#get_plugin"><a title="patterns.PatternView.get_plugin
+patternsx.PatternView.get_plugin" class="py-name" href="#" onclick="return doclink('link-21', 'get_plugin', 'link-21');">get_plugin</a></tt><tt class="py-op">(</tt><tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
+<a name="L57"></a><tt class="py-lineno"> 57</tt>  <tt class="py-line">                <tt class="py-name">vol</tt><tt class="py-op">=</tt><tt class="py-name">master</tt><tt class="py-op">.</tt><tt class="py-name">get_parameter_value</tt><tt class="py-op">(</tt><tt class="py-number">1</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
+<a name="L58"></a><tt class="py-lineno"> 58</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">amp</tt> <tt class="py-op">=</tt> <tt class="py-name">min</tt><tt class="py-op">(</tt><tt class="py-name">master</tt><tt class="py-op">.</tt><tt class="py-name">get_last_peak</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">[</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">channel</tt><tt class="py-op">]</tt><tt class="py-op">,</tt><tt class="py-number">1.0</tt><tt class="py-op">)</tt> </tt>
+<a name="L59"></a><tt class="py-lineno"> 59</tt>  <tt class="py-line">                <tt class="py-name">rect</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">get_allocation</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L60"></a><tt class="py-lineno"> 60</tt>  <tt class="py-line">                <tt class="py-keyword">if</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">window</tt><tt class="py-op">:</tt> </tt>
+<a name="L61"></a><tt class="py-lineno"> 61</tt>  <tt class="py-line">                        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">window</tt><tt class="py-op">.</tt><tt class="py-name">invalidate_rect</tt><tt class="py-op">(</tt><tt class="py-op">(</tt><tt class="py-number">0</tt><tt class="py-op">,</tt><tt class="py-number">0</tt><tt class="py-op">,</tt><tt class="py-name">rect</tt><tt class="py-op">.</tt><tt class="py-name">width</tt><tt class="py-op">,</tt><tt class="py-name">rect</tt><tt class="py-op">.</tt><tt class="py-name">height</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> <tt class="py-name">False</tt><tt class="py-op">)</tt> </tt>
+<a name="L62"></a><tt class="py-lineno"> 62</tt>  <tt class="py-line">                <tt class="py-keyword">return</tt> <tt class="py-name">True</tt> </tt>
+</div><a name="L63"></a><tt class="py-lineno"> 63</tt>  <tt class="py-line">                 </tt>
+<a name="AmpView.draw"></a><div id="AmpView.draw-def"><a name="L64"></a><tt class="py-lineno"> 64</tt> <a class="py-toggle" href="#" id="AmpView.draw-toggle" onclick="return toggle('AmpView.draw');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="masterpanel.AmpView-class.html#draw">draw</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">ctx</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="AmpView.draw-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="AmpView.draw-expanded"><a name="L65"></a><tt class="py-lineno"> 65</tt>  <tt class="py-line">                <tt class="py-docstring">"""</tt> </tt>
+<a name="L66"></a><tt class="py-lineno"> 66</tt>  <tt class="py-line"><tt class="py-docstring">                Draws the VU bar client region.</tt> </tt>
+<a name="L67"></a><tt class="py-lineno"> 67</tt>  <tt class="py-line"><tt class="py-docstring">                """</tt> </tt>
+<a name="L68"></a><tt class="py-lineno"> 68</tt>  <tt class="py-line">                <tt class="py-name">rect</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">get_allocation</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L69"></a><tt class="py-lineno"> 69</tt>  <tt class="py-line">                <tt class="py-name">w</tt><tt class="py-op">,</tt><tt class="py-name">h</tt> <tt class="py-op">=</tt> <tt class="py-name">rect</tt><tt class="py-op">.</tt><tt class="py-name">width</tt><tt class="py-op">,</tt><tt class="py-name">rect</tt><tt class="py-op">.</tt><tt class="py-name">height</tt> </tt>
+<a name="L70"></a><tt class="py-lineno"> 70</tt>  <tt class="py-line">                <tt class="py-keyword">if</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">amp</tt> <tt class="py-op">&gt;=</tt> <tt class="py-number">1.0</tt><tt class="py-op">:</tt> </tt>
+<a name="L71"></a><tt class="py-lineno"> 71</tt>  <tt class="py-line">                        <tt class="py-name">ctx</tt><tt class="py-op">.</tt><tt class="py-name">set_source_rgb</tt><tt class="py-op">(</tt><tt class="py-number">1</tt><tt class="py-op">,</tt><tt class="py-number">0</tt><tt class="py-op">,</tt><tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
+<a name="L72"></a><tt class="py-lineno"> 72</tt>  <tt class="py-line">                        <tt class="py-name">ctx</tt><tt class="py-op">.</tt><tt class="py-name">rectangle</tt><tt class="py-op">(</tt><tt class="py-number">0</tt><tt class="py-op">,</tt><tt class="py-number">0</tt><tt class="py-op">,</tt><tt class="py-name">w</tt><tt class="py-op">,</tt><tt class="py-name">h</tt><tt class="py-op">)</tt> </tt>
+<a name="L73"></a><tt class="py-lineno"> 73</tt>  <tt class="py-line">                        <tt class="py-name">ctx</tt><tt class="py-op">.</tt><tt class="py-name">fill</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L74"></a><tt class="py-lineno"> 74</tt>  <tt class="py-line">                <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L75"></a><tt class="py-lineno"> 75</tt>  <tt class="py-line">                        <tt class="py-name">y</tt> <tt class="py-op">=</tt> <tt class="py-number">0</tt> </tt>
+<a name="L76"></a><tt class="py-lineno"> 76</tt>  <tt class="py-line">                        <tt class="py-name">ctx</tt><tt class="py-op">.</tt><tt class="py-name">set_source_pixbuf</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">pixbuf</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">,</tt><tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
+<a name="L77"></a><tt class="py-lineno"> 77</tt>  <tt class="py-line">                        <tt class="py-name">ctx</tt><tt class="py-op">.</tt><tt class="py-name">rectangle</tt><tt class="py-op">(</tt><tt class="py-number">0</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">,</tt> <tt class="py-name">w</tt><tt class="py-op">,</tt> <tt class="py-name">h</tt><tt class="py-op">)</tt> </tt>
+<a name="L78"></a><tt class="py-lineno"> 78</tt>  <tt class="py-line">                        <tt class="py-name">ctx</tt><tt class="py-op">.</tt><tt class="py-name">fill</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L79"></a><tt class="py-lineno"> 79</tt>  <tt class="py-line">                        <tt class="py-name">bh</tt> <tt class="py-op">=</tt> <tt class="py-name">int</tt><tt class="py-op">(</tt><tt class="py-op">(</tt><tt class="py-name">h</tt> <tt class="py-op">*</tt> <tt class="py-op">(</tt><tt id="link-22" class="py-name"><a title="utils" class="py-name" href="#" onclick="return doclink('link-22', 'utils', 'link-6');">utils</a></tt><tt class="py-op">.</tt><tt id="link-23" class="py-name" targets="Function utils.linear2db()=utils-module.html#linear2db"><a title="utils.linear2db" class="py-name" href="#" onclick="return doclink('link-23', 'linear2db', 'link-23');">linear2db</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">amp</tt><tt class="py-op">,</tt><tt class="py-name">limit</tt><tt class="py-op">=</tt><tt class="py-op">-</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">range</tt><tt class="py-op">)</tt> <tt class="py-op">+</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">range</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> <tt class="py-op">/</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">range</tt><tt class="py-op">)</tt> </tt>
+<a name="L80"></a><tt class="py-lineno"> 80</tt>  <tt class="py-line">                        <tt class="py-name">ctx</tt><tt class="py-op">.</tt><tt class="py-name">set_source_rgba</tt><tt class="py-op">(</tt><tt class="py-number">0</tt><tt class="py-op">,</tt><tt class="py-number">0</tt><tt class="py-op">,</tt><tt class="py-number">0</tt><tt class="py-op">,</tt><tt class="py-number">0.6</tt><tt class="py-op">)</tt> </tt>
+<a name="L81"></a><tt class="py-lineno"> 81</tt>  <tt class="py-line">                        <tt class="py-name">ctx</tt><tt class="py-op">.</tt><tt class="py-name">rectangle</tt><tt class="py-op">(</tt><tt class="py-number">0</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">,</tt> <tt class="py-name">w</tt><tt class="py-op">,</tt> <tt class="py-name">h</tt> <tt class="py-op">-</tt> <tt class="py-name">bh</tt><tt class="py-op">)</tt> </tt>
+<a name="L82"></a><tt class="py-lineno"> 82</tt>  <tt class="py-line">                        <tt class="py-name">ctx</tt><tt class="py-op">.</tt><tt class="py-name">fill</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L83"></a><tt class="py-lineno"> 83</tt>  <tt class="py-line"> </tt>
+<a name="AmpView.expose"></a><div id="AmpView.expose-def"><a name="L84"></a><tt class="py-lineno"> 84</tt> <a class="py-toggle" href="#" id="AmpView.expose-toggle" onclick="return toggle('AmpView.expose');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="masterpanel.AmpView-class.html#expose">expose</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">widget</tt><tt class="py-op">,</tt> <tt class="py-param">event</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="AmpView.expose-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="AmpView.expose-expanded"><a name="L85"></a><tt class="py-lineno"> 85</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">context</tt> <tt class="py-op">=</tt> <tt class="py-name">widget</tt><tt class="py-op">.</tt><tt class="py-name">window</tt><tt class="py-op">.</tt><tt class="py-name">cairo_create</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L86"></a><tt class="py-lineno"> 86</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-24" class="py-name" targets="Method audiogui.DecoBox.draw()=audiogui.DecoBox-class.html#draw,Method audiogui.Knob.draw()=audiogui.Knob-class.html#draw,Method audiogui.LCD.draw()=audiogui.LCD-class.html#draw,Method envelope.EnvelopeView.draw()=envelope.EnvelopeView-class.html#draw,Method masterpanel.AmpView.draw()=masterpanel.AmpView-class.html#draw,Method patterns.PatternView.draw()=patterns.PatternView-class.html#draw,Method patternsx.PatternView.draw()=patternsx.PatternView-class.html#draw,Method router.RouteView.draw()=router.RouteView-class.html#draw,Method router.VolumeSlider.draw()=router.VolumeSlider-class.html#draw,Method sequencer.SequencerView.draw()=sequencer.SequencerView-class.html#draw,Method waveedit.WaveEditView.draw()=waveedit.WaveEditView-class.html#draw"><a title="audiogui.DecoBox.draw
+audiogui.Knob.draw
+audiogui.LCD.draw
+envelope.EnvelopeView.draw
+masterpanel.AmpView.draw
+patterns.PatternView.draw
+patternsx.PatternView.draw
+router.RouteView.draw
+router.VolumeSlider.draw
+sequencer.SequencerView.draw
+waveedit.WaveEditView.draw" class="py-name" href="#" onclick="return doclink('link-24', 'draw', 'link-24');">draw</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">context</tt><tt class="py-op">)</tt> </tt>
+<a name="L87"></a><tt class="py-lineno"> 87</tt>  <tt class="py-line">                <tt class="py-keyword">return</tt> <tt class="py-name">False</tt> </tt>
+</div></div><a name="L88"></a><tt class="py-lineno"> 88</tt>  <tt class="py-line"> </tt>
+<a name="MasterPanel"></a><div id="MasterPanel-def"><a name="L89"></a><tt class="py-lineno"> 89</tt> <a class="py-toggle" href="#" id="MasterPanel-toggle" onclick="return toggle('MasterPanel');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="masterpanel.MasterPanel-class.html">MasterPanel</a><tt class="py-op">(</tt><tt class="py-base-class">gtk</tt><tt class="py-op">.</tt><tt class="py-base-class">VBox</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="MasterPanel-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="MasterPanel-expanded"><a name="L90"></a><tt class="py-lineno"> 90</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L91"></a><tt class="py-lineno"> 91</tt>  <tt class="py-line"><tt class="py-docstring">        A panel containing the master machine controls.</tt> </tt>
+<a name="L92"></a><tt class="py-lineno"> 92</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L93"></a><tt class="py-lineno"> 93</tt>  <tt class="py-line">         </tt>
+<a name="L94"></a><tt class="py-lineno"> 94</tt>  <tt class="py-line">        <tt id="link-25" class="py-name" targets="Variable about.AboutDialog.__aldrin__=about.AboutDialog-class.html#__aldrin__,Variable about.__aldrin__=about-module.html#__aldrin__,Variable config.AldrinConfigSingleton.__aldrin__=config.AldrinConfigSingleton-class.html#__aldrin__,Variable config.__aldrin__=config-module.html#__aldrin__,Variable eventbus.AldrinEventBus.__aldrin__=eventbus.AldrinEventBus-class.html#__aldrin__,Variable eventbus.__aldrin__=eventbus-module.html#__aldrin__,Variable iconfactory.IconLibrary.__aldrin__=iconfactory.IconLibrary-class.html#__aldrin__,Variable iconfactory.__aldrin__=iconfactory-module.html#__aldrin__,Variable info.InfoPanel.__aldrin__=info.InfoPanel-class.html#__aldrin__,Variable info.__aldrin__=info-module.html#__aldrin__,Variable mainwindow.AldrinFrame.__aldrin__=mainwindow.AldrinFrame-class.html#__aldrin__,Variable mainwindow.__aldrin__=mainwindow-module.html#__aldrin__,Variable masterpanel.MasterPanel.__aldrin__=masterpanel.MasterPanel-class.html#__aldrin__,Variable masterpanel.__aldrin__=masterpanel-module.html#__aldrin__,Variable options.OptionParser.__aldrin__=options.OptionParser-class.html#__aldrin__,Variable options.__aldrin__=options-module.html#__aldrin__,Variable patterns.PatternPanel.__aldrin__=patterns.PatternPanel-class.html#__aldrin__,Variable patterns.__aldrin__=patterns-module.html#__aldrin__,Variable pkgbrowser.PackageBrowserDialog.__aldrin__=pkgbrowser.PackageBrowserDialog-class.html#__aldrin__,Variable pkgbrowser.PackageBrowserMenuItem.__aldrin__=pkgbrowser.PackageBrowserMenuItem-class.html#__aldrin__,Variable pkgbrowser.__aldrin__=pkgbrowser-module.html#__aldrin__,Variable player.AldrinPlayer.__aldrin__=player.AldrinPlayer-class.html#__aldrin__,Variable player.__aldrin__=player-module.html#__aldrin__,Variable rack.RackPanel.__aldrin__=rack.RackPanel-class.html#__aldrin__,Variable rack.__aldrin__=rack-module.html#__aldrin__,Variable router.RoutePanel.__aldrin__=router.RoutePanel-class.html#__aldrin__,Variable router.RouteView.__aldrin__=router.RouteView-class.html#__aldrin__,Variable router.__aldrin__=router-module.html#__aldrin__,Variable sequencer.SequencerPanel.__aldrin__=sequencer.SequencerPanel-class.html#__aldrin__,Variable sequencer.__aldrin__=sequencer-module.html#__aldrin__,Variable transportpanel.TransportPanel.__aldrin__=transportpanel.TransportPanel-class.html#__aldrin__,Variable transportpanel.__aldrin__=transportpanel-module.html#__aldrin__,Variable wavetable.WavetablePanel.__aldrin__=wavetable.WavetablePanel-class.html#__aldrin__,Variable wavetable.__aldrin__=wavetable-module.html#__aldrin__"><a title="about.AboutDialog.__aldrin__
+about.__aldrin__
+config.AldrinConfigSingleton.__aldrin__
+config.__aldrin__
+eventbus.AldrinEventBus.__aldrin__
+eventbus.__aldrin__
+iconfactory.IconLibrary.__aldrin__
+iconfactory.__aldrin__
+info.InfoPanel.__aldrin__
+info.__aldrin__
+mainwindow.AldrinFrame.__aldrin__
+mainwindow.__aldrin__
+masterpanel.MasterPanel.__aldrin__
+masterpanel.__aldrin__
+options.OptionParser.__aldrin__
+options.__aldrin__
+patterns.PatternPanel.__aldrin__
+patterns.__aldrin__
+pkgbrowser.PackageBrowserDialog.__aldrin__
+pkgbrowser.PackageBrowserMenuItem.__aldrin__
+pkgbrowser.__aldrin__
+player.AldrinPlayer.__aldrin__
+player.__aldrin__
+rack.RackPanel.__aldrin__
+rack.__aldrin__
+router.RoutePanel.__aldrin__
+router.RouteView.__aldrin__
+router.__aldrin__
+sequencer.SequencerPanel.__aldrin__
+sequencer.__aldrin__
+transportpanel.TransportPanel.__aldrin__
+transportpanel.__aldrin__
+wavetable.WavetablePanel.__aldrin__
+wavetable.__aldrin__" class="py-name" href="#" onclick="return doclink('link-25', '__aldrin__', 'link-25');">__aldrin__</a></tt> <tt class="py-op">=</tt> <tt class="py-name">dict</tt><tt class="py-op">(</tt> </tt>
+<a name="L95"></a><tt class="py-lineno"> 95</tt>  <tt class="py-line">                <tt class="py-name">id</tt> <tt class="py-op">=</tt> <tt class="py-string">'aldrin.core.panel.master'</tt><tt class="py-op">,</tt> </tt>
+<a name="L96"></a><tt class="py-lineno"> 96</tt>  <tt class="py-line">        <tt class="py-op">)</tt> </tt>
+<a name="L97"></a><tt class="py-lineno"> 97</tt>  <tt class="py-line">         </tt>
+<a name="MasterPanel.__init__"></a><div id="MasterPanel.__init__-def"><a name="L98"></a><tt class="py-lineno"> 98</tt> <a class="py-toggle" href="#" id="MasterPanel.__init__-toggle" onclick="return toggle('MasterPanel.__init__');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="masterpanel.MasterPanel-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">rootwindow</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="MasterPanel.__init__-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="MasterPanel.__init__-expanded"><a name="L99"></a><tt class="py-lineno"> 99</tt>  <tt class="py-line">                <tt class="py-name">gtk</tt><tt class="py-op">.</tt><tt class="py-name">VBox</tt><tt class="py-op">.</tt><tt id="link-26" class="py-name"><a title="about.AboutDialog.__init__
+aldrincom.ComponentManager.__init__
+audiogui.DecoBox.__init__
+audiogui.Knob.__init__
+audiogui.KnobTooltip.__init__
+audiogui.LCD.__init__
+common.PluginInfo.__init__
+common.PluginInfoCollection.__init__
+config.AldrinConfig.__init__
+contextlog.StdOutAnnotator.__init__
+controller.SelectControllerDialog.__init__
+cpumonitor.CPUMonitorDialog.__init__
+driver.AudioDriver.__init__
+driver.MidiDriver.__init__
+envelope.ADSRPanel.__init__
+envelope.EnvelopeView.__init__
+eventbus.EventBus.__init__
+eventbus.EventHandlerList.__init__
+freesound.Freesound.__init__
+fspanel.FreesoundPanel.__init__
+glcanvas.GLCanvas.__init__
+glcanvas.GLClientDC.__init__
+hdrecorder.HDRecorderDialog.__init__
+iconfactory.IconLibrary.__init__
+indexer.Directory.__init__
+info.InfoPanel.__init__
+info.InfoView.__init__
+mainwindow.AldrinFrame.__init__
+masterpanel.AmpView.__init__
+masterpanel.MasterPanel.__init__
+options.OptionParser.__init__
+patterns.PatternDialog.__init__
+patterns.PatternPanel.__init__
+patterns.PatternToolBar.__init__
+patterns.PatternView.__init__
+patternsx.PatternDialog.__init__
+patternsx.PatternPanel.__init__
+patternsx.PatternToolBar.__init__
+patternsx.PatternView.__init__
+pkgbrowser.PackageBrowserDialog.__init__
+pkgbrowser.PackageBrowserMenuItem.__init__
+player.AldrinPlayer.__init__
+preferences.ControllerPanel.__init__
+preferences.DriverPanel.__init__
+preferences.ExtensionsPanel.__init__
+preferences.GeneralPanel.__init__
+preferences.KeyboardPanel.__init__
+preferences.MidiPanel.__init__
+preferences.PreferencesDialog.__init__
+preferences.WavetablePanel.__init__
+preset.Preset.__init__
+preset.PresetCollection.__init__
+presetbrowser.PresetView.__init__
+rack.DataEntry.__init__
+rack.ParameterView.__init__
+rack.RackPanel.__init__
+router.AttributesDialog.__init__
+router.OscillatorView.__init__
+router.ParameterDialog.__init__
+router.PluginBrowserDialog.__init__
+router.PresetDialog.__init__
+router.RoutePanel.__init__
+router.RouteView.__init__
+router.SignalAnalysisDialog.__init__
+router.VolumeSlider.__init__
+sequencer.AddSequencerTrackDialog.__init__
+sequencer.SequencerPanel.__init__
+sequencer.SequencerToolBar.__init__
+sequencer.SequencerView.__init__
+testplayer.TestWindow.__init__
+transportpanel.TransportPanel.__init__
+waveedit.WaveEditPanel.__init__
+waveedit.WaveEditView.__init__
+wavetable.DataEntry.__init__
+wavetable.WavetablePanel.__init__" class="py-name" href="#" onclick="return doclink('link-26', '__init__', 'link-14');">__init__</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">)</tt> </tt>
+<a name="L100"></a><tt class="py-lineno">100</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">latency</tt> <tt class="py-op">=</tt> <tt class="py-number">0</tt> </tt>
+<a name="L101"></a><tt class="py-lineno">101</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">rootwindow</tt> <tt class="py-op">=</tt> <tt class="py-name">rootwindow</tt> </tt>
+<a name="L102"></a><tt class="py-lineno">102</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">rootwindow</tt><tt class="py-op">.</tt><tt id="link-27" class="py-name" targets="Variable testplayer.event_handlers=testplayer-module.html#event_handlers"><a title="testplayer.event_handlers" class="py-name" href="#" onclick="return doclink('link-27', 'event_handlers', 'link-27');">event_handlers</a></tt><tt class="py-op">.</tt><tt class="py-name">append</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-28" class="py-name" targets="Method controller.SelectControllerDialog.on_player_callback()=controller.SelectControllerDialog-class.html#on_player_callback,Method masterpanel.MasterPanel.on_player_callback()=masterpanel.MasterPanel-class.html#on_player_callback,Method patterns.PatternPanel.on_player_callback()=patterns.PatternPanel-class.html#on_player_callback,Method patternsx.PatternPanel.on_player_callback()=patternsx.PatternPanel-class.html#on_player_callback,Method rack.RackPanel.on_player_callback()=rack.RackPanel-class.html#on_player_callback,Method router.RouteView.on_player_callback()=router.RouteView-class.html#on_player_callback,Method transportpanel.TransportPanel.on_player_callback()=transportpanel.TransportPanel-class.html#on_player_callback"><a title="controller.SelectControllerDialog.on_player_callback
+masterpanel.MasterPanel.on_player_callback
+patterns.PatternPanel.on_player_callback
+patternsx.PatternPanel.on_player_callback
+rack.RackPanel.on_player_callback
+router.RouteView.on_player_callback
+transportpanel.TransportPanel.on_player_callback" class="py-name" href="#" onclick="return doclink('link-28', 'on_player_callback', 'link-28');">on_player_callback</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L103"></a><tt class="py-lineno">103</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">masterslider</tt> <tt class="py-op">=</tt> <tt class="py-name">gtk</tt><tt class="py-op">.</tt><tt class="py-name">VScale</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L104"></a><tt class="py-lineno">104</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">masterslider</tt><tt class="py-op">.</tt><tt class="py-name">set_draw_value</tt><tt class="py-op">(</tt><tt class="py-name">False</tt><tt class="py-op">)</tt> </tt>
+<a name="L105"></a><tt class="py-lineno">105</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">masterslider</tt><tt class="py-op">.</tt><tt id="link-29" class="py-name" targets="Method audiogui.Knob.set_range()=audiogui.Knob-class.html#set_range,Method waveedit.WaveEditView.set_range()=waveedit.WaveEditView-class.html#set_range"><a title="audiogui.Knob.set_range
+waveedit.WaveEditView.set_range" class="py-name" href="#" onclick="return doclink('link-29', 'set_range', 'link-29');">set_range</a></tt><tt class="py-op">(</tt><tt class="py-number">0</tt><tt class="py-op">,</tt><tt class="py-number">16384</tt><tt class="py-op">)</tt> </tt>
+<a name="L106"></a><tt class="py-lineno">106</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">masterslider</tt><tt class="py-op">.</tt><tt class="py-name">set_size_request</tt><tt class="py-op">(</tt><tt class="py-op">-</tt><tt class="py-number">1</tt><tt class="py-op">,</tt><tt class="py-number">200</tt><tt class="py-op">)</tt> </tt>
+<a name="L107"></a><tt class="py-lineno">107</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">masterslider</tt><tt class="py-op">.</tt><tt class="py-name">set_increments</tt><tt class="py-op">(</tt><tt class="py-number">500</tt><tt class="py-op">,</tt> <tt class="py-number">500</tt><tt class="py-op">)</tt> </tt>
+<a name="L108"></a><tt class="py-lineno">108</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">masterslider</tt><tt class="py-op">.</tt><tt class="py-name">set_inverted</tt><tt class="py-op">(</tt><tt class="py-name">True</tt><tt class="py-op">)</tt> </tt>
+<a name="L109"></a><tt class="py-lineno">109</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">masterslider</tt><tt class="py-op">.</tt><tt class="py-name">connect</tt><tt class="py-op">(</tt><tt class="py-string">'scroll-event'</tt><tt class="py-op">,</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-30" class="py-name" targets="Method audiogui.Knob.on_mousewheel()=audiogui.Knob-class.html#on_mousewheel,Method masterpanel.MasterPanel.on_mousewheel()=masterpanel.MasterPanel-class.html#on_mousewheel,Method patterns.PatternView.on_mousewheel()=patterns.PatternView-class.html#on_mousewheel,Method patternsx.PatternView.on_mousewheel()=patternsx.PatternView-class.html#on_mousewheel,Method rack.ParameterView.on_mousewheel()=rack.ParameterView-class.html#on_mousewheel,Method sequencer.SequencerView.on_mousewheel()=sequencer.SequencerView-class.html#on_mousewheel,Method waveedit.WaveEditView.on_mousewheel()=waveedit.WaveEditView-class.html#on_mousewheel,Method wavetable.WavetablePanel.on_mousewheel()=wavetable.WavetablePanel-class.html#on_mousewheel"><a title="audiogui.Knob.on_mousewheel
+masterpanel.MasterPanel.on_mousewheel
+patterns.PatternView.on_mousewheel
+patternsx.PatternView.on_mousewheel
+rack.ParameterView.on_mousewheel
+sequencer.SequencerView.on_mousewheel
+waveedit.WaveEditView.on_mousewheel
+wavetable.WavetablePanel.on_mousewheel" class="py-name" href="#" onclick="return doclink('link-30', 'on_mousewheel', 'link-30');">on_mousewheel</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L110"></a><tt class="py-lineno">110</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">masterslider</tt><tt class="py-op">.</tt><tt class="py-name">connect</tt><tt class="py-op">(</tt><tt class="py-string">'change-value'</tt><tt class="py-op">,</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-31" class="py-name" targets="Method masterpanel.MasterPanel.on_scroll_changed()=masterpanel.MasterPanel-class.html#on_scroll_changed,Method rack.ParameterView.on_scroll_changed()=rack.ParameterView-class.html#on_scroll_changed,Method wavetable.WavetablePanel.on_scroll_changed()=wavetable.WavetablePanel-class.html#on_scroll_changed"><a title="masterpanel.MasterPanel.on_scroll_changed
+rack.ParameterView.on_scroll_changed
+wavetable.WavetablePanel.on_scroll_changed" class="py-name" href="#" onclick="return doclink('link-31', 'on_scroll_changed', 'link-31');">on_scroll_changed</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L111"></a><tt class="py-lineno">111</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">masterslider</tt><tt class="py-op">.</tt><tt class="py-name">connect</tt><tt class="py-op">(</tt><tt class="py-string">'button-release-event'</tt><tt class="py-op">,</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-32" class="py-name" targets="Method mainwindow.AldrinFrame.button_up()=mainwindow.AldrinFrame-class.html#button_up,Method masterpanel.MasterPanel.button_up()=masterpanel.MasterPanel-class.html#button_up"><a title="mainwindow.AldrinFrame.button_up
+masterpanel.MasterPanel.button_up" class="py-name" href="#" onclick="return doclink('link-32', 'button_up', 'link-32');">button_up</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L112"></a><tt class="py-lineno">112</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">ampl</tt> <tt class="py-op">=</tt> <tt id="link-33" class="py-name" targets="Class masterpanel.AmpView=masterpanel.AmpView-class.html"><a title="masterpanel.AmpView" class="py-name" href="#" onclick="return doclink('link-33', 'AmpView', 'link-33');">AmpView</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
+<a name="L113"></a><tt class="py-lineno">113</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">ampr</tt> <tt class="py-op">=</tt> <tt id="link-34" class="py-name"><a title="masterpanel.AmpView" class="py-name" href="#" onclick="return doclink('link-34', 'AmpView', 'link-33');">AmpView</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">,</tt> <tt class="py-number">1</tt><tt class="py-op">)</tt> </tt>
+<a name="L114"></a><tt class="py-lineno">114</tt>  <tt class="py-line">                <tt class="py-name">hbox</tt> <tt class="py-op">=</tt> <tt class="py-name">gtk</tt><tt class="py-op">.</tt><tt class="py-name">HBox</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L115"></a><tt class="py-lineno">115</tt>  <tt class="py-line">                <tt class="py-name">hbox</tt><tt class="py-op">.</tt><tt class="py-name">set_border_width</tt><tt class="py-op">(</tt><tt id="link-35" class="py-name"><a title="common.MARGIN
+pkgbrowser.MARGIN" class="py-name" href="#" onclick="return doclink('link-35', 'MARGIN', 'link-2');">MARGIN</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L116"></a><tt class="py-lineno">116</tt>  <tt class="py-line">                <tt class="py-name">hbox</tt><tt class="py-op">.</tt><tt class="py-name">pack_start</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">ampl</tt><tt class="py-op">)</tt> </tt>
+<a name="L117"></a><tt class="py-lineno">117</tt>  <tt class="py-line">                <tt class="py-name">hbox</tt><tt class="py-op">.</tt><tt class="py-name">pack_start</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">masterslider</tt><tt class="py-op">)</tt> </tt>
+<a name="L118"></a><tt class="py-lineno">118</tt>  <tt class="py-line">                <tt class="py-name">hbox</tt><tt class="py-op">.</tt><tt class="py-name">pack_start</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">ampr</tt><tt class="py-op">)</tt> </tt>
+<a name="L119"></a><tt class="py-lineno">119</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">pack_start</tt><tt class="py-op">(</tt><tt class="py-name">hbox</tt><tt class="py-op">,</tt> <tt id="link-36" class="py-name" targets="Method path.path.expand()=path.path-class.html#expand"><a title="path.path.expand" class="py-name" href="#" onclick="return doclink('link-36', 'expand', 'link-36');">expand</a></tt><tt class="py-op">=</tt><tt class="py-name">False</tt><tt class="py-op">,</tt> <tt class="py-name">fill</tt><tt class="py-op">=</tt><tt class="py-name">False</tt><tt class="py-op">)</tt> </tt>
+<a name="L120"></a><tt class="py-lineno">120</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-37" class="py-name" targets="Method info.InfoPanel.update_all()=info.InfoPanel-class.html#update_all,Method masterpanel.MasterPanel.update_all()=masterpanel.MasterPanel-class.html#update_all,Method patterns.PatternPanel.update_all()=patterns.PatternPanel-class.html#update_all,Method patterns.PatternToolBar.update_all()=patterns.PatternToolBar-class.html#update_all,Method patternsx.PatternPanel.update_all()=patternsx.PatternPanel-class.html#update_all,Method patternsx.PatternToolBar.update_all()=patternsx.PatternToolBar-class.html#update_all,Method rack.RackPanel.update_all()=rack.RackPanel-class.html#update_all,Method router.RoutePanel.update_all()=router.RoutePanel-class.html#update_all,Method router.RouteView.update_all()=router.RouteView-class.html#update_all,Method sequencer.SequencerPanel.update_all()=sequencer.SequencerPanel-class.html#update_all,Method sequencer.SequencerToolBar.update_all()=sequencer.SequencerToolBar-class.html#update_all,Method transportpanel.TransportPanel.update_all()=transportpanel.TransportPanel-class.html#update_all,Method wavetable.WavetablePanel.update_all()=wavetable.WavetablePanel-class.html#update_all"><a title="info.InfoPanel.update_all
+masterpanel.MasterPanel.update_all
+patterns.PatternPanel.update_all
+patterns.PatternToolBar.update_all
+patternsx.PatternPanel.update_all
+patternsx.PatternToolBar.update_all
+rack.RackPanel.update_all
+router.RoutePanel.update_all
+router.RouteView.update_all
+sequencer.SequencerPanel.update_all
+sequencer.SequencerToolBar.update_all
+transportpanel.TransportPanel.update_all
+wavetable.WavetablePanel.update_all" class="py-name" href="#" onclick="return doclink('link-37', 'update_all', 'link-37');">update_all</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L121"></a><tt class="py-lineno">121</tt>  <tt class="py-line"> </tt>
+<a name="MasterPanel.on_player_callback"></a><div id="MasterPanel.on_player_callback-def"><a name="L122"></a><tt class="py-lineno">122</tt> <a class="py-toggle" href="#" id="MasterPanel.on_player_callback-toggle" onclick="return toggle('MasterPanel.on_player_callback');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="masterpanel.MasterPanel-class.html#on_player_callback">on_player_callback</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">player</tt><tt class="py-op">,</tt> <tt class="py-param">plugin</tt><tt class="py-op">,</tt> <tt class="py-param">data</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="MasterPanel.on_player_callback-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="MasterPanel.on_player_callback-expanded"><a name="L123"></a><tt class="py-lineno">123</tt>  <tt class="py-line">                <tt class="py-docstring">"""</tt> </tt>
+<a name="L124"></a><tt class="py-lineno">124</tt>  <tt class="py-line"><tt class="py-docstring">                callback for ui events sent by zzub.</tt> </tt>
+<a name="L125"></a><tt class="py-lineno">125</tt>  <tt class="py-line"><tt class="py-docstring">                </tt> </tt>
+<a name="L126"></a><tt class="py-lineno">126</tt>  <tt class="py-line"><tt class="py-docstring">                @param player: player instance.</tt> </tt>
+<a name="L127"></a><tt class="py-lineno">127</tt>  <tt class="py-line"><tt class="py-docstring">                @type player: zzub.Player</tt> </tt>
+<a name="L128"></a><tt class="py-lineno">128</tt>  <tt class="py-line"><tt class="py-docstring">                @param plugin: plugin instance</tt> </tt>
+<a name="L129"></a><tt class="py-lineno">129</tt>  <tt class="py-line"><tt class="py-docstring">                @type plugin: zzub.Plugin</tt> </tt>
+<a name="L130"></a><tt class="py-lineno">130</tt>  <tt class="py-line"><tt class="py-docstring">                @param data: event data.</tt> </tt>
+<a name="L131"></a><tt class="py-lineno">131</tt>  <tt class="py-line"><tt class="py-docstring">                @type data: zzub_event_data_t</tt> </tt>
+<a name="L132"></a><tt class="py-lineno">132</tt>  <tt class="py-line"><tt class="py-docstring">                """</tt> </tt>
+<a name="L133"></a><tt class="py-lineno">133</tt>  <tt class="py-line">                <tt id="link-38" class="py-name"><a title="player" class="py-name" href="#" onclick="return doclink('link-38', 'player', 'link-17');">player</a></tt> <tt class="py-op">=</tt> <tt id="link-39" class="py-name"><a title="aldrincom.com" class="py-name" href="#" onclick="return doclink('link-39', 'com', 'link-10');">com</a></tt><tt class="py-op">.</tt><tt id="link-40" class="py-name"><a title="aldrincom.ComponentManager.get
+common.PluginInfoCollection.get
+freesound.Freesound.get" class="py-name" href="#" onclick="return doclink('link-40', 'get', 'link-19');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'aldrin.core.player'</tt><tt class="py-op">)</tt> </tt>
+<a name="L134"></a><tt class="py-lineno">134</tt>  <tt class="py-line">                <tt class="py-keyword">if</tt> <tt class="py-name">plugin</tt> <tt class="py-op">==</tt> <tt id="link-41" class="py-name"><a title="player" class="py-name" href="#" onclick="return doclink('link-41', 'player', 'link-17');">player</a></tt><tt class="py-op">.</tt><tt id="link-42" class="py-name"><a title="patterns.PatternView.get_plugin
+patternsx.PatternView.get_plugin" class="py-name" href="#" onclick="return doclink('link-42', 'get_plugin', 'link-21');">get_plugin</a></tt><tt class="py-op">(</tt><tt class="py-number">0</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L135"></a><tt class="py-lineno">135</tt>  <tt class="py-line">                        <tt class="py-keyword">if</tt> <tt class="py-name">data</tt><tt class="py-op">.</tt><tt class="py-name">type</tt> <tt class="py-op">==</tt> <tt class="py-name">zzub</tt><tt class="py-op">.</tt><tt class="py-name">zzub_event_type_parameter_changed</tt><tt class="py-op">:</tt> </tt>
+<a name="L136"></a><tt class="py-lineno">136</tt>  <tt class="py-line">                                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-43" class="py-name"><a title="info.InfoPanel.update_all
+masterpanel.MasterPanel.update_all
+patterns.PatternPanel.update_all
+patterns.PatternToolBar.update_all
+patternsx.PatternPanel.update_all
+patternsx.PatternToolBar.update_all
+rack.RackPanel.update_all
+router.RoutePanel.update_all
+router.RouteView.update_all
+sequencer.SequencerPanel.update_all
+sequencer.SequencerToolBar.update_all
+transportpanel.TransportPanel.update_all
+wavetable.WavetablePanel.update_all" class="py-name" href="#" onclick="return doclink('link-43', 'update_all', 'link-37');">update_all</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L137"></a><tt class="py-lineno">137</tt>  <tt class="py-line"> </tt>
+<a name="MasterPanel.on_scroll_changed"></a><div id="MasterPanel.on_scroll_changed-def"><a name="L138"></a><tt class="py-lineno">138</tt> <a class="py-toggle" href="#" id="MasterPanel.on_scroll_changed-toggle" onclick="return toggle('MasterPanel.on_scroll_changed');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="masterpanel.MasterPanel-class.html#on_scroll_changed">on_scroll_changed</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">widget</tt><tt class="py-op">,</tt> <tt class="py-param">scroll</tt><tt class="py-op">,</tt> <tt class="py-param">value</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="MasterPanel.on_scroll_changed-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="MasterPanel.on_scroll_changed-expanded"><a name="L139"></a><tt class="py-lineno">139</tt>  <tt class="py-line">                <tt class="py-docstring">"""</tt> </tt>
+<a name="L140"></a><tt class="py-lineno">140</tt>  <tt class="py-line"><tt class="py-docstring">                Event handler triggered when the master slider has been dragged.</tt> </tt>
+<a name="L141"></a><tt class="py-lineno">141</tt>  <tt class="py-line"><tt class="py-docstring">                </tt> </tt>
+<a name="L142"></a><tt class="py-lineno">142</tt>  <tt class="py-line"><tt class="py-docstring">                @param event: event.</tt> </tt>
+<a name="L143"></a><tt class="py-lineno">143</tt>  <tt class="py-line"><tt class="py-docstring">                @type event: wx.Event</tt> </tt>
+<a name="L144"></a><tt class="py-lineno">144</tt>  <tt class="py-line"><tt class="py-docstring">                """</tt> </tt>
+<a name="L145"></a><tt class="py-lineno">145</tt>  <tt class="py-line">                <tt id="link-44" class="py-name"><a title="player" class="py-name" href="#" onclick="return doclink('link-44', 'player', 'link-17');">player</a></tt> <tt class="py-op">=</tt> <tt id="link-45" class="py-name"><a title="aldrincom.com" class="py-name" href="#" onclick="return doclink('link-45', 'com', 'link-10');">com</a></tt><tt class="py-op">.</tt><tt id="link-46" class="py-name"><a title="aldrincom.ComponentManager.get
+common.PluginInfoCollection.get
+freesound.Freesound.get" class="py-name" href="#" onclick="return doclink('link-46', 'get', 'link-19');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'aldrin.core.player'</tt><tt class="py-op">)</tt> </tt>
+<a name="L146"></a><tt class="py-lineno">146</tt>  <tt class="py-line">                <tt class="py-name">vol</tt> <tt class="py-op">=</tt> <tt class="py-name">int</tt><tt class="py-op">(</tt><tt class="py-name">min</tt><tt class="py-op">(</tt><tt class="py-name">max</tt><tt class="py-op">(</tt><tt class="py-name">value</tt><tt class="py-op">,</tt><tt class="py-number">0</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> <tt class="py-number">16384</tt><tt class="py-op">)</tt> <tt class="py-op">+</tt> <tt class="py-number">0.5</tt><tt class="py-op">)</tt> </tt>
+<a name="L147"></a><tt class="py-lineno">147</tt>  <tt class="py-line">                <tt class="py-name">master</tt> <tt class="py-op">=</tt> <tt id="link-47" class="py-name"><a title="player" class="py-name" href="#" onclick="return doclink('link-47', 'player', 'link-17');">player</a></tt><tt class="py-op">.</tt><tt id="link-48" class="py-name"><a title="patterns.PatternView.get_plugin
+patternsx.PatternView.get_plugin" class="py-name" href="#" onclick="return doclink('link-48', 'get_plugin', 'link-21');">get_plugin</a></tt><tt class="py-op">(</tt><tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
+<a name="L148"></a><tt class="py-lineno">148</tt>  <tt class="py-line">                <tt class="py-name">master</tt><tt class="py-op">.</tt><tt class="py-name">set_parameter_value</tt><tt class="py-op">(</tt><tt class="py-number">1</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">,</tt> <tt class="py-number">16384</tt> <tt class="py-op">-</tt> <tt class="py-name">vol</tt><tt class="py-op">,</tt> <tt class="py-number">1</tt><tt class="py-op">)</tt> </tt>
+<a name="L149"></a><tt class="py-lineno">149</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">masterslider</tt><tt class="py-op">.</tt><tt id="link-49" class="py-name" targets="Method audiogui.Knob.set_value()=audiogui.Knob-class.html#set_value"><a title="audiogui.Knob.set_value" class="py-name" href="#" onclick="return doclink('link-49', 'set_value', 'link-49');">set_value</a></tt><tt class="py-op">(</tt><tt class="py-name">vol</tt><tt class="py-op">)</tt> </tt>
+<a name="L150"></a><tt class="py-lineno">150</tt>  <tt class="py-line">                <tt class="py-keyword">return</tt> <tt class="py-name">True</tt> </tt>
+</div><a name="L151"></a><tt class="py-lineno">151</tt>  <tt class="py-line"> </tt>
+<a name="MasterPanel.on_mousewheel"></a><div id="MasterPanel.on_mousewheel-def"><a name="L152"></a><tt class="py-lineno">152</tt> <a class="py-toggle" href="#" id="MasterPanel.on_mousewheel-toggle" onclick="return toggle('MasterPanel.on_mousewheel');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="masterpanel.MasterPanel-class.html#on_mousewheel">on_mousewheel</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">widget</tt><tt class="py-op">,</tt> <tt class="py-param">event</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="MasterPanel.on_mousewheel-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="MasterPanel.on_mousewheel-expanded"><a name="L153"></a><tt class="py-lineno">153</tt>  <tt class="py-line">                <tt class="py-docstring">"""</tt> </tt>
+<a name="L154"></a><tt class="py-lineno">154</tt>  <tt class="py-line"><tt class="py-docstring">                Sent when the mousewheel is used on the master slider.</tt> </tt>
+<a name="L155"></a><tt class="py-lineno">155</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L156"></a><tt class="py-lineno">156</tt>  <tt class="py-line"><tt class="py-docstring">                @param event: A mouse event.</tt> </tt>
+<a name="L157"></a><tt class="py-lineno">157</tt>  <tt class="py-line"><tt class="py-docstring">                @type event: wx.MouseEvent</tt> </tt>
+<a name="L158"></a><tt class="py-lineno">158</tt>  <tt class="py-line"><tt class="py-docstring">                """</tt> </tt>
+<a name="L159"></a><tt class="py-lineno">159</tt>  <tt class="py-line">                <tt class="py-name">vol</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">masterslider</tt><tt class="py-op">.</tt><tt id="link-50" class="py-name" targets="Method audiogui.Knob.get_value()=audiogui.Knob-class.html#get_value"><a title="audiogui.Knob.get_value" class="py-name" href="#" onclick="return doclink('link-50', 'get_value', 'link-50');">get_value</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L160"></a><tt class="py-lineno">160</tt>  <tt class="py-line">                <tt class="py-name">step</tt> <tt class="py-op">=</tt> <tt class="py-number">16384</tt> <tt class="py-op">/</tt> <tt class="py-number">48</tt> </tt>
+<a name="L161"></a><tt class="py-lineno">161</tt>  <tt class="py-line">                <tt class="py-keyword">if</tt> <tt class="py-name">event</tt><tt class="py-op">.</tt><tt class="py-name">direction</tt> <tt class="py-op">==</tt> <tt class="py-name">gtk</tt><tt class="py-op">.</tt><tt class="py-name">gdk</tt><tt class="py-op">.</tt><tt class="py-name">SCROLL_UP</tt><tt class="py-op">:</tt> </tt>
+<a name="L162"></a><tt class="py-lineno">162</tt>  <tt class="py-line">                        <tt class="py-name">vol</tt> <tt class="py-op">+=</tt> <tt class="py-name">step</tt> </tt>
+<a name="L163"></a><tt class="py-lineno">163</tt>  <tt class="py-line">                <tt class="py-keyword">elif</tt> <tt class="py-name">event</tt><tt class="py-op">.</tt><tt class="py-name">direction</tt> <tt class="py-op">==</tt> <tt class="py-name">gtk</tt><tt class="py-op">.</tt><tt class="py-name">gdk</tt><tt class="py-op">.</tt><tt class="py-name">SCROLL_DOWN</tt><tt class="py-op">:</tt> </tt>
+<a name="L164"></a><tt class="py-lineno">164</tt>  <tt class="py-line">                        <tt class="py-name">vol</tt> <tt class="py-op">-=</tt> <tt class="py-name">step</tt> </tt>
+<a name="L165"></a><tt class="py-lineno">165</tt>  <tt class="py-line">                <tt class="py-name">vol</tt> <tt class="py-op">=</tt> <tt class="py-name">min</tt><tt class="py-op">(</tt><tt class="py-name">max</tt><tt class="py-op">(</tt><tt class="py-number">0</tt><tt class="py-op">,</tt><tt class="py-name">vol</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> <tt class="py-number">16384</tt><tt class="py-op">)</tt> </tt>
+<a name="L166"></a><tt class="py-lineno">166</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-51" class="py-name"><a title="masterpanel.MasterPanel.on_scroll_changed
+rack.ParameterView.on_scroll_changed
+wavetable.WavetablePanel.on_scroll_changed" class="py-name" href="#" onclick="return doclink('link-51', 'on_scroll_changed', 'link-31');">on_scroll_changed</a></tt><tt class="py-op">(</tt><tt class="py-name">None</tt><tt class="py-op">,</tt> <tt class="py-name">None</tt><tt class="py-op">,</tt> <tt class="py-name">vol</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L167"></a><tt class="py-lineno">167</tt>  <tt class="py-line">                 </tt>
+<a name="MasterPanel.update_all"></a><div id="MasterPanel.update_all-def"><a name="L168"></a><tt class="py-lineno">168</tt> <a class="py-toggle" href="#" id="MasterPanel.update_all-toggle" onclick="return toggle('MasterPanel.update_all');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="masterpanel.MasterPanel-class.html#update_all">update_all</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="MasterPanel.update_all-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="MasterPanel.update_all-expanded"><a name="L169"></a><tt class="py-lineno">169</tt>  <tt class="py-line">                <tt class="py-docstring">"""</tt> </tt>
+<a name="L170"></a><tt class="py-lineno">170</tt>  <tt class="py-line"><tt class="py-docstring">                Updates all controls.</tt> </tt>
+<a name="L171"></a><tt class="py-lineno">171</tt>  <tt class="py-line"><tt class="py-docstring">                """</tt> </tt>
+<a name="L172"></a><tt class="py-lineno">172</tt>  <tt class="py-line">                <tt id="link-52" class="py-name"><a title="player" class="py-name" href="#" onclick="return doclink('link-52', 'player', 'link-17');">player</a></tt> <tt class="py-op">=</tt> <tt id="link-53" class="py-name"><a title="aldrincom.com" class="py-name" href="#" onclick="return doclink('link-53', 'com', 'link-10');">com</a></tt><tt class="py-op">.</tt><tt id="link-54" class="py-name"><a title="aldrincom.ComponentManager.get
+common.PluginInfoCollection.get
+freesound.Freesound.get" class="py-name" href="#" onclick="return doclink('link-54', 'get', 'link-19');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'aldrin.core.player'</tt><tt class="py-op">)</tt> </tt>
+<a name="L173"></a><tt class="py-lineno">173</tt>  <tt class="py-line">                <tt class="py-name">master</tt> <tt class="py-op">=</tt> <tt id="link-55" class="py-name"><a title="player" class="py-name" href="#" onclick="return doclink('link-55', 'player', 'link-17');">player</a></tt><tt class="py-op">.</tt><tt id="link-56" class="py-name"><a title="patterns.PatternView.get_plugin
+patternsx.PatternView.get_plugin" class="py-name" href="#" onclick="return doclink('link-56', 'get_plugin', 'link-21');">get_plugin</a></tt><tt class="py-op">(</tt><tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
+<a name="L174"></a><tt class="py-lineno">174</tt>  <tt class="py-line">                <tt class="py-name">vol</tt> <tt class="py-op">=</tt> <tt class="py-name">master</tt><tt class="py-op">.</tt><tt class="py-name">get_parameter_value</tt><tt class="py-op">(</tt><tt class="py-number">1</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
+<a name="L175"></a><tt class="py-lineno">175</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">masterslider</tt><tt class="py-op">.</tt><tt id="link-57" class="py-name"><a title="audiogui.Knob.set_value" class="py-name" href="#" onclick="return doclink('link-57', 'set_value', 'link-49');">set_value</a></tt><tt class="py-op">(</tt><tt class="py-number">16384</tt> <tt class="py-op">-</tt> <tt class="py-name">vol</tt><tt class="py-op">)</tt> </tt>
+<a name="L176"></a><tt class="py-lineno">176</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">latency</tt> <tt class="py-op">=</tt> <tt id="link-58" class="py-name"><a title="driver" class="py-name" href="#" onclick="return doclink('link-58', 'driver', 'link-11');">driver</a></tt><tt class="py-op">.</tt><tt id="link-59" class="py-name" targets="Function driver.get_audiodriver()=driver-module.html#get_audiodriver"><a title="driver.get_audiodriver" class="py-name" href="#" onclick="return doclink('link-59', 'get_audiodriver', 'link-59');">get_audiodriver</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt id="link-60" class="py-name" targets="Method driver.AudioDriver.get_latency()=driver.AudioDriver-class.html#get_latency"><a title="driver.AudioDriver.get_latency" class="py-name" href="#" onclick="return doclink('link-60', 'get_latency', 'link-60');">get_latency</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L177"></a><tt class="py-lineno">177</tt>  <tt class="py-line"> </tt>
+<a name="MasterPanel.button_up"></a><div id="MasterPanel.button_up-def"><a name="L178"></a><tt class="py-lineno">178</tt> <a class="py-toggle" href="#" id="MasterPanel.button_up-toggle" onclick="return toggle('MasterPanel.button_up');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="masterpanel.MasterPanel-class.html#button_up">button_up</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">widget</tt><tt class="py-op">,</tt> <tt class="py-param">event</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="MasterPanel.button_up-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="MasterPanel.button_up-expanded"><a name="L179"></a><tt class="py-lineno">179</tt>  <tt class="py-line">                <tt class="py-docstring">"""</tt> </tt>
+<a name="L180"></a><tt class="py-lineno">180</tt>  <tt class="py-line"><tt class="py-docstring">                refocus panel</tt> </tt>
+<a name="L181"></a><tt class="py-lineno">181</tt>  <tt class="py-line"><tt class="py-docstring">                """</tt> </tt>
+<a name="L182"></a><tt class="py-lineno">182</tt>  <tt class="py-line">                <tt class="py-name">page</tt><tt class="py-op">=</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">rootwindow</tt><tt class="py-op">.</tt><tt class="py-name">framepanel</tt><tt class="py-op">.</tt><tt class="py-name">get_current_page</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L183"></a><tt class="py-lineno">183</tt>  <tt class="py-line">                <tt class="py-name">panel</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">rootwindow</tt><tt class="py-op">.</tt><tt class="py-name">pages</tt><tt class="py-op">[</tt><tt class="py-name">page</tt><tt class="py-op">]</tt> </tt>
+<a name="L184"></a><tt class="py-lineno">184</tt>  <tt class="py-line">                <tt class="py-keyword">try</tt><tt class="py-op">:</tt> <tt class="py-name">panel</tt><tt class="py-op">.</tt><tt class="py-name">view</tt><tt class="py-op">.</tt><tt class="py-name">grab_focus</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L185"></a><tt class="py-lineno">185</tt>  <tt class="py-line">                <tt class="py-keyword">except</tt><tt class="py-op">:</tt> <tt class="py-name">panel</tt><tt class="py-op">.</tt><tt class="py-name">grab_focus</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div></div><a name="L186"></a><tt class="py-lineno">186</tt>  <tt class="py-line"> </tt>
+<a name="L187"></a><tt class="py-lineno">187</tt>  <tt class="py-line"><tt id="link-61" class="py-name"><a title="about.AboutDialog.__aldrin__
+about.__aldrin__
+config.AldrinConfigSingleton.__aldrin__
+config.__aldrin__
+eventbus.AldrinEventBus.__aldrin__
+eventbus.__aldrin__
+iconfactory.IconLibrary.__aldrin__
+iconfactory.__aldrin__
+info.InfoPanel.__aldrin__
+info.__aldrin__
+mainwindow.AldrinFrame.__aldrin__
+mainwindow.__aldrin__
+masterpanel.MasterPanel.__aldrin__
+masterpanel.__aldrin__
+options.OptionParser.__aldrin__
+options.__aldrin__
+patterns.PatternPanel.__aldrin__
+patterns.__aldrin__
+pkgbrowser.PackageBrowserDialog.__aldrin__
+pkgbrowser.PackageBrowserMenuItem.__aldrin__
+pkgbrowser.__aldrin__
+player.AldrinPlayer.__aldrin__
+player.__aldrin__
+rack.RackPanel.__aldrin__
+rack.__aldrin__
+router.RoutePanel.__aldrin__
+router.RouteView.__aldrin__
+router.__aldrin__
+sequencer.SequencerPanel.__aldrin__
+sequencer.__aldrin__
+transportpanel.TransportPanel.__aldrin__
+transportpanel.__aldrin__
+wavetable.WavetablePanel.__aldrin__
+wavetable.__aldrin__" class="py-name" href="#" onclick="return doclink('link-61', '__aldrin__', 'link-25');">__aldrin__</a></tt> <tt class="py-op">=</tt> <tt class="py-name">dict</tt><tt class="py-op">(</tt> </tt>
+<a name="L188"></a><tt class="py-lineno">188</tt>  <tt class="py-line">        <tt class="py-name">classes</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt> </tt>
+<a name="L189"></a><tt class="py-lineno">189</tt>  <tt class="py-line">                <tt id="link-62" class="py-name" targets="Class masterpanel.MasterPanel=masterpanel.MasterPanel-class.html"><a title="masterpanel.MasterPanel" class="py-name" href="#" onclick="return doclink('link-62', 'MasterPanel', 'link-62');">MasterPanel</a></tt><tt class="py-op">,</tt> </tt>
+<a name="L190"></a><tt class="py-lineno">190</tt>  <tt class="py-line">        <tt class="py-op">]</tt><tt class="py-op">,</tt> </tt>
+<a name="L191"></a><tt class="py-lineno">191</tt>  <tt class="py-line"><tt class="py-op">)</tt> </tt>
+<a name="L192"></a><tt class="py-lineno">192</tt>  <tt class="py-line"> </tt>
+<a name="L193"></a><tt class="py-lineno">193</tt>  <tt class="py-line"><tt class="py-keyword">if</tt> <tt class="py-name">__name__</tt> <tt class="py-op">==</tt> <tt class="py-string">'__main__'</tt><tt class="py-op">:</tt> </tt>
+<a name="L194"></a><tt class="py-lineno">194</tt>  <tt class="py-line">        <tt class="py-keyword">pass</tt> </tt>
+<a name="L195"></a><tt class="py-lineno">195</tt>  <tt class="py-line"> </tt><script type="text/javascript">
+<!--
+expandto(location.href);
+// -->
+</script>
+</pre>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >Aldrin API</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0beta1 on Wed Jun 11 23:20:28 2008
+    </td>
+    <td align="right" class="footer">
+      <a href="http://epydoc.sourceforge.net">http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie()
+  // -->
+</script>
+  
+</body>
+</html>

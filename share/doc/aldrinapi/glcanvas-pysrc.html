@@ -1,0 +1,384 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>glcanvas</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >Aldrin API</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        Module&nbsp;glcanvas
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="glcanvas-pysrc.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<h1 class="epydoc">Source Code for <a href="glcanvas-module.html">Module glcanvas</a></h1>
+<pre class="py-src">
+<a name="L1"></a><tt class="py-lineno">  1</tt>  <tt class="py-line"> </tt>
+<a name="L2"></a><tt class="py-lineno">  2</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">wximport</tt> <tt class="py-keyword">import</tt> <tt class="py-name">wx</tt> </tt>
+<a name="L3"></a><tt class="py-lineno">  3</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">wx</tt><tt class="py-op">.</tt><tt id="link-0" class="py-name" targets="Module glcanvas=glcanvas-module.html"><a title="glcanvas" class="py-name" href="#" onclick="return doclink('link-0', 'glcanvas', 'link-0');">glcanvas</a></tt> </tt>
+<a name="L4"></a><tt class="py-lineno">  4</tt>  <tt class="py-line"> </tt>
+<a name="L5"></a><tt class="py-lineno">  5</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">OpenGL</tt><tt class="py-op">.</tt><tt class="py-name">GL</tt> <tt class="py-keyword">import</tt>   <tt class="py-name">glColor3f</tt><tt class="py-op">,</tt> \ </tt>
+<a name="L6"></a><tt class="py-lineno">  6</tt>  <tt class="py-line">                                                <tt class="py-name">glClearColor</tt><tt class="py-op">,</tt> \ </tt>
+<a name="L7"></a><tt class="py-lineno">  7</tt>  <tt class="py-line">                                                <tt class="py-name">glClear</tt><tt class="py-op">,</tt> \ </tt>
+<a name="L8"></a><tt class="py-lineno">  8</tt>  <tt class="py-line">                                                <tt class="py-name">GL_COLOR_BUFFER_BIT</tt><tt class="py-op">,</tt> \ </tt>
+<a name="L9"></a><tt class="py-lineno">  9</tt>  <tt class="py-line">                                                <tt class="py-name">glOrtho</tt><tt class="py-op">,</tt> \ </tt>
+<a name="L10"></a><tt class="py-lineno"> 10</tt>  <tt class="py-line">                                                <tt class="py-name">glBegin</tt><tt class="py-op">,</tt> \ </tt>
+<a name="L11"></a><tt class="py-lineno"> 11</tt>  <tt class="py-line">                                                <tt class="py-name">glEnd</tt><tt class="py-op">,</tt> \ </tt>
+<a name="L12"></a><tt class="py-lineno"> 12</tt>  <tt class="py-line">                                                <tt class="py-name">glVertex2f</tt><tt class="py-op">,</tt> \ </tt>
+<a name="L13"></a><tt class="py-lineno"> 13</tt>  <tt class="py-line">                                                <tt class="py-name">GL_QUADS</tt><tt class="py-op">,</tt> \ </tt>
+<a name="L14"></a><tt class="py-lineno"> 14</tt>  <tt class="py-line">                                                <tt class="py-name">glMatrixMode</tt><tt class="py-op">,</tt> \ </tt>
+<a name="L15"></a><tt class="py-lineno"> 15</tt>  <tt class="py-line">                                                <tt class="py-name">GL_PROJECTION</tt><tt class="py-op">,</tt> \ </tt>
+<a name="L16"></a><tt class="py-lineno"> 16</tt>  <tt class="py-line">                                                <tt class="py-name">glLoadIdentity</tt><tt class="py-op">,</tt> \ </tt>
+<a name="L17"></a><tt class="py-lineno"> 17</tt>  <tt class="py-line">                                                <tt class="py-name">GL_LINES</tt><tt class="py-op">,</tt> \ </tt>
+<a name="L18"></a><tt class="py-lineno"> 18</tt>  <tt class="py-line">                                                <tt class="py-name">GL_POLYGON</tt><tt class="py-op">,</tt> \ </tt>
+<a name="L19"></a><tt class="py-lineno"> 19</tt>  <tt class="py-line">                                                <tt class="py-name">GL_LINE_LOOP</tt> </tt>
+<a name="L20"></a><tt class="py-lineno"> 20</tt>  <tt class="py-line"> </tt>
+<a name="make_glcolor"></a><div id="make_glcolor-def"><a name="L21"></a><tt class="py-lineno"> 21</tt> <a class="py-toggle" href="#" id="make_glcolor-toggle" onclick="return toggle('make_glcolor');">-</a><tt class="py-line"><tt class="py-keyword">def</tt> <a class="py-def-name" href="glcanvas-module.html#make_glcolor">make_glcolor</a><tt class="py-op">(</tt><tt class="py-param">colour</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="make_glcolor-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="make_glcolor-expanded"><a name="L22"></a><tt class="py-lineno"> 22</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">colour</tt><tt class="py-op">.</tt><tt class="py-name">Red</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">/</tt><tt class="py-number">255.0</tt><tt class="py-op">,</tt> <tt class="py-name">colour</tt><tt class="py-op">.</tt><tt class="py-name">Green</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">/</tt><tt class="py-number">255.0</tt><tt class="py-op">,</tt> <tt class="py-name">colour</tt><tt class="py-op">.</tt><tt class="py-name">Blue</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">/</tt><tt class="py-number">255.0</tt> </tt>
+</div><a name="L23"></a><tt class="py-lineno"> 23</tt>  <tt class="py-line"> </tt>
+<a name="GLClientDC"></a><div id="GLClientDC-def"><a name="L24"></a><tt class="py-lineno"> 24</tt> <a class="py-toggle" href="#" id="GLClientDC-toggle" onclick="return toggle('GLClientDC');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="glcanvas.GLClientDC-class.html">GLClientDC</a><tt class="py-op">:</tt> </tt>
+</div><div id="GLClientDC-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="GLClientDC-expanded"><a name="GLClientDC.__init__"></a><div id="GLClientDC.__init__-def"><a name="L25"></a><tt class="py-lineno"> 25</tt> <a class="py-toggle" href="#" id="GLClientDC.__init__-toggle" onclick="return toggle('GLClientDC.__init__');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="glcanvas.GLClientDC-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">glcanvas</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="GLClientDC.__init__-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="GLClientDC.__init__-expanded"><a name="L26"></a><tt class="py-lineno"> 26</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">canvas</tt> <tt class="py-op">=</tt> <tt id="link-1" class="py-name"><a title="glcanvas" class="py-name" href="#" onclick="return doclink('link-1', 'glcanvas', 'link-0');">glcanvas</a></tt>           </tt>
+</div><a name="L27"></a><tt class="py-lineno"> 27</tt>  <tt class="py-line">                 </tt>
+<a name="GLClientDC.BeginDrawing"></a><div id="GLClientDC.BeginDrawing-def"><a name="L28"></a><tt class="py-lineno"> 28</tt> <a class="py-toggle" href="#" id="GLClientDC.BeginDrawing-toggle" onclick="return toggle('GLClientDC.BeginDrawing');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="glcanvas.GLClientDC-class.html#BeginDrawing">BeginDrawing</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="GLClientDC.BeginDrawing-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="GLClientDC.BeginDrawing-expanded"><a name="L29"></a><tt class="py-lineno"> 29</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">canvas</tt><tt class="py-op">.</tt><tt class="py-name">SetCurrent</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L30"></a><tt class="py-lineno"> 30</tt>  <tt class="py-line">                <tt class="py-name">w</tt><tt class="py-op">,</tt><tt class="py-name">h</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">canvas</tt><tt class="py-op">.</tt><tt class="py-name">GetClientSize</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L31"></a><tt class="py-lineno"> 31</tt>  <tt class="py-line">                <tt class="py-name">glMatrixMode</tt><tt class="py-op">(</tt><tt class="py-name">GL_PROJECTION</tt><tt class="py-op">)</tt> </tt>
+<a name="L32"></a><tt class="py-lineno"> 32</tt>  <tt class="py-line">                <tt class="py-name">glLoadIdentity</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L33"></a><tt class="py-lineno"> 33</tt>  <tt class="py-line">                <tt class="py-name">glOrtho</tt><tt class="py-op">(</tt><tt class="py-number">0</tt><tt class="py-op">,</tt><tt class="py-name">w</tt><tt class="py-op">,</tt><tt class="py-name">h</tt><tt class="py-op">,</tt><tt class="py-number">0</tt><tt class="py-op">,</tt><tt class="py-op">-</tt><tt class="py-number">1</tt><tt class="py-op">,</tt><tt class="py-number">1</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L34"></a><tt class="py-lineno"> 34</tt>  <tt class="py-line">                 </tt>
+<a name="GLClientDC.EndDrawing"></a><div id="GLClientDC.EndDrawing-def"><a name="L35"></a><tt class="py-lineno"> 35</tt> <a class="py-toggle" href="#" id="GLClientDC.EndDrawing-toggle" onclick="return toggle('GLClientDC.EndDrawing');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="glcanvas.GLClientDC-class.html#EndDrawing">EndDrawing</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="GLClientDC.EndDrawing-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="GLClientDC.EndDrawing-expanded"><a name="L36"></a><tt class="py-lineno"> 36</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">canvas</tt><tt class="py-op">.</tt><tt class="py-name">SwapBuffers</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L37"></a><tt class="py-lineno"> 37</tt>  <tt class="py-line">                 </tt>
+<a name="GLClientDC.SetFont"></a><div id="GLClientDC.SetFont-def"><a name="L38"></a><tt class="py-lineno"> 38</tt> <a class="py-toggle" href="#" id="GLClientDC.SetFont-toggle" onclick="return toggle('GLClientDC.SetFont');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="glcanvas.GLClientDC-class.html#SetFont">SetFont</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">font</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="GLClientDC.SetFont-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="GLClientDC.SetFont-expanded"><a name="L39"></a><tt class="py-lineno"> 39</tt>  <tt class="py-line">                <tt class="py-keyword">pass</tt> </tt>
+</div><a name="L40"></a><tt class="py-lineno"> 40</tt>  <tt class="py-line">                 </tt>
+<a name="GLClientDC.SetBackground"></a><div id="GLClientDC.SetBackground-def"><a name="L41"></a><tt class="py-lineno"> 41</tt> <a class="py-toggle" href="#" id="GLClientDC.SetBackground-toggle" onclick="return toggle('GLClientDC.SetBackground');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="glcanvas.GLClientDC-class.html#SetBackground">SetBackground</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">brush</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="GLClientDC.SetBackground-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="GLClientDC.SetBackground-expanded"><a name="L42"></a><tt class="py-lineno"> 42</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">bgbrushcolor</tt> <tt class="py-op">=</tt> <tt id="link-2" class="py-name" targets="Function glcanvas.make_glcolor()=glcanvas-module.html#make_glcolor"><a title="glcanvas.make_glcolor" class="py-name" href="#" onclick="return doclink('link-2', 'make_glcolor', 'link-2');">make_glcolor</a></tt><tt class="py-op">(</tt><tt class="py-name">brush</tt><tt class="py-op">.</tt><tt class="py-name">GetColour</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L43"></a><tt class="py-lineno"> 43</tt>  <tt class="py-line">                 </tt>
+<a name="GLClientDC.SetBackgroundMode"></a><div id="GLClientDC.SetBackgroundMode-def"><a name="L44"></a><tt class="py-lineno"> 44</tt> <a class="py-toggle" href="#" id="GLClientDC.SetBackgroundMode-toggle" onclick="return toggle('GLClientDC.SetBackgroundMode');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="glcanvas.GLClientDC-class.html#SetBackgroundMode">SetBackgroundMode</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">mode</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="GLClientDC.SetBackgroundMode-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="GLClientDC.SetBackgroundMode-expanded"><a name="L45"></a><tt class="py-lineno"> 45</tt>  <tt class="py-line">                <tt class="py-keyword">pass</tt> </tt>
+</div><a name="L46"></a><tt class="py-lineno"> 46</tt>  <tt class="py-line">                 </tt>
+<a name="GLClientDC.SetBrush"></a><div id="GLClientDC.SetBrush-def"><a name="L47"></a><tt class="py-lineno"> 47</tt> <a class="py-toggle" href="#" id="GLClientDC.SetBrush-toggle" onclick="return toggle('GLClientDC.SetBrush');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="glcanvas.GLClientDC-class.html#SetBrush">SetBrush</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">brush</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="GLClientDC.SetBrush-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="GLClientDC.SetBrush-expanded"><a name="L48"></a><tt class="py-lineno"> 48</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">brushcolor</tt> <tt class="py-op">=</tt> <tt id="link-3" class="py-name"><a title="glcanvas.make_glcolor" class="py-name" href="#" onclick="return doclink('link-3', 'make_glcolor', 'link-2');">make_glcolor</a></tt><tt class="py-op">(</tt><tt class="py-name">brush</tt><tt class="py-op">.</tt><tt class="py-name">GetColour</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L49"></a><tt class="py-lineno"> 49</tt>  <tt class="py-line">                 </tt>
+<a name="GLClientDC.SetPen"></a><div id="GLClientDC.SetPen-def"><a name="L50"></a><tt class="py-lineno"> 50</tt> <a class="py-toggle" href="#" id="GLClientDC.SetPen-toggle" onclick="return toggle('GLClientDC.SetPen');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="glcanvas.GLClientDC-class.html#SetPen">SetPen</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">pen</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="GLClientDC.SetPen-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="GLClientDC.SetPen-expanded"><a name="L51"></a><tt class="py-lineno"> 51</tt>  <tt class="py-line">                <tt class="py-keyword">if</tt> <tt class="py-name">pen</tt> <tt class="py-op">==</tt> <tt class="py-name">wx</tt><tt class="py-op">.</tt><tt class="py-name">TRANSPARENT_PEN</tt><tt class="py-op">:</tt> </tt>
+<a name="L52"></a><tt class="py-lineno"> 52</tt>  <tt class="py-line">                        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">pencolor</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt> </tt>
+<a name="L53"></a><tt class="py-lineno"> 53</tt>  <tt class="py-line">                <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L54"></a><tt class="py-lineno"> 54</tt>  <tt class="py-line">                        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">pencolor</tt> <tt class="py-op">=</tt> <tt id="link-4" class="py-name"><a title="glcanvas.make_glcolor" class="py-name" href="#" onclick="return doclink('link-4', 'make_glcolor', 'link-2');">make_glcolor</a></tt><tt class="py-op">(</tt><tt class="py-name">pen</tt><tt class="py-op">.</tt><tt class="py-name">GetColour</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L55"></a><tt class="py-lineno"> 55</tt>  <tt class="py-line">                 </tt>
+<a name="GLClientDC.SetTextForeground"></a><div id="GLClientDC.SetTextForeground-def"><a name="L56"></a><tt class="py-lineno"> 56</tt> <a class="py-toggle" href="#" id="GLClientDC.SetTextForeground-toggle" onclick="return toggle('GLClientDC.SetTextForeground');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="glcanvas.GLClientDC-class.html#SetTextForeground">SetTextForeground</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">color</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="GLClientDC.SetTextForeground-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="GLClientDC.SetTextForeground-expanded"><a name="L57"></a><tt class="py-lineno"> 57</tt>  <tt class="py-line">                <tt class="py-keyword">pass</tt> </tt>
+</div><a name="L58"></a><tt class="py-lineno"> 58</tt>  <tt class="py-line">                 </tt>
+<a name="GLClientDC.SetTextBackground"></a><div id="GLClientDC.SetTextBackground-def"><a name="L59"></a><tt class="py-lineno"> 59</tt> <a class="py-toggle" href="#" id="GLClientDC.SetTextBackground-toggle" onclick="return toggle('GLClientDC.SetTextBackground');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="glcanvas.GLClientDC-class.html#SetTextBackground">SetTextBackground</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">color</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="GLClientDC.SetTextBackground-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="GLClientDC.SetTextBackground-expanded"><a name="L60"></a><tt class="py-lineno"> 60</tt>  <tt class="py-line">                <tt class="py-keyword">pass</tt> </tt>
+</div><a name="L61"></a><tt class="py-lineno"> 61</tt>  <tt class="py-line">                 </tt>
+<a name="GLClientDC.Clear"></a><div id="GLClientDC.Clear-def"><a name="L62"></a><tt class="py-lineno"> 62</tt> <a class="py-toggle" href="#" id="GLClientDC.Clear-toggle" onclick="return toggle('GLClientDC.Clear');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="glcanvas.GLClientDC-class.html#Clear">Clear</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="GLClientDC.Clear-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="GLClientDC.Clear-expanded"><a name="L63"></a><tt class="py-lineno"> 63</tt>  <tt class="py-line">                <tt class="py-name">glClearColor</tt><tt class="py-op">(</tt><tt class="py-op">*</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">bgbrushcolor</tt> <tt class="py-op">+</tt> <tt class="py-op">(</tt><tt class="py-number">0</tt><tt class="py-op">,</tt><tt class="py-op">)</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L64"></a><tt class="py-lineno"> 64</tt>  <tt class="py-line">                <tt class="py-name">glClear</tt><tt class="py-op">(</tt><tt class="py-name">GL_COLOR_BUFFER_BIT</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L65"></a><tt class="py-lineno"> 65</tt>  <tt class="py-line">                 </tt>
+<a name="GLClientDC.DrawCircle"></a><div id="GLClientDC.DrawCircle-def"><a name="L66"></a><tt class="py-lineno"> 66</tt> <a class="py-toggle" href="#" id="GLClientDC.DrawCircle-toggle" onclick="return toggle('GLClientDC.DrawCircle');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="glcanvas.GLClientDC-class.html#DrawCircle">DrawCircle</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">x</tt><tt class="py-op">,</tt> <tt class="py-param">y</tt><tt class="py-op">,</tt> <tt class="py-param">radius</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="GLClientDC.DrawCircle-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="GLClientDC.DrawCircle-expanded"><a name="L67"></a><tt class="py-lineno"> 67</tt>  <tt class="py-line">                <tt class="py-keyword">pass</tt> </tt>
+</div><a name="L68"></a><tt class="py-lineno"> 68</tt>  <tt class="py-line">                 </tt>
+<a name="GLClientDC.DrawRectangle"></a><div id="GLClientDC.DrawRectangle-def"><a name="L69"></a><tt class="py-lineno"> 69</tt> <a class="py-toggle" href="#" id="GLClientDC.DrawRectangle-toggle" onclick="return toggle('GLClientDC.DrawRectangle');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="glcanvas.GLClientDC-class.html#DrawRectangle">DrawRectangle</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">x</tt><tt class="py-op">,</tt> <tt class="py-param">y</tt><tt class="py-op">,</tt> <tt class="py-param">w</tt><tt class="py-op">,</tt> <tt class="py-param">h</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="GLClientDC.DrawRectangle-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="GLClientDC.DrawRectangle-expanded"><a name="L70"></a><tt class="py-lineno"> 70</tt>  <tt class="py-line">                <tt class="py-name">w</tt> <tt class="py-op">-=</tt> <tt class="py-number">1</tt> </tt>
+<a name="L71"></a><tt class="py-lineno"> 71</tt>  <tt class="py-line">                <tt class="py-name">h</tt> <tt class="py-op">-=</tt> <tt class="py-number">1</tt> </tt>
+<a name="L72"></a><tt class="py-lineno"> 72</tt>  <tt class="py-line">                <tt class="py-keyword">if</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">brushcolor</tt><tt class="py-op">:</tt> </tt>
+<a name="L73"></a><tt class="py-lineno"> 73</tt>  <tt class="py-line">                        <tt class="py-name">glColor3f</tt><tt class="py-op">(</tt><tt class="py-op">*</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">brushcolor</tt><tt class="py-op">)</tt> </tt>
+<a name="L74"></a><tt class="py-lineno"> 74</tt>  <tt class="py-line">                        <tt class="py-name">glBegin</tt><tt class="py-op">(</tt><tt class="py-name">GL_QUADS</tt><tt class="py-op">)</tt> </tt>
+<a name="L75"></a><tt class="py-lineno"> 75</tt>  <tt class="py-line">                        <tt class="py-name">glVertex2f</tt><tt class="py-op">(</tt><tt id="link-5" class="py-name" targets="Variable about.x=about-module.html#x,Variable mainwindow.AldrinFrame.x=mainwindow.AldrinFrame-class.html#x"><a title="about.x
+mainwindow.AldrinFrame.x" class="py-name" href="#" onclick="return doclink('link-5', 'x', 'link-5');">x</a></tt><tt class="py-op">,</tt><tt class="py-name">y</tt><tt class="py-op">)</tt> </tt>
+<a name="L76"></a><tt class="py-lineno"> 76</tt>  <tt class="py-line">                        <tt class="py-name">glVertex2f</tt><tt class="py-op">(</tt><tt id="link-6" class="py-name"><a title="about.x
+mainwindow.AldrinFrame.x" class="py-name" href="#" onclick="return doclink('link-6', 'x', 'link-5');">x</a></tt><tt class="py-op">,</tt><tt class="py-name">y</tt><tt class="py-op">+</tt><tt class="py-name">h</tt><tt class="py-op">)</tt> </tt>
+<a name="L77"></a><tt class="py-lineno"> 77</tt>  <tt class="py-line">                        <tt class="py-name">glVertex2f</tt><tt class="py-op">(</tt><tt id="link-7" class="py-name"><a title="about.x
+mainwindow.AldrinFrame.x" class="py-name" href="#" onclick="return doclink('link-7', 'x', 'link-5');">x</a></tt><tt class="py-op">+</tt><tt class="py-name">w</tt><tt class="py-op">,</tt><tt class="py-name">y</tt><tt class="py-op">+</tt><tt class="py-name">h</tt><tt class="py-op">)</tt> </tt>
+<a name="L78"></a><tt class="py-lineno"> 78</tt>  <tt class="py-line">                        <tt class="py-name">glVertex2f</tt><tt class="py-op">(</tt><tt id="link-8" class="py-name"><a title="about.x
+mainwindow.AldrinFrame.x" class="py-name" href="#" onclick="return doclink('link-8', 'x', 'link-5');">x</a></tt><tt class="py-op">+</tt><tt class="py-name">w</tt><tt class="py-op">,</tt><tt class="py-name">y</tt><tt class="py-op">)</tt> </tt>
+<a name="L79"></a><tt class="py-lineno"> 79</tt>  <tt class="py-line">                        <tt class="py-name">glEnd</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L80"></a><tt class="py-lineno"> 80</tt>  <tt class="py-line">                <tt class="py-keyword">if</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">pencolor</tt><tt class="py-op">:</tt> </tt>
+<a name="L81"></a><tt class="py-lineno"> 81</tt>  <tt class="py-line">                        <tt class="py-name">glColor3f</tt><tt class="py-op">(</tt><tt class="py-op">*</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">pencolor</tt><tt class="py-op">)</tt> </tt>
+<a name="L82"></a><tt class="py-lineno"> 82</tt>  <tt class="py-line">                        <tt class="py-comment">#~ x += 1</tt> </tt>
+<a name="L83"></a><tt class="py-lineno"> 83</tt>  <tt class="py-line"><tt class="py-comment"></tt>                        <tt class="py-comment">#~ y += 1</tt> </tt>
+<a name="L84"></a><tt class="py-lineno"> 84</tt>  <tt class="py-line"><tt class="py-comment"></tt>                        <tt class="py-comment">#~ w -= 2</tt> </tt>
+<a name="L85"></a><tt class="py-lineno"> 85</tt>  <tt class="py-line"><tt class="py-comment"></tt>                        <tt class="py-comment">#~ h -= 2</tt> </tt>
+<a name="L86"></a><tt class="py-lineno"> 86</tt>  <tt class="py-line"><tt class="py-comment"></tt>                        <tt class="py-name">glBegin</tt><tt class="py-op">(</tt><tt class="py-name">GL_LINE_LOOP</tt><tt class="py-op">)</tt> </tt>
+<a name="L87"></a><tt class="py-lineno"> 87</tt>  <tt class="py-line">                        <tt class="py-name">glVertex2f</tt><tt class="py-op">(</tt><tt id="link-9" class="py-name"><a title="about.x
+mainwindow.AldrinFrame.x" class="py-name" href="#" onclick="return doclink('link-9', 'x', 'link-5');">x</a></tt><tt class="py-op">,</tt><tt class="py-name">y</tt><tt class="py-op">)</tt> </tt>
+<a name="L88"></a><tt class="py-lineno"> 88</tt>  <tt class="py-line">                        <tt class="py-name">glVertex2f</tt><tt class="py-op">(</tt><tt id="link-10" class="py-name"><a title="about.x
+mainwindow.AldrinFrame.x" class="py-name" href="#" onclick="return doclink('link-10', 'x', 'link-5');">x</a></tt><tt class="py-op">,</tt><tt class="py-name">y</tt><tt class="py-op">+</tt><tt class="py-name">h</tt><tt class="py-op">)</tt> </tt>
+<a name="L89"></a><tt class="py-lineno"> 89</tt>  <tt class="py-line">                        <tt class="py-name">glVertex2f</tt><tt class="py-op">(</tt><tt id="link-11" class="py-name"><a title="about.x
+mainwindow.AldrinFrame.x" class="py-name" href="#" onclick="return doclink('link-11', 'x', 'link-5');">x</a></tt><tt class="py-op">+</tt><tt class="py-name">w</tt><tt class="py-op">,</tt><tt class="py-name">y</tt><tt class="py-op">+</tt><tt class="py-name">h</tt><tt class="py-op">)</tt> </tt>
+<a name="L90"></a><tt class="py-lineno"> 90</tt>  <tt class="py-line">                        <tt class="py-name">glVertex2f</tt><tt class="py-op">(</tt><tt id="link-12" class="py-name"><a title="about.x
+mainwindow.AldrinFrame.x" class="py-name" href="#" onclick="return doclink('link-12', 'x', 'link-5');">x</a></tt><tt class="py-op">+</tt><tt class="py-name">w</tt><tt class="py-op">,</tt><tt class="py-name">y</tt><tt class="py-op">)</tt> </tt>
+<a name="L91"></a><tt class="py-lineno"> 91</tt>  <tt class="py-line">                        <tt class="py-name">glEnd</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L92"></a><tt class="py-lineno"> 92</tt>  <tt class="py-line">                 </tt>
+<a name="GLClientDC.DrawPolygon"></a><div id="GLClientDC.DrawPolygon-def"><a name="L93"></a><tt class="py-lineno"> 93</tt> <a class="py-toggle" href="#" id="GLClientDC.DrawPolygon-toggle" onclick="return toggle('GLClientDC.DrawPolygon');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="glcanvas.GLClientDC-class.html#DrawPolygon">DrawPolygon</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">points</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="GLClientDC.DrawPolygon-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="GLClientDC.DrawPolygon-expanded"><a name="L94"></a><tt class="py-lineno"> 94</tt>  <tt class="py-line">                <tt class="py-keyword">if</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">brushcolor</tt><tt class="py-op">:</tt> </tt>
+<a name="L95"></a><tt class="py-lineno"> 95</tt>  <tt class="py-line">                        <tt class="py-name">glColor3f</tt><tt class="py-op">(</tt><tt class="py-op">*</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">brushcolor</tt><tt class="py-op">)</tt> </tt>
+<a name="L96"></a><tt class="py-lineno"> 96</tt>  <tt class="py-line">                        <tt class="py-name">glBegin</tt><tt class="py-op">(</tt><tt class="py-name">GL_POLYGON</tt><tt class="py-op">)</tt> </tt>
+<a name="L97"></a><tt class="py-lineno"> 97</tt>  <tt class="py-line">                        <tt class="py-keyword">for</tt> <tt class="py-name">pt</tt> <tt class="py-keyword">in</tt> <tt class="py-name">points</tt><tt class="py-op">:</tt> </tt>
+<a name="L98"></a><tt class="py-lineno"> 98</tt>  <tt class="py-line">                                <tt class="py-name">glVertex2f</tt><tt class="py-op">(</tt><tt class="py-name">pt</tt><tt class="py-op">.</tt><tt id="link-13" class="py-name"><a title="about.x
+mainwindow.AldrinFrame.x" class="py-name" href="#" onclick="return doclink('link-13', 'x', 'link-5');">x</a></tt><tt class="py-op">,</tt><tt class="py-name">pt</tt><tt class="py-op">.</tt><tt class="py-name">y</tt><tt class="py-op">)</tt> </tt>
+<a name="L99"></a><tt class="py-lineno"> 99</tt>  <tt class="py-line">                        <tt class="py-name">glEnd</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L100"></a><tt class="py-lineno">100</tt>  <tt class="py-line">                <tt class="py-keyword">if</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">pencolor</tt><tt class="py-op">:</tt> </tt>
+<a name="L101"></a><tt class="py-lineno">101</tt>  <tt class="py-line">                        <tt class="py-name">glColor3f</tt><tt class="py-op">(</tt><tt class="py-op">*</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">pencolor</tt><tt class="py-op">)</tt> </tt>
+<a name="L102"></a><tt class="py-lineno">102</tt>  <tt class="py-line">                        <tt class="py-name">glBegin</tt><tt class="py-op">(</tt><tt class="py-name">GL_LINE_LOOP</tt><tt class="py-op">)</tt> </tt>
+<a name="L103"></a><tt class="py-lineno">103</tt>  <tt class="py-line">                        <tt class="py-keyword">for</tt> <tt class="py-name">pt</tt> <tt class="py-keyword">in</tt> <tt class="py-name">points</tt><tt class="py-op">:</tt> </tt>
+<a name="L104"></a><tt class="py-lineno">104</tt>  <tt class="py-line">                                <tt class="py-name">glVertex2f</tt><tt class="py-op">(</tt><tt class="py-name">pt</tt><tt class="py-op">.</tt><tt id="link-14" class="py-name"><a title="about.x
+mainwindow.AldrinFrame.x" class="py-name" href="#" onclick="return doclink('link-14', 'x', 'link-5');">x</a></tt><tt class="py-op">,</tt><tt class="py-name">pt</tt><tt class="py-op">.</tt><tt class="py-name">y</tt><tt class="py-op">)</tt> </tt>
+<a name="L105"></a><tt class="py-lineno">105</tt>  <tt class="py-line">                        <tt class="py-name">glEnd</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L106"></a><tt class="py-lineno">106</tt>  <tt class="py-line">                 </tt>
+<a name="GLClientDC.SetLogicalFunction"></a><div id="GLClientDC.SetLogicalFunction-def"><a name="L107"></a><tt class="py-lineno">107</tt> <a class="py-toggle" href="#" id="GLClientDC.SetLogicalFunction-toggle" onclick="return toggle('GLClientDC.SetLogicalFunction');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="glcanvas.GLClientDC-class.html#SetLogicalFunction">SetLogicalFunction</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">func</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="GLClientDC.SetLogicalFunction-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="GLClientDC.SetLogicalFunction-expanded"><a name="L108"></a><tt class="py-lineno">108</tt>  <tt class="py-line">                <tt class="py-keyword">pass</tt> </tt>
+</div><a name="L109"></a><tt class="py-lineno">109</tt>  <tt class="py-line">                 </tt>
+<a name="GLClientDC.DrawLine"></a><div id="GLClientDC.DrawLine-def"><a name="L110"></a><tt class="py-lineno">110</tt> <a class="py-toggle" href="#" id="GLClientDC.DrawLine-toggle" onclick="return toggle('GLClientDC.DrawLine');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="glcanvas.GLClientDC-class.html#DrawLine">DrawLine</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">x1</tt><tt class="py-op">,</tt> <tt class="py-param">y1</tt><tt class="py-op">,</tt> <tt class="py-param">x2</tt><tt class="py-op">,</tt> <tt class="py-param">y2</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="GLClientDC.DrawLine-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="GLClientDC.DrawLine-expanded"><a name="L111"></a><tt class="py-lineno">111</tt>  <tt class="py-line">                <tt class="py-keyword">if</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">pencolor</tt><tt class="py-op">:</tt> </tt>
+<a name="L112"></a><tt class="py-lineno">112</tt>  <tt class="py-line">                        <tt class="py-name">glColor3f</tt><tt class="py-op">(</tt><tt class="py-op">*</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">pencolor</tt><tt class="py-op">)</tt> </tt>
+<a name="L113"></a><tt class="py-lineno">113</tt>  <tt class="py-line">                        <tt class="py-name">glBegin</tt><tt class="py-op">(</tt><tt class="py-name">GL_LINES</tt><tt class="py-op">)</tt> </tt>
+<a name="L114"></a><tt class="py-lineno">114</tt>  <tt class="py-line">                        <tt class="py-name">glVertex2f</tt><tt class="py-op">(</tt><tt class="py-name">x1</tt><tt class="py-op">,</tt><tt class="py-name">y1</tt><tt class="py-op">)</tt> </tt>
+<a name="L115"></a><tt class="py-lineno">115</tt>  <tt class="py-line">                        <tt class="py-name">glVertex2f</tt><tt class="py-op">(</tt><tt class="py-name">x2</tt><tt class="py-op">,</tt><tt class="py-name">y2</tt><tt class="py-op">)</tt> </tt>
+<a name="L116"></a><tt class="py-lineno">116</tt>  <tt class="py-line">                        <tt class="py-name">glEnd</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L117"></a><tt class="py-lineno">117</tt>  <tt class="py-line">                 </tt>
+<a name="GLClientDC.DrawLabel"></a><div id="GLClientDC.DrawLabel-def"><a name="L118"></a><tt class="py-lineno">118</tt> <a class="py-toggle" href="#" id="GLClientDC.DrawLabel-toggle" onclick="return toggle('GLClientDC.DrawLabel');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="glcanvas.GLClientDC-class.html#DrawLabel">DrawLabel</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">text</tt><tt class="py-op">,</tt> <tt class="py-param">rect</tt><tt class="py-op">,</tt> <tt class="py-param">flags</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="GLClientDC.DrawLabel-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="GLClientDC.DrawLabel-expanded"><a name="L119"></a><tt class="py-lineno">119</tt>  <tt class="py-line">                <tt class="py-keyword">pass</tt> </tt>
+</div><a name="L120"></a><tt class="py-lineno">120</tt>  <tt class="py-line">                 </tt>
+<a name="GLClientDC.DestroyClippingRegion"></a><div id="GLClientDC.DestroyClippingRegion-def"><a name="L121"></a><tt class="py-lineno">121</tt> <a class="py-toggle" href="#" id="GLClientDC.DestroyClippingRegion-toggle" onclick="return toggle('GLClientDC.DestroyClippingRegion');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="glcanvas.GLClientDC-class.html#DestroyClippingRegion">DestroyClippingRegion</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="GLClientDC.DestroyClippingRegion-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="GLClientDC.DestroyClippingRegion-expanded"><a name="L122"></a><tt class="py-lineno">122</tt>  <tt class="py-line">                <tt class="py-keyword">pass</tt> </tt>
+</div><a name="L123"></a><tt class="py-lineno">123</tt>  <tt class="py-line">                 </tt>
+<a name="GLClientDC.SetClippingRegion"></a><div id="GLClientDC.SetClippingRegion-def"><a name="L124"></a><tt class="py-lineno">124</tt> <a class="py-toggle" href="#" id="GLClientDC.SetClippingRegion-toggle" onclick="return toggle('GLClientDC.SetClippingRegion');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="glcanvas.GLClientDC-class.html#SetClippingRegion">SetClippingRegion</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">region</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="GLClientDC.SetClippingRegion-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="GLClientDC.SetClippingRegion-expanded"><a name="L125"></a><tt class="py-lineno">125</tt>  <tt class="py-line">                <tt class="py-keyword">pass</tt> </tt>
+</div><a name="L126"></a><tt class="py-lineno">126</tt>  <tt class="py-line">                 </tt>
+<a name="GLClientDC.SetClippingRegionAsRegion"></a><div id="GLClientDC.SetClippingRegionAsRegion-def"><a name="L127"></a><tt class="py-lineno">127</tt> <a class="py-toggle" href="#" id="GLClientDC.SetClippingRegionAsRegion-toggle" onclick="return toggle('GLClientDC.SetClippingRegionAsRegion');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="glcanvas.GLClientDC-class.html#SetClippingRegionAsRegion">SetClippingRegionAsRegion</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">region</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="GLClientDC.SetClippingRegionAsRegion-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="GLClientDC.SetClippingRegionAsRegion-expanded"><a name="L128"></a><tt class="py-lineno">128</tt>  <tt class="py-line">                <tt class="py-keyword">pass</tt> </tt>
+</div></div><a name="L129"></a><tt class="py-lineno">129</tt>  <tt class="py-line"> </tt>
+<a name="GLCanvas"></a><div id="GLCanvas-def"><a name="L130"></a><tt class="py-lineno">130</tt> <a class="py-toggle" href="#" id="GLCanvas-toggle" onclick="return toggle('GLCanvas');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="glcanvas.GLCanvas-class.html">GLCanvas</a><tt class="py-op">(</tt><tt class="py-base-class">wx</tt><tt class="py-op">.</tt><tt class="py-base-class">glcanvas</tt><tt class="py-op">.</tt><tt class="py-base-class">GLCanvas</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="GLCanvas-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="GLCanvas-expanded"><a name="GLCanvas.ReDraw"></a><div id="GLCanvas.ReDraw-def"><a name="L131"></a><tt class="py-lineno">131</tt> <a class="py-toggle" href="#" id="GLCanvas.ReDraw-toggle" onclick="return toggle('GLCanvas.ReDraw');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="glcanvas.GLCanvas-class.html#ReDraw">ReDraw</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-op">*</tt><tt class="py-param">args</tt><tt class="py-op">,</tt><tt class="py-op">**</tt><tt class="py-param">kargs</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="GLCanvas.ReDraw-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="GLCanvas.ReDraw-expanded"><a name="L132"></a><tt class="py-lineno">132</tt>  <tt class="py-line">                <tt class="py-keyword">pass</tt> </tt>
+</div><a name="L133"></a><tt class="py-lineno">133</tt>  <tt class="py-line"> </tt>
+<a name="GLCanvas.__init__"></a><div id="GLCanvas.__init__-def"><a name="L134"></a><tt class="py-lineno">134</tt> <a class="py-toggle" href="#" id="GLCanvas.__init__-toggle" onclick="return toggle('GLCanvas.__init__');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="glcanvas.GLCanvas-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-op">*</tt><tt class="py-param">args</tt><tt class="py-op">,</tt> <tt class="py-op">**</tt><tt class="py-param">kargs</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="GLCanvas.__init__-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="GLCanvas.__init__-expanded"><a name="L135"></a><tt class="py-lineno">135</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">buffer</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt> </tt>
+<a name="L136"></a><tt class="py-lineno">136</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">redraw_args</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt> </tt>
+<a name="L137"></a><tt class="py-lineno">137</tt>  <tt class="py-line">                <tt class="py-name">wx</tt><tt class="py-op">.</tt><tt id="link-15" class="py-name"><a title="glcanvas" class="py-name" href="#" onclick="return doclink('link-15', 'glcanvas', 'link-0');">glcanvas</a></tt><tt class="py-op">.</tt><tt id="link-16" class="py-name" targets="Class glcanvas.GLCanvas=glcanvas.GLCanvas-class.html"><a title="glcanvas.GLCanvas" class="py-name" href="#" onclick="return doclink('link-16', 'GLCanvas', 'link-16');">GLCanvas</a></tt><tt class="py-op">.</tt><tt id="link-17" class="py-name" targets="Method about.AboutDialog.__init__()=about.AboutDialog-class.html#__init__,Method aldrincom.ComponentManager.__init__()=aldrincom.ComponentManager-class.html#__init__,Method audiogui.DecoBox.__init__()=audiogui.DecoBox-class.html#__init__,Method audiogui.Knob.__init__()=audiogui.Knob-class.html#__init__,Method audiogui.KnobTooltip.__init__()=audiogui.KnobTooltip-class.html#__init__,Method audiogui.LCD.__init__()=audiogui.LCD-class.html#__init__,Method common.PluginInfo.__init__()=common.PluginInfo-class.html#__init__,Method common.PluginInfoCollection.__init__()=common.PluginInfoCollection-class.html#__init__,Method config.AldrinConfig.__init__()=config.AldrinConfig-class.html#__init__,Method contextlog.StdOutAnnotator.__init__()=contextlog.StdOutAnnotator-class.html#__init__,Method controller.SelectControllerDialog.__init__()=controller.SelectControllerDialog-class.html#__init__,Method cpumonitor.CPUMonitorDialog.__init__()=cpumonitor.CPUMonitorDialog-class.html#__init__,Method driver.AudioDriver.__init__()=driver.AudioDriver-class.html#__init__,Method driver.MidiDriver.__init__()=driver.MidiDriver-class.html#__init__,Method envelope.ADSRPanel.__init__()=envelope.ADSRPanel-class.html#__init__,Method envelope.EnvelopeView.__init__()=envelope.EnvelopeView-class.html#__init__,Method eventbus.EventBus.__init__()=eventbus.EventBus-class.html#__init__,Method eventbus.EventHandlerList.__init__()=eventbus.EventHandlerList-class.html#__init__,Method freesound.Freesound.__init__()=freesound.Freesound-class.html#__init__,Method fspanel.FreesoundPanel.__init__()=fspanel.FreesoundPanel-class.html#__init__,Method glcanvas.GLCanvas.__init__()=glcanvas.GLCanvas-class.html#__init__,Method glcanvas.GLClientDC.__init__()=glcanvas.GLClientDC-class.html#__init__,Method hdrecorder.HDRecorderDialog.__init__()=hdrecorder.HDRecorderDialog-class.html#__init__,Method iconfactory.IconLibrary.__init__()=iconfactory.IconLibrary-class.html#__init__,Method indexer.Directory.__init__()=indexer.Directory-class.html#__init__,Method info.InfoPanel.__init__()=info.InfoPanel-class.html#__init__,Method info.InfoView.__init__()=info.InfoView-class.html#__init__,Method mainwindow.AldrinFrame.__init__()=mainwindow.AldrinFrame-class.html#__init__,Method masterpanel.AmpView.__init__()=masterpanel.AmpView-class.html#__init__,Method masterpanel.MasterPanel.__init__()=masterpanel.MasterPanel-class.html#__init__,Method options.OptionParser.__init__()=options.OptionParser-class.html#__init__,Method patterns.PatternDialog.__init__()=patterns.PatternDialog-class.html#__init__,Method patterns.PatternPanel.__init__()=patterns.PatternPanel-class.html#__init__,Method patterns.PatternToolBar.__init__()=patterns.PatternToolBar-class.html#__init__,Method patterns.PatternView.__init__()=patterns.PatternView-class.html#__init__,Method patternsx.PatternDialog.__init__()=patternsx.PatternDialog-class.html#__init__,Method patternsx.PatternPanel.__init__()=patternsx.PatternPanel-class.html#__init__,Method patternsx.PatternToolBar.__init__()=patternsx.PatternToolBar-class.html#__init__,Method patternsx.PatternView.__init__()=patternsx.PatternView-class.html#__init__,Method pkgbrowser.PackageBrowserDialog.__init__()=pkgbrowser.PackageBrowserDialog-class.html#__init__,Method pkgbrowser.PackageBrowserMenuItem.__init__()=pkgbrowser.PackageBrowserMenuItem-class.html#__init__,Method player.AldrinPlayer.__init__()=player.AldrinPlayer-class.html#__init__,Method preferences.ControllerPanel.__init__()=preferences.ControllerPanel-class.html#__init__,Method preferences.DriverPanel.__init__()=preferences.DriverPanel-class.html#__init__,Method preferences.ExtensionsPanel.__init__()=preferences.ExtensionsPanel-class.html#__init__,Method preferences.GeneralPanel.__init__()=preferences.GeneralPanel-class.html#__init__,Method preferences.KeyboardPanel.__init__()=preferences.KeyboardPanel-class.html#__init__,Method preferences.MidiPanel.__init__()=preferences.MidiPanel-class.html#__init__,Method preferences.PreferencesDialog.__init__()=preferences.PreferencesDialog-class.html#__init__,Method preferences.WavetablePanel.__init__()=preferences.WavetablePanel-class.html#__init__,Method preset.Preset.__init__()=preset.Preset-class.html#__init__,Method preset.PresetCollection.__init__()=preset.PresetCollection-class.html#__init__,Method presetbrowser.PresetView.__init__()=presetbrowser.PresetView-class.html#__init__,Method rack.DataEntry.__init__()=rack.DataEntry-class.html#__init__,Method rack.ParameterView.__init__()=rack.ParameterView-class.html#__init__,Method rack.RackPanel.__init__()=rack.RackPanel-class.html#__init__,Method router.AttributesDialog.__init__()=router.AttributesDialog-class.html#__init__,Method router.OscillatorView.__init__()=router.OscillatorView-class.html#__init__,Method router.ParameterDialog.__init__()=router.ParameterDialog-class.html#__init__,Method router.PluginBrowserDialog.__init__()=router.PluginBrowserDialog-class.html#__init__,Method router.PresetDialog.__init__()=router.PresetDialog-class.html#__init__,Method router.RoutePanel.__init__()=router.RoutePanel-class.html#__init__,Method router.RouteView.__init__()=router.RouteView-class.html#__init__,Method router.SignalAnalysisDialog.__init__()=router.SignalAnalysisDialog-class.html#__init__,Method router.VolumeSlider.__init__()=router.VolumeSlider-class.html#__init__,Method sequencer.AddSequencerTrackDialog.__init__()=sequencer.AddSequencerTrackDialog-class.html#__init__,Method sequencer.SequencerPanel.__init__()=sequencer.SequencerPanel-class.html#__init__,Method sequencer.SequencerToolBar.__init__()=sequencer.SequencerToolBar-class.html#__init__,Method sequencer.SequencerView.__init__()=sequencer.SequencerView-class.html#__init__,Method testplayer.TestWindow.__init__()=testplayer.TestWindow-class.html#__init__,Method transportpanel.TransportPanel.__init__()=transportpanel.TransportPanel-class.html#__init__,Method waveedit.WaveEditPanel.__init__()=waveedit.WaveEditPanel-class.html#__init__,Method waveedit.WaveEditView.__init__()=waveedit.WaveEditView-class.html#__init__,Method wavetable.DataEntry.__init__()=wavetable.DataEntry-class.html#__init__,Method wavetable.WavetablePanel.__init__()=wavetable.WavetablePanel-class.html#__init__"><a title="about.AboutDialog.__init__
+aldrincom.ComponentManager.__init__
+audiogui.DecoBox.__init__
+audiogui.Knob.__init__
+audiogui.KnobTooltip.__init__
+audiogui.LCD.__init__
+common.PluginInfo.__init__
+common.PluginInfoCollection.__init__
+config.AldrinConfig.__init__
+contextlog.StdOutAnnotator.__init__
+controller.SelectControllerDialog.__init__
+cpumonitor.CPUMonitorDialog.__init__
+driver.AudioDriver.__init__
+driver.MidiDriver.__init__
+envelope.ADSRPanel.__init__
+envelope.EnvelopeView.__init__
+eventbus.EventBus.__init__
+eventbus.EventHandlerList.__init__
+freesound.Freesound.__init__
+fspanel.FreesoundPanel.__init__
+glcanvas.GLCanvas.__init__
+glcanvas.GLClientDC.__init__
+hdrecorder.HDRecorderDialog.__init__
+iconfactory.IconLibrary.__init__
+indexer.Directory.__init__
+info.InfoPanel.__init__
+info.InfoView.__init__
+mainwindow.AldrinFrame.__init__
+masterpanel.AmpView.__init__
+masterpanel.MasterPanel.__init__
+options.OptionParser.__init__
+patterns.PatternDialog.__init__
+patterns.PatternPanel.__init__
+patterns.PatternToolBar.__init__
+patterns.PatternView.__init__
+patternsx.PatternDialog.__init__
+patternsx.PatternPanel.__init__
+patternsx.PatternToolBar.__init__
+patternsx.PatternView.__init__
+pkgbrowser.PackageBrowserDialog.__init__
+pkgbrowser.PackageBrowserMenuItem.__init__
+player.AldrinPlayer.__init__
+preferences.ControllerPanel.__init__
+preferences.DriverPanel.__init__
+preferences.ExtensionsPanel.__init__
+preferences.GeneralPanel.__init__
+preferences.KeyboardPanel.__init__
+preferences.MidiPanel.__init__
+preferences.PreferencesDialog.__init__
+preferences.WavetablePanel.__init__
+preset.Preset.__init__
+preset.PresetCollection.__init__
+presetbrowser.PresetView.__init__
+rack.DataEntry.__init__
+rack.ParameterView.__init__
+rack.RackPanel.__init__
+router.AttributesDialog.__init__
+router.OscillatorView.__init__
+router.ParameterDialog.__init__
+router.PluginBrowserDialog.__init__
+router.PresetDialog.__init__
+router.RoutePanel.__init__
+router.RouteView.__init__
+router.SignalAnalysisDialog.__init__
+router.VolumeSlider.__init__
+sequencer.AddSequencerTrackDialog.__init__
+sequencer.SequencerPanel.__init__
+sequencer.SequencerToolBar.__init__
+sequencer.SequencerView.__init__
+testplayer.TestWindow.__init__
+transportpanel.TransportPanel.__init__
+waveedit.WaveEditPanel.__init__
+waveedit.WaveEditView.__init__
+wavetable.DataEntry.__init__
+wavetable.WavetablePanel.__init__" class="py-name" href="#" onclick="return doclink('link-17', '__init__', 'link-17');">__init__</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">,</tt> <tt class="py-op">*</tt><tt class="py-name">args</tt><tt class="py-op">,</tt> <tt class="py-op">**</tt><tt class="py-name">kargs</tt><tt class="py-op">)</tt> </tt>
+<a name="L138"></a><tt class="py-lineno">138</tt>  <tt class="py-line"> </tt>
+<a name="L139"></a><tt class="py-lineno">139</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-18" class="py-name" targets="Method glcanvas.GLCanvas.ReDraw()=glcanvas.GLCanvas-class.html#ReDraw"><a title="glcanvas.GLCanvas.ReDraw" class="py-name" href="#" onclick="return doclink('link-18', 'ReDraw', 'link-18');">ReDraw</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L140"></a><tt class="py-lineno">140</tt>  <tt class="py-line"> </tt>
+<a name="L141"></a><tt class="py-lineno">141</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">Bind</tt><tt class="py-op">(</tt><tt class="py-name">wx</tt><tt class="py-op">.</tt><tt class="py-name">EVT_SIZE</tt><tt class="py-op">,</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-19" class="py-name" targets="Method glcanvas.GLCanvas.onSize()=glcanvas.GLCanvas-class.html#onSize"><a title="glcanvas.GLCanvas.onSize" class="py-name" href="#" onclick="return doclink('link-19', 'onSize', 'link-19');">onSize</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L142"></a><tt class="py-lineno">142</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">Bind</tt><tt class="py-op">(</tt><tt class="py-name">wx</tt><tt class="py-op">.</tt><tt class="py-name">EVT_PAINT</tt><tt class="py-op">,</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-20" class="py-name" targets="Method glcanvas.GLCanvas.onPaint()=glcanvas.GLCanvas-class.html#onPaint"><a title="glcanvas.GLCanvas.onPaint" class="py-name" href="#" onclick="return doclink('link-20', 'onPaint', 'link-20');">onPaint</a></tt><tt class="py-op">)</tt> </tt>
+</div><a name="L143"></a><tt class="py-lineno">143</tt>  <tt class="py-line">                 </tt>
+<a name="GLCanvas.onSize"></a><div id="GLCanvas.onSize-def"><a name="L144"></a><tt class="py-lineno">144</tt> <a class="py-toggle" href="#" id="GLCanvas.onSize-toggle" onclick="return toggle('GLCanvas.onSize');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="glcanvas.GLCanvas-class.html#onSize">onSize</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">event</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="GLCanvas.onSize-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="GLCanvas.onSize-expanded"><a name="L145"></a><tt class="py-lineno">145</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-21" class="py-name"><a title="glcanvas.GLCanvas.ReDraw" class="py-name" href="#" onclick="return doclink('link-21', 'ReDraw', 'link-18');">ReDraw</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L146"></a><tt class="py-lineno">146</tt>  <tt class="py-line"> </tt>
+<a name="GLCanvas.ReDraw"></a><div id="GLCanvas.ReDraw-def"><a name="L147"></a><tt class="py-lineno">147</tt> <a class="py-toggle" href="#" id="GLCanvas.ReDraw-toggle" onclick="return toggle('GLCanvas.ReDraw');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="glcanvas.GLCanvas-class.html#ReDraw">ReDraw</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-op">*</tt><tt class="py-param">args</tt><tt class="py-op">,</tt><tt class="py-op">**</tt><tt class="py-param">kargs</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="GLCanvas.ReDraw-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="GLCanvas.ReDraw-expanded"><a name="L148"></a><tt class="py-lineno">148</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-22" class="py-name" targets="Method glcanvas.GLCanvas.Refresh()=glcanvas.GLCanvas-class.html#Refresh"><a title="glcanvas.GLCanvas.Refresh" class="py-name" href="#" onclick="return doclink('link-22', 'Refresh', 'link-22');">Refresh</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L149"></a><tt class="py-lineno">149</tt>  <tt class="py-line">                 </tt>
+<a name="GLCanvas.Refresh"></a><div id="GLCanvas.Refresh-def"><a name="L150"></a><tt class="py-lineno">150</tt> <a class="py-toggle" href="#" id="GLCanvas.Refresh-toggle" onclick="return toggle('GLCanvas.Refresh');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="glcanvas.GLCanvas-class.html#Refresh">Refresh</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="GLCanvas.Refresh-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="GLCanvas.Refresh-expanded"><a name="L151"></a><tt class="py-lineno">151</tt>  <tt class="py-line">                <tt class="py-name">dc</tt> <tt class="py-op">=</tt> <tt id="link-23" class="py-name" targets="Class glcanvas.GLClientDC=glcanvas.GLClientDC-class.html"><a title="glcanvas.GLClientDC" class="py-name" href="#" onclick="return doclink('link-23', 'GLClientDC', 'link-23');">GLClientDC</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">)</tt> </tt>
+<a name="L152"></a><tt class="py-lineno">152</tt>  <tt class="py-line">                <tt class="py-name">dc</tt><tt class="py-op">.</tt><tt id="link-24" class="py-name" targets="Method glcanvas.GLClientDC.BeginDrawing()=glcanvas.GLClientDC-class.html#BeginDrawing"><a title="glcanvas.GLClientDC.BeginDrawing" class="py-name" href="#" onclick="return doclink('link-24', 'BeginDrawing', 'link-24');">BeginDrawing</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L153"></a><tt class="py-lineno">153</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">buffer</tt> <tt class="py-op">=</tt> <tt class="py-name">dc</tt> </tt>
+<a name="L154"></a><tt class="py-lineno">154</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-25" class="py-name" targets="Method glcanvas.GLCanvas.DrawBuffer()=glcanvas.GLCanvas-class.html#DrawBuffer,Method router.OscillatorView.DrawBuffer()=router.OscillatorView-class.html#DrawBuffer"><a title="glcanvas.GLCanvas.DrawBuffer
+router.OscillatorView.DrawBuffer" class="py-name" href="#" onclick="return doclink('link-25', 'DrawBuffer', 'link-25');">DrawBuffer</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L155"></a><tt class="py-lineno">155</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-26" class="py-name" targets="Method glcanvas.GLCanvas.onPostPaint()=glcanvas.GLCanvas-class.html#onPostPaint"><a title="glcanvas.GLCanvas.onPostPaint" class="py-name" href="#" onclick="return doclink('link-26', 'onPostPaint', 'link-26');">onPostPaint</a></tt><tt class="py-op">(</tt><tt class="py-name">dc</tt><tt class="py-op">)</tt> </tt>
+<a name="L156"></a><tt class="py-lineno">156</tt>  <tt class="py-line">                <tt class="py-name">dc</tt><tt class="py-op">.</tt><tt id="link-27" class="py-name" targets="Method glcanvas.GLClientDC.EndDrawing()=glcanvas.GLClientDC-class.html#EndDrawing"><a title="glcanvas.GLClientDC.EndDrawing" class="py-name" href="#" onclick="return doclink('link-27', 'EndDrawing', 'link-27');">EndDrawing</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L157"></a><tt class="py-lineno">157</tt>  <tt class="py-line">                 </tt>
+<a name="GLCanvas.onPostPaint"></a><div id="GLCanvas.onPostPaint-def"><a name="L158"></a><tt class="py-lineno">158</tt> <a class="py-toggle" href="#" id="GLCanvas.onPostPaint-toggle" onclick="return toggle('GLCanvas.onPostPaint');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="glcanvas.GLCanvas-class.html#onPostPaint">onPostPaint</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">dc</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="GLCanvas.onPostPaint-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="GLCanvas.onPostPaint-expanded"><a name="L159"></a><tt class="py-lineno">159</tt>  <tt class="py-line">                <tt class="py-keyword">pass</tt> </tt>
+</div><a name="L160"></a><tt class="py-lineno">160</tt>  <tt class="py-line"> </tt>
+<a name="GLCanvas.onPaint"></a><div id="GLCanvas.onPaint-def"><a name="L161"></a><tt class="py-lineno">161</tt> <a class="py-toggle" href="#" id="GLCanvas.onPaint-toggle" onclick="return toggle('GLCanvas.onPaint');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="glcanvas.GLCanvas-class.html#onPaint">onPaint</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">event</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="GLCanvas.onPaint-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="GLCanvas.onPaint-expanded"><a name="L162"></a><tt class="py-lineno">162</tt>  <tt class="py-line">                <tt class="py-name">dc</tt> <tt class="py-op">=</tt> <tt class="py-name">wx</tt><tt class="py-op">.</tt><tt class="py-name">PaintDC</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">)</tt> </tt>
+<a name="L163"></a><tt class="py-lineno">163</tt>  <tt class="py-line">                <tt class="py-name">dc</tt><tt class="py-op">.</tt><tt id="link-28" class="py-name"><a title="glcanvas.GLClientDC.BeginDrawing" class="py-name" href="#" onclick="return doclink('link-28', 'BeginDrawing', 'link-24');">BeginDrawing</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L164"></a><tt class="py-lineno">164</tt>  <tt class="py-line">                <tt class="py-name">gldc</tt> <tt class="py-op">=</tt> <tt id="link-29" class="py-name"><a title="glcanvas.GLClientDC" class="py-name" href="#" onclick="return doclink('link-29', 'GLClientDC', 'link-23');">GLClientDC</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">)</tt> </tt>
+<a name="L165"></a><tt class="py-lineno">165</tt>  <tt class="py-line">                <tt class="py-name">gldc</tt><tt class="py-op">.</tt><tt id="link-30" class="py-name"><a title="glcanvas.GLClientDC.BeginDrawing" class="py-name" href="#" onclick="return doclink('link-30', 'BeginDrawing', 'link-24');">BeginDrawing</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L166"></a><tt class="py-lineno">166</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">buffer</tt> <tt class="py-op">=</tt> <tt class="py-name">gldc</tt> </tt>
+<a name="L167"></a><tt class="py-lineno">167</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-31" class="py-name"><a title="glcanvas.GLCanvas.DrawBuffer
+router.OscillatorView.DrawBuffer" class="py-name" href="#" onclick="return doclink('link-31', 'DrawBuffer', 'link-25');">DrawBuffer</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L168"></a><tt class="py-lineno">168</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-32" class="py-name"><a title="glcanvas.GLCanvas.onPostPaint" class="py-name" href="#" onclick="return doclink('link-32', 'onPostPaint', 'link-26');">onPostPaint</a></tt><tt class="py-op">(</tt><tt class="py-name">gldc</tt><tt class="py-op">)</tt> </tt>
+<a name="L169"></a><tt class="py-lineno">169</tt>  <tt class="py-line">                <tt class="py-name">gldc</tt><tt class="py-op">.</tt><tt id="link-33" class="py-name"><a title="glcanvas.GLClientDC.EndDrawing" class="py-name" href="#" onclick="return doclink('link-33', 'EndDrawing', 'link-27');">EndDrawing</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L170"></a><tt class="py-lineno">170</tt>  <tt class="py-line">                <tt class="py-name">dc</tt><tt class="py-op">.</tt><tt id="link-34" class="py-name"><a title="glcanvas.GLClientDC.EndDrawing" class="py-name" href="#" onclick="return doclink('link-34', 'EndDrawing', 'link-27');">EndDrawing</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L171"></a><tt class="py-lineno">171</tt>  <tt class="py-line"> </tt>
+<a name="GLCanvas.Blit"></a><div id="GLCanvas.Blit-def"><a name="L172"></a><tt class="py-lineno">172</tt> <a class="py-toggle" href="#" id="GLCanvas.Blit-toggle" onclick="return toggle('GLCanvas.Blit');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="glcanvas.GLCanvas-class.html#Blit">Blit</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">dc</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="GLCanvas.Blit-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="GLCanvas.Blit-expanded"><a name="L173"></a><tt class="py-lineno">173</tt>  <tt class="py-line">                <tt class="py-keyword">pass</tt> </tt>
+</div><a name="L174"></a><tt class="py-lineno">174</tt>  <tt class="py-line"> </tt>
+<a name="GLCanvas.GetBoundingRect"></a><div id="GLCanvas.GetBoundingRect-def"><a name="L175"></a><tt class="py-lineno">175</tt> <a class="py-toggle" href="#" id="GLCanvas.GetBoundingRect-toggle" onclick="return toggle('GLCanvas.GetBoundingRect');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="glcanvas.GLCanvas-class.html#GetBoundingRect">GetBoundingRect</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="GLCanvas.GetBoundingRect-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="GLCanvas.GetBoundingRect-expanded"><a name="L176"></a><tt class="py-lineno">176</tt>  <tt class="py-line">                <tt id="link-35" class="py-name"><a title="about.x
+mainwindow.AldrinFrame.x" class="py-name" href="#" onclick="return doclink('link-35', 'x', 'link-5');">x</a></tt><tt class="py-op">,</tt> <tt class="py-name">y</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">GetPosition</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L177"></a><tt class="py-lineno">177</tt>  <tt class="py-line">                <tt class="py-name">w</tt><tt class="py-op">,</tt> <tt class="py-name">h</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">GetSize</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L178"></a><tt class="py-lineno">178</tt>  <tt class="py-line">                <tt class="py-keyword">return</tt><tt class="py-op">(</tt><tt id="link-36" class="py-name"><a title="about.x
+mainwindow.AldrinFrame.x" class="py-name" href="#" onclick="return doclink('link-36', 'x', 'link-5');">x</a></tt><tt class="py-op">,</tt> <tt class="py-name">y</tt> <tt class="py-op">+</tt> <tt class="py-name">h</tt><tt class="py-op">,</tt> <tt id="link-37" class="py-name"><a title="about.x
+mainwindow.AldrinFrame.x" class="py-name" href="#" onclick="return doclink('link-37', 'x', 'link-5');">x</a></tt> <tt class="py-op">+</tt> <tt class="py-name">w</tt><tt class="py-op">,</tt> <tt class="py-name">y</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L179"></a><tt class="py-lineno">179</tt>  <tt class="py-line"> </tt>
+<a name="GLCanvas.DrawBuffer"></a><div id="GLCanvas.DrawBuffer-def"><a name="L180"></a><tt class="py-lineno">180</tt> <a class="py-toggle" href="#" id="GLCanvas.DrawBuffer-toggle" onclick="return toggle('GLCanvas.DrawBuffer');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="glcanvas.GLCanvas-class.html#DrawBuffer">DrawBuffer</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-op">*</tt><tt class="py-param">args</tt><tt class="py-op">,</tt><tt class="py-op">**</tt><tt class="py-param">kargs</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="GLCanvas.DrawBuffer-collapsed" style="display:none;" pad="+++" indent="++++++++++++"></div><div id="GLCanvas.DrawBuffer-expanded"><a name="L181"></a><tt class="py-lineno">181</tt>  <tt class="py-line">                <tt class="py-keyword">pass</tt> </tt>
+</div></div><a name="L182"></a><tt class="py-lineno">182</tt>  <tt class="py-line"> </tt><script type="text/javascript">
+<!--
+expandto(location.href);
+// -->
+</script>
+</pre>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >Aldrin API</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0beta1 on Wed Jun 11 23:20:25 2008
+    </td>
+    <td align="right" class="footer">
+      <a href="http://epydoc.sourceforge.net">http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie()
+  // -->
+</script>
+  
+</body>
+</html>

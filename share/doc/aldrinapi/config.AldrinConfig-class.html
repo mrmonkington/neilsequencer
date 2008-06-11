@@ -1,0 +1,2414 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>config.AldrinConfig</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >Aldrin API</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="config-module.html">Module&nbsp;config</a> ::
+        Class&nbsp;AldrinConfig
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="config.AldrinConfig-class.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS DESCRIPTION ==================== -->
+<h1 class="epydoc">Class AldrinConfig</h1><span class="codelink"><a href="config-pysrc.html#AldrinConfig">source&nbsp;code</a></span><br /><br />
+<pre class="base-tree">
+                          object --+
+                                   |
+ConfigParser.RawConfigParser --+   |
+                               |   |
+       ConfigParser.ConfigParser --+
+                                   |
+                                  <strong class="uidshort">AldrinConfig</strong>
+</pre>
+
+<dl><dt>Known Subclasses:</dt>
+<dd>
+    <a href="config.AldrinConfigSingleton-class.html">AldrinConfigSingleton</a>
+</dd></dl>
+
+<hr />
+<p>Streamlines access to the applications configuration. You should set 
+  all applications to and retrieve them from the config object.</p>
+  <p>Do not instantiate this class, use {get_config} instead.</p>
+  <p>On Windows, most settings will be saved in ~/aldrin/settings.cfg</p>
+  On Linux, most settings will be saved in ~/.aldrin/settings.cfg<br /><br />
+
+<!-- ==================== INSTANCE METHODS ==================== -->
+<a name="section-InstanceMethods"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Instance Methods</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-InstanceMethods"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="config.AldrinConfig-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Initializer.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.__init__">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="getter"></a><span class="summary-sig-name">getter</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">section</span>,
+        <span class="summary-sig-arg">option</span>,
+        <span class="summary-sig-arg">vtype</span>,
+        <span class="summary-sig-arg">onget</span>,
+        <span class="summary-sig-arg">defvalue</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.getter">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="setter"></a><span class="summary-sig-name">setter</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">section</span>,
+        <span class="summary-sig-arg">option</span>,
+        <span class="summary-sig-arg">vtype</span>,
+        <span class="summary-sig-arg">onset</span>,
+        <span class="summary-sig-arg">value</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.setter">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="listgetter"></a><span class="summary-sig-name">listgetter</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">section</span>,
+        <span class="summary-sig-arg">option</span>,
+        <span class="summary-sig-arg">vtype</span>,
+        <span class="summary-sig-arg">onget</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.listgetter">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="listsetter"></a><span class="summary-sig-name">listsetter</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">section</span>,
+        <span class="summary-sig-arg">option</span>,
+        <span class="summary-sig-arg">vtype</span>,
+        <span class="summary-sig-arg">onset</span>,
+        <span class="summary-sig-arg">values</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.listsetter">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="set_section"></a><span class="summary-sig-name">set_section</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">section</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.set_section">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="delete_section"></a><span class="summary-sig-name">delete_section</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">section</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.delete_section">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="get_values"></a><span class="summary-sig-name">get_values</span>(<span class="summary-sig-arg">self</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.get_values">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="read_int_value"></a><span class="summary-sig-name">read_int_value</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">name</span>,
+        <span class="summary-sig-arg">default</span>=<span class="summary-sig-default">0</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.read_int_value">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="read_value"></a><span class="summary-sig-name">read_value</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">name</span>,
+        <span class="summary-sig-arg">default</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.read_value">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="write_value"></a><span class="summary-sig-name">write_value</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">name</span>,
+        <span class="summary-sig-arg">value</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.write_value">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="write_int_value"></a><span class="summary-sig-name">write_int_value</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">name</span>,
+        <span class="summary-sig-arg">value</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.write_int_value">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="flush"></a><span class="summary-sig-name">flush</span>(<span class="summary-sig-arg">self</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.flush">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="get_plugin_icon_path"></a><span class="summary-sig-name">get_plugin_icon_path</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">name</span>)</span><br />
+      Returns the plugin icon path for a specific icon name.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.get_plugin_icon_path">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="get_freesound_samples_folder"></a><span class="summary-sig-name">get_freesound_samples_folder</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Returns the samples folder designated for samples downloaded from 
+      freesound.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.get_freesound_samples_folder">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="get_settings_folder"></a><span class="summary-sig-name">get_settings_folder</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Returns the users settings folder.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.get_settings_folder">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="config.AldrinConfig-class.html#select_theme" class="summary-sig-name">select_theme</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">name</span>)</span><br />
+      Selects a color theme with a specific name to be used.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.select_theme">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="get_float_color"></a><span class="summary-sig-name">get_float_color</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">name</span>)</span><br />
+      Returns a certain theme color as a float (r,g,b) tuple</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.get_float_color">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="get_color16"></a><span class="summary-sig-name">get_color16</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">name</span>)</span><br />
+      Returns a certain theme color as a 16-bit (r,g,b) tuple</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.get_color16">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">str</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="config.AldrinConfig-class.html#get_color" class="summary-sig-name">get_color</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">name</span>)</span><br />
+      Returns a certain theme color as html hex color string.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.get_color">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">[str,...]</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="config.AldrinConfig-class.html#get_theme_names" class="summary-sig-name">get_theme_names</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Returns a list of color theme names</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.get_theme_names">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="get_default_int"></a><span class="summary-sig-name">get_default_int</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">key</span>,
+        <span class="summary-sig-arg">defval</span>=<span class="summary-sig-default">0</span>)</span><br />
+      Returns the default value for a UI setting.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.get_default_int">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="set_default_int"></a><span class="summary-sig-name">set_default_int</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">key</span>,
+        <span class="summary-sig-arg">val</span>)</span><br />
+      Stores a default value for an UI setting.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.set_default_int">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="get_default"></a><span class="summary-sig-name">get_default</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">key</span>,
+        <span class="summary-sig-arg">s</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></span>)</span><br />
+      Returns the default value for a UI setting.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.get_default">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="set_default"></a><span class="summary-sig-name">set_default</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">key</span>,
+        <span class="summary-sig-arg">val</span>)</span><br />
+      Stores a default value for an UI setting.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.set_default">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="get_experimental"></a><span class="summary-sig-name">get_experimental</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">key</span>,
+        <span class="summary-sig-arg">defval</span>=<span class="summary-sig-default">0</span>)</span><br />
+      Returns whether an experimental feature is enabled.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.get_experimental">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="set_experimental"></a><span class="summary-sig-name">set_experimental</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">key</span>,
+        <span class="summary-sig-arg">val</span>)</span><br />
+      Stores whether an experimental feature is enabled.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.set_experimental">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="get_keymap"></a><span class="summary-sig-name">get_keymap</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      returns a keymap for the pattern editor, to be used for note 
+      input.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.get_keymap">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="get_credentials"></a><span class="summary-sig-name">get_credentials</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">service</span>)</span><br />
+      returns the credentials required for a service 
+      (username/password).</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.get_credentials">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="set_credentials"></a><span class="summary-sig-name">set_credentials</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">service</span>,
+        <span class="summary-sig-arg">username</span>,
+        <span class="summary-sig-arg">password</span>)</span><br />
+      stores the credentials required for a service 
+      (username/password).</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.set_credentials">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">str</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="config.AldrinConfig-class.html#get_index_path" class="summary-sig-name">get_index_path</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      yields a a tree of plugins, to be used in the machine view for 
+      menus.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.get_index_path">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">[str,...]</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="config.AldrinConfig-class.html#get_mididriver_inputs" class="summary-sig-name">get_mididriver_inputs</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Returns the current list of MIDI input driver names.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.get_mididriver_inputs">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="config.AldrinConfig-class.html#set_mididriver_inputs" class="summary-sig-name">set_mididriver_inputs</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">inputlist</span>)</span><br />
+      Stores the current list of used MIDI input driver names.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.set_mididriver_inputs">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">(str,str,int,int)</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="config.AldrinConfig-class.html#get_audiodriver_config" class="summary-sig-name">get_audiodriver_config</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Retrieves current audiodriver settings.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.get_audiodriver_config">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="config.AldrinConfig-class.html#set_audiodriver_config" class="summary-sig-name">set_audiodriver_config</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">inputname</span>,
+        <span class="summary-sig-arg">outputname</span>,
+        <span class="summary-sig-arg">samplerate</span>,
+        <span class="summary-sig-arg">buffersize</span>)</span><br />
+      Stores audiodriver settings.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.set_audiodriver_config">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">[str,...]</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="config.AldrinConfig-class.html#get_mididriver_outputs" class="summary-sig-name">get_mididriver_outputs</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Returns the current list of MIDI output driver names.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.get_mididriver_outputs">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="config.AldrinConfig-class.html#set_mididriver_outputs" class="summary-sig-name">set_mididriver_outputs</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">outputlist</span>)</span><br />
+      Stores the current list of used MIDI output driver names.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.set_mididriver_outputs">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="config.AldrinConfig-class.html#set_plugin_presets" class="summary-sig-name">set_plugin_presets</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">pluginloader</span>,
+        <span class="summary-sig-arg">presets</span>)</span><br />
+      Stores a preset collection for the given pluginloader.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.set_plugin_presets">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">preset.PresetCollection</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="config.AldrinConfig-class.html#get_plugin_presets" class="summary-sig-name">get_plugin_presets</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">pluginloader</span>)</span><br />
+      Returns a PresetCollection for the given pluginloader.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.get_plugin_presets">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="config.AldrinConfig-class.html#save_window_pos" class="summary-sig-name">save_window_pos</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">windowid</span>,
+        <span class="summary-sig-arg">window</span>)</span><br />
+      Stores a windows position to the config.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.save_window_pos">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="config.AldrinConfig-class.html#load_window_pos" class="summary-sig-name">load_window_pos</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">windowid</span>,
+        <span class="summary-sig-arg">window</span>)</span><br />
+      Retrieves a windows position from the config and applies it.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.load_window_pos">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="config.AldrinConfig-class.html#set_midi_controllers" class="summary-sig-name">set_midi_controllers</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">ctrllist</span>)</span><br />
+      Sets the list of mapped midi controllers.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.set_midi_controllers">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">[(str,int,int),...]</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="config.AldrinConfig-class.html#get_midi_controllers" class="summary-sig-name">get_midi_controllers</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Returns the list of mapped midi controllers.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.get_midi_controllers">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">str list</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="config.AldrinConfig-class.html#get_recent_files_config" class="summary-sig-name">get_recent_files_config</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Retrieves list of recently used files.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.get_recent_files_config">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="config.AldrinConfig-class.html#add_recent_file_config" class="summary-sig-name">add_recent_file_config</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">filename</span>)</span><br />
+      Adds a filename to the list of recently used files, if not already
+      included.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.add_recent_file_config">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="get_active_theme"></a><span class="summary-sig-name">get_active_theme</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">defvalue</span>=<span class="summary-sig-default">False</span>)</span><br />
+      Returns the name of the currently active theme.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.get_active_theme">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="get_audioeditor_command"></a><span class="summary-sig-name">get_audioeditor_command</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">defvalue</span>=<span class="summary-sig-default">False</span>)</span><br />
+      Returns the audio editor command.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.get_audioeditor_command">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="get_enabled_extensions"></a><span class="summary-sig-name">get_enabled_extensions</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Returns the current list of enabled extension uris.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.get_enabled_extensions">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="get_freesound_max_search_results"></a><span class="summary-sig-name">get_freesound_max_search_results</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">defvalue</span>=<span class="summary-sig-default">False</span>)</span><br />
+      Returns the number of max search results in freesound.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.get_freesound_max_search_results">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="get_incremental_saving"></a><span class="summary-sig-name">get_incremental_saving</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">defvalue</span>=<span class="summary-sig-default">False</span>)</span><br />
+      Returns the incremental saving option.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.get_incremental_saving">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="get_keymap_language"></a><span class="summary-sig-name">get_keymap_language</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">defvalue</span>=<span class="summary-sig-default">False</span>)</span><br />
+      Returns the current keymap language.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.get_keymap_language">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="get_led_draw"></a><span class="summary-sig-name">get_led_draw</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">defvalue</span>=<span class="summary-sig-default">False</span>)</span><br />
+      Returns the led draw option.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.get_led_draw">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="get_packages"></a><span class="summary-sig-name">get_packages</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Returns the list of python packages to be loaded.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.get_packages">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="get_pattern_font"></a><span class="summary-sig-name">get_pattern_font</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">defvalue</span>=<span class="summary-sig-default">False</span>)</span><br />
+      Returns the font used in the pattern editor.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.get_pattern_font">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="get_pattern_noteoff"></a><span class="summary-sig-name">get_pattern_noteoff</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">defvalue</span>=<span class="summary-sig-default">False</span>)</span><br />
+      Returns pattern noteoff option.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.get_pattern_noteoff">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="get_sample_preview_volume"></a><span class="summary-sig-name">get_sample_preview_volume</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">defvalue</span>=<span class="summary-sig-default">False</span>)</span><br />
+      Returns the volume with which samples shall be previewed.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.get_sample_preview_volume">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="get_wavetable_paths"></a><span class="summary-sig-name">get_wavetable_paths</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Returns the list of wavetable paths.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.get_wavetable_paths">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="set_active_theme"></a><span class="summary-sig-name">set_active_theme</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">value</span>)</span><br />
+      Sets the name of the currently active theme.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.set_active_theme">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="set_audioeditor_command"></a><span class="summary-sig-name">set_audioeditor_command</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">value</span>)</span><br />
+      Sets the audio editor command.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.set_audioeditor_command">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="set_enabled_extensions"></a><span class="summary-sig-name">set_enabled_extensions</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">value</span>)</span><br />
+      Sets the current list of enabled extension uris.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.set_enabled_extensions">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="set_freesound_max_search_results"></a><span class="summary-sig-name">set_freesound_max_search_results</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">value</span>)</span><br />
+      Sets the number of max search results in freesound.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.set_freesound_max_search_results">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="set_incremental_saving"></a><span class="summary-sig-name">set_incremental_saving</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">value</span>)</span><br />
+      Sets the incremental saving option.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.set_incremental_saving">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="set_keymap_language"></a><span class="summary-sig-name">set_keymap_language</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">value</span>)</span><br />
+      Sets the current keymap language.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.set_keymap_language">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="set_led_draw"></a><span class="summary-sig-name">set_led_draw</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">value</span>)</span><br />
+      Sets the led draw option.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.set_led_draw">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="set_packages"></a><span class="summary-sig-name">set_packages</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">value</span>)</span><br />
+      Sets the list of python packages to be loaded.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.set_packages">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="set_pattern_font"></a><span class="summary-sig-name">set_pattern_font</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">value</span>)</span><br />
+      Sets the font used in the pattern editor.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.set_pattern_font">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="set_pattern_noteoff"></a><span class="summary-sig-name">set_pattern_noteoff</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">value</span>)</span><br />
+      Sets pattern noteoff option.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.set_pattern_noteoff">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="set_sample_preview_volume"></a><span class="summary-sig-name">set_sample_preview_volume</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">value</span>)</span><br />
+      Sets the volume with which samples shall be previewed.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.set_sample_preview_volume">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="set_wavetable_paths"></a><span class="summary-sig-name">set_wavetable_paths</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">value</span>)</span><br />
+      Sets the list of wavetable paths.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="config-pysrc.html#AldrinConfig.set_wavetable_paths">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
+      <code>__delattr__</code>,
+      <code>__getattribute__</code>,
+      <code>__hash__</code>,
+      <code>__new__</code>,
+      <code>__reduce__</code>,
+      <code>__reduce_ex__</code>,
+      <code>__repr__</code>,
+      <code>__setattr__</code>,
+      <code>__str__</code>
+      </p>
+    <p class="indent-wrapped-lines"><b>Inherited from <code>ConfigParser.ConfigParser</code></b>:
+      <code>get</code>,
+      <code>items</code>
+      </p>
+    <div class="private">    <p class="indent-wrapped-lines"><b>Inherited from <code>ConfigParser.ConfigParser</code></b> (private):
+      <code>_interpolate</code>,
+      <code>_interpolation_replace</code>
+      </p></div>
+    <p class="indent-wrapped-lines"><b>Inherited from <code>ConfigParser.RawConfigParser</code></b>:
+      <code>add_section</code>,
+      <code>defaults</code>,
+      <code>getboolean</code>,
+      <code>getfloat</code>,
+      <code>getint</code>,
+      <code>has_option</code>,
+      <code>has_section</code>,
+      <code>options</code>,
+      <code>optionxform</code>,
+      <code>read</code>,
+      <code>readfp</code>,
+      <code>remove_option</code>,
+      <code>remove_section</code>,
+      <code>sections</code>,
+      <code>set</code>,
+      <code>write</code>
+      </p>
+    <div class="private">    <p class="indent-wrapped-lines"><b>Inherited from <code>ConfigParser.RawConfigParser</code></b> (private):
+      <code>_get</code>,
+      <code>_read</code>
+      </p></div>
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS VARIABLES ==================== -->
+<a name="section-ClassVariables"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Class Variables</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-ClassVariables"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <div class="private">    <p class="indent-wrapped-lines"><b>Inherited from <code>ConfigParser.ConfigParser</code></b> (private):
+      <code>_KEYCRE</code>
+      </p></div>
+    <p class="indent-wrapped-lines"><b>Inherited from <code>ConfigParser.RawConfigParser</code></b>:
+      <code>OPTCRE</code>,
+      <code>SECTCRE</code>
+      </p>
+    <div class="private">    <p class="indent-wrapped-lines"><b>Inherited from <code>ConfigParser.RawConfigParser</code></b> (private):
+      <code>_boolean_states</code>
+      </p></div>
+    </td>
+  </tr>
+</table>
+<!-- ==================== PROPERTIES ==================== -->
+<a name="section-Properties"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Properties</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-Properties"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="config.AldrinConfig-class.html#active_theme" class="summary-name">active_theme</a><br />
+      the name of the currently active theme.
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="config.AldrinConfig-class.html#audioeditor_command" class="summary-name">audioeditor_command</a><br />
+      the audio editor command.
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="config.AldrinConfig-class.html#enabled_extensions" class="summary-name">enabled_extensions</a><br />
+      the current list of enabled extension uris.
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="config.AldrinConfig-class.html#freesound_max_search_results" class="summary-name">freesound_max_search_results</a><br />
+      the number of max search results in freesound.
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="config.AldrinConfig-class.html#incremental_saving" class="summary-name">incremental_saving</a><br />
+      the incremental saving option.
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="config.AldrinConfig-class.html#keymap_language" class="summary-name">keymap_language</a><br />
+      the current keymap language.
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="config.AldrinConfig-class.html#led_draw" class="summary-name">led_draw</a><br />
+      the led draw option.
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="config.AldrinConfig-class.html#packages" class="summary-name">packages</a><br />
+      the list of python packages to be loaded.
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="config.AldrinConfig-class.html#pattern_font" class="summary-name">pattern_font</a><br />
+      the font used in the pattern editor.
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="config.AldrinConfig-class.html#pattern_noteoff" class="summary-name">pattern_noteoff</a><br />
+      pattern noteoff option.
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="config.AldrinConfig-class.html#sample_preview_volume" class="summary-name">sample_preview_volume</a><br />
+      the volume with which samples shall be previewed.
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="config.AldrinConfig-class.html#wavetable_paths" class="summary-name">wavetable_paths</a><br />
+      the list of wavetable paths.
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
+      <code>__class__</code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== METHOD DETAILS ==================== -->
+<a name="section-MethodDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Method Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-MethodDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="__init__"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">__init__</span>(<span class="sig-arg">self</span>)</span>
+    <br /><em class="fname">(Constructor)</em>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="config-pysrc.html#AldrinConfig.__init__">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </table>
+  
+  Initializer.
+  <dl class="fields">
+    <dt>Overrides:
+      object.__init__
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="select_theme"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">select_theme</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">name</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="config-pysrc.html#AldrinConfig.select_theme">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </table>
+  
+  Selects a color theme with a specific name to be used.
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>name</code></strong> (str) - name of theme as returned by get_theme_names.</li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="get_color"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">get_color</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">name</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="config-pysrc.html#AldrinConfig.get_color">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </table>
+  
+  Returns a certain theme color as html hex color string.
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>name</code></strong> (str) - name of color theme key.</li>
+    </ul></dd>
+    <dt>Returns: str</dt>
+        <dd>color of key.</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="get_theme_names"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">get_theme_names</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="config-pysrc.html#AldrinConfig.get_theme_names">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </table>
+  
+  Returns a list of color theme names
+  <dl class="fields">
+    <dt>Returns: [str,...]</dt>
+        <dd>A list of color theme names.</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="get_index_path"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">get_index_path</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="config-pysrc.html#AldrinConfig.get_index_path">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </table>
+  
+  <p>yields a a tree of plugins, to be used in the machine view for 
+  menus.</p>
+  <p>On Posix platforms, ~/.aldrin/index.txt overrides 
+  ${PREFIX}/share/aldrin/index.txt.</p>
+  On Windows, &lt;user folder&gt;/aldrin/index.txt overrides &lt;app 
+  folder&gt;/share/aldrin/index.txt.
+  <dl class="fields">
+    <dt>Returns: str</dt>
+        <dd>Path to the index file.</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="get_mididriver_inputs"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">get_mididriver_inputs</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="config-pysrc.html#AldrinConfig.get_mididriver_inputs">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </table>
+  
+  Returns the current list of MIDI input driver names.
+  <dl class="fields">
+    <dt>Returns: [str,...]</dt>
+        <dd>List of driver names.</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="set_mididriver_inputs"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">set_mididriver_inputs</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">inputlist</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="config-pysrc.html#AldrinConfig.set_mididriver_inputs">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </table>
+  
+  Stores the current list of used MIDI input driver names.
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>name</code></strong> ([str,...]) - List of driver names.</li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="get_audiodriver_config"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">get_audiodriver_config</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="config-pysrc.html#AldrinConfig.get_audiodriver_config">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </table>
+  
+  Retrieves current audiodriver settings.
+  <dl class="fields">
+    <dt>Returns: (str,str,int,int)</dt>
+        <dd>A tuple containing input driver name, output driver name, 
+          samplerate and buffer size.</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="set_audiodriver_config"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">set_audiodriver_config</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">inputname</span>,
+        <span class="sig-arg">outputname</span>,
+        <span class="sig-arg">samplerate</span>,
+        <span class="sig-arg">buffersize</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="config-pysrc.html#AldrinConfig.set_audiodriver_config">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </table>
+  
+  Stores audiodriver settings.
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>name</code></strong> (str) - The newly selected driver name.</li>
+        <li><strong class="pname"><code>samplerate</code></strong> (int) - Selected samples per seconds.</li>
+        <li><strong class="pname"><code>buffersize</code></strong> (int) - Buffer size in samples.</li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="get_mididriver_outputs"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">get_mididriver_outputs</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="config-pysrc.html#AldrinConfig.get_mididriver_outputs">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </table>
+  
+  Returns the current list of MIDI output driver names.
+  <dl class="fields">
+    <dt>Returns: [str,...]</dt>
+        <dd>List of driver names.</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="set_mididriver_outputs"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">set_mididriver_outputs</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">outputlist</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="config-pysrc.html#AldrinConfig.set_mididriver_outputs">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </table>
+  
+  Stores the current list of used MIDI output driver names.
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>name</code></strong> ([str,...]) - List of driver names.</li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="set_plugin_presets"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">set_plugin_presets</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">pluginloader</span>,
+        <span class="sig-arg">presets</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="config-pysrc.html#AldrinConfig.set_plugin_presets">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </table>
+  
+  Stores a preset collection for the given pluginloader.
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>pluginloader</code></strong> (zzub.Pluginloader) - A pluginloader.</li>
+        <li><strong class="pname"><code>presets</code></strong> (preset.PresetCollection) - A preset collection</li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="get_plugin_presets"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">get_plugin_presets</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">pluginloader</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="config-pysrc.html#AldrinConfig.get_plugin_presets">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </table>
+  
+  Returns a PresetCollection for the given pluginloader.
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>pluginloader</code></strong> (zzub.Pluginloader) - A pluginloader.</li>
+    </ul></dd>
+    <dt>Returns: preset.PresetCollection</dt>
+        <dd>A preset collection.</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="save_window_pos"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">save_window_pos</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">windowid</span>,
+        <span class="sig-arg">window</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="config-pysrc.html#AldrinConfig.save_window_pos">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </table>
+  
+  Stores a windows position to the config.
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>windowid</code></strong> (str) - Name of window in config.</li>
+        <li><strong class="pname"><code>window</code></strong> (wx.Window) - The window whose properties to save.</li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="load_window_pos"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">load_window_pos</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">windowid</span>,
+        <span class="sig-arg">window</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="config-pysrc.html#AldrinConfig.load_window_pos">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </table>
+  
+  Retrieves a windows position from the config and applies it.
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>windowid</code></strong> (str) - Name of window in config.</li>
+        <li><strong class="pname"><code>window</code></strong> (wx.Window) - The window whose properties to save.</li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="set_midi_controllers"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">set_midi_controllers</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">ctrllist</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="config-pysrc.html#AldrinConfig.set_midi_controllers">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </table>
+  
+  Sets the list of mapped midi controllers.
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>ctrllist</code></strong> ([(str,int,int),...]) - List of tuples containing name,channel and controller id</li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="get_midi_controllers"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">get_midi_controllers</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="config-pysrc.html#AldrinConfig.get_midi_controllers">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </table>
+  
+  Returns the list of mapped midi controllers.
+  <dl class="fields">
+    <dt>Returns: [(str,int,int),...]</dt>
+        <dd>List of tuples containing name, channel and controller id</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="get_recent_files_config"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">get_recent_files_config</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="config-pysrc.html#AldrinConfig.get_recent_files_config">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </table>
+  
+  Retrieves list of recently used files.
+  <dl class="fields">
+    <dt>Returns: str list</dt>
+        <dd>List of file paths.</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="add_recent_file_config"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">add_recent_file_config</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">filename</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="config-pysrc.html#AldrinConfig.add_recent_file_config">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </table>
+  
+  Adds a filename to the list of recently used files, if not already 
+  included.
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>filename</code></strong> (str) - path to file.</li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== PROPERTY DETAILS ==================== -->
+<a name="section-PropertyDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Property Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-PropertyDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="active_theme"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">active_theme</h3>
+  the name of the currently active theme.
+  <dl class="fields">
+    <dt>Get Method:</dt>
+    <dd class="value"><span class="summary-sig"><a href="config.AldrinConfig-class.html#get_active_theme" class="summary-sig-name">config.AldrinConfig.get_active_theme</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">defvalue</span>=<span class="summary-sig-default">False</span>)</span>
+        - Returns the name of the currently active theme.
+    </dd>
+    <dt>Set Method:</dt>
+    <dd class="value"><span class="summary-sig"><a href="config.AldrinConfig-class.html#set_active_theme" class="summary-sig-name">config.AldrinConfig.set_active_theme</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">value</span>)</span>
+        - Sets the name of the currently active theme.
+    </dd>
+    <dt>Delete Method:</dt>
+    <dd class="value"><table><tr><td><pre class="variable">
+None
+</pre></td></tr></table>
+
+    </dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="audioeditor_command"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">audioeditor_command</h3>
+  the audio editor command.
+  <dl class="fields">
+    <dt>Get Method:</dt>
+    <dd class="value"><span class="summary-sig"><a href="config.AldrinConfig-class.html#get_audioeditor_command" class="summary-sig-name">config.AldrinConfig.get_audioeditor_command</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">defvalue</span>=<span class="summary-sig-default">False</span>)</span>
+        - Returns the audio editor command.
+    </dd>
+    <dt>Set Method:</dt>
+    <dd class="value"><span class="summary-sig"><a href="config.AldrinConfig-class.html#set_audioeditor_command" class="summary-sig-name">config.AldrinConfig.set_audioeditor_command</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">value</span>)</span>
+        - Sets the audio editor command.
+    </dd>
+    <dt>Delete Method:</dt>
+    <dd class="value"><table><tr><td><pre class="variable">
+None
+</pre></td></tr></table>
+
+    </dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="enabled_extensions"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">enabled_extensions</h3>
+  the current list of enabled extension uris.
+  <dl class="fields">
+    <dt>Get Method:</dt>
+    <dd class="value"><span class="summary-sig"><a href="config.AldrinConfig-class.html#get_enabled_extensions" class="summary-sig-name">config.AldrinConfig.get_enabled_extensions</a>(<span class="summary-sig-arg">self</span>)</span>
+        - Returns the current list of enabled extension uris.
+    </dd>
+    <dt>Set Method:</dt>
+    <dd class="value"><span class="summary-sig"><a href="config.AldrinConfig-class.html#set_enabled_extensions" class="summary-sig-name">config.AldrinConfig.set_enabled_extensions</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">value</span>)</span>
+        - Sets the current list of enabled extension uris.
+    </dd>
+    <dt>Delete Method:</dt>
+    <dd class="value"><table><tr><td><pre class="variable">
+None
+</pre></td></tr></table>
+
+    </dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="freesound_max_search_results"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">freesound_max_search_results</h3>
+  the number of max search results in freesound.
+  <dl class="fields">
+    <dt>Get Method:</dt>
+    <dd class="value"><span class="summary-sig"><a href="config.AldrinConfig-class.html#get_freesound_max_search_results" class="summary-sig-name">config.AldrinConfig.get_freesound_max_search_results</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">defvalue</span>=<span class="summary-sig-default">False</span>)</span>
+        - Returns the number of max search results in freesound.
+    </dd>
+    <dt>Set Method:</dt>
+    <dd class="value"><span class="summary-sig"><a href="config.AldrinConfig-class.html#set_freesound_max_search_results" class="summary-sig-name">config.AldrinConfig.set_freesound_max_search_results</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">value</span>)</span>
+        - Sets the number of max search results in freesound.
+    </dd>
+    <dt>Delete Method:</dt>
+    <dd class="value"><table><tr><td><pre class="variable">
+None
+</pre></td></tr></table>
+
+    </dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="incremental_saving"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">incremental_saving</h3>
+  the incremental saving option.
+  <dl class="fields">
+    <dt>Get Method:</dt>
+    <dd class="value"><span class="summary-sig"><a href="config.AldrinConfig-class.html#get_incremental_saving" class="summary-sig-name">config.AldrinConfig.get_incremental_saving</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">defvalue</span>=<span class="summary-sig-default">False</span>)</span>
+        - Returns the incremental saving option.
+    </dd>
+    <dt>Set Method:</dt>
+    <dd class="value"><span class="summary-sig"><a href="config.AldrinConfig-class.html#set_incremental_saving" class="summary-sig-name">config.AldrinConfig.set_incremental_saving</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">value</span>)</span>
+        - Sets the incremental saving option.
+    </dd>
+    <dt>Delete Method:</dt>
+    <dd class="value"><table><tr><td><pre class="variable">
+None
+</pre></td></tr></table>
+
+    </dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="keymap_language"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">keymap_language</h3>
+  the current keymap language.
+  <dl class="fields">
+    <dt>Get Method:</dt>
+    <dd class="value"><span class="summary-sig"><a href="config.AldrinConfig-class.html#get_keymap_language" class="summary-sig-name">config.AldrinConfig.get_keymap_language</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">defvalue</span>=<span class="summary-sig-default">False</span>)</span>
+        - Returns the current keymap language.
+    </dd>
+    <dt>Set Method:</dt>
+    <dd class="value"><span class="summary-sig"><a href="config.AldrinConfig-class.html#set_keymap_language" class="summary-sig-name">config.AldrinConfig.set_keymap_language</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">value</span>)</span>
+        - Sets the current keymap language.
+    </dd>
+    <dt>Delete Method:</dt>
+    <dd class="value"><table><tr><td><pre class="variable">
+None
+</pre></td></tr></table>
+
+    </dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="led_draw"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">led_draw</h3>
+  the led draw option.
+  <dl class="fields">
+    <dt>Get Method:</dt>
+    <dd class="value"><span class="summary-sig"><a href="config.AldrinConfig-class.html#get_led_draw" class="summary-sig-name">config.AldrinConfig.get_led_draw</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">defvalue</span>=<span class="summary-sig-default">False</span>)</span>
+        - Returns the led draw option.
+    </dd>
+    <dt>Set Method:</dt>
+    <dd class="value"><span class="summary-sig"><a href="config.AldrinConfig-class.html#set_led_draw" class="summary-sig-name">config.AldrinConfig.set_led_draw</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">value</span>)</span>
+        - Sets the led draw option.
+    </dd>
+    <dt>Delete Method:</dt>
+    <dd class="value"><table><tr><td><pre class="variable">
+None
+</pre></td></tr></table>
+
+    </dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="packages"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">packages</h3>
+  the list of python packages to be loaded.
+  <dl class="fields">
+    <dt>Get Method:</dt>
+    <dd class="value"><span class="summary-sig"><a href="config.AldrinConfig-class.html#get_packages" class="summary-sig-name">config.AldrinConfig.get_packages</a>(<span class="summary-sig-arg">self</span>)</span>
+        - Returns the list of python packages to be loaded.
+    </dd>
+    <dt>Set Method:</dt>
+    <dd class="value"><span class="summary-sig"><a href="config.AldrinConfig-class.html#set_packages" class="summary-sig-name">config.AldrinConfig.set_packages</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">value</span>)</span>
+        - Sets the list of python packages to be loaded.
+    </dd>
+    <dt>Delete Method:</dt>
+    <dd class="value"><table><tr><td><pre class="variable">
+None
+</pre></td></tr></table>
+
+    </dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="pattern_font"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">pattern_font</h3>
+  the font used in the pattern editor.
+  <dl class="fields">
+    <dt>Get Method:</dt>
+    <dd class="value"><span class="summary-sig"><a href="config.AldrinConfig-class.html#get_pattern_font" class="summary-sig-name">config.AldrinConfig.get_pattern_font</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">defvalue</span>=<span class="summary-sig-default">False</span>)</span>
+        - Returns the font used in the pattern editor.
+    </dd>
+    <dt>Set Method:</dt>
+    <dd class="value"><span class="summary-sig"><a href="config.AldrinConfig-class.html#set_pattern_font" class="summary-sig-name">config.AldrinConfig.set_pattern_font</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">value</span>)</span>
+        - Sets the font used in the pattern editor.
+    </dd>
+    <dt>Delete Method:</dt>
+    <dd class="value"><table><tr><td><pre class="variable">
+None
+</pre></td></tr></table>
+
+    </dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="pattern_noteoff"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">pattern_noteoff</h3>
+  pattern noteoff option.
+  <dl class="fields">
+    <dt>Get Method:</dt>
+    <dd class="value"><span class="summary-sig"><a href="config.AldrinConfig-class.html#get_pattern_noteoff" class="summary-sig-name">config.AldrinConfig.get_pattern_noteoff</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">defvalue</span>=<span class="summary-sig-default">False</span>)</span>
+        - Returns pattern noteoff option.
+    </dd>
+    <dt>Set Method:</dt>
+    <dd class="value"><span class="summary-sig"><a href="config.AldrinConfig-class.html#set_pattern_noteoff" class="summary-sig-name">config.AldrinConfig.set_pattern_noteoff</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">value</span>)</span>
+        - Sets pattern noteoff option.
+    </dd>
+    <dt>Delete Method:</dt>
+    <dd class="value"><table><tr><td><pre class="variable">
+None
+</pre></td></tr></table>
+
+    </dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="sample_preview_volume"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">sample_preview_volume</h3>
+  the volume with which samples shall be previewed.
+  <dl class="fields">
+    <dt>Get Method:</dt>
+    <dd class="value"><span class="summary-sig"><a href="config.AldrinConfig-class.html#get_sample_preview_volume" class="summary-sig-name">config.AldrinConfig.get_sample_preview_volume</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">defvalue</span>=<span class="summary-sig-default">False</span>)</span>
+        - Returns the volume with which samples shall be previewed.
+    </dd>
+    <dt>Set Method:</dt>
+    <dd class="value"><span class="summary-sig"><a href="config.AldrinConfig-class.html#set_sample_preview_volume" class="summary-sig-name">config.AldrinConfig.set_sample_preview_volume</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">value</span>)</span>
+        - Sets the volume with which samples shall be previewed.
+    </dd>
+    <dt>Delete Method:</dt>
+    <dd class="value"><table><tr><td><pre class="variable">
+None
+</pre></td></tr></table>
+
+    </dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="wavetable_paths"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">wavetable_paths</h3>
+  the list of wavetable paths.
+  <dl class="fields">
+    <dt>Get Method:</dt>
+    <dd class="value"><span class="summary-sig"><a href="config.AldrinConfig-class.html#get_wavetable_paths" class="summary-sig-name">config.AldrinConfig.get_wavetable_paths</a>(<span class="summary-sig-arg">self</span>)</span>
+        - Returns the list of wavetable paths.
+    </dd>
+    <dt>Set Method:</dt>
+    <dd class="value"><span class="summary-sig"><a href="config.AldrinConfig-class.html#set_wavetable_paths" class="summary-sig-name">config.AldrinConfig.set_wavetable_paths</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">value</span>)</span>
+        - Sets the list of wavetable paths.
+    </dd>
+    <dt>Delete Method:</dt>
+    <dd class="value"><table><tr><td><pre class="variable">
+None
+</pre></td></tr></table>
+
+    </dd>
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >Aldrin API</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0beta1 on Wed Jun 11 23:20:20 2008
+    </td>
+    <td align="right" class="footer">
+      <a href="http://epydoc.sourceforge.net">http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie()
+  // -->
+</script>
+  
+</body>
+</html>
