@@ -27,7 +27,8 @@ import os, sys
 from gtkimport import gtk
 import gobject
 import pango
-from utils import prepstr, filepath, get_item_count, get_clipboard_text, set_clipboard_text, question, error, get_new_pattern_name
+from utils import prepstr, filepath, get_item_count, get_clipboard_text, set_clipboard_text, question, error, get_new_pattern_name, \
+	new_liststore, new_combobox
 import pickle
 import zzub
 import time
@@ -156,17 +157,26 @@ class PatternToolBar(gtk.HBox):
 		self.set_border_width(MARGIN)
 		self.pluginlabel = gtk.Label()
 		self.pluginlabel.set_text_with_mnemonic("_Plugin")
-		self.pluginselect = gtk.combo_box_new_text()
+		self.pluginselect = new_combobox([
+			('Name', str),
+			(None, gobject.TYPE_PYOBJECT),
+		])
 		self.pluginselect.connect('changed', self.on_pluginselect)
 		self.pluginlabel.set_mnemonic_widget(self.pluginselect)
 		self.patternlabel = gtk.Label()
 		self.patternlabel.set_text_with_mnemonic("_Pattern")
-		self.patternselect = gtk.combo_box_new_text()
+		self.patternselect = new_combobox([
+			('Name', str),
+			(None, gobject.TYPE_PYOBJECT),
+		])
 		self.patternselect.connect('changed', self.on_patternselect)
 		self.patternlabel.set_mnemonic_widget(self.patternselect)
 		self.wavelabel = gtk.Label()
 		self.wavelabel.set_text_with_mnemonic("_Instrument")
-		self.waveselect = gtk.combo_box_new_text()
+		self.waveselect = new_combobox([
+			('Name', str),
+			(None, gobject.TYPE_PYOBJECT),
+		])
 		self.waveselect.connect('changed', self.on_waveselect)
 		self.waveselect.connect('notify::popup-shown', self.on_waveselect_popup)
 		self.wavelabel.set_mnemonic_widget(self.waveselect)
@@ -202,6 +212,7 @@ class PatternToolBar(gtk.HBox):
 		eventbus.pattern_created += self.update_patternselect
 		eventbus.pattern_name_changed += self.update_patternselect
 		eventbus.song_opened += self.update_all
+		eventbus.plugin_created += self.select_plugin_instance
 		
 	def reset(self):
 		self.plugin_index = 0
@@ -285,9 +296,10 @@ class PatternToolBar(gtk.HBox):
 		player = com.get('aldrin.core.player')
 		self.plugin_index = min(max(self.plugin_index, 0), player.get_plugin_count()-1)
 		self.pluginselect.get_model().clear()
+		store = self.pluginselect.get_model()
 		for i, plugin in enumerate(sorted(player.get_plugin_list(), lambda a,b:cmp(a.get_name().lower(),b.get_name().lower()))):
 			self.index_to_plugin[i] = plugin
-			self.pluginselect.append_text(prepstr(plugin.get_name()))
+			store.append([prepstr(plugin.get_name()),plugin])
 		self.plugin_to_index = dict([(v,k) for (k,v) in self.index_to_plugin.iteritems()])
 		if self.plugin_index != -1:
 			self.pluginselect.set_active(self.plugin_index)
@@ -324,6 +336,18 @@ class PatternToolBar(gtk.HBox):
 			self.view.show_cursor_right()
 		except AttributeError:
 			pass
+			
+	def select_plugin_instance(self, mp):
+		"""
+		Selects a plugin by instance handle.
+		"""
+		store = self.pluginselect.get_model()
+		iter = store.get_iter_first()
+		while iter:
+			plugin = store.get_value(iter, 1)
+			if mp == plugin:
+				self.select_plugin(store.get_path(iter)[0])
+			iter = store.iter_next(iter)
 
 	def get_combo_plugin(self, index):
 		"""
@@ -363,11 +387,12 @@ class PatternToolBar(gtk.HBox):
 		"""
 		Rebuilds and updates the patternselect list.
 		"""
-		self.patternselect.get_model().clear()
+		store = self.patternselect.get_model()
+		store.clear()
 		if self.plugin_index != -1:
 			mp = self.get_combo_plugin(self.plugin_index)
 			for p in mp.get_pattern_list():
-				self.patternselect.append_text(prepstr(p.get_name()))
+				store.append([prepstr(p.get_name()), p])
 			self.pattern = min(max(self.pattern, 0),mp.get_pattern_count()-1)
 			if self.pattern != -1:
 				self.patternselect.set_active(self.pattern)
@@ -377,14 +402,15 @@ class PatternToolBar(gtk.HBox):
 		Rebuilds and updates the waveselect list.
 		"""
 		self.cb2w = {}
-		self.waveselect.get_model().clear()
+		store = self.waveselect.get_model()
+		store.clear()
 		count = 0
 		wi = 0
 		player = com.get('aldrin.core.player')
 		for i in range(player.get_wave_count()):
 			w = player.get_wave(i)
 			if w.get_level_count() >= 1:
-				self.waveselect.append_text("%02X. %s" % (i+1, prepstr(w.get_name())))
+				store.append(["%02X. %s" % (i+1, prepstr(w.get_name())), w])
 				if i == self.wave:
 					wi = count
 				self.cb2w[count] = i

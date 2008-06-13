@@ -91,12 +91,12 @@ def run(argv):
 	options = com.get('aldrin.core.options')
 	options.parse_args(argv)
 	app_options, app_args = options.get_options_args()
+	global app
+	app = AldrinApplication()
 	if app_options.profile:
 		import cProfile
-		cProfile.runctx('main()', globals(), locals(), app_options.profile)
+		cProfile.runctx('app.main()', globals(), locals(), app_options.profile)
 	else:
-		global app
-		app = AldrinApplication()
 		app.main()
 
 __all__ = [

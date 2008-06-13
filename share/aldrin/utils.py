@@ -531,6 +531,23 @@ def warning(parent, msg):
 
 def new_listview(columns):
 	"""
+	Creates a list store with multiple columns.
+	"""
+	treeview = gtk.TreeView()
+	treeview.set_rules_hint(True)
+	store, columncontrols = new_liststore(treeview, columns)
+	return treeview,store,columncontrols
+
+def new_combobox(columns):
+	"""
+	Creates a combobox.
+	"""
+	combobox = gtk.ComboBox()
+	store, columncontrols = new_liststore(combobox, columns)
+	return combobox
+
+def new_liststore(view, columns):
+	"""
 	Creates a gtk.TreeView for a list store with multiple columns.
 	"""
 	class ToggledHandler:
@@ -541,8 +558,7 @@ def new_listview(columns):
 			model.set(iter, self.column, checked)
 	
 	liststore = gtk.ListStore(*[col[1] for col in columns])
-	treeview = gtk.TreeView(liststore)
-	treeview.set_rules_hint(True)
+	view.set_model(liststore)
 	columncontrols = []
 	for i,args in enumerate(columns):
 		assert len(args) >= 2
@@ -551,9 +567,15 @@ def new_listview(columns):
 			name,coltype = args
 		else:
 			name,coltype,options = args
-		column = gtk.TreeViewColumn(name)
+		if isinstance(view, gtk.ComboBox):
+			if i > 0:
+				break
+			column = view
+		else:
+			column = gtk.TreeViewColumn(name)
 		if coltype == str:
-			column.set_resizable(True)
+			if isinstance(column, gtk.TreeViewColumn):
+				column.set_resizable(True)
 			cellrenderer = gtk.CellRendererText()
 			column.pack_start(cellrenderer)
 			if options.get('markup',False):
@@ -569,11 +591,13 @@ def new_listview(columns):
 			cellrenderer.connect('toggled', th.fixed_toggled, liststore)
 			column.pack_start(cellrenderer)
 			column.add_attribute(cellrenderer, 'active', i)
-		treeview.append_column(column)
-		column.set_sort_column_id(i)
+		if isinstance(view, gtk.TreeView):
+			view.append_column(column)
+			column.set_sort_column_id(i)
 		columncontrols.append(column)
-	treeview.set_search_column(0)
-	return treeview, liststore, columncontrols
+	if isinstance(view, gtk.TreeView):
+		view.set_search_column(0)
+	return liststore, columncontrols
 	
 def new_image_button(path, tooltip, tooltips_object):
 	"""
@@ -861,6 +885,8 @@ __all__ = [
 'message',
 'warning',
 'new_listview',
+'new_liststore',
+'new_combobox',
 'new_image_button',
 'get_item_count',
 'add_scrollbars',

@@ -38,6 +38,7 @@ EVENTS = [
 	'pattern-size-changed', #(pattern, ...). called when a patterns size has changed.
 	'pattern-name-changed', #(pattern, ...). challed when a patterns name has changed.
 	'connection-changed', #() called when a connection between machines is deleted.
+	'plugin-created', # (plugin, ... )
 ]
 
 class EventHandlerList:

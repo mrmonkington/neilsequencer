@@ -1003,11 +1003,9 @@ class RouteView(gtk.DrawingArea):
 				import traceback
 				print traceback.format_exc()
 		self.rootwindow.document_changed()
-		# selects the plugin in the pattern view
-		plugintoolbar = com.get('aldrin.core.patternpanel').toolbar
-		plugintoolbar.select_plugin(get_item_count(plugintoolbar.pluginselect.get_model())-1)
 		# add plugin information
 		common.get_plugin_infos().add_plugin(mp)
+		com.get('aldrin.core.eventbus').plugin_created(mp)
 		# open parameter view if its an effect
 		if is_effect(mp):
 			self.show_parameter_dialog(mp)
