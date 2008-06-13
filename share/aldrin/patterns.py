@@ -213,6 +213,7 @@ class PatternToolBar(gtk.HBox):
 		eventbus.pattern_name_changed += self.update_patternselect
 		eventbus.song_opened += self.update_all
 		eventbus.plugin_created += self.select_plugin_instance
+		eventbus.show_plugin += self.select_plugin_instance
 		
 	def reset(self):
 		self.plugin_index = 0

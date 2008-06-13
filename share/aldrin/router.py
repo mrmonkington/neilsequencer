@@ -1320,12 +1320,7 @@ class RouteView(gtk.DrawingArea):
 			self.selected_plugin = self.current_plugin
 			player.set_midi_plugin(self.current_plugin)
 			if self.selected_plugin:
-				i=0
-				for mp in player.get_plugin_list():
-					if self.selected_plugin==mp:
-						break
-					i+=1
-				com.get('aldrin.core.patternpanel').toolbar.pluginselect.set_active(i)
+				com.get('aldrin.core.eventbus').show_plugin(self.selected_plugin)
 				common.get_plugin_infos().get(self.selected_plugin).reset_plugingfx()									
 			if last:
 				common.get_plugin_infos().get(last).reset_plugingfx()
