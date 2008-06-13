@@ -671,6 +671,7 @@ class PatternView(gtk.DrawingArea):
 		self.vscroll = vscroll
 		self.toolbar = None
 		self.statusbar = None
+		self.jump_to_note = False
 		self.patternsize = 16
 		self.index = None
 		self.pattern = None
@@ -712,6 +713,7 @@ class PatternView(gtk.DrawingArea):
 		self.vscroll.connect('change-value', self.on_vscroll_window)
 		eventbus = com.get('aldrin.core.eventbus')
 		eventbus.connection_changed += self.pattern_changed
+		eventbus.plugin_created += self.plugin_created
 
 	def update_font(self):
 		pctx = self.get_pango_context()
@@ -728,6 +730,19 @@ class PatternView(gtk.DrawingArea):
 		self.row_height = fh # row height
 		self.top_margin = fh # top margin
 		self.column_width = fw # column width
+		
+	def tab_to_second_track(self):
+		"""
+		tab to (usually) first note column
+		"""
+		if self.move_track_right():
+			self.set_index(0)
+			self.set_subindex(0)
+			self.show_cursor_right()
+			self.refresh_view()
+		
+	def plugin_created(self, mp):
+		self.jump_to_note = True # mark that we want tab_to_second_track on next update
 	
 	def on_copy(self, widget):
 		"""
@@ -1025,6 +1040,9 @@ class PatternView(gtk.DrawingArea):
 		plugin = self.get_plugin()
 		if plugin:
 			self.plugin_info.get(plugin).reset_patterngfx()
+		if self.jump_to_note:
+			self.tab_to_second_track()
+			self.jump_to_note = False
 
 	def move_up(self, step = 1):
 		"""
