@@ -80,6 +80,10 @@ struct miditrack {
 	int velocity;
 	int note_delay;
 	int note_cut;
+	int command;
+	int commandValue;
+	int parameter;
+	int parameterValue;
 	int midi_channel;
 
 	miditrack();
@@ -137,6 +141,11 @@ struct miditracker : public zzub::plugin {
 	virtual void input(float**, int, float) {}
 	virtual void midi_control_change(int, int, int) {}
 	virtual bool handle_input(int, int, int) { return false; }
+	virtual void process_midi_events(zzub::midi_message* pin, int nummessages) {}
+	virtual void get_midi_output_names(zzub::outstream *pout) {}
+	virtual void set_stream_source(const char* resource) {}
+	virtual const char* get_stream_source() { return 0; }
+
 };
 
 struct midioutnames : zzub::outstream {
@@ -161,8 +170,12 @@ miditrack::miditrack() {
 	note = zzub::note_value_none;
 	note_delay = paraDelay->value_none;
 	note_cut = paraCut->value_none;
-	midi_channel = paraMidiChannel->value_default;
+	midi_channel = paraMidiChannel->value_default - 1;
 	last_note = zzub::note_value_none;
+	command = paraCommand->value_default;
+	commandValue = paraCommandValue->value_default;
+	parameter = paraParameter->value_default;
+	parameterValue = paraParameterValue->value_default;
 }
 
 void miditrack::tick() {
@@ -182,8 +195,24 @@ void miditrack::tick() {
 		note_delay = (int)(unit * values->delay); // convert to samples in tick
 	}
 
+	if (values->command != paraCommand->value_none) {
+		command = values->command;
+	}
+
+	if (values->commandValue != paraCommandValue->value_none) {
+		commandValue = values->commandValue;
+	}
+
+	if (values->parameter != paraParameter->value_none) {
+		parameter = values->parameter;
+	}
+
+	if (values->parameterValue != paraParameterValue->value_none) {
+		parameterValue = values->parameterValue;
+	}
+
 	if (values->midiChannel != paraMidiChannel->value_none)
-		midi_channel = values->midiChannel;
+		midi_channel = values->midiChannel - 1;
 	// find out how many samples we should wait before triggering this note
 }
 
@@ -193,11 +222,11 @@ void miditrack::tick() {
           ((status) & 0xFF))
 
 void miditrack::process_stereo(int numsamples) {
-	if (note == zzub::note_value_none) return ;
+	
 
-	if (tracker->open_device == -1) return ;
-	int midi_device = tracker->_host->get_midi_device(tracker->devices[tracker->open_device].c_str());
-	if (midi_device == -1) return ;
+	//if (tracker->open_device == -1) return ;
+	//int midi_device = tracker->_host->get_midi_device(tracker->devices[tracker->open_device].c_str());
+	//if (midi_device == -1) return ;
 
 	if (tracker->samples_in_tick<=note_delay && tracker->samples_in_tick + numsamples>=note_delay) {
 		//we're here!
@@ -205,12 +234,124 @@ void miditrack::process_stereo(int numsamples) {
 		//fordi nå driver vi og fyller opp en buffer, men hvis vi kan finne ut hvor playeren spiller nå
 		//så kan vi regne ut hvor lenge det er til ticket starter, så kommer delayen oppå det
 
-		if (note == zzub::note_value_off || last_note != zzub::note_value_none) {
+		// Determine desired delay
+		// ts is incremented during each midi_out() to curtail simultaneous midi output.
+
+		int ts = note_delay / 16; // this division by 16 is arbitrary, what does Polac use?
+
+		// Parameters
+
+		if (parameter != paraParameter->value_none && parameterValue != paraParameterValue->value_none) {
+
+			int msg;
+			int status;
+			int x;
+			int y;
+			int message;
+
+			/*
+
+				Polac VST(i):
+
+					30ff:	None
+					30fe:	Pitch Bend
+					30fd:	PolyAT
+					30fc:	MonoAT
+					30fb:	Morph Programs
+					30fa:	CC 250
+						...
+					3000:	CC 0
+					2fff:	unused (or VST parameter)
+						...
+					0000:	unused (or VST parameter)
+
+			*/
+			if (parameter < 0x3000) {
+				// unused
+				msg = 0;
+			}
+			else if (parameter < 0x30fb) {
+				msg = 0xb0; // CC
+				x = parameter - 0x3000;
+				y = (parameterValue > 127) ? 127 : parameterValue;
+			}
+			else if (parameter == 0x30fe) {
+				msg = 0xe0; // Pitch Bend
+				x = (parameterValue > 127) ? 127 : parameterValue;
+				y = 0;
+				printf("Pitch bend: %i\n", x);
+			}
+			else {
+				// TODO: the other parameter values
+				msg = 0;
+			}
+
+			if (msg) {
+				status = msg | (midi_channel & 0x0f);
+				message = MAKEMIDI(status, x, y);
+				tracker->_host->midi_out(ts++, message);
+			}
+
+			//parameter = paraParameter->value_none;
+			//parameterValue = paraParameterValue->value_none;
+		}
+
+		// Commands
+
+		if (command != paraCommand->value_none && commandValue != paraCommandValue->value_none) {
+			switch (command) {
+
+				case 9: // MIDI Message
+
+					int msg;
+					/*
+						From Polac VST(i):
+
+						09 xxyy
+
+						xx(0-FF): MIDI Message #
+						00-7F: CC 0-7F
+						80-FD: user-defined MIDI Message
+						FE: Pitch Bend Range
+						FF: Pitch Bend
+
+						yy(0-FF): Value
+
+						The MIDI Messages can be edited: ->Default Valus->Midi Messages.
+					*/
+
+					int x = commandValue >> 8;
+					int y = commandValue - (x << 8);
+
+					if (x <= 0x7f) {
+						msg = 0xb0;	// Control Change (CC)
+						if(y > 0x7f) // limit is 127
+							y = 0x7f;
+					}
+					else if (x <= 0xfd);		// user-defined MIDI message (To Do)
+					else msg = 0xe0;			// Pitch Bend (To Fix?)
+
+
+					int status = msg | (midi_channel & 0x0f);
+					int message = MAKEMIDI(status, x, y);
+					tracker->_host->midi_out(ts++, message);
+
+					//cout << "midiTracker sending MIDI Message=\"" << hex << message << "\" commandValue=\"" << commandValue << "\" x=\"" << x << "\" y=\"" << y << "\"."<<dec<< endl;
+					break;
+			};
+			command = paraCommand->value_none;
+			commandValue = paraCommandValue->value_none;
+		}
+
+	    if (note == zzub::note_value_none) return;
+
+		if ( 1 /* note == zzub::note_value_off || last_note != zzub::note_value_none */) {
 			int status = 0x80 | (midi_channel & 0x0f);
 			int message = MAKEMIDI(status, last_note, 0);
 
-			tracker->_host->midi_out(midi_device, message);
+			tracker->_host->midi_out(ts++, message);
 			last_note = zzub::note_value_none;
+
 			//cout << "miditracker playing note-off " << note << " with delay " << (int)note_delay << endl;
 		}
 
@@ -222,14 +363,13 @@ void miditrack::process_stereo(int numsamples) {
 
 			last_note = midi_note;
 
-			tracker->_host->midi_out(midi_device, message);
+			tracker->_host->midi_out(ts++, message);
+
 			//cout << "miditracker playing note " << note << " with delay " << (int)note_delay << endl;
 		}
-
 		note = zzub::note_value_none;
 	}
 }
-
 
 miditracker::miditracker() {
 	global_values = &gval;
@@ -245,37 +385,37 @@ miditracker::miditracker() {
 
 void miditracker::init(zzub::archive * const pi) {
 	devices.clear();
-	midioutnames outnames(this);
-	_host->get_midi_output_names(&outnames);
+//	midioutnames outnames(this);
+//	_host->get_midi_output_names(&outnames);
 
-	if (!pi) {
-		if (devices.size() > 0)
-			open_device = 0;
-		return ;
-	}
+//	if (!pi) {
+//		if (devices.size() > 0)
+//			open_device = 0;
+//		return ;
+//	}
 
-	zzub::instream* ins = pi->get_instream("");
-	std::string deviceName;
-	ins->read(deviceName);
-	std::vector<std::string>::iterator i = std::find(devices.begin(), devices.end(), deviceName);
-	if (i != devices.end())
-		open_device = i - devices.begin();
+//	zzub::instream* ins = pi->get_instream("");
+//	std::string deviceName;
+//	ins->read(deviceName);
+//	std::vector<std::string>::iterator i = std::find(devices.begin(), devices.end(), deviceName);
+//	if (i != devices.end())
+//		open_device = i - devices.begin();
 }
 
 void miditracker::load(zzub::archive * const pi) {
-	zzub::instream* ins = pi->get_instream("");
-	std::string deviceName;
-	ins->read(deviceName);
-	std::vector<std::string>::iterator i = std::find(devices.begin(), devices.end(), deviceName);
-	if (i != devices.end())
-		open_device = i - devices.begin();
+//	zzub::instream* ins = pi->get_instream("");
+//	std::string deviceName;
+//	ins->read(deviceName);
+//	std::vector<std::string>::iterator i = std::find(devices.begin(), devices.end(), deviceName);
+//	if (i != devices.end())
+//		open_device = i - devices.begin();
 }
 
 void miditracker::save(zzub::archive* po) {
-	zzub::outstream* outs = po->get_outstream("");
-	if (open_device >= 0)
-		outs->write(devices[open_device].c_str()); else
-		outs->write("");
+//	zzub::outstream* outs = po->get_outstream("");
+//	if (open_device >= 0)
+//		outs->write(devices[open_device].c_str()); else
+//		outs->write("");
 }
 
 void miditracker::set_track_count(int i) {
@@ -286,12 +426,11 @@ void miditracker::process_events() {
 	samples_per_tick = _master_info->samples_per_tick;
 	samples_in_tick = 0;
 
-	if (open_device != -1 && gval.program != paraProgram->value_none) {
+	if (gval.program != paraProgram->value_none) {
 		// here we change program on all midi channels
-		int midi_device = _host->get_midi_device(devices[open_device].c_str());
 		for (int i = 0; i < 16; i++) {
 			unsigned int data = MAKEMIDI(0xC0 | i, gval.program, 0);
-			_host->midi_out(midi_device, data);
+			_host->midi_out(0, data);
 		}
 	}
 
@@ -301,17 +440,16 @@ void miditracker::process_events() {
 }
 
 void miditracker::stop() {
-	if (open_device == -1) return ;
-
-	int midi_device = _host->get_midi_device(devices[open_device].c_str());
-	if (midi_device == -1) return ;
+//	if (open_device == -1) return ;
+//	int midi_device = _host->get_midi_device(devices[open_device].c_str());
+//	if (midi_device == -1) return ;
 
 	for (int i = 0; i < num_tracks; i++) {
 		if (tracks[i].last_note != zzub::note_value_none) {
 			int status = 0x80 | (tracks[i].midi_channel & 0x0f);
 			int message = MAKEMIDI(status, tracks[i].last_note, 0);
 
-			_host->midi_out(midi_device, message);
+			_host->midi_out(0, message);
 			tracks[i].note = zzub::note_value_none;
 			tracks[i].last_note = zzub::note_value_none;
 		}
@@ -330,6 +468,39 @@ bool miditracker::process_stereo(float **pin, float **pout, int numsamples, int 
 }
 
 const char * miditracker::describe_value(int param, int value) {
+	static char temp[1024];
+
+	switch (param) {
+		case 11: // track parameter
+			/*
+
+				Polac VST(i):
+
+					30ff:	None
+					30fe:	Pitch Bend
+					30fd:	PolyAT
+					30fc:	MonoAT
+					30fb:	Morph Programs
+					30fa:	CC 250
+						...
+					3000:	CC 0
+					2fff:	unused (or VST parameter)
+						...
+					0000:	unused (or VST parameter)
+
+			*/
+			if (value < 0x3000)
+				return "unused";
+			else if (value < 0x30fb) {
+				sprintf(temp, "CC: %3i   %02Xh", value - 0x3000, value - 0x3000);
+				return temp;
+			}
+			break;
+		default:
+
+			break;
+	};
+
 	return 0;
 }
 
@@ -340,23 +511,23 @@ void miditracker::command(int index) {
 }
 
 void miditracker::get_sub_menu(int i, zzub::outstream* os) {
-	devices.clear();
-	midioutnames outnames(this);
-	_host->get_midi_output_names(&outnames);
+//	devices.clear();
+//	midioutnames outnames(this);
+//	_host->get_midi_output_names(&outnames);
 
-	for (int i = 0; i< devices.size(); i++) {
-		std::stringstream strm;
-		strm << (open_device==i?"*":"") << devices[i];
-		std::string outs = strm.str();
-		os->write((void*)outs.c_str(), outs.length() + 1);
-	}
+//	for (int i = 0; i< devices.size(); i++) {
+//		std::stringstream strm;
+//		strm << (open_device==i?"*":"") << devices[i];
+//		std::string outs = strm.str();
+//		os->write((void*)outs.c_str(), outs.length() + 1);
+//	}
 }
 
 const char *zzub_get_signature() { return ZZUB_SIGNATURE; }
 
 struct miditracker_info : zzub::info {
 	miditracker_info() {
-		this->flags = 0;
+		this->flags = zzub::plugin_flag_has_midi_output;
 		this->name = "zzub miditracker";
 		this->short_name = "miditracker";
 		this->author = "Andy Werk <calvin@countzero.no>";
@@ -392,25 +563,28 @@ struct miditracker_info : zzub::info {
 			.set_value_min(0)
 			.set_value_max(0xfe)
 			.set_value_none(0xff)
+			.set_state_flag()
 			.set_value_default(0xff);
 
 		paraGlobalCommandValue = &add_global_parameter()
 			.set_word()
-			.set_name("Global Command Value")
+			.set_name("Command Value")
 			.set_description("Global Command Value")
 			.set_value_min(0)
 			.set_value_max(0xfffe)
 			.set_value_none(0xffff)
+			.set_state_flag()
 			.set_value_default(0xffff);
 
 		paraProgram = &add_global_parameter()
 			.set_word()
 			.set_name("Program")
 			.set_description("Program")
-			.set_value_min(0)
-			.set_value_max(0xfffe)
-			.set_value_none(0xffff)
-			.set_value_default(0xffff);
+			.set_value_min(1)
+			.set_value_max(0x80)
+			.set_value_none(0)
+			.set_state_flag()
+			.set_value_default(0x0);
 
 		paraNote = &add_track_parameter()
 			.set_note()
@@ -429,7 +603,6 @@ struct miditracker_info : zzub::info {
 			.set_value_min(0x01)
 			.set_value_max(0x7f)
 			.set_value_none(0xff)
-			.set_state_flag()
 			.set_value_default(0x7f);
 
 		paraDelay = &add_track_parameter()
@@ -452,7 +625,7 @@ struct miditracker_info : zzub::info {
 
 		paraCommand = &add_track_parameter()
 			.set_byte()
-			.set_name("Track Command")
+			.set_name("Command")
 			.set_description("Track Command")
 			.set_value_min(0)
 			.set_value_max(0xfe)
@@ -461,7 +634,7 @@ struct miditracker_info : zzub::info {
 
 		paraCommandValue = &add_track_parameter()
 			.set_word()
-			.set_name("Track Command Value")
+			.set_name("Command Value")
 			.set_description("Track Command Value")
 			.set_value_min(0)
 			.set_value_max(0xfffe)
@@ -470,30 +643,33 @@ struct miditracker_info : zzub::info {
 
 		paraParameter = &add_track_parameter()
 			.set_word()
-			.set_name("Track Parameter")
+			.set_name("Parameter")
 			.set_description("Track Parameter")
 			.set_value_min(0)
-			.set_value_max(0xfffe)
-			.set_value_none(0xffff)
-			.set_value_default(0xffff);
+			.set_value_max(0x30fe)
+			.set_value_none(0x30ff)
+			.set_state_flag()
+			.set_value_default(0x30ff);
 
 		paraParameterValue = &add_track_parameter()
 			.set_word()
-			.set_name("Track Parameter Value")
+			.set_name("Parameter Value")
 			.set_description("Track Parameter Value")
 			.set_value_min(0)
-			.set_value_max(0xfffe)
-			.set_value_none(0xffff)
-			.set_value_default(0xffff);
+			.set_value_max(127)
+			.set_value_none(128)
+			.set_state_flag()
+			.set_value_default(128);
 
 		paraMidiChannel = &add_track_parameter()
 			.set_byte()
 			.set_name("MIDI Channel")
 			.set_description("MIDI Channel")
-			.set_value_min(0)
-			.set_value_max(0xf)
+			.set_value_min(1)
+			.set_value_max(0x10)
 			.set_value_none(0xff)
-			.set_value_default(0);
+			.set_state_flag()
+			.set_value_default(1);
 
 	}
 	virtual zzub::plugin* create_plugin() const { return new miditracker(); }
@@ -520,5 +696,7 @@ struct miditrackerplugincollection : zzub::plugincollection {
 zzub::plugincollection *zzub_get_plugincollection() {
 	return new miditrackerplugincollection();
 }
+
+
 
 

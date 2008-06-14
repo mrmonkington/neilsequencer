@@ -783,7 +783,7 @@ void green_milk::init(zzub::archive *arc) {
 
 	this->hbOut.Init();
 
-	this->pThisMachine = _host->get_metaplugin();
+	//this->pThisMachine = _host->get_metaplugin();
 }
 
 void green_milk::save(zzub::archive *arc)
@@ -1088,7 +1088,7 @@ void green_milk::midi_note(int channel, int val, int velocity)
 	if(stateflags & zzub::state_flag_playing && stateflags & zzub::state_flag_recording)
 	{
 		// ok, we're on!
-		pseq = _host->get_playing_sequence(pThisMachine);
+		pseq = _host->get_playing_sequence(_host->get_metaplugin());
 	}
 
 	// first thing to do is check if its on our channel

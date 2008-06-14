@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2003-2007 Anders Ervik <calvin@countzero.no>
+Copyright (C) 2003-2008 Anders Ervik <calvin@countzero.no>
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -21,12 +21,21 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <algorithm>
 #include <cctype>
 #include <ctime>
+#include <sstream>
 #include "bmxreader.h"
 #include "bmxwriter.h"
-#include "timer.h"
 #include "dummy.h"
 #include "archive.h"
 #include "tools.h"
+
+#if defined(USE_LIBMAD)
+#include <mad.h>
+#endif
+#if defined(USE_SNDFILE)
+#include <sndfile.h>
+#endif
+
+#include "import.h"
 
 #if defined(POSIX)
 #include <dirent.h>
@@ -40,9 +49,334 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 using namespace std;
 
+extern size_t sizeFromWaveFormat(int waveFormat);
+
+struct find_info_by_uri : public std::unary_function<const zzub::info*, bool> {
+	std::string uri;
+	find_info_by_uri(std::string u) {
+		uri = u;
+	}
+	bool operator()(const zzub::info* info) {
+		return strcmpi(uri.c_str(), info->uri.c_str()) == 0;
+	}
+};
+
 namespace zzub {
 
-short player::oscTables[8][OSCTABSIZE];
+/***
+
+	waveimporter
+
+***/
+
+#if defined(USE_LIBMAD)
+
+static enum mad_flow zzub_mad_input(void *data, struct mad_stream *stream) {
+  struct zzub_mad_data *buffer = (zzub_mad_data*)data;
+
+  if (buffer->f->position() >= buffer->f->size())
+    return MAD_FLOW_STOP;
+  
+  int bufferleft = 0;
+  if (stream->next_frame) {
+	bufferleft = &buffer->frame[buffer->framepos] - stream->next_frame;
+  }
+  //printf("stream->next_frame = %p, bufferleft = %i\n", stream->next_frame, bufferleft);
+  
+  if (bufferleft) {
+	  memmove(buffer->frame, &buffer->frame[buffer->framepos - bufferleft], bufferleft);
+	  buffer->framepos = bufferleft;
+  }
+  
+  assert((MAD_FRAMESIZE-bufferleft) >= 0);
+  if ((MAD_FRAMESIZE-bufferleft) > 0) {
+  
+	  int bytes_read = buffer->f->read(&buffer->frame[buffer->framepos], MAD_FRAMESIZE-bufferleft);
+	  //printf("bytes_read = %i\n", bytes_read);
+	  buffer->framepos += bytes_read;
+	  //~ printf("%i bytes read\n", bytes_read);
+	  if (!bytes_read)
+		  return MAD_FLOW_STOP;
+  }
+
+  mad_stream_buffer(stream, buffer->frame, buffer->framepos);
+
+  return MAD_FLOW_CONTINUE;
+}
+
+static enum mad_flow zzub_mad_header(void *data, struct mad_header const *header) {
+	//~ printf("zzub_mad_header\n");
+  //~ printf("header->samplerate: %u\n", header->samplerate);
+	return MAD_FLOW_CONTINUE;
+}
+
+static inline signed int zzub_mad_scale(mad_fixed_t sample) {
+  /* round */
+  sample += (1L << (MAD_F_FRACBITS - 16));
+
+  /* clip */
+  if (sample >= MAD_F_ONE)
+    sample = MAD_F_ONE - 1;
+  else if (sample < -MAD_F_ONE)
+    sample = -MAD_F_ONE;
+
+  /* quantize */
+  return sample >> (MAD_F_FRACBITS + 1 - 16);
+}
+
+static enum mad_flow zzub_mad_output(void *data, struct mad_header const *header, struct mad_pcm *pcm) {
+	struct zzub_mad_data *buffer = (zzub_mad_data*)data;
+  unsigned int nchannels, nsamples;
+  mad_fixed_t const *left_ch, *right_ch;
+	
+
+  /* pcm->samplerate contains the sampling frequency */
+
+  nchannels = pcm->channels;
+  buffer->samplerate = header->samplerate;
+  buffer->nchannels = (int)nchannels;
+  nsamples  = pcm->length;
+  left_ch   = pcm->samples[0];
+  right_ch  = pcm->samples[1];
+
+  while (nsamples--) {
+    signed int sample;
+
+    /* output sample(s) in 16-bit signed little-endian PCM */
+
+    sample = zzub_mad_scale(*left_ch++);
+    buffer->outbuffer.push_back(sample);
+
+    if (nchannels == 2) {
+      sample = zzub_mad_scale(*right_ch++);
+      buffer->outbuffer.push_back(sample);
+    }
+  }
+
+  return MAD_FLOW_CONTINUE;
+}
+
+static enum mad_flow zzub_mad_error(void *data, struct mad_stream *stream, struct mad_frame *frame) {
+  struct zzub_mad_data *buffer = (zzub_mad_data*)data;
+
+  fprintf(stderr, "decoding error 0x%04x (%s) at frame %u\n",
+	  stream->error, mad_stream_errorstr(stream),
+	  stream->this_frame - buffer->frame);
+
+  /* return MAD_FLOW_BREAK here to stop decoding (and propagate an error) */
+
+  return MAD_FLOW_CONTINUE;
+}
+
+import_mad::import_mad() {
+	zmd.f = 0;
+}
+
+bool import_mad::open(zzub::instream* datastream) {
+	zmd.f = datastream;
+	zmd.samplerate = 44100;
+	zmd.nchannels = 1;
+	zmd.framepos = 0;
+	mad_decoder_init(&decoder, &zmd, &zzub_mad_input, /*&zzub_mad_header*/0, 0, &zzub_mad_output, &zzub_mad_error, 0);
+	
+	int result = mad_decoder_run(&decoder, MAD_DECODER_MODE_SYNC);
+	if (!result) {
+		size_t frames = zmd.outbuffer.size() / zmd.nchannels;
+		printf("loaded mp3 '%s'\n", "(stream)");
+	} else {
+		fprintf(stderr, "couldn't decode '%s' properly.\n", "(stream)");
+		return false;
+	}
+	return true;
+}
+
+int import_mad::get_wave_count() {
+	if (zmd.f) return 1;
+	return 0;
+}
+
+int import_mad::get_wave_level_count(int i) {
+	if (zmd.f) return 1;
+	return 0;
+}
+
+bool import_mad::get_wave_level_info(int i, int level, importwave_info& info) {
+	if (i != 0 && level != 0) return false;
+
+	info.channels = zmd.nchannels;
+	info.format = wave_buffer_type_si16;
+	info.sample_count = zmd.outbuffer.size() / zmd.nchannels;
+	info.samples_per_second = zmd.samplerate;
+	return true;
+}
+
+void import_mad::read_wave_level_samples(int i, int level, void* buffer) {
+	memcpy(buffer, &zmd.outbuffer[0], sizeof(short) * zmd.outbuffer.size());
+	
+	mad_decoder_finish(&decoder);
+}
+
+void import_mad::close() {
+	
+}
+
+#endif	// USE_LIBMAD
+
+
+#if defined(USE_SNDFILE)
+
+static sf_count_t instream_filelen (void *user_data) {
+	zzub::instream* strm = (zzub::instream*)user_data ;
+	return strm->size();
+}
+
+static sf_count_t instream_seek (sf_count_t offset, int whence, void *user_data) {
+	zzub::instream* strm = (zzub::instream*)user_data ;
+	strm->seek((long)offset, (int)whence);
+	return strm->position();
+}
+
+static sf_count_t instream_read (void *ptr, sf_count_t count, void *user_data){
+	zzub::instream* strm = (zzub::instream*)user_data ;
+	return strm->read(ptr, count);
+}
+
+static sf_count_t instream_write (const void *ptr, sf_count_t count, void *user_data) {
+	zzub::instream* strm = (zzub::instream*)user_data ;
+	assert(false);
+	return 0;
+}
+
+static sf_count_t instream_tell (void *user_data){
+	zzub::instream* strm = (zzub::instream*)user_data ;
+	return strm->position();
+}
+
+
+import_sndfile::import_sndfile() {
+	sf = 0;
+	memset(&sfinfo, 0, sizeof(sfinfo));
+}
+
+bool import_sndfile::open(zzub::instream* strm) {
+	memset(&sfinfo, 0, sizeof(sfinfo));
+	SF_VIRTUAL_IO vio;
+	vio.get_filelen = instream_filelen ;
+	vio.seek = instream_seek;
+	vio.read = instream_read;
+	vio.write = instream_write;
+	vio.tell = instream_tell;
+	sf = sf_open_virtual(&vio, SFM_READ, &sfinfo, strm);
+
+	if (!sf || !sfinfo.frames) {
+		sf_close(sf);
+		sf = 0;
+		return false;
+	}
+
+	return true;
+}
+
+int import_sndfile::get_wave_count() {
+	if (sf != 0) return 1;
+	return 0;
+}
+
+int import_sndfile::get_wave_level_count(int i) {
+	assert(i == 0);
+	if (sf != 0) return 1;
+	return 0;
+}
+
+bool import_sndfile::get_wave_level_info(int i, int level, importwave_info& info) {
+	assert(i == 0);
+	assert(level == 0);
+	if (i != 0 && level != 0) return false;
+	info.channels = sfinfo.channels;
+	info.format = wave_buffer_type_si16;
+	info.sample_count = (int)sfinfo.frames;
+	info.samples_per_second = sfinfo.samplerate;
+	return true;
+}
+
+void import_sndfile::read_wave_level_samples(int i, int level, void* buffer) {
+	assert(i == 0);
+	assert(level == 0);
+	importwave_info iwi;
+	if (!get_wave_level_info(i, level, iwi)) return ;
+	sf_readf_short(sf, (short*)buffer, iwi.sample_count);
+
+}
+
+void import_sndfile::close() {
+	assert(sf != 0);
+	sf_close(sf);
+}
+
+#endif
+
+
+
+waveimporter::waveimporter() {
+	imp = 0;
+
+#if defined(USE_SNDFILE)
+	plugins.push_back(new import_sndfile());
+#endif
+#if defined(USE_LIBMAD)
+	plugins.push_back(new import_mad());
+#endif
+}
+
+waveimporter::~waveimporter() {
+	for (size_t i = 0; i < plugins.size(); i++)
+		delete plugins[i];
+	plugins.clear();
+}
+
+importplugin* waveimporter::get_importer(std::string filename) {
+	size_t dp = filename.find_last_of('.');
+	if (dp == std::string::npos) return 0;
+	std::string ext = filename.substr(dp + 1);
+	transform(ext.begin(), ext.end(), ext.begin(), (int(*)(int))std::tolower);
+	std::vector<importplugin*>::iterator i;
+	for (i = plugins.begin(); i != plugins.end(); ++i) {
+		std::vector<std::string> exts = (*i)->get_extensions();
+		std::vector<std::string>::iterator j = find(exts.begin(), exts.end(), ext);
+		if (j != exts.end()) return *i;
+	}
+
+	return 0;
+}
+
+bool waveimporter::open(std::string filename, zzub::instream* inf) {
+	imp = get_importer(filename);
+	if (!imp) return false;
+	return imp->open(inf);
+}
+
+int waveimporter::get_wave_count() {
+	assert(imp);
+	return imp->get_wave_count();
+}
+
+int waveimporter::get_wave_level_count(int i) {
+	return imp->get_wave_level_count(i);
+}
+
+bool waveimporter::get_wave_level_info(int i, int level, importwave_info& info) {
+	return imp->get_wave_level_info(i, level, info);
+}
+
+void waveimporter::read_wave_level_samples(int i, int level, void* buffer) {
+	imp->read_wave_level_samples(i, level, buffer);
+}
+
+void waveimporter::close() {
+	imp->close();
+	imp = 0;
+}
+
 
 /***
 
@@ -50,74 +384,56 @@ short player::oscTables[8][OSCTABSIZE];
 
 ***/
 
-/**
- *	\struct player
- *	\brief This struct provides libzzub's core services.
- */
-player::player()
-	:song_sequencer(this) 
-{
-	for (int c = 0; c < 2; ++c) {
-		mixBuffer[c] = new float[zzub::buffer_size * 4];
-		memset(mixBuffer[c], 0, sizeof(float) * zzub::buffer_size * 4);
-	}
-	soloMachine=0;
-	workPos=0;
-	workFracs=0.0f;
-	playerState=player_state_muted;
-	currentlyPlayingSequencer=&song_sequencer;
-	master=0;
-	masterLoader = 0;
-	recordParameters=false;
-	for (int i = 0; i < audiodriver::MAX_CHANNELS; i++) {
-		inputBuffer[i] = 0;
-	}
-	cpuLoad = 0;
-	editCommand = 0;
-	stopFlag = false;
-	midiNoteMachine = 0;
-	midiSyncTransport = false;
+player::player() {
+	swap_operations_commit = false;
+
+	history_position = history.begin();
+
 }
 
 player::~player(void) {
-	// free machineloaders
-	clearMachineLoaders();
-	machineInstances.clear();	// finally remove master
-
-	if (master)
-		delete master;
-	if (masterLoader)
-		delete masterLoader;
-	for (int c = 0; c < 2; ++c) {
-		delete[] mixBuffer[c];
+	if (front.plugins[0] != 0) {
+		front.plugins[0]->plugin->destroy();
+		delete front.plugins[0]->callbacks;
+		delete front.plugins[0];
+		front.plugins[0] = 0;
 	}
+	front.plugins.clear();
+
+	for (size_t i = 0; i < plugin_libraries.size(); i++) {
+		delete plugin_libraries[i];
+	}
+	plugin_libraries.clear();
+}
+
+bool player::initialize() {
+#if defined(__SSE__)
+	std::cout << "SSE optimization is enabled." << std::endl;
+#else
+	std::cout << "SSE optimization is not enabled. Expect your CPU to choke once in a while." << std::endl;
+#endif
+	front.work_position = 0;
+	front.master_info.tick_position = 0;
+	front.master_info.samples_per_second = work_rate;
+
+	std::vector<char> bytes;
+	create_plugin(bytes, "Master", &front.master_plugininfo);
+	flush_operations(0, 0);
+	flush_from_history();
+
+	initialize_plugin_libraries();
+
+	front.wavetable.waves.resize(200);
+	for (size_t i = 0; i < front.wavetable.waves.size(); i++) {
+		front.wavetable.waves[i] = new wave_info_ex();
+	}
+
+	front.state = player_state_stopped;
+	return true;
 }
 
 
-/*! \brief Generates diverse tables used by some (old, Buzz only) machines */
-
-void player::generateOscillatorTables() {
-	int tabSize=2048;
-	srand(static_cast<unsigned int>(time(0)));
-	for (int tabLevel=0; tabLevel<11; tabLevel++) {
-		int tabOfs=zzub::get_oscillator_table_offset(tabLevel);
-		for (int i=0; i<tabSize; i++) {
-			double dx=(double)i/tabSize;
-			oscTables[zzub::oscillator_type_sine][tabOfs+i]=(short)(sin(dx*2.0f*M_PI)*32000);
-			oscTables[zzub::oscillator_type_sawtooth][tabOfs+i]=(short)(sawtooth(dx*2.0f*M_PI)*32000);
-			oscTables[zzub::oscillator_type_pulse][tabOfs+i]=(short)(square(dx*2.0f*M_PI)*32000);
-			oscTables[zzub::oscillator_type_triangle][tabOfs+i]=(short)(triangle(dx*2.0f*M_PI)*32000);
-			oscTables[zzub::oscillator_type_noise][tabOfs+i]=(short) (((float)rand()/(float)RAND_MAX)*64000.f - 32000);
-			oscTables[zzub::oscillator_type_sawtooth_303][tabOfs+i]=(short)(sawtooth(dx*2.0f*M_PI)*32000);
-			oscTables[6][tabOfs+i]=(short)(sin(dx*2.0f*M_PI)*32000);
-		}
-		tabSize/=2;
-	}
-}
-
-/*! \brief Create a plugin library from a DLL */
-
-void player::loadPluginLibrary(const std::string &fullpath) {
+void player::load_plugin_library(const std::string &fullpath) {
 	int dpos=(int)fullpath.find_last_of('.');
 	string fileExtension = fullpath.substr(dpos);
 #if defined(_WIN32)
@@ -126,51 +442,32 @@ void player::loadPluginLibrary(const std::string &fullpath) {
 #elif defined(POSIX)
 	if (fileExtension == ".so") {
 #endif
-		pluginlib* lib=new pluginlib(fullpath,*this);
 		// machine loaders will be registered by lib through registerMachineLoader,
 		// now and during loading of songs
-		pluginLibraries.push_back(lib);
+		plugin_libraries.push_back(new pluginlib(fullpath, *this));
 	}
 }
 
-/*! \brief Register a plugin type with the players list of known plugins 
-
-	Machine loaders will be registered by pluginlib instances
-	upon initialization and during loading of songs.
-*/
-
-void player::registerMachineLoader(pluginloader *loader) {
-	string pluginUri = loader->plugin_info->uri;
-	transform(pluginUri.begin(), pluginUri.end(), pluginUri.begin(), (int(*)(int))std::tolower);
-	if (!isBlackListed(pluginUri)) {
-		machines[pluginUri] = loader;
-	}
-}
-
-/*! \brief Enumerate all files in the given folder and initialie all plugins. 
-
-	\param folder Name of folder to scan, must end with a slash (or backslash for Win32).
-*/
-void player::initializeFolder(std::string folder) {
+void player::initialize_plugin_directory(std::string folder) {
 	using namespace std;
 
 #if defined(_WIN32)
 
-	string searchPath=folder + "*.dll";
+	string searchPath = folder + "*.dll";
 
 	WIN32_FIND_DATA fd;
-	HANDLE hFind=FindFirstFile(searchPath.c_str(), &fd);
+	HANDLE hFind = FindFirstFile(searchPath.c_str(), &fd);
 
-	while (hFind!=INVALID_HANDLE_VALUE) {
+	while (hFind != INVALID_HANDLE_VALUE) {
 		
 		if ( (fd.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY)==0) {
-			string fullFilePath=folder + fd.cFileName;
+			string fullFilePath = folder + fd.cFileName;
 			printf("enumerating %s\n", fullFilePath.c_str());
 			char fullPath[1024];
 			char* filePart;
 			GetFullPathName(fullFilePath.c_str(), 1024, fullPath, &filePart);
 
-			loadPluginLibrary(fullPath);
+			load_plugin_library(fullPath);
 		}
 
 		if (!FindNextFile(hFind, &fd)) break;
@@ -184,1090 +481,317 @@ void player::initializeFolder(std::string folder) {
 	
 	string searchPath=folder;
 	
-    n = scandir(searchPath.c_str(), &namelist, 0, alphasort);
-    if (n < 0)
-        perror("scandir");
-    else {
-        while(n--) {
+	n = scandir(searchPath.c_str(), &namelist, 0, alphasort);
+	if (n < 0)
+		perror("scandir");
+	else {
+		while(n--) {
 			string fullFilePath=folder + namelist[n]->d_name;
 			printf("enumerating %s\n", fullFilePath.c_str());
 			if (!stat(fullFilePath.c_str(), &statinfo))
 			{
 				if (!S_ISDIR(statinfo.st_mode))
 				{
-					loadPluginLibrary(fullFilePath);
+					load_plugin_library(fullFilePath);
 				}
 			}
-            free(namelist[n]);
-        }
-        free(namelist);
-    }
-
-#endif
-
-}
-
-/*! \brief Add a folder name to scan for plugins upon initialization.
-
-	\param folder Name of folder to scan, must end with a slash (or backslash for Win32).
-*/
-void player::addMachineFolder(std::string folder) {
-	pluginFolders.push_back(folder);
-}
-
-/*! \brief Clear registered plugin libraries and free plugin DLLs. */
-void player::clearMachineLoaders() {
-    for (size_t i=0; i<pluginLibraries.size(); i++) {
-        pluginlib* lib = pluginLibraries[i];
-        delete lib;
-    }
-    machines.clear();
-    pluginLibraries.clear();
-}
-
-/*! \brief Returns a plugin library by URI. */
-pluginlib* player::getPluginlibByUri(const std::string &uri) {
-    for (size_t i=0; i<pluginLibraries.size(); i++) {
-		pluginlib *lib = pluginLibraries[i];
-		if (lib->collection && lib->collection->get_uri() && (uri == lib->collection->get_uri())) {
-			return lib;
+			free(namelist[n]);
 		}
-    }
-	return 0;
+		free(namelist);
+	}
+#endif
 }
 
-/*! \brief Enumerates all plugin folders for plugin libraries. */
-void player::loadMachineLoaders() {
+void player::initialize_plugin_libraries() {
 	// add input collection
-	pluginLibraries.push_back(new pluginlib("input",*this, &inputPluginCollection));
+	plugin_libraries.push_back(new pluginlib("input", *this, &inputPluginCollection));
 	// add output collection
-	pluginLibraries.push_back(new pluginlib("output",*this, &outputPluginCollection));
+	plugin_libraries.push_back(new pluginlib("output", *this, &outputPluginCollection));
 	// add recorder collection
-	recorderPluginCollection.setPlayer(this);
-	pluginLibraries.push_back(new pluginlib("recorder",*this, &recorderPluginCollection));
+	recorderPluginCollection.setPlayer(&front);
+	plugin_libraries.push_back(new pluginlib("recorder", *this, &recorderPluginCollection));
 
 	// initialize rest like usual
-	for (size_t i=0; i<pluginFolders.size(); i++) {
-		initializeFolder(pluginFolders[i]);
+	for (size_t i = 0; i < plugin_folders.size(); i++) {
+		initialize_plugin_directory(plugin_folders[i]);
 	}
 }
 
-/*! \brief Returns the current state of the player 
-*/
-player_state player::getPlayState() { 
-	return playerState; 
-}
-
-/*! \brief Initializes internal player data.
-	\param samplesPerSec Initial mixing rate, passed on to audio driver
-	\return Returns false if player could not be initialized.
-
-    initialize does the following:
-		- initializes mixer
-		- loads and indexes all dll's
-		- generate built-in oscillator tables
-		- initializes master and adds it to the stage
-		- initializes a performance timer for CPU measurement
-		- sets the player to stopped state
-		- check if internal memory structures are aligned correctly
-
-*/
-bool player::initialize() {
-#if defined(__SSE__)
-	std::cout << "SSE optimization is enabled." << std::endl;
-#else
-	std::cout << "SSE optimization is not enabled. Expect your CPU to choke once in a while." << std::endl;
-#endif
-
-	masterInfo.samples_per_second = workRate;
-
-    masterLoader=new master_pluginloader();
-
-    master=createMachine(0, 0, "Master", masterLoader);
-	if (!master) return false;
-
-    master->initialize(0, 0, 0, 0, 0);
-    master->tickAsync();
-
-	wavePlayer.initialize(this);
-
-	loadMachineLoaders();
-
-	player::generateOscillatorTables();
-
-	timer.start();
-	workPos=0;
-
-    resetMachines();
-	playerState=player_state_stopped;
-	
-//	driver.initialize(this);
-//    midiDriver.initialize(this);
-	
-	return true;
-}
-
-/*! \brief Returns the number of known machines.
-*/
-int player::getMachineLoaders() {
-	return machines.size();
-}
-
-/*! \brief Returns a machine loader by index.
-*/
-pluginloader* player::getMachineLoader(int index) {
-	int j=0;
-	for (map<string, pluginloader*>::iterator i=machines.begin(); i!=machines.end(); ++i) {
-		if (index==j) return i->second;
-		j++;
-	}
-	return 0;
-}
-
-/*! \brief Returns a machine loader by name. 
-*/
-pluginloader* player::getMachineLoader(std::string uri) {
-
-    // master is hardcoded
-    if (uri=="Master" || uri=="@zzub.org/master") return masterLoader;
-
-	string keyName=uri;
-	transform(keyName.begin(), keyName.end(), keyName.begin(), (int(*)(int))std::tolower);
-	map<string, pluginloader*>::iterator i=machines.find(keyName);
-	pluginloader* l=i==machines.end()?0:i->second;
-
-	return l;
-}
-
-/*! \brief Lock the player. Restrict access on player resources to calling thread.
-
-	This causes the player to halt all processing until unlock() is called.
-	This method is used when you need to invoke non-thread safe methods on player 
-	member objects, and return values from zzub::metaplugin and player methods.
-*/
-void player::lock() {
-	playerLock.lock();
-}
-
-/*! \brief Unlock the player.
-*/
-void player::unlock() {
-	playerLock.unlock();
-}
-
-/*! \brief Lock sequencer and pattern data. */
-void player::lockTick() {
-	playerTickLock.lock();
-}
-
-/*!	\brief Unlock sequencer and pattern data. */
-void player::unlockTick() {
-	playerTickLock.unlock();
-}
-
-/*! \brief Returns a machine loader by index. */
-void player::resetMachines() {
-	for (size_t i=0; i<getMachines(); i++) {
-		zzub::metaplugin* machine=getMachine(i);
-		if (!machine) continue;
-		machine->resetMixer();
-	}
-}
-
-/*!	\brief Tells the player to use another sequencer for playing.
-	\param newseq If this is NULL, the player resumes playing from the built-in sequencer
-	\return Returns the previous sequencer instance.
-*/
-sequencer* player::setCurrentlyPlayingSequencer(sequencer* newseq) {
-	sequencer* prev=currentlyPlayingSequencer;
-	lock();
-	if (!newseq)
-		newseq=&song_sequencer;
-
-	currentlyPlayingSequencer=newseq;
-	//resetMachines();	// maybe not necessary, since we playerLock anyway?
-	unlock();
-	return prev;
-}
-
-/*	\brief Set player state, used to start and stop playing. */
-
-void player::setPlayerState(player_state state) {
-
-	lock();
-	resetMachines();
-	playerState=state;
-	unlock();
-
-	switch (playerState) {
-		case player_state_stopped:
-			for (size_t i=0; i<getMachines(); i++) {
-				zzub::metaplugin* stopMachine=getMachine(i);
-				stopMachine->stop();	// (some?) effects seem to never start again (maybe because of softmuting which maybe should not be set?)
-			}
-			stopFlag = false;
-			break;
-	}
-
-	if (playerState==state) return;
-
-	// send event
-	zzub_event_data eventData={event_type_player_state_changed};
-	eventData.player_state_changed.player_state=(int)state;
-	master->invokeEvent(eventData, false); // can also be fired if loop ends
+void player::set_state(player_state newstate) {
+	op_state_change o(newstate);
+	backbuffer_operations.push_back(&o);
+	o.prepare(front);
+	flush_operations(0, 0);
+	//execute_single_operation(&o);
 }
 
 /*	\brief Clears all data associated with current song from the player.
 */
 void player::clear() {
 	using namespace std;
-	lock();
-    setPlayerState(player_state_muted);
-    recordParameters=false;
-	unlock();
 
-	song_sequencer.clear();
+	set_state(player_state_muted);
 
-	waveTable.clear();
+	// make sure we flushed since we are manipulating the front buffer directly
+	flush_operations(0, 0);
 
-    midiInputMappings.clear();
-	keyjazz.clear();
+	front.is_recording_parameters = false;
+	front.midi_mappings.clear();
+	front.keyjazz.clear();
+	front.song_events.clear();
+	front.sequencer_tracks.clear();
+	front.midi_plugin = graph_traits<plugin_map>::null_vertex();
+	//front.user_event_queue_read = 0;
+	//front.user_event_queue_write = 0;
 
-	// delete all machines except master and nonsongplugins
-	std::vector<zzub::metaplugin*> machinesCopy = machineInstances;
-	for (int i = 0; i<machinesCopy.size(); i++) {
-		zzub::metaplugin* plugin = machinesCopy[i];
-		if (plugin->loader->plugin_info->flags & zzub::plugin_flag_is_root) continue;
-		if (plugin->nonSongPlugin) continue;
-		deleteMachine(plugin);
+	operation_copy_flags flags;
+	flags.copy_plugins = true;
+	flags.copy_wavetable = true;
+	merge_backbuffer_flags(flags);
+
+	// release sample data on all wave levels
+	for (int i = 0; i < (int)back.wavetable.waves.size(); i++)
+		wave_clear(i);
+
+	for (int i = 0; i < (int)back.plugins.size(); i++) {
+		// skip NULL plugins
+		if (back.plugins[i] == 0) continue;
+
+		// reset the master plugin
+		if (back.plugins[i]->info->flags & zzub::plugin_flag_is_root) {
+			clear_plugin(0);
+			back.process_plugin_events(0);
+			continue;
+		}
+
+		// destroy all other plugins
+		plugin_destroy(i);
 	}
 
-	master->clear();
-	master->tick();
+	flush_operations(0, 0);
+	clear_history();
 
-    setPlayerState(player_state_stopped);
+	front.song_comment = "";
 	
-	infoText = "";
+	// there is most likely a bunch of NULL-plugins at the end of plugins, so we trim them off here
+	// we assume only master is left at plugin index 0
+	if (front.plugins.size() > 1)
+		front.plugins.erase(front.plugins.begin() + 1, front.plugins.end());
+
+	set_state(player_state_stopped);
+}
+
+void player::clear_plugin(int id) {
+
+	operation_copy_flags flags;
+	flags.copy_plugins = true;
+	flags.copy_graph = true;
+	flags.copy_sequencer_track_order = true;
+	flags.copy_song_events = true;
+	merge_backbuffer_flags(flags);
+
+	for (int j = 0; j < back.plugin_get_input_connection_count(id); ) {
+		int from_id = back.plugin_get_input_connection_plugin(id, j);
+		connection_type type = back.plugin_get_input_connection_type(id, j);
+
+		plugin_delete_input(id, from_id, type);
+	}
+
+	for (int j = 0; j < back.plugin_get_output_connection_count(id); ) {
+		int to_id = back.plugin_get_output_connection_plugin(id, j);
+		connection_type type = back.plugin_get_output_connection_type(id, j);
+
+		plugin_delete_input(to_id, id, type);
+	}
+
+	for (int j = 0; j < (int)back.sequencer_tracks.size(); ) {
+		if (back.sequencer_tracks[j] == back.plugins[id]->descriptor) {
+			sequencer_remove_track(j);
+		} else
+			j++;
+	}
+
+	for (int j = 0; j < (int)back.plugins[id]->patterns.size(); ) {
+		plugin_remove_pattern(id, j);
+	}
+
+	plugin_set_position(id, 0, 0);
+
+	// set default params
+	for (int group = 1; group <= 2; group++) {
+		for (int track = 0; track < back.plugin_get_track_count(id, group); track++) {
+			for (int j = 0; j < back.plugin_get_parameter_count(id, group, 0); j++) {
+				const parameter* param = back.plugin_get_parameter_info(id, group, track, j);
+				// this will tick-a-lot:
+				plugin_set_parameter(id, group, track, j, param->value_default, false, false, true);
+			}
+		}
+	}
+
+	// after setting default params, remove non-default tracks. undo operation will 
+	// do this in reverse: first set track count, and then params in all tracks
+	const zzub::info* i = back.plugins[id]->info;
+	plugin_set_track_count(id, i->min_tracks);
 
 }
 
+void player::audio_enabled() {
+	// tell undo manager to wait for audio thread to perform swapping
+	swap_mode = true;
+}
 
-/*	\brief Generates a new, unique name for a machine.
-	\param The machine instance name you wish to generate a name for.
-*/
-std::string player::getNewMachineName(std::string machineUri) {
+void player::audio_disabled() {
+	// tell undo manager we should swap directly on the user thread
+	swap_mode = false;
+}
+
+void player::samplerate_changed() {
+	front.master_info.samples_per_second = work_rate;
+}
+
+void player::work_stereo(int sample_count) {
 	using namespace std;
-	
-	pluginloader* loader=getMachineLoader(machineUri);
-	string baseName;
-	if (!loader) 
-		baseName=machineUri; else
-		baseName=loader->plugin_info->short_name;
-	char pc[16];
-	for (int i=0; i<9999; i++) {
-		if (i==0) {
-			strcpy(pc, baseName.substr(0,12).c_str());
-		}  else
-			sprintf(pc, "%s%i", baseName.substr(0,12).c_str(), i+1);
-		zzub::metaplugin* m=getMachine(pc);
-		if (!m) return pc;
-	}
-	return "_(error)"+baseName;
-}
 
-/*	\brief Sets or clears the solo machine.
-	\param machine When machine is set to NULL, no machine is playing solo.
-*/
-void player::setSoloMachine(zzub::metaplugin* machine) {
-	soloMachine=machine;
-}
+	// handle serialized editing
+	poll_operations();
 
-/*	\brief Returns current solo machine.
-*/
-zzub::metaplugin* player::getSoloMachine() {
-	return soloMachine;
-}
+	swap_lock.lock();
 
-/*	\brief Returns the index of a machine.
-*/
-int player::getMachineIndex(zzub::metaplugin* machine) {
-	for (int i=0; i<(int)machineInstances.size(); i++) {
-		if (machine==getMachine(i)) {
-			//machineLock.Unlock();
-			return i;
+	// handle MIDI input
+	if (midiDriver) midiDriver->poll();
+
+	work_buffer_position = 0;
+
+	int remaining_samples = sample_count;
+	while (remaining_samples > 0) {
+
+		for (int i = 0; i < work_out_channel_count; i++) {
+			front.outputBuffer[i] = &work_out_buffer[i][work_buffer_position];
 		}
-	}
-	return -1;
-}
-
-/*	\brief Deletes a machine.
-
-	Releases all connections, sequencer tracks, patterns and events associated with the machine.
-*/
-void player::deleteMachine(zzub::metaplugin* machine) {
-	assert(machine!=master);
-
-	lock();
-	if (midiNoteMachine == machine) midiNoteMachine = 0;
-	machineInstances.erase(machineInstances.begin()+getMachineIndex(machine));
-    machine->initialized=false;
-	unlock();
-
-	for (size_t i=song_sequencer.getTracks(); i>0; i--) {
-		if (song_sequencer.getTrack(i-1)->getMachine()==machine)
-			song_sequencer.removeTrack(i-1);
-	}
-
-	
-	machine->clear();
-
-    // buzz has a gDeleteEvent declared in its machineinterface.h, but it is apparently never called
-    // we tell out master
-    zzub_event_data eventData={event_type_delete_plugin};
-    eventData.delete_plugin.plugin=(zzub_plugin_t*)machine;
-	master->invokeEvent(eventData, true);
-
-    // flush pending events for this machine
-    eventLock.lock();
-    for (deque<event_message>::iterator i = messageQueue.begin(); i!=messageQueue.end(); i++) {
-        if (i->plugin == machine) {
-            i = messageQueue.erase(i);
-            --i;
-        }
-    }
-    eventLock.unlock();
-
-	delete machine;
-}
-
-/*!	\brief Tests if the machine exists in the current song.
-
-    Used internally to test for rogue pointers sent to CMICallbacks.
-*/
-bool player::machineExists(zzub::metaplugin* machine) {
-	bool test=false;
-	for (size_t i=0; i<machineInstances.size(); i++) {
-		if (getMachine(i)==machine) {
-			return true;
-		}
-	}
-
-	return test;
-}
-
-/*!	\brief Returns number of machines in current song.
-*/
-size_t player::getMachines() { 
-	size_t size=machineInstances.size(); 
-	return size;
-}
-
-/*!	\brief Returns a machine by name.
-*/
-zzub::metaplugin* player::getMachine(std::string instanceName) {
-	for (size_t i=0; i<machineInstances.size(); i++) {
-		if (machineInstances[i]->getName()==instanceName) {
-			zzub::metaplugin* m=(zzub::metaplugin*)machineInstances[i];
-			return m;
-		}
-	}
-	return 0;
-}
-
-
-/*!	\brief Returns a machine by index.
-*/
-zzub::metaplugin* player::getMachine(size_t index) {
-	zzub::metaplugin* m=0;
-	if (index>=0 && index<machineInstances.size()) 
-		m=(zzub::metaplugin*)machineInstances[index];
-	return m;
-}
-
-
-/*! \brief Returns information about the master.
-*/
-zzub::master_info* player::getMasterInfo() {
-	return &masterInfo;
-}
-
-/*! \brief Returns currently playing position in the sequencer.
-*/
-int player::getSequencerPosition() {
-	return song_sequencer.getPosition();
-}
-
-/*! \brief Sets the currently playing position in the sequencer.
-
-If the player is playing, this changes the song position.
-*/
-void player::setSequencerPosition(int v) {
-	song_sequencer.setPosition(v);
-}
-
-/*! \brief Sets the loop start point of a song.
-*/
-void player::setSongBeginLoop(int v) {
-	song_sequencer.beginOfLoop=v;
-}
-
-/*! \brief Sets the loop end point of a song.
-*/
-void player::setSongEndLoop(int v) {
-	song_sequencer.endOfLoop=v;
-}
-
-/*! \brief Sets the song start point of a song.
-*/
-void player::setSongBegin(int v) {
-	song_sequencer.startOfSong=v;
-}
-
-/*! \brief Retreives the loop start point of a song.
-*/
-int player::getSongBeginLoop() {
-	return song_sequencer.beginOfLoop;
-}
-
-/*! \brief Retreives the loop end point of a song.
-*/
-int player::getSongEndLoop() {
-	return song_sequencer.endOfLoop;
-}
-
-/*! \brief Retreives the song start point of a song.
-*/
-int player::getSongBegin() {
-	return song_sequencer.startOfSong;
-}
-
-/*! \brief Set song looping mode.
-
-	If enabled, the player will stop when the song position reaches the end.
-*/
-void player::setLoopEnabled(bool enable) {
-	song_sequencer.loop = enable;
-}
-
-/*! \brief Retreives song looping mode. */
-
-bool player::getLoopEnabled() {
-	return song_sequencer.loop;
-}
-
-/*! \brief Sets the song end point of a song. */
-
-void player::setSongEnd(int v) {
-	song_sequencer.endOfSong=v;
-}
-
-/*! \brief Retreives the song end point of a song. */
-
-int player::getSongEnd() {
-	return song_sequencer.endOfSong;
-}
-
-/*! \brief Returns the number of waves in the wavetable. Is usually 0xc8.
-*/
-size_t player::getWaves() {
-	return waveTable.waves.size();
-}
-
-/*! \brief Returns the wave in the specified wavetable location.
-*/
-wave_info_ex* player::getWave(size_t index) {
-	return &waveTable.waves[index];
-}
-
-/*! \brief Returns the index of a wave.
-*/
-
-int player::getWaveIndex(wave_info_ex* entry) {
-	for (size_t i=0; i<getWaves(); i++) {
-		if (getWave(i)==entry) return i;
-	}
-	return -1;
-}
-
-
-/*! \brief Returns the built-in wave player instance.
-*/
-wave_player* player::getWavePlayer() {
-	return &wavePlayer;
-}
-
-/*! \brief Returns audio driver mixing rate.
-*/
-int player::samplesPerTick() {
-	return masterInfo.samples_per_tick;
-}
-
-/*! \brief Returns a string of warnings that occured during last load.
-
-	If there were no warnings, this string is blank.
-*/
-std::string player::getLoadWarnings() {
-	return loadWarning;
-}
-
-/*! \brief Returns a string of errrors that occured during last load.
-
-	If there were no errors, this string is blank.
-*/
-std::string player::getLoadErrors() {
-	return loadError;
-}
-
-/*! \brief Returns a sequence by index */
-
-sequence* player::getSequenceTrack(size_t i) {
-	return song_sequencer.getTrack(i);
-}
-
-/*! \brief Returns the number of sequences */
-
-size_t player::getSequenceTracks() {
-	return song_sequencer.getTracks();
-}
-
-/*! \brief Create a dummy plugin.
-*/
-pluginloader* player::createDummyLoader(int type, std::string fullName, int attributeCount, int numGlobalParams, int numTrackParams, zzub::parameter* params) {
-    return new dummy_loader(type, fullName, attributeCount, numGlobalParams, numTrackParams, params);
-}
-
-/*! \brief Create a plugin instance.
-*/
-metaplugin* player::createMachine(char* inputData, int inputSize, std::string machineName, pluginloader *loader) {
-	metaplugin* machine=new metaplugin(this, loader);
-	
-	machine->setName(machineName);
-
-	machineInstances.push_back(machine);
-
-	if (!machine->create(inputData, inputSize)) {
-        // couldnt create, so remove from internal collection and clean up
-        machineInstances.erase(machineInstances.begin() + machineInstances.size()-1);
-        delete machine;
-        return 0;
-    }
-
-    // automatically add NO_OUTPUT-machines to the master
-	if (machine->isNoOutput()) {
-		getMaster()->addAudioInput((metaplugin*)machine, 0x4000, 0x4000);
-	}
-
-    return machine;
-}
-
-/*! \brief Test if a plugin name is blacklisted.
-*/
-bool player::isBlackListed(std::string name) {
-	transform(name.begin(), name.end(), name.begin(), (int(*)(int))std::tolower);
-	for (size_t i=0; i<blacklist.size(); i++) {
-		string keyName=blacklist[i];
-		transform(keyName.begin(), keyName.end(), keyName.begin(), (int(*)(int))std::tolower);
-		if (keyName==name) return true;
-	}
-	return false;
-}
-
-/*! \brief Audio processing helper.
-*/
-void player::updateTick(int workSamples) {
-	player_state state=getPlayState();
-
-	if (masterInfo.tick_position==0 && (state!=player_state_released && state!=player_state_muted)) {
-		if (stopFlag)
-			setPlayerState(player_state_stopped);
-
-		lockTick();
-		lastTickPos=getWorkPosition();
-
-		// the player machines process their own sequences
-
-		for (size_t i=0; i<getMachines(); i++) {
-			if (getMachine(i)->isNoOutput())
-				getMachine(i)->tick();
-		}
-		for (size_t i=0; i<getMachines(); i++) {
-			if (!getMachine(i)->isNoOutput())
-				getMachine(i)->tick();
+		for (int i = 0; i < work_in_channel_count; i++) {
+			if (work_in_device)
+				front.inputBuffer[i] = &work_in_buffer[i][work_buffer_position]; else
+				front.inputBuffer[i] = 0;
 		}
 
-		// this is for advancing the entire seqiuencer, each machine advances each track itself in tickmachine()
-		if (state==player_state_playing && !currentlyPlayingSequencer->advanceTick())
-			// signal we want to mix until the end of this tick before stopping
-			stopFlag = true;
+		int chunk_size = front.generate_audio(remaining_samples);
 
-		// check for delayed note offs
-		// playMachineNote may modify keyjazz so we use a copy
-		std::vector<keyjazz_note> keycopy = keyjazz;
-		for (size_t i = 0; i < keycopy.size(); i++) {
-			if (keycopy[i].delay_off == true) {
-				playMachineNote(keycopy[i].plugin, note_value_off, keycopy[i].note, 0);
-			}
-		}
+		// the master plugins work_buffer has the final output
+		// users can add Audio Output-plugins to send output to channels > 2
+		metaplugin& masterplugin = front.get_plugin(0);
+		memcpy(&work_out_buffer[work_master_channel*2+0][work_buffer_position], &masterplugin.work_buffer[0].front(), chunk_size * sizeof(float));
+		memcpy(&work_out_buffer[work_master_channel*2+1][work_buffer_position], &masterplugin.work_buffer[1].front(), chunk_size * sizeof(float));
 
-		unlockTick();
-
-        workFracs+=masterInfo.samples_per_tick_frac;
+		work_buffer_position += chunk_size;
+		remaining_samples -= chunk_size;
 	}
 
-	mixSamples=masterInfo.samples_per_tick+floor(workFracs)-masterInfo.tick_position;	// mix only up to closest tick
+	// update cpu_load per plugin
+	for (int i = 0; i < front.plugins.size(); i++) {
+		if (front.plugins[i] == 0) continue;
+		metaplugin& m = *front.plugins[i];
+		double load;
+		
+		if (m.cpu_load_buffersize > 0)
+			load = (m.cpu_load_time * double(front.master_info.samples_per_second)) / double(m.cpu_load_buffersize); else
+			load = 0;
+		m.cpu_load += 0.1 * (load - m.cpu_load);
 
-	nextPosInTick=0;
-
-    if (mixSamples>buffer_size) {
-		mixSamples=buffer_size;
-		if (mixSamples>(unsigned int)workSamples)
-			mixSamples=workSamples;
-		nextPosInTick=masterInfo.tick_position+mixSamples;	// remember where we are
-	} else
-	if (mixSamples>(unsigned int)workSamples) {
-		mixSamples=workSamples;
-		nextPosInTick=masterInfo.tick_position+mixSamples;	// remember where we are
-    } else {
-        double n;
-        workFracs=modf(workFracs, &n);
-	    nextPosInTick=0;
-    }
-}
-
-/*! \brief Audio processing helper.
-*/
-void player::finishWork() {
-	player_state state=getPlayState();
-
-	metaplugin* masterInternal=(metaplugin*)master;
-	if (state!=player_state_released)
-		wavePlayer.work(masterInternal->machineBuffer, mixSamples, true);
-
-	masterInfo.tick_position=nextPosInTick;
-	workPos+=mixSamples;
-}
-
-/*! \brief Audio processing helper.
-*/
-bool player::workMachine(metaplugin* machine, int numSamples) {
-	assert(machine->lastWorkPos!=workPos);
-
-	size_t inputConnections=machine->inConnections.size();
-	bool inputState=inputConnections?false:true;
-
-	memset(machine->machineBuffer[0], 0, numSamples*sizeof(float));
-	memset(machine->machineBuffer[1], 0, numSamples*sizeof(float));
-
-	int maxInputAmp=0;
-	for (size_t i=0; i<inputConnections; i++) {
-		connection *cx = machine->inConnections[i];
-		if (cx->connectionType == connection_type_audio) {
-			audio_connection *cax = (audio_connection*)cx;
-			maxInputAmp = std::max(maxInputAmp, (int)cax->values.amp);
-			// check for no_output: these have been processed anyway, 
-			// and master->no_output would enter an infinite loop unless we continue
-			if (cx->plugin_in->isNoOutput()) continue;
-
-			if (cax->work(this, numSamples)) {
-				inputState=true;
-			}
-		}
+		m.cpu_load_time = 0;
+		m.cpu_load_buffersize = 0;
 	}
 
-	// bestem flagg: 
-	//	- hvis minst en av inn-maskinene var suksess så blir det WM_READWRITE på fx
-	// TODO: må sette WM_NOIO når maskinen ikke er koblet på noen, men alle pathene til dette stedet kommer via connections, så det er noe som mangler
-	int flags;
-	if (inputState) {
-		// testing for doesInputMixing || !isBufferZero() fixes F:\audio\bmx\div\nool+ladproject - the longest travel.bmx
-		// testing for maxInputAmp fixes F:\audio\bmx\orange.bmx
-		if (inputConnections>0 && maxInputAmp>0 && (machine->doesInputMixing() || (buffer_has_signals(machine->machineBuffer[0], numSamples) || buffer_has_signals(machine->machineBuffer[1], numSamples))))
-//		if (inputConnections>0 && maxInputAmp>0)
-			flags=zzub::process_mode_read_write; else
-			flags=zzub::process_mode_write;
-	} else {
-		flags=zzub::process_mode_write;
-	}
-
-    // this if-test worked fine before the -1 - 1 transition, but now it cant be here anymore (clears the work buffer, but inside there is mode_write and ret=false all the way)
-    // -> machineBuffer is all zeros, so this clears the mixBuffer, which is a good idea
-    //if (((flags&zzub::process_mode_read)!=0) && !machine->doesInputMixing())
-	memcpy(mixBuffer[0], machine->machineBuffer[0], numSamples*sizeof(float));
-	memcpy(mixBuffer[1], machine->machineBuffer[1], numSamples*sizeof(float));
-
-	bool ret=machine->work(mixBuffer, numSamples, flags);
-
-	return ret;
-}
-
-/*! \brief This methods generates audio and fills he specified buffer with output.
-*/
-void player::workStereo(int numSamples) {
-	using namespace std;
-	lock();
-
-	// update master samplerate
-	if (workRate != masterInfo.samples_per_second) {
-		masterInfo.samples_per_second = workRate;
-		master->tickAsync();
-	}
-
-	double tempTime=timer.frame();
-	int samplecount = numSamples;
-
-    workBufpos = 0;
-    while (numSamples > 0) {
-		// init buffer pointers for all input and output channels
-		for (int i = 0; i < workDevice->out_channels; i++) {
-			outputBuffer[i] = &workOutputBuffer[i][workBufpos];
-			//memset(outputBuffer[i], 0, numSamples * sizeof(float));
-		}
-		for (int i = 0; i < workDevice->in_channels; i++) {
-	        if (workInputDevice)
-				inputBuffer[i] = &workInputBuffer[i][workBufpos]; else
-	            inputBuffer[i] = 0;
-		}
-
-	    updateTick(numSamples);
-
-	    player_state state = getPlayState();
-
-	    memset(master->machineBuffer[0], 0, zzub::buffer_size * sizeof(float));
-	    memset(master->machineBuffer[1], 0, zzub::buffer_size * sizeof(float));
-
-		if (state != player_state_muted && state != player_state_released) {
-			for (unsigned i = 0; i < machineInstances.size(); i++) {
-				if (machineInstances[i]->isNoOutput())
-					workMachine(machineInstances[i], mixSamples);
-			}
-		    workMachine(master, mixSamples);
-		}
-
-	    finishWork();
-		// support more than 2 output channels
-		// this can be called from many context, eg a recorder in the ui thread
-		// so - outputChannel may need to be adjusted depending on the situation
-		assert(workChannel < workDevice->out_channels/2);
-        memcpy(&workOutputBuffer[workChannel*2+0][workBufpos], master->machineBuffer[0], mixSamples*sizeof(float));
-        memcpy(&workOutputBuffer[workChannel*2+1][workBufpos], master->machineBuffer[1], mixSamples*sizeof(float));
-	    numSamples -= mixSamples;
-        workBufpos += mixSamples;
-
-		if (midiDriver)
-			midiDriver->poll();
-
-    }
-	
-	workTime=timer.frame()-tempTime;
-	// how long we needed / how much we could have needed
-	double load=(100.0 * workTime * double(masterInfo.samples_per_second)) / double(samplecount);
-	// slowly approach to new value
-	cpuLoad += 0.1 * (load - cpuLoad);
-	
-	unlock();
-
-	if (editCommand) {
-		zzub_edit* edit = (zzub_edit*)editCommand;
-		edit->apply();
-		editCommand = 0;
-		edit->done.signal();
-	}
+	swap_lock.unlock();
 
 }
 
-/*! \brief Look up URI based on an alias */
-std::string player::getBuzzUri(std::string name) {
-    transform(name.begin(), name.end(), name.begin(), (int(*)(int))std::tolower);
-    for (map<string, string>::iterator i=aliases.begin(); i!=aliases.end(); ++i) {
-        string alias=i->first;
-        transform(alias.begin(), alias.end(), alias.begin(), (int(*)(int))std::tolower);
-        if (alias==name) return i->second;
-    }
-    return "";
-}
+// ---------------------------------------------------------------------------
+//
+// MIDI stuff and keyboard note handling
+//
+// ---------------------------------------------------------------------------
 
-/*! \brief Look up alias based on a URI */
-std::string player::getBuzzName(std::string uri) {
-    transform(uri.begin(), uri.end(), uri.begin(), (int(*)(int))std::tolower);
-    for (map<string, string>::iterator i=aliases.begin(); i!=aliases.end(); ++i) {
-        string id=i->second;
-        transform(id.begin(), id.end(), id.begin(), (int(*)(int))std::tolower);
-        if (id==uri) return i->first;
-    }
-    return "";
-}
-
-/*! \brief MIDI callback */
-namespace {	// duplicate from ccm.h and pattern.cpp
-int midi_to_buzz_note(int value) {
-	return ((value / 12) << 4) + (value % 12) + 1;
-}
-
-int buzz_to_midi_note(int value) {
-	return 12 * (value >> 4) + (value & 0xf) - 1;
-}
-}
 void player::midiEvent(unsigned short status, unsigned char data1, unsigned char data2) {
-    // look up mapping(s) and send value to plugin
-    int channel = status&0xF;
-	int command = (status & 0xf0) >> 4;
-
-	if ((command == 0xb) || (command == 0xe)) {
-		if (command == 0xe) {
-			// convert pitchbend to CC
-			data1 = 128;
-		}
-
-		for (size_t i=0; i<midiInputMappings.size(); i++) {
-			midimapping& mm=midiInputMappings[i];
-			if (mm.channel==channel && mm.controller==data1) {
-				metaplugin* plugin=mm.machine;
-				const parameter* param=plugin->getMachineParameter(mm.group, mm.track, mm.column);
-				float minValue = (float)param->value_min;
-				float maxValue = (float)param->value_max;
-				float delta = (maxValue - minValue) / 127.0f;
-
-				plugin->setParameter(mm.group, mm.track, mm.column, (int)ceil(minValue + data2 * delta), true);
-				//plugin->machine->process_events();
-			}
-		}
-	}
-	
-	// also send note events to plugins directly
-	if ((command == 8) || (command == 9)) {
-		int velocity = (int)data2;
-		if (command == 8)
-			velocity = 0;
-		for (size_t i=0; i<machineInstances.size(); i++) {
-			zzub::metaplugin* m=(zzub::metaplugin*)machineInstances[i];
-			if (m->machine)
-				m->machine->midi_note(channel, (int)data1, velocity);
-
-			if (m->midiInputChannel == channel || m->midiInputChannel == 16 || (m->midiInputChannel == 17 && m == midiNoteMachine)) {
-				// play a recordable note/off, w/optional velocity, delay and cut
-				int note, prevNote;
-				if (command == 9 && velocity != 0) {
-					note = midi_to_buzz_note(data1);
-					prevNote = -1;
-				} else {
-					note = zzub::note_value_off;
-					prevNote = midi_to_buzz_note(data1);
-				}
-
-				playMachineNote(m, note, prevNote, velocity);
-			}
-		}
-	}
-	else if (command == 0xb) {
-		for (size_t i=0; i<machineInstances.size(); i++) {
-			zzub::metaplugin* m=(zzub::metaplugin*)machineInstances[i];
-			if (m->machine)
-				m->machine->midi_control_change((int)data1, channel, (int)data2);
-		}
-	}
-
-    // plus all midi messages should be sent as master-events, so ui's can pick these up
-
-	if (command == 0xe) {
-		// convert pitchbend to CC
-		command = 0xb;
-		status = channel | (command << 4);
-		data1 = 128;
-	}
 
 	// midi sync
-	if (midiSyncTransport) {
+	if (front.is_syncing_midi_transport) {
 		if (status == 0xf2) {
 			// set song position pointer
 			int spp = data1 | (data2 << 7);
-			setSequencerPosition(getSongBeginLoop() + spp);
+			front.song_position = front.song_loop_begin + spp;
 		} else
 		if (status == 0xfa) {
 			// midi start
-			setSequencerPosition(0);
-			setPlayerState(player_state_playing);
+			front.song_position = 0;
+			set_state(player_state_playing);
 		} else
 		if (status == 0xfb) {
 			// midi continue
-			setPlayerState(player_state_playing);
+			set_state(player_state_playing);
 		} else
 		if (status == 0xfc) {
 			// midi stop
-			setPlayerState(player_state_stopped);
+			set_state(player_state_stopped);
 		}
 	}
 
-    zzub_event_data eventData={event_type_midi_control};
-    eventData.midi_message.status=status;
-    eventData.midi_message.data1=data1;
-    eventData.midi_message.data2=data2;
-
-    master->invokeEvent(eventData);
-}
-
-bool isNotePlaying(zzub::metaplugin* plugin, const std::vector<zzub::keyjazz_note>& keyjazz, int note) {
-	for (size_t i = 0; i<keyjazz.size(); i++)
-		if (keyjazz[i].plugin == plugin && keyjazz[i].note == note) return true;
-	return false;
+	// send midi event to the mixer class for handling per machine
+	front.midi_event(status, data1, data2);
 }
 
 
-void player::playMachineNote(zzub::metaplugin* plugin, int note, int prevNote, int _velocity) {
-
-	// ignore note-off when prevNote wasnt already playing
-	if (note == note_value_off && !isNotePlaying(plugin, keyjazz, prevNote)) return ;
-
-	// create a blank 1-row pattern we're going to play
-	zzub::pattern* p = new zzub::pattern(plugin->loader->plugin_info, plugin->getConnections(), plugin->getTracks(), 1);
-
-	bool multiChannel;
-	size_t noteGroup = -1;
-	size_t noteParameter = -1;
-	plugin->findNoteColumn(noteParameter, noteGroup, multiChannel);
-	if (noteParameter == -1) return ;
-
-	if (multiChannel) {
-		// play note on track
-		if (note == note_value_off) {
-			// find which track this note was played in and play a note-stop
-			// if note-off is on the same tick as the note it stops, we wait 
-			// until next tick before "comitting" it, so that we dont overwrite
-			// notes when recording
-			// if timestamp is >= lastTickPos, set keyjazz->delay_off to true 
-			// and return. a poller checks the keyjazz-vector each tick and
-			// records/plays noteoffs then.
-			for (size_t i = 0; i<keyjazz.size(); i++) {
-				if (keyjazz[i].plugin != plugin) continue;
-				if (keyjazz[i].note == prevNote || prevNote == -1) {
-					
-					if (keyjazz[i].timestamp >= lastTickPos) {
-						//cerr << "note off on the same tick as note was played!" << endl;
-						keyjazz[i].delay_off = true;
-						break;
-					}
-
-					patterntrack* pt = p->getPatternTrack(keyjazz[i].group, keyjazz[i].track);
-					pt->setValue(0, noteParameter, note_value_off);
-					keyjazz.erase(keyjazz.begin() + i);
-					i--;
-					if (prevNote != -1) break;
-				}
-			}
-		} else {
-			size_t lowestTime = UINT_MAX;
-			int lowestTrack = -1;
-			int foundTrack = -1;
-			size_t lowestIndex;
-
-			vector<bool> foundTracks(plugin->getTracks());
-			for (size_t i = 0; i < foundTracks.size(); i++)
-				foundTracks[i] = false;
-
-			for (size_t j = 0; j < keyjazz.size(); j++) {
-				if (keyjazz[j].plugin != plugin) continue;
-				int track = keyjazz[j].track;
-				if (track >= foundTracks.size()) continue;
-
-				foundTracks[track] = true;
-				if (keyjazz[j].timestamp < lowestTime) {
-					lowestTime = keyjazz[j].timestamp;
-					lowestTrack = keyjazz[j].track;
-					lowestIndex = j;
-				}
-			}
-
-			for (size_t i = 0; i < foundTracks.size(); i++) {
-				if (foundTracks[i] == false) {
-					foundTrack = i;
-					break;
-				}
-			}
-			if (foundTrack == -1) {
-				foundTrack = lowestTrack;
-				keyjazz.erase(keyjazz.begin()+lowestIndex);
-			}
-
-			patterntrack* pt = p->getPatternTrack(noteGroup, foundTrack);
-			pt->setValue(0, noteParameter, note);
-
-			// find an available track or the one with lowest timestamp
-			keyjazz_note ki = { plugin, workPos, noteGroup, foundTrack, note, false };
-			keyjazz.push_back(ki);
-		}
-	} else {
-		// play global note - no need for track counting
-		if (note == note_value_off) {
-			for (int i = 0; i<keyjazz.size(); i++) {
-				if (keyjazz[i].plugin != plugin) continue;
-				if (keyjazz[i].note == prevNote) {
-					if (keyjazz[i].timestamp >= lastTickPos) {
-						// cerr << "detected a note off on the same tick as note was played!" << endl;
-						keyjazz[i].delay_off = true;
-						break;
-					}
-
-					keyjazz.clear();
-
-					patterntrack* pt = p->getPatternTrack(noteGroup, 0);
-					pt->setValue(0, noteParameter, note);
-					break;
-				}
-			}
-		} else {
-			keyjazz_note ki = { plugin, workPos, 1, 0, note, false };
-			keyjazz.clear();
-			keyjazz.push_back(ki);
-			
-			patterntrack* pt = p->getPatternTrack(noteGroup, 0);
-			pt->setValue(0, noteParameter, note);
-		}
-	}
-
-	lock();
-	plugin->playPatternRow(p, 0, true);
-	plugin->tickAsync();
-	unlock();
-
-	delete p;
+void player::play_plugin_note(int plugin_id, int note, int prevNote, int _velocity) {
+	op_plugin_play_note o(plugin_id, note, prevNote, _velocity);
+	merge_backbuffer_flags(o.copy_flags);
+	backbuffer_operations.push_back(&o);
+	o.prepare(back);
+	flush_operations(0, 0);
 }
 
-void player::resetKeyjazz() {
+void player::reset_keyjazz() {
 	// todo: set note off for all current playing keys
-	keyjazz.clear();
+	front.keyjazz.clear();
 }
 
-/*! \brief Define a MIDI mapping */
 
-midimapping* player::addMidiMapping(metaplugin* plugin, size_t group, size_t track, size_t param, size_t channel, size_t controller) {
-    midimapping mm={plugin, group, track, param, channel, controller };
-    midiInputMappings.push_back(mm);
-    return &midiInputMappings.back();
+std::string player::plugin_get_new_name(std::string uri) {
+	operation_copy_flags flags;
+	flags.copy_graph = true;
+	merge_backbuffer_flags(flags);
+
+	using namespace std;
+	string baseName;
+	std::vector<const zzub::info*>::iterator info = find_if(plugin_infos.begin(), plugin_infos.end(), find_info_by_uri(uri));
+	if (info == plugin_infos.end()) 
+		baseName = uri; else
+		baseName = (*info)->short_name;
+
+	for (int i = 0; i < 9999; i++) {
+		std::stringstream strm;
+		if (i == 0) {
+			strm << baseName;
+		}  else {
+			strm << baseName << (i+1);
+		}
+		zzub::plugin_descriptor m = back.get_plugin_descriptor(strm.str());
+		if (m == graph_traits<plugin_map>::null_vertex()) return strm.str();
+	}
+	assert(false);
+	return baseName;	// error
 }
 
-/*! \brief Remove a MIDI mapping */
-
-bool player::removeMidiMapping(metaplugin* plugin, size_t group, size_t track, size_t param) {
-    for (size_t i=0; i<midiInputMappings.size(); i++) {
-        midimapping& mm=midiInputMappings[i];
-        if (mm.machine==plugin && mm.group==group && mm.track==track && mm.column==param) {
-            midiInputMappings.erase(midiInputMappings.begin()+i);
-            i--;
-        }
-    }
-    return false;
+const zzub::info* player::plugin_get_info(std::string uri) {
+	std::vector<const zzub::info*>::iterator i = find_if(plugin_infos.begin(), plugin_infos.end(), find_info_by_uri(uri));
+	if (i == plugin_infos.end()) return 0;
+	return *i;
 }
 
-/*! \brief Retreive a MIDI mapping in current song */
 
-midimapping* player::getMidiMapping(size_t index) {
-    return &midiInputMappings[index];
-}
-
-/*! \brief Retreive number of MIDI mappings in current song */
-
-size_t player::getMidiMappings() {
-    return midiInputMappings.size();
-}
+// ---------------------------------------------------------------------------
+//
+// Idle GUI messages
+//
+// ---------------------------------------------------------------------------
 
 /*! \brief Process GUI messages. 
 
@@ -1275,173 +799,941 @@ Whenever the player invokes an event that may reach the GUI, it is
 queued until the host invokes handleMessages() on its thread.
 
 */
-void player::handleMessages() {
-	while (true) {
-		eventLock.lock();
-		size_t messages = messageQueue.size();
-		eventLock.unlock();
-
- 		if (messages == 0) break;
-
-		eventLock.lock();
-        event_message& message=messageQueue.front();
-		eventLock.unlock();
-
-		message.event->invoke(message.data);
-
-		eventLock.lock();
-        messageQueue.pop_front();
-        eventLock.unlock();
-    }
-}
-
-/*! \brief Retreive master information.
-*/
-float player::getBeatsPerMinute() {
-	return float(master->getParameter(1, 0, 1));
-}
-
-/*! \brief Retreive master information.
-*/
-int player::getTicksPerBeat() {
-	return master->getParameter(1, 0, 2);
-}
-
-/*! \brief Set master information.
-*/
-void player::setBeatsPerMinute(float bpm) {
-	master->setParameter(1, 0, 1, (int)(bpm+0.5), false);
-}
-
-/*! \brief Set master information.
-*/
-void player::setTicksPerBeat(int tpb) {
-	master->setParameter(1, 0, 2, tpb, false);
-}
-
-void player::executeThreadCommand(zzub_edit* edit) {
-	if (workStarted) {
-		// there is a workDevice, the player thread runs and we must wait
-		editCommand = edit;
-		edit->done.wait();
-	} else {
-		// no worker, execute in current thread
-		edit->apply();
+void player::process_user_event_queue() {
+	while (front.user_event_queue_read != front.user_event_queue_write) {
+		event_message& message = front.user_event_queue[front.user_event_queue_read];
+		if (message.event != 0) message.event->invoke(message.data);
+		if (front.user_event_queue_read == front.user_event_queue.size() - 1)
+			front.user_event_queue_read = 0; else
+			front.user_event_queue_read++;
 	}
-}
-
-plugin* player::createStream(std::string streamPluginUri, std::string streamDataUrl) {
-	pluginloader* loader = getMachineLoader(streamPluginUri);
-	if (!loader) return 0;
-	plugin* plugin = loader->createMachine();
-	archive* a = new mem_archive();
-	outstream* outs = a->get_outstream("");
-	outs->write(streamDataUrl.c_str());
-	// without a host, the plugin wont give any sample data =)
-	plugin->_host = master->machine->_host;
-	plugin->_master_info = &masterInfo;
-	plugin->init(a);
-	int* streamvals = (int*)plugin->global_values;
-	streamvals[0] = 0xFFFFFFFF;
-	streamvals[1] = 0xFFFFFFFF;
-	delete a;
-
-	return plugin;
 }
 
 /***
 
-	zzub_edit_connection
+	User methods for writing to the graph
+
+	The following methods set up redo/undo operations and executes the redo-operation
 
 ***/
 
-void zzub_edit_connection::apply() {
-	conn->plugin_out->inConnections.swap(input_connections);
-	conn->plugin_in->outConnections.swap(output_connections);
 
-	for (size_t i = 0; i < pattern_connection_tracks.size(); i++) {
-		conn->plugin_out->patterns[i]->_connections.swap(pattern_connection_tracks[i]);
-		for (unsigned j = 0; j < conn->plugin_out->patterns[i]->_connections.size(); j++) {
-			conn->plugin_out->patterns[i]->_connections[j]->setTrack(j);
+void player::plugin_set_parameter(int plugin_id, int group, int track, int column, int value, bool record, bool immediate, bool undoable) {
+	if (immediate) {
+		zzub::pattern state = front.create_pattern(plugin_id, 1);
+		state.groups[group][track][column][0] = value;
+		front.transfer_plugin_parameter_row(plugin_id, group, state, front.plugins[plugin_id]->state_write, 0, 0, false);
+		if (record)
+			front.transfer_plugin_parameter_row(plugin_id, group, state, front.plugins[plugin_id]->state_automation, 0, 0, false);
+	} else {
+		// her kan vi merge flagg
+		operation_copy_flags flags;
+		flags.copy_plugins = true;
+		flags.copy_graph = true;
+		merge_backbuffer_flags(flags);
+
+		zzub::pattern state = back.create_pattern(plugin_id, 1);
+		state.groups[group][track][column][0] = value;
+		op_plugin_set_parameters_and_tick* redo = new op_plugin_set_parameters_and_tick(plugin_id, state, 0);
+		redo->record = record;
+		if (undoable) {
+			int oldval = back.plugin_get_parameter(plugin_id, group, track, column);
+			zzub::pattern undo_state = back.create_pattern(plugin_id, 1);
+			undo_state.groups[group][track][column][0] = oldval;
+			op_plugin_set_parameters_and_tick* undo = new op_plugin_set_parameters_and_tick(plugin_id, undo_state, 0);
+			undo->record = record;
+			prepare_operation_redo(redo);
+			prepare_operation_undo(undo);
+		} else {
+			// these two lines are identical to prepare_operation_redo() except we dont add it to the undo buffer:
+			redo->prepare(back);
+			backbuffer_operations.push_back(redo);
+			// TODO: dont leak the redo object here!
+		}
+	}
+}
+
+void player::add_midimapping(int plugin_id, int group, int track, int param, int channel, int controller) {
+	zzub::midimapping mapping;
+	mapping.plugin_id = plugin_id;
+	mapping.group = group;
+	mapping.track = track;
+	mapping.column = param;
+	mapping.channel = channel;
+	mapping.controller = controller;
+
+	op_midimapping_insert* redo = new op_midimapping_insert(mapping);
+	prepare_operation_redo(redo);
+
+	op_midimapping_remove* undo = new op_midimapping_remove(back.midi_mappings.size() - 1);
+	prepare_operation_undo(undo);
+}
+
+void player::remove_midimapping(int plugin_id, int group, int track, int param) {
+	operation_copy_flags flags;
+	flags.copy_midi_mappings = true;
+	merge_backbuffer_flags(flags);
+
+	int found = 0;
+	for (int i = 0; i < (int)back.midi_mappings.size(); i++) {
+		midimapping& mm = back.midi_mappings[i];
+		if (mm.plugin_id == plugin_id && mm.group == group && mm.track == track && mm.column == param) {
+			op_midimapping_remove* redo = new op_midimapping_remove(i - found);
+			op_midimapping_insert* undo = new op_midimapping_insert(mm);
+			prepare_operation_redo(redo);
+			prepare_operation_undo(undo);
+		}
+	}
+}
+
+int player::create_plugin(std::vector<char>& bytes, string name, const zzub::info* loader) {
+
+	operation_copy_flags flags;
+	flags.copy_plugins = true;
+	flags.copy_wavetable = true;	// some plugins (e.g utrk) query the wavetable during init() so we need the wavetable
+	merge_backbuffer_flags(flags);
+
+	int next_id = (int)back.plugins.size();
+
+	op_plugin_create* redo = new op_plugin_create(this, next_id, name, bytes, loader);
+	prepare_operation_redo(redo);
+
+	op_plugin_delete* undo = new op_plugin_delete(this, next_id);
+	prepare_operation_undo(undo);
+
+	return next_id;
+}
+
+void player::plugin_destroy(int id) {
+	op_plugin_delete* redo = new op_plugin_delete(this, id);
+
+	merge_backbuffer_flags(redo->copy_flags);
+
+	assert(id >= 0 && id < back.plugins.size());
+	assert(back.plugins[id] != 0);
+
+	metaplugin& m = *back.plugins[id];
+
+	clear_plugin(id);
+
+	// NOTE: undo operations are added in opposite order (!!!!1)
+
+	int tracks = m.tracks;
+	op_plugin_set_track_count* undo_tracks = new op_plugin_set_track_count(id, tracks);
+	prepare_operation_undo(undo_tracks);
+
+	// create undo for minimize, mute, xy-position, midi-channel, etc
+	metaplugin pos_plugin = m;
+	op_plugin_replace* undo_pos = new op_plugin_replace(id, pos_plugin);
+	prepare_operation_undo(undo_pos);
+
+	std::vector<char> bytes;
+	op_plugin_create* undo = new op_plugin_create(this, id, m.name, bytes, m.info);
+	prepare_operation_undo(undo);
+
+	prepare_operation_redo(redo);
+}
+
+void player::plugin_set_name(int id, std::string name) {
+
+	zzub::metaplugin m;
+	op_plugin_replace* redo = new op_plugin_replace(id, m);
+
+	merge_backbuffer_flags(redo->copy_flags);
+
+	redo->plugin = *back.plugins[id];
+	redo->plugin.name = name;
+
+	prepare_operation_redo(redo);
+
+	op_plugin_replace* undo = new op_plugin_replace(id, *back.plugins[id]);
+	prepare_operation_undo(undo);
+}
+
+void player::plugin_set_position(int id, float x, float y) {
+	zzub::metaplugin m;
+	op_plugin_replace* redo = new op_plugin_replace(id, m);
+	merge_backbuffer_flags(redo->copy_flags);
+
+	redo->plugin = *back.plugins[id];
+	redo->plugin.x = x;
+	redo->plugin.y = y;
+
+	prepare_operation_redo(redo);
+
+	op_plugin_replace* undo = new op_plugin_replace(id, *back.plugins[id]);
+	prepare_operation_undo(undo);
+}
+
+void player::plugin_set_track_count(int id, int tracks) {
+
+	op_plugin_set_track_count* redo = new op_plugin_set_track_count(id, tracks);
+	merge_backbuffer_flags(redo->copy_flags);
+
+	metaplugin& m = *back.plugins[id];
+
+	// add undo actions for removed pattern data
+	for (int i = 0; i < (int)m.patterns.size(); i++) {
+		op_pattern_replace* undo_p = new op_pattern_replace(id, i, *m.patterns[i]);
+		prepare_operation_undo(undo_p);
+	}
+
+	op_plugin_set_track_count* undo = new op_plugin_set_track_count(id, m.tracks);
+	prepare_operation_undo(undo);
+
+	// prepare the redo operation after the undo operations are set up
+	prepare_operation_redo(redo);
+}
+
+void player::plugin_add_pattern(int id, const zzub::pattern& pattern) {
+	prepare_operation_redo(new op_pattern_insert(id, -1, pattern));
+	prepare_operation_undo(new op_pattern_remove(id, -1));
+}
+
+void player::plugin_remove_pattern(int id, int pattern) {
+	op_pattern_remove* redo = new op_pattern_remove(id, pattern);
+	merge_backbuffer_flags(redo->copy_flags);
+
+	plugin_descriptor plugin = back.plugins[id]->descriptor;
+
+	// remove all sequence events for this pattern in an undoable manner
+	std::vector<std::pair<int, int> > remove_events;
+	for (size_t i = 0; i < back.song_events.size(); i++) {
+		sequencer_event& ev = back.song_events[i];
+		for (size_t j = 0; j < ev.actions.size(); j++) {
+			sequencer_event::track_action& ta = ev.actions[j];
+			if (back.sequencer_tracks[ta.first] == plugin && ta.second >= 0x10) {
+				if (pattern == ta.second - 0x10) {
+					remove_events.push_back(std::pair<int, int>(ta.first, ev.timestamp));
+				}
+			}
+		}
+	}
+	for (size_t i = 0; i < remove_events.size(); i++) {
+		sequencer_set_event(remove_events[i].first, remove_events[i].second, -1);
+	}
+
+	op_pattern_move* undo_move = new op_pattern_move(id, -1, pattern);
+	prepare_operation_undo(undo_move);
+
+	op_pattern_insert* undo = new op_pattern_insert(id, -1, *back.plugins[id]->patterns[pattern]);
+	prepare_operation_undo(undo);
+
+	prepare_operation_redo(redo);
+}
+
+void player::plugin_move_pattern(int id, int pattern, int newindex) {
+	assert(false);
+}
+
+void player::plugin_update_pattern(int id, int index, const zzub::pattern& pattern) {
+	zzub::pattern newpattern;
+	op_pattern_replace* redo = new op_pattern_replace(id, index, newpattern);
+	merge_backbuffer_flags(redo->copy_flags);
+
+	redo->pattern = pattern;
+
+	op_pattern_replace* undo = new op_pattern_replace(id, index, *back.plugins[id]->patterns[index]);
+	prepare_operation_undo(undo);
+
+	prepare_operation_redo(redo);
+
+}
+
+void player::plugin_set_pattern_name(int id, int index, std::string name) {
+	zzub::pattern newpattern;
+	op_pattern_replace* redo = new op_pattern_replace(id, index, newpattern);
+	merge_backbuffer_flags(redo->copy_flags);
+
+	redo->pattern = *back.plugins[id]->patterns[index];
+	redo->pattern.name = name;
+
+	op_pattern_replace* undo = new op_pattern_replace(id, index, *back.plugins[id]->patterns[index]);
+	prepare_operation_undo(undo);
+
+	prepare_operation_redo(redo);
+}
+
+void player::plugin_set_pattern_length(int id, int index, int rows) {
+	zzub::pattern newpattern;// = *get_plugin(plugin).patterns[index];
+	op_pattern_replace* redo = new op_pattern_replace(id, index, newpattern);
+
+	merge_backbuffer_flags(redo->copy_flags);
+
+	op_pattern_replace* undo = new op_pattern_replace(id, index, *back.plugins[id]->patterns[index]);
+	prepare_operation_undo(undo);
+
+	redo->pattern = *back.plugins[id]->patterns[index];
+	back.set_pattern_length(id, redo->pattern, rows);
+
+	prepare_operation_redo(redo);
+}
+
+void player::plugin_set_pattern_value(int id, int pattern, int group, int track, int column, int row, int value) {
+	op_pattern_edit* redo = new op_pattern_edit(id, pattern, group, track, column, row, value);
+
+	merge_backbuffer_flags(redo->copy_flags);
+
+	int prevvalue = back.plugins[id]->patterns[pattern]->groups[group][track][column][row];
+	op_pattern_edit* undo = new op_pattern_edit(id, pattern, group, track, column, row, prevvalue);
+	prepare_operation_undo(undo);
+
+	prepare_operation_redo(redo);
+}
+
+void player::plugin_insert_pattern_rows(int plugin_id, int pattern, int* column_indices, int num_indices, int start, int rows) {
+	operation_copy_flags flags;
+	flags.copy_plugins = true;
+	merge_backbuffer_flags(flags);
+
+	operation_copy_pattern_flags patternflags;
+	patternflags.plugin_id = plugin_id;
+	patternflags.index = pattern;
+	flags.pattern_flags.push_back(patternflags);
+
+	metaplugin& m = *back.plugins[plugin_id];
+	zzub::pattern& p = *m.patterns[pattern];
+
+	for (int i = 0; i < num_indices; i++) {
+		int group = column_indices[i * 3 + 0];
+		int track = column_indices[i * 3 + 1];
+		int column = column_indices[i * 3 + 2];
+		int first_overflow_row = p.rows - rows;
+		for (int j = 0; j < rows; j++) {
+			int v = p.groups[group][track][column][first_overflow_row + j];
+			op_pattern_edit* undo_edit = new op_pattern_edit(plugin_id, pattern, group, track, column, first_overflow_row + j, v);
+			prepare_operation_undo(undo_edit);
 		}
 	}
 
-	conn->plugin_out->connectionStates.swap(parameter_states);
+	std::vector<int> columns;
+	columns.insert(columns.begin(), column_indices, column_indices + (num_indices * 3));
+	op_pattern_insert_rows* redo = new op_pattern_insert_rows(plugin_id, pattern, start, columns, rows);
+	op_pattern_remove_rows* undo = new op_pattern_remove_rows(plugin_id, pattern, start, columns, rows);
+	prepare_operation_redo(redo);
+	prepare_operation_undo(undo);
+}
 
-	for (unsigned i = 0; i < conn->plugin_out->connectionStates.size(); i++) {
-		conn->plugin_out->connectionStates[i]->getStateTrack()->setTrack(i);
-		conn->plugin_out->connectionStates[i]->getStateTrackControl()->setTrack(i);
-		conn->plugin_out->connectionStates[i]->getStateTrackCopy()->setTrack(i);
+void player::plugin_remove_pattern_rows(int plugin_id, int pattern, int* column_indices, int num_indices, int start, int rows) {
+	operation_copy_flags flags;
+	flags.copy_plugins = true;
+
+	operation_copy_pattern_flags patternflags;
+	patternflags.plugin_id = plugin_id;
+	patternflags.index = pattern;
+	flags.pattern_flags.push_back(patternflags);
+
+	merge_backbuffer_flags(flags);
+
+	metaplugin& m = *back.plugins[plugin_id];
+	zzub::pattern& p = *m.patterns[pattern];
+
+	for (int i = 0; i < num_indices; i++) {
+		int group = column_indices[i * 3 + 0];
+		int track = column_indices[i * 3 + 1];
+		int column = column_indices[i * 3 + 2];
+
+		for (int j = 0; j < rows; j++) {
+			int v = p.groups[group][track][column][start + j];
+			op_pattern_edit* undo_edit = new op_pattern_edit(plugin_id, pattern, group, track, column, start + j, v);
+			prepare_operation_undo(undo_edit);
+		}
 	}
 
-	if (type == zzub_edit_add_input) {
-		conn->plugin_out->machine->add_input(conn->plugin_in->getName().c_str());
-	} else
-	if (type == zzub_edit_delete_input) {
-		conn->plugin_out->machine->delete_input(conn->plugin_in->getName().c_str());
+	std::vector<int> columns;
+	columns.insert(columns.begin(), column_indices, column_indices + (num_indices * 3));
+	op_pattern_remove_rows* redo = new op_pattern_remove_rows(plugin_id, pattern, start, columns, rows);
+	op_pattern_insert_rows* undo = new op_pattern_insert_rows(plugin_id, pattern, start, columns, rows);
+	prepare_operation_redo(redo);
+	prepare_operation_undo(undo);
+}
+
+bool player::plugin_add_input(int to_id, int from_id, connection_type type) {
+
+	op_plugin_connect* redo = new op_plugin_connect(from_id, to_id, type);
+	if (!prepare_operation_redo(redo)) {
+		delete redo;
+		return false;
 	}
+
+	op_plugin_disconnect* undo = new op_plugin_disconnect(from_id, to_id, type);
+	prepare_operation_undo(undo);
+
+	return true;
+}
+
+void player::plugin_delete_input(int to_id, int from_id, connection_type type) {
+
+	op_plugin_disconnect* redo = new op_plugin_disconnect(from_id, to_id, type);
+	merge_backbuffer_flags(redo->copy_flags);
+
+	plugin_descriptor from_plugin = back.plugins[from_id]->descriptor;
+	plugin_descriptor to_plugin = back.plugins[to_id]->descriptor;
+
+	op_plugin_connect* undo = new op_plugin_connect(from_id, to_id, type);
+
+	int track = back.plugin_get_input_connection_index(to_id, from_id, type);
+	assert(track != -1);
+	connection* conn = back.plugin_get_input_connection(to_id, track);
+	for (int i = 0; i < (int)conn->connection_parameters.size(); i++) {
+		undo->values.push_back(back.plugin_get_parameter(to_id, 0, track, i));
+	}
+
+	switch (type) {
+		case zzub::connection_type_audio:
+			break;
+		case zzub::connection_type_midi:
+			undo->midi_device = ((midi_connection*)conn)->device_name;
+			break;
+		case zzub::connection_type_event:
+			undo->bindings = ((event_connection*)conn)->bindings;
+			break;
+	}
+	prepare_operation_redo(redo);
+	prepare_operation_undo(undo);
+}
+
+void player::plugin_set_midi_connection_device(int to_id, int from_id, std::string name) {
+	operation_copy_flags flags;
+	flags.copy_graph = true;
+	flags.copy_plugins = true;
+	merge_backbuffer_flags(flags);
+
+	op_plugin_set_midi_connection_device* redo = new op_plugin_set_midi_connection_device(to_id, from_id, name);
+	int midiconn = back.plugin_get_input_connection_index(to_id, from_id, connection_type_midi);
+	assert(midiconn != -1);
+	
+	midi_connection* conn = (midi_connection*)back.plugin_get_input_connection(to_id, midiconn);
+
+	op_plugin_set_midi_connection_device* undo = new op_plugin_set_midi_connection_device(to_id, from_id, conn->device_name);
+
+	prepare_operation_redo(redo);
+	prepare_operation_undo(undo);
+}
+
+void player::plugin_add_event_connection_binding(int to_id, int from_id, int sourceparam, int targetgroup, int targettrack, int targetparam) {
+	event_connection_binding binding;
+	binding.source_param_index = sourceparam;
+	binding.target_group_index = targetgroup;
+	binding.target_track_index = targettrack;
+	binding.target_param_index = targetparam;
+
+	op_plugin_add_event_connection_binding* redo = new op_plugin_add_event_connection_binding(to_id, from_id, binding);
+
+	op_plugin_remove_event_connection_binding* undo = new op_plugin_remove_event_connection_binding(to_id, from_id, -1);
+	prepare_operation_redo(redo);
+	prepare_operation_undo(undo);
+
+}
+
+void player::plugin_remove_event_connection_binding(int to_id, int from_id, int index) {
+	assert(false);
+}
+
+void player::plugin_set_stream_source(int plugin_id, std::string data_url) {
+	operation_copy_flags flags;
+	flags.copy_plugins = true;
+	operation_copy_plugin_flags pluginflags;
+	pluginflags.plugin_id = plugin_id;
+	pluginflags.copy_plugin = true;
+	flags.plugin_flags.push_back(pluginflags);
+	merge_backbuffer_flags(flags);
+
+	std::string prev_data_url = back.plugins[plugin_id]->stream_source;
+
+	op_plugin_set_stream_source* redo = new op_plugin_set_stream_source(plugin_id, data_url);
+	prepare_operation_redo(redo);
+
+	op_plugin_set_stream_source* undo = new op_plugin_set_stream_source(plugin_id, prev_data_url);
+	prepare_operation_undo(undo);
 }
 
 
-/***
+void player::sequencer_add_track(int id) {
+	op_sequencer_create_track* redo = new op_sequencer_create_track(id);
+	prepare_operation_redo(redo);
 
-	zzub_edit_pattern
+	op_sequencer_remove_track* undo = new op_sequencer_remove_track(-1);
+	prepare_operation_undo(undo);
+}
 
-***/
+void player::sequencer_remove_track(int index) {
+	operation_copy_flags flags;
+	flags.copy_graph = true;
+	flags.copy_plugins = true;
+	flags.copy_sequencer_track_order = true;
 
-void zzub_edit_pattern::apply() {
-	plugin->patterns.swap(patterns);
+	merge_backbuffer_flags(flags);
 
-	if (sequence_events.size() == 0) return ;
+	int plugin = (int)back.sequencer_tracks[index];
 
-	zzub::player* player = plugin->getPlayer();
-	unsigned track_index = 0;
-	for (size_t i = 0; i<player->getSequenceTracks(); i++) {
-		sequence* track = player->getSequenceTrack(i);
-		if (track->getMachine() == plugin) {
-			track->events.swap(sequence_events[track_index]);
-			track_index++;
+	// remove the events in this track in an undoable fashion
+	vector<sequencer_event> events = back.song_events;
+	for (int i = 0; i < (int)events.size(); i++) {
+		sequencer_event& se = events[i];
+		for (int j = 0; j < (int)se.actions.size(); j++) {
+			sequencer_event::track_action& ta = se.actions[j];
+			if (ta.first == index) sequencer_set_event(ta.first, se.timestamp, -1);
+		}
+	}
 
-			if (type == zzub_edit_delete_pattern && pattern == track->pattern) {
-				// if this track is currently playing the pattern we delete, clear it
-				track->pattern = 0;
+	op_sequencer_remove_track* redo = new op_sequencer_remove_track(index);
+	prepare_operation_redo(redo);
+
+	// NOTE: adding undo operations in reverse order
+	op_sequencer_move_track* undo_pos = new op_sequencer_move_track(-1, index);
+	prepare_operation_undo(undo_pos);
+
+	op_sequencer_create_track* undo = new op_sequencer_create_track(back.get_plugin_id(plugin));
+	prepare_operation_undo(undo);
+
+}
+
+void player::sequencer_move_track(int index, int newindex) {
+	op_sequencer_move_track* redo = new op_sequencer_move_track(index, newindex);
+	merge_backbuffer_flags(redo->copy_flags);
+
+	prepare_operation_redo(redo);
+
+	op_sequencer_move_track* undo = new op_sequencer_move_track(newindex, index);
+	prepare_operation_undo(undo);
+}
+
+void player::sequencer_set_event(int track, int pos, int value) {
+	op_sequencer_set_event* redo = new op_sequencer_set_event(pos, track, value);
+	merge_backbuffer_flags(redo->copy_flags);
+
+	int prevvalue = back.sequencer_get_event_at(track, pos);
+	prepare_operation_undo(new op_sequencer_set_event(pos, track, prevvalue));
+	prepare_operation_redo(redo);
+}
+
+void player::sequencer_insert_events(int* _track_indices, int num_indices, int start, int ticks) {
+	operation_copy_flags flags;
+	flags.copy_song_events = true;
+	merge_backbuffer_flags(flags);
+
+	std::vector<int> track_indices(_track_indices, _track_indices + num_indices);
+
+	op_sequencer_replace* undo = new op_sequencer_replace(back.song_events);
+
+	// set up temporary operation-objects to perform the sequencer editing on the back buffer
+	std::vector<op_sequencer_set_event> remove_ops;
+	std::vector<op_sequencer_set_event> insert_ops;
+	for (size_t i = 0; i < back.song_events.size(); i++) {
+		sequencer_event& ev = back.song_events[i];
+		for (size_t j = 0; j < ev.actions.size(); j++) {
+			sequencer_event::track_action& ta = ev.actions[j];
+			if (ev.timestamp >= start) {
+				std::vector<int>::iterator ti = find(track_indices.begin(), track_indices.end(), ta.first);
+				if (ti != track_indices.end()) {
+					// this event is subject to moving
+					remove_ops.push_back(op_sequencer_set_event(ev.timestamp, ta.first, -1));
+					insert_ops.push_back(op_sequencer_set_event(ev.timestamp + ticks, ta.first, ta.second));
+				}
 			}
 		}
 	}
 
-}
-
-/***
-
-	zzub_edit_tracks
-
-***/
-
-void zzub_edit_tracks::apply() {
-	if (plugin->machine) plugin->machine->set_track_count(num_tracks);
-	plugin->tracks = num_tracks;
-	plugin->trackStates.swap(parameter_states);
-    
-	for (size_t i=0; i<plugin->patterns.size(); i++) {
-		plugin->patterns[i]->_tracks.swap(pattern_tracks[i]);
+	// do the reading and writing, not calling finish() to avoid sending any events
+	std::vector<op_sequencer_set_event>::iterator op;
+	for (op = remove_ops.begin(); op != remove_ops.end(); ++op) {
+		op->prepare(back);
+		op->operate(back);
+	}
+	for (op = insert_ops.begin(); op != insert_ops.end(); ++op) {
+		op->prepare(back);
+		op->operate(back);
 	}
 
+	// put the backbuffer-sequencer into the undo buffer
+	op_sequencer_replace* redo = new op_sequencer_replace(back.song_events);
+	prepare_operation_redo(redo);
+	prepare_operation_undo(undo);
+
 }
 
+void player::sequencer_remove_events(int* _track_indices, int num_indices, int start, int ticks) {
+	operation_copy_flags flags;
+	flags.copy_song_events = true;
+	merge_backbuffer_flags(flags);
+
+	std::vector<int> track_indices(_track_indices, _track_indices + num_indices);
+
+	op_sequencer_replace* undo = new op_sequencer_replace(back.song_events);
+
+	// set up temporary operation-objects to perform the sequencer editing on the back buffer
+	std::vector<op_sequencer_set_event> remove_ops;
+	std::vector<op_sequencer_set_event> insert_ops;
+	for (size_t i = 0; i < back.song_events.size(); i++) {
+		sequencer_event& ev = back.song_events[i];
+		for (size_t j = 0; j < ev.actions.size(); j++) {
+			sequencer_event::track_action& ta = ev.actions[j];
+			if (ev.timestamp >= start) {
+				std::vector<int>::iterator ti = find(track_indices.begin(), track_indices.end(), ta.first);
+				if (ti != track_indices.end()) {
+					// this event is subject to moving
+					remove_ops.push_back(op_sequencer_set_event(ev.timestamp, ta.first, -1));
+					if (ev.timestamp - ticks >= start)
+						insert_ops.push_back(op_sequencer_set_event(ev.timestamp - ticks, ta.first, ta.second));
+				}
+			}
+		}
+	}
+
+	// do the reading and writing, not calling finish() to avoid sending any events
+	std::vector<op_sequencer_set_event>::iterator op;
+	for (op = remove_ops.begin(); op != remove_ops.end(); ++op) {
+		op->prepare(back);
+		op->operate(back);
+	}
+	for (op = insert_ops.begin(); op != insert_ops.end(); ++op) {
+		op->prepare(back);
+		op->operate(back);
+	}
+
+	// put the backbuffer-sequencer into the undo buffer
+	op_sequencer_replace* redo = new op_sequencer_replace(back.song_events);
+	prepare_operation_redo(redo);
+	prepare_operation_undo(undo);
+}
 
 /***
 
-	zzub_edit_sequence
+	Wavetable
 
 ***/
 
+int player::wave_load_sample(int wave, int level, int offset, bool clear, std::string name, zzub::instream* datastream) {
+	operation_copy_flags flags;
+	flags.copy_wavetable = true;
+	merge_backbuffer_flags(flags);
 
-void zzub_edit_sequence::apply() {
-	sequencer->tracks.swap(sequences);
+	// because of limitations in buzz, the mono/stereo flag is specified for all levels
+	// a situation occurs if we try to load a mono sample as the second level where the first
+	// level is a stereo sample. what to do? three possibilities: 
+	//     - convert both to mono? 
+	//     - convert both to stereo?
+	//     - import the stereo sample as mono sample data, so the user has to convert the 
+	//       second sample manually if it mismatches the earlier sample?
+
+	waveimporter importer;
+	importwave_info wavedata;
+
+	if (!importer.open(name.c_str(), datastream)) return 0;
+	if (!importer.get_wave_level_info(0, 0, wavedata)) return 0;
+
+	assert(wavedata.channels != 0);
+
+	int bytes_per_sample = sizeFromWaveFormat(wavedata.format) * wavedata.channels;
+	char* buffer = new char[bytes_per_sample * wavedata.sample_count];
+
+	importer.read_wave_level_samples(0, 0, buffer);
+	importer.close();
+
+	bool reset_wave = false;
+	// determine cases where we want to set/change the wave stereo flag before loading a sample:
+	if ((back.wavetable.waves[wave]->levels.size() == 1 && level == 0 && clear) || back.wavetable.waves[wave]->levels.size() == 0) {
+		reset_wave = true;
+	}
+
+	// add needed levels
+	while (back.wavetable.waves[wave]->levels.size() <= (size_t)level) {
+		wave_add_level(wave);
+	}
+
+	// clear previous wave level contents (with undo)
+	if (clear)
+		wave_clear_level(wave, level);
+
+	if (reset_wave) {
+		if (wavedata.channels == 2)
+			wave_set_flags(wave, wave_flag_stereo); else
+			wave_set_flags(wave, 0);
+		
+		// TODO: set the wave format here as well
+		// allocate_level = wave_set_format + wave_insert_sample_data ?
+		//wave_set_format(wave, level, wavedata.sample_count);
+	}
+
+	assert(offset <= back.wavetable.waves[wave]->get_sample_count(level));
+
+	// now load sample data into an insert_samples-operation
+	op_wavetable_insert_sampledata* redo = new op_wavetable_insert_sampledata(wave, level, offset);
+
+	redo->samples = buffer;
+	redo->samples_format = wavedata.format;
+	redo->samples_length = wavedata.sample_count;
+	redo->samples_channels = wavedata.channels;
+
+	prepare_operation_redo(redo);
+
+	op_wavetable_remove_sampledata* undo = new op_wavetable_remove_sampledata(wave, level, offset, wavedata.sample_count);
+	prepare_operation_undo(undo);
+
+	return wavedata.sample_count;
+}
+
+void player::wave_allocate_level(int wave, int level, int sample_count, int channels, int format) {
+	operation_copy_flags flags;
+	flags.copy_wavetable = true;
+	merge_backbuffer_flags(flags);
+
+	wave_info_ex& w = *back.wavetable.waves[wave];
+
+	op_wavetable_allocate_wavelevel* redo = new op_wavetable_allocate_wavelevel(wave, level, sample_count, channels, format);
+
+	op_wavetable_allocate_wavelevel* undo = new op_wavetable_allocate_wavelevel(wave, level, w.get_sample_count(level), w.get_stereo() ? 2 : 1, w.get_wave_format(level));
+
+	// TODO: preserve wave data in undo
+	prepare_operation_redo(redo);
+	prepare_operation_undo(undo);
+}
+
+void player::wave_add_level(int wave) {
+	op_wavetable_add_wavelevel* redo = new op_wavetable_add_wavelevel(wave);
+	prepare_operation_redo(redo);
+
+	op_wavetable_remove_wavelevel* undo = new op_wavetable_remove_wavelevel(wave, -1);
+	prepare_operation_undo(undo);
+}
+
+void player::wave_remove_level(int wave, int level) {
+	// TODO: since move_wave_level isnt implemented yet, undo only works with the last level - ie we cant delete an arbitrary level yet
+	op_wavetable_remove_wavelevel* redo = new op_wavetable_remove_wavelevel(wave, level);
+	prepare_operation_redo(redo);
+
+	op_wavetable_move_wavelevel* undo_move = new op_wavetable_move_wavelevel(wave, back.wavetable.waves[wave]->levels.size(), level);
+	prepare_operation_undo(undo_move);
+
+	op_wavetable_add_wavelevel* undo = new op_wavetable_add_wavelevel(wave);
+	prepare_operation_undo(undo);
+}
+
+void player::wave_move_level(int wave, int level, int newlevel) {
+	op_wavetable_move_wavelevel* redo = new op_wavetable_move_wavelevel(wave, level, newlevel);
+	prepare_operation_redo(redo);
+
+	op_wavetable_move_wavelevel* undo = new op_wavetable_move_wavelevel(wave, newlevel, level);
+	prepare_operation_undo(undo);
+}
+
+void player::wave_set_name(int wave, std::string name) {
+
+	operation_copy_flags flags;
+	flags.copy_wavetable = true;
+	merge_backbuffer_flags(flags);
+
+	op_wavetable_wave_replace* undo = new op_wavetable_wave_replace(wave, *back.wavetable.waves[wave]);
+	prepare_operation_undo(undo);
+
+	wave_info data;
+	data = *back.wavetable.waves[wave];
+	data.name = name;
+	op_wavetable_wave_replace* redo = new op_wavetable_wave_replace(wave, data);
+	prepare_operation_redo(redo);
+
+}
+
+void player::wave_set_volume(int wave, float volume) {
+
+	operation_copy_flags flags;
+	flags.copy_wavetable = true;
+	merge_backbuffer_flags(flags);
+
+	op_wavetable_wave_replace* undo = new op_wavetable_wave_replace(wave, *back.wavetable.waves[wave]);
+	prepare_operation_undo(undo);
+
+	wave_info data;
+	data = *back.wavetable.waves[wave];
+	data.volume = volume;
+	op_wavetable_wave_replace* redo = new op_wavetable_wave_replace(wave, data);
+	prepare_operation_redo(redo);
+
+}
+
+void player::wave_set_flags(int wave, int waveflags) {
+	operation_copy_flags flags;
+	flags.copy_wavetable = true;
+	merge_backbuffer_flags(flags);
+
+	op_wavetable_wave_replace* undo = new op_wavetable_wave_replace(wave, *back.wavetable.waves[wave]);
+	prepare_operation_undo(undo);
+
+	wave_info data;
+	data = *back.wavetable.waves[wave];
+	data.flags = waveflags;
+	op_wavetable_wave_replace* redo = new op_wavetable_wave_replace(wave, data);
+	prepare_operation_redo(redo);
+}
+
+void player::wave_set_path(int wave, std::string name) {
+	operation_copy_flags flags;
+	flags.copy_wavetable = true;
+	merge_backbuffer_flags(flags);
+
+	op_wavetable_wave_replace* undo = new op_wavetable_wave_replace(wave, *back.wavetable.waves[wave]);
+	prepare_operation_undo(undo);
+
+	wave_info data;
+	data = *back.wavetable.waves[wave];
+	data.fileName = name;
+	op_wavetable_wave_replace* redo = new op_wavetable_wave_replace(wave, data);
+	prepare_operation_redo(redo);
+}
+
+void player::wave_set_loop_begin(int wave, int level, int pos) {
+	operation_copy_flags flags;
+	flags.copy_wavetable = true;
+	merge_backbuffer_flags(flags);
+
+	op_wavetable_wavelevel_replace* undo = new op_wavetable_wavelevel_replace(wave, level, back.wavetable.waves[wave]->levels[level]);
+	prepare_operation_undo(undo);
+
+	wave_level data;
+	data = back.wavetable.waves[wave]->levels[level];
+	data.loop_start = pos;
+	op_wavetable_wavelevel_replace* redo = new op_wavetable_wavelevel_replace(wave, level, data);
+	prepare_operation_redo(redo);
+}
+
+
+void player::wave_set_loop_end(int wave, int level, int pos) {
+	operation_copy_flags flags;
+	flags.copy_wavetable = true;
+	merge_backbuffer_flags(flags);
+
+	op_wavetable_wavelevel_replace* undo = new op_wavetable_wavelevel_replace(wave, level, back.wavetable.waves[wave]->levels[level]);
+	prepare_operation_undo(undo);
+
+	wave_level data;
+	data = back.wavetable.waves[wave]->levels[level];
+	data.loop_end = pos;
+	op_wavetable_wavelevel_replace* redo = new op_wavetable_wavelevel_replace(wave, level, data);
+	prepare_operation_redo(redo);
+}
+
+
+void player::wave_set_samples_per_second(int wave, int level, int sps) {
+	operation_copy_flags flags;
+	flags.copy_wavetable = true;
+	merge_backbuffer_flags(flags);
+
+	op_wavetable_wavelevel_replace* undo = new op_wavetable_wavelevel_replace(wave, level, back.wavetable.waves[wave]->levels[level]);
+	prepare_operation_undo(undo);
+
+	wave_level data;
+	data = back.wavetable.waves[wave]->levels[level];
+	data.samples_per_second = sps;
+	op_wavetable_wavelevel_replace* redo = new op_wavetable_wavelevel_replace(wave, level, data);
+	prepare_operation_redo(redo);
+}
+
+void player::wave_set_root_note(int wave, int level, int note) {
+	operation_copy_flags flags;
+	flags.copy_wavetable = true;
+	merge_backbuffer_flags(flags);
+
+	op_wavetable_wavelevel_replace* undo = new op_wavetable_wavelevel_replace(wave, level, back.wavetable.waves[wave]->levels[level]);
+	prepare_operation_undo(undo);
+
+	wave_level data;
+	data = back.wavetable.waves[wave]->levels[level];
+	data.root_note = note;
+	op_wavetable_wavelevel_replace* redo = new op_wavetable_wavelevel_replace(wave, level, data);
+	prepare_operation_redo(redo);
+}
+
+void player::wave_clear_level(int wave, int level) {
+	operation_copy_flags flags;
+	flags.copy_wavetable = true;
+	merge_backbuffer_flags(flags);
+
+	wave_info_ex& w = *back.wavetable.waves[wave];
+	int numsamples = w.get_sample_count(level);
+	op_wavetable_remove_sampledata* redo = new op_wavetable_remove_sampledata(wave, level, 0, numsamples);
+
+	op_wavetable_insert_sampledata* undo = new op_wavetable_insert_sampledata(wave, level, 0);
+	int channels = w.get_stereo() ? 2 : 1;
+	wave_buffer_type format = w.get_wave_format(level);
+	int bytes_per_sample = sizeFromWaveFormat(format) * channels;
+	int num_samples = w.get_sample_count(level);
+	char* buffer = new char[bytes_per_sample * num_samples];
+	memcpy(buffer, w.get_sample_ptr(level), bytes_per_sample * num_samples);
+	undo->samples = buffer;
+	undo->samples_channels = channels;
+	undo->samples_format = format;
+	undo->samples_length = num_samples;
+
+	prepare_operation_redo(redo);
+	prepare_operation_undo(undo);
+}
+
+void player::wave_clear(int wave) {
+	// copy necessary fields to back buffer and operate there
+	operation_copy_flags flags;
+	flags.copy_wavetable = true;
+	merge_backbuffer_flags(flags);
+
+	int num_levels = back.wavetable.waves[wave]->levels.size();
+	for (int i = 0 ; i < num_levels; i++) {
+		// free sample data in levels
+		wave_clear_level(wave, num_levels - i - 1);
+		wave_remove_level(wave, num_levels - i - 1);
+
+		// reset name, flags, volume, envelopes, etc
+		op_wavetable_wave_replace* undo_reset = new op_wavetable_wave_replace(wave, *back.wavetable.waves[wave]);
+		wave_info_ex blank_wave;
+		op_wavetable_wave_replace* redo_reset = new op_wavetable_wave_replace(wave, blank_wave);
+		prepare_operation_redo(redo_reset);
+		prepare_operation_undo(undo_reset);
+	}
+}
+
+
+void player::wave_insert_samples(int wave, int level, int target_offset, int sample_count, int channels, wave_buffer_type format, void* bytes) {
+	assert(false);
+}
+
+void player::wave_remove_samples(int wave, int level, int target_offset, int sample_count) {
+	operation_copy_flags flags;
+	flags.copy_wavetable = true;
+	merge_backbuffer_flags(flags);
+
+	op_wavetable_remove_sampledata* redo = new op_wavetable_remove_sampledata(wave, level, target_offset, sample_count);
+
+	op_wavetable_insert_sampledata* undo = new op_wavetable_insert_sampledata(wave, level, target_offset);
+	wave_info_ex& w = *back.wavetable.waves[wave];
+	int channels = w.get_stereo() ? 2 : 1;
+	wave_buffer_type format = w.get_wave_format(level);
+	int bytes_per_sample = sizeFromWaveFormat(format) * channels;
+	int num_samples = w.get_sample_count(level);
+	char* buffer = new char[bytes_per_sample * sample_count];
+	memcpy(buffer, w.get_sample_ptr(level, target_offset), bytes_per_sample * sample_count);
+	undo->samples = buffer;
+	undo->samples_channels = channels;
+	undo->samples_format = format;
+	undo->samples_length = sample_count;
+
+	prepare_operation_redo(redo);
+	prepare_operation_undo(undo);
+}
+
+void player::wave_set_envelopes(int wave, const vector<zzub::envelope_entry>& envelopes) {
+
+	operation_copy_flags flags;
+	flags.copy_wavetable = true;
+	merge_backbuffer_flags(flags);
+
+	op_wavetable_wave_replace* undo = new op_wavetable_wave_replace(wave, *back.wavetable.waves[wave]);
+	prepare_operation_undo(undo);
+
+	wave_info data;
+	data = *back.wavetable.waves[wave];
+	data.envelopes = envelopes;
+	op_wavetable_wave_replace* redo = new op_wavetable_wave_replace(wave, data);
+	prepare_operation_redo(redo);
 }
 
 
 } // namespace zzub
-
-
-

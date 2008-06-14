@@ -2,12 +2,14 @@
 
 #include <sndfile.h>
 
-struct stream_wav : stream_plugin {
+struct stream_wav : stream_plugin, stream_provider {
+	stereo_resampler resample;
+	stream_resampler* resampler;
+
 	std::string fileName;
 	SNDFILE *sf;
 	SF_INFO sfinfo;
 	bool loaded;
-	bool triggered;
 	unsigned int currentPosition;
 	float* buffer;
 	size_t buffer_size;
@@ -23,6 +25,11 @@ struct stream_wav : stream_plugin {
 	virtual bool process_offline(float **pin, float **pout, int *numsamples, int *channels, int *samplerate) { return false; }
 	virtual void command(int);
 	virtual void stop();
+	virtual void set_stream_source(const char* resource);
+	virtual const char* get_stream_source();
+
+	virtual bool generate_samples(float** buffer, int numsamples);
+	virtual int get_target_samplerate();
 
 	bool open();
 	void close();

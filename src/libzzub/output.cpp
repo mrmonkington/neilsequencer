@@ -105,6 +105,10 @@ struct output_plugin : plugin {
 	virtual void input(float **samples, int size, float amp) {}
 	virtual void midi_control_change(int ctrl, int channel, int value) {}
 	virtual bool handle_input(int index, int amp, int pan) { return false; }
+	virtual void process_midi_events(midi_message* pin, int nummessages) {}
+	virtual void get_midi_output_names(outstream *pout) {}
+	virtual void set_stream_source(const char* resource) {}
+	virtual const char* get_stream_source() { return 0; }
 };
 
 zzub::plugin* output_plugin_info::create_plugin() const { 
@@ -115,10 +119,10 @@ void output_plugincollection::initialize(zzub::pluginfactory *factory) {
 	factory->register_info(&_info);
 }
 
-output_plugincollection the_output_plugincollection;
+//output_plugincollection the_output_plugincollection;
 
-plugincollection *get_output_plugincollection(audiodriver *ad) {
-	return &the_output_plugincollection;
-}
+//plugincollection *get_output_plugincollection(audiodriver *ad) {
+//	return &the_output_plugincollection;
+//}
 
 } // namespace zzub

@@ -75,6 +75,8 @@ struct input_plugin : plugin {
 			attributes_changed();
 		}
 	}
+	virtual void process_midi_events(midi_message* pin, int nummessages) {}
+	virtual void get_midi_output_names(outstream *pout) {}
 	virtual void set_track_count(int count) {}
 	virtual void mute_track(int index) {}
 	virtual bool is_track_muted(int index) const { return false; }
@@ -103,6 +105,8 @@ struct input_plugin : plugin {
 	virtual void input(float **samples, int size, float amp) {}
 	virtual void midi_control_change(int ctrl, int channel, int value) {}
 	virtual bool handle_input(int index, int amp, int pan) { return false; }
+	virtual void set_stream_source(const char* resource) {}
+	virtual const char* get_stream_source() { return 0; }
 };
 
 zzub::plugin* input_plugin_info::create_plugin() const { 

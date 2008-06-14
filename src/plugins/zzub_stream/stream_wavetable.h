@@ -1,8 +1,10 @@
 #pragma once
 
-struct stream_wavetable : stream_plugin {
+struct stream_wavetable : stream_plugin, stream_provider {
+	stereo_resampler resample;
+	stream_resampler* resampler;
+
 	int index, level;
-	bool triggered;
 	unsigned int currentPosition;
 	unsigned int lastCurrentPosition;
 
@@ -19,6 +21,11 @@ struct stream_wavetable : stream_plugin {
 	virtual void command(int);
 	virtual void stop();
 	virtual void get_sub_menu(int, zzub::outstream*);
+	virtual void set_stream_source(const char* resource);
+	virtual const char* get_stream_source();
+
+	virtual bool generate_samples(float** buffer, int numsamples);
+	virtual int get_target_samplerate();
 
 	bool open();
 	void close();

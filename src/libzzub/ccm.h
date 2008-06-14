@@ -72,7 +72,7 @@ public:
     bool eof();
     char peek();
     virtual void seek(long pos, int mode=SEEK_SET) { assert(false); }
-    virtual long position() { return lastReadOfs; }
+    virtual long position() { return (long)lastReadOfs; }
 
     virtual int read(void* buffer, int size);
 	virtual long size() { return currentFileInfo.uncompressed_size; }
@@ -87,29 +87,27 @@ class CcmWriter {
     ArchiveWriter arch;
 
 	xml_node saveParameter(xml_node &parent, const zzub::parameter &p);
-	xml_node saveClasses(xml_node &parent, zzub::player &player);
-	xml_node saveClass(xml_node &parent, zzub::pluginloader &pl);
-	xml_node saveHead(xml_node &parent, zzub::player &player);
+	xml_node saveClasses(xml_node &parent, zzub::song &player);
+	xml_node saveClass(xml_node &parent, const zzub::info &pl);
+	xml_node saveHead(xml_node &parent, zzub::song &player);
 	xml_node addMeta(xml_node &parent, const std::string &propname);
-	xml_node saveSequencer(xml_node &parent, const std::string &id, sequencer &seq);
-	xml_node saveConnection(xml_node &parent, zzub::connection &connection);
+	xml_node saveSequencer(xml_node &parent, const std::string &id, zzub::song &seq);
 	xml_node saveEventBindings(xml_node &parent, std::vector<zzub::event_connection_binding> &bindings);
 	xml_node saveEventBinding(xml_node &parent, zzub::event_connection_binding &binding);
-	xml_node saveConnections(xml_node &parent, zzub::metaplugin &plugin);
 	xml_node saveParameterValue(xml_node &parent, std::string &group, int track, int param, int value);
 	xml_node saveArchive(xml_node &parent, const std::string&, zzub::mem_archive &arc);
-	xml_node saveInit(xml_node &parent, zzub::metaplugin &plugin);
-	xml_node saveAttributes(xml_node &parent, zzub::metaplugin &plugin);
-	xml_node savePatterns(xml_node &parent, zzub::player &player, zzub::metaplugin &plugin);
-	xml_node savePatternTrack(xml_node &parent, const std::string &colname, double fac, zzub::metaplugin &plugin, zzub::pattern &p, int group, int track);
-	xml_node savePattern(xml_node &parent, zzub::player &player, zzub::metaplugin &plugin, zzub::pattern &p);
-	xml_node saveSequence(xml_node &parent, double fac, zzub::player &player, zzub::metaplugin &plugin, zzub::sequence &seq);
-	xml_node saveSequences(xml_node &parent, zzub::player &player, zzub::metaplugin &plugin);
-	xml_node saveMidiMappings(xml_node &parent, zzub::player &player, zzub::metaplugin &plugin);
-	xml_node savePlugin(xml_node &parent, zzub::player &player, zzub::metaplugin &plugin);
-	xml_node savePlugins(xml_node &parent, zzub::player &player);
+	xml_node saveInit(xml_node &parent, zzub::song &player, zzub::plugin_descriptor plugin);
+	xml_node saveAttributes(xml_node &parent, zzub::song &player, zzub::plugin_descriptor plugin);
+	xml_node savePatterns(xml_node &parent, zzub::song &player, int plugin_id);
+	xml_node savePatternTrack(xml_node &parent, const std::string &colname, double fac, zzub::song &player, int plugin_id, zzub::pattern &p, int group, int track);
+	xml_node savePattern(xml_node &parent, zzub::song &player, int plugin_id, zzub::pattern &p);
+	xml_node saveSequence(xml_node &parent, double fac, zzub::song &player, int track);
+	xml_node saveSequences(xml_node &parent, zzub::song &player, int plugin_id);
+	xml_node saveMidiMappings(xml_node &parent, zzub::song &player, int plugin_id);
+	xml_node savePlugin(xml_node &parent, zzub::song &player, int plugin_id);
+	xml_node savePlugins(xml_node &parent, zzub::song &player);
 	xml_node saveWave(xml_node &parent, zzub::wave_info_ex &info);
-	xml_node saveWaves(xml_node &parent, zzub::player &player);
+	xml_node saveWaves(xml_node &parent, zzub::song &player);
 	xml_node saveEnvelope(xml_node &parent, zzub::envelope_entry& env);
 	xml_node saveEnvelopes(xml_node &parent, zzub::wave_info_ex &info);
 public:
@@ -127,7 +125,7 @@ class CcmReader : xml_tree_walker {
 	virtual bool for_each(xml_node&);
 
 	bool loadClasses(xml_node &classes, zzub::player &player);
-	bool loadPlugins(xml_node &plugins, zzub::player &player);
+	bool loadPlugins(xml_node plugins, zzub::player &player);
 	bool loadInstruments(xml_node &instruments, zzub::player &player);
 	bool loadSequencer(xml_node &seq, zzub::player &player);
 public:

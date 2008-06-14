@@ -23,7 +23,7 @@ std::string stringFromInt(int i, int len, char fillChar) {
 stream_machine_info_wavetable stream_info_wavetable;
 
 stream_machine_info_wavetable::stream_machine_info_wavetable() {
-	this->name = "zzub Stream - Wavetable (raw)";
+	this->name = "Wavetable Stream";
 	this->short_name = "WavetableStream";
 	this->author = "Andy Werk";
 	this->uri = "@zzub.org/stream/wavetable;1";
@@ -37,50 +37,71 @@ stream_machine_info_wavetable::stream_machine_info_wavetable() {
 ***/
 
 stream_wavetable::stream_wavetable() {
-	triggered = false;
 	currentPosition = 0;
+	resampler = 0;
 }
 
 stream_wavetable::~stream_wavetable() {
+	if (resampler) delete resampler;
 }
 
 void stream_wavetable::init(zzub::archive * const pi) {
-	// the format of initialization instreams is defined for stream plugins
-	if (!pi) return ;
-	zzub::instream* strm = pi->get_instream("");
-	if (!strm) return ;
-
-	std::string fileName;
-	if (!strm->read(fileName)) return ;
-
-	this->index = atoi(fileName.c_str());
+	this->index = 0;
 	this->level = 0;
 
-	this->triggered = false;
 	this->currentPosition = 0;
 	this->lastCurrentPosition = 0;
 }
 
-void stream_wavetable::attributes_changed() {
-	
-}
-
 void stream_wavetable::load(zzub::archive * const pi) {
-	init(pi);
 }
 
 void stream_wavetable::save(zzub::archive* po) {
-	zzub::outstream* strm = po->get_outstream("");
-	strm->write(stringFromInt(index, 0, ' ').c_str());
+}
+
+void stream_wavetable::set_stream_source(const char* resource) {
+	index = atoi(resource);
+	level = 0;
+
+	currentPosition = 0;
+	lastCurrentPosition = 0;
+
+	if (resampler) delete resampler;
+	resampler = new stream_resampler(this);
+
+	const zzub::wave_info* wave = _host->get_wave(index);
+	if (wave) {
+		zzub::wave_level* l = wave->get_level(level);
+		if (l) resampler->stream_sample_rate = l->samples_per_second;
+	}
+}
+
+const char* stream_wavetable::get_stream_source() {
+	static char src[32];
+	itoa(index, src, 10);
+	return src;
+}
+
+
+void stream_wavetable::attributes_changed() {
 }
 
 void stream_wavetable::process_events() {
-	lastCurrentPosition = currentPosition;
-	
-	if (gval.offset != 0xFFFFFFFF) {
-		unsigned int offset = get_offset();
+	if (!resampler) return ;
 
-		currentPosition = offset;
+	lastCurrentPosition = currentPosition;
+
+	bool triggered = false;
+
+	if (gval.note != zzub::note_value_none) {
+		resampler->note = buzz_to_midi_note(gval.note);
+		triggered = true;
+		currentPosition = 0;
+	}
+
+	if (gval.offset != 0xFFFFFFFF) {
+		currentPosition = get_offset();
+
 		triggered = true;
 	}
 
@@ -98,6 +119,9 @@ void stream_wavetable::process_events() {
 			}
 		}
 	}
+
+	if (triggered)
+		resampler->set_stream_pos(currentPosition);
 
 }
 
@@ -119,12 +143,7 @@ inline float sample_scale(zzub::wave_buffer_type format, void* buffer) {
 	}
 }
 
-bool stream_wavetable::process_stereo(float **pin, float **pout, int numsamples, int mode) {
-	if (mode == zzub::process_mode_read) return false;
-	if (mode == zzub::process_mode_no_io) return false;
-
-	if (!triggered) return false;
-
+bool stream_wavetable::generate_samples(float** pout, int numsamples) {
 	const zzub::wave_info* wave = _host->get_wave(index);
 	if (!wave) {
 		return false;
@@ -177,6 +196,19 @@ bool stream_wavetable::process_stereo(float **pin, float **pout, int numsamples,
 	return true;
 }
 
+int stream_wavetable::get_target_samplerate() {
+	return _master_info->samples_per_second;
+}
+
+bool stream_wavetable::process_stereo(float **pin, float **pout, int numsamples, int mode) {
+	if (mode == zzub::process_mode_read) return false;
+	if (mode == zzub::process_mode_no_io) return false;
+
+	if (!resampler || !resampler->playing) return false;
+
+	return resampler->process_stereo(pout, numsamples);
+}
+
 void stream_wavetable::command(int index) {
 	std::cout << "command " << index << std::endl;
 	if (index >=256 && index<=512) {
@@ -192,7 +224,7 @@ void stream_wavetable::command(int index) {
 					std::cout << wave->name << std::endl;
 					if (!level) return ;
 					
-					this->triggered = false;
+					resampler->playing = false;
 					this->index = i+1;
 					this->level = 0;
 					this->currentPosition = 0;
@@ -221,7 +253,7 @@ void stream_wavetable::get_sub_menu(int index, zzub::outstream* outs) {
 
 
 void stream_wavetable::stop() {
-	triggered = false;
+	if (resampler) resampler->playing = false;
 }
 
 bool stream_wavetable::open() {

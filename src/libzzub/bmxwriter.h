@@ -27,11 +27,13 @@ class BuzzWriter {
 
 	void presortPatterns();
 
-	bool saveMachine(zzub::metaplugin* machine);
+	bool saveMachine(zzub::plugin_descriptor machine);
 	bool saveMachines();
 	bool savePatterns();
 	bool saveConnections();
+	bool saveConnections2();
 	bool saveSequences();
+	bool saveSequenceTrack(int track);
 	bool saveWaveTable();
 	bool saveWaves();
 	bool saveComment(std::string text);
@@ -40,16 +42,16 @@ class BuzzWriter {
 
 	zzub::outstream* f;
 	zzub::player* player;
-	std::vector<zzub::metaplugin*> machines;
-	size_t getMachineIndex(zzub::metaplugin* m);
-	void setMachines(std::vector<zzub::metaplugin*>& machineSelection);
+	std::vector<zzub::plugin_descriptor> machines;
+	int getMachineIndex(zzub::plugin_descriptor m);
+	void setMachines(std::vector<zzub::plugin_descriptor>& machineSelection);
 
 	unsigned short numberOfWaves;
 public:
 	BuzzWriter(zzub::outstream* outf);
 	~BuzzWriter(void);
 
-	bool writePlayer(zzub::player* pl, std::vector<metaplugin*> machineSelection, bool saveWaveSections);
+	bool writePlayer(zzub::player* pl, std::vector<zzub::plugin_descriptor> machineSelection, bool saveWaveSections);
 };
 
 }

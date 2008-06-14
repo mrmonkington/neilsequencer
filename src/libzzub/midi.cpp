@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2003-2007 Anders Ervik <calvin@countzero.no>
+Copyright (C) 2003-2008 Anders Ervik <calvin@countzero.no>
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <portmidi.h>
 #include <pmutil.h>
 #include "midi.h"
-#include <cstdio>
 
 namespace zzub {
 
@@ -34,8 +33,6 @@ namespace zzub {
 	\brief Base class for processing MIDI input.
 */
 const int BUFFER_EVENTS = 256;
-const int MIDI_IN = 0;
-const int MIDI_OUT = 1;
 
 mididriver::~mididriver() {
 	close();
@@ -45,21 +42,21 @@ void process_midi(PtTimestamp timestamp, void *userData) {
 	mididriver* driver = (mididriver*)userData;
 	PmError result;
 
-	midi_time_message msg;
+	midi_message msg;
 
 	PmEvent event[BUFFER_EVENTS];
-	for (size_t i = 0; i < driver->devices.size(); i++) {	
+	for (size_t i = 0; i < driver->devices.size(); i++) {
 		if (driver->devices[i] == 0) continue;
-		if ((driver->device_type[i] == MIDI_IN) && (TRUE == Pm_Poll(driver->devices[i]))) {
+		if (driver->isInput(i) && (TRUE == Pm_Poll(driver->devices[i]))) { 
 			int ret = Pm_Read(driver->devices[i], event, BUFFER_EVENTS);
 			if (ret<0) continue;
 			for (int j = 0; j < ret; j++) {
-				msg.data = event[j].message;
-				msg.time_ms = event[j].timestamp;
+				msg.message = event[j].message;
+				msg.timestamp = event[j].timestamp;
 				Pm_Enqueue(driver->readQueue, &msg);
 				//worker->midiEvent(Pm_MessageStatus(event[j].message), Pm_MessageData1(event[j].message), Pm_MessageData2(event[j].message));
 			}
-		}		
+		}
 	}
 
 
@@ -67,30 +64,38 @@ void process_midi(PtTimestamp timestamp, void *userData) {
 		driver->outMessages.push_back(msg);
 	}
 
-	for (std::list<midi_time_message>::iterator i = driver->outMessages.begin(); i != driver->outMessages.end(); i++) {
-		if (i->time_ms == 0) {
-			driver->send(i->device, i->data);
+	double time = driver->timer.frame();
+	double diff_ms = (time - driver->lastTime) * 1000 * 1000;	// using microseconds internally
+
+	for (std::list<midi_message>::iterator i = driver->outMessages.begin(); i != driver->outMessages.end(); ) {
+		if (i->timestamp > diff_ms)
+			i->timestamp -= (unsigned long)diff_ms; else
+			i->timestamp = 0;
+
+		if (i->timestamp == 0) {
+			driver->send(i->device, i->message);
 			i = driver->outMessages.erase(i);
-			if (i == driver->outMessages.end())
-				break;
-		} else {
-			i->time_ms--;
-		}
+		} else
+			i++;
 	}
+
+	driver->lastTime = time;
 }
 
 bool mididriver::initialize(midiworker* worker) {
 	this->worker=worker;
 	if (this->worker) this->worker->midiDriver = this;
-	this->readQueue = Pm_QueueCreate(32, sizeof(midi_time_message));
-	this->sendQueue = Pm_QueueCreate(32, sizeof(midi_time_message));
+	this->readQueue = Pm_QueueCreate(32, sizeof(midi_message));
+	this->sendQueue = Pm_QueueCreate(32, sizeof(midi_message));
 
+	timer.start();
+	lastTime = timer.frame();
 	Pt_Start(1, &process_midi, this);  // start 1ms timer
 
 	if (pmNoError!=Pm_Initialize()) return false;
 
 	devices.resize(getDevices());
-	device_type.resize(getDevices());
+
 	return true;
 }
 
@@ -101,12 +106,10 @@ bool mididriver::openDevice(size_t index) {
 	if (deviceInfo->input) {
 		if (pmNoError!=Pm_OpenInput(&stream, index, 0, BUFFER_EVENTS, 0, 0))
 			return false;
-		device_type[index]=MIDI_IN;
 	} else
 	if (deviceInfo->output) {
 		if (pmNoError!=Pm_OpenOutput(&stream, index, 0, BUFFER_EVENTS, 0, 0, 0))
 			return false;
-		device_type[index]=MIDI_OUT;
 	}
 
 	devices[index]=stream;
@@ -142,17 +145,17 @@ size_t mididriver::getDevices() {
 
 bool mididriver::isInput(size_t index) {
 	const PmDeviceInfo* deviceInfo=Pm_GetDeviceInfo(index);
-	return deviceInfo->input;
+	return deviceInfo->input != 0;
 }
 
 bool mididriver::isOutput(size_t index) {
 	const PmDeviceInfo* deviceInfo=Pm_GetDeviceInfo(index);
-	return deviceInfo->output;
+	return deviceInfo->output != 0;
 }
 
 bool mididriver::isOpen(size_t index) {
 	const PmDeviceInfo* deviceInfo=Pm_GetDeviceInfo(index);
-	return deviceInfo->opened;
+	return deviceInfo->opened != 0;
 }
 
 const char* mididriver::getDeviceName(size_t index) {
@@ -164,41 +167,29 @@ bool mididriver::poll() {
 
 	if (readQueue == 0 || sendQueue == 0) return false;
 
-	midi_time_message msg;
+	midi_message msg;
 	PmError result;
 	do {
 		result = Pm_Dequeue(readQueue, &msg);
 		if (result) {
-			worker->midiEvent(Pm_MessageStatus(msg.data), Pm_MessageData1(msg.data), Pm_MessageData2(msg.data));
+			worker->midiEvent((unsigned short)Pm_MessageStatus(msg.message), (unsigned char)Pm_MessageData1(msg.message), (unsigned char)Pm_MessageData2(msg.message));
 		}
 	} while (result);
-
-/*	PmEvent event[BUFFER_EVENTS];
-	for (size_t i = 0; i<devices.size(); i++) {
-		if (devices[i] == 0) continue;
-		if (TRUE==Pm_Poll(devices[i])) {
-			int ret=Pm_Read(devices[i], event, BUFFER_EVENTS);
-			if (ret<0) continue;
-			for (int j=0; j<ret; j++) {
-				worker->midiEvent(Pm_MessageStatus(event[j].message), Pm_MessageData1(event[j].message), Pm_MessageData2(event[j].message));
-			}
-		}
-	}*/
 	return true;
 }
 
 void mididriver::schedule_send(size_t index, int time_ms, unsigned int data) {
-	midi_time_message msg;
+	midi_message msg;
 	msg.device = index;
-	msg.time_ms = time_ms;
-	msg.data = data,
+	msg.timestamp = time_ms * 1000;	// using microseconds for fixed point presicion
+	msg.message = data,
 	Pm_Enqueue(sendQueue, &msg);
 }
 
 bool mididriver::send(size_t index, unsigned int data) {
 	if (index >= devices.size()) return false;
 	if (devices[index] == 0) return false;
-	printf("send\n");
+
 	PmEvent event = { data, 0 };
 	Pm_Write(devices[index], &event, 1);
 	return true;

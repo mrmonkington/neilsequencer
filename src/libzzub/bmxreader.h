@@ -17,21 +17,21 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #pragma once
-#include "master.h"
 
 namespace zzub {
 
-const unsigned int MAGIC_Buzz=0x7a7a7542;
-const unsigned int MAGIC_MACH=0x4843414d;
-const unsigned int MAGIC_CONN=0x4E4E4F43;
-const unsigned int MAGIC_PATT=0x54544150;
-const unsigned int MAGIC_SEQU=0x55514553;
-const unsigned int MAGIC_WAVT=0x54564157;
-const unsigned int MAGIC_CWAV=0x56415743;
-const unsigned int MAGIC_WAVE=0x45564157;
-const unsigned int MAGIC_BLAH=0x48414c42;
-const unsigned int MAGIC_PARA=0x41524150;
-const unsigned int MAGIC_MIDI=0x4944494D;
+const unsigned int MAGIC_Buzz = 0x7a7a7542;
+const unsigned int MAGIC_MACH = 0x4843414d;
+const unsigned int MAGIC_CONN = 0x4E4E4F43;
+const unsigned int MAGIC_PATT = 0x54544150;
+const unsigned int MAGIC_SEQU = 0x55514553;
+const unsigned int MAGIC_WAVT = 0x54564157;
+const unsigned int MAGIC_CWAV = 0x56415743;
+const unsigned int MAGIC_WAVE = 0x45564157;
+const unsigned int MAGIC_BLAH = 0x48414c42;
+const unsigned int MAGIC_PARA = 0x41524150;
+const unsigned int MAGIC_MIDI = 0x4944494D;
+const unsigned int MAGIC_CON2 = 0x324E4F43;
 
 
 struct Section {
@@ -40,6 +40,39 @@ struct Section {
 	unsigned int size;
 };
 
+class MachineValidation {
+public:
+    MachineValidation() {
+        numGlobals=numTrackParams=0;
+    }
+	std::string instanceName;
+	std::string machineName;
+	unsigned int numGlobals, numTrackParams;
+
+	std::vector<zzub::parameter> parameters;
+
+	int get_param_count(int group) { 
+		switch (group) {
+			case 1:
+				return numGlobals;
+			case 2:
+				return numTrackParams;
+			default:
+				return 0;
+		}
+	}
+
+	zzub::parameter* get_param(int group, int column) {
+		switch (group) {
+			case 1:
+				return &parameters[column];
+			case 2:
+				return &parameters[numGlobals + column];
+			default:
+				return 0;
+		}
+	}
+};
 
 class MachineParameterInformation {
 public:
@@ -57,6 +90,7 @@ class BuzzReader : public zzub::event_handler {
 	bool loadMachines();
 	bool loadPatterns();
 	bool loadConnections();
+	bool loadConnections2();
 	bool loadSequences();
 	bool loadWaveTable();
 	bool loadWaves();
@@ -67,25 +101,29 @@ class BuzzReader : public zzub::event_handler {
 	void clear();
 	MachineParameterInformation machineParameters;
 
-	bool testMachineCompatibility(zzub::metaplugin* machine);
+	void print_test_messages(string machine_name, string uri, const char* field_name, int index, const char* expected_name, int expected, const char* found_name, int found, bool warn);
+	bool test_group_compat(zzub::metaplugin& machine, int group, MachineValidation* validator);
+	bool test_compatibility(zzub::metaplugin& plugin);
 	MachineValidation* findMachinePara(std::string name, std::string fullName);
 
-	//bool ZZUB_STDCALL validateMachine(void* param);
 	bool invoke(zzub_event_data_t& data);
 
 	bool open(zzub::instream* inf);
 
 public:
-	typedef std::map<zzub::metaplugin*, std::vector<zzub::connection*> > connectionmap;
-	typedef std::pair<zzub::metaplugin*, std::vector<zzub::connection*> > connectionpair;
+	typedef std::map<int, std::vector<std::pair<int, zzub::connection_type> > > connectionmap;
+	typedef std::pair<int, std::vector<std::pair<int, zzub::connection_type> > > connectionpair;
 	connectionmap connections;
-	std::vector<zzub::metaplugin*> machines;
+	int plugins_in_player;
+	std::vector<int> machines;
 	std::string lastError;
 	std::string lastWarning;
 
 	BuzzReader(zzub::instream* inf);
 	~BuzzReader();
-	void loadTrack(zzub::metaplugin* machine, patterntrack* track);
+
+	zzub::pattern::track read_track(const std::vector<const zzub::parameter*>& params, int rows);
+
 	bool readPlayer(zzub::player* pl);
 };
 

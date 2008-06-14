@@ -63,7 +63,7 @@ void stereo_resampler::set_pitch(long pitch) {
 
 ***/
 
-stream_resampler::stream_resampler(zzub::plugin* _plugin) {
+stream_resampler::stream_resampler(stream_provider* _plugin) {
 	plugin = _plugin;
 	stream_sample_rate = 44100;
 	stream_base_note = zzub::note_value_c4;
@@ -137,7 +137,7 @@ void stream_resampler::fill_resampler() {
 
 	int relnote = buzz_to_midi_note(stream_base_note);
 	float fromrate = stream_sample_rate;
-	float torate = (float)plugin->_master_info->samples_per_second * powf(2.0f, ((float)relnote - note) / 12);
+	float torate = (float)plugin->get_target_samplerate() * powf(2.0f, ((float)relnote - note) / 12);
 
 	float ratio = (float)fromrate / (float)torate;
 
@@ -180,7 +180,7 @@ void stream_resampler::fill_resampler() {
 
 	samples_in_resampler = resampler_samples;
 
-	bool result = plugin->process_stereo(0, outs, samples_to_process, zzub::process_mode_write);
+	bool result = plugin->generate_samples(outs, samples_to_process);
 	if (!result) {
 		playing = false;
 		samples_in_resampler = 0;
@@ -213,12 +213,12 @@ void stream_resampler::set_stream_pos(unsigned int ofs) {
 	samples_in_resampler = 0;
 	first_fill = true;
 	fade_pos = -1;
-
+/*
 	int* streamvals = (int*)plugin->global_values;
 	streamvals[0] = ofs;
 	plugin->process_events();
 	streamvals[0] = 0xFFFFFFFF;
 	streamvals[1] = 0xFFFFFFFF;
-
+*/
 }
 

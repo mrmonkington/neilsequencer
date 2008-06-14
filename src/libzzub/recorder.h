@@ -22,6 +22,8 @@ typedef	struct SNDFILE_tag	SNDFILE ;
 
 namespace zzub {
 
+struct mixer;
+
 enum tickstream_type {
     tickstream_type_file,
     tickstream_type_wavetable,
@@ -36,7 +38,7 @@ struct tickstream {
 };
 
 struct recorder : tickstream {
-    zzub::player* player;
+    zzub::mixer* player;
     //int samplesPerSecond;   // samplerate when recording started
 	bool writeWave; // if true, mixed buffers will be written to outfile
 	int startWritePosition; // writeWave will be set to true if this tick is reached, if -1, no effect
@@ -44,13 +46,13 @@ struct recorder : tickstream {
 	bool autoWrite; // write wave when playing and stop writing when stopped
 	int ticksWritten; // number of ticks that have been written
 
-    recorder(zzub::player* p);
+    recorder(zzub::mixer* p);
 
     virtual void process_events();
     virtual void process_stereo(float** buf, int numSamples);
 
     virtual bool open()=0;
-    virtual void write(float** samples, size_t numSamples)=0;
+    virtual void write(float** samples, int numSamples)=0;
     virtual void close()=0;
     virtual bool isOpen()=0;
 };
@@ -61,15 +63,15 @@ struct recorder_buffer : recorder {
     float** buffer;
     bool opened;
 
-    recorder_buffer(zzub::player* p, int bufferSize=256);
+    recorder_buffer(zzub::mixer* p, int bufferSize=256);
     void setBufferSize(int buffersize);
 
     virtual bool open();
-    virtual void write(float** samples, size_t numSamples);
+    virtual void write(float** samples, int numSamples);
     virtual void close();
     virtual bool isOpen();
 
-    virtual void writeBuffer(float** samples, size_t numSamples)=0;
+    virtual void writeBuffer(float** samples, int numSamples)=0;
 
 };
 
@@ -77,14 +79,14 @@ struct recorder_wavetable : recorder_buffer {
 
     std::string waveName;
     int waveIndex;
-    size_t samplesRecorded;
+    int samplesRecorded;
 
-    recorder_wavetable(zzub::player* p);
+    recorder_wavetable(zzub::mixer* p);
 
     virtual bool open();
     virtual void close();
 
-    virtual void writeBuffer(float** samples, size_t numSamples);
+    virtual void writeBuffer(float** samples, int numSamples);
 
     void setWaveName(std::string name);
     std::string& getWaveName();
@@ -97,9 +99,9 @@ struct recorder_wavetable : recorder_buffer {
 struct recorder_file : recorder {
     std::string waveFilePath;
     SNDFILE *waveFile; // handle of wavefile to write to
-    recorder_file(zzub::player* p, std::string fileName="");
+    recorder_file(zzub::mixer* p, std::string fileName="");
     virtual bool open();
-    virtual void write(float** samples, size_t numSamples);
+    virtual void write(float** samples, int numSamples);
     virtual void close();
     virtual bool isOpen();
 
@@ -111,14 +113,14 @@ struct recorder_input : recorder_wavetable {
     bool monitor;
     bool record;
 
-    recorder_input(zzub::player* p);
+    recorder_input(zzub::mixer* p);
     virtual void process_events();
     virtual void process_stereo(float** buf, int numSamples);
 };
 
 
 struct recorder_wavetable_plugin_info : zzub::info {
-	player *_player;
+	mixer *_player;
 	
 	recorder_wavetable_plugin_info() {
 		this->flags = zzub::plugin_flag_has_audio_input;
@@ -148,7 +150,7 @@ struct recorder_wavetable_plugin_info : zzub::info {
 };
 
 struct recorder_file_plugin_info : zzub::info {
-	player *_player;
+	mixer *_player;
 	
 	recorder_file_plugin_info() {
 		this->flags = zzub::plugin_flag_has_audio_input;
@@ -206,7 +208,7 @@ struct recorder_plugincollection : plugincollection {
 	recorder_wavetable_plugin_info wavetable_info;
 	recorder_file_plugin_info file_info;
 	
-	void setPlayer(player *p);
+	void setPlayer(mixer *p);
 	
 	// Called by the host initially. The collection registers
 	// plugins through the pluginfactory::register_info method.

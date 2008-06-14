@@ -60,8 +60,8 @@ namespace zzub {
 
 ***/
 
-recorder::recorder(zzub::player* p) {
-    player = p;
+recorder::recorder(zzub::mixer* p) {
+	player = p;
 	writeWave = false;
 	startWritePosition = -1;
 	endWritePosition = -1;
@@ -71,16 +71,16 @@ recorder::recorder(zzub::player* p) {
 
 void recorder::process_events() {
 	if (autoWrite) {
-		if (player->getPlayState()==player_state_playing)
+		if (player->state == player_state_playing)
 			writeWave = true;
 		else
 			writeWave = false;
 	}
 	
-	if (writeWave && (endWritePosition != -1) && (player->lastTickPos >= endWritePosition)) {
+	if (writeWave && (endWritePosition != -1) && (player->last_tick_work_position >= endWritePosition)) {
 		writeWave = false;
 	}
-	if (!writeWave && (startWritePosition != -1) && (player->lastTickPos >= startWritePosition)) {
+	if (!writeWave && (startWritePosition != -1) && (player->last_tick_work_position >= startWritePosition)) {
 		writeWave = true;
 	}
 	
@@ -90,16 +90,16 @@ void recorder::process_events() {
 }
 
 void recorder::process_stereo(float** buf, int numSamples) {
-    if (writeWave) { // shall we write a wavefile?
+	if (writeWave) { // shall we write a wavefile?
 		if (!isOpen()) { // did we open the handle yet?
-            open();
+			open();
 		}
 		if (isOpen()) { // do we have a handle?
-            write(buf, numSamples);
+			write(buf, numSamples);
 		}
 	} else { // no wave writing
 		if (isOpen()) { // but our handle is still open
-            close();
+			close();
 		}
 	}
 
@@ -108,78 +108,78 @@ void recorder::process_stereo(float** buf, int numSamples) {
 
 /***
 
-    recorder_buffer
+	recorder_buffer
 
 ***/
 
-recorder_buffer::recorder_buffer(zzub::player* p, int bufferSize):recorder(p) {
-    buffer = 0;
-    setBufferSize(bufferSize);
-    opened = false;
+recorder_buffer::recorder_buffer(zzub::mixer* p, int bufferSize):recorder(p) {
+	buffer = 0;
+	setBufferSize(bufferSize);
+	opened = false;
 }
 
 void recorder_buffer::setBufferSize(int bufferSize) {
-    size = bufferSize;
-    if (buffer) {
-        delete[] buffer[1];
-        delete[] buffer[0];
-        delete[] buffer;
-    }
+	size = bufferSize;
+	if (buffer) {
+		delete[] buffer[1];
+		delete[] buffer[0];
+		delete[] buffer;
+	}
 
-    buffer = new float*[2];
-    buffer[0] = new float[size];
-    buffer[1] = new float[size];
-    offset = 0;
+	buffer = new float*[2];
+	buffer[0] = new float[size];
+	buffer[1] = new float[size];
+	offset = 0;
 }
 
 
 bool recorder_buffer::open() {
-    opened = true;
-    return opened;
+	opened = true;
+	return opened;
 }
 
 void recorder_buffer::close() {
-    if (offset>0) {
-        writeBuffer(buffer, offset);
-        offset = 0;
-    }
-    
-    opened = false;
+	if (offset>0) {
+		writeBuffer(buffer, offset);
+		offset = 0;
+	}
+	
+	opened = false;
 }
 
 bool recorder_buffer::isOpen() {
-    return opened;
+	return opened;
 }
 
-void recorder_buffer::write(float** samples, size_t numSamples) {
-    if (offset+numSamples<size) {
-        memcpy(buffer[0]+offset, samples[0], numSamples*sizeof(float));
-        memcpy(buffer[1]+offset, samples[1], numSamples*sizeof(float));
-        offset+=numSamples;
-        return ;
-    }
+void recorder_buffer::write(float** samples, int numSamples) {
+	if (offset+numSamples<size) {
+		memcpy(buffer[0]+offset, samples[0], numSamples*sizeof(float));
+		memcpy(buffer[1]+offset, samples[1], numSamples*sizeof(float));
+		offset+=numSamples;
+		return ;
+	}
 
-    float* samples2[2]={samples[0], samples[1]};
+	float* samples2[2]={samples[0], samples[1]};
 
-    while (offset+numSamples>=size) {
-        int rem = size-offset;
-        memcpy(buffer[0]+offset, samples2[0], rem*sizeof(float));
-        memcpy(buffer[1]+offset, samples2[1], rem*sizeof(float));
-        writeBuffer(buffer, size);
-        
-        samples2[0]+=rem;
-        samples2[1]+=rem;
-        numSamples-=rem;
+	while (offset+numSamples>=size) {
+		int rem = size-offset;
+		memcpy(buffer[0]+offset, samples2[0], rem*sizeof(float));
+		memcpy(buffer[1]+offset, samples2[1], rem*sizeof(float));
+		writeBuffer(buffer, size);
+	    
+		samples2[0]+=rem;
+		samples2[1]+=rem;
+		numSamples-=rem;
 
-        offset = 0;
-    }
+		offset = 0;
+	}
 
-    if (offset+numSamples<size) {
-        memcpy(buffer[0]+offset, samples2[0], numSamples*sizeof(float));
-        memcpy(buffer[1]+offset, samples2[1], numSamples*sizeof(float));
-        offset+=numSamples;
-        return ;
-    }
+	if (offset+numSamples<size) {
+		memcpy(buffer[0]+offset, samples2[0], numSamples*sizeof(float));
+		memcpy(buffer[1]+offset, samples2[1], numSamples*sizeof(float));
+		offset+=numSamples;
+		return ;
+	}
 }
 
 
@@ -190,9 +190,9 @@ void recorder_buffer::write(float** samples, size_t numSamples) {
 
 ***/
 
-recorder_file::recorder_file(zzub::player* p, std::string fileName):recorder(p) {
-    waveFile = 0;
-    waveFilePath = fileName;
+recorder_file::recorder_file(zzub::mixer* p, std::string fileName):recorder(p) {
+	waveFile = 0;
+	waveFilePath = fileName;
 }
 
 bool recorder_file::setWaveFilePath(const std::string& path) {
@@ -205,21 +205,21 @@ std::string &recorder_file::getWaveFilePath() {
 }
 
 bool recorder_file::open() {
-    if (waveFile) return false;
+	if (waveFile) return false;
 	SF_INFO sfinfo;
 	memset(&sfinfo, 0, sizeof(sfinfo));
-	sfinfo.samplerate = player->masterInfo.samples_per_second;
+	sfinfo.samplerate = player->master_info.samples_per_second;
 	sfinfo.channels = 2;
 	sfinfo.format = SF_FORMAT_WAV | SF_FORMAT_PCM_16;
 	
 	waveFile = sf_open(waveFilePath.c_str(), SFM_WRITE, &sfinfo); // open a handle
-    if (!waveFile)
+	if (!waveFile)
 		printf("opening '%s' for writing failed.\n", waveFilePath.c_str());
 
-    return waveFile!=0;
+	return waveFile!=0;
 }
 
-void recorder_file::write(float** samples, size_t numSamples) {
+void recorder_file::write(float** samples, int numSamples) {
 	if (!numSamples || !waveFile)
 		return;
 	float *ilsamples = new float[numSamples*2];
@@ -232,102 +232,99 @@ void recorder_file::write(float** samples, size_t numSamples) {
 		*p++ = l;
 		*p++ = r;
 	}
-    sf_writef_float(waveFile, ilsamples, numSamples);
+	sf_writef_float(waveFile, ilsamples, numSamples);
 	delete[] ilsamples;
 }
 
 void recorder_file::close() {
-    sf_close(waveFile); // so close it
-    waveFile=0;
+	sf_close(waveFile); // so close it
+	waveFile=0;
 }
 
 bool recorder_file::isOpen() {
-    return waveFile!=0;
+	return waveFile!=0;
 }
 
 /***
 
-    recorder_wavetable
+	recorder_wavetable
 
 ***/
 
-recorder_wavetable::recorder_wavetable(zzub::player* p):recorder_buffer(p) {
-    waveIndex = -1;
-    samplesRecorded = 0;
-    setBufferSize(4096);
+recorder_wavetable::recorder_wavetable(zzub::mixer* p):recorder_buffer(p) {
+	waveIndex = -1;
+	samplesRecorded = 0;
+	setBufferSize(4096);
 }
 
 bool recorder_wavetable::open() {
-    if (waveIndex==-1) return false;
-    
-    wave_info_ex* wave = player->getWave(waveIndex);
-    if (!wave) return false;
+	if (waveIndex==-1) return false;
+	
+	player->wavetable.waves[waveIndex]->clear();
 
-    wave->clear();
-
-    return recorder_buffer::open();
+	return recorder_buffer::open();
 }
 
-void recorder_wavetable::writeBuffer(float** samples, size_t numSamples) {
-    samplesRecorded = numSamples;
-    flushBuffer();
+void recorder_wavetable::writeBuffer(float** samples, int numSamples) {
+	samplesRecorded = numSamples;
+	flushBuffer();
 }
 
 void recorder_wavetable::close() {
-    recorder_buffer::close();
+	recorder_buffer::close();
 }
 
 void recorder_wavetable::flushBuffer() {
-    wave_info_ex* wave = player->getWave(waveIndex);
+	wave_info_ex& wave = *player->wavetable.waves[waveIndex];
 
-    int samplesSoFar = wave->get_sample_count(0);
+	int samplesSoFar = wave.get_sample_count(0);
 
-    if (samplesSoFar==0) {
-        wave->allocate_level(0, samplesRecorded, wave_buffer_type_si16, true);
-        wave->set_samples_per_sec(0, player->masterInfo.samples_per_second);
+	if (samplesSoFar==0) {
+		wave.allocate_level(0, samplesRecorded, wave_buffer_type_si16, true);
+		wave.set_samples_per_sec(0, player->master_info.samples_per_second);
 		
 		zzub_event_data eventData={event_type_wave_allocated};
-		player->master->invokeEvent(eventData);
-    } else {
-        wave->reallocate_level(0, samplesSoFar+samplesRecorded);
-    }
-    short* wavedata = (short*)wave->get_sample_ptr(0);
-    for (int i=0; i<samplesRecorded; i++) {
+		player->plugin_invoke_event(0, eventData);
+	} else {
+		wave.reallocate_level(0, samplesSoFar+samplesRecorded);
+	}
+	short* wavedata = (short*)wave.get_sample_ptr(0);
+	for (int i=0; i<samplesRecorded; i++) {
 		float l = buffer[0][i];
 		float r = buffer[1][i];
 		if (l>1.0) l = 1.0; else if (l<-1.0) l = -1.0;
 		if (r>1.0) r = 1.0; else if (r<-1.0) r = -1.0;
-        wavedata[samplesSoFar*2 + i*2] = l * 0x7fff;
-        wavedata[samplesSoFar*2 + i*2+1] = r * 0x7fff;
+		wavedata[samplesSoFar*2 + i*2] = (short)(l * 0x7fff);
+		wavedata[samplesSoFar*2 + i*2+1] = (short)(r * 0x7fff);
 
-        //wavedata[samplesSoFar*2 + i*2+1] = buffer[i*2+1] * 0x7fff;
-    }
+		//wavedata[samplesSoFar*2 + i*2+1] = buffer[i*2+1] * 0x7fff;
+	}
 
-    samplesRecorded=0;
+	samplesRecorded=0;
 
 }
 
 void recorder_wavetable::setWaveIndex(int i) {
-    waveIndex = i;
+	waveIndex = i;
 }
 
 void recorder_wavetable::setWaveName(std::string name) {
-    waveName = name;
+	waveName = name;
 }
 
 
 
-recorder_input::recorder_input(zzub::player* p):recorder_wavetable(p) {
+recorder_input::recorder_input(zzub::mixer* p):recorder_wavetable(p) {
 }
 
 void recorder_input::process_events() {
-    recorder_wavetable::process_events();
+	recorder_wavetable::process_events();
 }
 
 void recorder_input::process_stereo(float** buf, int numSamples) {
-    if (!player->inputBuffer[0] || !player->inputBuffer[1]) return ;
-    // replace buf with input
-    recorder_wavetable::process_stereo(player->inputBuffer, numSamples);
+	if (!player->inputBuffer[0] || !player->inputBuffer[1]) return ;
+	// replace buf with input
+	recorder_wavetable::process_stereo(player->inputBuffer, numSamples);
 }
 
 //// recorder_plugin ////
@@ -345,7 +342,7 @@ struct recorder_wavetable_plugin : plugin {
 	gvals g;
 	gvals lg;
 	
-	recorder_wavetable_plugin(player *p) : rec(p) {
+	recorder_wavetable_plugin(mixer *p) : rec(p) {
 		global_values = &g;
 		lg.wave = 0;
 		lg.enable = 0;
@@ -359,7 +356,7 @@ struct recorder_wavetable_plugin : plugin {
 				lg.wave = g.wave;
 				int waveindex = int(g.wave) - 1;
 				rec.setWaveIndex(waveindex);
-				std::string name = _host->get_name(_host->_metaplugin);
+				std::string name = _host->get_name(_host->get_metaplugin());
 				rec.setWaveName(name);
 			}
 		}
@@ -382,6 +379,8 @@ struct recorder_wavetable_plugin : plugin {
 		return true;
 	}
 	virtual bool process_offline(float **pin, float **pout, int *numsamples, int *channels, int *samplerate) { return false; }
+	virtual void process_midi_events(midi_message* pin, int nummessages) {}
+	virtual void get_midi_output_names(outstream *pout) {}
 	virtual void stop() {}
 	virtual void load(zzub::archive *arc) {}
 	virtual void save(zzub::archive *arc) {}
@@ -408,6 +407,8 @@ struct recorder_wavetable_plugin : plugin {
 	virtual void input(float **samples, int size, float amp) {}
 	virtual void midi_control_change(int ctrl, int channel, int value) {}
 	virtual bool handle_input(int index, int amp, int pan) { return false; }
+	virtual void set_stream_source(const char* resource) {}
+	virtual const char* get_stream_source() { return 0; }
 };
 
 
@@ -428,7 +429,7 @@ struct recorder_file_plugin : plugin {
 	gvals g;
 	gvals lg;
 	
-	recorder_file_plugin(player *p) : rec(p) {
+	recorder_file_plugin(mixer *p) : rec(p) {
 		global_values = &g;
 		lg.enable = 0;
 	}
@@ -527,13 +528,17 @@ struct recorder_file_plugin : plugin {
 	virtual void input(float **samples, int size, float amp) {}
 	virtual void midi_control_change(int ctrl, int channel, int value) {}
 	virtual bool handle_input(int index, int amp, int pan) { return false; }
+	virtual void process_midi_events(midi_message* pin, int nummessages) {}
+	virtual void get_midi_output_names(outstream *pout) {}
+	virtual void set_stream_source(const char* resource) {}
+	virtual const char* get_stream_source() { return 0; }
 };
 
 zzub::plugin* recorder_file_plugin_info::create_plugin() const { 
 	return new recorder_file_plugin(_player);
 }
 
-void recorder_plugincollection::setPlayer(player *p) {
+void recorder_plugincollection::setPlayer(mixer *p) {
 	wavetable_info._player = p;
 	file_info._player = p;
 }

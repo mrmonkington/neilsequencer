@@ -730,7 +730,7 @@ void CLadspaCollection::destroy(void)
 
 HINSTANCE CLadspa::hInst = 0;
 
-CLadspa::CLadspa(const CLadspaCollection::CLadspaInfo *_info) : info((CLadspaCollection::CLadspaInfo *)_info), ladspa(0), ladspaInitialized(false), cm(0), ins(0), outs(0), paramInertia(0), inertia(eDefaultInertia)
+CLadspa::CLadspa(const CLadspaCollection::CLadspaInfo *_info) : info((CLadspaCollection::CLadspaInfo *)_info), ladspa(0), ladspaInitialized(false), ins(0), outs(0), paramInertia(0), inertia(eDefaultInertia)
 {
 	global_values = 0;
 	track_values = 0;
@@ -756,7 +756,7 @@ void CLadspa::init(archive *arc)
 	
 	inertia = eDefaultInertia;
 
-	cm = _host->get_metaplugin();	
+	//cm = _host->get_metaplugin();	
 
 	ladspa = new CLadspaPlugin();
 
@@ -896,7 +896,7 @@ void CLadspa::destroy(void)
 
 	info = 0;
 
-	cm = 0;
+	//cm = 0;
 
 	delete this;
 }

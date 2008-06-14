@@ -20,82 +20,66 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <iostream>
 #include <RtAudio.h>
 #include <cassert>
-#include <cstring>
+#include "timer.h"
+#include "driver.h"
 #include "driver_rtaudio.h"
 
 using namespace std;
 
 namespace zzub {
-/*! \struct audiodriver
-	\brief This class implements audio output via RtAudio.
-*/
 
-/*! \struct audiodevice
-	\brief Contains information about a detected audio device.
-*/
-
-/*! \struct audioworker
-	\brief Abstract base class with audio processing callback.
-*/
-
-audiodriver::audiodriver()
+audiodriver_rtaudio::audiodriver_rtaudio()
 {
 	audio = 0;
-    defaultDevice = -1;
-}
+	defaultDevice = -1;
 
-void i2s(float **s, float *i, int channels, int numsamples) {
-	if (!numsamples)
-		return;
-	float* p[audiodriver::MAX_CHANNELS];// = new float*[channels];
-	for (int j = 0; j<channels; j++) {
-		p[j] = s[j];
-	}
-	while (numsamples--) {
-		for (int j = 0; j<channels; j++) {
-			*p[j]++ = *i++;
-		}
-	}
+	timer.start();
+	cpu_load = 0;
+	last_work_time = 0;
 }
 
 int rtaudio_process_callback(void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames, double streamTime, RtAudioStreamStatus status, void *data) {
-	assert(nBufferFrames <= audiodriver::MAX_FRAMESIZE);
-	audiodriver *self = (audiodriver *)data;
-	float* oBuffer = (float*)outputBuffer;
-	float* ob = oBuffer;
-	float* iBuffer = (float*)inputBuffer;
-	float* ib = iBuffer;
-	float* ip[audiodriver::MAX_CHANNELS];
-	float* op[audiodriver::MAX_CHANNELS];
+	assert(nBufferFrames <= audiodriver_rtaudio::MAX_FRAMESIZE);
+	audiodriver_rtaudio *self = (audiodriver_rtaudio *)data;
 
-	int out_ch = self->worker->workDevice->out_channels;
-	int in_ch = self->worker->workInputDevice?self->worker->workInputDevice->in_channels:0;
+	double start_time = self->timer.frame();
+
+	float* fout = (float*)outputBuffer;
+	float* fin = (float*)inputBuffer;
+
+	int out_ch = self->worker->work_out_channel_count;
+	int in_ch = self->worker->work_in_channel_count;
 	for (int i = 0; i<in_ch; i++) {
-		ip[i] = self->worker->workInputBuffer[i];
+		self->worker->work_in_buffer[i] = &fin[i * nBufferFrames];
 	}
 	for (int i = 0; i<out_ch; i++) {
-		op[i] = self->worker->workOutputBuffer[i];
+		self->worker->work_out_buffer[i] = &fout[i * nBufferFrames];
 	}
 
-	// de-interleave all input channels
-	i2s(ip, ib, in_ch, nBufferFrames);
+	self->worker->work_stereo(nBufferFrames);
 
-	self->worker->workStereo(nBufferFrames);
-
-	// re-interleave output channels
+	// clip
 	float f;
-	for (int i=0; i<nBufferFrames; i++) {
-		for (int j = 0; j<out_ch; j++) {
-			f=*op[j]++;
-			if (f>1) f=1.0f;
-			if (f<-1) f=-1.0f;
-			*ob++ = f;
+	for (unsigned int i = 0; i < nBufferFrames; i++) {
+		for (int j = 0; j < out_ch; j++) {
+			f = self->worker->work_out_buffer[j][i];
+			if (f > 1) f = 1.0f;
+			if (f < -1) f = -1.0f;
+			self->worker->work_out_buffer[j][i] = f;
 		}
 	}
+
+
+	// update stats
+	self->last_work_time = self->timer.frame() - start_time;
+	double load = (self->last_work_time * double(self->samplerate)) / double(nBufferFrames);
+	// slowly approach to new value
+	self->cpu_load += 0.1 * (load - self->cpu_load);
+
 	return 0;
 }
 
-audiodriver::~audiodriver()
+audiodriver_rtaudio::~audiodriver_rtaudio()
 {
 	destroyDevice();
 	if (audio) {
@@ -105,12 +89,12 @@ audiodriver::~audiodriver()
 }
 
 
-int audiodriver::getApiDevices(int apiId) {
+int audiodriver_rtaudio::getApiDevices(int apiId) {
 	int deviceCount = 0;
 	try {
 		audio = new RtAudio((RtAudio::Api)apiId);
 		deviceCount = audio->getDeviceCount();
-		std::cout << "RtAudio reports " << deviceCount << "devices found." << std::endl;
+		std::cout << "RtAudio reports " << deviceCount << " devices found." << std::endl;
 	} catch (RtError &error) {
 		error.printMessage();
 		return -1;
@@ -153,17 +137,17 @@ int audiodriver::getApiDevices(int apiId) {
 }
 
 
-void audiodriver::initialize(audioworker *worker)
+void audiodriver_rtaudio::initialize(audioworker *worker)
 {
 	this->worker = worker;
 #if defined(__WINDOWS_ASIO__)
-    getApiDevices(RtAudio::WINDOWS_ASIO);
+	getApiDevices(RtAudio::WINDOWS_ASIO);
 #endif
 #if defined(__WINDOWS_DS__)
-    getApiDevices(RtAudio::WINDOWS_DS);
+	getApiDevices(RtAudio::WINDOWS_DS);
 #endif
 #if defined(__UNIX_JACK__)
-    getApiDevices(RtAudio::UNIX_JACK);
+	getApiDevices(RtAudio::UNIX_JACK);
 #endif
 #if defined(__LINUX_ALSA__)
 	// only probe for alsa if no (jack) devices were already found
@@ -176,115 +160,116 @@ void audiodriver::initialize(audioworker *worker)
 		getApiDevices(RtAudio::LINUX_OSS);
 #endif
 #if defined(__MACOSX_CORE__)
-      getApiDevices(RtAudio::RtAudio::MACOSX_CORE);
+	getApiDevices(RtAudio::RtAudio::MACOSX_CORE);
 #endif
 }
 
-void audiodriver::reset()
-{
-	enable(false);
-	enable(true);
-}
-
-bool audiodriver::enable(bool e)
+bool audiodriver_rtaudio::enable(bool e)
 {
 	if (!audio)
 		return false;
 	if (e)
 	{
-        if (!worker->workStarted)
+		if (!worker->work_started)
     		audio->startStream();
-		worker->workStarted = true;
+		worker->work_started = true;
+		worker->audio_enabled();
 		return true;
 	}
 	else
 	{
-        if (worker->workStarted)
-		    audio->stopStream();
-		worker->workStarted = false;
+		if (worker->work_started)
+			audio->stopStream();
+		worker->work_started = false;
+		worker->audio_disabled();
 		return true;
 	}
 }
 
-int audiodriver::getWritePos()
-{
-	return 0;
-}
-
-int audiodriver::getPlayPos()
-{
-	return 0; 
-}
-
-int audiodriver::getDeviceCount()
+int audiodriver_rtaudio::getDeviceCount()
 {
 	return devices.size();
 }
 
-int audiodriver::getDeviceByName(const char* name) {
-    for (int i=0; i<devices.size(); i++) {
-        if (devices[i].name == name) return i;
-    }
-    return -1;
+int audiodriver_rtaudio::getDeviceByName(const char* name) {
+	for (size_t i = 0; i < devices.size(); i++) {
+		if (devices[i].name == name) return (int)i;
+	}
+	return -1;
 }
 
 
-bool audiodriver::createDevice(int index, int inIndex, int sampleRate, int bufferSize, int channel)
+bool audiodriver_rtaudio::createDevice(int index, int inIndex)
 {
 	if (index == -1)
-		index = getBestDevice();
+		index = defaultDevice;
 
 	if (index == -1) return false;
-	if (index >= devices.size()) return false;
-	if (bufferSize<=0 || bufferSize > MAX_FRAMESIZE) {
+	if (index >= (int)devices.size()) return false;
+	if (buffersize <= 0 || buffersize > MAX_FRAMESIZE) {
 		cerr << "Invalid buffer size for createDevice" << endl;
 		return false;
 	}
 	
 	audiodevice* device = getDeviceInfo(index);
-	cout << "creating output device '" << device->name << "' with " << sampleRate << "Hz samplerate" << endl;
+	cout << "creating output device '" << device->name << "' with " << samplerate << "Hz samplerate" << endl;
 
-    audio = new RtAudio((RtAudio::Api)devices[index].api_id);
+	audio = new RtAudio((RtAudio::Api)devices[index].api_id);
 
-    // ensure rtaudio out/in ids are on the same api or disable input
-    int outdevid = devices[index].device_id;
+	// ensure rtaudio out/in ids are on the same api or disable input
+	int outdevid = devices[index].device_id;
 	int outdevch = devices[index].out_channels;
-    int outapi = devices[index].api_id;
+	int outapi = devices[index].api_id;
 
-    int inapi = -1;
-    if (inIndex != -1)
-        inapi = devices[inIndex].api_id;
-    int indevid = 0;
-    int indevch = 0;
-    if (inapi == outapi && inIndex != -1) {
-        indevid = devices[inIndex].device_id;
-        indevch = devices[inIndex].in_channels;
-    }
+	int inapi = -1;
+	if (inIndex != -1)
+		inapi = devices[inIndex].api_id;
+	int indevid = 0;
+	int indevch = 0;
+	if (inapi == outapi && inIndex != -1) {
+		indevid = devices[inIndex].device_id;
+		indevch = devices[inIndex].in_channels;
+	}
 	try {
 
 		RtAudio::StreamParameters iParams, oParams;
 		oParams.deviceId = outdevid;
 		oParams.firstChannel = 0;
+#ifdef _DEBUG
+		oParams.nChannels = 2;
+#else
 		oParams.nChannels = outdevch;
+#endif
 
 		iParams.deviceId = indevid;
 		iParams.firstChannel = 0;
+#ifdef _DEBUG
+		iParams.nChannels = 2;
+#else
 		iParams.nChannels = indevch;
+#endif
 
 		RtAudio::StreamOptions streamOpts;
 		streamOpts.numberOfBuffers = 4;
+		streamOpts.flags = RTAUDIO_NONINTERLEAVED;
 
 		if (inapi != -1)
-			audio->openStream(&oParams, &iParams, RTAUDIO_FLOAT32, sampleRate, (unsigned int*)&bufferSize, &rtaudio_process_callback, (void*)this, &streamOpts); 
+			audio->openStream(&oParams, &iParams, RTAUDIO_FLOAT32, samplerate, (unsigned int*)&buffersize, &rtaudio_process_callback, (void*)this, &streamOpts); 
 		else
-			audio->openStream(&oParams, 0, RTAUDIO_FLOAT32, sampleRate, (unsigned int*)&bufferSize, &rtaudio_process_callback, (void*)this, &streamOpts);
+			audio->openStream(&oParams, 0, RTAUDIO_FLOAT32, samplerate, (unsigned int*)&buffersize, &rtaudio_process_callback, (void*)this, &streamOpts);
 
-		worker->workDevice = &devices[index];
-		worker->workInputDevice = inIndex != -1 ? &devices[inIndex] : 0;
-		worker->workRate = sampleRate;
-		worker->workBufferSize = bufferSize;
-		worker->workChannel = channel;
-		worker->workLatency = audio->getStreamLatency();
+		worker->work_out_device = &devices[index];
+		worker->work_in_device = inIndex != -1 ? &devices[inIndex] : 0;
+		worker->work_rate = samplerate;
+		worker->work_buffersize = buffersize;
+		worker->work_master_channel = master_channel;
+		worker->work_latency = audio->getStreamLatency();
+		worker->work_out_first_channel = oParams.firstChannel;
+		worker->work_out_channel_count = oParams.nChannels;
+		worker->work_in_first_channel = iParams.firstChannel;
+		worker->work_in_channel_count = inapi != -1 ? iParams.nChannels : 0;
+
+		worker->samplerate_changed();
 		return true;
 	} catch (RtError &error) {
 		error.getMessage();
@@ -294,30 +279,26 @@ bool audiodriver::createDevice(int index, int inIndex, int sampleRate, int buffe
 	return false;
 }
 
-void audiodriver::destroyDevice()
+void audiodriver_rtaudio::destroyDevice()
 {
 	if (!audio)
 		return;
 
 	enable(false);
-    delete audio;
-    audio = 0;
+	delete audio;
+	audio = 0;
 
-	worker->workDevice = 0;
-	worker->workInputDevice = 0;
+	worker->work_out_device = 0;
+	worker->work_in_device = 0;
 }
 
-int audiodriver::getBestDevice()
-{
-    return defaultDevice;
+
+double audiodriver_rtaudio::getCpuLoad() {
+	return cpu_load;
 }
 
-double audiodriver::getCpuLoad() {
-    return 1.0;
-}
-
-audiodevice* audiodriver::getDeviceInfo(int index) {
-	if (index<0 || index>=devices.size()) return 0;
+audiodevice* audiodriver_rtaudio::getDeviceInfo(int index) {
+	if (index < 0 || index >= (int)devices.size()) return 0;
 	return &devices[index];
 }
 

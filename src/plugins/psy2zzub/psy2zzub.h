@@ -8,7 +8,6 @@
 
 #include <cstdlib>
 #include <cstdio>
-#include <cstring>
 #include <string>
 #include <list>
 #include <vector>
@@ -83,6 +82,10 @@ namespace zzub { namespace plugins { namespace psycle_to_zzub {
 				void rename_input(const char *oldname,const char *newname) {}
 				void input(float **samples,int size,float amp) {}
 				bool handle_input(int index,int amp,int pan) { return false; }
+				virtual void process_midi_events(zzub::midi_message* pin, int nummessages) {}
+				virtual void get_midi_output_names(zzub::outstream *pout) {}
+				virtual void set_stream_source(const char* resource) {}
+				virtual const char* get_stream_source() { return 0; }
 			///\}
 			
 		private:
@@ -119,7 +122,7 @@ namespace zzub { namespace plugins { namespace psycle_to_zzub {
 			} * track_params;
 			#pragma pack(pop)
 
-			zzub::metaplugin * metaplugin;
+			//zzub::metaplugin * metaplugin;
 			module::handle_type module_handle;
 			psycle::plugin_interface::CMachineInterface * psycle_plugin;
 			psycle::plugin_interface::CMachineParameter const ** psycle_plugin_param_info;

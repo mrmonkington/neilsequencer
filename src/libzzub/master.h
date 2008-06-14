@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2003-2007 Anders Ervik <calvin@countzero.no>
+Copyright (C) 2003-2008 Anders Ervik <calvin@countzero.no>
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -18,37 +18,36 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #pragma once
 
-#include "metaplugin.h"
-
 namespace zzub {
 
-struct metaplugin;
 struct master_metaplugin;
 
-struct MasterGlobalValues {
-	unsigned short Volume;
-	unsigned short BPM;
-	unsigned char TPB;
+struct master_values {
+	unsigned short volume;
+	unsigned short bpm;
+	unsigned char tpb;
 };
 
 struct master_plugin : plugin {
-	MasterGlobalValues* gvals;
-	MasterGlobalValues dummyValuesUsedWhenNotHacked;
+	master_values* gvals;
+	master_values dummy;
     
-    int masterVolume;
-    int samplesPerSecond;
+	std::vector<std::pair<int, std::string> > midi_devices;
+	int master_volume;
+	int samples_per_second;
 
 	master_plugin();
+	virtual void init(zzub::archive*);
 	void process_events();
 	virtual void process_controller_events() {}
 	bool process_stereo(float **pin, float **pout, int numsamples, int mode);
 	virtual bool process_offline(float **pin, float **pout, int *numsamples, int *channels, int *samplerate) { return false; }
 
-    void updateSpeed(int bpm, int tpb);
-	
+	void update_tempo(int bpm, int tpb);
+	void update_midi_devices();
+
 	// ::zzub::plugin methods
-	virtual void destroy() { /* delete this; */ }
-	virtual void init(zzub::archive*) {}
+	virtual void destroy() { delete this; }
 	virtual void stop() {}
 	virtual void load(zzub::archive*) {}
 	virtual void save(zzub::archive*) {}
@@ -73,12 +72,17 @@ struct master_plugin : plugin {
 	virtual void input(float**, int, float) {}
 	virtual void midi_control_change(int, int, int) {}
 	virtual bool handle_input(int, int, int) { return false; }
+	virtual void process_midi_events(midi_message* pin, int nummessages);
+	virtual void get_midi_output_names(outstream *pout);
+	virtual void set_stream_source(const char* resource) {}
+	virtual const char* get_stream_source() { return 0; }
 };
 
-struct master_pluginloader : pluginloader {
-    master_pluginloader();
-	virtual plugin* createMachine();
 
+struct master_plugin_info : zzub::info {
+	master_plugin_info();	
+	virtual zzub::plugin* create_plugin() const;
+	virtual bool store_info(zzub::archive *) const;
 };
 
 }

@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <iostream>
 #include <cctype>
 #include "unhack.h"
 #include "MemoryModule.h"
@@ -19,6 +20,33 @@ bool hexStringToBytes(std::string str, unsigned char* pc) {
         pc[i]=(unsigned char)c;
     }
     return true;
+}
+
+bool isMfc(std::string mfc) {
+	std::transform(mfc.begin(), mfc.end(), mfc.begin(), (int(*)(int))std::tolower);
+	return mfc == "mfc42";
+}
+
+void displayError() {
+
+	LPVOID lpMsgBuf;
+	if (!FormatMessage(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+		NULL, 
+		GetLastError(),
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
+		(LPTSTR) &lpMsgBuf,
+		0,
+		NULL )) {
+		// error during error handling
+		return;
+	}
+
+	// Display the string.
+	printf("%s\n", lpMsgBuf);
+
+	// Free the buffer.
+	LocalFree(lpMsgBuf);
 }
 
 /***
@@ -67,7 +95,7 @@ void unhack::process(std::string machineName, void* data, size_t len) {
         if (token=="patch-midi") {
             midi(data, len, machineName);
         } else
-        if (token.find_first_of("patch-replace(")==0) {
+        if (token.substr(0, 14) == "patch-replace(") {
             string param=token.substr(14);
             param=param.substr(0, param.length()-1);
 
@@ -151,11 +179,6 @@ std::string unhack::machineNameFromFileName(std::string fileName) {
     return fileName;
 }
 
-bool isMfc(std::string mfc) {
-	std::transform(mfc.begin(), mfc.end(), mfc.begin(), (int(*)(int))std::tolower);
-	return mfc == "mfc42";
-}
-
 HMODULE unhack::loadLibrary(LPCTSTR lpLibFileName) {
     std::string name = machineNameFromFileName(lpLibFileName);
 	bool patch = isPatch(name);
@@ -169,6 +192,8 @@ HMODULE unhack::loadLibrary(LPCTSTR lpLibFileName) {
 		}
 
     if (patch || mfc) {
+
+		cerr << "unhack::loadLibrary(" << lpLibFileName << ")" << endl;
 
 		// load binary bits of plugin dll
 		char lpFilePath[MAX_PATH];
@@ -197,13 +222,16 @@ HMODULE unhack::loadLibrary(LPCTSTR lpLibFileName) {
 		}
         
         HMODULE module = (HMODULE)MemoryLoadLibrary(data, lpLibFileName);
-        if (!module) return 0;
+		delete[] data;
 
-        delete[] data;
+		if (!module) return 0;
         
         return module;
-    } else
-        return LoadLibrary(lpLibFileName);
+	} else {
+		HMODULE module = LoadLibrary(lpLibFileName);
+		if (!module) displayError();
+		return module;
+	}
 }
 
 BOOL unhack::freeLibrary(HMODULE hModule) {

@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2003-2007 Anders Ervik <calvin@countzero.no>
+Copyright (C) 2003-2008 Anders Ervik <calvin@countzero.no>
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -17,287 +17,108 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #pragma once
-#include <algorithm>
-#include <deque>
-#include "timer.h"
-#include "waveplayer.h"
-#include "wavetable.h"
-#include "driver.h"
-#include "midi.h"
-#include "input.h"
-#include "output.h"
-#include "recorder.h"
-#include "synchronization.h"
+
+using std::pair;
+using std::string;
+using std::vector;
 
 namespace zzub {
 
-const int OSCTABSIZE = (2048+1024+512+256+128+64+32+16+8+4)*sizeof(short);
 
-struct pluginloader;
-struct pluginlib;
-struct master_pluginloader;
-	
-enum player_state {
-	player_state_playing,
-	player_state_stopped,
-	player_state_muted,
-	player_state_released
-};
-
-struct keyjazz_note {
-	metaplugin* plugin;
-	size_t timestamp;	// tick when note was played
-	size_t group, track;
-	int note;
-	bool delay_off;		// set to true if a noteoff was sent on the same timestamp (tick)
-};
-
-struct midimapping {
-	zzub::metaplugin* machine;
-	size_t group, track, column;
-	size_t channel, controller;
-
-	bool operator==(const midimapping& mm) {
-		if (this==&mm)
-			return true; else
-			return false;
-	}
-};
-
-struct event_message {
-    metaplugin* plugin;
-    event_handler* event;
-    zzub_event_data data;
-};
-
-enum zzub_edit_type {
-	zzub_edit_add_input,
-	zzub_edit_delete_input,
-	zzub_edit_add_pattern,
-	zzub_edit_delete_pattern,
-	zzub_edit_move_pattern,
-	zzub_edit_set_tracks,
-
-	zzub_edit_replace_sequences,
-
-};
-
-struct zzub_edit {
-	zzub_edit_type type;
-	synchronization::event done;
-
-	virtual void apply() = 0;
-};
-
-struct zzub_edit_connection : zzub_edit {
-	connection* conn;
-	std::vector<connection*> input_connections;
-	std::vector<connection*> output_connections;
-	std::vector<std::vector<patterntrack*> > pattern_connection_tracks;
-	std::vector<ParameterState*> parameter_states;
-
-	virtual void apply();
-};
-
-struct zzub_edit_pattern : zzub_edit {
-	metaplugin* plugin;
-	zzub::pattern* pattern;
-	std::vector<zzub::pattern*> patterns;
-	std::vector<std::vector<sequence_event> > sequence_events;
-
-	virtual void apply();
-};
-
-struct zzub_edit_tracks : zzub_edit {
-	metaplugin* plugin;
-	int num_tracks;
-	std::vector<ParameterState*> parameter_states;
-	std::vector<std::vector<patterntrack*> > pattern_tracks;
-
-	virtual void apply();
-};
-
-struct zzub_edit_sequence : zzub_edit {
-	zzub::player* player;
-	zzub::sequencer* sequencer;
-	std::vector<sequence*> sequences;
-
-	virtual void apply();
-};
-
-struct player :
-	audioworker,
-	midiworker {
-
-	static short oscTables[8][OSCTABSIZE];
-
-	player_state playerState;
-	metaplugin* soloMachine;
-
-	int workPos;								// total accumulation of samples processed
-	int workBufpos;								// sample position in current buffer
-	int lastTickPos;							// at which workPos we last ticked
-
-	std::vector<metaplugin*> machineInstances;	// machines in current song
-
-	Timer timer;								// hires timer, for cpu-meter
-
-	synchronization::critical_section playerLock;				// locked while mixing
-	synchronization::critical_section playerTickLock;			// locked while ticking
-
-	std::map<std::string, pluginloader*> machines;
-	std::map<std::string, std::string> aliases;
-	std::vector<pluginlib*> pluginLibraries;
-	std::string loadError;
-	std::string loadWarning;
-
-	master_info masterInfo;
-	metaplugin* master;
-	master_pluginloader* masterLoader;
-	sequencer song_sequencer;
-	wave_table waveTable;
-	wave_player wavePlayer;
-	sequencer* currentlyPlayingSequencer;
-	std::vector<std::string> blacklist;
-	std::vector<std::string> pluginFolders;
-
-	// mixer:
-	//int samplesPerSec;
-	float *mixBuffer[2];
-	DWORD nextPosInTick;
-	DWORD mixSamples;
-	double workFracs;
+struct player : undo_manager, audioworker, midiworker {
+	int work_buffer_position;						// sample position in current buffer
 
 	input_plugincollection inputPluginCollection;
 	output_plugincollection outputPluginCollection;
 	recorder_plugincollection recorderPluginCollection;
-
-	bool recordParameters;
-
-	std::vector<midimapping> midiInputMappings;
-	std::deque<event_message> messageQueue;
-	synchronization::critical_section eventLock;
-
-	std::string infoText; // song comment
-	float* inputBuffer[audiodriver::MAX_CHANNELS];
-	float* outputBuffer[audiodriver::MAX_CHANNELS];
-
-	double workTime;	                    // length of last WorkStereo
-	double cpuLoad;							// cpu load
-	bool stopFlag;
-	volatile zzub_edit* editCommand;
-
-	zzub::metaplugin* midiNoteMachine;
-	std::vector<keyjazz_note> keyjazz;
-	bool midiSyncTransport;
+	vector<pluginlib*> plugin_libraries;
+	vector<string> plugin_folders;
+	vector<const zzub::info*> plugin_infos;
 
 	player();
 	virtual ~player(void);
 
+	// initialization
 	bool initialize();
-	void addMachineFolder(std::string folder);
-	void setPlayerState(player_state state);
-	void lock();
-	void unlock();
-	void lockTick();
-	void unlockTick();
-	virtual void workStereo(int num);	// workStereo is called by audiodrivers and recorders and generates normally 256 samples of audio data
-	void clear();
-	void clearMachineLoaders();
-	void loadMachineLoaders();
-	std::string getLoadWarnings();
-	std::string getLoadErrors();
+	void initialize_plugin_libraries();
+	void initialize_plugin_directory(string folder);
+	void load_plugin_library(const string &fullpath);
 
-	// work with machines in currently loaded song:
-	void deleteMachine(metaplugin* machine);	// releases some player-specific data.. 
-	metaplugin* getMachine(std::string instanceName);
-	metaplugin* getMachine(size_t index);
-	size_t getMachines();
-	int getMachineIndex(metaplugin* machine);
-	bool machineExists(metaplugin* machine);
-
-	pluginloader* getMachineLoader(std::string uri);
-	int getMachineLoaders();
-	pluginloader* getMachineLoader(int index);
-	std::string getNewMachineName(std::string machineName);
-	void registerMachineLoader(pluginloader *pl);
-
-	//metaplugin* createDummyMachine(int type, std::string machineName, std::string fullName, int attributeCount, MachineValidation* intf);
-	pluginloader* createDummyLoader(int type, std::string fullName, int attributeCount, int numGlobalParams, int numTrackParams, zzub::parameter* params);
-
-	metaplugin* createMachine(char* inputData, int inputSize, std::string machineName, pluginloader *loader);
-	pluginlib* getPluginlibByUri(const std::string &uri);
-	// mixer:
-
-	virtual void updateTick(int numSamples);
-	virtual void finishWork();
-	bool workMachine(metaplugin* machine, int numSamples);
-
-	// Query player status
-	player_state getPlayState();
-	void setSoloMachine(metaplugin* machine);
-	metaplugin* getSoloMachine();
-
-	int samplesPerTick();
-	void resetMachines();	// // Invokes resetMixer() on all machines, i.e set lastWorkPos to -1 to ensure a re-work (dette er kanskje ikke nødvendig med ny player-locking?)
-
-	master_info* getMasterInfo();
-
-	// Sequencer stuff:
-	sequencer* setCurrentlyPlayingSequencer(sequencer* newseq);	// Returns previous currently playing sequence. When newseq=0, the internal sequencer is set
-	sequence* getSequenceTrack(size_t i);
-	size_t getSequenceTracks();
-	int getSequencerPosition();
-	void setSequencerPosition(int v);
-	void setSongBeginLoop(int v);
-	void setSongEndLoop(int v);
-	void setSongBegin(int v);
-	int getSongBeginLoop();
-	int getSongEndLoop();
-	int getSongBegin();
-	void setSongEnd(int v);
-	int getSongEnd();
-	void setLoopEnabled(bool enable);
-	bool getLoopEnabled();
-	float getBeatsPerMinute();
-	int getTicksPerBeat();
-	void setBeatsPerMinute(float bpm);
-	void setTicksPerBeat(int tpb);
-
-	// Wavetable stuff:
-	size_t getWaves();
-	wave_info_ex* getWave(size_t index);
-	wave_player* getWavePlayer();
-	int getWaveIndex(wave_info_ex* entry);
-
-	// internal initialization
-	static void generateOscillatorTables();
-	bool initializeMachine(metaplugin* machine, instream* input, int dataSize, std::string machineName, pluginloader *loader);
-	void initializeFolder(std::string folder);
-	void loadPluginLibrary(const std::string &fullpath);
-	int getWorkPosition() { return workPos; }
-	metaplugin* getMaster() { return (metaplugin*)master; };
-
-	bool isBlackListed(std::string name);
-
-	std::string getBuzzUri(std::string name);
-	std::string getBuzzName(std::string uri);
-
+	// audioworker
+	virtual void work_stereo(int sample_count);
+	virtual void audio_enabled();
+	virtual void audio_disabled();
+	virtual void samplerate_changed();
+	
+	// midiworker
 	void midiEvent(unsigned short status, unsigned char data1, unsigned char data2);
 
-	midimapping* addMidiMapping(metaplugin* plugin, size_t group, size_t track, size_t param, size_t channel, size_t controller);
-	bool removeMidiMapping(metaplugin* plugin, size_t group, size_t track, size_t param);
-	midimapping* getMidiMapping(size_t index);
-	size_t getMidiMappings();
+	// user methods (should be, but arent supported by begin_/commit_operation)
+	void clear();
+	void process_user_event_queue();
+	void set_state(player_state state);
+	void plugin_set_parameter(int plugin_id, int group, int track, int column, int value, bool record, bool immediate, bool undoable);
+	void play_plugin_note(int plugin_id, int note, int prevNote, int velocity);
+	void reset_keyjazz();
 
-	void handleMessages();
-	void executeThreadCommand(zzub_edit* edit);
+	// user methods for creating compound, undoable operations
+	// any of these must be enclosed by calls to begin_operation() and commit_operation().
+	// all these methods operate on the intermediate backbuffer_song, which is committed
+	// to the running graph after calling commit_operation().
+	void clear_plugin(int id);
+	void add_midimapping(int plugin_id, int group, int track, int param, int channel, int controller);
+	void remove_midimapping(int plugin_id, int group, int track, int param);
+	int create_plugin(std::vector<char>& bytes, string name, const zzub::info* loader);
+	string plugin_get_new_name(string uri);
+	const zzub::info* plugin_get_info(string uri);
 
-	plugin* createStream(std::string streamUri, std::string streamDataUrl);
+	void plugin_destroy(int plugin_id);
+	void plugin_set_name(int plugin_id, std::string name);
+	void plugin_set_position(int plugin_id, float x, float y);
+	void plugin_set_track_count(int plugin_id, int count);
+	void plugin_add_pattern(int plugin_id, const zzub::pattern& pattern);
+	void plugin_remove_pattern(int plugin_id, int pattern);
+	void plugin_move_pattern(int plugin_id, int pattern, int newindex);
+	void plugin_update_pattern(int plugin_id, int index, const zzub::pattern& pattern);
+	void plugin_set_pattern_name(int plugin_id, int index, std::string name);
+	void plugin_set_pattern_length(int plugin_id, int index, int rows);
+	void plugin_set_pattern_value(int plugin_id, int index, int group, int track, int column, int row, int value);
+	void plugin_insert_pattern_rows(int plugin_id, int pattern, int* column_indices, int num_indices, int start, int rows);
+	void plugin_remove_pattern_rows(int plugin_id, int pattern, int* column_indices, int num_indices, int start, int rows);
+	bool plugin_add_input(int to_id, int from_id, connection_type type);
+	void plugin_delete_input(int to_id, int from_id, connection_type type);
+	void plugin_set_midi_connection_device(int to_id, int from_id, std::string name);
+	void plugin_add_event_connection_binding(int to_id, int from_id, int sourceparam, int targetgroup, int targettrack, int targetparam);
+	void plugin_remove_event_connection_binding(int to_id, int from_id, int index);
+	void plugin_set_stream_source(int plugin_id, std::string data_url);
+	void sequencer_add_track(int plugin_id);
+	void sequencer_remove_track(int index);
+	void sequencer_move_track(int index, int newindex);
+	void sequencer_set_event(int track, int pos, int value);
+	void sequencer_insert_events(int* track_indices, int num_indices, int start, int ticks);
+	void sequencer_remove_events(int* track_indices, int num_indices, int start, int ticks);
 
-	void playMachineNote(zzub::metaplugin* plugin, int note, int prevNote, int velocity);
-	void resetKeyjazz();
+	void wave_set_name(int wave, std::string name);
+	void wave_set_path(int wave, std::string name);
+	void wave_set_volume(int wave, float volume);
+	void wave_set_flags(int wave, int flags);
+	void wave_add_level(int wave);
+	void wave_remove_level(int wave, int level);
+	void wave_move_level(int wave, int level, int newlevel);
+	void wave_allocate_level(int wave, int level, int sample_count, int channels, int format);
+	void wave_clear_level(int wave, int level);
+	void wave_clear(int wave);
+	void wave_set_samples(int wave, int level, int sample_count, int channels, int format, void* bytes);
+	void wave_insert_samples(int wave, int level, int target_offset, int sample_count, int channels, wave_buffer_type format, void* bytes);
+	void wave_remove_samples(int wave, int level, int target_offset, int sample_count);
+	void wave_set_root_note(int wave, int level, int note);
+	void wave_set_samples_per_second(int wave, int level, int sps);
+	void wave_set_loop_begin(int wave, int level, int loop_begin);
+	void wave_set_loop_end(int wave, int level, int loop_end);
 
+	int wave_load_sample(int wave, int level, int offset, bool clear, std::string name, zzub::instream* datastream);
+	void wave_set_envelopes(int wave, const vector<zzub::envelope_entry>& _envelopes);
 };
+
 
 };

@@ -867,6 +867,10 @@ public:
 	virtual void input(float **samples, int size, float amp) {}
 	virtual void midi_control_change(int ctrl, int channel, int value) {}
 	virtual bool handle_input(int index, int amp, int pan) { return false; }
+	virtual void process_midi_events(zzub::midi_message* pin, int nummessages) {}
+	virtual void get_midi_output_names(zzub::outstream *pout) {}
+	virtual void set_stream_source(const char* resource) {}
+	virtual const char* get_stream_source() { return 0; }
 
 	virtual void init(zzub::archive *arc);
 	virtual void process_events();
@@ -918,7 +922,7 @@ private:
 	gvals gval;
 	tvals tval[MAX_TRACKS];
 
-  zzub::metaplugin *ThisMachine;
+  //zzub::metaplugin *ThisMachine;
 };
 
 #define LFOPAR2TIME(value) (0.03*pow(600.0,value/240.0))

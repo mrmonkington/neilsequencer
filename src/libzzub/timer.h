@@ -17,26 +17,31 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #pragma once
+
+namespace zzub {
+
 #if defined(_WIN32)
 
-class Timer {
-public:
-	signed __int64 perfStart;
-	signed __int64 perfFreq;
+#include <windows.h>
+
+struct timer {
+
+	signed __int64 perf_start;
+	signed __int64 perf_freq;
 	double scale;
 
-	Timer() {
-		QueryPerformanceFrequency((LARGE_INTEGER*)&perfFreq);
-		scale=static_cast<double>(perfFreq);
+	timer() {
+		QueryPerformanceFrequency((LARGE_INTEGER*)&perf_freq);
+		scale = static_cast<double>(perf_freq);
 	}
 	void start() {
-		QueryPerformanceCounter((LARGE_INTEGER*)&perfStart);
+		QueryPerformanceCounter((LARGE_INTEGER*)&perf_start);
 	}
 
 	double frame() {
-		__int64 perfFrame;
-		QueryPerformanceCounter((LARGE_INTEGER*)&perfFrame);
-		return double(perfFrame-perfStart)/scale;
+		__int64 perf_frame;
+		QueryPerformanceCounter((LARGE_INTEGER*)&perf_frame);
+		return double(perf_frame - perf_start) / scale;
 	}
 
 };
@@ -46,11 +51,10 @@ public:
 #include <sys/time.h>
 #include <time.h>
 
-class Timer {
-public:
+struct timer {
 	timeval vStart;
 
-	Timer() {
+	timer() {
 		gettimeofday(&vStart, 0);
 	}
 	void start() {
@@ -68,3 +72,5 @@ public:
 };
 
 #endif
+
+} // namespace zzub

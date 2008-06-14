@@ -42,45 +42,22 @@ typedef zzub::plugin *(__attribute__((cdecl)) *CREATE_MACHINE)();
 namespace zzub {
 
 struct info;
-struct player;
+struct mixer;
 struct pluginloader;
 
 // a pluginlib maintains the generic dll handle
 struct pluginlib : pluginfactory {
-	int refcount;
 	xp_modulehandle hMachine;
-	bool initialized;	// delay-load helper
-
 	std::string fileName;
-	
-	zzub::plugincollection *collection;
-	std::list<pluginloader*> loaders;
+	zzub::plugincollection* collection;
+	std::list<const zzub::info*> loaders;
 	zzub::player &player;
 	
 	pluginlib(const std::string& fileName, zzub::player &p, zzub::plugincollection *_collection = 0);
 	~pluginlib();
-	virtual void initDll();
-
-	virtual void unload();
-	
-	int getPlugins();
-	
-	// Registers a plugin info to the host. If the uri argument
-	// of the info struct designates a plugin already existing
-	// to the host, the old info struct will be replaced.
+	void init_dll();
+	void unload();
 	virtual void register_info(const zzub::info *_info);
-};
-
-// a pluginloader resembles a particular pluginfo within a pluginlib
-struct pluginloader {
-
-	const pluginlib *lib;
-	const info *plugin_info;
-
-	pluginloader(pluginlib *lib, const info *_info);
-	~pluginloader();
-
-	virtual plugin* createMachine();
 };
 
 

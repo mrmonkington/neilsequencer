@@ -19,23 +19,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <iostream>
 #include <cassert>
+#include <vector>
 #include "portaudio.h"
+#include "driver.h"
 #include "driver_portaudio.h"
 
 using namespace std;
 
 namespace zzub {
-/*! \struct audiodriver
-	\brief This class implements audio output via RtAudio.
-*/
-
-/*! \struct audiodevice
-	\brief Contains information about a detected audio device.
-*/
-
-/*! \struct audioworker
-	\brief Abstract base class with audio processing callback.
-*/
 
 void print_error(PaError err) {
 	if (err == paNoError)
@@ -43,27 +34,12 @@ void print_error(PaError err) {
 	std::cerr << "ERROR(PortAudio): " << Pa_GetErrorText( err ) << std::endl;
 }
 
-audiodriver::audiodriver()
-{
+audiodriver_portaudio::audiodriver_portaudio() {
 	stream = 0;
 	defaultDevice = -1;
 	PaError err = Pa_Initialize();
 	if (err != paNoError)
 		print_error(err);
-}
-
-void i2s(float **s, float *i, int channels, int numsamples) {
-	if (!numsamples)
-		return;
-	float* p[audiodriver::MAX_CHANNELS];// = new float*[channels];
-	for (int j = 0; j<channels; j++) {
-		p[j] = s[j];
-	}
-	while (numsamples--) {
-		for (int j = 0; j<channels; j++) {
-			*p[j]++ = *i++;
-		}
-	}
 }
 
 int portaudio_process_callback( const void *input,
@@ -73,28 +49,28 @@ int portaudio_process_callback( const void *input,
 										PaStreamCallbackFlags statusFlags,
 										void *userData )
 {
-	assert(frameCount <= audiodriver::MAX_FRAMESIZE);
+	assert(frameCount <= audiodriver_portaudio::MAX_FRAMESIZE);
 	audiodriver *self = (audiodriver *)userData;
 	float* oBuffer = (float*)output;
 	float* ob = oBuffer;
 	float* iBuffer = (float*)input;
 	float* ib = iBuffer;
-	float* ip[audiodriver::MAX_CHANNELS];
-	float* op[audiodriver::MAX_CHANNELS];
+	float* ip[audiodriver_portaudio::MAX_CHANNELS];
+	float* op[audiodriver_portaudio::MAX_CHANNELS];
 
-	int out_ch = self->worker->workDevice->out_channels;
-	int in_ch = self->worker->workInputDevice?self->worker->workInputDevice->in_channels:0;
+	int out_ch = self->worker->work_out_device->out_channels;
+	int in_ch = self->worker->work_in_device?self->worker->work_in_device->in_channels:0;
 	for (int i = 0; i<in_ch; i++) {
-		ip[i] = self->worker->workInputBuffer[i];
+		ip[i] = self->worker->work_in_buffer[i];
 	}
 	for (int i = 0; i<out_ch; i++) {
-		op[i] = self->worker->workOutputBuffer[i];
+		op[i] = self->worker->work_out_buffer[i];
 	}
 
 	// de-interleave all input channels
 	i2s(ip, ib, in_ch, frameCount);
 
-	self->worker->workStereo(frameCount);
+	self->worker->work_stereo(frameCount);
 
 	// re-interleave output channels
 	float f;
@@ -109,7 +85,7 @@ int portaudio_process_callback( const void *input,
 	return 0;
 }
 
-audiodriver::~audiodriver()
+audiodriver_portaudio::~audiodriver_portaudio()
 {
 	destroyDevice();
 	PaError err = Pa_Terminate();
@@ -118,7 +94,7 @@ audiodriver::~audiodriver()
 }
 
 
-int audiodriver::getApiDevices(PaHostApiTypeId hostapiid) {
+int audiodriver_portaudio::getApiDevices(PaHostApiTypeId hostapiid) {
 	const PaHostApiInfo *hostApiInfo;
 	int apiindex = Pa_HostApiTypeIdToHostApiIndex(hostapiid);
 	if (apiindex == paHostApiNotFound)
@@ -151,14 +127,14 @@ int audiodriver::getApiDevices(PaHostApiTypeId hostapiid) {
 		PaStreamParameters inputParameters;
 		double desiredSampleRate;
 		
-		bzero( &inputParameters, sizeof( inputParameters ) );
+		memset( &inputParameters, 0, sizeof( inputParameters ) );
 		inputParameters.channelCount = ad.in_channels;
 		inputParameters.device = i;
 		inputParameters.hostApiSpecificStreamInfo = NULL;
 		inputParameters.sampleFormat = paFloat32;
 		inputParameters.suggestedLatency = deviceInfo->defaultLowInputLatency;
 		
-		bzero( &outputParameters, sizeof( outputParameters ) );
+		memset( &outputParameters, 0, sizeof( outputParameters ) );
 		outputParameters.channelCount = ad.out_channels;
 		outputParameters.device = i;
 		outputParameters.hostApiSpecificStreamInfo = NULL;
@@ -181,7 +157,7 @@ int audiodriver::getApiDevices(PaHostApiTypeId hostapiid) {
 }
 
 
-void audiodriver::initialize(audioworker *worker)
+void audiodriver_portaudio::initialize(audioworker *worker)
 {
 	this->worker = worker;
 	getApiDevices(paASIO);
@@ -196,54 +172,40 @@ void audiodriver::initialize(audioworker *worker)
 	getApiDevices(paMME);
 }
 
-void audiodriver::reset()
-{
-	enable(false);
-	enable(true);
-}
-
-bool audiodriver::enable(bool e)
+bool audiodriver_portaudio::enable(bool e)
 {
 	if (!stream)
 		return false;
 	if (e)
 	{
-		if (!worker->workStarted)
+		if (!worker->work_started)
 		{
 			PaError err = Pa_StartStream( stream );
 			print_error(err);		
-			worker->workStarted = true;
+			worker->work_started = true;
+			worker->audio_enabled();
 		}
 		return true;
 	}
 	else
 	{
-		if (worker->workStarted)
+		if (worker->work_started)
 		{
 			PaError err = Pa_StopStream( stream );
 			print_error(err);
-			worker->workStarted = false;
+			worker->work_started = false;
+			worker->audio_disabled();
 		}
 		return true;
 	}
 }
 
-int audiodriver::getWritePos()
-{
-	return 0;
-}
-
-int audiodriver::getPlayPos()
-{
-	return 0; 
-}
-
-int audiodriver::getDeviceCount()
+int audiodriver_portaudio::getDeviceCount()
 {
 	return devices.size();
 }
 
-int audiodriver::getDeviceByName(const char* name) {
+int audiodriver_portaudio::getDeviceByName(const char* name) {
 		for (int i=0; i<devices.size(); i++) {
 				if (devices[i].name == name) return i;
 		}
@@ -251,20 +213,20 @@ int audiodriver::getDeviceByName(const char* name) {
 }
 
 
-bool audiodriver::createDevice(int index, int inIndex, int sampleRate, int bufferSize, int channel)
+bool audiodriver_portaudio::createDevice(int index, int inIndex)
 {
 	if (index == -1)
 		index = getBestDevice();
 
 	if (index == -1) return false;
 	if (index >= devices.size()) return false;
-	if (bufferSize<=0 || bufferSize > MAX_FRAMESIZE) {
+	if (buffersize <= 0 || buffersize > MAX_FRAMESIZE) {
 		cerr << "Invalid buffer size for createDevice" << endl;
 		return false;
 	}
 	
 	audiodevice* device = getDeviceInfo(index);
-	cout << "creating output device '" << device->name << "' with " << sampleRate << "Hz samplerate" << endl;
+	cout << "creating output device '" << device->name << "' with " << samplerate << "Hz samplerate" << endl;
 
 	// ensure rtaudio out/in ids are on the same api or disable input
 	int outdevid = devices[index].device_id;
@@ -284,14 +246,14 @@ bool audiodriver::createDevice(int index, int inIndex, int sampleRate, int buffe
 	PaStreamParameters outputParameters;
 	PaStreamParameters inputParameters;
 
-	bzero( &inputParameters, sizeof( inputParameters ) );
+	memset( &inputParameters, 0, sizeof( inputParameters ) );
 	inputParameters.channelCount = indevch;
 	inputParameters.device = indevid;
 	inputParameters.hostApiSpecificStreamInfo = NULL;
 	inputParameters.sampleFormat = paFloat32;
 	inputParameters.suggestedLatency = Pa_GetDeviceInfo(indevid)->defaultLowInputLatency;
 	
-	bzero( &outputParameters, sizeof( outputParameters ) );
+	memset( &outputParameters, 0, sizeof( outputParameters ) );
 	outputParameters.channelCount = outdevch;
 	outputParameters.device = outdevid;
 	outputParameters.hostApiSpecificStreamInfo = NULL;
@@ -304,8 +266,8 @@ bool audiodriver::createDevice(int index, int inIndex, int sampleRate, int buffe
 			&stream,
 			0,
 			&outputParameters,
-			sampleRate,
-			bufferSize,
+			samplerate,
+			buffersize,
 			paNoFlag,
 			portaudio_process_callback,
 			(void*)this);
@@ -314,8 +276,8 @@ bool audiodriver::createDevice(int index, int inIndex, int sampleRate, int buffe
 			&stream,
 			&inputParameters,
 			&outputParameters,
-			sampleRate,
-			bufferSize,
+			samplerate,
+			buffersize,
 			paNoFlag,
 			portaudio_process_callback,
 			(void*)this);
@@ -327,16 +289,17 @@ bool audiodriver::createDevice(int index, int inIndex, int sampleRate, int buffe
 	
 	const PaStreamInfo *streamInfo = Pa_GetStreamInfo(stream);
 
-	worker->workDevice = &devices[index];
-	worker->workInputDevice = inIndex != -1 ? &devices[inIndex] : 0;
-	worker->workRate = sampleRate;
-	worker->workBufferSize = bufferSize;
-	worker->workChannel = channel;
-	worker->workLatency = (int)streamInfo->outputLatency;
+	worker->work_out_device = &devices[index];
+	worker->work_in_device = inIndex != -1 ? &devices[inIndex] : 0;
+	worker->work_rate = samplerate;
+	worker->work_buffersize = buffersize;
+	worker->work_master_channel = master_channel;
+	worker->work_latency = (int)streamInfo->outputLatency;
+	worker->samplerate_changed();
 	return true;
 }
 
-void audiodriver::destroyDevice()
+void audiodriver_portaudio::destroyDevice()
 {
 	if (!stream)
 		return;
@@ -346,20 +309,19 @@ void audiodriver::destroyDevice()
 	print_error(err);
 	stream = 0;
 
-	worker->workDevice = 0;
-	worker->workInputDevice = 0;
+	worker->work_out_device = 0;
+	worker->work_in_device = 0;
 }
 
-int audiodriver::getBestDevice()
-{
+int audiodriver_portaudio::getBestDevice() {
 		return defaultDevice;
 }
 
-double audiodriver::getCpuLoad() {
+double audiodriver_portaudio::getCpuLoad() {
 		return 1.0;
 }
 
-audiodevice* audiodriver::getDeviceInfo(int index) {
+audiodevice* audiodriver_portaudio::getDeviceInfo(int index) {
 	if (index<0 || index>=devices.size()) return 0;
 	return &devices[index];
 }

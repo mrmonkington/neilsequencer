@@ -602,7 +602,7 @@ void fsm_infector::init(zzub::archive *arc)
     Channels[c].init();
   }
 
-  ThisMachine=_host->get_metaplugin();
+  //ThisMachine=_host->get_metaplugin();
   if (arc)
   {
 	zzub::instream *pi = arc->get_instream("");
@@ -1070,7 +1070,7 @@ void fsm_infector::midi_note(int channel, int value, int velocity)
 
 	int stateflags = _host->get_state_flags();	
 	if (stateflags & zzub::state_flag_playing && stateflags & zzub::state_flag_recording)
-		pseq = _host->get_playing_sequence(ThisMachine);
+		pseq = _host->get_playing_sequence(_host->get_metaplugin());
 	else 
 		pseq = NULL;
 

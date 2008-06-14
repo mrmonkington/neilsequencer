@@ -783,7 +783,7 @@ struct dspplugin : zzub::plugin {
 	
 	std::vector<float> gvalues;
 	std::vector< std::vector<float> > tvalues;
-  std::vector<float> cvalues;
+	std::vector<float> cvalues;
 
 	enum {
 		MAX_GPARAMS = 64,
@@ -1304,6 +1304,10 @@ struct dspplugin : zzub::plugin {
 	virtual void input(float**, int, float) {}
 	virtual void midi_control_change(int, int, int) {}
 	virtual bool handle_input(int, int, int) { return false; }
+	virtual void process_midi_events(zzub::midi_message* pin, int nummessages) {}
+	virtual void get_midi_output_names(zzub::outstream *pout) {}
+	virtual void set_stream_source(const char* resource) {}
+	virtual const char* get_stream_source() { return 0; }
 };
 
 void digest_to_hex(const uint8_t digest[SHA1_DIGEST_SIZE], char *output)

@@ -23,6 +23,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #if defined(_WIN32)
 
+#if defined(_DEBUG)
+#define CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
+#endif
+
 #include <windows.h>
 
 #elif defined(POSIX) // 
@@ -32,62 +38,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <unistd.h> 
 #include <semaphore.h> 
 
-#if defined(USE_DLLLOADER)
-	#include "../dllloader/dllloader.h"
-	
-#endif
-
-#if defined(__powerpc__) || defined(__POWERPC__) || defined(_M_PPC)
-#define ZZUB_LITTLE_ENDIAN
-#else
+#if defined(__powerpc__) || defined(__POWERPC__) || defined(_M_PPC) || defined(__BIG_ENDIAN__)
 #define ZZUB_BIG_ENDIAN
 #endif
 
-
-typedef unsigned char		BYTE;
-typedef unsigned short      WORD;
-typedef unsigned long       DWORD;
-typedef unsigned int	 	UINT;
-typedef int		 			BOOL;
-
-#define FALSE   0
-#define TRUE    1
-typedef signed char         INT8, *PINT8;
-typedef signed short        INT16, *PINT16;
-typedef signed int          INT32, *PINT32;
-typedef unsigned char       UINT8, *PUINT8;
-typedef unsigned short      UINT16, *PUINT16;
-typedef unsigned int        UINT32, *PUINT32;
-typedef BOOL				*LPBOOL;
-typedef BYTE				*LPBYTE;
-typedef int					*LPINT;
-typedef WORD				*LPWORD;
-typedef long				*LPLONG;
-typedef DWORD				*LPDWORD;
-typedef void				*LPVOID;
-
-#define strcmpi strcasecmp
-
-typedef char* LPSTR;
-typedef const char* LPCSTR;
-
-#define LocalAlloc(uFlags, uBytes) calloc(1, uBytes)
-#define LocalFree(hMem) free(hMem)
-
 #endif
-
-
-
-#define NOTE_C4			((16 * 4) + 1)		// B-9
-
-// OnProgress callback parameters on master during BuzzReader::open()
-enum LoadProgressType {
-	LoadProgressMachines,
-	LoadProgressWaves,
-	LoadProgressPatterns,
-	LoadProgressConnections,
-	LoadProgressSequences,
-};
 
 #ifdef min
 	#undef min
@@ -99,24 +54,32 @@ enum LoadProgressType {
 
 #define _USE_MATH_DEFINES
 #include <cmath>
-#include <list>
 #include <map>
+#include <list>
 #include <vector>
-#include <cstring>
 #include <string>
 #include <iostream>
 #include <cassert>
 #include <algorithm>
+#include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/visitors.hpp>
+#include <boost/graph/depth_first_search.hpp>
 
 #include "synchronization.h"
-
 #include "zzub/plugin.h"
-
-#include "metaplugin.h"
 #include "pluginloader.h"
-#include "sequencer.h"
-#include "sequence.h"
-#include "pattern.h"
-#include "master.h"
-#include "player.h"
+#include "timer.h"
+#include "driver.h"
+#include "midi.h"
 #include "wavetable.h"
+#include "input.h"
+#include "output.h"
+#include "master.h"
+#include "recorder.h"
+#include "graph.h"
+#include "song.h"
+#include "undo.h"
+#include "operations.h"
+#include "player.h"
+#include "connections.h"
+

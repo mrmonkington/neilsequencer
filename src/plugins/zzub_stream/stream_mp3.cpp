@@ -10,11 +10,12 @@
 stream_machine_info_mp3 stream_info_mp3;
 
 stream_machine_info_mp3::stream_machine_info_mp3() {
-	this->name = "zzub Stream - MP3 (raw)";
+	this->name = "Libmad Stream (MP3)";
 	this->short_name = "Mp3Stream";
 	this->author = "Andy Werk";
 	this->uri = "@zzub.org/stream/mp3;1";
 	this->commands = "Select .MP3...";
+	this->supported_stream_extensions.push_back("mp3");
 }
 
 /***
@@ -24,56 +25,68 @@ stream_machine_info_mp3::stream_machine_info_mp3() {
 ***/
 
 stream_mp3::stream_mp3() {
+	resampler = 0;
 	f = 0;
 	loaded = false;
 	changedFile = false;
-	triggered = false;
 }
 
 stream_mp3::~stream_mp3() {
 	close();
+	if (resampler) delete resampler;
 }
 
 void stream_mp3::init(zzub::archive * const pi) {
-	// the format of initialization instreams is defined for stream plugins
-	if (!pi) return ;
-	zzub::instream* strm = pi->get_instream("");
-	if (!strm) return ;
-
-	if (!strm->read(fileName)) return ;
-
-	changedFile = true;
 }
 
 void stream_mp3::load(zzub::archive* pi) {
-	zzub::instream* strm = pi->get_instream("");
-	if (!strm) return ;
-
-	if (!strm->read(fileName)) return ;
-
-	changedFile = true;
 }
 
 void stream_mp3::save(zzub::archive* po) {
-	zzub::outstream* strm = po->get_outstream("");
-	strm->write(fileName.c_str());
-	// TODO: should save samplerate and basenote too!
+}
+
+void stream_mp3::set_stream_source(const char* resource) {
+	fileName = resource;
+	changedFile = true;
+}
+
+const char* stream_mp3::get_stream_source() {
+	return fileName.c_str();
 }
 
 void stream_mp3::stop() {
-	triggered = false;
+	if (resampler) resampler->playing = false;
 }
 
 void stream_mp3::process_events() {
 	if (changedFile) {
 		open();
 		changedFile = false;
+		if (resampler) delete resampler;
+		resampler = new stream_resampler(this);
+
+		// run at least a frame to get the sample rate
+		while (outbuffer.size() < 1) 
+			if (!run_frame()) break;
+
+
 	}
 
 	if (!f) return ;
+	if (!resampler) return ;
 
+	unsigned int trigger_offset = 0;
+	bool triggered = false;
+
+	if (gval.note != zzub::note_value_none) {
+		//resampler->stream_sample_rate
+		resampler->note = buzz_to_midi_note(gval.note);
+		triggered = true;
+	}
+
+	unsigned int offset = 0;
 	if (gval.offset != 0xFFFFFFFF) {
-		unsigned int offset = get_offset();
+		offset = get_offset();
 
 		outOfSync = true;
 		outbuffer.clear();
@@ -81,14 +94,26 @@ void stream_mp3::process_events() {
 		seek(offset);
 		triggered = true;
 	}
+
+	if (triggered)
+		resampler->set_stream_pos(offset);
+}
+
+
+int stream_mp3::get_target_samplerate() {
+	return _master_info->samples_per_second;
 }
 
 bool stream_mp3::process_stereo(float **pin, float **pout, int numsamples, int mode) {
 	if (mode == zzub::process_mode_read) return false;
 	if (mode == zzub::process_mode_no_io) return false;
 
-	if (!triggered || changedFile) return false;
+	if (!resampler || !resampler->playing || changedFile) return false;
 
+	return resampler->process_stereo(pout, numsamples);
+}
+
+bool stream_mp3::generate_samples(float** pout, int numsamples) {
 	while ((outbuffer.size() / 2) < numsamples + seekSkipSamples) 
 		if (!run_frame()) break;
 
@@ -155,7 +180,6 @@ void stream_mp3::close() {
 	fclose(f);
 	f = 0;
 	fileName = "";
-	triggered = false;
 }
 
 frame_info* stream_mp3::get_frame_at_sample(unsigned int pos, int* index) {
@@ -243,7 +267,7 @@ void stream_mp3::seek(unsigned int pos) {
 	int frameIndex;
 	frame_info* fi = get_frame_at_sample(pos, &frameIndex);
 	if (!fi) {
-		triggered = false;
+		resampler->playing = false;
 		return ;	// eos
 	}
 
@@ -442,6 +466,8 @@ enum mad_flow stream_mp3::zzub_mad_output(struct mad_header const *header, struc
 
 	nchannels = pcm->channels;
 	samplerate = header->samplerate;
+	resampler->stream_sample_rate = samplerate;
+
 	nchannels = (int)nchannels;
 	nsamples  = pcm->length;
 	left_ch   = pcm->samples[0];

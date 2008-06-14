@@ -11,7 +11,10 @@ struct frame_info {
 	int samples;
 };
 
-struct stream_mp3 : stream_plugin {
+struct stream_mp3 : stream_plugin, stream_provider {
+	stereo_resampler resample;
+	stream_resampler* resampler;
+
 	std::string fileName;
 	FILE* f;
 	int samplerate;
@@ -20,7 +23,6 @@ struct stream_mp3 : stream_plugin {
 	unsigned char framebuf[MAD_FRAMESIZE];
 	int framepos;
 	bool loaded;
-	bool triggered;
 	bool changedFile;
 	bool outOfSync;
 	int currentFrame;
@@ -46,6 +48,11 @@ struct stream_mp3 : stream_plugin {
 	virtual bool process_offline(float **pin, float **pout, int *numsamples, int *channels, int *samplerate) { return false; }
 	virtual void command(int);
 	virtual void stop();
+	virtual void set_stream_source(const char* resource);
+	virtual const char* get_stream_source();
+
+	virtual bool generate_samples(float** buffer, int numsamples);
+	virtual int get_target_samplerate();
 
 	bool open();
 	void close();

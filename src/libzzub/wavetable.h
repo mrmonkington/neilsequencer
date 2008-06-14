@@ -29,6 +29,7 @@ struct wave_info_ex;
 struct wave_info_ex : wave_info {
 
 	wave_info_ex();
+	wave_info_ex(const wave_info& w);
 	~wave_info_ex();
 	void clear();
 
@@ -53,7 +54,7 @@ struct wave_info_ex : wave_info {
 };
 
 struct wave_table {
-	std::vector<wave_info_ex> waves;
+	std::vector<wave_info_ex*> waves;
 	wave_info_ex monitorwave; // for prelistening
 
 	wave_table(void);

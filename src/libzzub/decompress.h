@@ -4,6 +4,7 @@
 #define MAXPACKEDBUFFER 2048
 
 //=====================================STRUCTURES================================
+#include "compresstypes.h"
 
 namespace zzub {
 	struct instream;

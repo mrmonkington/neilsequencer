@@ -39,22 +39,25 @@ files = [
 	'libzzub.cpp',
 	'driver.cpp',
 	'master.cpp',
-	'metaplugin.cpp',
-	'pattern.cpp',
 	'player.cpp',
 	'pluginloader.cpp',
-	'sequence.cpp',
-	'sequencer.cpp',
 	'tools.cpp',
-	'waveplayer.cpp',
 	'wavetable.cpp',
 	'midi.cpp',
 	'recorder.cpp',
 	'ccm.cpp',
+	'connections.cpp',
 	'input.cpp',
+	'operations.cpp',
 	'output.cpp',
+	'song.cpp',
 	'synchronization.cpp',
+	'undo.cpp',
 ]
+
+localenv.Append(CPPPATH=[
+	"${ROOTPATH}/src/boost"
+])
 
 # we build from our private flac,
 # since some are using 1.1.3, and that
@@ -217,6 +220,11 @@ elif win32:
 #######################################
 
 if localenv['AUDIOENGINE'] == 'portaudio':
+
+	files += [
+		'driver_portaudio.cpp',
+	]
+
 	localenv.Append(CCFLAGS=[
 		'-DUSE_PORTAUDIO',
 	])
@@ -309,6 +317,10 @@ if localenv['AUDIOENGINE'] == 'portaudio':
 #######################################
 
 if localenv['AUDIOENGINE'] == 'rtaudio':
+	files += [
+		'driver_rtaudio.cpp',
+	]
+
 	localenv.Append(CCFLAGS=[
 		'-DUSE_RTAUDIO',
 	])

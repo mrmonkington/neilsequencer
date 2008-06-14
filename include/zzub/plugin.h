@@ -55,14 +55,29 @@ enum event_type {
 	
 	event_type_new_plugin = zzub_event_type_new_plugin,
 	event_type_delete_plugin = zzub_event_type_delete_plugin,
+	event_type_pre_delete_plugin = zzub_event_type_pre_delete_plugin,
 	event_type_disconnect = zzub_event_type_disconnect,
 	event_type_connect = zzub_event_type_connect,
+	event_type_plugin_changed = zzub_event_type_plugin_changed,
 	event_type_parameter_changed = zzub_event_type_parameter_changed,
 	event_type_set_tracks = zzub_event_type_set_tracks,
-
+	event_type_set_sequence_tracks = zzub_event_type_set_sequence_tracks,
+	event_type_set_sequence_event = zzub_event_type_set_sequence_event,
+	event_type_new_pattern = zzub_event_type_new_pattern,
+	event_type_pre_delete_pattern = zzub_event_type_pre_delete_pattern,
+	event_type_delete_pattern = zzub_event_type_delete_pattern,
+	event_type_edit_pattern = zzub_event_type_edit_pattern,
+	event_type_pattern_changed = zzub_event_type_pattern_changed,
 	event_type_pre_disconnect = zzub_event_type_pre_disconnect,
 	event_type_pre_connect = zzub_event_type_pre_connect,
+	event_type_post_connect = zzub_event_type_post_connect,
 	event_type_pre_set_tracks = zzub_event_type_pre_set_tracks,
+	event_type_post_set_tracks = zzub_event_type_post_set_tracks,
+	event_type_sequencer_add_track = zzub_event_type_sequencer_add_track,
+	event_type_sequencer_remove_track = zzub_event_type_sequencer_remove_track,
+	event_type_sequencer_changed = zzub_event_type_sequencer_changed,
+	event_type_pattern_insert_rows = zzub_event_type_pattern_insert_rows,
+	event_type_pattern_remove_rows = zzub_event_type_pattern_remove_rows,
 
 	// global/master events
 	event_type_load_progress	= zzub_event_type_load_progress,
@@ -72,6 +87,11 @@ enum event_type {
 	event_type_player_state_changed = zzub_event_type_player_state_changed,
 	event_type_osc_message = zzub_event_type_osc_message,
 	
+	event_type_envelope_changed = zzub_event_type_envelope_changed,
+	event_type_slices_changed = zzub_event_type_slices_changed,
+	event_type_wave_changed = zzub_event_type_wave_changed,
+	event_type_delete_wave = zzub_event_type_delete_wave,
+
 	// catch all event
 	event_type_all = zzub_event_type_all,
 };
@@ -108,15 +128,6 @@ enum wave_buffer_type {
 	wave_buffer_type_f32	= zzub_wave_buffer_type_f32,    // float 32bit
 	wave_buffer_type_si32	= zzub_wave_buffer_type_si32,    // signed int 32bit
 	wave_buffer_type_si24	= zzub_wave_buffer_type_si24,    // signed int 24bit
-};
-
-enum oscillator_type {
-	oscillator_type_sine	= zzub_oscillator_type_sine,
-	oscillator_type_sawtooth	= zzub_oscillator_type_sawtooth,
-	oscillator_type_pulse	= zzub_oscillator_type_pulse,
-	oscillator_type_triangle	= zzub_oscillator_type_triangle,
-	oscillator_type_noise	= zzub_oscillator_type_noise,
-	oscillator_type_sawtooth_303 = zzub_oscillator_type_sawtooth_303,
 };
 
 enum note_value {
@@ -156,7 +167,7 @@ enum plugin_flag {
 	plugin_flag_uses_lib_interface	= zzub_plugin_flag_uses_lib_interface,
 	plugin_flag_uses_instruments	= zzub_plugin_flag_uses_instruments,
 	plugin_flag_does_input_mixing	= zzub_plugin_flag_does_input_mixing,
-	//~ plugin_flag_no_output	= zzub_plugin_flag_no_output,
+	plugin_flag_no_output	= zzub_plugin_flag_no_output,
 	plugin_flag_control_plugin	= zzub_plugin_flag_control_plugin,
 	plugin_flag_auxiliary	= zzub_plugin_flag_auxiliary,
 	plugin_flag_is_root = zzub_plugin_flag_is_root,
@@ -166,6 +177,8 @@ enum plugin_flag {
 	plugin_flag_has_event_output = zzub_plugin_flag_has_event_output,
 	plugin_flag_offline = zzub_plugin_flag_offline, 
 	plugin_flag_stream = zzub_plugin_flag_stream,
+	plugin_flag_has_midi_input = zzub_plugin_flag_has_midi_input,
+	plugin_flag_has_midi_output = zzub_plugin_flag_has_midi_output,
 };
 
 enum state_flag {
@@ -198,6 +211,7 @@ enum process_mode {
 enum connection_type {
 	connection_type_audio = zzub_connection_type_audio,
 	connection_type_event = zzub_connection_type_event,
+	connection_type_midi = zzub_connection_type_midi,
 };
 
 struct parameter {
@@ -293,7 +307,7 @@ struct parameter {
 		return int(normal * float(this->value_max - this->value_min) + 0.5) + this->value_min;
 	}
 	
-	size_t get_bytesize() const {
+	int get_bytesize() const {
 		switch(this->type) {
 			case parameter_type_note:
 			case parameter_type_switch:
@@ -400,11 +414,11 @@ struct wave_info {
 	std::vector<wave_level> levels;
 
 	int get_levels() const {
-		return levels.size();
+		return (int)levels.size();
 	}
 
 	wave_level* get_level(int level) const {
-		if (level < 0 || level >= levels.size()) return 0;
+		if (level < 0 || (size_t)level >= levels.size()) return 0;
 		return &(wave_level&)levels[level];
 	}
 
@@ -458,12 +472,12 @@ struct wave_info {
 		return get_bits_per_sample(level) / 8;
 	}
 
-	inline unsigned int get_extended_samples(int level, unsigned int samples) const {
+	inline unsigned int get_extended_samples(int level, int samples) const {
 		int channels = get_stereo()?2:1;
 		return ((samples-(4/channels)) *2 ) / get_bytes_per_sample(level);
 	}
 
-	inline unsigned int get_unextended_samples(int level, unsigned int samples) const {
+	inline unsigned int get_unextended_samples(int level, int samples) const {
 		int channels = get_stereo()?2:1;
 		return ((samples * get_bytes_per_sample(level)) / 2) + (4/channels);
 	}
@@ -502,7 +516,7 @@ struct wave_info {
 		}
 	}
 
-	void set_loop_end(size_t level, size_t value) {
+	void set_loop_end(int level, int value) {
 		wave_level* l = get_level(level);
 		if (!l) return ;
 		if (get_extended()) {
@@ -512,7 +526,7 @@ struct wave_info {
 		}
 	}
 
-	wave_buffer_type get_wave_format(size_t level) const {
+	wave_buffer_type get_wave_format(int level) const {
 		wave_level* l = get_level(level);
 		if (!l) return wave_buffer_type_si16;
 		if (get_extended() && l->sample_count > 0) {
@@ -523,37 +537,11 @@ struct wave_info {
 
 };
 
-// each oscillator table contains one period
-// of a bandlimited waveform
-//
-// level | samples
-// ------+------------------
-// 0     | 2048
-// 1     | 1024
-// 2     | 512
-// 3     | 256
-// 4     | 128
-// 5     | 64
-// 6     | 32
-// 7     | 16
-// 8     | 8
-// 9     | 4
-// 10    | 2
-//
-// all waves are 16bit signed int
-//
-// get_oscillator_table returns a pointer to the table
-//
-// get_oscillator_table_offset returns an offset to
-// the table for a specified level
-
-inline int get_oscillator_table_offset(unsigned int level) {
-	return ((1 << 12) - (1 << 2)) & ~(((1 << 12) - (1 << 2)) >> level);
-}
 
 struct pattern;
 struct sequence;
-struct metaplugin;
+struct player;
+struct song;
 struct outstream;
 struct info;
 struct plugin;
@@ -561,15 +549,17 @@ struct plugin;
 typedef bool (plugin::*event_handler_method)(void *);
 
 struct event_handler {
+	virtual ~event_handler() { }
 	virtual bool invoke(zzub_event_data_t& data)=0;
 };
 
 struct host {
 	virtual const wave_info * get_wave(int index);
-	virtual const wave_level * get_wave_level(int index, unsigned int level);
+	virtual const wave_level * get_wave_level(int index, int level);
 	virtual void message(const char *text);
 	virtual void lock ();
 	virtual void unlock();
+	virtual void set_swap_mode(bool free);
 	virtual int get_write_position();
 	virtual int get_play_position();
 	virtual void set_play_position(int pos);
@@ -577,11 +567,7 @@ struct host {
 	virtual void clear_auxiliary_buffer();
 	virtual int get_next_free_wave_index();
 	virtual bool allocate_wave(int index, int level, int samples, wave_buffer_type type, bool stereo, const char *name);
-	virtual void schedule_event(int time, unsigned int data);
-	virtual void get_midi_output_names(outstream *pout);
-	virtual void midi_out(int device, unsigned int data);
-	virtual int get_midi_device(const char* name);
-	virtual const short * get_oscillator_table(int waveform);
+	virtual void midi_out(int time, unsigned int data);
 	virtual int get_envelope_size(int wave, int envelope);
 	virtual bool get_envelope_point(int wave, int envelope, int index, unsigned short &x, unsigned short &y, int &flags);
 	virtual const wave_level * get_nearest_wave_level(int index, int note);
@@ -601,26 +587,28 @@ struct host {
 	virtual int audio_driver_get_channel_count(bool input);
 	virtual void audio_driver_write(int channel, float *samples, int buffersize);
 	virtual void audio_driver_read(int channel, float *samples, int buffersize);
-	virtual metaplugin * get_metaplugin();
-	virtual void control_change(metaplugin *_metaplugin, int group, int track, int param, int value, bool record, bool immediate);
+	virtual int get_metaplugin();
+	virtual int get_metaplugin_by_index(int plugin_desc);
+	virtual void control_change(int _metaplugin, int group, int track, int param, int value, bool record, bool immediate);
 	
-	virtual sequence * get_playing_sequence(metaplugin *_metaplugin);
+	virtual sequence * get_playing_sequence(int _metaplugin);
 	virtual void * get_playing_row(sequence *_sequence, int group, int track);
 	virtual int get_state_flags();
 	virtual void set_state_flags(int state);
-	virtual void set_event_handler(metaplugin *_metaplugin, event_handler* handler);
+	virtual void set_event_handler(int _metaplugin, event_handler* handler);
+	virtual void remove_event_handler(int _metaplugin, event_handler* handler);
 	virtual const char * get_wave_name(int index);
-	virtual void set_internal_wave_name(metaplugin *_metaplugin, int index, const char *name);
+	virtual void set_internal_wave_name(int _metaplugin, int index, const char *name);
 	virtual void get_plugin_names(outstream *os);
-	virtual metaplugin * get_metaplugin(const char *name);
-	virtual info const * get_info(metaplugin *_metaplugin);
-	virtual char const * get_name(metaplugin *_metaplugin);
+	virtual int get_metaplugin(const char *name);
+	virtual info const * get_info(int _metaplugin);
+	virtual char const * get_name(int _metaplugin);
 	virtual bool get_input(int index, float *samples, int buffersize, bool stereo, float *extrabuffer);
-	virtual bool get_osc_url(metaplugin *pmac, char *url);
+	virtual bool get_osc_url(int pmac, char *url);
 	
 	// peerctrl extensions
-	virtual int get_parameter(metaplugin *_metaplugin, int group, int track, int param);
-	virtual plugin *get_plugin(metaplugin *_metaplugin);
+	virtual int get_parameter(int _metaplugin, int group, int track, int param);
+	virtual plugin *get_plugin(int _metaplugin);
 
 	// hacked extensions
 	virtual int get_song_begin();
@@ -632,13 +620,12 @@ struct host {
 	virtual int get_song_end_loop();
 	virtual void set_song_end_loop(int pos);
 
-	// wavetable stream support
-	virtual plugin* stream_create(int index, int level);
-	virtual plugin* stream_create(const char* pluginUri, const char* dataUrl);
-	virtual void stream_destroy(plugin* stream);
+	zzub::player* player;
+	zzub::song* plugin_player;		// plugin_player is used for accessing plugins and is the same as player except during initialization
+	int plugin_id;
+	bool pre_lock_swap_mode;
 
-	metaplugin* _metaplugin;
-	host(metaplugin* _metaplugin);
+	host(zzub::player* player, int plugin_id);
 	~host();
 	float *auxBuffer[2];
 };
@@ -699,25 +686,29 @@ struct info	{
 	int flags;
 	unsigned int min_tracks;
 	unsigned int max_tracks;
-	const char* name;
-	const char* short_name;
-	const char* author;
-	const char* commands;
+	std::string name;
+	std::string short_name;
+	std::string author;
+	std::string commands;
 	lib* plugin_lib;
-	const char* uri;
+	std::string uri;
 	
 	std::vector<const zzub::parameter*> global_parameters;
 	
-  std::vector<const zzub::parameter*> track_parameters;
-  
-  // for controller plugins: those will be associated with parameters of remote plugins
-  // they are purely internal and will not be visible in the pattern editor or gui
-  std::vector<const zzub::parameter*> controller_parameters; 
+	std::vector<const zzub::parameter*> track_parameters;
+
+	// for controller plugins: those will be associated with parameters of remote plugins
+	// they are purely internal and will not be visible in the pattern editor or gui
+	std::vector<const zzub::parameter*> controller_parameters; 
 
 	std::vector<const zzub::attribute*> attributes;
+
+	// details about what formats import and stream plugins handle
+	std::vector<std::string> supported_import_extensions;
+	std::vector<std::string> supported_stream_extensions;
 	
-	virtual zzub::plugin* create_plugin() const = 0;// { return 0; }
-	virtual bool store_info(zzub::archive *arc) const = 0;// { return false; }
+	virtual zzub::plugin* create_plugin() const = 0;
+	virtual bool store_info(zzub::archive *arc) const = 0;
 
 	zzub::parameter& add_global_parameter() {
 		zzub::parameter *param = new zzub::parameter();
@@ -751,9 +742,9 @@ struct info	{
 		name = "";
 		short_name = "";
 		author = "";
-		commands = 0;
+		commands = "";
 		plugin_lib = 0;
-		uri = 0;
+		uri = "";
 	}
 	
 	virtual ~info() {
@@ -802,11 +793,18 @@ struct info	{
 
 };
 
+struct midi_message {
+	int device;
+	unsigned long message;
+	unsigned long timestamp;
+};
+
 struct plugin {
 	virtual ~plugin() { }
 	virtual void destroy() = 0;//{ delete this; }
 	virtual void init(zzub::archive *arc) = 0;//{}
 	virtual void process_events() = 0;//{}
+	virtual void process_midi_events(midi_message* pin, int nummessages) = 0;//{}
 	virtual void process_controller_events() = 0;//{}
 	virtual bool process_stereo(float **pin, float **pout, int numsamples, int mode) = 0;//{ return false; }
 	virtual bool process_offline(float **pin, float **pout, int *numsamples, int *channels, int *samplerate) = 0;//{ return false; }
@@ -837,10 +835,17 @@ struct plugin {
 	virtual void midi_control_change(int ctrl, int channel, int value) = 0;//{}
 	virtual bool handle_input(int index, int amp, int pan) = 0;//{ return false; }
 
+	// plugin_flag_has_midi_output
+	virtual void get_midi_output_names(outstream *pout) = 0;
+
+	// plugin_flag_stream | plugin_flag_has_audio_output
+	virtual void set_stream_source(const char* resource) = 0;
+	virtual const char* get_stream_source() = 0;
+
 	plugin() {
 		global_values = 0;
 		track_values = 0;
-    controller_values = 0;
+		controller_values = 0;
 		attributes = 0;
 		_master_info = 0;
 		_host = 0;
@@ -848,7 +853,7 @@ struct plugin {
 
 	void *global_values;
 	void *track_values;
-  void *controller_values;
+	void *controller_values;
 	int *attributes;
 
 	master_info *_master_info;

@@ -25,13 +25,26 @@
 
 #include <windows.h>
 #include <cassert>
-#include <string>
 #include <vector>
 #include <iostream>
 #include <list>
 #include <algorithm>
 #include <map>
 #include <sstream>
+#include <fstream>
+#include <ctime>
+#include <string>
+
+#ifdef min
+	#undef min
+#endif
+
+#ifdef max
+	#undef max
+#endif
+
+#define _USE_MATH_DEFINES
+#include <cmath>
 #include "inifile.h"
 
 #define __BUZZ2ZZUB__
@@ -41,10 +54,6 @@
 #include "mdk.h"
 #include "mdkimpl.h"
 #include "dsplib.h"
-#include "../../libzzub/synchronization.h"  // needed by metaplugin
-#include "../../libzzub/metaplugin.h"       // needs to set some internal Buzz-only stuff 
-#include "../../libzzub/sequencer.h"        // needs to set some internal Buzz-only stuff 
-#include "../../libzzub/player.h"           // needs to set some internal Buzz-only stuff 
 #include "unhack.h"
 
 #define PLUGIN_FLAGS_MASK (zzub_plugin_flag_is_root|zzub_plugin_flag_has_audio_input|zzub_plugin_flag_has_audio_output|zzub_plugin_flag_has_event_output)
@@ -53,18 +62,14 @@
 #define EFFECT_PLUGIN_FLAGS (zzub_plugin_flag_has_audio_input|zzub_plugin_flag_has_audio_output)
 #define CONTROLLER_PLUGIN_FLAGS (zzub_plugin_flag_has_event_output)
 
-
-void CopyM2S(float *pout, float *pin, int numsamples, float amp);
-
 using std::cout;
 using std::cerr;
 using std::endl;
-
-namespace buzz2zzub
-{
+using std::map;
 
 using namespace zzub;
 
+void CopyM2S(float *pout, float *pin, int numsamples, float amp);
 
 void CopyStereoToMono(float *pout, float *pin, int numsamples, float amp)
 {
@@ -81,9 +86,156 @@ void Amp(float *pout, int numsamples, float amp) {
 	}
 }
 
+void s2i(float *i, float **s, int numsamples) {
+	float *p[] = {s[0],s[1]};
+	while (numsamples--)
+	{
+		*i++ = *p[0]++;
+		*i++ = *p[1]++;
+	};
+}
 
-inline bool my_isnan(double x) {
-    return x != x;
+void i2s(float **s, float *i, int numsamples) {
+	if (!numsamples)
+		return;
+	float *p[] = {s[0],s[1]};
+	while (numsamples--)
+	{
+		*p[0]++ = *i++;
+		*p[1]++ = *i++;
+	};
+}
+
+
+struct plugintools {
+	static HMODULE hModule;  // set this in DLL_PROCESS_ATTACH
+
+	static std::string getPluginPath() {
+		if (!hModule) return "";
+
+		char modulename[MAX_PATH];
+		GetModuleFileName(hModule, modulename, MAX_PATH);
+		std::string result = modulename;
+		size_t ls = result.find_last_of("\\/");
+		return result.substr(0, ls + 1);
+	}
+};
+
+void conformParameter(zzub::parameter& param) {
+	int in = std::min(param.value_min, param.value_max);
+	int ax = std::max(param.value_min, param.value_max);
+	param.value_min = in;
+	param.value_max = ax;
+
+	if (param.type == zzub::parameter_type_switch) {
+		param.value_min = zzub::switch_value_off;
+		param.value_max = zzub::switch_value_on;
+		param.value_none = zzub::switch_value_none;
+	} else
+	if (param.type == zzub::parameter_type_note) {
+		param.value_min = zzub::note_value_min;
+		param.value_max = zzub::note_value_max;
+		param.value_none = zzub::note_value_none;
+	}
+}
+
+class CMachine {
+public:
+	// Jeskola Buzz compatible CMachine header.
+	// Some machines look up these by reading directly from zzub::metaplugin memory.
+
+	char _placeholder[16];
+	char* _internal_name;					// 0x14: polac's VST reads this string, set to 0
+	char _placeholder2[52];
+	void* _internal_machine;				// pointer to CMachine*, scanned for by some plugins
+	void* _internal_machine_ex;				// 0x50: same as above, but is not scanned for
+	char _placeholder3[20];
+	char* _internal_global_state;			// 0x68: copy of machines global state
+	char* _internal_track_state;			// 0x6C: copy of machines track state
+	char _placeholder4[120];
+	int _internal_seqCommand;				// 0xE8: used by mooter, 0 = --, 1 = mute, 2 = thru
+	char _placeholder6[17];
+	bool hardMuted;							// 0xFD: true when muted by user, used by mooter
+
+	// End of Buzz compatible header
+
+	int plugin_id;
+	CMachineInfo* buzzinfo;
+
+	CMachine() {
+		plugin_id = -1;
+		buzzinfo = 0;
+	}
+	virtual ~CMachine() { }
+
+	static bool checkBuzzCompatibility() {
+		// check offsets that may be used for known hacks
+		int nameofs = offsetof(CMachine, _internal_name);			// 0x14 / 0x18 (+/- vtbl)
+		int exofs = offsetof(CMachine, _internal_machine_ex);		// 0x50
+		int gstateofs = offsetof(CMachine, _internal_global_state);	// 0x68
+		int tstateofs = offsetof(CMachine, _internal_track_state);	// 0x6c
+		//int xofs = offsetof(CMachine, x);							// 0xa8
+		//int yofs = offsetof(CMachine, y);							// 0xac
+		int seqcmdofs = offsetof(CMachine, _internal_seqCommand); // 0xe8
+		int hardmuteofs = offsetof(CMachine, hardMuted);			// 0xfd
+
+		if (exofs != 0x50) return false;
+		if (gstateofs != 0x68) return false;
+		if (tstateofs != 0x6c) return false;
+		
+		if (seqcmdofs != 0xe8) return false;
+		if (hardmuteofs != 0xfd) return false;
+		return true;
+	}
+};
+
+namespace buzz2zzub {
+
+struct plugin;
+struct buzzplugininfo;
+
+typedef CMachineInfo const *(__cdecl *GET_INFO)();
+typedef CMachineInterface *(__cdecl *CREATE_MACHINE)();
+
+const int OSCTABSIZE = (2048+1024+512+256+128+64+32+16+8+4)*sizeof(short);
+
+short oscTables[8][OSCTABSIZE];
+
+double square(double v) {
+		double sqmod=fmod(v, 2.0f*M_PI);
+		return sqmod<M_PI?-1:1;
+	}
+
+double sawtooth(double v) {
+	return (fmod(v, 2.0f*M_PI) / M_PI)-1;
+}
+
+double triangle(double v) {
+	double sqmod=fmod(v, 2.0f*M_PI);
+
+	if (sqmod<M_PI) {
+		return sqmod/M_PI;
+	} else
+		return (M_PI-(sqmod-M_PI)) / M_PI;
+}
+
+void generate_oscillator_tables() {
+	int tabSize = 2048;
+	srand(static_cast<unsigned int>(time(0)));
+	for (int tabLevel = 0; tabLevel < 11; tabLevel++) {
+		int tabOfs = GetOscTblOffset(tabLevel);
+		for (int i = 0; i < tabSize; i++) {
+			double dx = (double)i/tabSize;
+			oscTables[OWF_SINE][tabOfs+i] = (short)(sin(dx*2.0f*M_PI)*32000);
+			oscTables[OWF_SAWTOOTH][tabOfs+i] = (short)(sawtooth(dx*2.0f*M_PI)*32000);
+			oscTables[OWF_PULSE][tabOfs+i] = (short)(square(dx*2.0f*M_PI)*32000);
+			oscTables[OWF_TRIANGLE][tabOfs+i] = (short)(triangle(dx*2.0f*M_PI)*32000);
+			oscTables[OWF_NOISE][tabOfs+i] = (short) (((float)rand()/(float)RAND_MAX)*64000.f - 32000);
+			oscTables[OWF_303_SAWTOOTH][tabOfs+i] = (short)(sawtooth(dx*2.0f*M_PI)*32000);
+			oscTables[6][tabOfs+i] = (short)(sin(dx*2.0f*M_PI)*32000);
+		}
+		tabSize/=2;
+	}
 }
 
 class CMachineDataInputWrap : public CMachineDataInput
@@ -98,8 +250,8 @@ public:
 
 	virtual void Read(void *pbuf, int const numbytes)
 	{
-        if (pi->position()+numbytes <= pi->size())
-		    pi->read(pbuf, numbytes);
+		if (pi->position()+numbytes <= pi->size())
+			pi->read(pbuf, numbytes);
 	}
 };
 
@@ -118,7 +270,6 @@ public:
 		po->write(pbuf, numbytes);
 	}
 };
-	
 
 class outstreamwrap : public outstream
 {
@@ -146,35 +297,30 @@ public:
 	}
 };
 
+struct libwrap : public zzub::lib {
+	CLibInterface* blib;
+	buzzplugininfo* info;
 
-void s2i(float *i, float **s, int numsamples) {
-	float *p[] = {s[0],s[1]};
-	while (numsamples--)
-	{
-		*i++ = *p[0]++;
-		*i++ = *p[1]++;
-	};
-}
+	libwrap(CLibInterface* mlib, buzzplugininfo* _info) ;
 
-void i2s(float **s, float *i, int numsamples) {
-	if (!numsamples)
-		return;
-	float *p[] = {s[0],s[1]};
-	while (numsamples--)
-	{
-		*p[0]++ = *i++;
-		*p[1]++ = *i++;
-	};
-}
+	virtual void get_instrument_list(zzub::outstream* os);
+};
 
+class CMachineManager {
+public:
+	std::map<int, CMachine*> plugin_to_machine;
 
+	CMachine* get(zzub::host* host, int plugin_id);
+	CMachine* create(buzz2zzub::plugin* plugin);
+	CMachine* create(zzub::plugin* plugin);
+	void destroy(int plugin_id);
+};
 
-typedef CMachineInfo const *(__cdecl *GET_INFO)();
-typedef CMachineInterface *(__cdecl *CREATE_MACHINE)();
-
+struct buzzplugincollection;
 
 struct buzzplugininfo : zzub::info
 {
+	buzzplugincollection* plugincollection;
 	std::string m_uri;
 	std::string m_name;
 	std::string m_path;
@@ -182,9 +328,11 @@ struct buzzplugininfo : zzub::info
 	GET_INFO GetInfo;
 	CREATE_MACHINE CreateMachine;
 	bool lockAddInput, lockSetTracks, useSequencerHack;
-	
+	CMachineManager* machines;
+
 	buzzplugininfo();
 	
+	bool attach();
 	void detach();
 	
 	virtual zzub::plugin* create_plugin() const;
@@ -192,31 +340,288 @@ struct buzzplugininfo : zzub::info
 	virtual bool store_info(zzub::archive *arc) const;
 	
 	bool init();
+
 };
 
+struct buzzplugincollection : zzub::plugincollection {
+
+	CMachineManager machines;
+	std::vector<buzzplugininfo *> buzzplugins;
+
+	buzzplugincollection() {
+		DSP_Init(44100);
+
+		load_config();
+
+		load_plugins("buzz");
+		load_plugins("..\\generators");
+		load_plugins("..\\effects");
+	}
+
+	~buzzplugincollection() {
+		std::vector<buzzplugininfo *>::iterator i;
+		for (i = buzzplugins.begin(); i != buzzplugins.end(); ++i)
+		{
+			(*i)->detach();
+			delete (*i)->plugin_lib;	// buzzplugininfo has no destructor so we free this here
+			delete *i;
+		}
+		buzzplugins.clear();
+	}
+
+	// Called by the host initially. The collection registers
+	// plugins through the pluginfactory::register_info method.
+	// The factory pointer remains valid and can be stored
+	// for later reference.
+	virtual void initialize(zzub::pluginfactory *factory) {
+		for (std::vector<buzzplugininfo *>::iterator i = buzzplugins.begin(); i != buzzplugins.end(); ++i) {
+			const zzub::info *_info = *i;
+			factory->register_info(_info);
+		}
+	}
+
+	// Called by the host upon song loading. If the collection
+	// can not provide a plugin info based on the uri or
+	// the metainfo passed, it should return a null pointer.
+	virtual const zzub::info *get_info(const char *uri, zzub::archive *arc) { return 0; }
+	
+	// Called by the host upon destruction. You should
+	// delete the instance in this function
+	virtual void destroy() { delete this; }
+
+	// Returns the uri of the collection to be identified,
+	// return zero for no uri. Collections without uri can not be 
+	// configured.
+	virtual const char *get_uri() { return 0; }
+	
+	// Called by the host to set specific configuration options,
+	// usually related to paths.
+	virtual void configure(const char *key, const char *value) {}
+
+	void load_config() {
+		std::string configPath = plugintools::getPluginPath() + "buzz2zzub.ini";
+		ini::file inifile(configPath);
+		int patchCount = inifile.section("Patches").get("Count", 0);
+		for (int i = 0; i < patchCount; i++) {
+			std::stringstream patchName;
+			patchName << "Patch" << i;
+			std::string patchString = inifile.section("Patches").get<std::string>(patchName.str(), ""); 
+			if (patchString.empty()) continue;
+			size_t fe = patchString.find_first_of(':');
+			if (fe == std::string::npos) continue;
+			std::string dllName = patchString.substr(0, fe);
+			std::string patchCommand = patchString.substr(fe+1);
+			unhack::enablePatch(dllName, patchCommand);
+			cout << "Read patch from ini: " << dllName << " -> '" << patchCommand << "'" << endl;
+		}
+	}
+
+	bool attach(const buzzplugininfo* self) {
+		std::vector<buzzplugininfo*>::iterator i = find(buzzplugins.begin(), buzzplugins.end(), self);
+		if (i == buzzplugins.end()) return false;
+		return (*i)->attach();
+	}
+
+	map<std::string, buzzplugininfo*> plugin_cache;
+
+	bool load_cache(std::string pluginPath) {
+
+		std::string cacheFile = pluginPath + "buzz2zzub.dat";
+
+		cerr << "buzz2zzub: loading cache " << cacheFile << endl;
+		std::ifstream f;
+		f.open(cacheFile.c_str());
+		if (!f.good()) return false;
+		
+		std::string version;
+		std::getline(f, version);
+
+		if (version != "buzz2zzub-cache-version-1") return false;
+
+		while (!f.eof() && !f.fail()) {
+			std::string dll_name, name;
+			std::string flagstring;
+			int flags;
+			std::string short_name;
+			std::getline(f, dll_name);
+			std::getline(f, name);
+			std::getline(f, flagstring);
+			flags = atoi(flagstring.c_str());
+			std::getline(f, short_name);
+
+			if (name.empty() || short_name.empty()) continue;
+
+			cout << "Read cached plugin: " << name << ", flags=" << flags << ", short=" << short_name << endl;
+			buzzplugininfo* i = new buzzplugininfo();
+			i->plugincollection = this;
+			i->machines = &machines;
+			i->m_name = dll_name;
+			i->m_path = pluginPath + dll_name + ".dll";
+			i->init();
+
+			i->name = name;
+			i->flags = flags;
+			i->short_name = short_name;
+
+			if (flags & plugin_flag_uses_lib_interface)
+				i->plugin_lib = new libwrap(0, i);
+			
+			plugin_cache[dll_name] = i;
+		}
+
+		f.close();
+		return true;
+	}
+
+	void enumerate_plugins(std::string pluginPath, std::vector<buzzplugininfo*>& result_plugins) {
+		std::string searchPath = pluginPath + "*.dll";
+
+		cout << "buzz2zzub: searching folder " << pluginPath << "..." << endl;
+		WIN32_FIND_DATA fd;
+		HANDLE hFind = FindFirstFile(searchPath.c_str(), &fd);
+
+		while (hFind != INVALID_HANDLE_VALUE) {
+			
+			if ( (fd.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY)==0) {
+				std::string fullFilePath = pluginPath + fd.cFileName;
+				std::string name = fd.cFileName;
+				size_t ld = name.find_last_of('.');
+				name = name.substr(0, ld);
+
+				map<std::string, buzzplugininfo*>::iterator i;
+				i = plugin_cache.find(name);
+				if (i != plugin_cache.end()) {
+					// we know this plugin from before
+					buzzplugins.push_back(i->second);
+					result_plugins.push_back(i->second);
+				} else {
+					// first time we see this plugin!
+					buzzplugininfo *i = new buzzplugininfo();
+					i->plugincollection = this;
+					i->machines = &machines;
+					i->m_name = name;
+					i->m_path = fullFilePath;
+					cout << "buzz2zzub: adding " << name << "(" << fullFilePath << ")" << endl;
+					if (i->init()) {
+						if (i->attach()) {
+#if defined(USE_PLUGIN_CACHE)
+							i->detach();
+#endif
+							buzzplugins.push_back(i);
+							result_plugins.push_back(i);
+						}
+					} else {
+						i->detach();
+						delete i;
+					}
+				}
+			}
+
+			if (!FindNextFile(hFind, &fd)) break;
+		}
+		FindClose(hFind);
+	}
+
+	bool save_cache(std::string cachePath, const std::vector<buzzplugininfo*>& plugins) {
+		std::ofstream f;
+		f.open(cachePath.c_str());
+		if (!f.good()) return false;
+
+		f << "buzz2zzub-cache-version-1" << endl;
+
+		std::vector<buzzplugininfo*>::const_iterator i;
+		std::vector<char> bytes(1024);
+		for (i = plugins.begin(); i != plugins.end(); ++i) {
+			buzzplugininfo& info = **i;
+			f << info.m_name << endl;
+			f << info.name << endl;
+			f << info.flags << endl;
+			f << info.short_name << endl;
+		}
+
+		f.close();
+
+		return true;
+	}
+
+	void load_plugins(const char *relpath) {
+		std::string pluginPath = plugintools::getPluginPath() + relpath + "\\";
+
+#if defined(USE_PLUGIN_CACHE)
+
+		if (!load_cache(pluginPath)) {
+			cerr << "buzz2zzub: could not load buzz2zzub.dat" << endl;
+		}
+#endif
+
+		std::vector<buzzplugininfo*> result_plugins;
+		enumerate_plugins(pluginPath, result_plugins);
+
+#if defined(USE_PLUGIN_CACHE)
+
+		save_cache(pluginPath + "buzz2zzub.dat", result_plugins);
+
+#endif
+	}
+};
 
 struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
-	
+
+	struct master_events : zzub::event_handler {
+		plugin* _plugin;
+
+		virtual bool invoke(zzub_event_data_t& data) {
+			switch (data.type) {
+				case event_type_pre_set_tracks:
+					if (data.set_tracks.plugin == _plugin->_host->get_metaplugin())
+						_plugin->pre_set_tracks_event();
+					break;
+				case event_type_post_set_tracks:
+					if (data.set_tracks.plugin == _plugin->_host->get_metaplugin())
+						_plugin->post_set_tracks_event();
+					break;
+				case event_type_pre_connect:
+					if (data.connect_plugin.to_plugin == _plugin->_host->get_metaplugin())
+						_plugin->pre_add_input_event();
+					break;
+				case event_type_post_connect:
+					if (data.connect_plugin.to_plugin == _plugin->_host->get_metaplugin())
+						_plugin->post_add_input_event();
+					break;
+			}
+			return false;
+		}
+
+	};
+
 	CMachineInterface* machine;
 	CMachineInterfaceEx* machine2;
 	CMDKImplementation* implementation;
-    const struct buzzplugininfo* machineInfo;
+	const struct buzzplugininfo* machineInfo;
+	master_events mevents;
 
-    int channels;
+	int channels;
+	int track_count;
 	
 	plugin(CMachineInterface* machine, const buzzplugininfo* mi)
 	{
-		this->implementation=0;
-		this->machine2=0;
+		this->implementation = 0;
+		this->machine2 = 0;
 		this->machine = machine;
 		this->global_values = this->machine->GlobalVals;
 		this->track_values = this->machine->TrackVals;
 		this->attributes = this->machine->AttrVals;
-        this->machineInfo=mi;
-        channels=1;
+		this->machineInfo = mi;
+		channels =1;
+		track_count = machineInfo->min_tracks;
+		mevents._plugin = this;
 	}
 	~plugin()
 	{
+		machineInfo->machines->destroy(_host->get_metaplugin());
+		if (machineInfo->lockAddInput || machineInfo->lockSetTracks)
+			_host->remove_event_handler(0, &mevents);	// listen to event_type_pre_xxx-messages sent to the master
+
 		delete this->machine;
 	}
 	
@@ -225,21 +630,51 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 	virtual void destroy() { delete this; }
 	virtual void init(archive *arc)
 	{ 
+		machineInfo->machines->create(this);
+
 		machine->pCB = this;
 		machine->pMasterInfo = reinterpret_cast<CMasterInfo*>(_master_info);
-        metaplugin* thisplugin=_host->get_metaplugin();
-        thisplugin->_internal_machine=machine;
-        thisplugin->_internal_machine_ex=machine2;
+		
+		int thisplugin = _host->get_metaplugin();
+
 		if (arc)
 			machine->Init(&CMachineDataInputWrap(arc->get_instream(""))); 
 		else
-			machine->Init(0); 
+			machine->Init(0);
 
 		// need event handlers
 		if (machineInfo->lockAddInput || machineInfo->lockSetTracks)
-			_host->set_event_handler(reinterpret_cast<zzub::metaplugin*>(thisplugin), this);
+			_host->set_event_handler(0, &mevents);	// listen to event_type_pre_xxx-messages sent to the master
+		c = 0;
 	}
 	virtual void process_controller_events() {}
+
+	void transfer_hacked_plugin_states() {
+		// TODO: transfer current parameter values from state_last to hacked tstate and gstate
+		CMachine* m = GetThisMachine();
+		
+		transfer_track(1, 0, m->_internal_global_state, machineInfo->global_parameters);
+		
+		char* param_ptr = m->_internal_track_state;
+		for (int i = 0; i < track_count; i++) {
+			int size = transfer_track(2, i, param_ptr, machineInfo->track_parameters);
+			param_ptr += size;
+
+		}
+	}
+	
+	int transfer_track(int group, int track, char* param_ptr, const std::vector<const zzub::parameter*>& params) {
+		int size = 0;
+		for (int i = 0; i < params.size(); i++) {
+			int v = _host->get_parameter(_host->get_metaplugin(), group, track, i);
+			int param_size = params[i]->get_bytesize();
+			memcpy(param_ptr, &v, param_size);
+			param_ptr += param_size;
+			size += param_size;
+		}
+		return size;
+	}
+
 	virtual void process_events()
 	{
 		int last_play_position;
@@ -250,6 +685,8 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 			// support hacked jumping from ticks
 			last_play_position = _host->get_play_position();
 		}
+
+		transfer_hacked_plugin_states();
 
 		machine->Tick();
 
@@ -263,6 +700,8 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 	
 	virtual bool process_offline(float **pin, float **pout, int *numsamples, int *channels, int *samplerate) { return false; }
 
+	double c;
+
 	virtual bool process_stereo(float **pin, float **pout, int numsamples, int mode)
 	{
 		int last_play_position;
@@ -273,8 +712,8 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 			last_play_position = _host->get_play_position();
 		}
 
-        bool ret=false;
-        int mode2=mode;
+		bool ret = false;
+		int mode2 = mode;
 
 		float pini[256*2*2];
 		float pouti[256*2*2];
@@ -283,32 +722,32 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 		if (mode2&zzub_process_mode_write)
 			s2i(pouti, pout, numsamples);
 
-        if (channels==1) {
-            float buffer[256*2*2];
-            memset(buffer, 0, 256*2*2*sizeof(float));
+		if (channels == 1) {
+			float buffer[256*2*2];
+			memset(buffer, 0, 256*2*2*sizeof(float));
 			if (mode2&zzub_process_mode_read) {
 				if (machineInfo->flags&zzub_plugin_flag_mono_to_stereo)
 					CopyStereoToMono(buffer, pini, numsamples, 0x8000); else
 					CopyStereoToMono(buffer, pini, numsamples, 0x4000); // halve output volume for mono processing since mono->stereo makes a louder mix
 			}
-            if (machineInfo->flags&zzub_plugin_flag_mono_to_stereo) {
-                if (mode2&zzub_process_mode_read)
-                    Amp(pouti, numsamples*2, 0x8000);
-                ret=machine->WorkMonoToStereo(buffer, pouti, numsamples, mode2);
-            } else {
-    		    ret=machine->Work(buffer, numsamples, mode2);
-                if (ret)
-                    CopyM2S(pouti, buffer, numsamples, 1.0f);
-            }
-        } else {
-            if (mode2&zzub_process_mode_read) {
-                Amp(pini, numsamples*2, 0x8000);
-                Amp(pouti, numsamples*2, 0x8000);
-            }
-		    ret=machine->WorkMonoToStereo(pini, pouti, numsamples, mode2);
-        }
-        if (ret) {
-            Amp(pouti, numsamples*2, 1.0f / 0x8000);
+			if (machineInfo->flags&zzub_plugin_flag_mono_to_stereo) {
+				if (mode2&zzub_process_mode_read)
+					Amp(pouti, numsamples*2, 0x8000);
+				ret=machine->WorkMonoToStereo(buffer, pouti, numsamples, mode2);
+			} else {
+				ret=machine->Work(buffer, numsamples, mode2);
+				if (ret)
+					CopyM2S(pouti, buffer, numsamples, 1.0f);
+			}
+		} else {
+			if (mode2&zzub_process_mode_read) {
+				Amp(pini, numsamples*2, 0x8000);
+				Amp(pouti, numsamples*2, 0x8000);
+			}
+			ret=machine->WorkMonoToStereo(pini, pouti, numsamples, mode2);
+		}
+		if (ret) {
+			Amp(pouti, numsamples*2, 1.0f / 0x8000);
 			i2s(pout, pouti, numsamples); // interleaved to stereo
 		}
 
@@ -317,7 +756,7 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 			if (last_play_position != unhack::hackseq->songPos)
 				_host->set_play_position(unhack::hackseq->songPos);
 		}
-        return ret;
+		return ret;
 	}
 	virtual void stop()
 	{
@@ -338,6 +777,7 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 	}
 	virtual void set_track_count(int count)
 	{
+		track_count = count;
 		machine->SetNumTracks(count);
 	}
 	virtual void mute_track(int index)
@@ -403,11 +843,14 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 	virtual void ClearAuxBuffer() { _host->clear_auxiliary_buffer(); }
 	virtual int GetFreeWave() { return _host->get_next_free_wave_index(); }
 	virtual bool AllocateWave(int const i, int const size, char const *name) { return _host->allocate_wave(i,0,size,wave_buffer_type_si16,false,name); }
-	virtual void ScheduleEvent(int const time, dword const data) { _host->schedule_event(time,data); }
+	virtual void ScheduleEvent(int const time, dword const data) { 
+		MessageBox("ScheduleEvent not implemented");
+		//_host->schedule_event(time,data); 
+	}
 	virtual void MidiOut(int const dev, dword const data) { _host->midi_out(dev, data); }
-	virtual short const *GetOscillatorTable(int const waveform) { return _host->get_oscillator_table(waveform);}
+	virtual short const *GetOscillatorTable(int const waveform) { return oscTables[waveform]; /*return _host->get_oscillator_table(waveform);*/ }
 
-// incredibly odd - raverb and some other jeskola machines requires this to run =)
+// incredibly odd - raverb and some other jeskola machines require this to run =)
 // we do not keep the value though, it may haunt us later. both raverb and the host keep their own static copies of this value
 // the value seems to be combined from getlocaltime, getsystemtime, gettimezoneinfo and more.
 /*
@@ -418,7 +861,7 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 	00425038 A3 F0 26 4D 00   mov         dword ptr ds:[004D26F0h],eax 
 */
 
-    virtual int GetEnvSize(int const wave, int const env) { 
+	virtual int GetEnvSize(int const wave, int const env) { 
 		if (wave<0) {
 			return ((wave*0x3E39B193) + 0x303b ) & 0x7FFFFFFF;
 		}
@@ -470,7 +913,10 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 		//_host->audio_driver_read(channel, psamples, numsamples); 
 	}
 
-	virtual CMachine *GetThisMachine() { return reinterpret_cast<CMachine*>(_host->get_metaplugin()); }
+	virtual CMachine *GetThisMachine() { 
+		return machineInfo->machines->get(_host, _host->get_metaplugin());
+		//return reinterpret_cast<CMachine*>(_host->get_metaplugin()); 
+	}
 	 // set value of parameter (group & 16 == don't record)
 	virtual void ControlChange(CMachine *pmac, int group, int track, int param, int value) {
 		bool record = true;
@@ -479,12 +925,41 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 			record = false;
 			group ^= (group & 0x10);
 		}
-		_host->control_change(reinterpret_cast<zzub::metaplugin*>(pmac), group, track, param, value, record, immediate);
+
+		// BTDSys PeerCtrl doesnt initialize the track parameter on the global track, so we set to 0
+		// const CMachineParameter* mp;
+		// we also use the zzub parameter, since pmac->buzzinfo may not be initialized, e.g with live slice
+		const zzub::info* info = _host->get_info(pmac->plugin_id);
+		const zzub::parameter* mp;
+		switch (group) {
+			case 1:
+				track = 0;
+				assert(param >= 0 && param < info->global_parameters.size());
+				mp = info->global_parameters[param];//pmac->buzzinfo->Parameters[param];
+				break;
+			case 2:
+				assert(param >= 0 && param < info->track_parameters.size());
+				mp = info->track_parameters[param];// pmac->buzzinfo->Parameters[pmac->buzzinfo->numGlobalParameters + param];
+				break;
+			default:
+				cerr << "buzz2zzub: attempt to ControlChange illegal group" << endl;
+				return;
+		}
+
+		// BTDSys PeerState sends out-of-range values, so we sanitize
+		if (mp->type == parameter_type_byte || mp->type == parameter_type_word) {
+			if (value < mp->value_min) value = mp->value_min;
+			if (value > mp->value_max) value = mp->value_max;
+		}
+
+		_host->control_change(pmac->plugin_id, group, track, param, value, record, immediate);
 	}
-	virtual CSequence *GetPlayingSequence(CMachine *pmac)
-	{ return reinterpret_cast<CSequence*>(_host->get_playing_sequence(reinterpret_cast<zzub::metaplugin*>(pmac))); }
-	virtual void *GetPlayingRow(CSequence *pseq, int group, int track)
-	{ return _host->get_playing_row(reinterpret_cast<zzub::sequence*>(pseq), group, track); }
+	virtual CSequence *GetPlayingSequence(CMachine *pmac) { 
+		return reinterpret_cast<CSequence*>(_host->get_playing_sequence(pmac->plugin_id)); 
+	}
+	virtual void *GetPlayingRow(CSequence *pseq, int group, int track) { 
+		return _host->get_playing_row(reinterpret_cast<zzub::sequence*>(pseq), group, track); 
+	}
 
 	virtual int GetStateFlags() { return _host->get_state_flags(); }
 
@@ -492,80 +967,59 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 		if (implementation) {
 			CMDKMachineInterface* mdki=(CMDKMachineInterface*)machine;
 			mdki->SetOutputMode(n==2);
-			//implementation->SetOutputMode(n==2);
 		}
-        //assert(reinterpret_cast<zzub::metaplugin*>(pmac) == machine);
-        this->channels=n;
-		//_host->set_output_channel_count(reinterpret_cast<zzub::metaplugin*>(pmac), n); 
+		this->channels = n;
 	}
 
-    struct event_wrap {
-        BEventType et;
-        EVENT_HANDLER_PTR p;
-        void* param;
-    };
+	struct event_wrap {
+		BEventType et;
+		EVENT_HANDLER_PTR p;
+		void* param;
+	};
 
-    std::vector<event_wrap> events;
+	std::vector<event_wrap> events;
 
-    virtual bool invoke(zzub_event_data_t& data) {
-		switch (data.type) {
-			case event_type_pre_set_tracks:
-				pre_set_tracks_event();
-				break;
-			case event_type_set_tracks:
-				post_set_tracks_event();
-				break;
-			case event_type_pre_connect:
-				pre_add_input_event();
-				break;
-			case event_type_connect:
-				post_add_input_event();
-				break;
-			case event_type_pre_disconnect:
-				pre_delete_input_event();
-				break;
-			case event_type_disconnect:
-				post_delete_input_event();
-				break;
-		}
-
+	virtual bool invoke(zzub_event_data_t& data) {
 		for (size_t i=0; i<events.size(); i++) {
-            if (events[i].et==data.type) {
-                EVENT_HANDLER_PTR evptr=events[i].p;
-                return (machine->*evptr)(events[i].param);
-            }
-        }
-        return false;
-    }
+			if (events[i].et==data.type) {
+				EVENT_HANDLER_PTR evptr=events[i].p;
+				return (machine->*evptr)(events[i].param);
+			}
+		}
+		return false;
+	}
 
 	virtual void SetEventHandler(CMachine *pmac, BEventType et, EVENT_HANDLER_PTR p, void *param)
 	{
 		if (events.size() == 0)
-			_host->set_event_handler(reinterpret_cast<zzub::metaplugin*>(pmac), this);
-        event_wrap ew={et, p, param};
-        events.push_back(ew);
-		//real_event_handler = p;
-//		_host->set_event_handler(reinterpret_cast<zzub::metaplugin*>(pmac), (zzub::event_type)et, (zzub::event_handler_method)&buzz2zzub::plugin::on_event, param);
+			_host->set_event_handler(pmac->plugin_id, this);
+		event_wrap ew={et, p, param};
+		events.push_back(ew);
 	}
 
 	virtual char const *GetWaveName(int const i) { return _host->get_wave_name(i); }
 
-	virtual void SetInternalWaveName(CMachine *pmac, int const i, char const *name)
-	{ _host->set_internal_wave_name(reinterpret_cast<zzub::metaplugin*>(pmac), i, name); }
+	virtual void SetInternalWaveName(CMachine *pmac, int const i, char const *name) {
+		_host->set_internal_wave_name(pmac->plugin_id, i, name); 
+	}
 
 	virtual void GetMachineNames(CMachineDataOutput *pout)
 	{ _host->get_plugin_names(&outstreamwrap(pout)); }
 	
-	virtual CMachine *GetMachine(char const *name) { return reinterpret_cast<CMachine*>(_host->get_metaplugin(name)); }
+	virtual CMachine *GetMachine(char const *name) { 
+		int plugin = _host->get_metaplugin(name);
+		if (plugin == -1) return 0;
+		return machineInfo->machines->get(_host, plugin);
+	}
 
-	std::list<CMachineInfo *> machineinfos;
-	
 	virtual CMachineInfo const *GetMachineInfo(CMachine *pmac) {		
-		const zzub::info *_info = _host->get_info(reinterpret_cast<zzub::metaplugin*>(pmac));
+		const zzub::info *_info = _host->get_info(pmac->plugin_id);
 		if (!_info) return 0;	// could happen after deleting a peer controlled machine
 		
-		CMachineInfo *buzzinfo = new CMachineInfo();
-		machineinfos.push_back(buzzinfo);
+		if (pmac->buzzinfo != 0) return pmac->buzzinfo;
+
+		CMachineInfo *buzzinfo = pmac->buzzinfo = new CMachineInfo();
+
 		if ((_info->flags & PLUGIN_FLAGS_MASK) == ROOT_PLUGIN_FLAGS)
 			buzzinfo->Type = MT_MASTER;
 		else if ((_info->flags & PLUGIN_FLAGS_MASK) == GENERATOR_PLUGIN_FLAGS)
@@ -592,16 +1046,17 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 		}
 		buzzinfo->numAttributes = _info->attributes.size();
 		buzzinfo->Attributes = _info->attributes.size() > 0 ? (const CMachineAttribute **)&_info->attributes[0] : 0;
-		buzzinfo->Name = _info->name;
-		buzzinfo->ShortName = _info->short_name;
-		buzzinfo->Author = _info->author;
-		buzzinfo->Commands = _info->commands;
+		buzzinfo->Name = _info->name.c_str();
+		buzzinfo->ShortName = _info->short_name.c_str();
+		buzzinfo->Author = _info->author.c_str();
+		buzzinfo->Commands = _info->commands.c_str();
 		buzzinfo->pLI = (CLibInterface*)_info->plugin_lib;
 
 		return buzzinfo;
 	}
-	virtual char const *GetMachineName(CMachine *pmac)
-	{ return _host->get_name(reinterpret_cast<zzub::metaplugin*>(pmac)); }
+	virtual char const *GetMachineName(CMachine *pmac) { 
+		return _host->get_name(pmac->plugin_id); 
+	}
 
 	virtual bool GetInput(int index, float *psamples, int numsamples, bool stereo, float *extrabuffer)
 	{ return _host->get_input(index, psamples, numsamples, stereo, extrabuffer); }
@@ -645,14 +1100,14 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 	}
 	virtual void input(float **samples, int size, float amp) {
 		if (!machine2) return ;
-        // always stereo input
-        if (samples!=0) {
-            float buffer[256*2*2];
+		// always stereo input
+		if (samples != 0) {
+			float buffer[256*2*2];
 			s2i(buffer,samples,size);
-            Amp(buffer, size*2, 0x8000);
-    		machine2->Input(buffer, size, amp);
-        } else
-            machine2->Input(0,0,0);
+			Amp(buffer, size*2, 0x8000);
+			machine2->Input(buffer, size, amp);
+		} else
+			machine2->Input(0,0,0);
 	}
 	virtual void midi_control_change(int ctrl, int channel, int value) {
 		if (!machine2) return ;
@@ -668,172 +1123,249 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 		return machine2->HandleInput(index, amp, pan);
 	}
 
-	void evil_lock() {
+	virtual void process_midi_events(zzub::midi_message* pin, int nummessages) {}
+	virtual void get_midi_output_names(zzub::outstream *pout) {}
+	virtual void set_stream_source(const char* resource) {}
+	virtual const char* get_stream_source() { return 0; }
 
-		metaplugin* thisplugin = _host->get_metaplugin();
-		player* thisplayer = thisplugin->player;
-
-		thisplayer->playerLock.lock();
-
-		// setting thisplayer->workStarted to false tells the player to execute editing operations on the current thread
-		thisplayer->workStarted = false;
-	}
-
-	void evil_unlock() {
-
-		metaplugin* thisplugin = _host->get_metaplugin();
-		player* thisplayer = thisplugin->player;
-
-		thisplayer->workStarted = true;
-		thisplayer->playerLock.unlock();
-	}
+	bool pre_swap_mode;
 
 	void pre_add_input_event() {
-		if (machineInfo->lockAddInput) evil_lock();
+		// NOTE: we need host::get_swap_mode() to fetch previous swap_mode
+		// or this won't work without a running audiodriver.
+		//pre_swap_mode = _host->get_swap_mode();
+		if (machineInfo->lockAddInput) _host->set_swap_mode(false);
 	}
 
 	void post_add_input_event() {
-		if (machineInfo->lockAddInput) evil_unlock();
+		if (machineInfo->lockAddInput) _host->set_swap_mode(true);
 	}
 
-	void pre_delete_input_event() { }
-	void post_delete_input_event() { }
-
 	void pre_set_tracks_event() {
-		if (machineInfo->lockSetTracks) evil_lock();
+		if (machineInfo->lockSetTracks) _host->set_swap_mode(false);
 	}
 
 	void post_set_tracks_event() {
-		if (machineInfo->lockSetTracks) evil_unlock();
+		if (machineInfo->lockSetTracks) _host->set_swap_mode(true);
 	}
 };
 
+/***
 
+	libwrap
 
-struct libwrap : public zzub::lib {
-	CLibInterface* blib;
+***/
 
-	libwrap(CLibInterface* mlib) {
-		blib=mlib;
+libwrap::libwrap(CLibInterface* mlib, buzzplugininfo* _info) {
+	blib = mlib;
+	info = _info;
+}
+
+void libwrap::get_instrument_list(zzub::outstream* os)  {
+	if (!blib) {
+		cout << "Preloading " << info->name << " via libwrap::get_instrument_list" << endl;
+		if (!info->attach()) return ;
 	}
 
-	virtual void get_instrument_list(zzub::outstream* os)  {
-		if (!blib) return ;
+	buzz2zzub::CMachineDataOutputWrap mdow(os);
+	blib->GetInstrumentList(&mdow);
+}
 
-		buzz2zzub::CMachineDataOutputWrap mdow(os);
-		blib->GetInstrumentList(&mdow);
+
+/***
+
+	CMachineManager
+
+***/
+
+CMachine* CMachineManager::get(zzub::host* host, int plugin_id) {
+	std::map<int, CMachine*>::iterator i = plugin_to_machine.find(plugin_id);
+	if (i == plugin_to_machine.end()) {
+		zzub::plugin* p = host->get_plugin(plugin_id);
+		return create(p);
+	} else
+		return i->second;
+}
+
+// we need a buzz-compatible wrapper for zzub-plugins, i.e zzub2buzz
+class CPluginWrap : public CMachineInterface {
+public:
+	CPluginWrap(CMachine* machine) {
+		// peers try to write to these?
+		GlobalVals = machine->_internal_global_state;
+		TrackVals = machine->_internal_track_state;
+		pMasterInfo = 0;
+		pCB = 0;
 	}
+	virtual void Tick() {
+		cerr << "buzz2zzub::CPluginWrap::Tick()" << endl;
+	}
+	virtual bool Work(float *psamples, int numsamples, int const mode) { 
+		cerr << "buzz2zzub::CPluginWrap::Work()" << endl;
+		return false; 
+	}
+	virtual bool WorkMonoToStereo(float *pin, float *pout, int numsamples, int const mode) { 
+		cerr << "buzz2zzub::CPluginWrap::WorkMonoToStereo()" << endl;
+		return false; 
+	}
+	virtual void Stop() {
+		cerr << "buzz2zzub::CPluginWrap::Stop()" << endl;
+	}
+
 };
 
+CMachine* CMachineManager::create(zzub::plugin* plugin) {
+	CMachine* machine = new CMachine();
+	machine->plugin_id = plugin->_host->plugin_id;
+	machine->_internal_machine_ex = 0;
+	machine->_internal_seqCommand = 0;
+	machine->_internal_name = "";	// Must set to "" or else PVST will crash in SetInstrument
+	machine->_internal_track_state = (char*)new char[256*128*2];	// max 128 word parameters in 256 tracks;
+	machine->_internal_global_state = (char*)new char[128*2];		// max 128 word parameters
+	machine->_internal_machine = new CPluginWrap(machine);
 
 
+	plugin_to_machine[plugin->_host->plugin_id] = machine;
+	return machine;
+}
+
+CMachine* CMachineManager::create(buzz2zzub::plugin* plugin) {
+	CMachine* machine = new CMachine();
+	machine->plugin_id = plugin->_host->plugin_id;
+	machine->_internal_machine = plugin->machine;
+	machine->_internal_machine_ex = plugin->machine2;
+	machine->_internal_seqCommand = 0;
+	machine->_internal_name = "";	// Must set to "" or else PVST will crash in SetInstrument
+	machine->_internal_track_state = (char*)new char[256*128*2];	// max 128 word parameters in 256 tracks;
+	machine->_internal_global_state = (char*)new char[128*2];		// max 128 word parameters
+
+	plugin_to_machine[plugin->_host->plugin_id] = machine;
+	return machine;
+}
+
+void CMachineManager::destroy(int plugin_id) {
+	std::map<int, CMachine*>::iterator i = plugin_to_machine.find(plugin_id);
+	if (i != plugin_to_machine.end()) {
+		delete i->second->_internal_global_state;
+		delete i->second->_internal_track_state;
+		if (i->second->buzzinfo) {
+			delete[] i->second->buzzinfo->Parameters;
+			if (i->second->buzzinfo->pLI)
+				delete i->second->buzzinfo->pLI;
+			delete i->second->buzzinfo;
+		}
+		delete i->second;
+		plugin_to_machine.erase(i);
+	}
+}
+
+/***
+
+	buzzplugininfo
+
+***/
 
 buzzplugininfo::buzzplugininfo()
 {
+	plugincollection = 0;
 	hDllInstance = 0;
 	GetInfo = 0;
 	CreateMachine = 0;
 	lockAddInput = lockSetTracks = useSequencerHack = false;
+	plugin_lib = 0;
 }
-	
-void buzzplugininfo::detach()
+
+bool buzzplugininfo::attach()
 {
-	if (hDllInstance)
-	{
-        unhack::freeLibrary(hDllInstance);
-		hDllInstance = 0;
-		GetInfo = 0;
-		CreateMachine = 0;
-	}		
-}
-	
-zzub::plugin* buzzplugininfo::create_plugin() const {
-	CMachineInterface* machine = CreateMachine();
-	if (machine)
-	{
-		return new buzz2zzub::plugin(machine, this);
-	}
-	return 0;
-}
-	
-bool buzzplugininfo::store_info(zzub::archive *arc) const {
-	return false;
-}
-	
-bool buzzplugininfo::init()
-{
+	if (hDllInstance) return true ;
+
 	assert (!hDllInstance);
 
-    hDllInstance = unhack::loadLibrary(m_path.c_str());
+	hDllInstance = unhack::loadLibrary(m_path.c_str());
 
 	if (!hDllInstance) {
 		cout << m_path << ": LoadLibrary failed." << endl;
 		return false;
 	}
-    GetInfo = (GET_INFO)unhack::getProcAddress(hDllInstance, "GetInfo");
+	GetInfo = (GET_INFO)unhack::getProcAddress(hDllInstance, "GetInfo");
 	if (!GetInfo) {
 		cout << m_path << ": missing GetInfo." << endl;
+		unhack::freeLibrary(hDllInstance);
 		return false;
 	}
 	
-    CreateMachine = (CREATE_MACHINE)unhack::getProcAddress(hDllInstance, "CreateMachine");
+	CreateMachine = (CREATE_MACHINE)unhack::getProcAddress(hDllInstance, "CreateMachine");
 	if (!CreateMachine) {
 		cout << m_path << ": missing CreateMachine." << endl;
+		unhack::freeLibrary(hDllInstance);
 		return false;
 	}
-	
-	m_uri="@zzub.org/buzz2zzub/" + m_name;
-	replace(m_uri.begin(), m_uri.end(), ' ', '+');
-	uri = m_uri.c_str();
-	
+
 	const CMachineInfo *buzzinfo = GetInfo();
 
+	// small sanity check (this is legacy)
+	if (!buzzinfo->Name || !buzzinfo->ShortName) {
+		printf("%s: info name or short_name is empty. Skipping.\n", m_path.c_str()); 
+		unhack::freeLibrary(hDllInstance);
+		return false;
+	}
 	version = buzzinfo->Version;
 	flags = buzzinfo->Flags;
 	
 	// NOTE: A Buzz generator marked MIF_NO_OUTPUT is flagged with
 	// neither input nor output flags. An effect with NO_OUTPUT is marked 
 	// as input only. The MIF_NO_OUTPUT-flag is cleared no matter.
+	// NOTE: this has been changed back, the no_output flag is kept in order
+	// to put this special kind of plugin ahead in the work_order
+	// therefore...
+
+	// do not apply audio_output/audio_input-flags according to buzz type on
+	// machines marked MIF_NO_OUTPUT
 	switch (buzzinfo->Type) {
 		case MT_MASTER: 
 			flags |= ROOT_PLUGIN_FLAGS; 
 			break;
 		case MT_GENERATOR: 
-			if ((buzzinfo->Flags & MIF_NO_OUTPUT) != 0)
-				flags ^= MIF_NO_OUTPUT; else
+			if ((buzzinfo->Flags & MIF_NO_OUTPUT) == 0)
 				flags |= GENERATOR_PLUGIN_FLAGS; 
 			break;
-		case MT_EFFECT:
-			if ((buzzinfo->Flags & MIF_NO_OUTPUT) != 0) {
-				flags ^= MIF_NO_OUTPUT; 
-				flags |= zzub_plugin_flag_has_audio_input;
-			} else
-				flags |= EFFECT_PLUGIN_FLAGS; 
-			break;
 		default: 
-			flags |= EFFECT_PLUGIN_FLAGS; 
+			// TODO: we could look at the directory this plugin is contained in to determine bogus types
+			cerr << "buzz2zzub: " << buzzinfo->Name << "(" << m_path << ") claims to be of type " << buzzinfo->Type << ", assuming effect" << endl;
+			assert(false);
+		case MT_EFFECT:
+			if ((buzzinfo->Flags & MIF_NO_OUTPUT) == 0)
+				flags |= EFFECT_PLUGIN_FLAGS; 
+			else
+				flags |= zzub_plugin_flag_has_audio_input;
 			break;
 	}
 	min_tracks = buzzinfo->minTracks;
 	max_tracks = buzzinfo->maxTracks;
 	for (int i = 0; i < buzzinfo->numGlobalParameters; ++i) {
-        zzub::parameter& param=add_global_parameter();
-        param = *(const zzub::parameter *)buzzinfo->Parameters[i];
+		zzub::parameter& param=add_global_parameter();
+		param = *(const zzub::parameter *)buzzinfo->Parameters[i];
+		conformParameter(param);
 	}
 	for (int i = 0; i < buzzinfo->numTrackParameters; ++i) {
-        zzub::parameter& param=add_track_parameter();
-        param = *(const zzub::parameter *)buzzinfo->Parameters[buzzinfo->numGlobalParameters+i];
+		zzub::parameter& param=add_track_parameter();
+		param = *(const zzub::parameter *)buzzinfo->Parameters[buzzinfo->numGlobalParameters+i];
+		conformParameter(param);
 	}
 	for (int i = 0; i < buzzinfo->numAttributes; ++i) {
-        zzub::attribute& attr=add_attribute();
-        attr = *(const zzub::attribute *)buzzinfo->Attributes[i];
+		zzub::attribute& attr=add_attribute();
+		attr = *(const zzub::attribute *)buzzinfo->Attributes[i];
 	}
 	name = buzzinfo->Name;
 	short_name = buzzinfo->ShortName;
-	author = buzzinfo->Author;
-	commands = buzzinfo->Commands;
-	if (buzzinfo->pLI)
-		plugin_lib = new libwrap(buzzinfo->pLI);
+	author = buzzinfo->Author != 0 ? buzzinfo->Author : "";
+	commands = buzzinfo->Commands != 0 ? buzzinfo->Commands : "";
+
+	// on re-attachment, we re-use plugin_lib, and simply update the blib member
+	if (buzzinfo->pLI && !plugin_lib)
+		plugin_lib = new libwrap(buzzinfo->pLI, this); 
+	else if (buzzinfo->pLI && plugin_lib)
+		((libwrap*)plugin_lib)->blib = buzzinfo->pLI;
 
 	// set flags from buzz2zzub.ini
 	std::map<std::string, std::vector<std::string> >::iterator it = unhack::patches.find(m_name);
@@ -853,130 +1385,54 @@ bool buzzplugininfo::init()
 	return true;
 }
 
-struct plugintools {
-	static HMODULE hModule;  // set this in DLL_PROCESS_ATTACH
-
-	static std::string getPluginPath() {
-		if (!hModule) return "";
-
-		char modulename[MAX_PATH];
-		GetModuleFileName(hModule, modulename, MAX_PATH);
-		std::string result = modulename;
-		size_t ls = result.find_last_of("\\/");
-		return result.substr(0, ls + 1);
-	}
-};
-
-struct buzzplugincollection : zzub::plugincollection {
-
-	std::vector<buzzplugininfo *> buzzplugins;
-
-	buzzplugincollection() {
-        DSP_Init(44100);
-
-		load_config();
-
-		load_plugins("buzz");
-		load_plugins("..\\generators");
-		load_plugins("..\\effects");
-	}
-
-	~buzzplugincollection() {
-		std::vector<buzzplugininfo *>::iterator i;
-		for (i = buzzplugins.begin(); i != buzzplugins.end(); ++i)
-		{
-			(*i)->detach();
-			delete *i;
+void buzzplugininfo::detach()
+{
+	if (hDllInstance)
+	{
+		unhack::freeLibrary(hDllInstance);
+		hDllInstance = 0;
+		GetInfo = 0;
+		CreateMachine = 0;
+		if (plugin_lib) {
+			// we keep our plugin_lib, to allow re-attaching on calls to libwrap later
+			((libwrap*)plugin_lib)->blib = 0;
 		}
-		buzzplugins.clear();
-	}
 
-	// Called by the host initially. The collection registers
-	// plugins through the pluginfactory::register_info method.
-	// The factory pointer remains valid and can be stored
-	// for later reference.
-	virtual void initialize(zzub::pluginfactory *factory) {
-		for (std::vector<buzzplugininfo *>::iterator i = buzzplugins.begin(); i != buzzplugins.end(); ++i) {
-			const zzub::info *_info = *i;
-			factory->register_info(_info);
-		}
-	}
+		global_parameters.clear();
+		track_parameters.clear();
+		attributes.clear();
+		controller_parameters.clear();
 
-	// Called by the host upon song loading. If the collection
-	// can not provide a plugin info based on the uri or
-	// the metainfo passed, it should return a null pointer.
-	virtual const zzub::info *get_info(const char *uri, zzub::archive *arc) { return 0; }
+	}		
+}
 	
-	// Called by the host upon destruction. You should
-	// delete the instance in this function
-	virtual void destroy() { delete this; }
+zzub::plugin* buzzplugininfo::create_plugin() const {
+	if (!plugincollection->attach(this)) return 0;	// bypass const-ness
 
-	// Returns the uri of the collection to be identified,
-	// return zero for no uri. Collections without uri can not be 
-	// configured.
-	virtual const char *get_uri() { return 0; }
+	CMachineInterface* machine = CreateMachine();
+	if (machine)
+	{
+		return new buzz2zzub::plugin(machine, this);
+	}
+	return 0;
+}
 	
-	// Called by the host to set specific configuration options,
-	// usually related to paths.
-	virtual void configure(const char *key, const char *value) {}
+bool buzzplugininfo::store_info(zzub::archive *arc) const {
+	return false;
+}
 
-	void load_config() {
-		std::string configPath = plugintools::getPluginPath() + "buzz2zzub.ini";
-		ini::file inifile(configPath);
-		int patchCount = inifile.section("Patches").get("Count", 0);
-		for (int i = 0; i < patchCount; i++) {
-			std::stringstream patchName;
-			patchName << "Patch" << i;
-			std::string patchString = inifile.section("Patches").get<std::string>(patchName.str(), ""); 
-			if (patchString.empty()) continue;
-			size_t fe = patchString.find_first_of(':');
-			if (fe == std::string::npos) continue;
-			std::string dllName = patchString.substr(0, fe);
-			std::string patchCommand = patchString.substr(fe+1);
-			unhack::enablePatch(dllName, patchCommand);
-			cout << "Read patch from ini: " << dllName << " -> '" << patchCommand << "'" << endl;
-		}
-	}
+bool buzzplugininfo::init()
+{
+	
+	m_uri="@zzub.org/buzz2zzub/" + m_name;
+	replace(m_uri.begin(), m_uri.end(), ' ', '+');
+	uri = m_uri.c_str();
 
-	void load_plugins(const char *relpath) {
-		std::string pluginPath = plugintools::getPluginPath() + relpath + "\\";
-		std::string searchPath = pluginPath + "*.dll";
+	// TODO: this should load the info it needs only, and re-load the dll later when needed
 
-		cout << "buzz2zzub: searching folder " << pluginPath << "..." << endl;
-		WIN32_FIND_DATA fd;
-		HANDLE hFind = FindFirstFile(searchPath.c_str(), &fd);
-
-		while (hFind != INVALID_HANDLE_VALUE) {
-			
-			if ( (fd.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY)==0) {
-				std::string fullFilePath = pluginPath + fd.cFileName;
-				std::string name = fd.cFileName;
-				size_t ld = name.find_last_of('.');
-				name = name.substr(0, ld);
-
-				buzzplugininfo *i = new buzzplugininfo();
-				i->m_name = name;
-				i->m_path = fullFilePath;
-				cout << "buzz2zzub: adding " << name << "(" << fullFilePath << ")" << endl;
-				if (i->init())
-					buzzplugins.push_back(i);
-				else
-				{
-					i->detach();
-					delete i;
-				}
-			}
-
-			if (!FindNextFile(hFind, &fd)) break;
-		}
-		FindClose(hFind);
-
-	}
-};
-
-HMODULE plugintools::hModule = 0;
-
-
+	//return attach();
+	return true;
+}
 
 } // namespace buzz2zzub
 
@@ -988,10 +1444,16 @@ zzub::plugincollection *zzub_get_plugincollection() {
 
 const char *zzub_get_signature() { return ZZUB_SIGNATURE; }
 
+HMODULE plugintools::hModule = 0;
+
 BOOL WINAPI DllMain( HMODULE hModule, DWORD fdwreason, LPVOID lpReserved ) {
 	switch(fdwreason) {
 		case DLL_PROCESS_ATTACH:
-			buzz2zzub::plugintools::hModule = hModule;
+			if (!CMachine::checkBuzzCompatibility()) {
+				cout << "WARNING: The CMachine structure defined in buzz2zzub.dll is not binary compatible with Jeskola Buzz." << endl;
+			}
+			plugintools::hModule = hModule;
+			buzz2zzub::generate_oscillator_tables();
 			break;
 		case DLL_PROCESS_DETACH:
 			break;

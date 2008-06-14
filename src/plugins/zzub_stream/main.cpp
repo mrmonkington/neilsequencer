@@ -97,6 +97,7 @@ zzub::plugincollection *zzub_get_plugincollection() {
 
 namespace {
 
+const zzub::parameter *paraNote = 0;
 const zzub::parameter *paraOffsetHigh = 0;
 const zzub::parameter *paraOffsetLow = 0;
 const zzub::parameter *paraLengthHigh = 0;
@@ -111,6 +112,9 @@ stream_machine_info::stream_machine_info() {
 	| zzub::plugin_flag_has_audio_output
 	| zzub::plugin_flag_stream;
 	
+	paraNote = &add_global_parameter()
+		.set_note();
+
 	// what about a 32bit parameter instead
 	paraOffsetLow = &add_global_parameter()
 		.set_word()

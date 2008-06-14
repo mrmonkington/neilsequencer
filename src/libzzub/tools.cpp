@@ -103,24 +103,6 @@ float dB_to_linear(float val) {
 	return (float)(pow(10.0f, val / 20.0f));
 }
 
-double square(double v) {
-		double sqmod=fmod(v, 2.0f*M_PI);
-		return sqmod<M_PI?-1:1;
-	}
-
-double sawtooth(double v) {
-	return (fmod(v, 2.0f*M_PI) / M_PI)-1;
-}
-
-double triangle(double v) {
-	double sqmod=fmod(v, 2.0f*M_PI);
-
-	if (sqmod<M_PI) {
-		return sqmod/M_PI;
-	} else
-		return (M_PI-(sqmod-M_PI)) / M_PI;
-}
-
 
 #ifdef _USE_SEH
 // the translator function

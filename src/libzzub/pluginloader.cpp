@@ -36,27 +36,19 @@ using namespace std;
     \brief Enumerates plugins from plugin DLLs.
 */
 
-/*! \struct pluginloader
-    \brief Helper class for loading a specific plugin from a DLL.
-*/
-
-pluginlib::pluginlib(const std::string& fileName, zzub::player &p, zzub::plugincollection *_collection) : player(p) {
-	refcount = 0;
-	this->fileName=fileName;
-	this->hMachine=0;
+pluginlib::pluginlib(const std::string& _fileName, zzub::player &p, zzub::plugincollection *_collection) : player(p) {
+	fileName = _fileName;
+	hMachine = 0;
 	if (_collection) { // internal
-		this->initialized=true;
 		collection = _collection;
 		this->collection->initialize(this);
 	} else { // external
-		this->initialized=false;
 		collection = 0;
-		initDll();
+		init_dll();
 	}	
 }
 
-pluginlib::~pluginlib()
-{
+pluginlib::~pluginlib() {
 	unload();
 }
 
@@ -66,40 +58,29 @@ void pluginlib::unload() {
 		collection->destroy();
 		collection = 0;
 	}
-	for (std::list<pluginloader*>::iterator i=loaders.begin(); i != loaders.end(); ++i)
-	{
-		delete *i;
-	}
+
 	loaders.clear();
+
 	if (hMachine) {
 		xp_dlclose(hMachine);
-		hMachine=0;
+		hMachine = 0;
 	}
-	initialized=false; 	
-//	plugin_info=0;
 }
 
-void pluginlib::initDll() {
-	// NOTE: buzz.exe does not leave loadlibrary and getprocaddress-traces while profiling with depends.exe
-	
-	if (initialized) return ;
-//#if defined(_WIN32)
-	//~ char currentdir[1024];
-	//~ GetCurrentDirectory(1024, currentdir);
-
+void pluginlib::init_dll() {
 	printf("loading machine '%s'\n", fileName.c_str());
 
 	bool is_so = false;
 	bool is_win32 = false;
 	
-	int dpos=(int)fileName.find_last_of('.');
+	int dpos = (int)fileName.find_last_of('.');
 	string fileExtension = fileName.substr(dpos);
 	is_so = (fileExtension == ".so");
 	is_win32 = (fileExtension == ".dll");
 	
 	if (is_so || is_win32) {
-		this->hMachine=xp_dlopen(fileName.c_str());
-		if (this->hMachine==0) {
+		hMachine = xp_dlopen(fileName.c_str());
+		if (hMachine == 0) {
 			std::cerr << "error loading plugin library " << fileName << ": " << xp_dlerror() << std::endl;
 			return ;
 		}
@@ -133,41 +114,12 @@ void pluginlib::initDll() {
 		printf("%s: signature function missing.\n", fileName.c_str());
 	}
 	
-	initialized=true;
-	
 }
 
 void pluginlib::register_info(const zzub::info *_info) {
-	// small sanity check (this is legacy)
-	if (!_info->name || !_info->short_name) {
-		// let the user know
-		printf("%s: info name or short_name is empty.\n", fileName.c_str());
-	} else {
-		// add a pluginloader for this info struct
-		pluginloader *loader = new pluginloader(this, _info);
-		loaders.push_back(loader);
-		player.registerMachineLoader(loader);
-	}
-}
-
-int pluginlib::getPlugins()
-{
-	return loaders.size();
-}
-
-/// pluginloader ///
-
-pluginloader::pluginloader(pluginlib *lib, const info *_info) {	
-	this->lib = lib;
-	this->plugin_info = _info;
-}
-
-pluginloader::~pluginloader() {
-}
-
-plugin* pluginloader::createMachine() {
-	if (!plugin_info) return 0;
-	return plugin_info->create_plugin();
+	// add a pluginloader for this info struct
+	loaders.push_back(_info);
+	player.plugin_infos.push_back(_info);
 }
 
 };

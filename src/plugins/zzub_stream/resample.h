@@ -36,14 +36,21 @@ struct stereo_resampler {
 	void set_pitch(long pitch);
 };
 
+struct stream_provider {
+	virtual bool generate_samples(float** buffer, int numsamples) = 0;
+	virtual int get_target_samplerate() = 0;
+};
+
 struct stream_resampler {
 	enum {
-		overlap_samples = 256,
-		resampler_samples = 4096*4,
+		overlap_samples = 64,
+		resampler_samples = 4096,
+//		overlap_samples = 256,
+//		resampler_samples = 4096*4,
 		max_samples_per_tick = resampler_samples * (1 << 6), // hold sampledata for up to 6 octaves more than base note
 	};
 
-	zzub::plugin* plugin;
+	stream_provider* plugin;
 	bool playing;
 	int note;
 	int stream_sample_rate;
@@ -60,7 +67,7 @@ struct stream_resampler {
 	float remainderL[overlap_samples];
 	float remainderR[overlap_samples];
 
-	stream_resampler(zzub::plugin* plugin);
+	stream_resampler(stream_provider* plugin);
 
 	void fill_resampler();
 	void set_pitch(long pitch);

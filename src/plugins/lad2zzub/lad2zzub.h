@@ -318,6 +318,10 @@ public:
 	void rename_input(const char *oldname,const char *newname);
 	void input(float **samples,int size,float amp);
 	bool handle_input(int index,int amp,int pan);
+	virtual void process_midi_events(zzub::midi_message* pin, int nummessages) {}
+	virtual void get_midi_output_names(zzub::outstream *pout) {}
+	virtual void set_stream_source(const char* resource) {}
+	virtual const char* get_stream_source() { return 0; }
 
 	virtual void process_controller_events() {}
 
@@ -345,7 +349,7 @@ private:
 
 	SGlobalParams params;	
 
-	metaplugin *cm;
+	//metaplugin *cm;
 
 	float **ins;
 	float **outs;

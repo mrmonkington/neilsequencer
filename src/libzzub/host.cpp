@@ -29,8 +29,10 @@ namespace zzub {
 	info from and manipulating the player.
 */
 
-host::host(metaplugin* m) {
-	_metaplugin=m;
+host::host(zzub::player* _player, int _plugin_id) {
+	player = _player;
+	plugin_id = _plugin_id;
+
 	for (int c = 0; c < 2; ++c) {
 		auxBuffer[c] = new float[zzub::buffer_size * sizeof(float) * 4];
 		memset(auxBuffer[c], 0, zzub::buffer_size * sizeof(float) * 4);
@@ -45,11 +47,11 @@ host::~host() {
  
 const wave_info* host::get_wave(int const i) {
 	if (i<1 || i>0xc8) return 0;
-	wave_info_ex* wi=&_metaplugin->player->waveTable.waves[i-1];
+	wave_info_ex* wi = plugin_player->wavetable.waves[i-1];
 	return wi;
 }
 
-const wave_level* host::get_wave_level(int const i, unsigned int const level) {
+const wave_level* host::get_wave_level(int i, int level) {
 	wave_info_ex* waveInfo = (wave_info_ex*)get_wave(i);
 	if (waveInfo == 0 || waveInfo->get_levels() <= level) return 0;
 	return waveInfo->get_level(level);
@@ -66,16 +68,19 @@ void host::message(char const *txt) {
 }
 
 void host::lock() {
-	_metaplugin->interfaceLock.lock();
+	player->swap_lock.lock();
 }
 
 void host::unlock() {
-	_metaplugin->interfaceLock.unlock();
+	player->swap_lock.unlock();
+}
+
+void host::set_swap_mode(bool free) {
+	player->swap_mode = free;
 }
 
 int host::get_write_position() {
-	return _metaplugin->player->getWorkPosition();
-	//return _metaplugin->player->waveOut->GetWritePos();
+	return player->front.work_position;
 }
 
 float **host::get_auxiliary_buffer() { 
@@ -84,47 +89,41 @@ float **host::get_auxiliary_buffer() {
 
 void host::clear_auxiliary_buffer() { 
 	float **buffer = get_auxiliary_buffer();
-	memset(buffer[0], 0, zzub::buffer_size * sizeof(float));
-	memset(buffer[1], 0, zzub::buffer_size * sizeof(float));
+	memset(buffer[0], 0, zzub::buffer_size * sizeof(float) * 4);
+	memset(buffer[1], 0, zzub::buffer_size * sizeof(float) * 4);
 }
 
 int host::get_next_free_wave_index() {
-	wave_table& wt=_metaplugin->player->waveTable;
-	for (size_t i=0; i<wt.waves.size(); i++) {
-		if (wt.waves[i].get_levels()==0) return (int)i+1;
+	wave_table& wt = plugin_player->wavetable;
+	for (size_t i = 0; i < wt.waves.size(); i++) {
+		if (wt.waves[i]->get_levels() == 0) return (int)i+1;
 	}
 	return 0;
 }
 
 bool host::allocate_wave(int i, int level, int samples, wave_buffer_type type, bool stereo, char const *name) {
 	assert(i > 0);
-	wave_table& wt=_metaplugin->player->waveTable;
-	wt.waves[i-1].clear();
-	wt.waves[i-1].name=name;
-	wt.waves[i-1].volume=1.0;
-	wt.waves[i-1].flags=wave_flag_envelope;	// TODO? stereo or mono??
-	wt.waves[i-1].envelopes.push_back(envelope_entry());
-	if (!wt.waves[i-1].allocate_level(level, samples, type, stereo)) {
-		wt.waves[i-1].clear();
+	wave_table& wt = plugin_player->wavetable;
+	wave_info_ex& w = *wt.waves[i - 1];
+	w.clear();
+	w.name = name;
+	w.volume = 1.0;
+	w.flags = wave_flag_envelope;	// TODO? stereo or mono??
+	w.envelopes.push_back(envelope_entry());
+	if (!w.allocate_level(level, samples, type, stereo)) {
+		w.clear();
 		return false;
 	}
 
 	// need to tell someone we updated, so windows can be redrawn
-	zzub_event_data eventData={event_type_wave_allocated};
-	_metaplugin->player->master->invokeEvent(eventData);
+	zzub_event_data event_data = {event_type_wave_allocated};
+	plugin_player->plugin_invoke_event(0, event_data);
 
 	return true;
 }
 
 
-void host::schedule_event(int const time, unsigned int data) {
-	message("ScheduleEvent not implemented");
-	return ;
-	scheduled_event ev = { time, data };
-	this->_metaplugin->scheduledEvents.push_back(ev);
-}
-
-void host::get_midi_output_names(outstream *pout) {
+/*void host::get_midi_output_names(outstream *pout) {
 	// return a list of open midi output devices
 
 	midi_io* driver = _metaplugin->player->midiDriver;
@@ -164,36 +163,38 @@ void host::midi_out(int const dev, unsigned int data) {
 
 	_metaplugin->lastMidiState = true;
 }
+*/
 
-short const *host::get_oscillator_table(int const waveform) {
-	return zzub::player::oscTables[waveform];
+void host::midi_out(int time, unsigned int data) {
+	midi_message msg = { -1, data, time };
+	metaplugin& m = *plugin_player->plugins[plugin_id];
+	m.midi_messages.push_back(msg);
 }
 
 // envelopes
 
-int host::get_envelope_size(int const wave, int const env) {
-	wave_info_ex* waveInfo=(wave_info_ex*)get_wave(wave);
+int host::get_envelope_size(int wave, int env) {
+	wave_info_ex* wi = (wave_info_ex*)get_wave(wave);
 
-	if (env<0) return 0;
-	if (waveInfo==0) return 0;
-	if (env>=waveInfo->envelopes.size()) return 0;
+	if (env < 0) return 0;
+	if (wi == 0) return 0;
+	if (env >= (int)wi->envelopes.size()) return 0;
 		
-	if (waveInfo->envelopes[env].disabled)
+	if (wi->envelopes[env].disabled)
 		return 0;
 
-	//return 0;		// otherwise we get calls to get env point which I dont trust yet
-	return waveInfo->envelopes[env].points.size();
+	return (int)wi->envelopes[env].points.size();
 }
 
-bool host::get_envelope_point(int const wave, int const env, int const i, unsigned short &x, unsigned short &y, int &flags) {
-	wave_info_ex* waveInfo=(wave_info_ex*)get_wave(wave);
+bool host::get_envelope_point(int wave, int env, int i, unsigned short &x, unsigned short &y, int &flags) {
+	wave_info_ex* wi = (wave_info_ex*)get_wave(wave);
 
-	if (env<0) return false;
-	if (waveInfo==0) return false;
-	if (env>=waveInfo->envelopes.size()) return false;
-	if (i>=waveInfo->envelopes[env].points.size()) return false;
+	if (env < 0) return false;
+	if (wi == 0) return false;
+	if (env >= (int)wi->envelopes.size()) return false;
+	if (i >= (int)wi->envelopes[env].points.size()) return false;
 
-	envelope_point &pt = waveInfo->envelopes[env].points[i];
+	envelope_point &pt = wi->envelopes[env].points[i];
 	x = pt.x;
 	y = pt.y;
 	flags = pt.flags;
@@ -201,27 +202,21 @@ bool host::get_envelope_point(int const wave, int const env, int const i, unsign
 }
 
 
-// when i and note are both -1, we return a new instance of CMDKImplementation
-// the mdk-machine will take the returned pointer and populate its pmi-member during Init()
-const wave_level* host::get_nearest_wave_level(int const i, int const note) {
-//	if (i==-1 && note==-1) {
-//		return (wave_level*)_metaplugin->createMdkImplementation();
-//	}
-
-	wave_info_ex* waveInfo=(wave_info_ex*)get_wave(i);
-	if (waveInfo==0) return 0;
+const wave_level* host::get_nearest_wave_level(int i, int note) {
+	wave_info_ex* wi = (wave_info_ex*)get_wave(i);
+	if (wi == 0) return 0;
 	
-	int nearestIndex=-1;
-	int nearestNote=0;
-	for (size_t j=0; j<waveInfo->get_levels(); j++) {
-		int levelNote=waveInfo->get_root_note(j);
+	int nearestIndex = -1;
+	int nearestNote = 0;
+	for (int j = 0; j < wi->get_levels(); j++) {
+		int levelNote = wi->get_root_note(j);
 		if (abs(note-levelNote) < abs(note-nearestNote)) {
-			nearestNote=levelNote;
-			nearestIndex=j;
+			nearestNote = levelNote;
+			nearestIndex = j;
 		}
 	}
 
-	if (nearestIndex<0) nearestIndex=0;
+	if (nearestIndex<0) nearestIndex = 0;
 
 	return get_wave_level(i, nearestIndex);
 }
@@ -230,43 +225,39 @@ const wave_level* host::get_nearest_wave_level(int const i, int const note) {
 // pattern editing - never call any of these in tick or work, only init and command allowed
 
 void host::set_track_count(int const n) {
-	_metaplugin->setTracks(n);
+	assert(false);
 }
 
 pattern* host::create_pattern(char const* name, int const length) {
-	pattern* p = _metaplugin->createPattern(length);
-	p->name = name;
-	return p;
+	assert(false);
+	return 0;
 }
 
 pattern* host::get_pattern(int const index) {
-	return _metaplugin->getPattern(index);
+	assert(false);
+	return 0;
 }
 
 char const* host::get_pattern_name(pattern* ppat) {
-	return ppat->name.c_str();
+	assert(false);
+	return "";
 }
 
 void host::rename_pattern(char const* oldname, char const* newname) {
-	pattern* p = _metaplugin->getPattern((std::string)oldname);
-	if (!p) return ;
-	p->name = newname;
+	assert(false);
 }
 
 void host::delete_pattern(pattern* ppat) {
-	int index = _metaplugin->getPatternIndex(ppat);
-	if (index == -1) return ;
-	_metaplugin->removePattern(index);
+	assert(false);
 }
 
 int host::get_pattern_data(pattern* ppat, int const row, int const group, int const track, int const field) {
-	patterntrack* pt = ppat->getPatternTrack(group, track);
-	return pt->getValue(row, field);
+	assert(false);
+	return 0;
 }
 
 void host::set_pattern_data(pattern* ppat, int const row, int const group, int const track, int const field, int const value) {
-	patterntrack* pt = ppat->getPatternTrack(group, track);
-	pt->setValue(row, field, value);
+	assert(false);
 }
 	
 // sequence editing
@@ -298,11 +289,6 @@ void host::set_sequence_data(int const row, pattern* ppat) {
 
 // buzz v1.2 (MI_VERSION 15) additions start here
 
-// obsolete
-//~ void host::set_plugin2(plugin2* pex) {
-	//~ _metaplugin->setInterfaceEx(pex);
-//~ }
-
 // group 1=global, 2=track
 
 void host::_legacy_control_change(int group, int track, int param, int value) {					// set value of parameter
@@ -314,44 +300,66 @@ void host::_legacy_control_change(int group, int track, int param, int value) {	
 // shouldn't be used for anything else
 int host::audio_driver_get_channel_count(bool input) {
 	if (input) {
-		return _metaplugin->player->workInputDevice!=0 ? _metaplugin->player->workInputDevice->in_channels : 0;
+		return player->work_in_device!=0 ? player->work_in_device->in_channels : 0;
 	} else {
-		return _metaplugin->player->workDevice->out_channels;
+		return player->work_out_device->out_channels;
 	}
 }
 
 void host::audio_driver_write(int channel, float *psamples, int numsamples) {
-	memcpy(_metaplugin->player->outputBuffer[channel], psamples, sizeof(float) * numsamples);
+	memcpy(player->front.outputBuffer[channel], psamples, sizeof(float) * numsamples);
 }
 
 void host::audio_driver_read(int channel, float *psamples, int numsamples) {
-	if (_metaplugin->player->inputBuffer[channel] == 0) return ;
+	if (player->front.inputBuffer[channel] == 0) return ;
 
-	memcpy(psamples, _metaplugin->player->inputBuffer[channel], sizeof(float) * numsamples);
+	memcpy(psamples, player->front.inputBuffer[channel], sizeof(float) * numsamples);
 }
 
-metaplugin *host::get_metaplugin() {
-	return (metaplugin*)this->_metaplugin;
+int host::get_metaplugin() {
+	return plugin_id;
 }
 
-void host::control_change(metaplugin *pmac, int group, int track, int param, int value, bool record, bool immediate) {
-	if (!_metaplugin->player->machineExists(pmac)) return ;
-	pmac->setParameter(group, track, param, value, record);
-	if (immediate)
-		pmac->tickAsync();
+void host::control_change(int pmacid, int group, int track, int param, int value, bool record, bool immediate) {
+	if (plugin_player->plugins[pmacid] == 0) return ;
+	metaplugin& m = *plugin_player->plugins[pmacid];
+	
+	if (group == 2 && track >= m.tracks) return ;
+
+	plugin_player->plugin_set_parameter_direct(pmacid, group, track, param, value, record);
+
+	char* param_ptr = 0;
+	int track_size;
+	switch (group) {
+		case 0:
+			assert(false);
+			break;
+		case 1:
+			param_ptr = (char*)m.plugin->global_values;
+			break;
+		case 2:
+			param_ptr = (char*)m.plugin->track_values;
+			track_size = plugin_player->get_plugin_parameter_track_row_bytesize(pmacid, group, track);
+			param_ptr += track * track_size;
+			break;
+	}
+	plugin_player->transfer_plugin_parameter_track_row(pmacid, group, track, m.state_write, param_ptr, 0, false); 
+
+	//if (immediate)
+	//	pmac->tickAsync();
 }
 
 // peerctrl extensions
-int host::get_parameter(metaplugin *_metaplugin, int group, int track, int param) {
-	return _metaplugin->getParameter(group, track, param);
+int host::get_parameter(int _metaplugin, int group, int track, int param) {
+	return plugin_player->plugin_get_parameter(_metaplugin, group, track, param);
 }
 
-plugin *host::get_plugin(metaplugin *_metaplugin) {
-	return _metaplugin->machine;
+plugin *host::get_plugin(int _metaplugin) {
+	return plugin_player->plugins[_metaplugin]->plugin;//_metaplugin->plugin;
 }
 
 // returns pointer to the sequence if there is a pattern playing
-sequence* host::get_playing_sequence(metaplugin *pmac) {
+sequence* host::get_playing_sequence(int pmacid) {
 	message("GetPlayingSequence not implemented");
 	return 0;
 }
@@ -365,158 +373,128 @@ void* host::get_playing_row(sequence* pseq, int group, int track) {
 
 // GetStateFlags fixed selecting a VSTi's during playback
 int host::get_state_flags() {
-	return (zzub_player_state)_metaplugin->player->getPlayState()==zzub_player_state_playing?state_flag_playing:0;
+	return (zzub_player_state)player->front.state==zzub_player_state_playing?state_flag_playing:0;
 }
 
 void host::set_state_flags(int state) {
 	if (state==0)
-		_metaplugin->player->setPlayerState(player_state_stopped); else
-		_metaplugin->player->setPlayerState(player_state_playing);
+		player->set_state(player_state_stopped); else
+		player->set_state(player_state_playing);
 }
 
 
-void host::set_event_handler(metaplugin *pmac, event_handler* handler) {
-//void host::set_event_handler(metaplugin *pmac, event_type et, event_handler_method method, void *param) {
-	if (!_metaplugin->player->machineExists(pmac)) return ;
-
-    pmac->addEventHandler(handler);
-//	pmac->setEventHandler(et, method, param);
+void host::set_event_handler(int pmacid, event_handler* handler) {
+	plugin_player->plugins[pmacid]->event_handlers.push_back(handler);
 }
 
+void host::remove_event_handler(int pmacid, event_handler* handler) {
+	std::vector<event_handler*>& handlers = plugin_player->plugins[pmacid]->event_handlers;
+	std::vector<event_handler*>::iterator i = find(handlers.begin(), handlers.end(), handler);
+	if (i == handlers.end()) return ;
+	handlers.erase(i);
 
-char const *host::get_wave_name(int const i) {
-	if (i < 1 || i>=_metaplugin->player->waveTable.waves.size()) return 0;
-	wave_info_ex& we=_metaplugin->player->waveTable.waves[i-1];
-	return we.name.c_str();
-}
+	// clear events in queue using this handler
+	int read_pos = plugin_player->user_event_queue_read;
+	while (read_pos != plugin_player->user_event_queue_write) {
+		event_message& ev = plugin_player->user_event_queue[read_pos];
+		if (ev.event == handler) ev.event = 0;
 
-
-void host::set_internal_wave_name(metaplugin *pmac, int const i, char const *name) {
-	message("SetInternalWaveName not implemented");
-}
-	// i >= 1, NULL name to clear
-void host::get_plugin_names(outstream *pout) {	// should be metapluginnames?
-//	MessageBox("GetMachineNames not implemented");
-	using namespace std;
-	for (size_t i=0; i<_metaplugin->player->getMachines(); i++) {
-		metaplugin* m=_metaplugin->player->getMachine(i);
-		assert(_metaplugin->player->machineExists(m));
-		string name=m->getName();
-		pout->write((void*)name.c_str(), name.length()+1);
+		if (read_pos == plugin_player->user_event_queue.size() - 1)
+			read_pos = 0; else
+			read_pos++;
 	}
 }
 
-metaplugin* host::get_metaplugin(char const *name) {
-	if (name==0) return 0;
-	return _metaplugin->player->getMachine(name);
+char const *host::get_wave_name(int const i) {
+	if (i < 1 || (size_t)i >= plugin_player->wavetable.waves.size()) return 0;
+	wave_info_ex& we = *plugin_player->wavetable.waves[i-1];
+	return we.name.c_str();
 }
 
-const info* host::get_info(metaplugin *pmac) {
-	if (pmac==0) return 0;
-	if (!_metaplugin->player->machineExists(pmac)) return 0;
-	return ((metaplugin*)pmac)->loader->plugin_info;
+// i >= 1, NULL name to clear
+void host::set_internal_wave_name(int pmacid, int const i, char const *name) {
+	message("SetInternalWaveName not implemented");
 }
 
-const char* host::get_name(metaplugin *pmac) {
-	// hvis maskinen har blitt deleted, så hender det peer-maskiner klikker her. vi skal isåfall ikke returnere noe
-	if (pmac==0) return 0;
-	if (!_metaplugin->player->machineExists(pmac)) return 0;
-	return ((metaplugin*)pmac)->getName().c_str();
+void host::get_plugin_names(outstream *pout) {	// should be metapluginnames?
+	for (int i = 0; i < plugin_player->get_plugin_count(); i++) {
+		metaplugin& m = plugin_player->get_plugin(i);
+		pout->write((void*)m.name.c_str(), (int)m.name.length()+1);
+	}
 }
 
+int host::get_metaplugin(char const *name) {
+	if (name == 0) return -1;
+	plugin_descriptor plugindesc = plugin_player->get_plugin_descriptor(name);
+	if (plugindesc == graph_traits<plugin_map>::null_vertex()) return -1;
+	return plugin_player->get_plugin_id(plugindesc);
+}
+
+int host::get_metaplugin_by_index(int plugin_desc) {
+	return plugin_player->get_plugin_id(plugin_desc);
+}
+
+const info* host::get_info(int pmacid) {
+	assert(pmacid != -1);
+	assert(plugin_player->plugins[pmacid] != 0);
+	return plugin_player->plugins[pmacid]->info;
+}
+
+const char* host::get_name(int pmacid) {
+	assert(pmacid != -1);
+	if (plugin_player->plugins[pmacid] == 0) return 0; // could happen if a peer controlled machine is deleted
+	return plugin_player->plugins[pmacid]->name.c_str();
+}
 
 bool host::get_input(int index, float *psamples, int numsamples, bool stereo, float *extrabuffer) {
 	message("GetInput not implemented");
 	return false;
 }
 
-bool host::get_osc_url(metaplugin *pmac, char *url) {
-	sprintf(url, "osc.udp://localhost:7770/%s", pmac->getName().c_str());
+bool host::get_osc_url(int pmac, char *url) {
+	sprintf(url, "osc.udp://localhost:7770/%s", plugin_player->get_plugin(pmac).name.c_str());
 	return true;
 }
 
 int host::get_play_position() {
-	return _metaplugin->player->getSequencerPosition();
+	return player->front.song_position;
 }
 
 void host::set_play_position(int pos) {
 	printf("host::set_play_position %i\n", pos);
-	_metaplugin->player->setSequencerPosition(pos);
+	player->front.song_position = pos;
 }
 
 int host::get_song_begin() {
-	return _metaplugin->player->getSongBegin();
+	return player->front.song_begin;
 }
 
 void host::set_song_begin(int pos) {
-	_metaplugin->player->setSongBegin(pos);
+	player->front.song_begin = pos;
 }
 
 int host::get_song_end() {
-	return _metaplugin->player->getSongEnd();
+	return player->front.song_end;
 }
 
 void host::set_song_end(int pos) {
-	_metaplugin->player->setSongEnd(pos);
+	player->front.song_end = pos;
 }
 
 int host::get_song_begin_loop() {
-	return _metaplugin->player->getSongBeginLoop();
+	return player->front.song_loop_begin;
 }
 
 void host::set_song_begin_loop(int pos) {
-	_metaplugin->player->setSongBeginLoop(pos);
+	player->front.song_loop_begin = pos;
 }
 
 int host::get_song_end_loop() {
-	return _metaplugin->player->getSongEndLoop();
+	return player->front.song_loop_end;
 }
 
 void host::set_song_end_loop(int pos) {
-	_metaplugin->player->setSongEndLoop(pos);
+	player->front.song_loop_end = pos;
 }
-
-
-std::string stringFromInt(int i, int len, char fillChar) {
-	char pc[16];
-	sprintf(pc, "%i", i);
-	std::string s=pc;
-	while (s.length()<(size_t)len)
-		s=fillChar+s;
-
-	return s;
-}
-
-// TODO: should we return a streamplugin (vs metaplugin) instead, which handles enough of
-// parameter handling (such as clearing after tick) and supports the host-class etc? (streamhost?)
-
-plugin* host::stream_create(const char* pluginUri, const char* dataUrl) {
-	return _metaplugin->player->createStream(pluginUri, dataUrl);
-}
-
-plugin* host::stream_create(int index, int levelIndex) {
-	const wave_info* wave = get_wave(index);
-	if (!wave) return 0;
-
-	const wave_level* level = get_wave_level(index, levelIndex);
-	if (!level) return 0;
-
-	// if streamPluginUri is blank, we hardcode use of a wavetable stream
-	// and modify streamDataUrl to point to a wave indexish
-	string uri = level->stream_plugin_uri;
-	string url = level->stream_data_url;
-	if (uri == "") {
-		uri = "@zzub.org/stream/wavetable;1";
-		url = stringFromInt(index, 0, ' ');
-	}
-
-	// TODO: should player->createStream take a wave_info/wave_level instead? could allow for passing samplerates, volume, basenote etc to be serialized for the plugins init()-method
-	return _metaplugin->player->createStream(uri, url);
-}
-
-void host::stream_destroy(plugin* stream) {
-	stream->destroy();
-}
-
 
 };

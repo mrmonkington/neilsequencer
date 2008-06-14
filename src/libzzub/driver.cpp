@@ -17,9 +17,24 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#if defined(USE_PORTAUDIO)
-#include "driver_portaudio.cpp"
-#endif
-#if defined(USE_RTAUDIO)
-#include "driver_rtaudio.cpp"
-#endif
+#include <vector>
+#include <string>
+#include "driver.h"
+
+namespace zzub {
+
+void i2s(float **s, float *i, int channels, int numsamples) {
+	if (!numsamples)
+		return;
+	float* p[audiodriver::MAX_CHANNELS];// = new float*[channels];
+	for (int j = 0; j<channels; j++) {
+		p[j] = s[j];
+	}
+	while (numsamples--) {
+		for (int j = 0; j<channels; j++) {
+			*p[j]++ = *i++;
+		}
+	}
+}
+
+};

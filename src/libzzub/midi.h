@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2003-2007 Anders Ervik <calvin@countzero.no>
+Copyright (C) 2003-2008 Anders Ervik <calvin@countzero.no>
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -17,17 +17,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #pragma once
-//#include <portmidi.h>
+
+#include "timer.h"
+#include "zzub/plugin.h"
+
 typedef void PortMidiStream;
 typedef void PmQueue;
 
 namespace zzub {
-
-struct midi_time_message {
-	size_t device;
-	int time_ms;
-	unsigned int data;
-};
 
 struct midi_io {
 	virtual ~midi_io() { }
@@ -50,15 +47,16 @@ struct midiworker {
 };
 
 struct mididriver : midi_io {
-	std::list<midi_time_message> outMessages;
+	std::list<midi_message> outMessages;
+	zzub::timer timer;
+	double lastTime;
 	PmQueue* sendQueue;
 	PmQueue* readQueue;
 
 	~mididriver();
-	
+
 	midiworker* worker;
 	std::vector<PortMidiStream*> devices;
-	std::vector<int> device_type;
 
 	bool initialize(midiworker*);
 

@@ -9,11 +9,14 @@
 stream_machine_info_wav stream_info_wav;
 
 stream_machine_info_wav::stream_machine_info_wav() {
-	this->name = "zzub Stream - WAV (raw)";
+	this->name = "Libsndfile Stream (WAV/AIFF)";
 	this->short_name = "WavStream";
 	this->author = "Andy Werk";
 	this->uri = "@zzub.org/stream/wav;1";
 	this->commands = "Select .WAV...";
+	this->supported_stream_extensions.push_back("wav");
+	this->supported_stream_extensions.push_back("aif");
+	this->supported_stream_extensions.push_back("aiff");
 }
 
 /***
@@ -23,61 +26,83 @@ stream_machine_info_wav::stream_machine_info_wav() {
 ***/
 
 stream_wav::stream_wav() {
+	resampler = 0;
 	sf = 0;
 	memset(&sfinfo, 0, sizeof(sfinfo));
 	loaded = false;
-	triggered = false;
 	buffer = 0;
 	buffer_size = 0;
 }
 
 stream_wav::~stream_wav() {
 	close();
+	if (resampler) delete resampler;
+
 }
 
 void stream_wav::init(zzub::archive * const pi) {
-	// the format of initialization instreams is defined for stream plugins
-	if (!pi) return ;
-	zzub::instream* strm = pi->get_instream("");
-	if (!strm) return ;
-
-	if (!strm->read(fileName)) return ;
-	open();
 }
 
 void stream_wav::load(zzub::archive * const pi) {
-	zzub::instream* strm = pi->get_instream("");
-	if (!strm) return ;
-
-	if (!strm->read(fileName)) return ;
-	open();
 }
 
 void stream_wav::save(zzub::archive* po) {
-	zzub::outstream* strm = po->get_outstream("");
-	strm->write(fileName.c_str());
 }
 
+void stream_wav::set_stream_source(const char* resource) {
+	fileName = resource;
+	open();
 
+	if (resampler) delete resampler;
+	resampler = new stream_resampler(this);
+	
+	if (sf) resampler->stream_sample_rate = sfinfo.samplerate;
+}
+
+const char* stream_wav::get_stream_source() {
+	return fileName.c_str();
+}
 
 void stream_wav::process_events() {
 	if (!sf) return ;
+	if (!resampler) return ;
+
+	bool triggered = false;
+
+	if (gval.note != zzub::note_value_none) {
+		//resampler->stream_sample_rate
+		resampler->note = buzz_to_midi_note(gval.note);
+		triggered = true;
+		currentPosition = 0;
+	}
 
 	if (gval.offset != 0xFFFFFFFF) {
-		unsigned int offset = get_offset();
+		currentPosition = get_offset();
 
-		sf_seek(sf, offset, SEEK_SET);
-		currentPosition = offset;
+		sf_seek(sf, currentPosition, SEEK_SET);
 		triggered = true;
 	}
+
+	if (triggered)
+		resampler->set_stream_pos(currentPosition);
+
 }
+
+int stream_wav::get_target_samplerate() {
+	return _master_info->samples_per_second;
+}
+
 
 bool stream_wav::process_stereo(float **pin, float **pout, int numsamples, int mode) {
 	if (mode == zzub::process_mode_read) return false;
 	if (mode == zzub::process_mode_no_io) return false;
 
-	if (!loaded || !triggered) return false;
+	if (!loaded || !resampler || !resampler->playing) return false;
 
+	return resampler->process_stereo(pout, numsamples);
+}
+
+bool stream_wav::generate_samples(float** pout, int numsamples) {
 	bool result = true;
 
 	int maxread = numsamples;
@@ -123,7 +148,7 @@ void stream_wav::command(int index) {
 }
 
 void stream_wav::stop() {
-	triggered = false;
+	if (resampler) resampler->playing = false;
 }
 
 bool stream_wav::open() {
@@ -136,7 +161,6 @@ bool stream_wav::open() {
 	currentPosition = 0;
 
 	loaded = true;
-	triggered = false;
 
 	return true;
 }
@@ -149,7 +173,6 @@ void stream_wav::close() {
 	}
 	if (!sf) return ;
 	loaded = false;
-	triggered = false;
 	sf_close(sf);
 	sf = 0;
 	fileName = "";

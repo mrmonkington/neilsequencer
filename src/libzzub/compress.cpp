@@ -18,7 +18,6 @@ BOOL InitWavePack(WAVEUNPACK * wavepackinfo, zzub::outstream* pOutStrm)
 
 BOOL FlushPackedBuffer(WAVEUNPACK * packinfo,BOOL bFlushPartial)
 {
-	DWORD dwWrit;
 	if (packinfo->dwBytesInBuffer > 0)
 	{
 		//partial data? then write it too

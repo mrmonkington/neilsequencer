@@ -26,78 +26,30 @@ class RtAudio;
 
 namespace zzub {
 
-struct audioworker;
 
-struct audiodevice {
-	int api_id;
-	int device_id;
-	std::string name;
-	int in_channels;
-	int out_channels;
-	std::vector<unsigned int> rates;
-};
+struct audiodriver_rtaudio : audiodriver {
 
-struct audiodriver
-{
-	enum {
-		// increase this if you get problems
-		MAX_FRAMESIZE = 16384,
-		MAX_CHANNELS = 64,
-	};
 
-	audioworker *worker;
+	zzub::timer timer;								// hires timer, for cpu-meter
+	double last_work_time;							// length of last WorkStereo
+	double cpu_load;
+
 	RtAudio *audio;
 
-	int defaultDevice;
-	std::vector<audiodevice> devices;
-
-	audiodriver();
+	audiodriver_rtaudio();
 
 	int getApiDevices(int apiId);
 
-	virtual ~audiodriver();	
+	virtual ~audiodriver_rtaudio();	
 	virtual void initialize(audioworker *worker);	
-	virtual void reset();
 	virtual bool enable(bool e);	
-	virtual int getWritePos();
-	virtual int getPlayPos();
 
 	virtual int getDeviceCount();
-	virtual bool createDevice(int outputIndex, int inputIndex, int sampleRate, int bufferSize, int channel);
+	virtual bool createDevice(int outputIndex, int inputIndex);
 	virtual void destroyDevice(); 	
-	virtual int getBestDevice();
 	virtual int getDeviceByName(const char* name);
 	audiodevice* getDeviceInfo(int index);
 	double getCpuLoad();
-};
-
-
-struct audioworker {
-	int workChannel;		// 0..maxChannels/2
-	int workRate;
-	int workBufferSize;
-	int workLatency;
-	audiodevice* workDevice;
-	audiodevice* workInputDevice;
-	bool workStarted;
-
-	float workOutputBuffer[audiodriver::MAX_CHANNELS][audiodriver::MAX_FRAMESIZE];
-	float workInputBuffer[audiodriver::MAX_CHANNELS][audiodriver::MAX_FRAMESIZE];
-
-	audioworker() { 
-		workChannel = 0; 
-		workDevice = 0;
-		workInputDevice = 0;
-		workRate = 48000;
-		workBufferSize = 512;
-		workStarted = false;
-		for (int i = 0; i<audiodriver::MAX_CHANNELS; i++) {
-			memset(workOutputBuffer[i], 0, audiodriver::MAX_FRAMESIZE * sizeof(float));
-			memset(workInputBuffer[i], 0, audiodriver::MAX_FRAMESIZE * sizeof(float));
-		}
-	}
-	virtual ~audioworker() {}
-	virtual void workStereo(int num) {}
 };
 
 }

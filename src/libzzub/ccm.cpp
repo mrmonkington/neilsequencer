@@ -274,10 +274,10 @@ void ArchiveReader::closeFileInArchve() {
 int ArchiveReader::read(void* buffer, int size) {
     if (currentFileInfo.name=="") return 0;
 
-    char* charBuffer=(char*)buffer;
+    char* charBuffer = (char*)buffer;
     size_t peekSize=0;
     if (hasPeeked && size>0) {
-        charBuffer[0]=lastPeekByte;
+        charBuffer[0] = lastPeekByte;
         charBuffer++;
         size--;
         lastReadOfs++;
@@ -285,9 +285,9 @@ int ArchiveReader::read(void* buffer, int size) {
         peekSize=1;
     }
 
-    int err=unzReadCurrentFile(f, charBuffer, size);
+    int err = unzReadCurrentFile(f, charBuffer, size);
     if (err<0) return 0;
-    err+=peekSize;
+    err += (int)peekSize;
 
     lastReadOfs+=err;
 
@@ -314,11 +314,11 @@ bool encodeFLAC(zzub::outstream* writer, zzub::wave_info_ex& info, int level);
 
 using namespace std;
 
-xml_node CcmWriter::saveHead(xml_node &parent, zzub::player &player) {
-	if (strlen(player.infoText.c_str())) {
+xml_node CcmWriter::saveHead(xml_node &parent, zzub::song &player) {
+	if (strlen(player.song_comment.c_str())) {
 		// save song info
 		if (arch.createFileInArchive("readme.txt")) {
-			arch.write((void*)player.infoText.c_str(), strlen(player.infoText.c_str()));
+			arch.write((void*)player.song_comment.c_str(), (int)strlen(player.song_comment.c_str()));
 			arch.closeFileInArchive();
 			xml_node commentmeta = addMeta(parent, "comment");
 			commentmeta.attribute("src") = "readme.txt";
@@ -337,17 +337,14 @@ xml_node CcmWriter::addMeta(xml_node &parent, const std::string &propname) {
 	return item;
 }
 
-xml_node CcmWriter::saveClasses(xml_node &parent, zzub::player &player) {
+xml_node CcmWriter::saveClasses(xml_node &parent, zzub::song &player) {
 	xml_node item = parent.append_child(node_element);
 	item.name("pluginclasses");
 	
-    std::vector<pluginloader*> distinctLoaders;
-    for (size_t i=0; i<player.getMachines(); i++) {
-        metaplugin* plugin=player.getMachine(i);
-		if (plugin->nonSongPlugin) continue;
-
-        std::vector<pluginloader*>::iterator p=find<vector<pluginloader*>::iterator >(distinctLoaders.begin(), distinctLoaders.end(), plugin->loader);
-        if (p==distinctLoaders.end()) distinctLoaders.push_back(plugin->loader);
+    std::vector<const zzub::info*> distinctLoaders;
+    for (int i = 0; i<player.get_plugin_count(); i++) {
+		std::vector<const zzub::info*>::iterator p = find<vector<const zzub::info*>::iterator >(distinctLoaders.begin(), distinctLoaders.end(), player.get_plugin(i).info);
+        if (p == distinctLoaders.end()) distinctLoaders.push_back(player.get_plugin(i).info);
     }
 
     for (size_t i=0; i<distinctLoaders.size(); i++) {
@@ -361,6 +358,7 @@ std::string connectiontype_to_string(int connectiontype) {
 	switch (connectiontype) {
 		case zzub::connection_type_audio: return "audio";
 		case zzub::connection_type_event: return "event";
+		case zzub::connection_type_midi: return "midi";
 		default: assert(0);
 	}
 	return "";
@@ -413,61 +411,61 @@ xml_node CcmWriter::saveParameter(xml_node &parent, const zzub::parameter &p) {
 	return item;
 }
 
-xml_node CcmWriter::saveClass(xml_node &parent, zzub::pluginloader &pl) {
+xml_node CcmWriter::saveClass(xml_node &parent, const zzub::info &info) {
 
 	// we take the same format as for lunar manifests
 
 	xml_node item = parent.append_child(node_element);
 	item.name("pluginclass");
-	item.attribute("id") = pl.plugin_info->uri;
-	if (pl.plugin_info->flags & zzub::plugin_flag_mono_to_stereo)
+	item.attribute("id") = info.uri;
+	if (info.flags & zzub::plugin_flag_mono_to_stereo)
 		item.attribute("mono_to_stereo") = true;
-	if (pl.plugin_info->flags & zzub::plugin_flag_plays_waves)
+	if (info.flags & zzub::plugin_flag_plays_waves)
 		item.attribute("plays_waves") = true;
-	if (pl.plugin_info->flags & zzub::plugin_flag_uses_lib_interface)
+	if (info.flags & zzub::plugin_flag_uses_lib_interface)
 		item.attribute("uses_lib_interface") = true;
-	if (pl.plugin_info->flags & zzub::plugin_flag_uses_instruments)
+	if (info.flags & zzub::plugin_flag_uses_instruments)
 		item.attribute("uses_instruments") = true;
-	if (pl.plugin_info->flags & zzub::plugin_flag_does_input_mixing)
+	if (info.flags & zzub::plugin_flag_does_input_mixing)
 		item.attribute("does_input_mixing") = true;
-	if (pl.plugin_info->flags & zzub::plugin_flag_control_plugin)
+	if (info.flags & zzub::plugin_flag_control_plugin)
 		item.attribute("control_plugin") = true;
-	if (pl.plugin_info->flags & zzub::plugin_flag_auxiliary)
+	if (info.flags & zzub::plugin_flag_auxiliary)
 		item.attribute("auxiliary") = true;
-	if (pl.plugin_info->flags & zzub::plugin_flag_is_root)
+	if (info.flags & zzub::plugin_flag_is_root)
 		item.attribute("is_root") = true;
-	if (pl.plugin_info->flags & zzub::plugin_flag_has_audio_input)
+	if (info.flags & zzub::plugin_flag_has_audio_input)
 		item.attribute("has_audio_input") = true;
-	if (pl.plugin_info->flags & zzub::plugin_flag_has_audio_output)
+	if (info.flags & zzub::plugin_flag_has_audio_output)
 		item.attribute("has_audio_output") = true;
-	if (pl.plugin_info->flags & zzub::plugin_flag_has_event_input)
+	if (info.flags & zzub::plugin_flag_has_event_input)
 		item.attribute("has_event_input") = true;
-	if (pl.plugin_info->flags & zzub::plugin_flag_has_event_output)
+	if (info.flags & zzub::plugin_flag_has_event_output)
 		item.attribute("has_event_output") = true;
 	
 	mem_archive arc;
-	pl.plugin_info->store_info(&arc);
-	saveArchive(item, pl.plugin_info->uri, arc);
+	info.store_info(&arc);
+	saveArchive(item, info.uri, arc);
 	
 	xml_node params = item.append_child(node_element);
 	params.name("parameters");
 	
-    if (pl.plugin_info->global_parameters.size()>0) {
+    if (info.global_parameters.size()>0) {
 		xml_node global = params.append_child(node_element);
 		global.name("global");
 		
-        for (size_t i=0; i < pl.plugin_info->global_parameters.size(); i++) {
-            const zzub::parameter* p = pl.plugin_info->global_parameters[i];
+        for (size_t i=0; i < info.global_parameters.size(); i++) {
+            const zzub::parameter* p = info.global_parameters[i];
 			saveParameter(global, *p).attribute("index") = (long)i;
         }
     }
 
-    if (pl.plugin_info->track_parameters.size()>0) {
+    if (info.track_parameters.size()>0) {
 		xml_node track = params.append_child(node_element);
 		track.name("track");
   
-        for (size_t i=0; i<pl.plugin_info->track_parameters.size(); i++) {
-            const zzub::parameter* p = pl.plugin_info->track_parameters[i];
+        for (size_t i=0; i<info.track_parameters.size(); i++) {
+            const zzub::parameter* p = info.track_parameters[i];
 			saveParameter(track, *p).attribute("index") = (long)i;
         }
     }
@@ -514,49 +512,6 @@ xml_node CcmWriter::saveEventBindings(xml_node &parent, std::vector<zzub::event_
 	return item;
 }
 
-xml_node CcmWriter::saveConnection(xml_node &parent, zzub::connection &connection) {
-	xml_node item = parent.append_child(node_element);
-	item.name("input");
-
-	item.attribute("id") = id_from_ptr(&connection);
-	item.attribute("ref") = id_from_ptr(connection.plugin_in);
-	item.attribute("type") = connectiontype_to_string(connection.connectionType);
-	
-	switch(connection.connectionType)
-	{
-		case zzub::connection_type_audio:
-		{
-			zzub::audio_connection &ac = (zzub::audio_connection &)connection;
-			
-			// we save normals, not exposing implementation details
-			item.attribute("amplitude") = amp_to_double(ac.values.amp);
-			item.attribute("panning") = pan_to_double(ac.values.pan);
-		} break;
-		case zzub::connection_type_event:
-		{
-			zzub::event_connection &ac = (zzub::event_connection &)connection;
-			
-			saveEventBindings(item, ac.bindings);
-		} break;
-		default:
-			assert(0);
-			break;
-	}
-		
-	return item;
-}
-
-xml_node CcmWriter::saveConnections(xml_node &parent, zzub::metaplugin &plugin) {
-	xml_node item = parent.append_child(node_element);
-	item.name("connections");
-	
-	for (size_t i=0; i<plugin.getConnections(); i++) {
-		saveConnection(item, *plugin.getConnection(i));
-	}
-
-	return item;
-}
-
 xml_node CcmWriter::saveArchive(xml_node &parent, const std::string &pathbase, zzub::mem_archive &arc) {
 	zzub::mem_archive::buffermap::iterator i;
 	for (i = arc.buffers.begin(); i != arc.buffers.end(); ++i) {
@@ -580,94 +535,86 @@ xml_node CcmWriter::saveArchive(xml_node &parent, const std::string &pathbase, z
 	return xml_node();
 }
 
-xml_node CcmWriter::saveInit(xml_node &parent, zzub::metaplugin &plugin) {
+xml_node CcmWriter::saveInit(xml_node &parent, zzub::song &player, zzub::plugin_descriptor plugin) {
 	xml_node item = parent.append_child(node_element);
 	item.name("init");
 	
 	mem_archive arc;
-	plugin.machine->save(&arc);
-	saveArchive(item, id_from_ptr(&plugin), arc);
+	player.get_plugin(plugin).plugin->save(&arc);
+	saveArchive(item, id_from_ptr((const void*)plugin), arc);
 
-	if (plugin.loader->plugin_info->global_parameters.size()) {
+	if (player.get_plugin(plugin).info->global_parameters.size()) {
 		xml_node global = item.append_child(node_element);
 		global.name("global");
 		
-		for (size_t i = 0; i != plugin.loader->plugin_info->global_parameters.size(); ++i) {
+		for (size_t i = 0; i != player.get_plugin(plugin).info->global_parameters.size(); ++i) {
 			xml_node n = global.append_child(node_element);
 			n.name("n");
-			n.attribute("ref") = id_from_ptr(plugin.loader->plugin_info->global_parameters[i]);
-			n.attribute("v") = (long)plugin.getParameter(1, 0, i);
+			n.attribute("ref") = id_from_ptr(player.get_plugin(plugin).info->global_parameters[i]);
+			n.attribute("v") = (long)player.plugin_get_parameter(plugin, 1, 0, i);
 		}
 	}
 
-	if (plugin.getTracks()) {
+	if (player.get_plugin(plugin).tracks > 0) {
 		xml_node tracks = item.append_child(node_element);
 		tracks.name("tracks");
 		
-		for (int t = 0; t != plugin.getTracks(); ++t) {
+		for (int t = 0; t != player.get_plugin(plugin).tracks; ++t) {
 			xml_node track = tracks.append_child(node_element);
 			track.name("track");
 			track.attribute("index") = (long)t;
 			
-			for (size_t i = 0; i != plugin.loader->plugin_info->track_parameters.size(); ++i) {
+			for (size_t i = 0; i != player.get_plugin(plugin).info->track_parameters.size(); ++i) {
 				xml_node n = track.append_child(node_element);
 				n.name("n");
-				n.attribute("ref") = id_from_ptr(plugin.loader->plugin_info->track_parameters[i]);
-				n.attribute("v") = (long)plugin.getParameter(2, t, i);
+				n.attribute("ref") = id_from_ptr(player.get_plugin(plugin).info->track_parameters[i]);
+				n.attribute("v") = (long)player.plugin_get_parameter(plugin, 2, t, i);
 			}
 		}
 	}
 	
 	
-    if (plugin.hasAttributes() && plugin.getAttributes()>0)
-		saveAttributes(item, plugin);
+    if (player.get_plugin(plugin).plugin->attributes && player.get_plugin(plugin).info->attributes.size() > 0)
+		saveAttributes(item, player, plugin);
 	
 	return item;
 }
 
-xml_node CcmWriter::saveAttributes(xml_node &parent, zzub::metaplugin &plugin) {
+xml_node CcmWriter::saveAttributes(xml_node &parent, zzub::song &player, zzub::plugin_descriptor plugin) {
 	xml_node item = parent.append_child(node_element);
 	item.name("attributes");
 	
     // save attributes
-	for (size_t i=0; i<plugin.getAttributes(); i++) {
-		const attribute& attr=plugin.getAttribute(i);
+	for (size_t i = 0; i < player.get_plugin(plugin).info->attributes.size(); i++) {
+		const attribute& attr = *player.get_plugin(plugin).info->attributes[i];
 		xml_node n = item.append_child(node_element);
 		n.name("n");
 		n.attribute("name") = attr.name;
-		n.attribute("v") = (long)plugin.getAttributeValue(i);
+		n.attribute("v") = (long)player.get_plugin(plugin).plugin->attributes[i];
 	}
 
 	return item;
 }
 
-xml_node CcmWriter::savePatternTrack(xml_node &parent, const std::string &colname, double fac, zzub::metaplugin &plugin, zzub::pattern &p, int group, int track) {
+xml_node CcmWriter::savePatternTrack(xml_node &parent, const std::string &colname, double fac, zzub::song &player, int plugin, zzub::pattern &p, int group, int track) {
 	xml_node item = parent.append_child(node_element);
 	item.name(colname);
 	if (group == 2)
 		item.attribute("index") = (long)track;
 	
-	zzub::patterntrack& t = *p.getPatternTrack(group, track);
-    for (size_t i = 0; i < t.rows; ++i) {
-        for (size_t j = 0; j < t.getParams(); ++j) {
-			const zzub::parameter *param = 0;
-			switch(group) {
-				case 0: 
-				{
-					param = plugin.getConnection(track)->connection_parameters[j]; 
-				} break;
-				case 1: param = plugin.loader->plugin_info->global_parameters[j]; break;
-				case 2: param = plugin.loader->plugin_info->track_parameters[j]; break;
-				default: assert(0);
-			}
+	//zzub::patterntrack& t = *p.getPatternTrack(group, track);
+    for (size_t i = 0; i < p.rows; ++i) {
+        for (size_t j = 0; j < p.groups[group][track].size(); ++j) {
+			const zzub::parameter *param = player.plugin_get_parameter_info(plugin, group, track, j);
+			assert(param != 0);
 
-			int value = t.getValue(i,j);
+			int value = p.groups[group][track][j][i];
 			if (value != param->value_none) {
 				xml_node e = item.append_child(node_element);
 				e.name("e");
 				e.attribute("t") = fac * double(i);
 				if (group == 0) {
-					e.attribute("ref") = id_from_ptr(plugin.getConnection(track));
+					e.attribute("ref") = id_from_ptr(player.plugin_get_input_connection(plugin, track));
 					// we save normals, not exposing implementation details
 					if (j == 0) {
 						e.attribute("amp") = amp_to_double(value);
@@ -687,7 +634,7 @@ xml_node CcmWriter::savePatternTrack(xml_node &parent, const std::string &colnam
 	return item;
 }
 
-xml_node CcmWriter::savePattern(xml_node &parent, zzub::player &player, zzub::metaplugin &plugin, zzub::pattern &p) {
+xml_node CcmWriter::savePattern(xml_node &parent, zzub::song &player, int plugin, zzub::pattern &p) {
 	// we're going to save pattern data as events, since storing data
 	// in a table is implementation detail. also, empty patterns will
 	// take less space.
@@ -696,151 +643,185 @@ xml_node CcmWriter::savePattern(xml_node &parent, zzub::player &player, zzub::me
 	// easier to change the tpb count manually, and have the loader adapt all
 	// patterns on loading.
 	
-	double tpbfac = 1.0/double(player.master->getParameter(1, 0, 2));
+	double tpbfac = 1.0/double(player.plugin_get_parameter(0, 1, 0, 2));
 	
 	xml_node item = parent.append_child(node_element);
 	item.name("events");
 	item.attribute("id") = id_from_ptr(&p);
-	item.attribute("name") = p.getName();
+	item.attribute("name") = p.name;
 	item.attribute("length") = double(p.rows) * tpbfac;
 
 	// save connection columns	
-	for (size_t j = 0; j != p._connections.size(); ++j) {
-		savePatternTrack(item, "c", tpbfac, plugin, p, 0, j);
+	for (size_t j = 0; j < p.groups[0].size(); ++j) {
+		savePatternTrack(item, "c", tpbfac, player, plugin, p, 0, j);
 	}
 
 	// save globals
-	savePatternTrack(item, "g", tpbfac, plugin, p, 1, 0);
+	savePatternTrack(item, "g", tpbfac, player, plugin, p, 1, 0);
 
 	// save tracks
-	for (size_t j=0; j != p._tracks.size(); j++) {
-		savePatternTrack(item, "t", tpbfac, plugin, p, 2, j);
+	for (size_t j = 0; j < p.groups[2].size(); j++) {
+		savePatternTrack(item, "t", tpbfac, player, plugin, p, 2, j);
 	}
 
 	return item;
 }
 
-xml_node CcmWriter::savePatterns(xml_node &parent, zzub::player &player, zzub::metaplugin &plugin) {
+xml_node CcmWriter::savePatterns(xml_node &parent, zzub::song &player, int plugin) {
 	xml_node item = parent.append_child(node_element);
 	item.name("eventtracks");
 
-    for (size_t i=0; i != plugin.getPatterns(); i++) {
-		savePattern(item, player, plugin, *plugin.getPattern(i));
+    for (size_t i = 0; i != player.plugins[plugin]->patterns.size(); i++) {
+		savePattern(item, player, plugin, *player.plugins[plugin]->patterns[i]);
 	}
 	
 	return item;
 }
 
-xml_node CcmWriter::saveSequence(xml_node &parent, double fac, zzub::player &player, zzub::metaplugin &plugin, zzub::sequence &seq) {
+xml_node CcmWriter::saveSequence(xml_node &parent, double fac, zzub::song &player, int track) {
 	xml_node item = parent.append_child(node_element);
 	item.name("sequence");
 	
-	for (size_t i = 0; i != seq.getEvents(); ++i) {
-		sequence_event &ev = *seq.getEvent(i);
-		xml_node e = item.append_child(node_element);
-		e.name("e");
-		e.attribute("t") = fac * double(ev.pos);
-		if (ev.type == sequence_event_type_mute) {
-			e.attribute("mute") = true;
-		} else if (ev.type == sequence_event_type_break) {
-			e.attribute("break") = true;
-		} else if (ev.type == sequence_event_type_pattern) {
-			e.attribute("ref") = id_from_ptr(ev.value);
-		} else {
-			assert(0);
+	for (size_t i = 0; i < player.song_events.size(); ++i) {
+		sequencer_event &ev = player.song_events[i];
+		for (size_t j = 0; j < ev.actions.size(); j++) {
+			sequencer_event::track_action& ta = ev.actions[j];
+			if (ta.first != track) continue;
+
+			xml_node e = item.append_child(node_element);
+			e.name("e");
+			e.attribute("t") = fac * double(ev.timestamp);
+			if (ta.second == sequencer_event_type_mute) {
+				e.attribute("mute") = true;
+			} else if (ta.second == sequencer_event_type_break) {
+				e.attribute("break") = true;
+			} else if (ta.second == sequencer_event_type_thru) {
+				e.attribute("thru") = true;
+			} else if (ta.second >= 0x10) {
+				zzub::pattern& p = *player.plugins[player.sequencer_tracks[track]]->patterns[ta.second - 0x10];
+				e.attribute("ref") = id_from_ptr(&p);
+			} else {
+				assert(0);
+			}
 		}
 	}
 
 	return item;
 }
 
-xml_node CcmWriter::saveSequences(xml_node &parent, zzub::player &player, zzub::metaplugin &plugin) {
+xml_node CcmWriter::saveSequences(xml_node &parent, zzub::song &player, int plugin) {
 	
 	// event positions and track length is stored in beats, not rows. this makes it
 	// easier to change the tpb count manually, and have the loader adapt all
 	// sequences on loading.
-	double tpbfac = 1.0/double(player.master->getParameter(1, 0, 2));
+	double tpbfac = 1.0/double(player.plugin_get_parameter(0, 1, 0, 2));
 
 	xml_node item = parent.append_child(node_element);
 	item.name("sequences");
 
-    for (int i = 0; i != player.getSequenceTracks(); i++) {
-		zzub::sequence *seq = player.getSequenceTrack(i);
-		if (seq->machine == &plugin) {
-			saveSequence(item, tpbfac, player, plugin, *seq);
+	for (int i = 0; i != player.sequencer_tracks.size(); i++) {
+		zzub::plugin_descriptor plugindesc = player.plugins[plugin]->descriptor;
+		if (player.sequencer_tracks[i] == plugindesc) {
+			saveSequence(item, tpbfac, player, i);
 		}
 	}
-	
+
 	return item;
 }
 
-xml_node CcmWriter::saveMidiMappings(xml_node &parent, zzub::player &player, zzub::metaplugin &plugin) {
+xml_node CcmWriter::saveMidiMappings(xml_node &parent, zzub::song &player, int plugin) {
 	xml_node item = parent.append_child(node_element);
 	item.name("midi");
 	
-	for (size_t j=0; j<player.getMidiMappings(); j++) {
-		midimapping* mm=player.getMidiMapping(j);
-		if (mm->machine==&plugin) {
+	for (size_t j = 0; j < player.midi_mappings.size(); j++) {
+		midimapping& mm = player.midi_mappings[j];
+		if (mm.plugin_id == plugin) {
 			xml_node bind = item.append_child(node_element);
 			bind.name("bind");
 			
-			const zzub::parameter *param = 0;
-			switch(mm->group) {
-				case 0: param = plugin.getConnection(mm->track)->connection_parameters[mm->column]; break;
-				case 1: param = plugin.loader->plugin_info->global_parameters[mm->column]; break;
-				case 2: param = plugin.loader->plugin_info->track_parameters[mm->column]; break;
-				default: assert(0);
-			}
+			const zzub::parameter *param = player.plugin_get_parameter_info(plugin, mm.group, mm.track, mm.column);
+			assert(param);
 
-			if (mm->group == 0) {
-				bind.attribute("ref") = id_from_ptr(plugin.getConnection(mm->track));
-				if (mm->column == 0) {
+			if (mm.group == 0) {
+				bind.attribute("ref") = id_from_ptr(player.plugin_get_input_connection(plugin, mm.track));
+				if (mm.column == 0) {
 					bind.attribute("target") = "amp";
-				} else if (mm->column == 1) {
+				} else if (mm.column == 1) {
 					bind.attribute("target") = "pan";
 				} else {
 					assert(0);
 				}
-				bind.attribute("track") = long(mm->track);
-			} else if (mm->group == 1) {
+				bind.attribute("track") = long(mm.track);
+			} else if (mm.group == 1) {
 				bind.attribute("ref") = id_from_ptr(param);
 				bind.attribute("target") = "global";
-			} else if (mm->group == 2) {
-				bind.attribute("track") = long(mm->track);
+			} else if (mm.group == 2) {
+				bind.attribute("track") = long(mm.track);
 				bind.attribute("ref") = id_from_ptr(param);
 				bind.attribute("target") = "track";
 			} else {
 				assert(0);
 			}
 			
-			bind.attribute("channel") = long(mm->channel);
-			bind.attribute("controller") = long(mm->controller);
+			bind.attribute("channel") = long(mm.channel);
+			bind.attribute("controller") = long(mm.controller);
 		}
 	}
 	return item;
 }
 
-xml_node CcmWriter::savePlugin(xml_node &parent, zzub::player &player, zzub::metaplugin &plugin) {
+xml_node CcmWriter::savePlugin(xml_node &parent, zzub::song &player, int plugin) {
 	xml_node item = parent.append_child(node_element);
 	item.name("plugin");
-	item.attribute("id") = id_from_ptr(&plugin);
-	item.attribute("name") = plugin.getName();
-	item.attribute("ref") = plugin.loader->plugin_info->uri;
+	item.attribute("id") = (long)plugin;//id_from_ptr(plugin);
+	item.attribute("name") = player.plugins[plugin]->name;
+	item.attribute("ref") = player.plugins[plugin]->info->uri;
 	
 	// ui properties should be elsewhere
 	xml_node position = item.append_child(node_element);
 	position.name("position");
-	position.attribute("x") = plugin.x;
-	position.attribute("y") = plugin.y;
+	position.attribute("x") = player.plugins[plugin]->x;
+	position.attribute("y") = player.plugins[plugin]->y;
 
-	if (plugin.getConnections())
-		saveConnections(item, plugin);
+	if (player.plugin_get_input_connection_count(plugin) > 0) {
+		xml_node connections = parent.append_child(node_element);
+		connections.name("connections");
+
+		for (int i = 0; i < player.plugin_get_input_connection_count(plugin); i++) {
+			xml_node item = connections.append_child(node_element);
+			item.name("input");
+
+			item.attribute("id") = id_from_ptr(player.plugin_get_input_connection(plugin, i));
+			item.attribute("ref") = (long)player.plugin_get_input_connection_plugin(plugin, i);
+			item.attribute("type") = connectiontype_to_string(player.plugin_get_input_connection_type(plugin, i));
+			
+			switch (player.plugin_get_input_connection_type(plugin, i)) {
+				case zzub::connection_type_audio:
+					// we save normals, not exposing implementation details
+					item.attribute("amplitude") = amp_to_double(player.plugin_get_parameter(plugin, 0, i, 0));
+					item.attribute("panning") = pan_to_double(player.plugin_get_parameter(plugin, 0, i, 1));
+					break;
+				case zzub::connection_type_event: {
+					zzub::event_connection &ac = *(zzub::event_connection*)player.plugin_get_input_connection(plugin, i);
+					saveEventBindings(item, ac.bindings);
+				} break;
+				case zzub::connection_type_midi: {
+					zzub::midi_connection &ac = *(zzub::midi_connection*)player.plugin_get_input_connection(plugin, i);
+					item.attribute("device") = ac.device_name;
+				} break;
+				default:
+					assert(0);
+					break;
+			}
+
+		}
+	}
 	
-	saveInit(item, plugin);
+	saveInit(item, player, plugin);
 	
 	saveMidiMappings(item, player, plugin);
 	
-	if (plugin.getPatterns())
+	if (player.plugins[plugin]->patterns.size() > 0)
 		savePatterns(item, player, plugin);
 
 	saveSequences(item, player, plugin);
@@ -848,22 +829,12 @@ xml_node CcmWriter::savePlugin(xml_node &parent, zzub::player &player, zzub::met
 	return item;
 }
 
-xml_node CcmWriter::savePlugins(xml_node &parent, zzub::player &player) {
+xml_node CcmWriter::savePlugins(xml_node &parent, zzub::song &player) {
 	xml_node item = parent.append_child(node_element);
 	item.name("plugins");
 
-    for (size_t i=0; i<player.getMachines(); i++) {
-		zzub::metaplugin* plugin = player.getMachine(i);
-		if (!plugin->isNoOutput() && !plugin->nonSongPlugin) {
-			savePlugin(item, player, *plugin);
-		}
-    }
-
-    for (size_t i=0; i<player.getMachines(); i++) {
-		zzub::metaplugin* plugin = player.getMachine(i);
-		if (plugin->isNoOutput()) {
-			savePlugin(item, player, *plugin);
-		}
+    for (int i = 0; i < player.get_plugin_count(); i++) {
+		savePlugin(item, player, player.get_plugin_id(i));
     }
 	
 	return item;
@@ -937,7 +908,7 @@ xml_node CcmWriter::saveWave(xml_node &parent, zzub::wave_info_ex &info) {
 	xml_node waves = item.append_child(node_element);
 	waves.name("waves");
 
-	for (size_t j=0; j<info.get_levels(); j++) {
+	for (int j = 0; j < info.get_levels(); j++) {
 		if (info.get_sample_count(j)) {
 			wave_level &level = info.levels[j];
 			xml_node levelnode = waves.append_child(node_element);
@@ -994,14 +965,14 @@ xml_node CcmWriter::saveWave(xml_node &parent, zzub::wave_info_ex &info) {
 	return item;
 }
 
-xml_node CcmWriter::saveWaves(xml_node &parent, zzub::player &player) {
+xml_node CcmWriter::saveWaves(xml_node &parent, zzub::song &player) {
 	xml_node item = parent.append_child(node_element);
 	item.name("instruments");
 	
-    for (size_t i=0; i<player.waveTable.waves.size(); i++) {
+    for (size_t i = 0; i < player.wavetable.waves.size(); i++) {
 
         // NOTE: getting reference, ~wave_info_ex frees the sample data!!1
-        wave_info_ex& info=player.waveTable.waves[i];
+        wave_info_ex& info = *player.wavetable.waves[i];
 
         if (info.get_levels()) {
 			xml_node instr = saveWave(item, info);
@@ -1031,31 +1002,31 @@ bool CcmWriter::save(std::string fileName, zzub::player* player) {
 	xmix.attribute("xmlns:xmix") = "http://www.zzub.org/ccm/xmix";
 	
 	// save meta information
-	saveHead(xmix, *player);
+	saveHead(xmix, player->front);
 	
 	// save main sequencer settings
 	{
-		double tpbfac = 1.0/double(player->master->getParameter(1, 0, 2));	
+		double tpbfac = 1.0/double(player->front.plugin_get_parameter(0, 1, 0, 2));	
 		
-		sequencer &seq = player->song_sequencer;
+		//sequencer &seq = player->song_sequencer;
 		xml_node item = xmix.append_child(node_element);
 		item.name("transport");
-		item.attribute("bpm") = double(player->master->getParameter(1, 0, 1));
-		item.attribute("tpb") = double(player->master->getParameter(1, 0, 2));
-		item.attribute("loopstart") = double(seq.beginOfLoop) * tpbfac;
-		item.attribute("loopend") = double(seq.endOfLoop) * tpbfac;
-		item.attribute("start") = double(seq.startOfSong) * tpbfac;
-		item.attribute("end") = double(seq.endOfSong) * tpbfac;
+		item.attribute("bpm") = double(player->front.plugin_get_parameter(0, 1, 0, 1));
+		item.attribute("tpb") = double(player->front.plugin_get_parameter(0, 1, 0, 2));
+		item.attribute("loopstart") = double(player->front.song_loop_begin) * tpbfac;
+		item.attribute("loopend") = double(player->front.song_loop_end) * tpbfac;
+		item.attribute("start") = double(player->front.song_begin) * tpbfac;
+		item.attribute("end") = double(player->front.song_end) * tpbfac;
 	}
 	
 	// save classes
-	saveClasses(xmix, *player);
+	saveClasses(xmix, player->front);
 	
 	// save plugins
-	savePlugins(xmix, *player);
+	savePlugins(xmix, player->front);
 	
 	// save waves
-	saveWaves(xmix, *player);
+	saveWaves(xmix, player->front);
 	
 	std::ostringstream oss("");
 	oss << xml.document();
@@ -1310,7 +1281,7 @@ bool CcmReader::loadClasses(xml_node &classes, zzub::player &player) {
 	for (xml_node::child_iterator i = classes.children_begin(); i != classes.children_end(); ++i) {
 		if (i->has_name("pluginclass")) {
 			std::string uri = i->attribute("id").value();
-			pluginloader *loader = player.getMachineLoader(uri);
+			const zzub::info* loader = player.plugin_get_info(uri);
 			if (!loader) { // no loader for this 
 				mem_archive arc;
 				// do we have some data saved?
@@ -1331,7 +1302,7 @@ bool CcmReader::loadClasses(xml_node &classes, zzub::player &player) {
 				if (arc.buffers.size()) {
 					std::cout << "ccm: searching for loader for " << uri << std::endl;
 					std::vector<pluginlib*>::iterator lib;
-					for (lib = player.pluginLibraries.begin(); lib != player.pluginLibraries.end(); ++lib) {
+					for (lib = player.plugin_libraries.begin(); lib != player.plugin_libraries.end(); ++lib) {
 						if ((*lib)->collection) {
 							const zzub::info *_info = (*lib)->collection->get_info(uri.c_str(), &arc);
 							if (_info) { // library could read archive
@@ -1340,7 +1311,7 @@ bool CcmReader::loadClasses(xml_node &classes, zzub::player &player) {
 							}
 						}
 					}
-					if (!player.pluginLibraries.size()) {
+					if (!player.plugin_libraries.size()) {
 						std::cerr << "ccm: warning: no plugin libraries available." << std::endl;
 					}
 				}
@@ -1365,7 +1336,7 @@ bool CcmReader::loadClasses(xml_node &classes, zzub::player &player) {
 
 
 struct ccache { // connection and node cache
-	metaplugin *target;
+	plugin_descriptor target;
 	xml_node connections;
 	xml_node global;
 	xml_node tracks;
@@ -1374,9 +1345,9 @@ struct ccache { // connection and node cache
 	xml_node midi;
 };
 
-bool CcmReader::loadPlugins(xml_node &plugins, zzub::player &player) {
+bool CcmReader::loadPlugins(xml_node plugins, zzub::player &player) {
 	
-	std::map<std::string, metaplugin *> id2plugin;
+	std::map<std::string, int> id2plugin;
 	
 	std::vector<ccache> conns;
 	
@@ -1430,70 +1401,41 @@ bool CcmReader::loadPlugins(xml_node &plugins, zzub::player &player) {
 				}
 			}
 			
-			pluginloader *loader = player.getMachineLoader(i->attribute("ref").value());
-			metaplugin *plugin = 0;
+			const zzub::info *loader = player.plugin_get_info(i->attribute("ref").value());
+			int plugin_id;
 			if (i->attribute("ref").has_value("@zzub.org/master")) {
-				plugin=player.getMaster();
+				plugin_id = 0;//player.master;
 			} else if (loader) {
 				std::vector<char> &b = arc.get_buffer("");
-        char *data = 0;
-        if (b.size())
-          data = &b[0];
-				plugin = player.createMachine(data, b.size(), i->attribute("name").value(), loader);
-				plugin->initialize(0,0,0,0,0);
+
+				plugin_id = player.create_plugin(b, i->attribute("name").value(), loader);
+				player.flush_operations(0, 0);
+
 			} else {
 				std::cerr << "ccm: unable to find loader for uri " << i->attribute("ref").value() << std::endl;
-				/*
-				if (pluginNames[i]=="Master") {
-					plugin=player->getMaster();
-				} else {
-					int type=0;
-					if (pluginProps["type"]=="effect")
-						type=zzub_plugin_type_effect; else
-					if (pluginProps["type"]=="generator")
-						type=zzub_plugin_type_generator;
-
-					string pluginUri=pluginProps["uri"];
-					// find validator
-					MachineValidation* validator=0;
-					for (size_t j=0; j<validators.size(); j++) {
-						if (validators[j].machineName==pluginUri) {
-							validator=&validators[j];
-							break;
-						}
-					}
-					if (validator) {
-						//plugin=player->createDummyMachine(type, pluginNames[i], pluginUri, attributeProps.size(), validator);
-						player->loadWarning+="Created dummy machine for " + pluginUri + "\n";
-					} else {
-						player->loadError+="Could not create dummy machine for " + pluginUri + "\n";
-					}
-						
-				}
-				*/
 			}
-			
-			if (plugin) {
-				id2plugin.insert(std::pair<std::string,metaplugin*>(i->attribute("id").value(), plugin));
+
+			if (plugin_id != -1 && player.front.plugins[plugin_id] != 0) {
+				metaplugin& m = *player.front.plugins[plugin_id];
+
+				id2plugin.insert(std::pair<std::string, int>(i->attribute("id").value(), plugin_id));
 
 				if (!position.empty()) {
-					plugin->x = (double)position.attribute("x");
-					plugin->y = (double)position.attribute("y");
+					m.x = (float)(double)position.attribute("x");
+					m.y = (float)(double)position.attribute("y");
 				}
 
-				plugin->defaultAttributes();
-				
 				if (!attribs.empty()) {
 					for (xml_node::child_iterator a = attribs.children_begin(); a != attribs.children_end(); ++a) {
-						for (size_t pa = 0; pa != plugin->getAttributes(); ++pa) {
-							if (!strcmp(plugin->getAttribute(pa).name, a->attribute("name").value())) {
-								plugin->setAttributeValue(pa, (int)(long)a->attribute("v"));
+						for (size_t pa = 0; pa != m.info->attributes.size(); ++pa) {
+							if (!strcmp(m.info->attributes[pa]->name, a->attribute("name").value())) {
+								m.plugin->attributes[pa] = (int)(long)a->attribute("v");
 							}
 						}
 					}
 				}
-				
-				plugin->attributesChanged();
+
+				m.plugin->attributes_changed();
 
 				if (!tracks.empty()) {
 					xml_node_list tracknodes;
@@ -1503,14 +1445,14 @@ bool CcmReader::loadPlugins(xml_node &plugins, zzub::player &player) {
 						// if we find any track with a higher index, extend the size
 						trackcount = std::max(trackcount, (long)tracknodes[a].attribute("index"));
 					}
-					plugin->setTracks(trackcount);
-				}
 
-				plugin->defaultParameters();
+					player.plugin_set_track_count(plugin_id, trackcount);
+					player.flush_operations(0, 0);
+				}
 
 				// plugin default parameter values are read after connections are made
 				ccache cc;
-				cc.target = plugin;
+				cc.target = plugin_id;
 				cc.connections = connections;
 				cc.global = global;
 				cc.tracks = tracks;
@@ -1525,36 +1467,50 @@ bool CcmReader::loadPlugins(xml_node &plugins, zzub::player &player) {
 	
 	// make connections
 	for (std::vector<ccache>::iterator c = conns.begin(); c != conns.end(); ++c) {
+
 		if (!c->connections.empty()) {
 			for (xml_node::child_iterator i = c->connections.children_begin(); i != c->connections.children_end(); ++i) {
 				if (i->has_name("input")) {
-					std::map<std::string, metaplugin *>::iterator iplug = id2plugin.find(i->attribute("ref"));
+					std::map<std::string, int>::iterator iplug = id2plugin.find(i->attribute("ref"));
 					if (iplug != id2plugin.end()) {
 						std::string conntype = "audio";
 						if (i->has_attribute("type")) {
 							conntype = i->attribute("type").value();
 						}
 						if (conntype == "audio") {
-							int amp = double_to_amp((double)i->attribute("amplitude"));
-							int pan = double_to_pan((double)i->attribute("panning"));
-							c->target->addAudioInput(iplug->second, (unsigned short)amp, (unsigned short)pan);
+							if (player.plugin_add_input(c->target, iplug->second, connection_type_audio)) {
+								int amp = double_to_amp((double)i->attribute("amplitude"));
+								int pan = double_to_pan((double)i->attribute("panning"));
+								int track = player.front.plugin_get_input_connection_count(c->target) - 1;
+
+								player.plugin_set_parameter(c->target, 0, track, 0, amp, false, false, false);
+								player.plugin_set_parameter(c->target, 0, track, 1, pan, false, false, false);
+							} else
+								assert(false);
 						} else if (conntype == "event") {
-							// TODO: restore controller associations
-							event_connection *evc = c->target->addEventInput(iplug->second);
+							// restore controller associations
+							player.plugin_add_input(c->target, iplug->second, connection_type_event);
+
 							for (xml_node::child_iterator j = i->children_begin(); j != i->children_end(); ++j) {
 								if (j->has_name("bindings")) {
 									for (xml_node::child_iterator k = j->children_begin(); k != j->children_end(); ++k) {
 										if (k->has_name("binding")) {
 											event_connection_binding binding;
-											binding.source_param_index = long(k->attribute("source_param_index"));
-											binding.target_group_index = long(k->attribute("target_group_index"));
-											binding.target_track_index = long(k->attribute("target_track_index"));
-											binding.target_param_index = long(k->attribute("target_param_index"));
-											evc->bindings.push_back(binding);
+											long source_param_index = long(k->attribute("source_param_index"));
+											long target_group_index = long(k->attribute("target_group_index"));
+											long target_track_index = long(k->attribute("target_track_index"));
+											long target_param_index = long(k->attribute("target_param_index"));
+											
+											player.plugin_add_event_connection_binding(c->target, iplug->second, 
+												source_param_index, target_group_index, target_track_index, target_param_index);
 										}
 									}
 								}
 							}
+						} else if (conntype == "midi") {
+							assert(false);
+							player.plugin_add_input(c->target, iplug->second, connection_type_midi);
+							player.plugin_set_midi_connection_device(c->target, iplug->second, (const std::string&)i->attribute("device"));
 						} else {
 							assert(0);
 						}
@@ -1564,27 +1520,33 @@ bool CcmReader::loadPlugins(xml_node &plugins, zzub::player &player) {
 					
 				}
 			}
-		}		// now that connections are set up, we can load the plugin default values
+		}
+		
+		// now that connections are set up, we can load the plugin default state values
 		if (!c->global.empty()) {
 			for (xml_node::child_iterator i = c->global.children_begin(); i != c->global.children_end(); ++i) {
 				if (i->has_name("n")) {
 					xml_node paraminfo = getNodeById(i->attribute("ref").value());
 					assert(!paraminfo.empty()); // not being able to deduce the index is fatal
-
-					// test if the parameter names correspond with index position
-					int global_param_size = c->target->loader->plugin_info->global_parameters.size();
-					int index = long(paraminfo.attribute("index"));
-					const char* name = paraminfo.attribute("name").value();
-					if ((index < global_param_size) && 
-					!strcmp(trim(c->target->getMachineParameter(1, 0, index)->name).c_str(), name)) {
-						c->target->setParameter(1, 0, index, long(i->attribute("v")), false);
-					}
-					else {
-						// else search for a parameter name that matches
-						for (size_t pg = 0; pg != global_param_size; ++pg) {
-							if (!strcmp(c->target->getMachineParameter(1, 0, pg)->name, name)) {
-								c->target->setParameter(1, 0, pg, long(i->attribute("v")), false);
-								break;
+					if ((bool)paraminfo.attribute("state") == true) {
+						
+						// test if the parameter names correspond with index position
+						int plugin = c->target;
+						long index = long(paraminfo.attribute("index"));
+						const parameter* param = player.front.plugin_get_parameter_info(plugin, 1, 0, index);
+						std::string name = paraminfo.attribute("name").value();
+						const zzub::info* info = player.front.plugins[plugin]->info;
+						
+						if (index < info->global_parameters.size() && param->name == name) {
+							player.plugin_set_parameter(plugin, 1, 0, index, long(i->attribute("v")), false, false, false);
+						} else {
+							// else search for a parameter name that matches
+							for (size_t pg = 0; pg != info->global_parameters.size(); ++pg) {
+								const parameter* pgp = player.front.plugin_get_parameter_info(plugin, 1, 0, pg);
+								if (pgp->name == name) {
+									player.plugin_set_parameter(plugin, 1, 0, pg, long(i->attribute("v")), false, false, false);
+									break;
+								}
 							}
 						}
 					}
@@ -1599,39 +1561,44 @@ bool CcmReader::loadPlugins(xml_node &plugins, zzub::player &player) {
 						if (j->has_name("n")) {
 							xml_node paraminfo = getNodeById(j->attribute("ref").value());
 							assert(!paraminfo.empty()); // not being able to deduce the index is fatal
-							// test if the parameter names correspond with index position
-							int track_param_size = c->target->loader->plugin_info->track_parameters.size();
-							int index = long(paraminfo.attribute("index"));
-							const char* name = paraminfo.attribute("name").value();
-							if ((index < track_param_size) && 
-							!strcmp(trim(c->target->getMachineParameter(2, t, index)->name).c_str(), name)) {
-								c->target->setParameter(2, t, index, long(j->attribute("v")), false);
-							}
-							else {
-								// else search for a parameter name that matches
-								for (size_t pt = 0; pt != track_param_size; ++pt) {
-									if (!strcmp(c->target->getMachineParameter(2, t, pt)->name, name)) {
-										c->target->setParameter(2, t, pt, long(j->attribute("v")), false);
-										break;
+							if ((bool)paraminfo.attribute("state") == true) {
+								// test if the parameter names correspond with index position
+								int plugin = c->target;
+								long index = long(paraminfo.attribute("index"));
+								const parameter* param = player.front.plugin_get_parameter_info(plugin, 2, t, index);
+								std::string name = paraminfo.attribute("name").value();
+								const zzub::info* info = player.front.plugins[plugin]->info;
+
+								if ((index < info->track_parameters.size()) && param->name == name) {
+									player.plugin_set_parameter(plugin, 2, t, index, long(j->attribute("v")), false, false, false);
+								} else {
+									// else search for a parameter name that matches
+									for (size_t pt = 0; pt != info->track_parameters.size(); ++pt) {
+										const parameter* ptp = player.front.plugin_get_parameter_info(plugin, 2, t, pt);
+										if (ptp->name == name) {
+											player.plugin_set_parameter(plugin, 2, t, pt, long(j->attribute("v")), false, false, false);
+											break;
+										}
 									}
 								}
+
 							}
 						}
 					}
 				}
 			}
 		}
+
+		player.flush_operations(0, 0);
 		
-		c->target->stopParameters();
-		
-		c->target->tick(); // works?
-		//plugin->machine->process_events();  // works better
+		player.front.process_plugin_events(c->target);
 	}
 		
 	// we need to create patterns in the second iteration, since the master
 	// might not be neccessarily the first plugin to be initialized
-	double tpbfac = double(player.master->getParameter(1, 0, 2));
-	
+	double tpbfac = double(player.front.plugin_get_parameter(0, 1, 0, 2));
+
+
 	for (std::vector<ccache>::iterator c = conns.begin(); c != conns.end(); ++c) {
 		
 		if (!c->eventtracks.empty()) {
@@ -1639,9 +1606,12 @@ bool CcmReader::loadPlugins(xml_node &plugins, zzub::player &player) {
 			for (xml_node::child_iterator i = c->eventtracks.children_begin(); i != c->eventtracks.children_end(); ++i) {
 				if (i->has_name("events")) {
 					int rows = int(double(i->attribute("length")) * tpbfac + 0.5);
-					pattern *p = c->target->createPattern(rows);
-					p->setName(i->attribute("name").value());
-					i->attribute("index") = long(c->target->getPatternIndex(p)); // set an index attribute
+					int plugin = c->target;
+					pattern p = player.front.create_pattern(plugin, rows);
+					p.name = i->attribute("name").value();
+					player.plugin_add_pattern(plugin, p);
+					int pattern_index = player.back.plugins[plugin]->patterns.size() - 1;
+					i->attribute("index") = (long)pattern_index;  // set an index attribute
 					for (xml_node::child_iterator j = i->children_begin(); j != i->children_end(); ++j) {
 						int group = 1;
 						int track = 0;
@@ -1653,52 +1623,59 @@ bool CcmReader::loadPlugins(xml_node &plugins, zzub::player &player) {
 							group = 2;
 							track = (int)long(j->attribute("index"));
 						}
+
+
 						if (group != 0) { // TODO: connections not supported yet
-							patterntrack *pt = p->getPatternTrack(group, track);
 							for (xml_node::child_iterator k = j->children_begin(); k != j->children_end(); ++k) {
 								if (k->has_name("e")) {
 									int row = int(double(k->attribute("t")) * tpbfac + 0.5);
 									assert(row < rows);
 									xml_node paraminfo = getNodeById(k->attribute("ref").value());
 									assert(!paraminfo.empty()); // not being able to deduce the index is fatal
-									pt->setValue(row, long(paraminfo.attribute("index")), long(k->attribute("v")));
+									player.plugin_set_pattern_value(plugin, pattern_index, group, track, long(paraminfo.attribute("index")), row, long(k->attribute("v")));
 								}
 							}
 						}
+
 					}
 				}
 			}
 		}
+
 		
 		if (!c->sequences.empty()) {
 			// load and create sequences
 			for (xml_node::child_iterator i = c->sequences.children_begin(); i != c->sequences.children_end(); ++i) {
 				if (i->has_name("sequence")) {
-					sequence *seq = player.song_sequencer.createTrack(c->target);
+
+					player.sequencer_add_track(c->target);
+
+					int seq_track = player.back.sequencer_tracks.size() - 1;
 					
 					for (xml_node::child_iterator j = i->children_begin(); j != i->children_end(); ++j) {
 						if (j->has_name("e")) {
 							int row = int(double(j->attribute("t")) * tpbfac + 0.5);
-							sequence_event_type type;
-							zzub::pattern* value = 0;
+							int value = -1;
 							if (bool(j->attribute("mute"))) {
-								type=sequence_event_type_mute;
+								value = sequencer_event_type_mute;
 							} else if (bool(j->attribute("break"))) {
-								type=sequence_event_type_break;
+								value = sequencer_event_type_break;
+							} else if (bool(j->attribute("thru"))) {
+								value = sequencer_event_type_thru;
 							} else {
 								xml_node patternnode = getNodeById(j->attribute("ref").value());
 								assert(!patternnode.empty()); // shouldn't be empty
-								type=sequence_event_type_pattern;
-								value = c->target->getPattern(long(patternnode.attribute("index")));
+								value = 0x10 + long(patternnode.attribute("index"));
 							}
-							seq->setEvent(row, type, value);
+							player.sequencer_set_event(seq_track, row, value);
 						}
 					}
 				}
 			}
 
 		}
-		
+
+
 		if (!c->midi.empty()) {
 			// load and set up controller bindings
 			for (xml_node::child_iterator i = c->midi.children_begin(); i != c->midi.children_end(); ++i) {
@@ -1734,11 +1711,12 @@ bool CcmReader::loadPlugins(xml_node &plugins, zzub::player &player) {
 						assert(0);
 					}
 					
-					player.addMidiMapping(c->target, group, track, index, channel, controller);
+					player.add_midimapping(c->target, group, track, index, channel, controller);
 				}
 			}
 		}
 
+		player.flush_operations(0, 0);
 	}
 
 	return true;
@@ -1751,7 +1729,7 @@ bool CcmReader::loadInstruments(xml_node &instruments, zzub::player &player) {
 
 	for (xml_node::child_iterator i = instruments.children_begin(); i != instruments.children_end(); ++i) {
 		if (i->has_name("instrument")) {
-			wave_info_ex &info = *player.getWave(long(i->attribute("index")));
+			wave_info_ex &info = *player.front.wavetable.waves[long(i->attribute("index"))];
 			info.name = i->attribute("name").value();
 			info.flags = 0;
 			
@@ -1795,14 +1773,14 @@ bool CcmReader::loadInstruments(xml_node &instruments, zzub::player &player) {
 			}
 
 			// NOTE: must set volume after (first) allocate_level (which happens in decodeFLAC)
-			info.volume = double(i->attribute("volume"));
+			info.volume = (float)double(i->attribute("volume"));
 			
 			xml_node envelopes = i->first_element_by_name("envelopes");
 			if (!envelopes.empty()) {
 				for (xml_node::child_iterator e = envelopes.children_begin(); e != envelopes.children_end(); ++e) {
 					if (e->has_name("envelope")) {
 						long index = long(e->attribute("index"));
-						if (info.envelopes.size() <= index) {
+						if (info.envelopes.size() <= (size_t)index) {
 							info.envelopes.resize(index+1);
 						}
 						envelope_entry &env = info.envelopes[index];
@@ -1847,13 +1825,13 @@ bool CcmReader::loadInstruments(xml_node &instruments, zzub::player &player) {
 }
 
 bool CcmReader::loadSequencer(xml_node &item, zzub::player &player) {
-	double tpbfac = double(player.master->getParameter(1, 0, 2));	
+	double tpbfac = double(player.front.plugin_get_parameter(0, 1, 0, 2));	
 	
-	sequencer &seq = player.song_sequencer;
-	seq.beginOfLoop = int(double(item.attribute("loopstart")) * tpbfac + 0.5);
-	seq.endOfLoop= int(double(item.attribute("loopend")) * tpbfac + 0.5);
-	seq.startOfSong = int(double(item.attribute("start")) * tpbfac + 0.5);
-	seq.endOfSong = int(double(item.attribute("end")) * tpbfac + 0.5);
+	//sequencer &seq = player.song_sequencer;
+	player.front.song_loop_begin = int(double(item.attribute("loopstart")) * tpbfac + 0.5);
+	player.front.song_loop_end = int(double(item.attribute("loopend")) * tpbfac + 0.5);
+	player.front.song_begin = int(double(item.attribute("start")) * tpbfac + 0.5);
+	player.front.song_end = int(double(item.attribute("end")) * tpbfac + 0.5);
 	return true;
 }
 
@@ -1863,7 +1841,7 @@ bool CcmReader::open(std::string fileName, zzub::player* player) {
 	const char* loc = setlocale(LC_NUMERIC, "C");
 
 	bool result = false;
-	player->setPlayerState(player_state_muted);
+	player->set_state(player_state_muted);
 	
 	if (arch.open(fileName)) {
 		compressed_file_info cfi;
@@ -1888,7 +1866,7 @@ bool CcmReader::open(std::string fileName, zzub::player* player) {
 									infotext[cfi.uncompressed_size] = '\0';
 									arch.read(&infotext[0], cfi.uncompressed_size);
 									arch.closeFileInArchve();
-									player->infoText = &infotext[0];
+									player->front.song_comment = &infotext[0];
 								} else {
 									std::cerr << "unable to open " << m->attribute("src").value() << " for reading." << std::endl;
 								}
@@ -1929,10 +1907,7 @@ bool CcmReader::open(std::string fileName, zzub::player* player) {
 		std::cerr << "ccm: error opening " << fileName << std::endl;
 	}
 	
-	player->lock();
-	player->playerState=player_state_stopped;
-	player->resetMachines();
-	player->unlock();
+	player->set_state(player_state_stopped);
 
 	setlocale(LC_NUMERIC, loc);
 

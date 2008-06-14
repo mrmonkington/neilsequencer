@@ -67,7 +67,7 @@ struct file_outstream : zzub::outstream {
 	}
 
 	int write(void* p, int bytes) {
-		return fwrite(p, (unsigned int)bytes, 1, f);
+		return (int)fwrite(p, (unsigned int)bytes, 1, f);
 	}
 
 };
@@ -122,7 +122,7 @@ struct mem_outstream : zzub::outstream {
 	virtual int write(void *buffer, int size) {		
 		char *charbuf = (char*)buffer;
 		int ret = size;
-		if (pos + size > this->buffer.size()) this->buffer.resize(pos+size);
+		if (pos + size > (int)this->buffer.size()) this->buffer.resize(pos+size);
 		while (size--) {
 			//this->buffer.push_back(*charbuf++);
 			this->buffer[pos++] = *charbuf++;
@@ -140,7 +140,7 @@ struct mem_outstream : zzub::outstream {
 		} else if (origin == SEEK_CUR) {
 			pos += offset;
 		} else if (origin == SEEK_END) {
-			pos = this->buffer.size() - offset;
+			pos = (int)this->buffer.size() - offset;
 		} else {
 			assert(0);
 		}
@@ -154,9 +154,9 @@ struct mem_instream : zzub::instream {
 	mem_instream(std::vector<char> &b) : buffer(b) { pos = 0; }
 	
 	virtual int read(void *buffer, int size) {
-		if (pos + size > this->buffer.size()) {
+		if (pos + size > (int)this->buffer.size()) {
 			std::cerr << "Tried to read beyond end of memory stream" << std::endl;
-			size = this->buffer.size() - pos;
+			size = (int)this->buffer.size() - pos;
 		}
 		memcpy(buffer, &this->buffer[pos], size);
 		pos += size;
@@ -173,13 +173,13 @@ struct mem_instream : zzub::instream {
 		} else if (origin == SEEK_CUR) {
 			pos += offset;
 		} else if (origin == SEEK_END) {
-			pos = this->buffer.size() - offset;
+			pos = (int)this->buffer.size() - offset;
 		} else {
 			assert(0);
 		}
 	}
 
-	virtual long size() { return buffer.size(); }
+	virtual long size() { return (long)buffer.size(); }
 };
 
 struct mem_archive : zzub::archive {

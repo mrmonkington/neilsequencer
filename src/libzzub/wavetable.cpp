@@ -78,6 +78,16 @@ wave_info_ex::wave_info_ex() {
 	envelopes.push_back(envelope_entry());
 }
 
+wave_info_ex::wave_info_ex(const wave_info& w) {
+	name = w.name;
+	flags = w.flags;
+	volume = w.volume;
+	envelopes = w.envelopes;
+	fileName = w.fileName;
+	levels = w.levels;
+}
+
+
 wave_info_ex::~wave_info_ex() {
 	clear();
 }
@@ -88,12 +98,12 @@ void wave_info_ex::clear() {
 	fileName = "";
 	name = "";
 
-	for (size_t i = 0; i < levels.size(); i++) {
+/*	for (size_t i = 0; i < levels.size(); i++) {
 		if (levels[i].samples != 0)
 			delete[] levels[i].samples;
 		levels[i].sample_count = 0;
 	}
-
+*/
 	levels.clear();
 	envelopes.clear();
 	envelopes.push_back(envelope_entry());
@@ -103,10 +113,10 @@ void wave_info_ex::clear() {
 // reallocate reallocates and truncates or inserts silence
 bool wave_info_ex::reallocate_level(size_t level, size_t samples) {
 
-	size_t samplesIn16Bit = 0;
-	size_t waveChannels = get_stereo()?2:1;
-	size_t oldSamples = get_sample_count(level);
-	size_t oldSamplesIn16Bit = 0;
+	int samplesIn16Bit = 0;
+	int waveChannels = get_stereo()?2:1;
+	int oldSamples = get_sample_count(level);
+	int oldSamplesIn16Bit = 0;
 
 	if (get_extended()) {
 		samplesIn16Bit = get_unextended_samples(level, samples);
@@ -187,7 +197,7 @@ bool wave_info_ex::allocate_level(size_t level, size_t numSamples, zzub::wave_bu
 			allocExtended = true;
 			break;
 		case zzub::wave_buffer_type_si32:
-			waveBufferSize = numSamples*waveChannels*sizeof(DWORD);
+			waveBufferSize = numSamples*waveChannels*sizeof(unsigned int);
 			samplesIn16bit = numSamples*2;
 			allocExtended = true;
 			break;
@@ -425,7 +435,7 @@ bool wave_info_ex::stretch_wave_range(size_t level, size_t fromSample, size_t nu
 	}
 
 	// adjust end looping point
-	size_t loopEnd = get_loop_end(level);
+	int loopEnd = (int)get_loop_end(level);
 	if (loopEnd > newsize)
 		set_loop_end(level, newsize);
 	
@@ -587,7 +597,7 @@ bool wave_info_ex::insert_wave_at(size_t level, size_t atSample, void* sampleDat
 }
 
 size_t wave_info_ex::get_level_index(zzub::wave_level* level) {
-	for (size_t i = 0; i < get_levels(); i++) {
+	for (int i = 0; i < get_levels(); i++) {
 		if (&levels[i] == level) return i;
 	}
 	return -1;
@@ -625,7 +635,7 @@ void wave_info_ex::set_extended() {
 
 	// TODO: this only clears 8 first shorts, should reallocate sample with + 8 shorts
 	flags |= wave_flag_extended;
-	for (size_t i = 0; i < get_levels(); i++) {
+	for (int i = 0; i < get_levels(); i++) {
 		wave_level* l = get_level(i);
 		if (!l) continue;
 		if (l->sample_count < 8) continue;
@@ -642,7 +652,7 @@ void wave_info_ex::set_extended() {
 ***/
 
 wave_table::wave_table(void) {
-	waves.resize(0xc8);	// max 200 waves
+//	waves.resize(0xc8);	// max 200 waves
 }
 
 wave_table::~wave_table(void) {
@@ -651,8 +661,8 @@ wave_table::~wave_table(void) {
 }
 
 void wave_table::clear() {
-	for (size_t i=0; i<waves.size(); i++) {
-		waves[i].clear();
+	for (size_t i = 0; i < waves.size(); i++) {
+		waves[i]->clear();
 	}
 }
 

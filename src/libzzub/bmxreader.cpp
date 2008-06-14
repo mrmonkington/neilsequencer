@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2003-2007 Anders Ervik <calvin@countzero.no>
+Copyright (C) 2003-2008 Anders Ervik <calvin@countzero.no>
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -17,23 +17,31 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include "common.h"
-#if defined(_WIN32)
-#include <strstream>
-#else
 #include <sstream>
-#endif
+#include "archive.h"
 #include "bmxreader.h"
 #include "decompress.h"
 #include "dummy.h"
 #include "tools.h"
 
+#if defined(POSIX)
+#define _strcmpi strcasecmp
+#endif
+
 using namespace std;
 
 namespace zzub {
 
-/*! \struct BuzzReader
-	\brief .BMX importer
-*/
+#define PLUGIN_FLAGS_MASK (zzub_plugin_flag_is_root|zzub_plugin_flag_has_audio_input|zzub_plugin_flag_has_audio_output|zzub_plugin_flag_has_event_output)
+#define ROOT_PLUGIN_FLAGS (zzub_plugin_flag_is_root|zzub_plugin_flag_has_audio_input)
+#define GENERATOR_PLUGIN_FLAGS (zzub_plugin_flag_has_audio_output)
+#define EFFECT_PLUGIN_FLAGS (zzub_plugin_flag_has_audio_input|zzub_plugin_flag_has_audio_output)
+#define CONTROLLER_PLUGIN_FLAGS (zzub_plugin_flag_has_event_output)
+// machine types
+#define MT_MASTER				0 
+#define MT_GENERATOR			1
+#define MT_EFFECT				2
+
 
 /***
 
@@ -71,31 +79,26 @@ bool BuzzReader::readPlayer(zzub::player* pl) {
 
 	player = pl;
 
-	player->setPlayerState(player_state_muted);
-	
+//	player->set_state(player_state_muted);
+
 	if (!loadPara()) goto error;
+	if (!loadWaveTable()) goto error;
 	if (!loadMachines()) goto error;
 	if (!loadConnections()) goto error;
 	if (!loadPatterns()) goto error;
 	if (!loadSequences()) goto error;
-	if (!loadWaveTable()) goto error;
 	if (!loadWaves()) goto error;
 	if (!loadMidi()) goto error;
 	if (!loadInfoText()) goto error;
 
 	goto all_ok;
 error:
-	returnValue=false;
-	player->loadError=lastError;
+	returnValue = false;
+	player->front.load_error = lastError;
 all_ok:
-	player->loadWarning=lastWarning;
+	player->front.load_warning = lastWarning;
 
-	player->lock();
-	player->playerState=player_state_stopped;
-	player->resetMachines();
-	// when pasting machines into a song, new tracks must inherit the current play position
-	player->setSequencerPosition(player->getSequencerPosition());
-	player->unlock();
+//	player->set_state(player_state_stopped);
 
 	return returnValue;
 }
@@ -136,319 +139,288 @@ Section* BuzzReader::getSection(unsigned int magic) {
 	return 0;
 }
 
-/* loadtrack does not set novalues, which means previously set defaultValues are kept 
-this should be extended to reset out-of-range parameters as well (or, as setValue doesnt set out-of-range, we're actually fine)
-
-additionally, loadTrack calls setParametr when a machine parametr is supplied so
-(master) callbacks are correctly called when a new song is called. this also
-allows the host to attach callbacks during validation
-*/
-
-void BuzzReader::loadTrack(zzub::metaplugin* machine, patterntrack* track) {
-
-	for (size_t j=0; j<track->getRows(); j++) {
-		int readSize=0;
-		size_t expectedSize = track->rowSize;
-		for (size_t k=0; k<track->getParams(); k++) {
-
-			unsigned short value=0;	// this one fucked up validating pt_words when value was signed
-			
-			const zzub::parameter* param=track->getParam(k);
-
-			readSize+=f->read(&value, param->get_bytesize());
-
-			if (value!=getNoValue(param)) {
-				if (machine)
-					machine->setParameter(track->getGroup(), track->getTrack(), k, value, false); else
-					track->setValue(j, k, value);
-			}
-		}
-		if (expectedSize!=readSize) {
-#if defined(_WIN32)
-			MessageBox(0, "loadTrack read unexpected number of bytes. Your BMX is possiblly broken.", 0, MB_OK);
-#else
-			printf("loadTrack read unexpected number of bytes. Your BMX is possiblly broken.");
-#endif
-		
-		}
-	}
-}
-
-
 MachineValidation* BuzzReader::findMachinePara(std::string name, std::string fullName) {
 	for (size_t i=0; i<machineParameters.machines.size(); i++) {
 		MachineValidation& mp=machineParameters.machines[i];
 		// f.ex HalyVerb failes on Interactive demo here with fullName
-		if (strcmpi(mp.instanceName.c_str(), name.c_str())==0) return &mp;
+		if (_strcmpi(mp.instanceName.c_str(), name.c_str())==0) return &mp;
 	}
 
 	return 0;
 }
 
-bool BuzzReader::testMachineCompatibility(zzub::metaplugin* machine) {
-	using namespace std;
-	if (machine==player->getMaster()) return true;
+void BuzzReader::print_test_messages(string machine_name, string uri, const char* field_name, int index, const char* expected_name, int expected, const char* found_name, int found, bool warn) {
 
-	MachineValidation* param=findMachinePara(machine->getName(), machine->loader->plugin_info->uri);
+	stringstream ss;
+	ss << machine_name << " (" << uri << ") ";
+	if (warn)
+		ss << "Warning: "; else
+		ss << "Error: ";
+	ss << "Parameter " << index << " (" << (field_name?field_name:"") << ") mismatch. Expected " << expected << " (" << (expected_name?expected_name:"") << "), found=" << found << " (" << (found_name?found_name:"") << ")\n";
 
-	if (param==0) {
-		lastError=machine->getName() + " (" + machine->loader->plugin_info->name + ") Warning: No PARA info found. Machine is most likely not connected.\n";
-		return true;
+	if (warn) {
+		lastWarning = ss.str() + lastWarning;
+	} else {
+		lastError = ss.str() + lastError;
 	}
+}
 
-	if (param->numGlobals != machine->loader->plugin_info->global_parameters.size()) {
-		lastError=machine->getName() + " (" + machine->loader->plugin_info->name + ") Error: PARA global parameter count mismatch.\n";
-		return false;
-	}
-	if (param->numTrackParams != machine->loader->plugin_info->track_parameters.size()) {
-		lastError=machine->getName() + " (" + machine->loader->plugin_info->name + ") Error: PARA track parameter count mismatch.\n";
-		return false;
-	}
+bool BuzzReader::test_group_compat(zzub::metaplugin& machine, int group, MachineValidation* validator) {
 
-#if defined(_WIN32)
-	
-#define TESTPARAMETER(x, warn) \
-	if (machine->getMachineParameter(i)->x!=param->parameters[i].x) {\
-		std::strstream ss(pc, 1024);\
-		ss << machine->getName() << " (" << machine->getLoaderName() << ") ";\
-		if (warn)\
-			ss << "Warning: "; else\
-			ss << "Error: ";\
-		ss << "Parameter " << i << " (" << #x << ") mismatch. Expected " << machine->getMachineParameter(i)->x << " (" << machine->getMachineParameter(i)->Name << "), found=" << param->parameters[i].x << " (" << param->parameters[i].Name << ")\n";\
-		pc[ss.pcount()]=0;\
-		if (warn) {\
-			lastWarning=ss.str()+lastWarning;\
-		} else {\
-			lastError=ss.str()+lastError;\
-			return false;\
+	int plugin_id = player->back.graph[machine.descriptor].id;
+
+	for (int i = 0; i < validator->get_param_count(group); i++) {
+		const zzub::parameter* found_param = player->back.plugin_get_parameter_info(plugin_id, group, 0, i);
+		assert(found_param);
+		zzub::parameter* expected_param = validator->get_param(group, i);
+		assert(expected_param);
+
+#define TESTPARAMETER(field, warn) {\
+			int expected = expected_param->field;\
+			int found = found_param->field;\
+			if (expected != found) {\
+				print_test_messages(machine.name, machine.info->uri, #field, i, expected_param->name, expected, found_param->name, found, warn);\
+				if (!warn) return false;\
+			}\
 		}\
-	}
-#else // POSIX
-	
-	
-#define TESTPARAMETER(x, warn) \
-	if (machine->getMachineParameter(i)->x!=param->parameters[i].x) {\
-		std::ostringstream ss;\
-		ss << machine->getName() << " (" << machine->getLoaderName() << ") ";\
-		if (warn)\
-			ss << "Warning: "; else\
-			ss << "Error: ";\
-		ss << "Parameter " << i << " (" << #x << ") mismatch. Expected " << machine->getMachineParameter(i)->x << " (" << machine->getMachineParameter(i)->Name << "), found=" << param->parameters[i].x << " (" << param->parameters[i].Name << ")\n";\
-		if (warn) {\
-			lastWarning=ss.str()+lastWarning;\
-		} else {\
-			lastError=ss.str()+lastError;\
-			return false;\
-		}\
-	}
-#endif
-	
-	for (size_t i=0; i<param->numGlobals+param->numTrackParams; i++) {
-		// we allow min, max, def-value changes, but they must be logged
-		/*
-		TESTPARAMETER(Type, false);
-		TESTPARAMETER(MinValue, true);
-		TESTPARAMETER(MaxValue, true);
-		TESTPARAMETER(NoValue, false);
-		TESTPARAMETER(DefValue, true);
-		TESTPARAMETER(Flags, true);*/
+
+		TESTPARAMETER(type, false)
+		TESTPARAMETER(value_min, true)
+		TESTPARAMETER(value_max, true)
+		TESTPARAMETER(value_default, true)
+		TESTPARAMETER(flags, true)
 	}
 	return true;
 }
 
-bool BuzzReader::invoke(zzub_event_data_t& data) {
-	if (data.type==zzub_event_type_new_plugin) {
-		zzub::metaplugin* machine=(zzub::metaplugin*)data.new_plugin.plugin;
-		if (this->machineParameters.machines.size()==0) {
-			lastWarning=machine->getName() + " (" + machine->loader->plugin_info->name + ") Warning: Song has no PARA section. Machine validation overrided.\n" + lastWarning;
-			return true;
-		}
+bool BuzzReader::test_compatibility(zzub::metaplugin& machine) {
+	using namespace std;
+	if (machine.descriptor == 0) return true;
 
-		if (!testMachineCompatibility(machine)) {
-			lastError=machine->getName() + " (" + machine->loader->plugin_info->name + ") Error: Failed machine compatibility test.\n" + lastError;
+	MachineValidation* param = findMachinePara(machine.name, machine.info->uri);
 
-			// vi kan fortsatt tillate denne masinen å validatere dersom låten IKKE har en para-seksjon assosiert
-			return false;
-		}
+	if (param == 0) {
+		lastError = machine.name + " (" + machine.info->name + ") Warning: No PARA info found. Machine is most likely not connected.\n" + lastError;
 		return true;
-	} else
+	}
+
+	if (param->numGlobals != machine.info->global_parameters.size()) {
+		lastError = machine.name + " (" + machine.info->name + ") Error: PARA global parameter count mismatch.\n" + lastError;
 		return false;
+	}
+	if (param->numTrackParams != machine.info->track_parameters.size()) {
+		lastError = machine.name + " (" + machine.info->name + ") Error: PARA track parameter count mismatch.\n" + lastError;
+		return false;
+	}
+
+	// these tests helps e.g when mixing two versions of plugins which have the same number of parameters, but have different
+	// types or something. when not handled properly, the following machine is usually not loaded correctly giving weird errors.
+	if (!test_group_compat(machine, 1, param)) return false;
+	if (!test_group_compat(machine, 2, param)) return false;
+
+	return true;
+}
+
+bool BuzzReader::invoke(zzub_event_data_t& data) {
+	return false;
 }
 
 // loadMachines is probably the most debugged method in this project =)
 
+std::string rewriteBuzzWrapperUri(std::string fileName) {
+	string prefix = "@zzub.org/buzz2zzub/";
+	if (fileName.find(prefix) == 0) {
+		// i did it again; this trims off extra prefixes that were accidentally added in some songs
+		while (fileName.find(prefix, prefix.length()) != std::string::npos) {
+			fileName = fileName.substr(prefix.length());
+		}
+		return fileName;
+	}
+	fileName = prefix + fileName;
+	replace(fileName.begin(), fileName.end(), ' ', '+');
+	return fileName;
+}
+
 bool BuzzReader::loadMachines() {
-//	player->getMaster()->invokeEvent(zzub::event_type_load_progress, (void*)LoadProgressMachines);
-	Section* section=getSection(MAGIC_MACH);
+
+	Section* section = getSection(MAGIC_MACH);
 	if (!section) {
 		lastError="Error: Cannot find MACH section.\n" + lastError;
 		return false;
 	}
 	f->seek(section->offset, SEEK_SET);
 
-	bool returnValue=true;
+	// put wavetable on the backbuffer in case any plugins query for info while loading
+	operation_copy_flags flags;
+	flags.copy_wavetable = true;
+	player->merge_backbuffer_flags(flags);
+
+	bool returnValue = true;
 	unsigned short machineCount;
 	f->read(machineCount);
 
-	for (int j=0; j<machineCount; j++) {
-		if (j==1) {	// this event is created (once) after master is created
-			zzub::metaplugin* master=player->getMaster();
-			master->addEventHandler(this);
-		}
+	for (int j = 0; j < machineCount; j++) {
 		string machineName;
 		f->read(machineName);
 		
 		char type;
-		float x,y;
+		float x, y;
 		string fullName, pluginUri;
-		zzub::pluginloader* loader;
 		int dataSize;
-		char* inputData;
+		std::vector<char> input_data;
 		unsigned short attributeCount, tracks;
-		int* attributeValues, *globalValues, *trackValues;
-
-		//~ enum zzub_plugin_type {
-		//~ // possible plugin types
-		//~ zzub_plugin_type_master = 0,
-		//~ zzub_plugin_type_generator = 1,
-		//~ zzub_plugin_type_effect	= 2,
-		//~ };
+		const zzub::info* loader = 0;
 
 		f->read(type);
 		if (type)
 			f->read(fullName); else
-			fullName="Master";
+			fullName = "Master";
 		f->read(x);
 		f->read(y);
 
 		f->read(dataSize);
 
-		inputData=new char[dataSize];
-		f->read(inputData, dataSize);
+		input_data.resize(dataSize);
+		if (dataSize > 0) f->read(&input_data.front(), dataSize);
 
 		// read attributes, and then test if machine was successfully created. attributes are used to create a dummy machine in case a machine was not found
 		f->read(attributeCount);
-		attributeValues=new int[attributeCount];
+
+		std::vector<int> attributeValues(attributeCount);
 
 		// casting attributeCount to signed short so we catch the situation described in bmformat_hotkey ??
-		for (int k=0; k<(signed short)attributeCount; k++) {
+		for (int k = 0; k < (signed short)attributeCount; k++) {
 			std::string name;
 			f->read(name);
 			f->read(attributeValues[k]);
 		}
 
-		pluginUri=player->getBuzzUri(fullName);
-		if (pluginUri=="")
-			pluginUri=fullName;
+		if (fullName == "Master") {
+			pluginUri = "@zzub.org/master"; 
+			loader = &player->front.master_plugininfo;
+		} else {
+			pluginUri = fullName;
+			loader = player->plugin_get_info(pluginUri);
 
-		loader=player->getMachineLoader(pluginUri);
+			// if retreiving loader fails, we should rewrite the machine name to a buzz2zzub-uri and retry
+			// if that fails too, just keep the original uri
+			if (loader == 0) {
+				string buzzUri = rewriteBuzzWrapperUri(pluginUri);
+				loader = player->plugin_get_info(buzzUri);
+				if (loader) pluginUri = buzzUri;
+			}
+		}
 
 		string loadedMachineName = machineName;
 		// validate machine name, disallow duplicate machine names - but keep a copy of the original so we can still lookup the PARA
-		if (machineName != "Master" && player->getMachine(machineName)) {
-			std::string newName = player->getNewMachineName(pluginUri);
+		if (machineName != "Master" && player->back.get_plugin_descriptor(machineName) != graph_traits<plugin_map>::null_vertex()) {
+			std::string newName = player->plugin_get_new_name(pluginUri);
 			lastWarning = "Duplicate machine name found. " + machineName + " renamed to " + newName + "\n" + lastWarning;
 			machineName = newName;
 		}
 
-		metaplugin* plugin=0;
+		int plugin_id;
 
 		// if a loader was found, try to create the plugin and check for pattern compatibility
-		if (loader) {
-			if (type==0) {
-				plugin=player->master;
+		if (loader != 0) {
+			if (type == 0) {
+				plugin_id = 0;	// NOTE: 0 == master
+				operation_copy_flags flags;
+				flags.copy_plugins = true;
+				player->merge_backbuffer_flags(flags);
 			} else {
-				plugin=player->createMachine(inputData, dataSize, machineName, loader);
+				plugin_id = player->create_plugin(input_data, machineName, loader);
 			}
 
 			// test if plugin is compatible with saved data
-			if (!testMachineCompatibility(plugin)) {
+			if (!test_compatibility(*player->back.plugins[plugin_id])) {
 				// it wasnt compatible, set loader to 0. this will create a dummy so we can load defaults and patterns correctly
-				player->deleteMachine(plugin);
-				plugin=0;
-				loader=0;
+				player->plugin_destroy(plugin_id);
+				plugin_id = -1;
+				loader = 0;
 			}
-		}
-
-#define PLUGIN_FLAGS_MASK (zzub_plugin_flag_is_root|zzub_plugin_flag_has_audio_input|zzub_plugin_flag_has_audio_output|zzub_plugin_flag_has_event_output)
-#define ROOT_PLUGIN_FLAGS (zzub_plugin_flag_is_root|zzub_plugin_flag_has_audio_input)
-#define GENERATOR_PLUGIN_FLAGS (zzub_plugin_flag_has_audio_output)
-#define EFFECT_PLUGIN_FLAGS (zzub_plugin_flag_has_audio_input|zzub_plugin_flag_has_audio_output)
-#define CONTROLLER_PLUGIN_FLAGS (zzub_plugin_flag_has_event_output)
-// machine types
-#define MT_MASTER				0 
-#define MT_GENERATOR			1
-#define MT_EFFECT				2
-
-		int flags = 0;
-		switch (type) {
-			case MT_MASTER:
-				flags = ROOT_PLUGIN_FLAGS;
-				break;
-			case MT_GENERATOR:
-				flags = GENERATOR_PLUGIN_FLAGS;
-				break;
-			default:
-				flags = EFFECT_PLUGIN_FLAGS;
-				break;
 		}
 
 		// if there is no loader for this uri, or validation failed, try to create a dummy loader + machine
-		if (loader==0) {
+		if (loader == 0) {
+
+			int flags = 0;
+			switch (type) {
+				case MT_MASTER:
+					flags = ROOT_PLUGIN_FLAGS;
+					break;
+				case MT_GENERATOR:
+					flags = GENERATOR_PLUGIN_FLAGS;
+					break;
+				default:
+					flags = EFFECT_PLUGIN_FLAGS;
+					break;
+			}
+
 			// use loadedMachineName, because machineName could potentially change before we get here
-			MachineValidation* validator=findMachinePara(loadedMachineName, fullName);
+			MachineValidation* validator = findMachinePara(loadedMachineName, fullName);
 			if (validator) {
-				loader=player->createDummyLoader(flags, pluginUri, attributeCount, validator->numGlobals, validator->numTrackParams, &validator->parameters.front());
+				loader = player->front.create_dummy_info(flags, pluginUri, attributeCount, validator->numGlobals, validator->numTrackParams, validator->parameters.empty()?0:&validator->parameters.front());
 			}
 			if (!loader) {
-				lastError=machineName + " (" + fullName + ") Error: Cannot load nor create dummy machine.\n" + lastError;
-				returnValue=false;
+				lastError = machineName + " (" + fullName + ") Error: Cannot load nor create dummy machine.\n" + lastError;
+				returnValue = false;
 				break;
 			}
-			lastWarning=machineName + " (" + fullName + ") Warning: Could not load machine, a replacement machine was created instead.\n" + lastWarning + lastError;
-			lastError="";	// reset errors
-			plugin=player->createMachine(inputData, dataSize, machineName, loader);
+			lastWarning = machineName + " (" + fullName + ") Warning: Could not load machine, a replacement machine was created instead.\n" + lastWarning + lastError;
+			lastError = "";	// reset errors
+
+			plugin_id = player->create_plugin(input_data, machineName, loader);
 		}
 
+		metaplugin& m = *player->back.plugins[plugin_id];
+		for (size_t i = 0; i < attributeValues.size(); i++)
+			if (m.plugin->attributes) 
+				m.plugin->attributes[i] = attributeValues[i];
+		m.plugin->attributes_changed();
+
+		std::vector<int> globals(loader->global_parameters.size());
+
 		// load global default
-		globalValues=new int[loader->plugin_info->global_parameters.size()];
-		for (size_t k=0; k<loader->plugin_info->global_parameters.size(); k++) {
-			const parameter* param=loader->plugin_info->global_parameters[k];
-			globalValues[k]=0;
-			f->read(&globalValues[k], param->get_bytesize());
+		for (size_t k = 0; k < loader->global_parameters.size(); k++) {
+			const parameter* param = loader->global_parameters[k];
+			int v = 0;
+			f->read(&v, param->get_bytesize());
+			globals[k] = v;
 		}
 
 		// load track defaults
 		f->read(tracks);
-		size_t numTrackParams=loader->plugin_info->track_parameters.size();
-		trackValues=new int[tracks*numTrackParams];
-		
-		for (size_t l=0; l<tracks; l++) {
-			for (size_t k=0; k<numTrackParams; k++) {
-				const parameter* param=loader->plugin_info->track_parameters[k];
-				trackValues[numTrackParams*l+k]=0;
-				f->read(&trackValues[numTrackParams*l+k], param->get_bytesize());
+
+		player->plugin_set_track_count(plugin_id, tracks);
+		player->plugin_set_position(plugin_id, x, y);
+
+		for (size_t k = 0; k < loader->global_parameters.size(); k++) {
+			const parameter* param = loader->global_parameters[k];
+			int v;
+			if (param->flags & parameter_flag_state)
+				v = globals[k]; else
+				v = param->value_none;
+			player->plugin_set_parameter(plugin_id, 1, 0, k, v, false, false, true);
+		}
+
+		for (size_t l = 0; l < tracks; l++) {
+			for (size_t k = 0; k < loader->track_parameters.size(); k++) {
+				const parameter* param = loader->track_parameters[k];
+				int v = 0;
+				f->read(&v, param->get_bytesize());
+				if ((param->flags & parameter_flag_state) == 0) v = param->value_none;
+				player->plugin_set_parameter(plugin_id, 2, l, k, v, false, false, true);
 			}
 		}
 
-		// initialize with defaults
-		plugin->initialize(attributeValues, attributeCount, globalValues, trackValues, tracks);
+		player->back.process_plugin_events(plugin_id);
 
-		plugin->x=x;
-		plugin->y=y;
-
-		machines.push_back(plugin);
-		connections.insert(connectionpair(plugin, vector<connection*>()));
-
-		delete[] inputData;
-		delete[] attributeValues;
-		delete[] globalValues;
-		delete[] trackValues;
+		machines.push_back(plugin_id);
+		connections.insert(connectionpair(plugin_id, vector<pair<int, zzub::connection_type> >()));
 	}
+	player->flush_operations(0, 0);
 
-	player->getMaster()->removeEventHandler(this);
-
-	// masteren får ikke kallet callbacks for sine introduksjonelle - loadTrack skal kalle setParameter!
 	return returnValue;
 }
 /*
@@ -462,104 +434,223 @@ setnumtracks | setnumtracks (i hver sin tråd)
 mdktick
 */
 
+zzub::pattern::track BuzzReader::read_track(const std::vector<const zzub::parameter*>& parameters, int rows) {
+	int size = 0;
+	zzub::pattern::track result;
+	result.resize(parameters.size());
+	
+	for (size_t i = 0; i < parameters.size(); i++) {
+		result[i].resize(rows);
+	}
+
+	for (int i = 0; i < rows; i++) {
+		for (size_t j = 0; j < parameters.size(); j++) {
+			int column_size = parameters[j]->get_bytesize();
+			int v = 0;
+			size += f->read(&v, column_size);
+			result[j][i] = v;
+		}
+	}
+
+	return result;
+}
+
+
 bool BuzzReader::loadPatterns() {
-//	player->getMaster()->invokeEvent(zzub::event_type_load_progress, (void*)LoadProgressPatterns);
-	Section* section=getSection(MAGIC_PATT);
+	Section* section = getSection(MAGIC_PATT);
 	f->seek(section->offset, SEEK_SET);
 
-	//player->lock();
-	for (vector<zzub::metaplugin*>::iterator i=machines.begin(); i!=machines.end(); ++i) {
-		zzub::metaplugin* machine=*i;
-		unsigned short patterns=0;
-		unsigned short tracks=0;
+	operation_copy_flags flags;
+	flags.copy_plugins = true;
+	flags.copy_graph = true;
+	player->merge_backbuffer_flags(flags);
+
+	for (vector<int>::iterator i = machines.begin(); i != machines.end(); ++i) {
+		unsigned short patterns = 0;
+		unsigned short tracks = 0;
+
 		f->read(patterns);
 		f->read(tracks);
 
-		for (int j=0; j<patterns; j++) {
-			string name;
-			f->read(name);
+		for (int j = 0; j < patterns; j++) {
+			zzub::metaplugin& machine = *player->back.plugins[*i];
 			unsigned short rows;
+
+			std::string name;
+			f->read(name);
 			f->read(rows);
 
-			pattern* ptn=machine->createPattern(rows);
-			ptn->setName(name);
+			pattern p;
+			p.name = name;
+			p.rows = rows;
 
-			//if (machine->type==1) continue;	// do not load connection patterns for generators
+			pattern::group group0;
 
-			for (size_t k=0; k<connections[machine].size(); k++) {
-				connection* c = connections[machine][k];
-				if (c==0) 
-					continue;
+			for (size_t k = 0; k < connections[*i].size(); k++) {
 				unsigned short machineIndex;
 				f->read(machineIndex);	// NOTE: this byte is not documented in bmformat.txt. in fact the connection pattern section is terribly documented.
 
-				if (machineIndex>=machines.size()) {
-					lastError="Invalid pattern connection machine index on " + machine->getName();
+				if (machineIndex >= machines.size()) {
+					lastError = "Invalid pattern connection machine index on " + machine.name;
 					return false;
 				}
 
-				zzub::metaplugin* cmac=machines[machineIndex];
-				if (cmac==0) {
-					lastError="Cannot get pattern for machine connected to " + machine->getName();
-					return false;
-				}
+				std::pair<int, zzub::connection_type> cit = connections[*i][k];
+				int conntrack = player->back.plugin_get_input_connection_index(*i, cit.first, cit.second);
 
-				patterntrack* connTrack=ptn->getPatternTrack(0, k);
-				if (connTrack==0) {
-					lastError="Cannot load connection pattern for connection " + cmac->getName() + "->" + machine->getName();
-					return false;
+				if (conntrack != -1) {
+					connection* conn = player->back.plugin_get_input_connection(*i, conntrack);
+					pattern::track group0track = read_track(conn->connection_parameters, rows);
+					group0.push_back(group0track);
+				} else {
+					// if we come here - there was a buggy BMX, the connection was saved, but not successfully reconnected
+					// at least one bmx has this problem, so here is a fix which shouldnt be needed in final code:
+					vector<const parameter*> params;
+					params.push_back(&audio_connection::para_volume);
+					params.push_back(&audio_connection::para_panning);
+					pattern::track group0track = read_track(params, rows);
 				}
-				
-				loadTrack(0, connTrack);
 			}
 
-			patterntrack* globTrack=ptn->getPatternTrack(1, 0);
-			loadTrack(0, globTrack);
+			pattern::group group1;
+			pattern::track group1track = read_track(machine.info->global_parameters, rows);
+			group1.push_back(group1track);
 
-			// bmx-patterne er lagret nedover, ikke bortover. eller noe.
-			for (int l=0; l<tracks; l++) {
-				patterntrack* track=ptn->getPatternTrack(2, l);
-				loadTrack(0, track);
+			pattern::group group2;
+			for (int l = 0; l < tracks; l++) {
+				pattern::track group2track = read_track(machine.info->track_parameters, rows);
+				group2.push_back(group2track);
 			}
+
+			p.groups.push_back(group0);
+			p.groups.push_back(group1);
+			p.groups.push_back(group2);
+
+			player->plugin_add_pattern(*i, p);
 		}
 	}
+	player->flush_operations(0, 0);
 
 	return true;
 }
 
-bool BuzzReader::loadConnections() {
-//	player->getMaster()->invokeEvent(zzub::event_type_load_progress, (void*)LoadProgressConnections);
-	Section* section=getSection(MAGIC_CONN);
+bool BuzzReader::loadConnections2() {
+
+	Section* section=getSection(MAGIC_CON2);
 	f->seek(section->offset, SEEK_SET);
+
+	unsigned short version = 1;
+	f->read(version);
+	if (version != 1) return false;
+
 	unsigned short conns=0;
 	f->read(conns);
 
-	int masterConns=player->getMaster()->getConnections();
+	unsigned short type = 0;
+	unsigned short index1 = 0, index2 = 0;
+	for (int i = 0; i<conns; i++) {
+		f->read(type);
+		f->read(index1);
+		f->read(index2);
 
-	unsigned short index1=0,index2=0;
-	int i;	// for vc6
-	for (i=0; i<conns; i++) {
+		int from_id = machines[index1];
+		int to_id = machines[index2];
+
+		unsigned short amp, pan;
+		std::string deviceName;
+		event_connection_binding binding;
+		switch (type) {
+			case zzub::connection_type_audio: {
+				f->read(amp);
+				f->read(pan);
+
+				bool result = player->plugin_add_input(to_id, from_id, connection_type_audio);
+				if (result) {
+					assert(result);
+					int track = player->back.plugin_get_input_connection_count(to_id) - 1;
+					player->plugin_set_parameter(to_id, 0, track, 0, amp, false, false, true);
+					player->plugin_set_parameter(to_id, 0, track, 1, pan, false, false, true);
+				}
+
+				connections[to_id].push_back(std::pair<int, zzub::connection_type>(from_id, connection_type_audio) );
+				break;
+			}
+			case zzub::connection_type_midi: {
+				f->read(deviceName);
+
+				bool result = player->plugin_add_input(to_id, from_id, connection_type_midi);
+				if (result) {
+					player->plugin_set_midi_connection_device(to_id, from_id, deviceName);
+				}
+
+				connections[to_id].push_back(std::pair<int, connection_type>(from_id, connection_type_midi) );
+				break;
+			}
+			case zzub::connection_type_event: {
+				unsigned short bindings = 0;
+				f->read(bindings);
+				bool result = player->plugin_add_input(to_id, from_id, connection_type_event);
+				if (result) {
+					for (int i = 0; i < bindings; i++) {
+						f->read(binding.source_param_index);
+						f->read(binding.target_group_index);
+						f->read(binding.target_track_index);
+						f->read(binding.target_param_index);
+						player->plugin_add_event_connection_binding(to_id, from_id, binding.source_param_index, 
+							binding.target_group_index, binding.target_track_index, binding.target_param_index);
+					}
+				}
+				connections[to_id].push_back(std::pair<int, zzub::connection_type>(from_id, connection_type_event) );
+				break;
+			}
+			default:
+				assert(false);
+				return false;
+		}
+
+	}
+	return true;
+}
+
+bool BuzzReader::loadConnections() {
+	Section* section = getSection(MAGIC_CON2);
+	if (section && loadConnections2()) return true;
+
+	section=getSection(MAGIC_CONN);
+	f->seek(section->offset, SEEK_SET);
+	unsigned short conns = 0;
+	f->read(conns);
+
+	unsigned short index1 = 0, index2 = 0;
+	for (int i = 0; i < conns; i++) {
 		f->read(index1);
 		f->read(index2);
 		unsigned short amp, pan;
 		f->read(amp);
 		f->read(pan);
-		zzub::metaplugin* machine1=machines[index1];
-		zzub::metaplugin* machine2=machines[index2];
 
-		//if (machine2->getType()==0 && machine1->getMachineFlags()&zzub::plugin_flag_no_output) {
-		//} else continue;	// tror denne er fikset i addInput nå... ?
-		audio_connection *conn = machine2->addAudioInput(machine1, amp, pan);
+		int from_id = machines[index1];
+		int to_id = machines[index2];
 
-		connections[machine2].push_back(machine2->getConnection(machine1));
+		//int to_id = player->front.get_plugin_id(to_plugin);
+
+		bool result = player->plugin_add_input(to_id, from_id, connection_type_audio);
+		if (result) {
+			assert(result);
+			int track = player->back.plugin_get_input_connection_count(to_id) - 1;
+			player->plugin_set_parameter(to_id, 0, track, 0, amp, false, false, true);
+			player->plugin_set_parameter(to_id, 0, track, 1, pan, false, false, true);
+		}
+
+		connections[to_id].push_back(std::pair<int, zzub::connection_type>(from_id, zzub::connection_type_audio) );
 
 	}
+	player->flush_operations(0, 0);
 	return true;
 }
 
 
 bool BuzzReader::loadSequences() {
-//	player->getMaster()->invokeEvent(zzub::event_type_load_progress, (void*)LoadProgressSequences);
 	Section* section=getSection(MAGIC_SEQU);
 	f->seek(section->offset, SEEK_SET);
 
@@ -571,62 +662,97 @@ bool BuzzReader::loadSequences() {
 	f->read(endLoop);
 	f->read(numSequences);
 
-	player->setSongBegin(0);
-	player->setSongBeginLoop(beginLoop);
-	player->setSongEndLoop(endLoop);
-	player->setSongEnd(endSong);
+	player->front.song_begin = 0;
+	player->front.song_loop_begin = beginLoop;
+	player->front.song_loop_end = endLoop;
+	player->front.song_end = endSong;
 
-	for (int i=0; i<numSequences; i++) {
+	operation_copy_flags flags;
+	flags.copy_plugins = true;
+	flags.copy_graph = true;
+	player->merge_backbuffer_flags(flags);
+
+	for (int i = 0; i < numSequences; i++) {
 		unsigned short machineIndex;
 		f->read(machineIndex);
-		metaplugin* plugin = machines[machineIndex];
-		sequence* seq = new sequence(plugin);
-		seq->deserialize(f);
-		player->song_sequencer.tracks.push_back(seq);
+		
+		int plugin_id = machines[machineIndex];
+		
+		player->sequencer_add_track(plugin_id);
+
+		int track = player->back.sequencer_tracks.size() - 1;
+
+		unsigned int events;
+		unsigned char posSize, eventSize;
+		f->read(events);
+		if (events > 0) {
+			f->read(posSize);
+			f->read(eventSize);
+		}
+
+		for (size_t j = 0; j < events; j++) {
+			unsigned long pos = 0, value = 0;
+			f->read(&pos, posSize);
+			f->read(&value, eventSize);
+			player->sequencer_set_event(track, pos, value);
+		}
 	}
+
+	player->flush_operations(0, 0);
+
 	return true;
 }
 
 
 bool BuzzReader::loadWaveTable() {
-//	player->getMaster()->invokeEvent(zzub::event_type_load_progress, (void*)LoadProgressWaves);
-	Section* section=getSection(MAGIC_WAVT);
-	if (section==0) return true;	// no wavetable
+	Section* section = getSection(MAGIC_WAVT);
+	if (section == 0) return true;	// no wavetable
 	f->seek(section->offset, SEEK_SET);
 
 	unsigned short waveCount;
 	f->read(waveCount);
 
-	for (int i=0; i<waveCount; i++) {
+	for (int i = 0; i < waveCount; i++) {
 		unsigned short index;
+
 		f->read(index);
-		wave_info_ex* entry=player->getWave(index);
-		f->read(entry->fileName);
-		f->read(entry->name);
-		f->read(entry->volume);
-		entry->flags=0;
-		f->read((unsigned char&)entry->flags);
-		if ((entry->flags&zzub::wave_flag_envelope)!=0) {
+		if (index >= 200) {
+			std::stringstream strm;
+			strm << "Error: Invalid index " << index << " on wave " << i << "/" << waveCount << " in WAVT" << endl;
+			lastError = strm.str();
+			break;
+		}
+
+		player->wave_clear(index);
+
+		wave_info_ex wave;
+		//wave_info_ex& wave = *player->front.wavetable.waves[index];
+		f->read(wave.fileName);
+		f->read(wave.name);
+		f->read(wave.volume);
+		wave.flags = 0;
+		f->read((unsigned char&)wave.flags);
+		if ((wave.flags & zzub::wave_flag_envelope) != 0) {
 			unsigned short numEnvelopes;
 			f->read(numEnvelopes);
-			entry->envelopes.resize(numEnvelopes);
-			for (int j=0; j<numEnvelopes; j++) {
+			wave.envelopes.resize(numEnvelopes);
+			for (int j = 0; j < numEnvelopes; j++) {
 				unsigned short numPoints;
-				envelope_entry& env=entry->envelopes[j];//.back();
-			
+				envelope_entry& env = wave.envelopes[j];//.back();
+
 				f->read(env.attack);	// Attack time 
-				f->read(env.decay);	// Decay time
+				f->read(env.decay);		// Decay time
 				f->read(env.sustain);	// Sustain level
 				f->read(env.release);	// Release time
 				f->read(env.subDivide);	// ADSR Subdivide
-				f->read(env.flags);	// ADSR Flags
-				f->read(numPoints);	//	word		number of points (can be zero) (bit 15 set = envelope disabled)
-				env.disabled=(numPoints&0x8000)!=0;
-				numPoints&=0x7FFF;
+				f->read(env.flags);		// ADSR Flags
+				f->read(numPoints);		// number of points (can be zero) (bit 15 set = envelope disabled)
+				env.disabled = (numPoints&0x8000)!=0;
+				numPoints &= 0x7FFF;
 
 				env.points.resize(numPoints);
-				for (int k=0; k<numPoints; k++) {
-					envelope_point& pt=env.points[k];
+				for (int k = 0; k < numPoints; k++) {
+					envelope_point& pt = env.points[k];
 					f->read(pt.x);	// x
 					f->read(pt.y);	// y
 					f->read(pt.flags);	// flags
@@ -634,7 +760,7 @@ bool BuzzReader::loadWaveTable() {
 			}
 		}
 
-		bool stereo = entry->get_stereo();
+		bool stereo = wave.get_stereo();
 		unsigned char waveLevels;
 		f->read(waveLevels);
 
@@ -642,9 +768,9 @@ bool BuzzReader::loadWaveTable() {
 		// (which in turn, happens because the default volume is 0.0, and when machines 
 		// allocate waves we need to update the volume to 1.0 without breaking anything)
 		// so we need to make a copy of the loaded volume and set it again afterwards
-		float vol = entry->volume;
+		float vol = wave.volume;
 
-		for (int j=0; j<waveLevels; j++) {
+		for (int j = 0; j < waveLevels; j++) {
 			int numSamples, loopStart, loopEnd, samplesPerSec;
 			unsigned char rootNote;
 			f->read(numSamples);
@@ -653,66 +779,83 @@ bool BuzzReader::loadWaveTable() {
 			f->read(samplesPerSec);
 			f->read(rootNote);
 			
-			entry->allocate_level(j, numSamples, zzub::wave_buffer_type_si16, stereo);
-			entry->set_root_note(j, rootNote);
-			entry->set_loop_start(j, loopStart);
-			entry->set_loop_end(j, loopEnd);
-			entry->set_samples_per_sec(j, samplesPerSec);
+			player->wave_add_level(index);
+			player->wave_allocate_level(index, j, numSamples, stereo?2:1, zzub::wave_buffer_type_si16);
+			player->wave_set_root_note(index, j, rootNote);
+			player->wave_set_loop_begin(index, j, loopStart);
+			player->wave_set_loop_end(index, j, loopEnd);
+			player->wave_set_samples_per_second(index, j, samplesPerSec);
+
+			/*wave.allocate_level(j, numSamples, zzub::wave_buffer_type_si16, stereo);
+			wave.set_root_note(j, rootNote);
+			wave.set_loop_start(j, loopStart);
+			wave.set_loop_end(j, loopEnd);
+			wave.set_samples_per_sec(j, samplesPerSec);*/
 		}
 
-		entry->volume = vol;
+		//wave.volume = vol;
+		player->wave_set_flags(index, wave.flags);
+		player->wave_set_volume(index, vol);
+		player->wave_set_name(index, wave.name);
+		player->wave_set_path(index, wave.fileName);
+		player->wave_set_envelopes(index, wave.envelopes);
 	}
+
+	player->flush_operations(0, 0);
 
 	return true;
 }
 
 bool BuzzReader::loadWaves() {
-	Section* section=getSection(MAGIC_CWAV);
-	if (section==0) section=getSection(MAGIC_WAVE);
-	if (section==0) return true;
+	Section* section = getSection(MAGIC_CWAV);
+	if (section == 0) section=getSection(MAGIC_WAVE);
+	if (section == 0) return true;
 	f->seek(section->offset, SEEK_SET);
 
 	unsigned short waveCount;
 	f->read(waveCount);
 
-	for (int i=0; i<waveCount; i++) {
+	for (int i = 0; i<waveCount; i++) {
 		unsigned short index;
 		f->read(index);
+		if (index >= 200) {
+			std::stringstream strm;
+			strm << "Error: Invalid index " << index << " on wave " << i << "/" << waveCount << " in CWAV/WAVE" << endl;
+			lastError = strm.str();
+			break;
+		}
 		unsigned char format;
 		f->read(format);
-		if (format==0) {
-			DWORD totalBytes;
+		if (format == 0) {
+			unsigned int totalBytes;
 			f->read(totalBytes);
-			wave_info_ex* entry=player->getWave(index);
-			for (size_t j=0; j<entry->get_levels(); j++) {
-				zzub::wave_level* level=entry->get_level(j);
-				LPWORD pSamples=(LPWORD)level->samples; //(short*)entry.getSampleData(j);
-
-				f->read(pSamples, level->sample_count*2*(entry->get_stereo()?2:1));
+			wave_info_ex& entry = *player->front.wavetable.waves[index];
+			for (int j = 0; j < entry.get_levels(); j++) {
+				zzub::wave_level* level = entry.get_level(j);
+				short* pSamples = (short*)level->samples;
+				f->read(pSamples, level->sample_count * 2 * (entry.get_stereo()?2:1));
 			}
 		} else 
-		if (format==1) {
-			wave_info_ex* entry=player->getWave(index);
+		if (format == 1) {
+			wave_info_ex& entry = *player->front.wavetable.waves[index];
 			WAVEUNPACK wup;
 			InitWaveUnpack(&wup, f, section->size);
 
-			for (size_t j=0; j<entry->get_levels(); j++) {
-				zzub::wave_level* level=entry->get_level(j);
-				LPWORD pSamples=(LPWORD)level->samples; //(short*)entry.getSampleData(j);
+			for (int j = 0; j < entry.get_levels(); j++) {
+				zzub::wave_level* level = entry.get_level(j);
+				unsigned short* pSamples = (unsigned short*)level->samples; //(short*)entry.getSampleData(j);
 
-				// review the comment by stefan k here: http://www.marcnetsystem.co.uk/cgi-shl/mn2.pl?ti=1141928795?drs=,V77M0R1,39,2,
-				// regarding bug in decompressor on waves less than 64 byte
-				DecompressWave(&wup, pSamples, level->sample_count, entry->get_stereo()?TRUE:FALSE);
-
-				// at this point, bytesPerSample is read from pSamples on extended waves
+				DecompressWave(&wup, pSamples, level->sample_count, entry.get_stereo()?TRUE:FALSE);
 			}
 
 			int iRemain = wup.dwCurIndex - wup.dwBytesInBuffer;
 			f->seek(iRemain+1, SEEK_CUR);
 
 		} else {
-			lastError="Unknown compression format";
-			return false;
+			std::stringstream strm;
+			strm << "Error: Unknown compression format (" << format << ") on wave " << i << "/" << waveCount << " at #" << index << endl;
+			lastError = strm.str();
+			break;
 		}
 
 	}
@@ -720,28 +863,47 @@ bool BuzzReader::loadWaves() {
 }
 
 
+// from buzz2zzub
+void conformParameter(zzub::parameter& param) {
+	int in = std::min(param.value_min, param.value_max);
+	int ax = std::max(param.value_min, param.value_max);
+	param.value_min = in;
+	param.value_max = ax;
+
+	if (param.type == zzub::parameter_type_switch) {
+		param.value_min = zzub::switch_value_off;
+		param.value_max = zzub::switch_value_on;
+		param.value_none = zzub::switch_value_none;
+	} else
+	if (param.type == zzub::parameter_type_note) {
+		param.value_min = zzub::note_value_min;
+		param.value_max = zzub::note_value_max;
+		param.value_none = zzub::note_value_none;
+	}
+}
+
 bool BuzzReader::loadPara() {
-	Section* section=getSection(MAGIC_PARA);
+	Section* section = getSection(MAGIC_PARA);
 	if (!section) return true;
 	f->seek(section->offset, SEEK_SET);
 
 	unsigned int numMachines;
 	f->read(numMachines);
 
-	for (size_t i=0; i<numMachines; i++) {
+	for (size_t i = 0; i < numMachines; i++) {
 		MachineValidation para;
 		f->read(para.instanceName);
 		f->read(para.machineName);
 		f->read(para.numGlobals);
 		f->read(para.numTrackParams);
 
-		for (size_t j=0; j<para.numGlobals+para.numTrackParams; j++) {
+		for (size_t j = 0; j < para.numGlobals + para.numTrackParams; j++) {
 			zzub::parameter cmp;
 			memset(&cmp, 0, sizeof(zzub::parameter));
 			f->read((char&)cmp.type);	// undocumented
 			std::string machineName;
 			f->read(machineName);
-			cmp.name=new char[machineName.length()+1];
+			cmp.name = new char[machineName.length()+1];
 			const_cast<char*>(cmp.name)[0]=0;
 			strcpy(const_cast<char*>(cmp.name), machineName.c_str());
 			f->read(cmp.value_min);
@@ -749,6 +911,7 @@ bool BuzzReader::loadPara() {
 			f->read(cmp.value_none);
 			f->read(cmp.flags);
 			f->read(cmp.value_default);
+			conformParameter(cmp);
 			para.parameters.push_back(cmp);
 		}
 		machineParameters.machines.push_back(para);
@@ -767,16 +930,18 @@ bool BuzzReader::loadMidi() {
 		string name;
 		f->read(name);
 		if (name=="") break;
-		metaplugin* m=player->getMachine(name);
+		plugin_descriptor mmdesc = player->front.get_plugin_descriptor(name);
 		char g, t, c, mc, mn;
 		f->read(g);
 		f->read(t);
 		f->read(c);
 		f->read(mc);
 		f->read(mn);
-		if (!m) continue;
-		player->addMidiMapping(m, g, t, c, mc, mn);
+		if (mmdesc == -1) continue;
+		int plugin_id = player->front.get_plugin(mmdesc).descriptor;
+		player->add_midimapping(plugin_id, g, t, c, mc, mn);
 	}
+	player->flush_operations(0, 0);
 
 	return true;
 }
@@ -795,7 +960,7 @@ bool BuzzReader::loadInfoText() {
 	char *text = new char[textlength+1];
 	text[textlength] = '\0';
 	f->read(text, sizeof(char)*textlength);
-	player->infoText = text;
+	player->front.song_comment = text;
 	delete[] text;
 	return true;
 }

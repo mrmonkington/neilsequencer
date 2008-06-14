@@ -32,6 +32,11 @@
 
 #include "MemoryModule.h"
 
+// Missing from vs2008 headers:
+#ifndef IMAGE_SIZEOF_BASE_RELOCATION
+#define IMAGE_SIZEOF_BASE_RELOCATION 8
+#endif
+
 typedef struct {
 	PIMAGE_NT_HEADERS headers;
 	unsigned char *codeBase;

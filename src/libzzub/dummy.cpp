@@ -32,25 +32,25 @@ namespace zzub {
 	\brief Dummy plugin implementation.
 */
 
-/*!	\struct dummy_loader
-	\brief Dummy plugin loader.
-*/
-
 const size_t default_dummy_maxtracks=255;
 
-struct dummy_info : zzub::info {
-	dummy_info() {
-		this->flags = zzub::plugin_flag_mono_to_stereo;
-		this->max_tracks = default_dummy_maxtracks;
-		this->name = "Dummy";
-		this->short_name = "Dummy";
-		this->author = "n/a";
-		this->uri = "urn:zzub:Dummy";
-	}
+dummy_info::dummy_info() {
+	this->flags = zzub::plugin_flag_mono_to_stereo;
+	this->max_tracks = default_dummy_maxtracks;
+	this->name = "Dummy";
+	this->short_name = "Dummy";
+	this->author = "n/a";
+	this->uri = "urn:zzub:Dummy";
+}
 	
-	virtual zzub::plugin* create_plugin() const { return 0; }
-	virtual bool store_info(zzub::archive *arc) const { return false; }
-} dummyInfo;
+zzub::plugin* dummy_info::create_plugin() const { 
+	return new dummy_plugin(this); 
+}
+
+bool dummy_info::store_info(zzub::archive *arc) const { 
+	return false; 
+}
+
 
 /***
 
@@ -59,15 +59,49 @@ struct dummy_info : zzub::info {
 ***/
 
 dummy_plugin::dummy_plugin(const zzub::info* info) {
-    attributes = new int[info->attributes.size()];
+	attributes = new int[info->attributes.size()];
 
-    if (info->global_parameters.size()>0)
-	    global_values=new char[info->global_parameters.size()*2]; else
-        global_values=0;
+	if (info->global_parameters.size()>0)
+		global_values = new char[info->global_parameters.size()*2]; else
+		global_values = 0;
 
-    if (info->track_parameters.size()>0)
-	    track_values=new char[info->track_parameters.size()*2*default_dummy_maxtracks]; else
-        track_values=0;
+	if (info->track_parameters.size()>0)
+		track_values = new char[info->track_parameters.size()*2*default_dummy_maxtracks]; else
+		track_values =0;
+}
+
+void dummy_plugin::destroy() {
+	delete[] attributes;
+
+	if (global_values != 0)
+		delete[] global_values;
+
+	if (track_values != 0)
+		delete[] track_values;
+
+	delete this;
+}
+
+void dummy_plugin::init(zzub::archive* arc) {
+	// we assume player::create_plugin gives us an archive which contains the
+	// data bytes only (and not the remainder of e.g the .bmx)
+	if (!arc) return ;
+	instream* inf = arc->get_instream("");
+	data.resize(inf->size());
+	inf->read(&data.front(), data.size());
+}
+
+void dummy_plugin::load(zzub::archive* arc) {
+	if (!arc) return ;
+	instream* inf = arc->get_instream("");
+	data.resize(inf->size());
+	inf->read(&data.front(), (int)data.size());
+}
+
+void dummy_plugin::save(zzub::archive* arc) {
+	if (!arc) return ;
+	outstream* outf = arc->get_outstream("");
+	outf->write(&data.front(), (int)data.size());
 }
 
 void dummy_plugin::process_events() {
@@ -78,50 +112,5 @@ bool dummy_plugin::process_stereo(float **pin, float **pout, int numsamples, int
 		return false;
 	return true;
 }
-
-
-dummy_loader::dummy_loader(int flags, std::string pluginUri, int attributes, int globalValues, int trackValues, parameter* params)
-    :pluginloader(0, 0) 
-{
-    dummy_info* newInfo=new dummy_info();
-
-    this->uri=pluginUri;
-
-    newInfo->flags |= flags;
-    newInfo->uri=this->uri.c_str();
-    //~ newInfo->attribute_count=attributes;
-    //~ newInfo->global_parameter_count=globalValues;
-    //~ newInfo->track_parameter_count=trackValues;
-    
-    for (size_t i = 0; i < attributes; ++i) {
-        attribute& a = newInfo->add_attribute();
-    }
-
-    // copy incoming params because they wont be valid after loading ends
-	for (size_t i=0; i < globalValues; ++i) {
-		parameter &p = newInfo->add_global_parameter();
-		p = *params;
-        char* name = new char[strlen(params->name)+1];
-        strcpy(name, params->name);
-        p.name = name;
-		params++;
-	}
-	for (size_t i=0; i < trackValues; ++i) {
-		parameter &p = newInfo->add_track_parameter();
-		p = *params;
-        char* name = new char[strlen(params->name)+1];
-        strcpy(name, params->name);
-        p.name = name;
-		params++;
-	}
-
-    plugin_info=newInfo;
-
-}
-
-plugin* dummy_loader::createMachine() {
-    return new dummy_plugin(this->plugin_info);
-}
-
 
 };
