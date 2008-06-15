@@ -45,9 +45,10 @@ class ComponentManager:
 		self.singletons = {}
 		self.factories = {}
 		self.categories = {}
+		self.packages = []
 		self.register(config.__aldrin__)
 		
-	def load_packages(self):
+	def load_packages(self):		
 		self.packages = DEFAULT_PACKAGES + self.get('aldrin.core.config').packages
 		for modulename in self.packages:
 			print "importing module %s" % modulename
@@ -57,16 +58,17 @@ class ComponentManager:
 				module_ = getattr(module_, name)
 			if not hasattr(module_, '__aldrin__'):
 				continue
-			self.register(module_.__aldrin__)
+			self.register(module_.__aldrin__, modulename)
 					
-	def register(self, pkginfo):
+	def register(self, pkginfo, modulename=None):
 		# enumerate class factories
 		for class_ in pkginfo.get('classes', []):
 			if not hasattr(class_, '__aldrin__'):
 				continue
 			classinfo = class_.__aldrin__
 			id = classinfo['id']
-			self.factories[id] = class_
+			self.factories[id] = dict(classobj=class_, modulename=modulename)
+			self.factories[id].update(classinfo)
 			# register categories
 			for category in classinfo.get('categories', []):
 				catlist = self.categories.get(category, [])
@@ -78,8 +80,13 @@ class ComponentManager:
 		instance = self.singletons.get(id, None)
 		if instance:
 			return instance
+		# get metainfo for object
+		metainfo = self.factories.get(id, None)
+		if not metainfo:
+			print "no factory metainfo found for classid '%s'" % id
+			return None
 		# create a new object
-		class_ = self.factories.get(id, None)
+		class_ = metainfo.get('classobj', None)
 		if not class_:
 			print "no factory found for classid '%s'" % id
 			return None

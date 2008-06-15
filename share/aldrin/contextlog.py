@@ -58,29 +58,19 @@ def init():
 		_annotator = StdOutAnnotator()	
 	return _annotator
 
-def log(*args):
-	try:
-		stack = traceback.extract_stack()
-		if len(stack) >= 3:
-			entry = traceback.extract_stack()[-2]
-		else:
-			entry = ('???','')
-		name = os.path.splitext(os.path.basename(entry[0]))[0]
-		if name == '__init__':
-			name = 'nedu'
-		else:
-			name = 'nedu.'+name
-		line = entry[1]
-		print name + ('(%s): ' % line) + ' '.join([str(arg) for arg in args])
-	except:
-		print ' '.join([str(arg) for arg in args])
+def clean_next_line():
+	if not _annotator:
+		return
+	_annotator.annotate_next = False
 
 __all__ = [
 	'init',
+	'print_clean',
 ]
 
 if __name__ == '__main__':
 	init()
 	print "hello."
-
- 
+	clean_next_line()
+	print "hello again."
+	print "and hello once more."
