@@ -361,7 +361,7 @@ class ControllerPanel(gtk.VBox):
 	)
 	
 	def __init__(self):
-		self.rootwindow = com.get('aldrin.core.mainwindow')
+		self.rootwindow = com.get('aldrin.core.window.root')
 		self.sort_column = 0
 		gtk.VBox.__init__(self)
 		self.set_border_width(MARGIN)
@@ -550,78 +550,6 @@ class KeyboardPanel(gtk.VBox):
 		"""
 		config.get_config().set_keymap_language(self.KEYMAPS[self.cblanguage.get_active()][0])
 
-class ComponentsPanel(gtk.VBox):
-	"""
-	Panel which allows to enable and disable extensions.
-	"""
-
-	__aldrin__ = dict(
-		id = 'aldrin.core.pref.components',
-		categories = [
-			'aldrin.prefpanel',
-		]
-	)
-
-	__prefpanel__ = dict(
-		label = "Components",
-	)
-	
-	def __init__(self):
-		gtk.VBox.__init__(self, False, MARGIN)
-		self.set_border_width(MARGIN)
-		#~ self.extlist = ExtensionListBox(self, -1, style=wx.SUNKEN_BORDER)
-		self.cfg = config.get_config()
-		self.extlist, self.extstore, columns = new_listview([
-			("Use", bool),
-			("Name", str, dict(markup=True,wrap=True)),
-		])
-		self.extlist.set_property('headers-visible', False)
-		exts = config.get_config().get_enabled_extensions()
-		#~ for ext in self.extman.extensions:
-			#~ name = prepstr(ext.name)
-			#~ checked = ext.uri in exts
-			#~ markup = ''
-			#~ markup += '<b><big>%s</big></b>\n' % ext.name
-			#~ markup += '<i>Version %s, by %s</i>\n' % (ext.version, ext.author)
-			#~ markup += '\n'
-			#~ markup += '%s\n' % ext.description
-			#~ self.extstore.append([checked,markup])
-		self.pack_start(add_scrollbars(self.extlist))
-		label = gtk.Label("Click OK and restart Aldrin to apply changes.")
-		label.set_alignment(0, 0.5)
-		self.pack_start(label, expand=False)
-		
-	def on_extlist_select(self, event):
-		"""
-		Called when an extension is selected. Updates the html description.
-		
-		@param event: Event.
-		@type event: wx.Event
-		"""
-		pass
-		#~ ext = self.extman.extensions[event.GetSelection()]
-		#~ out = """<html><head></head>
-		#~ <style type="text/css">
-		#~ body {
-			#~ font-size: 8pt;
-		#~ }
-		#~ </style>
-		#~ <body><font size="-4">"""
-		#~ out += "</font></body></html>"
-		#~ self.htmldesc.SetPage(out)
-		
-	def apply(self):
-		"""
-		Updates the config object with the currently selected extensions.
-		"""
-		#~ exts = []
-		#~ for i,row in enumerate(self.extstore):
-			#~ if row[0]:
-				#~ ext = self.extman.extensions[i]
-				#~ exts.append(ext.uri)
-		#~ config.get_config().set_enabled_extensions(exts)
-		pass
-
 class PreferencesDialog(gtk.Dialog):
 	"""
 	This Dialog aggregates the different panels and allows
@@ -723,7 +651,6 @@ __aldrin__ = dict(
 		ControllerPanel,
 		MidiPanel,
 		KeyboardPanel,
-		ComponentsPanel,
 	],
 )
 
