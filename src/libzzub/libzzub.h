@@ -454,7 +454,7 @@ int zzub_plugin_get_envelope_flags(zzub_player_t* player, int plugin, int index)
 const char* zzub_plugin_get_envelope_name(zzub_player_t* player, int plugin, int index);
 
 void zzub_plugin_set_stream_source(zzub_player_t* player, int plugin, const char* resource);
-const char* zzub_plugin_get_stream_source(zzub_player_t* player, int plugin);
+// 0.3: DEAD // const char* zzub_plugin_get_stream_source(zzub_player_t* player, int plugin);
 
 /** \brief Sets the plugin instrument (d'oh!) */
 int zzub_plugin_set_instrument(zzub_player_t *player, int plugin, const char *name);
@@ -517,7 +517,7 @@ void zzub_plugin_remove_pattern_rows(zzub_player_t* player, int plugin_id, int p
 /** \brief Copies columns from an offline pattern to a live pattern. Source and target columns are set up in
 	the mappings array, which has 6 ints for each mapping: group, track and column for source and target 
 	plugins.*/
-void zzub_plugin_set_pattern_values(zzub_player_t* player, int plugin, int pattern, int target_row, zzub_pattern_t* src_pattern, int* mappings, int mappings_count);
+// 0.3: DEAD // void zzub_plugin_set_pattern_values(zzub_player_t* player, int plugin, int pattern, int target_row, zzub_pattern_t* src_pattern, int* mappings, int mappings_count);
 
 /*@}*/
 /** @name Plugin parameter methods
@@ -602,8 +602,8 @@ void zzub_plugin_play_midi_note(zzub_player_t *player, int plugin, int note, int
 void zzub_plugin_play_pattern_row_ref(zzub_player_t *player, int plugin, int pattern, int row);
 void zzub_plugin_play_pattern_row(zzub_player_t *player, int plugin, zzub_pattern_t* pattern, int row);
 
-int zzub_plugin_is_non_song_plugin(zzub_player_t *player, int plugin);
-void zzub_plugin_set_non_song_plugin(zzub_player_t *player, int plugin, int state);
+// 0.3: DEAD // int zzub_plugin_is_non_song_plugin(zzub_player_t *player, int plugin);
+// 0.3: DEAD // void zzub_plugin_set_non_song_plugin(zzub_player_t *player, int plugin, int state);
 
 // Connection methods
 
@@ -612,25 +612,25 @@ void zzub_plugin_set_non_song_plugin(zzub_player_t *player, int plugin, int stat
 /*@{*/
 
 int zzub_plugin_set_midi_connection_device(zzub_player_t* player, int plugin, int from_plugin, const char* name);
-const char* zzub_plugin_get_midi_connection_device(zzub_player_t* player, int plugin, int from_plugin);
+// 0.3: DEAD // const char* zzub_plugin_get_midi_connection_device(zzub_player_t* player, int plugin, int from_plugin);
 
 /*@}*/
 /** @name Event connection methods */
 /*@{*/
 
 void zzub_plugin_add_event_connection_binding(zzub_player_t* player, int plugin, int from_plugin, int sourceparam, int targetgroup, int targettrack, int targetparam);
-int zzub_plugin_get_event_connection_binding_count(zzub_player_t* player, int plugin, int from_plugin);
-zzub_event_connection_binding_t *zzub_plugin_get_event_connection_binding(zzub_player_t *player, int plugin, int from_plugin, int index);
-int zzub_plugin_remove_event_connection_binding(zzub_player_t *player, int plugin, int from_plugin, int index);
+// 0.3: DEAD // int zzub_plugin_get_event_connection_binding_count(zzub_player_t* player, int plugin, int from_plugin);
+// 0.3: DEAD // zzub_event_connection_binding_t *zzub_plugin_get_event_connection_binding(zzub_player_t *player, int plugin, int from_plugin, int index);
+// 0.3: DEAD // int zzub_plugin_remove_event_connection_binding(zzub_player_t *player, int plugin, int from_plugin, int index);
 
 /*@}*/
 /** @name Event connection binding methods */
 /*@{*/
 
-int zzub_event_connection_binding_get_group(zzub_event_connection_binding_t *binding);
-int zzub_event_connection_binding_get_track(zzub_event_connection_binding_t *binding);
-int zzub_event_connection_binding_get_column(zzub_event_connection_binding_t *binding);
-int zzub_event_connection_binding_get_controller(zzub_event_connection_binding_t *binding);
+// 0.3: DEAD // int zzub_event_connection_binding_get_group(zzub_event_connection_binding_t *binding);
+// 0.3: DEAD // int zzub_event_connection_binding_get_track(zzub_event_connection_binding_t *binding);
+// 0.3: DEAD // int zzub_event_connection_binding_get_column(zzub_event_connection_binding_t *binding);
+// 0.3: DEAD // int zzub_event_connection_binding_get_controller(zzub_event_connection_binding_t *binding);
 
 /*@}*/
 /** @name Sequencer methods */
@@ -644,7 +644,7 @@ int zzub_sequence_insert_events(zzub_player_t *player, int* track_indices, int n
 int zzub_sequence_remove_events(zzub_player_t *player, int* track_indices, int num_indices, int start, int ticks);
 
 void zzub_sequence_set_event(zzub_player_t *player, int track, int pos, int value);
-void zzub_sequence_set_events(zzub_player_t *player, int* events, int num_events);
+// 0.3: DEAD // void zzub_sequence_set_events(zzub_player_t *player, int* events, int num_events);
 
 int zzub_sequence_get_plugin(zzub_player_t *player, int track);
 int zzub_sequence_get_event_at(zzub_player_t *player, int track, unsigned long pos);
@@ -701,8 +701,8 @@ void zzub_wavetable_set_wave_volume(zzub_player_t* player, int wave, float volum
 
 int zzub_wavetable_get_level_count(zzub_player_t* player, int wave);
 int zzub_wavetable_clear_level(zzub_player_t* player, int wave, int level);
-void zzub_wavetable_add_level(zzub_player_t* player, int wave);
-void zzub_wavetable_remove_level(zzub_player_t* player, int wave, int level);
+// 0.3: DEAD // void zzub_wavetable_add_level(zzub_player_t* player, int wave);
+// 0.3: DEAD // void zzub_wavetable_remove_level(zzub_player_t* player, int wave, int level);
 
 int zzub_wavetable_get_sample_count(zzub_player_t* player, int wave, int level);
 void zzub_wavetable_set_sample_count(zzub_player_t* player, int wave, int level, int count);
@@ -715,7 +715,7 @@ void zzub_wavetable_set_loop_start(zzub_player_t* player, int wave, int level, i
 int zzub_wavetable_get_loop_end(zzub_player_t* player, int wave, int level);
 void zzub_wavetable_set_loop_end(zzub_player_t* player, int wave, int level, int pos);
 int zzub_wavetable_get_format(zzub_player_t* player, int wave, int level);
-void zzub_wavetable_set_format(zzub_player_t* player, int wave, int level, int format);
+// 0.3: DEAD // void zzub_wavetable_set_format(zzub_player_t* player, int wave, int level, int format);
 
 void zzub_wavetable_remove_sample_range(zzub_player_t* player, int wave, int level, int start, int end);
 void zzub_wavetable_insert_sample_range(zzub_player_t* player, int wave, int level, int start, void* buffer, int channels, int format, int numsamples);
