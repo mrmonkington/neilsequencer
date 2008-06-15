@@ -69,7 +69,7 @@ opts.Add("ZZUB_STREAM", "Compile stream plugins (experimental)", False, None, bo
 opts.Add("BMPCCM", "Compile bmp-ccm plugin", False, None, bool_converter)
 opts.Add("REVISION", 'Revision number (will be set automatically)', '0')
 opts.Add("SIGNATURE", 'Host signature (will be set automatically)', '')
-opts.Add("CONFIGURED", 'Is the build configured properly? (will be set automatically)', False, None, bool_converter)
+opts.Add("CONFIGURED", 'Version for which the build is configured (will be set automatically)', '')
 opts.Add("TOOLS", 'Compiler suite to use', 'default', None, tools_converter)
 opts.Add("LUNAR", 'Support Lunar plugins', posix or mac, None, bool_converter)
 opts.Add("LLVMGCCPATH", 'Path to llvm-gcc', '')
@@ -387,7 +387,7 @@ def check_cpu_flag(conf, flag):
 	return False
 
 if env['LUNARTARGET'] == '':
-	env['CONFIGURED'] = False
+	env['CONFIGURED'] = ''
 
 def is_cleaning():
 	import SCons.Script.Main 
@@ -397,7 +397,7 @@ def is_cleaning():
 if (not is_cleaning()) and ('configure' in COMMAND_LINE_TARGETS):
 	import os
 	
-	env['CONFIGURED'] = False
+	env['CONFIGURED'] = ''
 	yesno = {True:'yes', False:'no'}
 	conf = Configure(env,
 		custom_tests = {
@@ -527,7 +527,7 @@ if (not is_cleaning()) and ('configure' in COMMAND_LINE_TARGETS):
 	print "Generate Debug Info:".rjust(30),env['DEBUG']
 
 	env = conf.Finish()
-	env['CONFIGURED'] = True
+	env['CONFIGURED'] = VERSION
 	opts.Save('options.conf', env)
 	print
 	print "Please check if above settings reflect what you want, then build libzzub using"
@@ -543,8 +543,8 @@ if (not is_cleaning()) and ('configure' in COMMAND_LINE_TARGETS):
 opts.Save('options.conf', env)
 Help( opts.GenerateHelpText( env ) )
 
-if (not is_cleaning()) and (env['CONFIGURED'] == False):
-	print "libzzub is not configured yet."
+if (not is_cleaning()) and (env['CONFIGURED'] != VERSION):
+	print "libzzub is not configured for version %s yet." % VERSION
 	print
 	print "Please run 'scons configure' to configure libzzub."
 	Exit(1)
