@@ -36,6 +36,7 @@ DEFAULT_PACKAGES = [
 	'options',
 	'pkgbrowser',
 	'iconfactory',
+	'preferences',
 ]
 
 # aldrin component object model

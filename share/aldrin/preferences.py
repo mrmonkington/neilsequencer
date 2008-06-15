@@ -49,6 +49,18 @@ class GeneralPanel(gtk.VBox):
 	"""
 	Panel which allows changing of general settings.
 	"""
+	
+	__aldrin__ = dict(
+		id = 'aldrin.core.pref.general',
+		categories = [
+			'aldrin.prefpanel',
+		]
+	)
+	
+	__prefpanel__ = dict(
+		label = "General",
+	)
+	
 	def __init__(self):
 		"""
 		Initializing.
@@ -109,11 +121,22 @@ class GeneralPanel(gtk.VBox):
 		config.get_config().set_pattern_noteoff(self.patnoteoff.get_active())
 		#config.get_config().set_experimental('RackPanel', self.rackpanel.get_active())
 	
-
 class DriverPanel(gtk.VBox):
 	"""
 	Panel which allows to see and change audio driver settings.
 	"""
+	
+	__aldrin__ = dict(
+		id = 'aldrin.core.pref.driver',
+		categories = [
+			'aldrin.prefpanel',
+		]
+	)
+	
+	__prefpanel__ = dict(
+		label = "Audio",
+	)
+	
 	def __init__(self):
 		"""
 		Initializing.
@@ -195,6 +218,18 @@ class WavetablePanel(gtk.HBox):
 	"""
 	Panel which allows to see and change paths to sample libraries.
 	"""
+	
+	__aldrin__ = dict(
+		id = 'aldrin.core.pref.wavetable',
+		categories = [
+			'aldrin.prefpanel',
+		]
+	)
+	
+	__prefpanel__ = dict(
+		label = "Sound Library",
+	)
+	
 	def __init__(self):
 		gtk.HBox.__init__(self, False, MARGIN)
 		self.set_border_width(MARGIN)
@@ -313,8 +348,20 @@ class ControllerPanel(gtk.VBox):
 	"""
 	Panel which allows to set up midi controller mappings.
 	"""
-	def __init__(self, rootwindow):
-		self.rootwindow = rootwindow
+	
+	__aldrin__ = dict(
+		id = 'aldrin.core.pref.controller',
+		categories = [
+			'aldrin.prefpanel',
+		]
+	)
+	
+	__prefpanel__ = dict(
+		label = "Controllers",
+	)
+	
+	def __init__(self):
+		self.rootwindow = com.get('aldrin.core.mainwindow')
 		self.sort_column = 0
 		gtk.VBox.__init__(self)
 		self.set_border_width(MARGIN)
@@ -387,6 +434,18 @@ class MidiPanel(gtk.VBox):
 	"""
 	Panel which allows to see and change a list of used MIDI output devices.
 	"""
+	
+	__aldrin__ = dict(
+		id = 'aldrin.core.pref.midi',
+		categories = [
+			'aldrin.prefpanel',
+		]
+	)
+	
+	__prefpanel__ = dict(
+		label = "MIDI",
+	)
+	
 	def __init__(self):
 		gtk.VBox.__init__(self, False, MARGIN)
 		self.set_border_width(MARGIN)
@@ -448,6 +507,17 @@ class KeyboardPanel(gtk.VBox):
 	"""
 	Panel which allows to see and change the current keyboard configuration.
 	"""
+
+	__aldrin__ = dict(
+		id = 'aldrin.core.pref.keyboard',
+		categories = [
+			'aldrin.prefpanel',
+		]
+	)
+
+	__prefpanel__ = dict(
+		label = "Keyboard",
+	)
 	
 	KEYMAPS = [
 		('en', 'English (QWERTY)'),
@@ -480,10 +550,21 @@ class KeyboardPanel(gtk.VBox):
 		"""
 		config.get_config().set_keymap_language(self.KEYMAPS[self.cblanguage.get_active()][0])
 
-class ExtensionsPanel(gtk.VBox):
+class ComponentsPanel(gtk.VBox):
 	"""
 	Panel which allows to enable and disable extensions.
 	"""
+
+	__aldrin__ = dict(
+		id = 'aldrin.core.pref.components',
+		categories = [
+			'aldrin.prefpanel',
+		]
+	)
+
+	__prefpanel__ = dict(
+		label = "Components",
+	)
 	
 	def __init__(self):
 		gtk.VBox.__init__(self, False, MARGIN)
@@ -554,20 +635,15 @@ class PreferencesDialog(gtk.Dialog):
 		self.nb = gtk.Notebook()
 		self.nb.set_show_tabs(False)
 		self.nb.set_border_width(MARGIN)
-		self.generalpanel = GeneralPanel()
-		self.driverpanel = DriverPanel()
-		self.wavetablepanel = WavetablePanel()
-		self.midipanel = MidiPanel()
-		self.controllerpanel = ControllerPanel(rootwindow)
-		self.keyboardpanel = KeyboardPanel()
-		self.extensionspanel = ExtensionsPanel()
-		self.nb.append_page(self.driverpanel, gtk.Label("Audio"))
-		self.nb.append_page(self.midipanel, gtk.Label("MIDI"))
-		self.nb.append_page(self.controllerpanel, gtk.Label("Controllers"))
-		self.nb.append_page(self.keyboardpanel, gtk.Label("Keyboard"))
-		self.nb.append_page(self.wavetablepanel, gtk.Label("Sound Library"))
-		self.nb.append_page(self.generalpanel, gtk.Label("General"))
-		self.nb.append_page(self.extensionspanel, gtk.Label("Extensions"))
+		self.panels = com.get_from_category('aldrin.prefpanel')
+		for panel in self.panels:
+			if not hasattr(panel, '__prefpanel__'):
+				continue
+			cfg = panel.__prefpanel__
+			label = cfg.get('label',None)
+			if not label:
+				continue
+			self.nb.append_page(panel, gtk.Label(label))
 		self.tab_list, self.tab_list_store, columns = new_listview([('Name', str),])
 		self.tab_list.set_headers_visible(False)
 		self.tab_list.set_size_request(120, 100)
@@ -605,13 +681,8 @@ class PreferencesDialog(gtk.Dialog):
 		"""
 		Apply changes in settings without closing the dialog.
 		"""
-		self.generalpanel.apply()
-		self.wavetablepanel.apply()
-		self.extensionspanel.apply()
-		self.keyboardpanel.apply()
-		self.driverpanel.apply()
-		self.controllerpanel.apply()
-		self.midipanel.apply()
+		for panel in self.panels:
+			panel.apply()
 		
 	def on_apply(self):
 		"""
@@ -643,6 +714,18 @@ def show_preferences(rootwindow, parent):
 	@type parent: wx.Window
 	"""
 	dlg = PreferencesDialog(rootwindow, parent)
+
+__aldrin__ = dict(
+	classes = [
+		GeneralPanel,
+		DriverPanel,
+		WavetablePanel,
+		ControllerPanel,
+		MidiPanel,
+		KeyboardPanel,
+		ComponentsPanel,
+	],
+)
 
 __all__ = [
 'CancelException',
