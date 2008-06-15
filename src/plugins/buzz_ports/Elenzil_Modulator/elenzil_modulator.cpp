@@ -338,7 +338,7 @@ char const *mi::DescribeValue(int const param, int const value)
 			}
 		break;
 	case 2:		// wave
-		char*	s;
+		const char*	s;
 		switch(val)
 			{
 			case WAVE_SIN		: s = "sin"			; break;

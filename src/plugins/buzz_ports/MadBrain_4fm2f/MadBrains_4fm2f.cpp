@@ -75,7 +75,7 @@ int speedtable[] =
 	0x4000000  //32(turbo)
 };
 
-char *speednames[] =
+const char *speednames[] =
 {
 	"infinite",//0
 	 "16.0 s", //1

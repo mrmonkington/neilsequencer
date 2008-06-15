@@ -255,7 +255,7 @@ enum insNumbers { inOriginalPS, inTunedPS, inGrandPS, inMandolin, inEmpty, inNum
 void (CTrack:: *insCbTable[inNumOf])(float *,int)	= {
 	&CTrack::OriginalPS,&CTrack::TunedPS,&CTrack::TunedPS,&CTrack::Mandolin,&CTrack::Empty };
 
-char *insNameTable[inNumOf] = { "1-OriginalPs","2-GuitarString","3-GrandPluck","4-Mandolin","5-???" };
+const char *insNameTable[inNumOf] = { "1-OriginalPs","2-GuitarString","3-GrandPluck","4-Mandolin","5-???" };
 
 
 /*
