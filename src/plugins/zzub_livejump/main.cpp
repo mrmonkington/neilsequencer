@@ -16,7 +16,8 @@ int buzz_to_midi_note(int value) {
 
 std::string note_string(unsigned char i) {
 	if (i==zzub::note_value_off) return "off";
-	static char* notes[]={"..", "C-", "C#", "D-", "D#", "E-", "F-", "F#", "G-", "G#", "A-", "A#", "B-", "..", "..", "..", ".." };
+	
+	static const char* notes[]={"..", "C-", "C#", "D-", "D#", "E-", "F-", "F#", "G-", "G#", "A-", "A#", "B-", "..", "..", "..", ".." };
 	char pc[16];
 	int note=i&0xF;
 	int oct=(i&0xF0) >> 4;

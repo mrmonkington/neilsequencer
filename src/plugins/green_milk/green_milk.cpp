@@ -2159,12 +2159,12 @@ const char * green_milk::describe_value(const int param, const int value)
 {	
 	static char description[256];
 
-	static char * waveSine = "Sin";
-	static char * waveSaw = "Saw";
-	static char * waveSquare = "Squ";
-	static char * waveTriangle = "Tri";
-	static char * waveCubeSaw = "Saw³";
-	static char * waveCubeTri = "Tri³";
+	static const char * waveSine = "Sin";
+	static const char * waveSaw = "Saw";
+	static const char * waveSquare = "Squ";
+	static const char * waveTriangle = "Tri";
+	static const char * waveCubeSaw = "Saw³";
+	static const char * waveCubeTri = "Tri³";
 
 	float fval;
 

@@ -3078,7 +3078,7 @@ void CTrack::Work( float *psamples, int numsamples)
 
 const char * m4wii::describe_value(int const param, int const value)
 {
-        static char *MixTypeTab[14] = {
+        static const char *MixTypeTab[14] = {
                 "add",
                 "Abs",
                 "mul",
@@ -3095,7 +3095,7 @@ const char * m4wii::describe_value(int const param, int const value)
 				"sub"
 				};
 
-        static char *UEGDestTab[11] = {
+        static const char *UEGDestTab[11] = {
                 "none",
                 "osc1",
                 "osc2",
@@ -3110,7 +3110,7 @@ const char * m4wii::describe_value(int const param, int const value)
 
         };
 
-       static char *LFO1DestTab[18] = {
+       static const char *LFO1DestTab[18] = {
                 "none",
                 "osc1",
                 "p.width1",
@@ -3131,7 +3131,7 @@ const char * m4wii::describe_value(int const param, int const value)
 				"VCF"
         };					 
 
-        static char *LFOWaveTab[9] = {
+        static const char *LFOWaveTab[9] = {
                 "sine",
                 "saw",
                 "square",
@@ -3143,7 +3143,7 @@ const char * m4wii::describe_value(int const param, int const value)
 				"Wacky2"
         };
 
-        static char *PlaymodeTab[10] = {
+        static const char *PlaymodeTab[10] = {
 				"Reg",
 				"init Amp",
 				"init LFO",
@@ -3157,7 +3157,7 @@ const char * m4wii::describe_value(int const param, int const value)
 		
 		};
 
-        static char *LFO2DestTab[17] = {			
+        static const char *LFO2DestTab[17] = {			
                 "none",
                 "osc2",
                 "p.width2",
@@ -3178,7 +3178,7 @@ const char * m4wii::describe_value(int const param, int const value)
 
         };
 
-        static char *FilterTypeTab[14] = {
+        static const char *FilterTypeTab[14] = {
                 "lowpass24",
                 "lowpass18",
                 "lowpass12",
@@ -3195,7 +3195,7 @@ const char * m4wii::describe_value(int const param, int const value)
 				"phatlinked"
 		};
 
-        static char *ModDest1Tab[9] = {
+        static const char *ModDest1Tab[9] = {
 				"Off",
                 "FEnvMod",
                 "Cutoff",
@@ -3207,7 +3207,7 @@ const char * m4wii::describe_value(int const param, int const value)
 				"Osc2 Semi"
 		};
 
-        static char *ModDest2Tab[12] = {
+        static const char *ModDest2Tab[12] = {
 				"Off",
                 "UEnvMod",
                 "Resonance",

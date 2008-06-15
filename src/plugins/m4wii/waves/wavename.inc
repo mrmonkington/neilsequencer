@@ -1,4 +1,4 @@
-static char *wavenames[] = {
+static const char *wavenames[] = {
 "*Sine",
 "*Saw",
 "*Pulse",
