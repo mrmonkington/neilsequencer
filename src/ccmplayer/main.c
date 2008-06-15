@@ -17,6 +17,7 @@ example ccm/bmx player using the C interface
 #include "../libzzub/libzzub.h"
 
 int main(int argc, char** argv) {
+	zzub_audiodriver_t* driver;
 	zzub_player_t *player;
 	int res;
 	
@@ -40,13 +41,15 @@ int main(int argc, char** argv) {
 	}
 	zzub_audiodriver_set_samplerate(player, 44100);
 	
-	res = zzub_audiodriver_create(player, -1, -1);
-	if (res) {
+	driver = zzub_audiodriver_create(player);
+	if (driver == 0) {
 		fprintf(stderr, "ccmplayer: error %i creating audiodriver.\n", res);
 		return 1;
 	}
 
-	zzub_audiodriver_enable(player, 1);
+	zzub_audiodriver_create_device(driver, -1, -1);
+
+	zzub_audiodriver_enable(driver, 1);
 
 	printf("ccmplayer: loading %s...\n", argv[1]);
 	res = zzub_player_load_ccm(player, argv[1]);

@@ -3,7 +3,9 @@
 // copyright 2007 members of the psycle project http://psycle.sourceforge.net
 
 #include "psy2zzub.h"
+#include <iostream>
 #include <sstream>
+#include <cstring>
 
 #if defined _WIN64 || defined _WIN32
 	#include <windows.h>
@@ -12,8 +14,6 @@
 	#include <sys/stat.h>
 	#include <dirent.h>
 #endif
-#include <iostream>
-#include <sstream>
 
 namespace zzub { namespace plugins { namespace psycle_to_zzub {
 
@@ -360,7 +360,6 @@ namespace zzub { namespace plugins { namespace psycle_to_zzub {
 		info(info),
 		global_params(info),
 		track_params(new track_param[info->track_parameters.size() * max_tracks]),
-		metaplugin(),
 		module_handle(),
 		psycle_plugin(),
 		psycle_plugin_param_info(),

@@ -42,6 +42,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #define ZZUB_BIG_ENDIAN
 #endif
 
+#define strcmpi strcasecmp
+
 #endif
 
 #ifdef min
@@ -54,12 +56,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #define _USE_MATH_DEFINES
 #include <cmath>
+#include <cassert>
+#include <cstring>
 #include <map>
 #include <list>
 #include <vector>
 #include <string>
 #include <iostream>
-#include <cassert>
 #include <algorithm>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/visitors.hpp>

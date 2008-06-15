@@ -100,6 +100,9 @@ localenv.Append(CCFLAGS=['-D_LIB','-D_LIBZZUB'])
 
 # neccessities
 if posix:	
+	localenv.Append(CCFLAGS=[
+		'-Wno-deprecated',
+	])
 	localenv.Append(LIBS=[
 		'pthread',
 		localenv['LIB_DL'],

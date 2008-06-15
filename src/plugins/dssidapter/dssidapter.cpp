@@ -180,7 +180,7 @@ struct dssidapter : plugin, event_handler
 	float outputs[16][256];
 	snd_seq_event_t events[256];
 	int eventcount;
-	zzub::metaplugin*_metaplugin;
+	int _metaplugin;
 	
 	~dssidapter()
 	{
@@ -446,6 +446,10 @@ struct dssidapter : plugin, event_handler
 	virtual void input(float**, int, float) {}
 	virtual void midi_control_change(int, int, int) {}
 	virtual bool handle_input(int, int, int) { return false; }
+	virtual void process_midi_events(zzub::midi_message* pin, int nummessages) {}
+	virtual void get_midi_output_names(zzub::outstream *pout) {}
+	virtual void set_stream_source(const char* resource) {}
+	virtual const char* get_stream_source() { return 0; }
 };
 
 zzub::plugin* dssi_info::create_plugin() const {
