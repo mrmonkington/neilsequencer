@@ -1,5 +1,6 @@
 #include "main.h"
 #include <iostream>
+#include <stdio.h>
 /***
 
 	streaming of sampledata in wavetable
@@ -78,8 +79,8 @@ void stream_wavetable::set_stream_source(const char* resource) {
 
 const char* stream_wavetable::get_stream_source() {
 	static char src[32];
-	itoa(index, src, 10);
-	return src;
+	sprintf(src, "%i", index);
+    return src;
 }
 
 

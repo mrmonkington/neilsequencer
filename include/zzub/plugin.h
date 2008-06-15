@@ -836,11 +836,11 @@ struct plugin {
 	virtual bool handle_input(int index, int amp, int pan) = 0;//{ return false; }
 
 	// plugin_flag_has_midi_output
-	virtual void get_midi_output_names(outstream *pout) = 0;
+	virtual void get_midi_output_names(outstream *pout) = 0;//{}
 
 	// plugin_flag_stream | plugin_flag_has_audio_output
-	virtual void set_stream_source(const char* resource) = 0;
-	virtual const char* get_stream_source() = 0;
+	virtual void set_stream_source(const char* resource) = 0;//{}
+	virtual const char* get_stream_source() = 0;//{ return 0; }
 
 	plugin() {
 		global_values = 0;

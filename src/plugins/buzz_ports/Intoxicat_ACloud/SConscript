@@ -18,9 +18,10 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-Import('pluginenv', 'build_plugin')
+Import('pluginenv', 'build_plugin', 'posix')
 
-build_plugin(pluginenv, 'Intoxicat_ACloud', [
-	'Cloud.cpp', 'CGrain.cpp', 'gAHDEnv.cpp'
-])
+if not posix:
+	build_plugin(pluginenv, 'Intoxicat_ACloud', [
+		'Cloud.cpp', 'CGrain.cpp', 'gAHDEnv.cpp'
+	])
 

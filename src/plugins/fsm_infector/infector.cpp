@@ -55,8 +55,8 @@ CBandlimitedTable pr3table;
 CBandlimitedTable spltable;
 CBandlimitedTable smntable;
 
-char *tabnames[]={"Sine","Triangle","SuperSaw","PWM Sqr","Dbl Sqr","Hexagon","Carrot","Onion","Tomato","Cabbage","Cucumber","Octave","1-3","4-6","Regs","Saw","User A","User AA'","User B","User BB'","User C","User CC'","User D","User DD'"};
-char *stabnames[]={"Sine","Tri","Saw","SuperSaw","Sqr","Oct","1-3","4-6","Regs","Hex","FM","XT1","XT2","User A","User A'","User B","User B'","User C","User C'","User D","User D'"};
+const char *tabnames[]={"Sine","Triangle","SuperSaw","PWM Sqr","Dbl Sqr","Hexagon","Carrot","Onion","Tomato","Cabbage","Cucumber","Octave","1-3","4-6","Regs","Saw","User A","User AA'","User B","User BB'","User C","User CC'","User D","User DD'"};
+const char *stabnames[]={"Sine","Tri","Saw","SuperSaw","Sqr","Oct","1-3","4-6","Regs","Hex","FM","XT1","XT2","User A","User A'","User B","User B'","User C","User C'","User D","User D'"};
 
 CBandlimitedTable *tablesA[]={&sintable,&tritable,&spstable,&sawtable,&sqrtable,&hextable,&xt1table,&sawtable,&fm1table,&fm1table,&xt2table,&octtable,&prttable,&pr2table,&pr3table,&spltable};
 CBandlimitedTable *tablesB[]={&nultable,&tritable,&sp2table,&sawtable,&sqrtable,&hextable,&xt1table,&sqrtable,&fm1table,&sqrtable,&xt2table,&octtable,&prttable,&pr2table,&pr3table,&smntable};
