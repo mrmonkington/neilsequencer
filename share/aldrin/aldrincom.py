@@ -21,22 +21,22 @@
 import config
 
 DEFAULT_PACKAGES = [
-	'eventbus',
-	'router',
-	'patterns',
-	'sequencer',
-	'wavetable',
-	'rack',
-	'info',
-	'mainwindow',
-	'about',
-	'masterpanel',
-	'transportpanel',
-	'player',
-	'options',
-	'pkgbrowser',
-	'iconfactory',
-	'preferences',
+	'+eventbus',
+	'+router',
+	'+patterns',
+	'+sequencer',
+	'+wavetable',
+	'+rack',
+	'+info',
+	'+mainwindow',
+	'+about',
+	'+masterpanel',
+	'+transportpanel',
+	'+player',
+	'+options',
+	'+pkgbrowser',
+	'+iconfactory',
+	'+preferences',
 ]
 
 # aldrin component object model
@@ -46,11 +46,30 @@ class ComponentManager:
 		self.factories = {}
 		self.categories = {}
 		self.packages = []
+		self.factory_excludes = []
 		self.register(config.__aldrin__)
 		
 	def load_packages(self):		
-		self.packages = DEFAULT_PACKAGES + self.get('aldrin.core.config').packages
-		for modulename in self.packages:
+		self.packages = []
+		includes = []
+		excludes = []
+		for modulename in DEFAULT_PACKAGES + self.get('aldrin.core.config').packages:
+			if modulename.startswith('+'):
+				modulename = modulename[1:]
+				includes.append(modulename)
+			elif modulename.startswith('-'):
+				modulename = modulename[1:]
+				if modulename.startswith(':'):
+					id = modulename[1:]
+					self.factory_excludes.append(id)
+				else:
+					excludes.append(modulename)
+			else:
+				includes.append(modulename)
+		for modulename in includes:
+			if modulename in excludes:
+				print "excluding module %s" % modulename
+				continue
 			print "importing module %s" % modulename
 			module_ = __import__(modulename)
 			names = modulename.split('.')
@@ -58,6 +77,7 @@ class ComponentManager:
 				module_ = getattr(module_, name)
 			if not hasattr(module_, '__aldrin__'):
 				continue
+			self.packages.append(modulename)
 			self.register(module_.__aldrin__, modulename)
 					
 	def register(self, pkginfo, modulename=None):
@@ -67,6 +87,9 @@ class ComponentManager:
 				continue
 			classinfo = class_.__aldrin__
 			id = classinfo['id']
+			if id in self.factory_excludes:
+				print "excluding factory '%s'" % id
+				continue
 			self.factories[id] = dict(classobj=class_, modulename=modulename)
 			self.factories[id].update(classinfo)
 			# register categories
