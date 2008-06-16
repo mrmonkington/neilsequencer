@@ -29,9 +29,9 @@ namespace zzub {
 	info from and manipulating the player.
 */
 
-host::host(zzub::player* _player, zzub_plugin_t* _plugin) {
-	player = _player;
-	plugin = _plugin;
+host::host(zzub::player* play, zzub_plugin_t* plug) {
+	_player = play;
+	_plugin = plug;
 
 	for (int c = 0; c < 2; ++c) {
 		auxBuffer[c] = new float[zzub::buffer_size * sizeof(float) * 4];
@@ -68,19 +68,19 @@ void host::message(char const *txt) {
 }
 
 void host::lock() {
-	player->swap_lock.lock();
+	_player->swap_lock.lock();
 }
 
 void host::unlock() {
-	player->swap_lock.unlock();
+	_player->swap_lock.unlock();
 }
 
 void host::set_swap_mode(bool free) {
-	player->swap_mode = free;
+	_player->swap_mode = free;
 }
 
 int host::get_write_position() {
-	return player->front.work_position;
+	return _player->front.work_position;
 }
 
 float **host::get_auxiliary_buffer() { 
@@ -167,7 +167,7 @@ void host::midi_out(int const dev, unsigned int data) {
 
 void host::midi_out(int time, unsigned int data) {
 	midi_message msg = { -1, data, time };
-	metaplugin& m = *plugin_player->plugins[plugin->id];
+	metaplugin& m = *plugin_player->plugins[_plugin->id];
 	m.midi_messages.push_back(msg);
 }
 
@@ -300,24 +300,24 @@ void host::_legacy_control_change(int group, int track, int param, int value) {	
 // shouldn't be used for anything else
 int host::audio_driver_get_channel_count(bool input) {
 	if (input) {
-		return player->work_in_device!=0 ? player->work_in_device->in_channels : 0;
+		return _player->work_in_device!=0 ? _player->work_in_device->in_channels : 0;
 	} else {
-		return player->work_out_device->out_channels;
+		return _player->work_out_device->out_channels;
 	}
 }
 
 void host::audio_driver_write(int channel, float *psamples, int numsamples) {
-	memcpy(player->front.outputBuffer[channel], psamples, sizeof(float) * numsamples);
+	memcpy(_player->front.outputBuffer[channel], psamples, sizeof(float) * numsamples);
 }
 
 void host::audio_driver_read(int channel, float *psamples, int numsamples) {
-	if (player->front.inputBuffer[channel] == 0) return ;
+	if (_player->front.inputBuffer[channel] == 0) return ;
 
-	memcpy(psamples, player->front.inputBuffer[channel], sizeof(float) * numsamples);
+	memcpy(psamples, _player->front.inputBuffer[channel], sizeof(float) * numsamples);
 }
 
 metaplugin_proxy* host::get_metaplugin() {
-	return plugin;
+	return _plugin;
 }
 
 void host::control_change(metaplugin_proxy* pmac, int group, int track, int param, int value, bool record, bool immediate) {
@@ -373,13 +373,13 @@ void* host::get_playing_row(sequence* pseq, int group, int track) {
 
 // GetStateFlags fixed selecting a VSTi's during playback
 int host::get_state_flags() {
-	return (zzub_player_state)player->front.state==zzub_player_state_playing?state_flag_playing:0;
+	return (zzub_player_state)_player->front.state==zzub_player_state_playing?state_flag_playing:0;
 }
 
 void host::set_state_flags(int state) {
 	if (state==0)
-		player->set_state(player_state_stopped); else
-		player->set_state(player_state_playing);
+		_player->set_state(player_state_stopped); else
+		_player->set_state(player_state_playing);
 }
 
 
@@ -458,44 +458,44 @@ bool host::get_osc_url(metaplugin_proxy* pmac, char *url) {
 }
 
 int host::get_play_position() {
-	return player->front.song_position;
+	return _player->front.song_position;
 }
 
 void host::set_play_position(int pos) {
 	printf("host::set_play_position %i\n", pos);
-	player->front.song_position = pos;
+	_player->front.song_position = pos;
 }
 
 int host::get_song_begin() {
-	return player->front.song_begin;
+	return _player->front.song_begin;
 }
 
 void host::set_song_begin(int pos) {
-	player->front.song_begin = pos;
+	_player->front.song_begin = pos;
 }
 
 int host::get_song_end() {
-	return player->front.song_end;
+	return _player->front.song_end;
 }
 
 void host::set_song_end(int pos) {
-	player->front.song_end = pos;
+	_player->front.song_end = pos;
 }
 
 int host::get_song_begin_loop() {
-	return player->front.song_loop_begin;
+	return _player->front.song_loop_begin;
 }
 
 void host::set_song_begin_loop(int pos) {
-	player->front.song_loop_begin = pos;
+	_player->front.song_loop_begin = pos;
 }
 
 int host::get_song_end_loop() {
-	return player->front.song_loop_end;
+	return _player->front.song_loop_end;
 }
 
 void host::set_song_end_loop(int pos) {
-	player->front.song_loop_end = pos;
+	_player->front.song_loop_end = pos;
 }
 
 };

@@ -163,11 +163,11 @@ void master_plugin::update_tempo(int bpm, int tpb) {
 }
 
 void master_plugin::process_midi_events(midi_message* pin, int nummessages) {
-	midi_io* driver = _host->player->midiDriver;
+	midi_io* driver = _host->_player->midiDriver;
 	if (!driver) return ;
 	
 	for (int i = 0; i < nummessages; i++) {
-		float latency = (_host->player->work_latency / 2) + _host->player->work_buffer_position + (float)pin[i].timestamp;
+		float latency = (_host->_player->work_latency / 2) + _host->_player->work_buffer_position + (float)pin[i].timestamp;
 		float samples_per_ms = (float)_host->plugin_player->master_info.samples_per_second / 1000.0f;
 
 		int time_ms = (int)(latency / samples_per_ms);	// get latency and write position in ms from audio driver
@@ -180,7 +180,7 @@ void master_plugin::process_midi_events(midi_message* pin, int nummessages) {
 void master_plugin::update_midi_devices() {
 	midi_devices.clear();
 	
-	midi_io* driver = _host->player->midiDriver;
+	midi_io* driver = _host->_player->midiDriver;
 	if (!driver) return ;
 
 	for (unsigned int i=0; i<driver->getDevices(); i++) {

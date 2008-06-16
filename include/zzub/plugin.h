@@ -620,9 +620,9 @@ struct host {
 	virtual int get_song_end_loop();
 	virtual void set_song_end_loop(int pos);
 
-	zzub::player* player;
+	zzub::player* _player;
 	zzub::song* plugin_player;		// plugin_player is used for accessing plugins and is the same as player except during initialization
-	zzub_plugin_t* plugin;
+	zzub_plugin_t* _plugin;
 	bool pre_lock_swap_mode;
 
 	host(zzub::player*, zzub_plugin_t*);

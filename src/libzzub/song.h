@@ -76,8 +76,8 @@ struct pattern {
 };
 
 struct metaplugin_proxy {
-	metaplugin_proxy(player* _player, int _id):player(_player),id(_id){}
-	player* player;
+	metaplugin_proxy(player* _playr, int _id):_player(_playr),id(_id){}
+	player* _player;
 	int id;
 };
 
