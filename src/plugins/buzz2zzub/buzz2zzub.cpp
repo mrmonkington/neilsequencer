@@ -159,11 +159,11 @@ public:
 
 	// End of Buzz compatible header
 
-	int plugin_id;
+	zzub_plugin_t* plugin;
 	CMachineInfo* buzzinfo;
 
 	CMachine() {
-		plugin_id = -1;
+		plugin = 0;
 		buzzinfo = 0;
 	}
 	virtual ~CMachine() { }
@@ -308,12 +308,12 @@ struct libwrap : public zzub::lib {
 
 class CMachineManager {
 public:
-	std::map<int, CMachine*> plugin_to_machine;
+	std::map<zzub_plugin_t*, CMachine*> plugin_to_machine;
 
-	CMachine* get(zzub::host* host, int plugin_id);
+	CMachine* get(zzub::host* host, zzub_plugin_t* metaplugin);
 	CMachine* create(buzz2zzub::plugin* plugin);
 	CMachine* create(zzub::plugin* plugin);
-	void destroy(int plugin_id);
+	void destroy(zzub_plugin_t* metaplugin);
 };
 
 struct buzzplugincollection;
@@ -635,7 +635,7 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 		machine->pCB = this;
 		machine->pMasterInfo = reinterpret_cast<CMasterInfo*>(_master_info);
 		
-		int thisplugin = _host->get_metaplugin();
+		zzub_plugin_t* thisplugin = _host->get_metaplugin();
 
 		if (arc)
 			machine->Init(&CMachineDataInputWrap(arc->get_instream(""))); 
@@ -929,7 +929,7 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 		// BTDSys PeerCtrl doesnt initialize the track parameter on the global track, so we set to 0
 		// const CMachineParameter* mp;
 		// we also use the zzub parameter, since pmac->buzzinfo may not be initialized, e.g with live slice
-		const zzub::info* info = _host->get_info(pmac->plugin_id);
+		const zzub::info* info = _host->get_info(pmac->plugin);
 		const zzub::parameter* mp;
 		switch (group) {
 			case 1:
@@ -952,10 +952,10 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 			if (value > mp->value_max) value = mp->value_max;
 		}
 
-		_host->control_change(pmac->plugin_id, group, track, param, value, record, immediate);
+		_host->control_change(pmac->plugin, group, track, param, value, record, immediate);
 	}
 	virtual CSequence *GetPlayingSequence(CMachine *pmac) { 
-		return reinterpret_cast<CSequence*>(_host->get_playing_sequence(pmac->plugin_id)); 
+		return reinterpret_cast<CSequence*>(_host->get_playing_sequence(pmac->plugin)); 
 	}
 	virtual void *GetPlayingRow(CSequence *pseq, int group, int track) { 
 		return _host->get_playing_row(reinterpret_cast<zzub::sequence*>(pseq), group, track); 
@@ -992,7 +992,7 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 	virtual void SetEventHandler(CMachine *pmac, BEventType et, EVENT_HANDLER_PTR p, void *param)
 	{
 		if (events.size() == 0)
-			_host->set_event_handler(pmac->plugin_id, this);
+			_host->set_event_handler(pmac->plugin, this);
 		event_wrap ew={et, p, param};
 		events.push_back(ew);
 	}
@@ -1000,20 +1000,20 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 	virtual char const *GetWaveName(int const i) { return _host->get_wave_name(i); }
 
 	virtual void SetInternalWaveName(CMachine *pmac, int const i, char const *name) {
-		_host->set_internal_wave_name(pmac->plugin_id, i, name); 
+		_host->set_internal_wave_name(pmac->plugin, i, name); 
 	}
 
 	virtual void GetMachineNames(CMachineDataOutput *pout)
 	{ _host->get_plugin_names(&outstreamwrap(pout)); }
 	
 	virtual CMachine *GetMachine(char const *name) { 
-		int plugin = _host->get_metaplugin(name);
-		if (plugin == -1) return 0;
+		zzub_plugin_t* plugin = _host->get_metaplugin(name);
+		if (plugin == 0) return 0;
 		return machineInfo->machines->get(_host, plugin);
 	}
 
 	virtual CMachineInfo const *GetMachineInfo(CMachine *pmac) {		
-		const zzub::info *_info = _host->get_info(pmac->plugin_id);
+		const zzub::info *_info = _host->get_info(pmac->plugin);
 		if (!_info) return 0;	// could happen after deleting a peer controlled machine
 		
 		if (pmac->buzzinfo != 0) return pmac->buzzinfo;
@@ -1055,7 +1055,7 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 		return buzzinfo;
 	}
 	virtual char const *GetMachineName(CMachine *pmac) { 
-		return _host->get_name(pmac->plugin_id); 
+		return _host->get_name(pmac->plugin); 
 	}
 
 	virtual bool GetInput(int index, float *psamples, int numsamples, bool stereo, float *extrabuffer)
@@ -1178,10 +1178,10 @@ void libwrap::get_instrument_list(zzub::outstream* os)  {
 
 ***/
 
-CMachine* CMachineManager::get(zzub::host* host, int plugin_id) {
-	std::map<int, CMachine*>::iterator i = plugin_to_machine.find(plugin_id);
+CMachine* CMachineManager::get(zzub::host* host, zzub_plugin_t* metaplugin) {
+	std::map<zzub_plugin_t*, CMachine*>::iterator i = plugin_to_machine.find(metaplugin);
 	if (i == plugin_to_machine.end()) {
-		zzub::plugin* p = host->get_plugin(plugin_id);
+		zzub::plugin* p = host->get_plugin(metaplugin);
 		return create(p);
 	} else
 		return i->second;
@@ -1216,7 +1216,7 @@ public:
 
 CMachine* CMachineManager::create(zzub::plugin* plugin) {
 	CMachine* machine = new CMachine();
-	machine->plugin_id = plugin->_host->plugin_id;
+	machine->plugin = plugin->_host->get_metaplugin();
 	machine->_internal_machine_ex = 0;
 	machine->_internal_seqCommand = 0;
 	machine->_internal_name = "";	// Must set to "" or else PVST will crash in SetInstrument
@@ -1225,13 +1225,13 @@ CMachine* CMachineManager::create(zzub::plugin* plugin) {
 	machine->_internal_machine = new CPluginWrap(machine);
 
 
-	plugin_to_machine[plugin->_host->plugin_id] = machine;
+	plugin_to_machine[machine->plugin] = machine;
 	return machine;
 }
 
 CMachine* CMachineManager::create(buzz2zzub::plugin* plugin) {
 	CMachine* machine = new CMachine();
-	machine->plugin_id = plugin->_host->plugin_id;
+	machine->plugin = plugin->_host->get_metaplugin();
 	machine->_internal_machine = plugin->machine;
 	machine->_internal_machine_ex = plugin->machine2;
 	machine->_internal_seqCommand = 0;
@@ -1239,12 +1239,12 @@ CMachine* CMachineManager::create(buzz2zzub::plugin* plugin) {
 	machine->_internal_track_state = (char*)new char[256*128*2];	// max 128 word parameters in 256 tracks;
 	machine->_internal_global_state = (char*)new char[128*2];		// max 128 word parameters
 
-	plugin_to_machine[plugin->_host->plugin_id] = machine;
+	plugin_to_machine[machine->plugin] = machine;
 	return machine;
 }
 
-void CMachineManager::destroy(int plugin_id) {
-	std::map<int, CMachine*>::iterator i = plugin_to_machine.find(plugin_id);
+void CMachineManager::destroy(zzub_plugin_t* metaplugin) {
+	std::map<zzub_plugin_t*, CMachine*>::iterator i = plugin_to_machine.find(metaplugin);
 	if (i != plugin_to_machine.end()) {
 		delete i->second->_internal_global_state;
 		delete i->second->_internal_track_state;

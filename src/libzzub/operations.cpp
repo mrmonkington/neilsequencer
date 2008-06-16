@@ -114,7 +114,8 @@ bool op_plugin_create::prepare(zzub::song& song) {
 	plugin.work_buffer.resize(2);
 	plugin.work_buffer[0].resize(buffer_size * 4);
 	plugin.work_buffer[1].resize(buffer_size * 4);
-	plugin.callbacks = new host(player, id);
+	plugin.proxy = new metaplugin_proxy(player, id);
+	plugin.callbacks = new host(player, plugin.proxy);
 	plugin.callbacks->plugin_player = &song;
 	plugin.plugin->_host = plugin.callbacks;
 	plugin.plugin->_master_info = &player->front.master_info;
@@ -186,7 +187,7 @@ bool op_plugin_create::prepare(zzub::song& song) {
 	song.make_work_order();
 
 	event_data.type = event_type_new_plugin;
-	event_data.new_plugin.plugin = id;
+	event_data.new_plugin.plugin = plugin.proxy;
 
 	return true;
 }
@@ -226,18 +227,21 @@ op_plugin_delete::op_plugin_delete(zzub::player* _player, int _id) {
 
 bool op_plugin_delete::prepare(zzub::song& song) {
 
-	plugin_descriptor plugin = song.plugins[id]->descriptor;
+	metaplugin& mpl = *song.plugins[id];
+
+	plugin_descriptor plugin = mpl.descriptor;
 	assert(plugin != graph_traits<plugin_map>::null_vertex());
+
 
 	// send delete notification now - before any changes occur in any back/front buffers
 	event_data.type = event_type_pre_delete_plugin;
-	event_data.delete_plugin.plugin = id;
+	event_data.delete_plugin.plugin = mpl.proxy;
 	song.plugin_invoke_event(0, event_data, true);
 
 	clear_vertex(plugin, song.graph);
 	remove_vertex(plugin, song.graph);
 
-	song.plugins[id]->descriptor = graph_traits<plugin_map>::null_vertex();
+	mpl.descriptor = graph_traits<plugin_map>::null_vertex();
 	song.make_work_order();
 
 	// adjust all descriptors in plugins and song_events
@@ -276,15 +280,16 @@ void op_plugin_delete::finish(zzub::song& song, bool send_events) {
 
 	assert(plugin != 0);
 
+	event_data.type = event_type_delete_plugin;
+	event_data.delete_plugin.plugin = plugin->proxy;
+	if (send_events) song.plugin_invoke_event(0, event_data, true);
+
 	plugin->plugin->destroy();
 	int ptn = plugin->patterns.size();
 	delete plugin->callbacks;
+	delete plugin->proxy;
 	delete plugin;
 	plugin = 0;
-
-	event_data.type = event_type_delete_plugin;
-	event_data.delete_plugin.plugin = id;
-	if (send_events) song.plugin_invoke_event(0, event_data, true);
 
 }
 
@@ -306,8 +311,6 @@ op_plugin_replace::op_plugin_replace(int _id, const metaplugin& _plugin) {
 }
 
 bool op_plugin_replace::prepare(zzub::song& song) {
-	event_data.type = event_type_plugin_changed;
-	event_data.plugin_changed.plugin = id;
 	return true;
 }
 
@@ -325,7 +328,11 @@ bool op_plugin_replace::operate(zzub::song& song) {
 }
 
 void op_plugin_replace::finish(zzub::song& song, bool send_events) {
-	if (send_events) song.plugin_invoke_event(0, event_data, true);
+	if (send_events && song.plugins[id]) {
+		event_data.type = event_type_plugin_changed;
+		event_data.plugin_changed.plugin = song.plugins[id]->proxy;
+		song.plugin_invoke_event(0, event_data, true);
+	}
 }
 // ---------------------------------------------------------------------------
 //
@@ -410,10 +417,13 @@ bool op_plugin_connect::prepare(zzub::song& song) {
 	// validating done, remove the edge again before invoking the pre-event so the graph isnt bogus
 	remove_edge(edge_instance_p.first, song.graph);
 
+	metaplugin& to_mpl = *song.plugins[to_id];
+	metaplugin& from_mpl = *song.plugins[from_id];
+
 	// invoke pre-event so hacked plugins can lock the player
 	event_data.type = event_type_pre_connect;
-	event_data.connect_plugin.to_plugin = to_id;
-	event_data.connect_plugin.from_plugin = from_id;
+	event_data.connect_plugin.to_plugin = to_mpl.proxy;
+	event_data.connect_plugin.from_plugin = from_mpl.proxy;
 	event_data.connect_plugin.type = type;
 	song.plugin_invoke_event(0, event_data, true);
 
@@ -435,28 +445,27 @@ bool op_plugin_connect::prepare(zzub::song& song) {
 			break;
 	}
 
-	metaplugin& m = song.get_plugin(to_plugin) ;
-	for (size_t i = 0; i < m.patterns.size(); i++) {
-		song.add_pattern_connection_track(*m.patterns[i], c.conn->connection_parameters);
+	for (size_t i = 0; i < to_mpl.patterns.size(); i++) {
+		song.add_pattern_connection_track(*to_mpl.patterns[i], c.conn->connection_parameters);
 	}
 
-	song.add_pattern_connection_track(m.state_write, c.conn->connection_parameters);
-	song.default_plugin_parameter_track(m.state_write.groups[0].back(), c.conn->connection_parameters);
+	song.add_pattern_connection_track(to_mpl.state_write, c.conn->connection_parameters);
+	song.default_plugin_parameter_track(to_mpl.state_write.groups[0].back(), c.conn->connection_parameters);
 	for (size_t i = 0; i < values.size() && i < c.conn->connection_parameters.size(); i++) {
-		m.state_write.groups[0].back()[i][0] = values[i];
+		to_mpl.state_write.groups[0].back()[i][0] = values[i];
 	}
 
-	song.add_pattern_connection_track(m.state_last, c.conn->connection_parameters);
+	song.add_pattern_connection_track(to_mpl.state_last, c.conn->connection_parameters);
 
-	song.add_pattern_connection_track(m.state_automation, c.conn->connection_parameters);
+	song.add_pattern_connection_track(to_mpl.state_automation, c.conn->connection_parameters);
 
 	song.make_work_order();
 
-	from_name = song.get_plugin(from_plugin).name;
+	from_name = from_mpl.name;
 
 	event_data.type = event_type_connect;
-	event_data.connect_plugin.from_plugin = from_id;
-	event_data.connect_plugin.to_plugin = to_id;
+	event_data.connect_plugin.to_plugin = to_mpl.proxy;
+	event_data.connect_plugin.from_plugin = from_mpl.proxy;
 
 	return true;
 }
@@ -499,15 +508,18 @@ op_plugin_disconnect::op_plugin_disconnect(int _from_id, int _to_id, zzub::conne
 
 bool op_plugin_disconnect::prepare(zzub::song& song) {
 
-	plugin_descriptor to_plugin = song.plugins[to_id]->descriptor;
-	plugin_descriptor from_plugin = song.plugins[from_id]->descriptor;
+	metaplugin& to_mpl = *song.plugins[to_id];
+	metaplugin& from_mpl = *song.plugins[from_id];
+
+	plugin_descriptor to_plugin = to_mpl.descriptor;
+	plugin_descriptor from_plugin = from_mpl.descriptor;
 	assert(to_plugin != graph_traits<plugin_map>::null_vertex());
 	assert(from_plugin != graph_traits<plugin_map>::null_vertex());
 
 	// invoke pre-event so hacked plugins can lock the player
 	event_data.type = event_type_pre_disconnect;
-	event_data.disconnect_plugin.to_plugin = to_id;
-	event_data.disconnect_plugin.from_plugin = from_id;
+	event_data.disconnect_plugin.to_plugin = to_mpl.proxy;
+	event_data.disconnect_plugin.from_plugin = from_mpl.proxy;
 	event_data.disconnect_plugin.type = type;
 	song.plugin_invoke_event(0, event_data, true);
 
@@ -544,8 +556,8 @@ bool op_plugin_disconnect::prepare(zzub::song& song) {
 	remove_edge(conndesc, song.graph);
 
 	event_data.type = event_type_disconnect;
-	event_data.disconnect_plugin.from_plugin = from_id;
-	event_data.disconnect_plugin.to_plugin = to_id;
+	event_data.disconnect_plugin.to_plugin = to_mpl.proxy;
+	event_data.disconnect_plugin.from_plugin = from_mpl.proxy;
 
 	return true;
 }
@@ -692,7 +704,7 @@ bool op_plugin_set_track_count::prepare(zzub::song& song) {
 
 	// invoke pre-event so hacked plugins can lock the player
 	event_data.type = event_type_pre_set_tracks;
-	event_data.set_tracks.plugin = id;
+	event_data.set_tracks.plugin = m.proxy;
 	song.plugin_invoke_event(0, event_data, true);
 
 	for (size_t i = 0; i < m.patterns.size(); i++) {
@@ -706,7 +718,7 @@ bool op_plugin_set_track_count::prepare(zzub::song& song) {
 	m.tracks = tracks;
 
 	event_data.type = event_type_set_tracks;
-	event_data.set_tracks.plugin = id;
+	event_data.set_tracks.plugin = m.proxy;
 
 	return true;
 }
@@ -905,7 +917,7 @@ op_pattern_edit::op_pattern_edit(int _id, int _index, int _group, int _track, in
 bool op_pattern_edit::prepare(zzub::song& song) {
 
 	event_data.type = event_type_edit_pattern;
-	event_data.edit_pattern.plugin = id;
+	event_data.edit_pattern.plugin = song.plugins[id]->proxy;
 	event_data.edit_pattern.index = index;
 	event_data.edit_pattern.group = group;
 	event_data.edit_pattern.track = track;
@@ -959,16 +971,15 @@ op_pattern_insert::op_pattern_insert(int _id, int _index, zzub::pattern _pattern
 }
 
 bool op_pattern_insert::prepare(zzub::song& song) {
-	plugin_descriptor plugin = song.plugins[id]->descriptor;
-	assert(plugin != graph_traits<plugin_map>::null_vertex());
+	metaplugin& m = *song.plugins[id];
 
 	if (index == -1)
-		song.get_plugin(plugin).patterns.push_back(new zzub::pattern(pattern)); else
-		song.get_plugin(plugin).patterns.insert(song.get_plugin(plugin).patterns.begin() + index, new zzub::pattern(pattern));
+		m.patterns.push_back(new zzub::pattern(pattern)); else
+		m.patterns.insert(m.patterns.begin() + index, new zzub::pattern(pattern));
 
 	event_data.type = event_type_new_pattern;
-	event_data.new_pattern.plugin = id;
-	event_data.new_pattern.index = song.get_plugin(plugin).patterns.size() - 1;
+	event_data.new_pattern.plugin = m.proxy;
+	event_data.new_pattern.index = m.patterns.size() - 1;
 	return true;
 }
 
@@ -1011,7 +1022,7 @@ bool op_pattern_remove::prepare(zzub::song& song) {
 	assert(index >= 0 && (size_t)index < m.patterns.size());
 
 	event_data.type = event_type_pre_delete_pattern;
-	event_data.delete_pattern.plugin = id;
+	event_data.delete_pattern.plugin = m.proxy;
 	event_data.delete_pattern.index = index;
 	song.plugin_invoke_event(0, event_data, true);
 
@@ -1075,10 +1086,12 @@ op_pattern_move::op_pattern_move(int _id, int _index, int _newindex) {
 }
 
 bool op_pattern_move::prepare(zzub::song& song) {
-	plugin_descriptor plugin = song.plugins[id]->descriptor;
+	metaplugin& m = *song.plugins[id];
+
+	plugin_descriptor plugin = m.descriptor;
 	assert(plugin != graph_traits<plugin_map>::null_vertex());
 
-	std::vector<zzub::pattern*>& patterns = song.get_plugin(plugin).patterns;
+	std::vector<zzub::pattern*>& patterns = m.patterns;
 
 	if (index == -1) index = patterns.size() - 1;
 
@@ -1114,7 +1127,7 @@ bool op_pattern_move::prepare(zzub::song& song) {
 	}
 
 	event_data.type = event_type_plugin_changed;
-	event_data.plugin_changed.plugin = id;
+	event_data.plugin_changed.plugin = m.proxy;
 	return true;
 }
 
@@ -1158,7 +1171,7 @@ bool op_pattern_replace::prepare(zzub::song& song) {
 	m.patterns[index] = new zzub::pattern(pattern);
 
 	event_data.type = event_type_pattern_changed;
-	event_data.pattern_changed.plugin = id;
+	event_data.pattern_changed.plugin = m.proxy;
 	event_data.pattern_changed.index = index;
 	return true;
 }
@@ -1221,8 +1234,10 @@ bool op_pattern_insert_rows::operate(zzub::song& song) {
 }
 
 void op_pattern_insert_rows::finish(zzub::song& song, bool send_events) {
+	metaplugin& m = *song.plugins[id];
+
 	event_data.type = event_type_pattern_insert_rows;
-	event_data.pattern_insert_rows.plugin = id;
+	event_data.pattern_insert_rows.plugin = m.proxy;
 	event_data.pattern_insert_rows.column_indices = &columns.front();
 	event_data.pattern_insert_rows.indices = columns.size();
 	event_data.pattern_insert_rows.index = index;
@@ -1287,8 +1302,10 @@ bool op_pattern_remove_rows::operate(zzub::song& song) {
 }
 
 void op_pattern_remove_rows::finish(zzub::song& song, bool send_events) {
+	metaplugin& m = *song.plugins[id];
+
 	event_data.type = event_type_pattern_remove_rows;
-	event_data.pattern_remove_rows.plugin = id;
+	event_data.pattern_remove_rows.plugin = m.proxy;
 	event_data.pattern_remove_rows.column_indices = &columns.front();
 	event_data.pattern_remove_rows.indices = columns.size();
 	event_data.pattern_remove_rows.row = row;
@@ -1371,10 +1388,10 @@ bool op_sequencer_set_event::operate(zzub::song& song) {
 
 void op_sequencer_set_event::finish(zzub::song& song, bool send_events) {
 	event_data.type = event_type_set_sequence_event;
-	event_data.set_sequence_event.plugin = -1;
+	event_data.set_sequence_event.plugin = 0;
 	event_data.set_sequence_event.track = track;
 	event_data.set_sequence_event.time = timestamp;
-	if (send_events) song.plugin_invoke_event(0, event_data, true);
+	song.plugin_invoke_event(0, event_data, true);
 }
 
 // ---------------------------------------------------------------------------

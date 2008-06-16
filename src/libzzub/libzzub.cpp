@@ -33,56 +33,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <sndfile.h>
 #endif
 
-#define ZZUB_NO_CTYPES
-
-struct zzub_flatapi_player;
-
-namespace zzub {
-	struct metaplugin;
-	struct info;
-	struct pattern;
-	struct event_connection_binding;
-	struct wave_info_ex;
-	struct wave_level;
-	struct parameter;
-	struct attribute;
-	struct envelope_entry;
-	struct midimapping;
-	struct recorder;
-	struct pluginlib;
-	struct mem_archive;
-	struct audiodriver;
-	struct mididriver;
-	struct instream;
-	struct outstream;
-};
-
-// internal types
-typedef zzub_flatapi_player zzub_player_t;
-typedef zzub::audiodriver zzub_audiodriver_t;
-typedef zzub::mididriver zzub_mididriver_t;
-//typedef zzub::metaplugin zzub_plugin_t;
-typedef const zzub::info zzub_pluginloader_t;
-typedef zzub::pluginlib zzub_plugincollection_t;
-//typedef zzub::sequence zzub_sequence_t;
-//typedef zzub::sequencer zzub_sequencer_t;
-typedef zzub::pattern zzub_pattern_t;
-//typedef zzub::patterntrack zzub_patterntrack_t;
-//typedef zzub::connection zzub_connection_t;
-//typedef zzub::audio_connection zzub_audio_connection_t;
-//typedef zzub::event_connection zzub_event_connection_t;
-typedef zzub::event_connection_binding zzub_event_connection_binding_t;
-typedef zzub::wave_info_ex zzub_wave_t;
-typedef zzub::wave_level zzub_wavelevel_t;
-typedef zzub::parameter zzub_parameter_t;
-typedef zzub::attribute zzub_attribute_t;
-typedef zzub::envelope_entry zzub_envelope_t;
-typedef zzub::midimapping zzub_midimapping_t;
-typedef zzub::recorder zzub_recorder_t;
-typedef zzub::mem_archive zzub_archive_t;
-
-typedef zzub::instream zzub_input_t;
-typedef zzub::outstream zzub_output_t;
 
 #include "common.h"
 
@@ -134,28 +84,28 @@ extern "C"
 ***/
 
 struct zzub_player_callback_all_events : event_handler {
-	zzub_player_t *player;
-	int plugin_id;
+	metaplugin_proxy* proxy;
+	zzub_flatapi_player* player;
 
 	std::map<int, event_handler*> handlers;
 	
-	zzub_player_callback_all_events(zzub_player_t* _player, int _plugin_id) {
+	zzub_player_callback_all_events(zzub_flatapi_player* _player, metaplugin_proxy* _proxy) {
 		player = _player;
-		plugin_id = _plugin_id;
+		proxy = _proxy;
 	}
 
 	virtual bool invoke(zzub_event_data_t& data) {
 		// the master plugin checks for create/delete plugin events and maintains an
 		// array of handlers who forward all events to the player callback.
-		if (plugin_id == 0 && data.type == zzub_event_type_new_plugin) {
-			int id = data.new_plugin.plugin;
-			zzub_player_callback_all_events *ev = new zzub_player_callback_all_events(player, id);
-			handlers[id] = ev;
-			player->front.plugins[id]->event_handlers.push_back(ev);
+		if (proxy->id == 0 && data.type == zzub_event_type_new_plugin) {
+			metaplugin_proxy* new_plugin = data.new_plugin.plugin;
+			zzub_player_callback_all_events *ev = new zzub_player_callback_all_events(player, new_plugin);
+			handlers[new_plugin->id] = ev;
+			player->front.plugins[new_plugin->id]->event_handlers.push_back(ev);
 		} else
-		if (plugin_id == 0 && data.type == zzub_event_type_pre_delete_plugin) {
-			int id = data.delete_plugin.plugin;
-			map<int, event_handler*>::iterator i = handlers.find(id);
+		if (proxy->id == 0 && data.type == zzub_event_type_pre_delete_plugin) {
+			metaplugin_proxy* del_plugin = data.delete_plugin.plugin;
+			map<int, event_handler*>::iterator i = handlers.find(del_plugin->id);
 			if (i != handlers.end()) {
 				delete i->second;
 				handlers.erase(i);
@@ -164,7 +114,7 @@ struct zzub_player_callback_all_events : event_handler {
 
 		if (player->callback) {
 			//int plugin = player->front.plugins[plugin_id]->descriptor;
-			int res = player->callback(player, plugin_id, &data, player->callbackTag);
+			int res = player->callback(player, proxy, &data, player->callbackTag);
 			if (!res)
 				return true;
 		}
@@ -197,7 +147,7 @@ int zzub_player_initialize(zzub_player_t *player, int samplesPerSec) {
 		return -1;	
 
 	// NOTE: 0 == master
-	zzub_player_callback_all_events *ev = new zzub_player_callback_all_events(player, 0);
+	zzub_player_callback_all_events *ev = new zzub_player_callback_all_events(player, player->front.plugins[0]->proxy);
 	player->front.plugins[0]->event_handlers.push_back(ev);
 	player->reset();
 	return 0;
@@ -301,13 +251,13 @@ int zzub_player_load_bmx(zzub_player_t *player, zzub_input_t* datastream, char* 
 	return 0;
 }
 
-int zzub_player_save_bmx(zzub_player_t *player, int* _plugins, int num_plugins, int save_waves, zzub_output_t* datastream) {
+int zzub_player_save_bmx(zzub_player_t *player, zzub_plugin_t** _plugins, int num_plugins, int save_waves, zzub_output_t* datastream) {
 
 	// incoming plugins are plugin_id's. bmxwriter takes plugin_descriptors, so lets remap
 	std::vector<zzub::plugin_descriptor> plugins(num_plugins);
 	for (int i = 0; i < num_plugins; i++) {
-		int plugin_id = _plugins[i];
-		metaplugin& m = *player->front.plugins[plugin_id];
+		zzub_plugin_t* plugin = _plugins[i];
+		metaplugin& m = *player->front.plugins[plugin->id];
 		plugins[i] = m.descriptor;
 	}
 	BuzzWriter f(datastream);
@@ -358,7 +308,7 @@ void zzub_player_get_new_plugin_name(zzub_player_t *player, const char* uri, cha
 	strncpy(name, newname.c_str(), maxLen);
 }
 
-int zzub_player_get_plugin_by_name(zzub_player_t *player, const char* name) {
+zzub_plugin_t* zzub_player_get_plugin_by_name(zzub_player_t *player, const char* name) {
 
 	operation_copy_flags flags;
 	flags.copy_plugins = true;
@@ -366,28 +316,39 @@ int zzub_player_get_plugin_by_name(zzub_player_t *player, const char* name) {
 	player->merge_backbuffer_flags(flags);
 
 	plugin_descriptor plugindesc = player->back.get_plugin_descriptor(name);
-	if (plugindesc == graph_traits<plugin_map>::null_vertex()) return -1;
-	return player->back.graph[plugindesc].id;
+	if (plugindesc == graph_traits<plugin_map>::null_vertex()) return 0;
+	int id = player->back.graph[plugindesc].id;
+	return zzub_player_get_plugin_by_id(player, id);
 }
 
-int zzub_player_get_plugin_by_id(zzub_player_t *player, int id) {
+zzub_plugin_t* zzub_player_get_plugin_by_id(zzub_player_t *player, int id) {
 
 	operation_copy_flags flags;
 	flags.copy_plugins = true;
 	player->merge_backbuffer_flags(flags);
 
-	return (int)player->back.plugins[id]->descriptor;
+	return player->back.plugins[id]->proxy;
 }
 
-int zzub_plugin_set_midi_connection_device(zzub_player_t* player, int plugin, int from_plugin, const char* name) {
+zzub_plugin_t* zzub_player_get_plugin(zzub_player_t *player, int index) {
 
-	player->plugin_set_midi_connection_device(plugin, from_plugin, name);
+	operation_copy_flags flags;
+	flags.copy_graph = true;
+	player->merge_backbuffer_flags(flags);
+
+	int id = player->back.graph[index].id;
+	return zzub_player_get_plugin_by_id(player, id);
+}
+
+int zzub_plugin_set_midi_connection_device(zzub_plugin_t *to_plugin, zzub_plugin_t* from_plugin, const char* name) {
+
+	to_plugin->player->plugin_set_midi_connection_device(to_plugin->id, from_plugin->id, name);
 	return 0;
 }
 
-void zzub_plugin_add_event_connection_binding(zzub_player_t* player, int plugin, int from_plugin, int sourceparam, int targetgroup, int targettrack, int targetparam) {
+void zzub_plugin_add_event_connection_binding(zzub_plugin_t *to_plugin, zzub_plugin_t* from_plugin, int sourceparam, int targetgroup, int targettrack, int targetparam) {
 
-	player->plugin_add_event_connection_binding(plugin, from_plugin, sourceparam, targetgroup, targettrack, targetparam);
+	to_plugin->player->plugin_add_event_connection_binding(to_plugin->id, from_plugin->id, sourceparam, targetgroup, targettrack, targetparam);
 }
 
 float** zzub_player_work_stereo(zzub_player_t *player, int* numSamples) {
@@ -461,16 +422,16 @@ int zzub_player_get_sequence_track_count(zzub_player_t *player) {
 }
 
 
-int zzub_player_get_currently_playing_pattern(zzub_player_t* player, int plugin, int* pattern, int* row) {
+int zzub_player_get_currently_playing_pattern(zzub_plugin_t *plugin, int* pattern, int* row) {
 	// retreive player statistic from the front buffer
-	if (player->front.get_currently_playing_pattern(plugin, *pattern, *row))
+	if (plugin->player->front.get_currently_playing_pattern(plugin->id, *pattern, *row))
 		return 0;
 	return -1;
 }
 
-int zzub_player_get_currently_playing_pattern_row(zzub_player_t* player, int plugin, int pattern, int* row) {
+int zzub_player_get_currently_playing_pattern_row(zzub_plugin_t *plugin, int pattern, int* row) {
 	// retreive player statistic from the front buffer
-	if (player->front.get_currently_playing_pattern_row(plugin, pattern, *row))
+	if (plugin->player->front.get_currently_playing_pattern_row(plugin->id, pattern, *row))
 		return 0;
 	return -1;
 }
@@ -509,17 +470,17 @@ void zzub_player_handle_events(zzub_player_t* player) {
 //	player->update_plugins_load_snapshot();
 }
 
-zzub_midimapping_t *zzub_player_add_midimapping(zzub_player_t* player, int plugin, int group, int track, int param, int channel, int controller) {
+zzub_midimapping_t *zzub_player_add_midimapping(zzub_plugin_t *plugin, int group, int track, int param, int channel, int controller) {
 
 
-	player->add_midimapping(plugin, group, track, param, channel, controller);
-	return &player->back.midi_mappings.back();
+	plugin->player->add_midimapping(plugin->id, group, track, param, channel, controller);
+	return &plugin->player->back.midi_mappings.back();
 }
 
-int zzub_player_remove_midimapping(zzub_player_t* player, int plugin, int group, int track, int param) {
+int zzub_player_remove_midimapping(zzub_plugin_t *plugin, int group, int track, int param) {
 
 
-	player->remove_midimapping(plugin, group, track, param);
+	plugin->player->remove_midimapping(plugin->id, group, track, param);
 	return 0;
 }
 
@@ -570,30 +531,35 @@ void zzub_player_set_infotext(zzub_player_t *player, const char *text) {
 }
 
 float zzub_player_get_bpm(zzub_player_t *player) {
-	return (float)zzub_plugin_get_parameter_value(player, 0, 1, 0, 1);
+	return (float)zzub_plugin_get_parameter_value(zzub_player_get_plugin_by_id(player, 0), 1, 0, 1);
 }
 
 int zzub_player_get_tpb(zzub_player_t *player) {
-	return zzub_plugin_get_parameter_value(player, 0, 1, 0, 2);
+	return zzub_plugin_get_parameter_value(zzub_player_get_plugin_by_id(player, 0), 1, 0, 2);
 }
 
 void zzub_player_set_bpm(zzub_player_t *player, float bpm) {
-	zzub_plugin_set_parameter_value(player, 0, 1, 0, 1, (int)bpm, false);
+	zzub_plugin_set_parameter_value(zzub_player_get_plugin_by_id(player, 0), 1, 0, 1, (int)bpm, false);
 }
 
 void zzub_player_set_tpb(zzub_player_t *player, int tpb) {
-	zzub_plugin_set_parameter_value(player, 0, 1, 0, 2, tpb, false);
+	zzub_plugin_set_parameter_value(zzub_player_get_plugin_by_id(player, 0), 1, 0, 2, tpb, false);
 }
 
-void zzub_player_set_midi_plugin(zzub_player_t *player, int plugin) {
-	if (plugin >= player->front.plugins.size() || player->front.plugins[plugin] == 0) return ;
-	plugin_descriptor plugindesc = player->front.plugins[plugin]->descriptor;
-	player->front.midi_plugin = plugindesc;
+void zzub_player_set_midi_plugin(zzub_player_t *player, zzub_plugin_t* plugin) {
+	if (plugin == 0) {
+		player->front.midi_plugin = graph_traits<plugin_map>::null_vertex();
+	} else {
+		if (plugin->id >= player->front.plugins.size() || player->front.plugins[plugin->id] == 0) return ;
+		plugin_descriptor plugindesc = player->front.plugins[plugin->id]->descriptor;
+		player->front.midi_plugin = plugindesc;
+	}
 }
 
-int zzub_player_get_midi_plugin(zzub_player_t *player) {
-	if (player->front.midi_plugin == graph_traits<plugin_map>::null_vertex()) return -1;
-	return player->front.graph[player->front.midi_plugin].id;
+zzub_plugin_t* zzub_player_get_midi_plugin(zzub_player_t *player) {
+	if (player->front.midi_plugin == graph_traits<plugin_map>::null_vertex()) return 0;
+	int id = player->front.graph[player->front.midi_plugin].id;
+	return zzub_player_get_plugin_by_id(player, id);
 }
 
 // midimapping functions
@@ -778,27 +744,27 @@ int zzub_attribute_get_value_default(const zzub_attribute_t *attrib) {
 
 ***/
 
-int zzub_player_create_plugin(zzub_player_t *player, zzub_input_t *input, int dataSize, const char* name, zzub_pluginloader_t* loader) {
+zzub_plugin_t* zzub_player_create_plugin(zzub_player_t *player, zzub_input_t *input, int dataSize, const char* name, zzub_pluginloader_t* loader) {
 
 
 	std::vector<char> bytes(dataSize);
 	if (dataSize > 0) input->read(&bytes.front(), dataSize);
 	int plugin_id = player->create_plugin(bytes, name, const_cast<zzub::info*>(loader));
-	return plugin_id;
+	return player->back.plugins[plugin_id]->proxy;
 }
 
-int zzub_plugin_destroy(zzub_player_t *player, int plugin) {
+int zzub_plugin_destroy(zzub_plugin_t *plugin) {
 
-	player->plugin_destroy(plugin);
+	plugin->player->plugin_destroy(plugin->id);
 	return 0;
 }
 
 
 /** \brief Load plugin state. */
-int zzub_plugin_load(zzub_player_t *player, int plugin, zzub_input_t *input) {
+int zzub_plugin_load(zzub_plugin_t *plugin, zzub_input_t *input) {
 	operation_copy_flags flags;
 	flags.copy_plugins = true;
-	player->merge_backbuffer_flags(flags);
+	plugin->player->merge_backbuffer_flags(flags);
 
 	mem_archive* arc = new mem_archive();
 	outstream* outs = arc->get_outstream("");
@@ -807,7 +773,7 @@ int zzub_plugin_load(zzub_player_t *player, int plugin, zzub_input_t *input) {
 	input->read(&bytes.front(), (int)bytes.size());
 	outs->write(&bytes.front(), (int)bytes.size());
 
-	player->back.plugins[plugin]->plugin->load(arc);
+	plugin->player->back.plugins[plugin->id]->plugin->load(arc);
 
 	delete arc;
 
@@ -815,13 +781,13 @@ int zzub_plugin_load(zzub_player_t *player, int plugin, zzub_input_t *input) {
 }
 
 /** \brief Save plugin state. */
-int zzub_plugin_save(zzub_player_t *player, int plugin, zzub_output_t *ouput) {
+int zzub_plugin_save(zzub_plugin_t *plugin, zzub_output_t *ouput) {
 	operation_copy_flags flags;
 	flags.copy_plugins = true;
-	player->merge_backbuffer_flags(flags);
+	plugin->player->merge_backbuffer_flags(flags);
 
 	mem_archive* arc = new mem_archive();
-	player->back.plugins[plugin]->plugin->save(arc);
+	plugin->player->back.plugins[plugin->id]->plugin->save(arc);
 
 	instream* ins = arc->get_instream("");
 	vector<char> bytes(ins->size());
@@ -833,63 +799,59 @@ int zzub_plugin_save(zzub_player_t *player, int plugin, zzub_output_t *ouput) {
 }
 
 
-void zzub_plugin_command(zzub_player_t* player, int plugin, int i) {
+void zzub_plugin_command(zzub_plugin_t *plugin, int i) {
 
 	operation_copy_flags flags;
 	flags.copy_plugins = true;
-	player->merge_backbuffer_flags(flags);
+	plugin->player->merge_backbuffer_flags(flags);
 
-	player->back.plugins[plugin]->plugin->command(i);
+	plugin->player->back.plugins[plugin->id]->plugin->command(i);
 }
 
-int zzub_plugin_set_name(zzub_player_t* player, int plugin, char* name) {
+int zzub_plugin_set_name(zzub_plugin_t *plugin, char* name) {
 
-	player->plugin_set_name(plugin, name);
+	plugin->player->plugin_set_name(plugin->id, name);
 	return 0;
 }
 
-int zzub_plugin_get_name(zzub_player_t* player, int plugin, char* name, int maxlen) {
+int zzub_plugin_get_name(zzub_plugin_t *plugin, char* name, int maxlen) {
 	operation_copy_flags flags;
 	flags.copy_plugins = true;
-	player->merge_backbuffer_flags(flags);
+	plugin->player->merge_backbuffer_flags(flags);
 
-	std::string s = player->back.plugins[plugin]->name;
+	std::string s = plugin->player->back.plugins[plugin->id]->name;
 	strncpy(name, s.c_str(), maxlen);
 	return (int)strlen(name);
 }
 
-int zzub_plugin_get_id(zzub_player_t* player, int index) {
-
-	operation_copy_flags flags;
-	flags.copy_graph = true;
-	player->merge_backbuffer_flags(flags);
-	return player->back.get_plugin_id(index);
+int zzub_plugin_get_id(zzub_plugin_t* plugin) {
+	return plugin->id;
 }
 
-int zzub_plugin_get_commands(zzub_player_t* player, int plugin, char* commands, int maxlen) {
+int zzub_plugin_get_commands(zzub_plugin_t *plugin, char* commands, int maxlen) {
 
 	operation_copy_flags flags;
 	flags.copy_plugins = true;
-	player->merge_backbuffer_flags(flags);
+	plugin->player->merge_backbuffer_flags(flags);
 
-	strncpy(commands, player->back.plugins[plugin]->info->commands.c_str(), maxlen);
+	strncpy(commands, plugin->player->back.plugins[plugin->id]->info->commands.c_str(), maxlen);
 	return strlen(commands);
 }
 
-int zzub_plugin_get_sub_commands(zzub_player_t* player, int plugin, int i, char* commands, int maxlen) {
+int zzub_plugin_get_sub_commands(zzub_plugin_t *plugin, int i, char* commands, int maxlen) {
 // if a command string starts with the char '\', it has subcommands
 // unexpectedly, this returns a \n-separated string (like getCommands())
 // some machines need to be ticked before calling getSubCommands (not yet supported)
 
 	operation_copy_flags flags;
 	flags.copy_plugins = true;
-	player->merge_backbuffer_flags(flags);
+	plugin->player->merge_backbuffer_flags(flags);
 
 	vector<char> bytes;
 	mem_outstream outm(bytes);
 	outstream* outf = &outm;
 
-	player->back.plugins[plugin]->plugin->get_sub_menu(i, outf);
+	plugin->player->back.plugins[plugin->id]->plugin->get_sub_menu(i, outf);
 	outf->write((char)0);	// terminate array
 
 	// create a new \n-separated string and return it instead, means both getCommands() and getSubCommands() return similar formatted strings
@@ -907,216 +869,216 @@ int zzub_plugin_get_sub_commands(zzub_player_t* player, int plugin, int i, char*
 	return strlen(commands);
 }
 
-int zzub_plugin_get_midi_output_device_count(zzub_player_t* player, int plugin) {
+int zzub_plugin_get_midi_output_device_count(zzub_plugin_t *plugin) {
 
 	operation_copy_flags flags;
 	flags.copy_plugins = true;
-	player->merge_backbuffer_flags(flags);
+	plugin->player->merge_backbuffer_flags(flags);
 
 	static _midiouts midiouts;
 	midiouts.clear();
-	player->back.plugins[plugin]->plugin->get_midi_output_names(&midiouts);
+	plugin->player->back.plugins[plugin->id]->plugin->get_midi_output_names(&midiouts);
 	return midiouts.names.size();
 }
 
-const char* zzub_plugin_get_midi_output_device(zzub_player_t* player, int plugin, int index) {
+const char* zzub_plugin_get_midi_output_device(zzub_plugin_t *plugin, int index) {
 
 	operation_copy_flags flags;
 	flags.copy_plugins = true;
-	player->merge_backbuffer_flags(flags);
+	plugin->player->merge_backbuffer_flags(flags);
 
 	static _midiouts midiouts;
 	midiouts.clear();
-	player->back.plugins[plugin]->plugin->get_midi_output_names(&midiouts);
+	plugin->player->back.plugins[plugin->id]->plugin->get_midi_output_names(&midiouts);
 	return midiouts.names[index].c_str();
 }
 
-int zzub_plugin_get_envelope_count(zzub_player_t* player, int plugin) {
+int zzub_plugin_get_envelope_count(zzub_plugin_t *plugin) {
 
 	operation_copy_flags flags;
 	flags.copy_plugins = true;
-	player->merge_backbuffer_flags(flags);
+	plugin->player->merge_backbuffer_flags(flags);
 
-	const zzub::envelope_info** infos = player->back.plugins[plugin]->plugin->get_envelope_infos();
+	const zzub::envelope_info** infos = plugin->player->back.plugins[plugin->id]->plugin->get_envelope_infos();
 	int count = 0;
 	while (*infos) { count++; infos++; }
 	return count;
 }
 
-const zzub::envelope_info* get_envelope_info(zzub_player_t* player, int plugin, int index) {
+const zzub::envelope_info* get_envelope_info(zzub_plugin_t *plugin, int index) {
 
 	operation_copy_flags flags;
 	flags.copy_plugins = true;
-	player->merge_backbuffer_flags(flags);
+	plugin->player->merge_backbuffer_flags(flags);
 
-	const zzub::envelope_info** infos = player->back.plugins[plugin]->plugin->get_envelope_infos();
+	const zzub::envelope_info** infos = plugin->player->back.plugins[plugin->id]->plugin->get_envelope_infos();
 	int count = 0;
 	while (*infos && count < index) { count++; infos++; }
 	return *infos;
 }
 
-int zzub_plugin_get_envelope_flags(zzub_player_t* player, int plugin, int index) {
-	const zzub::envelope_info* info = get_envelope_info(player, plugin, index);
+int zzub_plugin_get_envelope_flags(zzub_plugin_t *plugin, int index) {
+	const zzub::envelope_info* info = get_envelope_info(plugin, index);
 	return info->flags;
 }
 
-const char* zzub_plugin_get_envelope_name(zzub_player_t* player, int plugin, int index) {
-	const zzub::envelope_info* info = get_envelope_info(player, plugin, index);
+const char* zzub_plugin_get_envelope_name(zzub_plugin_t *plugin, int index) {
+	const zzub::envelope_info* info = get_envelope_info(plugin, index);
 	return info->name;
 }
 
-void zzub_plugin_set_stream_source(zzub_player_t* player, int plugin, const char* resource) {
+void zzub_plugin_set_stream_source(zzub_plugin_t *plugin, const char* resource) {
 
-	player->plugin_set_stream_source(plugin, resource);
+	plugin->player->plugin_set_stream_source(plugin->id, resource);
 }
 
-int zzub_plugin_get_flags(zzub_player_t* player, int plugin) {
+int zzub_plugin_get_flags(zzub_plugin_t *plugin) {
 
 	operation_copy_flags flags;
 	flags.copy_plugins = true;
-	player->merge_backbuffer_flags(flags);
-	return player->back.plugins[plugin]->info->flags;
+	plugin->player->merge_backbuffer_flags(flags);
+	return plugin->player->back.plugins[plugin->id]->info->flags;
 }
 
-zzub_pluginloader_t *zzub_plugin_get_pluginloader(zzub_player_t* player, int plugin) {
+zzub_pluginloader_t *zzub_plugin_get_pluginloader(zzub_plugin_t *plugin) {
 
 	operation_copy_flags flags;
 	flags.copy_plugins = true;
-	player->merge_backbuffer_flags(flags);
-	return player->back.plugins[plugin]->info;
+	plugin->player->merge_backbuffer_flags(flags);
+	return plugin->player->back.plugins[plugin->id]->info;
 }
 
-void zzub_plugin_add_pattern(zzub_player_t* player, int plugin, zzub_pattern_t *pattern) {
+void zzub_plugin_add_pattern(zzub_plugin_t *plugin, zzub_pattern_t *pattern) {
 
 
-	player->plugin_add_pattern(plugin, *pattern);
+	plugin->player->plugin_add_pattern(plugin->id, *pattern);
 }
 
-void zzub_plugin_remove_pattern(zzub_player_t* player, int plugin, int pattern) {
+void zzub_plugin_remove_pattern(zzub_plugin_t *plugin, int pattern) {
 
-	player->plugin_remove_pattern(plugin, pattern);
+	plugin->player->plugin_remove_pattern(plugin->id, pattern);
 }
 
-void zzub_plugin_move_pattern(zzub_player_t* player, int plugin, int index, int newIndex) {
+void zzub_plugin_move_pattern(zzub_plugin_t *plugin, int index, int newIndex) {
 	assert(false);
 }
 
-void zzub_plugin_update_pattern(zzub_player_t *player, int plugin, int index, zzub_pattern_t* pattern) {
-	player->plugin_update_pattern(plugin, index, *pattern);
+void zzub_plugin_update_pattern(zzub_plugin_t *plugin, int index, zzub_pattern_t* pattern) {
+	plugin->player->plugin_update_pattern(plugin->id, index, *pattern);
 }
 
 
-zzub_pattern_t *zzub_plugin_get_pattern(zzub_player_t* player, int plugin, int index) {
+zzub_pattern_t *zzub_plugin_get_pattern(zzub_plugin_t *plugin, int index) {
 	operation_copy_flags flags;
 	flags.copy_plugins = true;
-	player->merge_backbuffer_flags(flags);
-	return new zzub::pattern(*player->back.plugins[plugin]->patterns[index]);
+	plugin->player->merge_backbuffer_flags(flags);
+	return new zzub::pattern(*plugin->player->back.plugins[plugin->id]->patterns[index]);
 }
 
-int zzub_plugin_get_pattern_index(zzub_player_t* player, int plugin, zzub_pattern_t *pattern) {
+int zzub_plugin_get_pattern_index(zzub_plugin_t *plugin, zzub_pattern_t *pattern) {
 
 	operation_copy_flags flags;
 	flags.copy_plugins = true;
-	player->merge_backbuffer_flags(flags);
+	plugin->player->merge_backbuffer_flags(flags);
 
-	for (size_t i = 0; i < player->back.plugins[plugin]->patterns.size(); i++)
-		if (player->back.plugins[plugin]->patterns[i] == pattern) return (int)i;
+	for (size_t i = 0; i < plugin->player->back.plugins[plugin->id]->patterns.size(); i++)
+		if (plugin->player->back.plugins[plugin->id]->patterns[i] == pattern) return (int)i;
 	return -1;
 }
 
 
-int zzub_plugin_get_pattern_by_name(zzub_player_t* player, int plugin, char* name) {
+int zzub_plugin_get_pattern_by_name(zzub_plugin_t *plugin, char* name) {
 	// copy necessary fields to the back buffer (if neccessary) and fetch the value from there
 	// (note to self: separating read/write flags seems appropriate now)
 
 	operation_copy_flags flags;
 	flags.copy_plugins = true;
-	player->merge_backbuffer_flags(flags);
-	for (size_t i = 0; i < player->back.plugins[plugin]->patterns.size(); i++)
-		if (player->back.plugins[plugin]->patterns[i]->name == name) return (int)i;
+	plugin->player->merge_backbuffer_flags(flags);
+	for (size_t i = 0; i < plugin->player->back.plugins[plugin->id]->patterns.size(); i++)
+		if (plugin->player->back.plugins[plugin->id]->patterns[i]->name == name) return (int)i;
 	return -1;
 }
 
-int zzub_plugin_get_pattern_count(zzub_player_t* player, int plugin) {
+int zzub_plugin_get_pattern_count(zzub_plugin_t *plugin) {
 
 	operation_copy_flags flags;
 	flags.copy_plugins = true;
-	player->merge_backbuffer_flags(flags);
-	return (int)player->back.plugins[plugin]->patterns.size();
+	plugin->player->merge_backbuffer_flags(flags);
+	return (int)plugin->player->back.plugins[plugin->id]->patterns.size();
 }
 
-const char* zzub_plugin_get_pattern_name(zzub_player_t *player, int plugin, int index) {
+const char* zzub_plugin_get_pattern_name(zzub_plugin_t *plugin, int index) {
 
 	operation_copy_flags flags;
 	flags.copy_plugins = true;
-	player->merge_backbuffer_flags(flags);
-	return player->back.plugins[plugin]->patterns[index]->name.c_str();
+	plugin->player->merge_backbuffer_flags(flags);
+	return plugin->player->back.plugins[plugin->id]->patterns[index]->name.c_str();
 }
 
-void zzub_plugin_set_pattern_name(zzub_player_t *player, int plugin, int index, const char* name) {
+void zzub_plugin_set_pattern_name(zzub_plugin_t *plugin, int index, const char* name) {
 
-	player->plugin_set_pattern_name(plugin, index, name);
+	plugin->player->plugin_set_pattern_name(plugin->id, index, name);
 }
 
-int zzub_plugin_get_pattern_length(zzub_player_t *player, int plugin, int index) {
+int zzub_plugin_get_pattern_length(zzub_plugin_t *plugin, int index) {
 
 	operation_copy_flags flags;
 	flags.copy_plugins = true;
-	player->merge_backbuffer_flags(flags);
+	plugin->player->merge_backbuffer_flags(flags);
 
-	return player->back.plugins[plugin]->patterns[index]->rows;
+	return plugin->player->back.plugins[plugin->id]->patterns[index]->rows;
 }
 
-void zzub_plugin_set_pattern_length(zzub_player_t *player, int plugin, int index, int rows) {
+void zzub_plugin_set_pattern_length(zzub_plugin_t *plugin, int index, int rows) {
 
-	player->plugin_set_pattern_length(plugin, index, rows);
+	plugin->player->plugin_set_pattern_length(plugin->id, index, rows);
 }
 
-int zzub_plugin_get_pattern_value(zzub_player_t *player, int plugin, int pattern, int group, int track, int column, int row) {
+int zzub_plugin_get_pattern_value(zzub_plugin_t *plugin, int pattern, int group, int track, int column, int row) {
 
 	operation_copy_flags flags;
 	flags.copy_plugins = true;
-	player->merge_backbuffer_flags(flags);
+	plugin->player->merge_backbuffer_flags(flags);
 
-	return player->back.plugins[plugin]->patterns[pattern]->groups[group][track][column][row];
+	return plugin->player->back.plugins[plugin->id]->patterns[pattern]->groups[group][track][column][row];
 }
 
-int zzub_plugin_get_parameter_count(zzub_player_t* player, int plugin, int group, int track) {
-
-	operation_copy_flags flags;
-	flags.copy_graph = true;
-	flags.copy_plugins = true;
-	player->merge_backbuffer_flags(flags);
-
-	return player->back.plugin_get_parameter_count(plugin, group, track);
-}
-
-const zzub_parameter_t* zzub_plugin_get_parameter(zzub_player_t *player, int plugin, int group, int track, int column) {
+int zzub_plugin_get_parameter_count(zzub_plugin_t *plugin, int group, int track) {
 
 	operation_copy_flags flags;
 	flags.copy_graph = true;
 	flags.copy_plugins = true;
-	player->merge_backbuffer_flags(flags);
+	plugin->player->merge_backbuffer_flags(flags);
 
-	return player->back.plugin_get_parameter_info(plugin, group, track, column);
+	return plugin->player->back.plugin_get_parameter_count(plugin->id, group, track);
 }
 
-void zzub_plugin_set_pattern_value(zzub_player_t *player, int plugin, int pattern, int group, int track, int column, int row, int value) {
-	const zzub_parameter_t* param = zzub_plugin_get_parameter(player, plugin, group, track, column);
+const zzub_parameter_t* zzub_plugin_get_parameter(zzub_plugin_t *plugin, int group, int track, int column) {
+
+	operation_copy_flags flags;
+	flags.copy_graph = true;
+	flags.copy_plugins = true;
+	plugin->player->merge_backbuffer_flags(flags);
+
+	return plugin->player->back.plugin_get_parameter_info(plugin->id, group, track, column);
+}
+
+void zzub_plugin_set_pattern_value(zzub_plugin_t *plugin, int pattern, int group, int track, int column, int row, int value) {
+	const zzub_parameter_t* param = zzub_plugin_get_parameter(plugin, group, track, column);
 	assert((value >= param->value_min && value <= param->value_max) || value == param->value_none || (param->type == zzub::parameter_type_note && value == zzub::note_value_off));
 
 
-	player->plugin_set_pattern_value(plugin, pattern, group, track, column, row, value);
+	plugin->player->plugin_set_pattern_value(plugin->id, pattern, group, track, column, row, value);
 }
 
-void zzub_plugin_insert_pattern_rows(zzub_player_t* player, int plugin, int pattern, int* column_indices, int num_indices, int start, int rows) {
+void zzub_plugin_insert_pattern_rows(zzub_plugin_t *plugin, int pattern, int* column_indices, int num_indices, int start, int rows) {
 
-	player->plugin_insert_pattern_rows(plugin, pattern, column_indices, num_indices, start, rows);
+	plugin->player->plugin_insert_pattern_rows(plugin->id, pattern, column_indices, num_indices, start, rows);
 }
 
-void zzub_plugin_remove_pattern_rows(zzub_player_t* player, int plugin, int pattern, int* column_indices, int num_indices, int start, int rows) {
+void zzub_plugin_remove_pattern_rows(zzub_plugin_t *plugin, int pattern, int* column_indices, int num_indices, int start, int rows) {
 
-	player->plugin_remove_pattern_rows(plugin, pattern, column_indices, num_indices, start, rows);
+	plugin->player->plugin_remove_pattern_rows(plugin->id, pattern, column_indices, num_indices, start, rows);
 }
 
 /*void zzub_plugin_set_pattern_values(zzub_player_t* player, int plugin, int pattern, int target_row, zzub_pattern_t* src_pattern, int* mappings, int mappings_count) {
@@ -1146,128 +1108,130 @@ void zzub_plugin_remove_pattern_rows(zzub_player_t* player, int plugin, int patt
 }*/
 
 
-int zzub_plugin_get_parameter_value(zzub_player_t* player, int plugin, int group, int track, int column) {
+int zzub_plugin_get_parameter_value(zzub_plugin_t *plugin, int group, int track, int column) {
 
 	operation_copy_flags flags;
 	flags.copy_graph = true;
 	flags.copy_plugins = true;
-	player->merge_backbuffer_flags(flags);
+	plugin->player->merge_backbuffer_flags(flags);
 
-	return player->back.plugin_get_parameter(plugin, group, track, column);
+	return plugin->player->back.plugin_get_parameter(plugin->id, group, track, column);
 }
 
-void zzub_plugin_set_parameter_value(zzub_player_t* player, int plugin, int group, int track, int column, int value, int record) {
+void zzub_plugin_set_parameter_value(zzub_plugin_t *plugin, int group, int track, int column, int value, int record) {
 	// NOTE: users of zzub have no way to set a parameter with undo
-	player->plugin_set_parameter(plugin, group, track, column, value, record?true:false, false, false);
+	plugin->player->plugin_set_parameter(plugin->id, group, track, column, value, record?true:false, false, false);
 }
 
-void zzub_plugin_set_parameter_value_direct(zzub_player_t* player, int plugin, int group, int track, int column, int value, int record) {
-	player->plugin_set_parameter(plugin, group, track, column, value, record?true:false, true, false);
+void zzub_plugin_set_parameter_value_direct(zzub_plugin_t *plugin, int group, int track, int column, int value, int record) {
+	plugin->player->plugin_set_parameter(plugin->id, group, track, column, value, record?true:false, true, false);
 }
 
-void zzub_plugin_get_position(zzub_player_t* player, int plugin, float* x, float *y) {
+void zzub_plugin_get_position(zzub_plugin_t *plugin, float* x, float *y) {
 
 	operation_copy_flags flags;
 	flags.copy_plugins = true;
-	player->merge_backbuffer_flags(flags);
+	plugin->player->merge_backbuffer_flags(flags);
 
-	*x = player->back.plugins[plugin]->x;
-	*y = player->back.plugins[plugin]->y;
+	*x = plugin->player->back.plugins[plugin->id]->x;
+	*y = plugin->player->back.plugins[plugin->id]->y;
 }
 
-void zzub_plugin_set_position(zzub_player_t* player, int plugin, float x, float y) {
+void zzub_plugin_set_position(zzub_plugin_t *plugin, float x, float y) {
 
-	player->plugin_set_position(plugin, x, y);
+	plugin->player->plugin_set_position(plugin->id, x, y);
 }
 
-void zzub_plugin_set_position_direct(zzub_player_t *player, int plugin, float x, float y) {
+void zzub_plugin_set_position_direct(zzub_plugin_t *plugin, float x, float y) {
 
 	operation_copy_flags flags;
 	flags.copy_plugins = true;
-	player->merge_backbuffer_flags(flags);
+	plugin->player->merge_backbuffer_flags(flags);
 
-	player->back.plugins[plugin]->x = x;
-	player->back.plugins[plugin]->y = y;
+	plugin->player->back.plugins[plugin->id]->x = x;
+	plugin->player->back.plugins[plugin->id]->y = y;
 }
 
-int zzub_plugin_get_input_connection_count(zzub_player_t *player, int plugin) {
+int zzub_plugin_get_input_connection_count(zzub_plugin_t *plugin) {
 
 	operation_copy_flags flags;
 	flags.copy_graph = true;
 	flags.copy_plugins = true;
-	player->merge_backbuffer_flags(flags);
+	plugin->player->merge_backbuffer_flags(flags);
 	
-	return player->back.plugin_get_input_connection_count(plugin);
+	return plugin->player->back.plugin_get_input_connection_count(plugin->id);
 }
 
-int zzub_plugin_get_input_connection_by_type(zzub_player_t *player, int plugin, int from_plugin, int type) {
+int zzub_plugin_get_input_connection_by_type(zzub_plugin_t *to_plugin, zzub_plugin_t* from_plugin, int type) {
 
 	operation_copy_flags flags;
 	flags.copy_graph = true;
 	flags.copy_plugins = true;
-	player->merge_backbuffer_flags(flags);
+	to_plugin->player->merge_backbuffer_flags(flags);
 
-	return player->back.plugin_get_input_connection_index(plugin, from_plugin, (connection_type)type);
+	return to_plugin->player->back.plugin_get_input_connection_index(to_plugin->id, from_plugin->id, (connection_type)type);
 }
 
-int zzub_plugin_get_input_connection_type(zzub_player_t *player, int plugin, int index) {
+int zzub_plugin_get_input_connection_type(zzub_plugin_t *plugin, int index) {
 
 	operation_copy_flags flags;
 	flags.copy_graph = true;
 	flags.copy_plugins = true;
-	player->merge_backbuffer_flags(flags);
+	plugin->player->merge_backbuffer_flags(flags);
 
-	return player->back.plugin_get_input_connection_type(plugin, index);
+	return plugin->player->back.plugin_get_input_connection_type(plugin->id, index);
 }
 
-int zzub_plugin_get_input_connection_plugin(zzub_player_t *player, int plugin, int index) {
+zzub_plugin_t* zzub_plugin_get_input_connection_plugin(zzub_plugin_t *plugin, int index) {
 
 	operation_copy_flags flags;
 	flags.copy_graph = true;
 	flags.copy_plugins = true;
-	player->merge_backbuffer_flags(flags);
+	plugin->player->merge_backbuffer_flags(flags);
 
-	return player->back.plugin_get_input_connection_plugin(plugin, index);
+	int id = plugin->player->back.plugin_get_input_connection_plugin(plugin->id, index);
+	return plugin->player->back.plugins[id]->proxy;
 }
 
-int zzub_plugin_get_output_connection_count(zzub_player_t *player, int plugin) {
+int zzub_plugin_get_output_connection_count(zzub_plugin_t *plugin) {
 
 	operation_copy_flags flags;
 	flags.copy_graph = true;
 	flags.copy_plugins = true;
-	player->merge_backbuffer_flags(flags);
+	plugin->player->merge_backbuffer_flags(flags);
 
-	return player->back.plugin_get_output_connection_count(plugin);
+	return plugin->player->back.plugin_get_output_connection_count(plugin->id);
 }
 
-int zzub_plugin_get_output_connection_by_type(zzub_player_t *player, int plugin, int from_plugin, int type) {
+int zzub_plugin_get_output_connection_by_type(zzub_plugin_t *to_plugin, zzub_plugin_t* from_plugin, int type) {
 
 	operation_copy_flags flags;
 	flags.copy_graph = true;
 	flags.copy_plugins = true;
-	player->merge_backbuffer_flags(flags);
+	to_plugin->player->merge_backbuffer_flags(flags);
 
-	return player->back.plugin_get_output_connection_index(plugin, from_plugin, (connection_type)type);
+	return to_plugin->player->back.plugin_get_output_connection_index(to_plugin->id, from_plugin->id, (connection_type)type);
 }
 
-int zzub_plugin_get_output_connection_type(zzub_player_t *player, int plugin, int index) {
+int zzub_plugin_get_output_connection_type(zzub_plugin_t *plugin, int index) {
 
 	operation_copy_flags flags;
 	flags.copy_graph = true;
 	flags.copy_plugins = true;
-	player->merge_backbuffer_flags(flags);
+	plugin->player->merge_backbuffer_flags(flags);
 
-	return player->back.plugin_get_output_connection_type(plugin, index);
+	return plugin->player->back.plugin_get_output_connection_type(plugin->id, index);
 }
 
-int zzub_plugin_get_output_connection_plugin(zzub_player_t *player, int plugin, int index) {
+zzub_plugin_t* zzub_plugin_get_output_connection_plugin(zzub_plugin_t *plugin, int index) {
 
 	operation_copy_flags flags;
 	flags.copy_graph = true;
 	flags.copy_plugins = true;
-	player->merge_backbuffer_flags(flags);
+	plugin->player->merge_backbuffer_flags(flags);
 
-	return player->back.plugin_get_output_connection_plugin(plugin, index);
+	int id = plugin->player->back.plugin_get_output_connection_plugin(plugin->id, index);
+	return plugin->player->back.plugins[id]->proxy;
 }
 
 int zzub_connection_get_parameter_count(zzub_player_t *player, int plugin, int from_plugin) {
@@ -1280,43 +1244,43 @@ const zzub_parameter_t* zzub_connection_get_parameter(zzub_player_t *player, int
 	return 0;
 }
 
-void zzub_plugin_get_last_peak(zzub_player_t *player, int plugin, float *maxL, float *maxR) {
-	*maxL = player->front.plugins[plugin]->last_work_max_left;
-	*maxR = player->front.plugins[plugin]->last_work_max_right;
+void zzub_plugin_get_last_peak(zzub_plugin_t *plugin, float *maxL, float *maxR) {
+	*maxL = plugin->player->front.plugins[plugin->id]->last_work_max_left;
+	*maxR = plugin->player->front.plugins[plugin->id]->last_work_max_right;
 }
 
-int zzub_plugin_add_input(zzub_player_t *player, int to_plugin, int from_plugin, int type) {
+int zzub_plugin_add_input(zzub_plugin_t *to_plugin, zzub_plugin_t* from_plugin, int type) {
 
-	bool result = player->plugin_add_input(to_plugin, from_plugin, (zzub::connection_type)type);
+	bool result = to_plugin->player->plugin_add_input(to_plugin->id, from_plugin->id, (zzub::connection_type)type);
 	return result ? 0 : -1;
 }
 
-void zzub_plugin_delete_input(zzub_player_t *player, int to_plugin, int from_plugin, int type) {
+void zzub_plugin_delete_input(zzub_plugin_t *to_plugin, zzub_plugin_t* from_plugin, int type) {
 
-	player->plugin_delete_input(to_plugin, from_plugin, (zzub::connection_type)type);
+	to_plugin->player->plugin_delete_input(to_plugin->id, from_plugin->id, (zzub::connection_type)type);
 }
 
-int zzub_plugin_get_track_count(zzub_player_t *player, int plugin) {
+int zzub_plugin_get_track_count(zzub_plugin_t *plugin) {
 
 	operation_copy_flags flags;
 	flags.copy_plugins = true;
-	player->merge_backbuffer_flags(flags);
-	return player->back.plugins[plugin]->tracks;
+	plugin->player->merge_backbuffer_flags(flags);
+	return plugin->player->back.plugins[plugin->id]->tracks;
 }
 
-void zzub_plugin_set_track_count(zzub_player_t *player, int plugin, int tracks) {
+void zzub_plugin_set_track_count(zzub_plugin_t *plugin, int tracks) {
 
-	player->plugin_set_track_count(plugin, tracks);
+	plugin->player->plugin_set_track_count(plugin->id, tracks);
 }
 
-int zzub_plugin_pattern_to_linear_no_connections(zzub_player_t *player, int plugin, int group, int track, int column, int* index) {
+int zzub_plugin_pattern_to_linear_no_connections(zzub_plugin_t *plugin, int group, int track, int column, int* index) {
 
 
 	operation_copy_flags flags;
 	flags.copy_plugins = true;
-	player->merge_backbuffer_flags(flags);
+	plugin->player->merge_backbuffer_flags(flags);
 
-	const zzub::info* info = player->back.plugins[plugin]->info;
+	const zzub::info* info = plugin->player->back.plugins[plugin->id]->info;
 
 	switch (group) {
 		case 0:
@@ -1338,7 +1302,7 @@ int zzub_plugin_pattern_to_linear_no_connections(zzub_player_t *player, int plug
 	//return player->plugin_pattern_to_linear(plugin, group, track, column, *index);
 }
 
-int zzub_plugin_describe_value(zzub_player_t *player, int plugin, int group, int column, int value, char* name, int maxlen) {
+int zzub_plugin_describe_value(zzub_plugin_t *plugin, int group, int column, int value, char* name, int maxlen) {
 	if (group == 0) {
 		if (column == 0) {
 			// buzz writes this as "-X.Y dB (Z%)"
@@ -1372,16 +1336,16 @@ int zzub_plugin_describe_value(zzub_player_t *player, int plugin, int group, int
 	operation_copy_flags flags;
 	flags.copy_plugins = true;
 	flags.copy_graph = true;
-	player->merge_backbuffer_flags(flags);
+	plugin->player->merge_backbuffer_flags(flags);
 
 	int index = -1;
-	zzub_plugin_pattern_to_linear_no_connections(player, plugin, group, 0, column, &index);
+	zzub_plugin_pattern_to_linear_no_connections(plugin, group, 0, column, &index);
 
-	const parameter* para = player->back.plugin_get_parameter_info(plugin, group, 0, column);
+	const parameter* para = plugin->player->back.plugin_get_parameter_info(plugin->id, group, 0, column);
 	if (index != -1) {
 		if (value != getNoValue(para)) {	// infector crashen when trying to describe novalues (and out-of-range-values)
 			
-			const char* str = player->back.plugins[plugin]->plugin->describe_value(index, value);
+			const char* str = plugin->player->back.plugins[plugin->id]->plugin->describe_value(index, value);
 			if (str != 0) {
 				strncpy(name, str, maxlen);
 				return strlen(str);
@@ -1392,77 +1356,77 @@ int zzub_plugin_describe_value(zzub_player_t *player, int plugin, int group, int
 	return 0;
 }
 
-int zzub_plugin_get_mute(zzub_player_t* player, int plugin) {
-	if (plugin >= player->front.plugins.size() || player->front.plugins[plugin] == 0) return 0;
-	return player->front.plugins[plugin]->is_muted?1:0;
+int zzub_plugin_get_mute(zzub_plugin_t *plugin) {
+	if (plugin->id >= plugin->player->front.plugins.size() || plugin->player->front.plugins[plugin->id] == 0) return 0;
+	return plugin->player->front.plugins[plugin->id]->is_muted?1:0;
 }
 
-void zzub_plugin_set_mute(zzub_player_t* player, int plugin, int muted) {
-	if (plugin >= player->front.plugins.size() || player->front.plugins[plugin] == 0) return ;
-	player->front.plugins[plugin]->is_muted = muted?true:false;
+void zzub_plugin_set_mute(zzub_plugin_t *plugin, int muted) {
+	if (plugin->id >= plugin->player->front.plugins.size() || plugin->player->front.plugins[plugin->id] == 0) return ;
+	plugin->player->front.plugins[plugin->id]->is_muted = muted?true:false;
 }
 
-int zzub_plugin_get_bypass(zzub_player_t *player, int plugin) {
-	if (plugin >= player->front.plugins.size() || player->front.plugins[plugin] == 0) return 0;
-	return player->front.plugins[plugin]->is_bypassed?1:0;
+int zzub_plugin_get_bypass(zzub_plugin_t *plugin) {
+	if (plugin->id >= plugin->player->front.plugins.size() || plugin->player->front.plugins[plugin->id] == 0) return 0;
+	return plugin->player->front.plugins[plugin->id]->is_bypassed?1:0;
 }
 
-void zzub_plugin_set_bypass(zzub_player_t *player, int plugin, int muted) {
-	if (plugin >= player->front.plugins.size() || player->front.plugins[plugin] == 0) return ;
-	player->front.plugins[plugin]->is_bypassed = muted?true:false;
+void zzub_plugin_set_bypass(zzub_plugin_t *plugin, int muted) {
+	if (plugin->id >= plugin->player->front.plugins.size() || plugin->player->front.plugins[plugin->id] == 0) return ;
+	plugin->player->front.plugins[plugin->id]->is_bypassed = muted?true:false;
 }
 
-int zzub_plugin_invoke_event(zzub_player_t* player, int plugin, zzub_event_data_t *data, int immediate) {
-	assert(plugin < player->front.plugins.size() && player->front.plugins[plugin] != 0);
-	return player->front.plugin_invoke_event(plugin, *data, immediate?true:false)?0:-1;
+int zzub_plugin_invoke_event(zzub_plugin_t *plugin, zzub_event_data_t *data, int immediate) {
+	assert(plugin->id < plugin->player->front.plugins.size() && plugin->player->front.plugins[plugin->id] != 0);
+	return plugin->player->front.plugin_invoke_event(plugin->id, *data, immediate?true:false)?0:-1;
 }
 
-double zzub_plugin_get_last_worktime(zzub_player_t* player, int plugin) {
-	if (plugin >= player->front.plugins.size() || player->front.plugins[plugin] == 0) return 0.0f;
-	return player->front.plugins[plugin]->last_work_time;
+double zzub_plugin_get_last_worktime(zzub_plugin_t *plugin) {
+	if (plugin->id >= plugin->player->front.plugins.size() || plugin->player->front.plugins[plugin->id] == 0) return 0.0f;
+	return plugin->player->front.plugins[plugin->id]->last_work_time;
 }
 
-double zzub_plugin_get_last_cpu_load(zzub_player_t* player, int plugin) {
-	if (plugin >= player->front.plugins.size() || player->front.plugins[plugin] == 0) return 0.0f;
-	return player->front.plugins[plugin]->cpu_load;
+double zzub_plugin_get_last_cpu_load(zzub_plugin_t *plugin) {
+	if (plugin->id >= plugin->player->front.plugins.size() || plugin->player->front.plugins[plugin->id] == 0) return 0.0f;
+	return plugin->player->front.plugins[plugin->id]->cpu_load;
 }
 
-int zzub_plugin_get_last_audio_result(zzub_player_t* player, int plugin) {
-	if (plugin >= player->front.plugins.size() || player->front.plugins[plugin] == 0) return 0;
-	return player->front.plugins[plugin]->last_work_audio_result?1:0;
+int zzub_plugin_get_last_audio_result(zzub_plugin_t *plugin) {
+	if (plugin->id >= plugin->player->front.plugins.size() || plugin->player->front.plugins[plugin->id] == 0) return 0;
+	return plugin->player->front.plugins[plugin->id]->last_work_audio_result?1:0;
 }
 
-int zzub_plugin_get_last_midi_result(zzub_player_t* player, int plugin) {
-	if (plugin >= player->front.plugins.size() || player->front.plugins[plugin] == 0) return 0;
-	return player->front.plugins[plugin]->last_work_midi_result?1:0;
+int zzub_plugin_get_last_midi_result(zzub_plugin_t *plugin) {
+	if (plugin->id >= plugin->player->front.plugins.size() || plugin->player->front.plugins[plugin->id] == 0) return 0;
+	return plugin->player->front.plugins[plugin->id]->last_work_midi_result?1:0;
 }
 
-void zzub_plugin_tick(zzub_player_t* player, int plugin) {
-	assert(plugin < player->front.plugins.size() && player->front.plugins[plugin] != 0);
-	player->front.process_plugin_events(plugin);
+void zzub_plugin_tick(zzub_plugin_t *plugin) {
+	assert(plugin->id < plugin->player->front.plugins.size() && plugin->player->front.plugins[plugin->id] != 0);
+	plugin->player->front.process_plugin_events(plugin->id);
 }
 
-int zzub_plugin_get_attribute_value(zzub_player_t* player, int plugin, int index) {
+int zzub_plugin_get_attribute_value(zzub_plugin_t *plugin, int index) {
 
 	operation_copy_flags flags;
 	flags.copy_plugins = true;
-	player->merge_backbuffer_flags(flags);
+	plugin->player->merge_backbuffer_flags(flags);
 
-	return player->back.plugins[plugin]->plugin->attributes[index];//machine->getAttributeValue((size_t)index);
+	return plugin->player->back.plugins[plugin->id]->plugin->attributes[index];//machine->getAttributeValue((size_t)index);
 }
 
-void zzub_plugin_set_attribute_value(zzub_player_t* player, int plugin, int index, int value) {
+void zzub_plugin_set_attribute_value(zzub_plugin_t *plugin, int index, int value) {
 
 	operation_copy_flags flags;
 	flags.copy_plugins = true;
-	player->merge_backbuffer_flags(flags);
+	plugin->player->merge_backbuffer_flags(flags);
 
-	metaplugin& m = *player->back.plugins[plugin];
+	metaplugin& m = *plugin->player->back.plugins[plugin->id];
 	m.plugin->attributes[index] = value;
 	m.plugin->attributes_changed();
 }
 
-int zzub_plugin_get_mixbuffer(zzub_player_t* player, int plugin, float *leftbuffer, float *rightbuffer, int *size, long long *samplepos) {
+int zzub_plugin_get_mixbuffer(zzub_plugin_t *plugin, float *leftbuffer, float *rightbuffer, int *size, long long *samplepos) {
 	assert(false);
 	return -1;
 	/*if (plugin >= player->front.plugins.size() || player->front.plugins[plugin] == 0) return -1;
@@ -1486,36 +1450,36 @@ int zzub_plugin_get_mixbuffer(zzub_player_t* player, int plugin, float *leftbuff
 	return -1;*/
 }
 
-void zzub_plugin_play_midi_note(zzub_player_t* player, int plugin_id, int note, int prevNote, int velocity) {
-	player->play_plugin_note(plugin_id, note, prevNote, velocity);
+void zzub_plugin_play_midi_note(zzub_plugin_t *plugin, int note, int prevNote, int velocity) {
+	plugin->player->play_plugin_note(plugin->id, note, prevNote, velocity);
 }
 
-void zzub_plugin_play_pattern_row_ref(zzub_player_t *player, int plugin, int pattern, int row) {
-	zzub_plugin_play_pattern_row(player, plugin, player->front.plugins[plugin]->patterns[pattern], row);
+void zzub_plugin_play_pattern_row_ref(zzub_plugin_t *plugin, int pattern, int row) {
+	zzub_plugin_play_pattern_row(plugin, plugin->player->front.plugins[plugin->id]->patterns[pattern], row);
 }
 
-void zzub_plugin_play_pattern_row(zzub_player_t *player, int plugin, zzub_pattern_t* pattern, int row) {
+void zzub_plugin_play_pattern_row(zzub_plugin_t *plugin, zzub_pattern_t* pattern, int row) {
 	if (pattern->rows == 0) return ;
 
-	op_plugin_set_parameters_and_tick o(plugin, *pattern, row, false);
-	player->backbuffer_operations.push_back(&o);
-	o.prepare(player->back);
-	player->flush_operations(0, 0);
+	op_plugin_set_parameters_and_tick o(plugin->id, *pattern, row, false);
+	plugin->player->backbuffer_operations.push_back(&o);
+	o.prepare(plugin->player->back);
+	plugin->player->flush_operations(0, 0);
 	//player->execute_single_operation(&o);
 }
 
 
-int zzub_plugin_linear_to_pattern(zzub_player_t *player, int plugin, int index, int* group, int* track, int* column) {
+int zzub_plugin_linear_to_pattern(zzub_plugin_t *plugin, int index, int* group, int* track, int* column) {
 	operation_copy_flags flags;
 	flags.copy_plugins = true;
 	flags.copy_graph = true;
-	player->merge_backbuffer_flags(flags);
+	plugin->player->merge_backbuffer_flags(flags);
 
-	const zzub::info* info = player->back.plugins[plugin]->info;
+	const zzub::info* info = plugin->player->back.plugins[plugin->id]->info;
 
 	int numconnparams = 0;
-	for (int i = 0; i < player->back.plugin_get_input_connection_count(plugin); i++) {
-		int numconnparamtrack = zzub_plugin_get_parameter_count(player, plugin, 0, i);
+	for (int i = 0; i < plugin->player->back.plugin_get_input_connection_count(plugin->id); i++) {
+		int numconnparamtrack = zzub_plugin_get_parameter_count(plugin, 0, i);
 		if (index < numconnparams + numconnparamtrack) {
 			*group = 0;
 			*track = i;
@@ -1539,7 +1503,7 @@ int zzub_plugin_linear_to_pattern(zzub_player_t *player, int plugin, int index, 
 	if (!info->track_parameters.size()) return 0;
 
 	int t = index / info->track_parameters.size();
-	if (t >= player->back.plugins[plugin]->tracks) return 0;
+	if (t >= plugin->player->back.plugins[plugin->id]->tracks) return 0;
 
 	*group = 2;
 	*track = t;
@@ -1547,17 +1511,17 @@ int zzub_plugin_linear_to_pattern(zzub_player_t *player, int plugin, int index, 
 	return 1;
 }
 
-int zzub_plugin_pattern_to_linear(zzub_player_t *player, int plugin, int group, int track, int column, int* index) {
+int zzub_plugin_pattern_to_linear(zzub_plugin_t *plugin, int group, int track, int column, int* index) {
 	operation_copy_flags flags;
 	flags.copy_plugins = true;
 	flags.copy_graph = true;
-	player->merge_backbuffer_flags(flags);
+	plugin->player->merge_backbuffer_flags(flags);
 
-	const zzub::info* info = player->back.plugins[plugin]->info;
+	const zzub::info* info = plugin->player->back.plugins[plugin->id]->info;
 
 	int numconnparams = 0;
-	for (int i = 0; i < player->back.plugin_get_input_connection_count(plugin); i++) {
-		int numconnparamtrack = zzub_plugin_get_parameter_count(player, plugin, 0, i);
+	for (int i = 0; i < plugin->player->back.plugin_get_input_connection_count(plugin->id); i++) {
+		int numconnparamtrack = zzub_plugin_get_parameter_count(plugin, 0, i);
 
 		if (group == 0 && track == i) {
 			*index = numconnparams + column;
@@ -1586,29 +1550,29 @@ int zzub_plugin_pattern_to_linear(zzub_player_t *player, int plugin, int group, 
 }
 
 
-int zzub_plugin_get_pattern_column_count(zzub_player_t *player, int plugin) {
+int zzub_plugin_get_pattern_column_count(zzub_plugin_t *plugin) {
 
 	operation_copy_flags flags;
 	flags.copy_graph = true;
 	flags.copy_plugins = true;
-	player->merge_backbuffer_flags(flags);
+	plugin->player->merge_backbuffer_flags(flags);
 
-	const zzub::info* info = player->back.plugins[plugin]->info;
+	const zzub::info* info = plugin->player->back.plugins[plugin->id]->info;
 
 	int numconnparams = 0;
-	for (int i = 0; i < player->back.plugin_get_input_connection_count(plugin); i++)
-		numconnparams += zzub_plugin_get_parameter_count(player, plugin, 0, i);
+	for (int i = 0; i < plugin->player->back.plugin_get_input_connection_count(plugin->id); i++)
+		numconnparams += zzub_plugin_get_parameter_count(plugin, 0, i);
 
-	return numconnparams + info->global_parameters.size() + info->track_parameters.size() * player->back.plugins[plugin]->tracks;
+	return numconnparams + info->global_parameters.size() + info->track_parameters.size() * plugin->player->back.plugins[plugin->id]->tracks;
 }
 
-int zzub_plugin_set_instrument(zzub_player_t *player, int plugin, const char *name) {
+int zzub_plugin_set_instrument(zzub_plugin_t *plugin, const char *name) {
 
 	operation_copy_flags flags;
 	flags.copy_plugins = true;
-	player->merge_backbuffer_flags(flags);
+	plugin->player->merge_backbuffer_flags(flags);
 
-	return player->back.plugins[plugin]->plugin->set_instrument(name) ? 0 : -1;
+	return plugin->player->back.plugins[plugin->id]->plugin->set_instrument(name) ? 0 : -1;
 }
 
 /***
@@ -1694,7 +1658,7 @@ int zzub_sequence_get_event_action(zzub_player_t *player, int index, int action,
 	return 0;
 }
 
-int zzub_sequence_get_plugin(zzub_player_t *player, int track) {
+zzub_plugin_t* zzub_sequence_get_plugin(zzub_player_t *player, int track) {
 
 	operation_copy_flags flags;
 	flags.copy_sequencer_track_order = true;
@@ -1702,12 +1666,13 @@ int zzub_sequence_get_plugin(zzub_player_t *player, int track) {
 	player->merge_backbuffer_flags(flags);
 
 	plugin_descriptor plugindesc = (plugin_descriptor)player->back.sequencer_tracks[track];
-	return player->back.graph[plugindesc].id;
+	int id = player->back.graph[plugindesc].id;
+	return zzub_player_get_plugin_by_id(player, id);
 }
 
-void zzub_sequence_create_track(zzub_player_t *player, int plugin_id) {
+void zzub_sequence_create_track(zzub_player_t *player, zzub_plugin_t* plugin) {
 
-	player->sequencer_add_track(plugin_id);
+	player->sequencer_add_track(plugin->id);
 }
 
 void zzub_sequence_remove_track(zzub_player_t *player, int index) {
@@ -1734,7 +1699,7 @@ int zzub_sequence_remove_events(zzub_player_t *player, int* track_indices, int n
 
 //	Pattern methods
 
-zzub_pattern_t *zzub_plugin_create_pattern(zzub_player_t* player, int plugin_id, int rows) {
+zzub_pattern_t *zzub_plugin_create_pattern(zzub_plugin_t *plugin, int rows) {
 	// copy necessary fields to back buffer and create pattern there
 	operation_copy_flags flags;
 	flags.copy_graph = true;
@@ -1742,11 +1707,11 @@ zzub_pattern_t *zzub_plugin_create_pattern(zzub_player_t* player, int plugin_id,
 
 	operation_copy_plugin_flags plugin_flags;
 	plugin_flags.copy_plugin = true;
-	plugin_flags.plugin_id = plugin_id;
+	plugin_flags.plugin_id = plugin->id;
 	flags.plugin_flags.push_back(plugin_flags);
-	player->merge_backbuffer_flags(flags);
+	plugin->player->merge_backbuffer_flags(flags);
 
-	return new zzub::pattern(player->back.create_pattern(plugin_id, rows));
+	return new zzub::pattern(plugin->player->back.create_pattern(plugin->id, rows));
 }
 
 zzub_pattern_t *zzub_plugin_create_range_pattern(zzub_player_t *player, int columns, int rows) {
@@ -1766,7 +1731,7 @@ void zzub_pattern_destroy(zzub_pattern_t *pattern) {
 	delete pattern;
 }
 
-void zzub_plugin_get_new_pattern_name(zzub_player_t* player, int plugin, char* name, int maxLen) {
+void zzub_plugin_get_new_pattern_name(zzub_plugin_t *plugin, char* name, int maxLen) {
 	std::stringstream strm;
 	for (int i = 0; i < 9999; i++) {
 		if (i < 100)
@@ -1778,7 +1743,7 @@ void zzub_plugin_get_new_pattern_name(zzub_player_t* player, int plugin, char* n
 		if (i < 100000)
 			strm << std::setw(5) << std::setfill('0') << i;
 
-		int p = zzub_plugin_get_pattern_by_name(player, plugin, const_cast<char*>(strm.str().c_str()));
+		int p = zzub_plugin_get_pattern_by_name(plugin, const_cast<char*>(strm.str().c_str()));
 		if (p != -1) {
 			strm.str("");
 			continue;
@@ -2447,7 +2412,7 @@ void zzub_wavetable_get_samples_digest(zzub_player_t* player, int wave, int leve
 	else
 	{
 		for (int i = 0; i < digestsize; ++i) {
-			int s = (int)(blockstart + i * sps + 0.5f);
+			int s = (int)(blockstart + i * sps /* + 0.5f */);
 			int offset = (s*channels + channel)*bps;
 			int isample = 0;
 			switch (bps) {

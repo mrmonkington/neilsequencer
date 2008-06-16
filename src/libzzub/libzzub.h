@@ -150,7 +150,7 @@ int zzub_player_load_bmx(zzub_player_t *player, zzub_input_t* datastream, char* 
 
 plugins is an array of ints containing the plugin ids to save in the song. If plugins is NULL,
 everything in the running graph is saved. Optionally without waves, when save_waves is zero. */
-int zzub_player_save_bmx(zzub_player_t *player, int* plugins, int num_plugins, int save_waves, zzub_output_t* datastream);
+int zzub_player_save_bmx(zzub_player_t *player, zzub_plugin_t** plugins, int num_plugins, int save_waves, zzub_output_t* datastream);
 
 /** \brief Load a project in CCM file format from disk. */
 int zzub_player_load_ccm(zzub_player_t *player, const char* fileName);
@@ -184,11 +184,14 @@ int zzub_player_get_plugin_count(zzub_player_t *player);
 
 //zzub_plugin_t *zzub_player_get_plugin(zzub_player_t *player, int index);
 
-/** \brief Returns the plugin index given the plugins name. */
-int zzub_player_get_plugin_by_name(zzub_player_t *player, const char* name);
+/** \brief Returns the plugin object given the plugins name. */
+zzub_plugin_t* zzub_player_get_plugin_by_name(zzub_player_t *player, const char* name);
 
-/** \brief Returns the plugin index given the plugin id. See also zzub_plugin_get_id(). */
-int zzub_player_get_plugin_by_id(zzub_player_t *player, int id);
+/** \brief Returns the plugin object given the plugin id. See also zzub_plugin_get_id(). */
+zzub_plugin_t* zzub_player_get_plugin_by_id(zzub_player_t *player, int id);
+
+/** \brief Returns the plugin object given the plugins index in the graph. */
+zzub_plugin_t* zzub_player_get_plugin(zzub_player_t* player, int index);
 
 float** zzub_player_work_stereo(zzub_player_t *player, int* numSamples);
 void zzub_player_clear(zzub_player_t *player);
@@ -212,10 +215,10 @@ int zzub_player_get_loop_enabled(zzub_player_t *player);
 int zzub_player_get_sequence_track_count(zzub_player_t *player);
 
 /** \brief Retreive the currently playing pattern and row for a plugin. */
-int zzub_player_get_currently_playing_pattern(zzub_player_t* player, int plugin, int* pattern, int* row);
+int zzub_player_get_currently_playing_pattern(zzub_plugin_t *plugin, int* pattern, int* row);
 
 /** \brief Retreive the currently playing row for a plugin and a pattern. */
-int zzub_player_get_currently_playing_pattern_row(zzub_player_t* player, int plugin, int pattern, int* row);
+int zzub_player_get_currently_playing_pattern_row(zzub_plugin_t *plugin, int pattern, int* row);
 
 int zzub_player_get_wave_count(zzub_player_t* player);
 
@@ -233,8 +236,8 @@ void zzub_player_set_callback(zzub_player_t* player, ZzubCallback callback, void
 	or on idle processing to receive events about parameter changes etc. */
 void zzub_player_handle_events(zzub_player_t* player);
 
-zzub_midimapping_t *zzub_player_add_midimapping(zzub_player_t* player, int plugin, int group, int track, int param, int channel, int controller);
-int zzub_player_remove_midimapping(zzub_player_t* player, int plugin, int group, int track, int param);
+zzub_midimapping_t *zzub_player_add_midimapping(zzub_plugin_t *plugin, int group, int track, int param, int channel, int controller);
+int zzub_player_remove_midimapping(zzub_plugin_t *plugin, int group, int track, int param);
 zzub_midimapping_t *zzub_player_get_midimapping(zzub_player_t* player, int index);
 int zzub_player_get_midimapping_count(zzub_player_t* player);
 
@@ -248,9 +251,9 @@ void zzub_player_set_infotext(zzub_player_t *player, const char *text);
 
 /** \brief Sets the plugin to receive MIDI data if the plugin's internal MIDI 
 	channel is set to the special channel 17 ("Play if selected"). */
-void zzub_player_set_midi_plugin(zzub_player_t *player, int plugin);
+void zzub_player_set_midi_plugin(zzub_player_t *player, zzub_plugin_t *plugin);
 
-int zzub_player_get_midi_plugin(zzub_player_t *player);
+zzub_plugin_t* zzub_player_get_midi_plugin(zzub_player_t *player);
 
 /** \brief Generates a new plugin name that can be used in a call to zzub_player_create_plugin(). */
 void zzub_player_get_new_plugin_name(zzub_player_t *player, const char* uri, char* name, int maxLen);
@@ -380,84 +383,84 @@ int zzub_attribute_get_value_default(const zzub_attribute_t *attrib);
 /*@{*/
 
 /** \brief Create a new plugin */
-int zzub_player_create_plugin(zzub_player_t *player, zzub_input_t *input, int dataSize, const char* instanceName, zzub_pluginloader_t* loader);
+zzub_plugin_t* zzub_player_create_plugin(zzub_player_t *player, zzub_input_t *input, int dataSize, const char* instanceName, zzub_pluginloader_t* loader);
 
 /** \brief Deletes a plugin */
-int zzub_plugin_destroy(zzub_player_t *player, int plugin);
+int zzub_plugin_destroy(zzub_plugin_t *plugin);
 
 /** \brief Load plugin state. */
-int zzub_plugin_load(zzub_player_t *player, int plugin, zzub_input_t *input);
+int zzub_plugin_load(zzub_plugin_t *plugin, zzub_input_t *input);
 
 /** \brief Save plugin state. */
-int zzub_plugin_save(zzub_player_t *player, int plugin, zzub_output_t *ouput);
+int zzub_plugin_save(zzub_plugin_t *plugin, zzub_output_t *ouput);
 
 /** \brief Renames a plugin. Should fail and return -1 if the name already exists. */
-int zzub_plugin_set_name(zzub_player_t *player, int plugin, char* name);
+int zzub_plugin_set_name(zzub_plugin_t *plugin, char* name);
 
 /** \brief Retreive the name of a plugin. */
-int zzub_plugin_get_name(zzub_player_t *player, int plugin, char* name, int maxlen);
+int zzub_plugin_get_name(zzub_plugin_t *plugin, char* name, int maxlen);
 
 /** \brief Retreive the unique per-session id of a plugin. See also zzub_player_get_plugin_by_id(). */
-int zzub_plugin_get_id(zzub_player_t *player, int plugin);
+int zzub_plugin_get_id(zzub_plugin_t *plugin);
 
 /** \brief Returns the screen position coordinates for the plugin. Values are expected to be in the range -1..1. */
-void zzub_plugin_get_position(zzub_player_t *player, int plugin, float* x, float *y);
+void zzub_plugin_get_position(zzub_plugin_t *plugin, float* x, float *y);
 
 /** \brief Sets the plugin screen position. Values are expected to be in the range -1..1. */
-void zzub_plugin_set_position(zzub_player_t *player, int plugin, float x, float y);
+void zzub_plugin_set_position(zzub_plugin_t *plugin, float x, float y);
 
 /** \brief Sets the plugin screen position. Values are expected to be in the range -1..1. This method is not undoable. */
-void zzub_plugin_set_position_direct(zzub_player_t *player, int plugin, float x, float y);
+void zzub_plugin_set_position_direct(zzub_plugin_t *plugin, float x, float y);
 
 /** \brief Returns flags for this plugin. Shorthand for using zzub_pluginloader_get_flags(). Combined by zero or more values in the #zzub_plugin_flag enumeration. */
-int zzub_plugin_get_flags(zzub_player_t *player, int plugin);
+int zzub_plugin_get_flags(zzub_plugin_t *plugin);
 
 /** \brief Returns the number of tracks. */
-int zzub_plugin_get_track_count(zzub_player_t *player, int plugin);
+int zzub_plugin_get_track_count(zzub_plugin_t *plugin);
 
 /** \brief Sets the number of tracks. Will call plugin::set_track_count() from the player thread. */
-void zzub_plugin_set_track_count(zzub_player_t *player, int plugin, int count);
+void zzub_plugin_set_track_count(zzub_plugin_t *plugin, int count);
 
 /** \brief Returns 1 if plugin is muted, otherwise 0. */
-int zzub_plugin_get_mute(zzub_player_t *player, int plugin);
+int zzub_plugin_get_mute(zzub_plugin_t *plugin);
 
 /** \brief Set whether plugin is muted. 1 for muted, 0 for normal. 
 	A muted machine does not produce any sound. */
-void zzub_plugin_set_mute(zzub_player_t *player, int plugin, int muted);
+void zzub_plugin_set_mute(zzub_plugin_t *plugin, int muted);
 
 /** \brief Returns 1 if plugin is bypassed, otherwise 0. */
-int zzub_plugin_get_bypass(zzub_player_t *player, int plugin);
+int zzub_plugin_get_bypass(zzub_plugin_t *plugin);
 
 /** \brief Set whether plugin is bypassed. 1 for bypass, 0 for normal. 
 	Bypass causes no processing to occur in the given machine. */
-void zzub_plugin_set_bypass(zzub_player_t *player, int plugin, int muted);
+void zzub_plugin_set_bypass(zzub_plugin_t *plugin, int muted);
 
 /** \brief Returns a string of \\n-separated command strings */
-int zzub_plugin_get_commands(zzub_player_t *player, int plugin, char* commands, int maxlen);
+int zzub_plugin_get_commands(zzub_plugin_t *plugin, char* commands, int maxlen);
 
 /** \brief When a plugin command string starts with the char '\', it has subcommands.
 	Unexpectedly, zzub_plugin_get_sub_commands returns a \\n-separated string (like get_commands).
 	Some plugins need to be ticked before calling get_sub_commands. */
-int zzub_plugin_get_sub_commands(zzub_player_t *player, int plugin, int i, char* commands, int maxlen);
+int zzub_plugin_get_sub_commands(zzub_plugin_t *plugin, int i, char* commands, int maxlen);
 
 /** \brief Invoke a command on the plugin. */
-void zzub_plugin_command(zzub_player_t *player, int plugin, int i);
+void zzub_plugin_command(zzub_plugin_t *plugin, int i);
 
 /** \brief Returns the pluginloader used to create this plugin. */
-zzub_pluginloader_t *zzub_plugin_get_pluginloader(zzub_player_t *player, int plugin);
+zzub_pluginloader_t *zzub_plugin_get_pluginloader(zzub_plugin_t *plugin);
 
-int zzub_plugin_get_midi_output_device_count(zzub_player_t* player, int plugin);
-const char* zzub_plugin_get_midi_output_device(zzub_player_t* player, int plugin, int index);
+int zzub_plugin_get_midi_output_device_count(zzub_plugin_t *plugin);
+const char* zzub_plugin_get_midi_output_device(zzub_plugin_t *plugin, int index);
 
-int zzub_plugin_get_envelope_count(zzub_player_t* player, int plugin);
-int zzub_plugin_get_envelope_flags(zzub_player_t* player, int plugin, int index);
-const char* zzub_plugin_get_envelope_name(zzub_player_t* player, int plugin, int index);
+int zzub_plugin_get_envelope_count(zzub_plugin_t *plugin);
+int zzub_plugin_get_envelope_flags(zzub_plugin_t *plugin, int index);
+const char* zzub_plugin_get_envelope_name(zzub_plugin_t *plugin, int index);
 
-void zzub_plugin_set_stream_source(zzub_player_t* player, int plugin, const char* resource);
-// 0.3: DEAD // const char* zzub_plugin_get_stream_source(zzub_player_t* player, int plugin);
+void zzub_plugin_set_stream_source(zzub_plugin_t *plugin, const char* resource);
+// 0.3: DEAD // const char* zzub_plugin_get_stream_source(zzub_plugin_t *plugin);
 
 /** \brief Sets the plugin instrument (d'oh!) */
-int zzub_plugin_set_instrument(zzub_player_t *player, int plugin, const char *name);
+int zzub_plugin_set_instrument(zzub_plugin_t *plugin, const char *name);
 
 /*@}*/
 /** @name Plugin pattern methods
@@ -465,54 +468,54 @@ int zzub_plugin_set_instrument(zzub_player_t *player, int plugin, const char *na
 /*@{*/
 
 /** \brief Returns how many patterns are associated with the plugin. */
-int zzub_plugin_get_pattern_count(zzub_player_t *player, int plugin);
+int zzub_plugin_get_pattern_count(zzub_plugin_t *plugin);
 
 /** \brief Adds a pattern at the end of the plugins list of patterns */
-void zzub_plugin_add_pattern(zzub_player_t *player, int plugin, zzub_pattern_t *pattern);
+void zzub_plugin_add_pattern(zzub_plugin_t *plugin, zzub_pattern_t *pattern);
 
 /** \brief Remove the pattern from the plugin */
-void zzub_plugin_remove_pattern(zzub_player_t *player, int plugin, int pattern);
+void zzub_plugin_remove_pattern(zzub_plugin_t *plugin, int pattern);
 
 /** \brief Change the order of patterns */
-void zzub_plugin_move_pattern(zzub_player_t *player, int plugin, int index, int newIndex);
+void zzub_plugin_move_pattern(zzub_plugin_t *plugin, int index, int newIndex);
 
 /** \brief Replaces pattern contents  */
-void zzub_plugin_update_pattern(zzub_player_t *player, int plugin, int index, zzub_pattern_t* pattern);
+void zzub_plugin_update_pattern(zzub_plugin_t *plugin, int index, zzub_pattern_t* pattern);
 
 /** \brief Returns a copy of the requested pattern. Callers must destroy the pattern returned from get_pattern */
-zzub_pattern_t *zzub_plugin_get_pattern(zzub_player_t *player, int plugin, int index);
+zzub_pattern_t *zzub_plugin_get_pattern(zzub_plugin_t *plugin, int index);
 
 /** \brief Returns the index of the pattern with the given name */
-int zzub_plugin_get_pattern_by_name(zzub_player_t *player, int plugin, char* name);
+int zzub_plugin_get_pattern_by_name(zzub_plugin_t *plugin, char* name);
 
 /** \brief Returns the name of given pattern. */
-const char* zzub_plugin_get_pattern_name(zzub_player_t *player, int plugin, int index);
+const char* zzub_plugin_get_pattern_name(zzub_plugin_t *plugin, int index);
 
 /** \brief Updates the name of the pattern. */
-void zzub_plugin_set_pattern_name(zzub_player_t *player, int plugin, int index, const char* name);
+void zzub_plugin_set_pattern_name(zzub_plugin_t *plugin, int index, const char* name);
 
 /** \brief Returns the length of the pattern. */
-int zzub_plugin_get_pattern_length(zzub_player_t *player, int plugin, int index);
+int zzub_plugin_get_pattern_length(zzub_plugin_t *plugin, int index);
 
 /** \brief Updates the number of rows in the pattern. */
-void zzub_plugin_set_pattern_length(zzub_player_t *player, int plugin, int index, int rows);
+void zzub_plugin_set_pattern_length(zzub_plugin_t *plugin, int index, int rows);
 
 /** \brief Returns a value from the requested pattern. */
-int zzub_plugin_get_pattern_value(zzub_player_t *player, int plugin, int pattern, int group, int track, int column, int row);
+int zzub_plugin_get_pattern_value(zzub_plugin_t *plugin, int pattern, int group, int track, int column, int row);
 
 /** \brief Sets a value in a pattern. */
-void zzub_plugin_set_pattern_value(zzub_player_t *player, int plugin, int pattern, int group, int track, int column, int row, int value);
+void zzub_plugin_set_pattern_value(zzub_plugin_t *plugin, int pattern, int group, int track, int column, int row, int value);
 
-void zzub_plugin_get_new_pattern_name(zzub_player_t *player, int plugin, char* name, int maxLen);
-int zzub_plugin_linear_to_pattern(zzub_player_t *player, int plugin, int index, int* group, int* track, int* column);
-int zzub_plugin_pattern_to_linear(zzub_player_t *player, int plugin, int group, int track, int column, int* index);
-int zzub_plugin_get_pattern_column_count(zzub_player_t *player, int plugin);
+void zzub_plugin_get_new_pattern_name(zzub_plugin_t *plugin, char* name, int maxLen);
+int zzub_plugin_linear_to_pattern(zzub_plugin_t *plugin, int index, int* group, int* track, int* column);
+int zzub_plugin_pattern_to_linear(zzub_plugin_t *plugin, int group, int track, int column, int* index);
+int zzub_plugin_get_pattern_column_count(zzub_plugin_t *plugin);
 
 /** \brief Inserts rows in a pattern. column_indices has a total length of 3 * num_indices, where each index is a triple of group, track and column. */
-void zzub_plugin_insert_pattern_rows(zzub_player_t* player, int plugin_id, int pattern, int* column_indices, int num_indices, int start, int rows);
+void zzub_plugin_insert_pattern_rows(zzub_plugin_t *plugin, int pattern, int* column_indices, int num_indices, int start, int rows);
 
 /** \brief Removes rows in a pattern. column_indices has a total length of 3 * num_indices, where each index is a triple of group, track and column. */
-void zzub_plugin_remove_pattern_rows(zzub_player_t* player, int plugin_id, int pattern, int* column_indices, int num_indices, int start, int rows);
+void zzub_plugin_remove_pattern_rows(zzub_plugin_t *plugin, int pattern, int* column_indices, int num_indices, int start, int rows);
 
 /** \brief Copies columns from an offline pattern to a live pattern. Source and target columns are set up in
 	the mappings array, which has 6 ints for each mapping: group, track and column for source and target 
@@ -525,54 +528,54 @@ void zzub_plugin_remove_pattern_rows(zzub_player_t* player, int plugin_id, int p
 /*@{*/
 
 /** \brief Creates a textual description of the given value. The return value is the number of characters in the output string. */
-int zzub_plugin_describe_value(zzub_player_t *player, int plugin, int group, int column, int value, char* name, int maxlen);
+int zzub_plugin_describe_value(zzub_plugin_t *plugin, int group, int column, int value, char* name, int maxlen);
 
 /** \brief Returns the last written value of the requested parameter. */
-int zzub_plugin_get_parameter_value(zzub_player_t *player, int plugin, int group, int track, int column);
+int zzub_plugin_get_parameter_value(zzub_plugin_t *plugin, int group, int track, int column);
 
 /** \brief Sets the value of a plugin parameter. The method will wait for the player thread to pick up the modified value and call process_events(). */
-void zzub_plugin_set_parameter_value(zzub_player_t *player, int plugin, int group, int track, int column, int value, int record);
+void zzub_plugin_set_parameter_value(zzub_plugin_t *plugin, int group, int track, int column, int value, int record);
 
 /** \brief Sets the value of a plugin parameter. Unlike zzub_plugin_set_parameter_value(), this method returns immediately. The parameter will be changed later when the player thread notices the modified value. Is also not undoable. */
-void zzub_plugin_set_parameter_value_direct(zzub_player_t *player, int plugin, int group, int track, int column, int value, int record);
+void zzub_plugin_set_parameter_value_direct(zzub_plugin_t *plugin, int group, int track, int column, int value, int record);
 
-int zzub_plugin_get_parameter_count(zzub_player_t* player, int plugin, int group, int track);
+int zzub_plugin_get_parameter_count(zzub_plugin_t *plugin, int group, int track);
 
-const zzub_parameter_t* zzub_plugin_get_parameter(zzub_player_t *player, int plugin, int group, int track, int column);
+const zzub_parameter_t* zzub_plugin_get_parameter(zzub_plugin_t *plugin, int group, int track, int column);
 
 /*@}*/
 /** @name Plugin connection methods */
 /*@{*/
 
 /** \brief Returns the number of input connections for given plugin. */
-int zzub_plugin_get_input_connection_count(zzub_player_t *player, int plugin);
+int zzub_plugin_get_input_connection_count(zzub_plugin_t *plugin);
 
 /** \brief Returns the input connection index for given plugin and connection type. */
-int zzub_plugin_get_input_connection_by_type(zzub_player_t *player, int plugin, int from_plugin, int type);
+int zzub_plugin_get_input_connection_by_type(zzub_plugin_t *to_plugin, zzub_plugin_t* from_plugin, int type);
 
 /** \brief Returns the connection type for given plugin and connection index. */
-int zzub_plugin_get_input_connection_type(zzub_player_t *player, int plugin, int index);
+int zzub_plugin_get_input_connection_type(zzub_plugin_t *plugin, int index);
 
 /** \brief Returns the plugin index for given plugin and connection index. */
-int zzub_plugin_get_input_connection_plugin(zzub_player_t *player, int plugin, int index);
+zzub_plugin_t* zzub_plugin_get_input_connection_plugin(zzub_plugin_t *plugin, int index);
 
 /** \brief Returns the number of output connections for given plugin. */
-int zzub_plugin_get_output_connection_count(zzub_player_t *player, int plugin);
+int zzub_plugin_get_output_connection_count(zzub_plugin_t *plugin);
 
 /** \brief Returns the output connection index for given plugin and connection type. */
-int zzub_plugin_get_output_connection_by_type(zzub_player_t *player, int plugin, int from_plugin, int type);
+int zzub_plugin_get_output_connection_by_type(zzub_plugin_t *to_plugin, zzub_plugin_t* from_plugin, int type);
 
 /** \brief Returns the connection type for given plugin and connection index. */
-int zzub_plugin_get_output_connection_type(zzub_player_t *player, int plugin, int index);
+int zzub_plugin_get_output_connection_type(zzub_plugin_t *plugin, int index);
 
 /** \brief Returns the plugin index for given plugin and connection index. */
-int zzub_plugin_get_output_connection_plugin(zzub_player_t *player, int plugin, int index);
+zzub_plugin_t* zzub_plugin_get_output_connection_plugin(zzub_plugin_t *plugin, int index);
 
 /** \brief Connect two plugins */
-int zzub_plugin_add_input(zzub_player_t *player, int plugin, int fromMachine, int type);
+int zzub_plugin_add_input(zzub_plugin_t *to_plugin, zzub_plugin_t* from_plugin, int type);
 
 /** \brief Disconnect two plugins */
-void zzub_plugin_delete_input(zzub_player_t *player, int plugin, int fromMachine, int type);
+void zzub_plugin_delete_input(zzub_plugin_t *to_plugin, zzub_plugin_t* from_plugin, int type);
 
 
 /*@}*/
@@ -582,28 +585,28 @@ void zzub_plugin_delete_input(zzub_player_t *player, int plugin, int fromMachine
 /*@{*/
 
 /** \brief Copies the given plugins work buffer. */
-int zzub_plugin_get_mixbuffer(zzub_player_t *player, int plugin, float *leftbuffer, float *rightbuffer, int *size, long long *samplepos);
+int zzub_plugin_get_mixbuffer(zzub_plugin_t *plugin, float *leftbuffer, float *rightbuffer, int *size, long long *samplepos);
 
-void zzub_plugin_get_last_peak(zzub_player_t *player, int plugin, float *maxL, float *maxR);
-double zzub_plugin_get_last_worktime(zzub_player_t *player, int plugin);
-double zzub_plugin_get_last_cpu_load(zzub_player_t *player, int plugin);
-int zzub_plugin_get_last_midi_result(zzub_player_t* player, int machine);
-int zzub_plugin_get_last_audio_result(zzub_player_t* player, int machine);
+void zzub_plugin_get_last_peak(zzub_plugin_t *plugin, float *maxL, float *maxR);
+double zzub_plugin_get_last_worktime(zzub_plugin_t *plugin);
+double zzub_plugin_get_last_cpu_load(zzub_plugin_t *plugin);
+int zzub_plugin_get_last_midi_result(zzub_plugin_t *plugin);
+int zzub_plugin_get_last_audio_result(zzub_plugin_t *plugin);
 
 /*@}*/
 /** @name Other plugin methdos */
 /*@{*/
 
-int zzub_plugin_invoke_event(zzub_player_t *player, int plugin, zzub_event_data_t *data, int immediate);
-void zzub_plugin_tick(zzub_player_t *player, int plugin);
-int zzub_plugin_get_attribute_value(zzub_player_t *player, int plugin, int index);
-void zzub_plugin_set_attribute_value(zzub_player_t *player, int plugin, int index, int value);
-void zzub_plugin_play_midi_note(zzub_player_t *player, int plugin, int note, int prevNote, int velocity);
-void zzub_plugin_play_pattern_row_ref(zzub_player_t *player, int plugin, int pattern, int row);
-void zzub_plugin_play_pattern_row(zzub_player_t *player, int plugin, zzub_pattern_t* pattern, int row);
+int zzub_plugin_invoke_event(zzub_plugin_t *plugin, zzub_event_data_t *data, int immediate);
+void zzub_plugin_tick(zzub_plugin_t *plugin);
+int zzub_plugin_get_attribute_value(zzub_plugin_t *plugin, int index);
+void zzub_plugin_set_attribute_value(zzub_plugin_t *plugin, int index, int value);
+void zzub_plugin_play_midi_note(zzub_plugin_t *plugin, int note, int prevNote, int velocity);
+void zzub_plugin_play_pattern_row_ref(zzub_plugin_t *plugin, int pattern, int row);
+void zzub_plugin_play_pattern_row(zzub_plugin_t *plugin, zzub_pattern_t* pattern, int row);
 
-// 0.3: DEAD // int zzub_plugin_is_non_song_plugin(zzub_player_t *player, int plugin);
-// 0.3: DEAD // void zzub_plugin_set_non_song_plugin(zzub_player_t *player, int plugin, int state);
+// 0.3: DEAD // int zzub_plugin_is_non_song_plugin(zzub_plugin_t *plugin);
+// 0.3: DEAD // void zzub_plugin_set_non_song_plugin(zzub_plugin_t *plugin, int state);
 
 // Connection methods
 
@@ -611,17 +614,17 @@ void zzub_plugin_play_pattern_row(zzub_player_t *player, int plugin, zzub_patter
 /** @name Midi connection methods */
 /*@{*/
 
-int zzub_plugin_set_midi_connection_device(zzub_player_t* player, int plugin, int from_plugin, const char* name);
-// 0.3: DEAD // const char* zzub_plugin_get_midi_connection_device(zzub_player_t* player, int plugin, int from_plugin);
+int zzub_plugin_set_midi_connection_device(zzub_plugin_t *to_plugin, zzub_plugin_t* from_plugin, const char* name);
+// 0.3: DEAD // const char* zzub_plugin_get_midi_connection_device(zzub_plugin_t *plugin, int from_plugin);
 
 /*@}*/
 /** @name Event connection methods */
 /*@{*/
 
-void zzub_plugin_add_event_connection_binding(zzub_player_t* player, int plugin, int from_plugin, int sourceparam, int targetgroup, int targettrack, int targetparam);
-// 0.3: DEAD // int zzub_plugin_get_event_connection_binding_count(zzub_player_t* player, int plugin, int from_plugin);
-// 0.3: DEAD // zzub_event_connection_binding_t *zzub_plugin_get_event_connection_binding(zzub_player_t *player, int plugin, int from_plugin, int index);
-// 0.3: DEAD // int zzub_plugin_remove_event_connection_binding(zzub_player_t *player, int plugin, int from_plugin, int index);
+void zzub_plugin_add_event_connection_binding(zzub_plugin_t *plugin, zzub_plugin_t* from_plugin, int sourceparam, int targetgroup, int targettrack, int targetparam);
+// 0.3: DEAD // int zzub_plugin_get_event_connection_binding_count(zzub_plugin_t *plugin, int from_plugin);
+// 0.3: DEAD // zzub_event_connection_binding_t *zzub_plugin_get_event_connection_binding(zzub_plugin_t *plugin, int from_plugin, int index);
+// 0.3: DEAD // int zzub_plugin_remove_event_connection_binding(zzub_plugin_t *plugin, int from_plugin, int index);
 
 /*@}*/
 /** @name Event connection binding methods */
@@ -636,8 +639,8 @@ void zzub_plugin_add_event_connection_binding(zzub_player_t* player, int plugin,
 /** @name Sequencer methods */
 /*@{*/
 
-void zzub_sequence_create_track(zzub_player_t *player, int machine);
-void zzub_sequence_remove_track(zzub_player_t *player, int machine);
+void zzub_sequence_create_track(zzub_player_t *player, zzub_plugin_t* plugin);
+void zzub_sequence_remove_track(zzub_player_t *player, int index);
 void zzub_sequence_move_track(zzub_player_t *player, int index, int newIndex);
 
 int zzub_sequence_insert_events(zzub_player_t *player, int* track_indices, int num_indices, int start, int ticks);
@@ -646,7 +649,7 @@ int zzub_sequence_remove_events(zzub_player_t *player, int* track_indices, int n
 void zzub_sequence_set_event(zzub_player_t *player, int track, int pos, int value);
 // 0.3: DEAD // void zzub_sequence_set_events(zzub_player_t *player, int* events, int num_events);
 
-int zzub_sequence_get_plugin(zzub_player_t *player, int track);
+zzub_plugin_t* zzub_sequence_get_plugin(zzub_player_t *player, int track);
 int zzub_sequence_get_event_at(zzub_player_t *player, int track, unsigned long pos);
 
 int zzub_sequence_get_event_count(zzub_player_t *player);
@@ -667,7 +670,7 @@ int zzub_sequence_get_event_action(zzub_player_t *player, int index, int action,
 /*@{*/
 
 /** \brief Creates a pattern compatible with given plugin. The pattern becomes incompatible if the plugin has tracks or incoming connections added. */
-zzub_pattern_t *zzub_plugin_create_pattern(zzub_player_t *player, int plugin, int rows);
+zzub_pattern_t *zzub_plugin_create_pattern(zzub_plugin_t *plugin, int rows);
 
 /** \brief Creates a non-playable pattern with given columns and rows in group 0, track 0. All values are set to 0 by default. */
 zzub_pattern_t *zzub_plugin_create_range_pattern(zzub_player_t *player, int columns, int rows);

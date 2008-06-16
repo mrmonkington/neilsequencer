@@ -108,6 +108,7 @@ enum zzub_player_state {
 typedef struct _zzub_player zzub_player_t;
 typedef struct _zzub_audiodriver zzub_audiodriver_t;
 typedef struct _zzub_mididriver zzub_mididriver_t;
+typedef struct _zzub_plugin zzub_plugin_t;
 typedef struct _zzub_pluginloader zzub_pluginloader_t;
 typedef struct _zzub_plugincollection zzub_plugincollection_t;
 typedef struct _zzub_pattern zzub_pattern_t;
@@ -137,56 +138,56 @@ typedef struct zzub_event_data_all {
 } zzub_event_data_all_t;
 
 typedef struct zzub_event_data_new_plugin {
-	int plugin;
+	zzub_plugin_t* plugin;
 } zzub_event_data_new_plugin_t;
 
 typedef struct zzub_event_data_delete_plugin {
-	int plugin;
+	zzub_plugin_t* plugin;
 } zzub_event_data_delete_plugin_t;
 
 typedef struct zzub_event_data_connect {
-	int from_plugin;
-	int to_plugin;
+	zzub_plugin_t* from_plugin;
+	zzub_plugin_t* to_plugin;
 	int type;
 } zzub_event_data_connect_t;
 
 typedef struct zzub_event_data_plugin_changed {
-	int plugin;
+	zzub_plugin_t* plugin;
 } zzub_event_data_plugin_changed_t;
 
 typedef struct zzub_event_data_set_tracks {
-	int plugin;
+	zzub_plugin_t* plugin;
 } zzub_event_data_set_tracks_t;
 
 typedef struct zzub_event_data_set_sequence_tracks {
-	int plugin;
+	zzub_plugin_t* plugin;
 } zzub_event_data_set_sequence_tracks_t;
 
 typedef struct zzub_event_data_set_sequence_event {
-	int plugin;
+	zzub_plugin_t* plugin;
 	int track;
 	int time;
 } zzub_event_data_set_sequence_event_t;
 
 typedef struct zzub_event_data_new_pattern {
-	int plugin;
+	zzub_plugin_t* plugin;
 	int index;
 } zzub_event_data_new_pattern_t;
 
 typedef struct zzub_event_data_delete_pattern {
-	int plugin;
+	zzub_plugin_t* plugin;
 	int index;
 } zzub_event_data_delete_pattern_t;
 
 typedef struct zzub_event_data_edit_pattern {
-	int plugin;
+	zzub_plugin_t* plugin;
 	int index;
 	int group, track, column;
 	int row, value;
 } zzub_event_data_edit_pattern_t;
 
 typedef struct zzub_event_data_pattern_insert_rows {
-	int plugin;
+	zzub_plugin_t* plugin;
 	int index;
 	int row, rows;
 	int* column_indices;
@@ -194,7 +195,7 @@ typedef struct zzub_event_data_pattern_insert_rows {
 } zzub_event_data_pattern_insert_rows_t;
 
 typedef struct zzub_event_data_pattern_remove_rows {
-	int plugin;
+	zzub_plugin_t* plugin;
 	int index;
 	int row, rows;
 	int* column_indices;
@@ -202,7 +203,7 @@ typedef struct zzub_event_data_pattern_remove_rows {
 } zzub_event_data_pattern_remove_rows_t;
 
 typedef struct zzub_event_data_pattern_changed {
-	int plugin;
+	zzub_plugin_t* plugin;
 	int index;
 } zzub_event_data_pattern_changed_t;
 
@@ -211,7 +212,7 @@ typedef struct zzub_event_data_midi_message {
 } zzub_event_data_midi_message_t;
 
 typedef struct zzub_event_data_change_parameter {
-	int plugin;
+	zzub_plugin_t* plugin;
 	int group, track, param, value;
 } zzub_event_data_change_parameter_t;
 
@@ -298,7 +299,7 @@ struct zzub_event_data {
 	};
 };
 
-typedef int (*ZzubCallback)(zzub_player_t *player, int machine, zzub_event_data_t* data, void *tag);
+typedef int (*ZzubCallback)(zzub_player_t *player, zzub_plugin_t* machine, zzub_event_data_t* data, void *tag);
 typedef void (*ZzubMixCallback)(float *left, float *right, int size, void *tag);
 
 enum zzub_parameter_type {

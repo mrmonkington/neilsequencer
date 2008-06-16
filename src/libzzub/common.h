@@ -68,6 +68,51 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <boost/graph/visitors.hpp>
 #include <boost/graph/depth_first_search.hpp>
 
+#define ZZUB_NO_CTYPES
+
+struct zzub_flatapi_player;
+
+namespace zzub {
+	struct metaplugin_proxy;
+	struct info;
+	struct pattern;
+	struct event_connection_binding;
+	struct wave_info_ex;
+	struct wave_level;
+	struct parameter;
+	struct attribute;
+	struct envelope_entry;
+	struct midimapping;
+	struct recorder;
+	struct pluginlib;
+	struct mem_archive;
+	struct audiodriver;
+	struct mididriver;
+	struct instream;
+	struct outstream;
+};
+
+// internal types
+typedef zzub_flatapi_player zzub_player_t;
+typedef zzub::audiodriver zzub_audiodriver_t;
+typedef zzub::mididriver zzub_mididriver_t;
+typedef zzub::metaplugin_proxy zzub_plugin_t;
+typedef const zzub::info zzub_pluginloader_t;
+typedef zzub::pluginlib zzub_plugincollection_t;
+typedef zzub::pattern zzub_pattern_t;
+typedef zzub::event_connection_binding zzub_event_connection_binding_t;
+typedef zzub::wave_info_ex zzub_wave_t;
+typedef zzub::wave_level zzub_wavelevel_t;
+typedef zzub::parameter zzub_parameter_t;
+typedef zzub::attribute zzub_attribute_t;
+typedef zzub::envelope_entry zzub_envelope_t;
+typedef zzub::midimapping zzub_midimapping_t;
+typedef zzub::recorder zzub_recorder_t;
+typedef zzub::mem_archive zzub_archive_t;
+typedef zzub::instream zzub_input_t;
+typedef zzub::outstream zzub_output_t;
+
+
 #include "synchronization.h"
 #include "zzub/plugin.h"
 #include "pluginloader.h"

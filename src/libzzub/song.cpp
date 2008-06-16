@@ -547,7 +547,7 @@ void song::invoke_plugin_parameter_changes(int plugin_id, int g) {
 			if (v != param->value_none) {
 				zzub_event_data event_data;
 				event_data.type = zzub_event_type_parameter_changed;
-				event_data.change_parameter.plugin = plugin_id;
+				event_data.change_parameter.plugin = plugins[plugin_id]->proxy;
 				event_data.change_parameter.group = g;
 				event_data.change_parameter.track = j;
 				event_data.change_parameter.param = i;
@@ -1122,7 +1122,7 @@ void mixer::sequencer_update_play_pattern_positions() {
 		sequencer_event& ev = song_events[i];
 		for (size_t j = 0; j < ev.actions.size(); j++) {
 			sequencer_event::track_action& ta = ev.actions[j];
-			if (sequencer_positions[ta.first] == -1 || ev.timestamp <= song_position) sequencer_positions[ta.first] = i;
+			if (sequencer_positions[ta.first] == -1 || ev.timestamp <= song_position) sequencer_positions[ta.first] = (int)i;
 		}
 
 //		bool all_set = true;

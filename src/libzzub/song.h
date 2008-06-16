@@ -75,6 +75,12 @@ struct pattern {
 	}
 };
 
+struct metaplugin_proxy {
+	metaplugin_proxy(player* _player, int _id):player(_player),id(_id){}
+	player* player;
+	int id;
+};
+
 struct metaplugin {
 	zzub::plugin* plugin;
 	plugin_descriptor descriptor;
@@ -108,6 +114,8 @@ struct metaplugin {
 
 	vector<event_handler*> event_handlers;
 	vector<pattern*> patterns;
+
+	metaplugin_proxy* proxy;
 };
 
 struct event_connection_binding {

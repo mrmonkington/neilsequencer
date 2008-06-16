@@ -231,7 +231,7 @@ int midi_connection::get_midi_device(zzub::song& player, int plugin_id, std::str
 	std::vector<string>::iterator i = find(midiouts.names.begin(), midiouts.names.end(), name);
 	if (i == midiouts.names.end()) return -1;
 	// we really need to find the _global_ device index, not the target machine one.... ? ?? ???
-	return i - midiouts.names.begin();
+	return (int)(i - midiouts.names.begin());
 }
 
 } // namespace zzub

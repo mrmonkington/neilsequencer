@@ -29,9 +29,9 @@ namespace zzub {
 	info from and manipulating the player.
 */
 
-host::host(zzub::player* _player, int _plugin_id) {
+host::host(zzub::player* _player, zzub_plugin_t* _plugin) {
 	player = _player;
-	plugin_id = _plugin_id;
+	plugin = _plugin;
 
 	for (int c = 0; c < 2; ++c) {
 		auxBuffer[c] = new float[zzub::buffer_size * sizeof(float) * 4];
@@ -167,7 +167,7 @@ void host::midi_out(int const dev, unsigned int data) {
 
 void host::midi_out(int time, unsigned int data) {
 	midi_message msg = { -1, data, time };
-	metaplugin& m = *plugin_player->plugins[plugin_id];
+	metaplugin& m = *plugin_player->plugins[plugin->id];
 	m.midi_messages.push_back(msg);
 }
 
@@ -316,17 +316,17 @@ void host::audio_driver_read(int channel, float *psamples, int numsamples) {
 	memcpy(psamples, player->front.inputBuffer[channel], sizeof(float) * numsamples);
 }
 
-int host::get_metaplugin() {
-	return plugin_id;
+metaplugin_proxy* host::get_metaplugin() {
+	return plugin;
 }
 
-void host::control_change(int pmacid, int group, int track, int param, int value, bool record, bool immediate) {
-	if (plugin_player->plugins[pmacid] == 0) return ;
-	metaplugin& m = *plugin_player->plugins[pmacid];
+void host::control_change(metaplugin_proxy* pmac, int group, int track, int param, int value, bool record, bool immediate) {
+	if (plugin_player->plugins[pmac->id] == 0) return ;
+	metaplugin& m = *plugin_player->plugins[pmac->id];
 	
 	if (group == 2 && track >= m.tracks) return ;
 
-	plugin_player->plugin_set_parameter_direct(pmacid, group, track, param, value, record);
+	plugin_player->plugin_set_parameter_direct(pmac->id, group, track, param, value, record);
 
 	char* param_ptr = 0;
 	int track_size;
@@ -339,27 +339,27 @@ void host::control_change(int pmacid, int group, int track, int param, int value
 			break;
 		case 2:
 			param_ptr = (char*)m.plugin->track_values;
-			track_size = plugin_player->get_plugin_parameter_track_row_bytesize(pmacid, group, track);
+			track_size = plugin_player->get_plugin_parameter_track_row_bytesize(pmac->id, group, track);
 			param_ptr += track * track_size;
 			break;
 	}
-	plugin_player->transfer_plugin_parameter_track_row(pmacid, group, track, m.state_write, param_ptr, 0, false); 
+	plugin_player->transfer_plugin_parameter_track_row(pmac->id, group, track, m.state_write, param_ptr, 0, false); 
 
 	//if (immediate)
 	//	pmac->tickAsync();
 }
 
 // peerctrl extensions
-int host::get_parameter(int _metaplugin, int group, int track, int param) {
-	return plugin_player->plugin_get_parameter(_metaplugin, group, track, param);
+int host::get_parameter(metaplugin_proxy* _metaplugin, int group, int track, int param) {
+	return plugin_player->plugin_get_parameter(_metaplugin->id, group, track, param);
 }
 
-plugin *host::get_plugin(int _metaplugin) {
-	return plugin_player->plugins[_metaplugin]->plugin;//_metaplugin->plugin;
+plugin *host::get_plugin(metaplugin_proxy* _metaplugin) {
+	return plugin_player->plugins[_metaplugin->id]->plugin;//_metaplugin->plugin;
 }
 
 // returns pointer to the sequence if there is a pattern playing
-sequence* host::get_playing_sequence(int pmacid) {
+sequence* host::get_playing_sequence(metaplugin_proxy* pmacid) {
 	message("GetPlayingSequence not implemented");
 	return 0;
 }
@@ -383,12 +383,12 @@ void host::set_state_flags(int state) {
 }
 
 
-void host::set_event_handler(int pmacid, event_handler* handler) {
-	plugin_player->plugins[pmacid]->event_handlers.push_back(handler);
+void host::set_event_handler(metaplugin_proxy* pmac, event_handler* handler) {
+	plugin_player->plugins[pmac->id]->event_handlers.push_back(handler);
 }
 
-void host::remove_event_handler(int pmacid, event_handler* handler) {
-	std::vector<event_handler*>& handlers = plugin_player->plugins[pmacid]->event_handlers;
+void host::remove_event_handler(metaplugin_proxy* pmac, event_handler* handler) {
+	std::vector<event_handler*>& handlers = plugin_player->plugins[pmac->id]->event_handlers;
 	std::vector<event_handler*>::iterator i = find(handlers.begin(), handlers.end(), handler);
 	if (i == handlers.end()) return ;
 	handlers.erase(i);
@@ -412,7 +412,7 @@ char const *host::get_wave_name(int const i) {
 }
 
 // i >= 1, NULL name to clear
-void host::set_internal_wave_name(int pmacid, int const i, char const *name) {
+void host::set_internal_wave_name(metaplugin_proxy* pmac, int const i, char const *name) {
 	message("SetInternalWaveName not implemented");
 }
 
@@ -423,27 +423,28 @@ void host::get_plugin_names(outstream *pout) {	// should be metapluginnames?
 	}
 }
 
-int host::get_metaplugin(char const *name) {
-	if (name == 0) return -1;
+metaplugin_proxy* host::get_metaplugin(char const *name) {
+	if (name == 0) return 0;
 	plugin_descriptor plugindesc = plugin_player->get_plugin_descriptor(name);
-	if (plugindesc == graph_traits<plugin_map>::null_vertex()) return -1;
-	return plugin_player->get_plugin_id(plugindesc);
+	if (plugindesc == graph_traits<plugin_map>::null_vertex()) return 0;
+	int id = plugin_player->get_plugin_id(plugindesc);
+	return plugin_player->plugins[id]->proxy;
 }
 
-int host::get_metaplugin_by_index(int plugin_desc) {
+/*int host::get_metaplugin_by_index(int plugin_desc) {
 	return plugin_player->get_plugin_id(plugin_desc);
+}*/
+
+const info* host::get_info(metaplugin_proxy* pmac) {
+	assert(pmac->id != -1);
+	assert(plugin_player->plugins[pmac->id] != 0);
+	return plugin_player->plugins[pmac->id]->info;
 }
 
-const info* host::get_info(int pmacid) {
-	assert(pmacid != -1);
-	assert(plugin_player->plugins[pmacid] != 0);
-	return plugin_player->plugins[pmacid]->info;
-}
-
-const char* host::get_name(int pmacid) {
-	assert(pmacid != -1);
-	if (plugin_player->plugins[pmacid] == 0) return 0; // could happen if a peer controlled machine is deleted
-	return plugin_player->plugins[pmacid]->name.c_str();
+const char* host::get_name(metaplugin_proxy* pmac) {
+	assert(pmac->id != -1);
+	if (plugin_player->plugins[pmac->id] == 0) return 0; // could happen if a peer controlled machine is deleted
+	return plugin_player->plugins[pmac->id]->name.c_str();
 }
 
 bool host::get_input(int index, float *psamples, int numsamples, bool stereo, float *extrabuffer) {
@@ -451,8 +452,8 @@ bool host::get_input(int index, float *psamples, int numsamples, bool stereo, fl
 	return false;
 }
 
-bool host::get_osc_url(int pmac, char *url) {
-	sprintf(url, "osc.udp://localhost:7770/%s", plugin_player->get_plugin(pmac).name.c_str());
+bool host::get_osc_url(metaplugin_proxy* pmac, char *url) {
+	sprintf(url, "osc.udp://localhost:7770/%s", plugin_player->plugins[pmac->id]->name.c_str());
 	return true;
 }
 

@@ -587,28 +587,28 @@ struct host {
 	virtual int audio_driver_get_channel_count(bool input);
 	virtual void audio_driver_write(int channel, float *samples, int buffersize);
 	virtual void audio_driver_read(int channel, float *samples, int buffersize);
-	virtual int get_metaplugin();
-	virtual int get_metaplugin_by_index(int plugin_desc);
-	virtual void control_change(int _metaplugin, int group, int track, int param, int value, bool record, bool immediate);
+	virtual zzub_plugin_t* get_metaplugin();
+	//virtual int get_metaplugin_by_index(int plugin_desc);
+	virtual void control_change(zzub_plugin_t* _metaplugin, int group, int track, int param, int value, bool record, bool immediate);
 	
-	virtual sequence * get_playing_sequence(int _metaplugin);
+	virtual sequence * get_playing_sequence(zzub_plugin_t* _metaplugin);
 	virtual void * get_playing_row(sequence *_sequence, int group, int track);
 	virtual int get_state_flags();
 	virtual void set_state_flags(int state);
-	virtual void set_event_handler(int _metaplugin, event_handler* handler);
-	virtual void remove_event_handler(int _metaplugin, event_handler* handler);
+	virtual void set_event_handler(zzub_plugin_t* _metaplugin, event_handler* handler);
+	virtual void remove_event_handler(zzub_plugin_t* _metaplugin, event_handler* handler);
 	virtual const char * get_wave_name(int index);
-	virtual void set_internal_wave_name(int _metaplugin, int index, const char *name);
+	virtual void set_internal_wave_name(zzub_plugin_t* _metaplugin, int index, const char *name);
 	virtual void get_plugin_names(outstream *os);
-	virtual int get_metaplugin(const char *name);
-	virtual info const * get_info(int _metaplugin);
-	virtual char const * get_name(int _metaplugin);
+	virtual zzub_plugin_t* get_metaplugin(const char *name);
+	virtual info const * get_info(zzub_plugin_t* _metaplugin);
+	virtual char const * get_name(zzub_plugin_t* _metaplugin);
 	virtual bool get_input(int index, float *samples, int buffersize, bool stereo, float *extrabuffer);
-	virtual bool get_osc_url(int pmac, char *url);
+	virtual bool get_osc_url(zzub_plugin_t* pmac, char *url);
 	
 	// peerctrl extensions
-	virtual int get_parameter(int _metaplugin, int group, int track, int param);
-	virtual plugin *get_plugin(int _metaplugin);
+	virtual int get_parameter(zzub_plugin_t* _metaplugin, int group, int track, int param);
+	virtual plugin *get_plugin(zzub_plugin_t* _metaplugin);
 
 	// hacked extensions
 	virtual int get_song_begin();
@@ -622,10 +622,10 @@ struct host {
 
 	zzub::player* player;
 	zzub::song* plugin_player;		// plugin_player is used for accessing plugins and is the same as player except during initialization
-	int plugin_id;
+	zzub_plugin_t* plugin;
 	bool pre_lock_swap_mode;
 
-	host(zzub::player* player, int plugin_id);
+	host(zzub::player*, zzub_plugin_t*);
 	~host();
 	float *auxBuffer[2];
 };
