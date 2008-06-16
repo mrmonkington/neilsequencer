@@ -706,7 +706,7 @@ public:
         // OscMix
         int Bal1, Bal2;
         int MixType;
-		int thismachine;
+		zzub_plugin_t* thismachine;
 
 		gvals ctlval;	// Current values of all the parameters for purposes of keeping the interface up to date
 
@@ -1811,6 +1811,7 @@ void CTrack::NoteOn()
 		else 
 			LevelShift3 = 0;
 
+		assert(false);
 		bw1.offset = 0;//zzub::get_oscillator_table_offset(LevelShift1);
 		bw1.sh = 16 + LevelShift1;
 		bw1.size = (2048>>LevelShift1)-1;
@@ -3515,6 +3516,7 @@ void m4wii::init(zzub::archive * const pi)
 		WaveDetuneSemi = 0;
 		WaveFixedPitch = 0;
 
+	assert(false);
         pwavetab1 = pwavetab2 = pwavetabsub = 0;//_host->get_oscillator_table(0);
 		pWave = NULL;
 
@@ -3532,6 +3534,7 @@ void m4wii::init(zzub::archive * const pi)
 
         PhaseLFO1 = PhaseLFO2 = 0;
 
+	assert(false);
         pwavetabLFO1 = pwavetabLFO2 = 0;//_host->get_oscillator_table( zzub::oscillator_type_sine);
         DetuneSemi = DetuneFine = 1.0;
 
@@ -4352,6 +4355,7 @@ void m4wii::process_events()
 
 				if(gval.SubOscWave <= 5)
 				{
+					assert(false);
 					pwavetabsub = 0;//_host->get_oscillator_table(gval.SubOscWave);
 					if(gval.SubOscWave == 0)
 						oscwave3 = -1;
@@ -4441,6 +4445,7 @@ void m4wii::process_events()
 
 						if(gval.Wave1 <= 5)
 						{
+							assert(false);
 							pwavetab1 = 0;//_host->get_oscillator_table(gval.Wave1);
 							if(gval.Wave1 == 0)
 								oscwave1 = -1;
@@ -4471,6 +4476,7 @@ void m4wii::process_events()
                         noise2 = false;
 						if(gval.Wave2 <= 5)
 						{
+							assert(false);
 							pwavetab2 = 0;//_host->get_oscillator_table(gval.Wave2);
 							if(gval.Wave2 == 0)
 								oscwave2 = -1;
@@ -4602,8 +4608,10 @@ void m4wii::process_events()
 		// FIXME: Add 3 step wave here
         if( gval.LFO1Wave != paraLFO1Wave->value_none) {
 				ctlval.LFO1Wave = gval.LFO1Wave;
-				if(gval.LFO1Wave <= 4)
+				if(gval.LFO1Wave <= 4) {
+					assert(false);
 					pwavetabLFO1 = 0;//_host->get_oscillator_table( gval.LFO1Wave);
+				}
 				else if(gval.LFO1Wave == 5)
 					pwavetabLFO1 = waves + (WAVE_STEPUP << 11);
 				else if(gval.LFO1Wave == 6)
@@ -4746,8 +4754,10 @@ void m4wii::process_events()
 
         if( gval.LFO2Wave != paraLFO2Wave->value_none) {
 				ctlval.LFO2Wave = gval.LFO2Wave;
-				if(gval.LFO2Wave <= 4)
-	                pwavetabLFO2 = 0;//_host->get_oscillator_table( gval.LFO2Wave);
+				if(gval.LFO2Wave <= 4) {
+					assert(false);
+			                pwavetabLFO2 = 0;//_host->get_oscillator_table( gval.LFO2Wave);
+				}
 				else if(gval.LFO2Wave == 5)
 					pwavetabLFO2 = waves + (WAVE_STEPUP << 11);
 				else if(gval.LFO2Wave == 6)
@@ -4756,6 +4766,7 @@ void m4wii::process_events()
 					pwavetabLFO2 = waves + (WAVE_WACKY1 << 11);
 				else if(gval.LFO2Wave == 8)
 					pwavetabLFO2 = waves + (WAVE_WACKY2 << 11);
+		assert(false);
 //                if( gval.LFO2Wave == zzub::oscillator_type_noise)
 //                        LFO2Noise = true;
 //                else

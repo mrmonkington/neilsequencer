@@ -180,7 +180,7 @@ struct dssidapter : plugin, event_handler
 	float outputs[16][256];
 	snd_seq_event_t events[256];
 	int eventcount;
-	int _metaplugin;
+	zzub_plugin_t* _metaplugin;
 	
 	~dssidapter()
 	{
