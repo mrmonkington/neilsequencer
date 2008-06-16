@@ -103,7 +103,7 @@ class BuzzReader : public zzub::event_handler {
 
 	void print_test_messages(string machine_name, string uri, const char* field_name, int index, const char* expected_name, int expected, const char* found_name, int found, bool warn);
 	bool test_group_compat(zzub::metaplugin& machine, int group, MachineValidation* validator);
-	bool test_compatibility(zzub::metaplugin& plugin);
+	bool test_compatibility(zzub::metaplugin& plugin, std::string loadedName);
 	MachineValidation* findMachinePara(std::string name, std::string fullName);
 
 	bool invoke(zzub_event_data_t& data);

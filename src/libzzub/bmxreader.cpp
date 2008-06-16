@@ -193,11 +193,11 @@ bool BuzzReader::test_group_compat(zzub::metaplugin& machine, int group, Machine
 	return true;
 }
 
-bool BuzzReader::test_compatibility(zzub::metaplugin& machine) {
+bool BuzzReader::test_compatibility(zzub::metaplugin& machine, string loadedName) {
 	using namespace std;
 	if (machine.descriptor == 0) return true;
 
-	MachineValidation* param = findMachinePara(machine.name, machine.info->uri);
+	MachineValidation* param = findMachinePara(loadedName, machine.info->uri);
 
 	if (param == 0) {
 		lastError = machine.name + " (" + machine.info->name + ") Warning: No PARA info found. Machine is most likely not connected.\n" + lastError;
@@ -333,7 +333,7 @@ bool BuzzReader::loadMachines() {
 			}
 
 			// test if plugin is compatible with saved data
-			if (!test_compatibility(*player->back.plugins[plugin_id])) {
+			if (!test_compatibility(*player->back.plugins[plugin_id], loadedMachineName)) {
 				// it wasnt compatible, set loader to 0. this will create a dummy so we can load defaults and patterns correctly
 				player->plugin_destroy(plugin_id);
 				plugin_id = -1;
