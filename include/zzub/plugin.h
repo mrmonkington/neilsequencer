@@ -397,6 +397,7 @@ struct wave_level {
 	int loop_start;
 	int loop_end;
 	int format;	// zzub_wave_buffer_type
+	std::vector<int> slices; // slice offsets in the wave
 
 	int get_bytes_per_sample() const {
 		switch (format) {

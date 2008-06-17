@@ -43,7 +43,6 @@ struct wavelevel_proxy {
 struct wave_info_ex;
 
 struct wave_level_ex : wave_level {
-	std::vector<int> slices; // slice offsets in the wave
 	wavelevel_proxy* proxy;
 
 	wave_level_ex() {
