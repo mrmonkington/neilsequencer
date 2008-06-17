@@ -256,6 +256,9 @@ bool op_plugin_delete::prepare(zzub::song& song) {
 			song.plugins[i]->descriptor--;
 	}
 
+	event_data.type = event_type_delete_plugin;
+	event_data.delete_plugin.plugin = mpl.proxy;
+
 	return true;
 }
 
@@ -280,8 +283,6 @@ void op_plugin_delete::finish(zzub::song& song, bool send_events) {
 
 	assert(plugin != 0);
 
-	event_data.type = event_type_delete_plugin;
-	event_data.delete_plugin.plugin = plugin->proxy;
 	if (send_events) song.plugin_invoke_event(0, event_data, true);
 
 	plugin->plugin->destroy();
@@ -311,6 +312,8 @@ op_plugin_replace::op_plugin_replace(int _id, const metaplugin& _plugin) {
 }
 
 bool op_plugin_replace::prepare(zzub::song& song) {
+	event_data.type = event_type_plugin_changed;
+	event_data.plugin_changed.plugin = song.plugins[id]->proxy;
 	return true;
 }
 
@@ -328,11 +331,7 @@ bool op_plugin_replace::operate(zzub::song& song) {
 }
 
 void op_plugin_replace::finish(zzub::song& song, bool send_events) {
-	if (send_events && song.plugins[id]) {
-		event_data.type = event_type_plugin_changed;
-		event_data.plugin_changed.plugin = song.plugins[id]->proxy;
-		song.plugin_invoke_event(0, event_data, true);
-	}
+	if (send_events) song.plugin_invoke_event(0, event_data, true);
 }
 // ---------------------------------------------------------------------------
 //
@@ -1226,6 +1225,13 @@ bool op_pattern_insert_rows::prepare(zzub::song& song) {
 		patterncolumn.erase(patterncolumn.begin() + p.rows, patterncolumn.end());
 	}
 
+	event_data.type = event_type_pattern_insert_rows;
+	event_data.pattern_insert_rows.plugin = m.proxy;
+	event_data.pattern_insert_rows.column_indices = &columns.front();
+	event_data.pattern_insert_rows.indices = columns.size();
+	event_data.pattern_insert_rows.index = index;
+	event_data.pattern_insert_rows.row = row;
+	event_data.pattern_insert_rows.rows = count;
 	return true;
 }
 
@@ -1234,15 +1240,7 @@ bool op_pattern_insert_rows::operate(zzub::song& song) {
 }
 
 void op_pattern_insert_rows::finish(zzub::song& song, bool send_events) {
-	metaplugin& m = *song.plugins[id];
 
-	event_data.type = event_type_pattern_insert_rows;
-	event_data.pattern_insert_rows.plugin = m.proxy;
-	event_data.pattern_insert_rows.column_indices = &columns.front();
-	event_data.pattern_insert_rows.indices = columns.size();
-	event_data.pattern_insert_rows.index = index;
-	event_data.pattern_insert_rows.row = row;
-	event_data.pattern_insert_rows.rows = count;
 	if (send_events) song.plugin_invoke_event(0, event_data, true);
 }
 
@@ -1294,6 +1292,14 @@ bool op_pattern_remove_rows::prepare(zzub::song& song) {
 		patterncolumn.insert(patterncolumn.end(), count, param->value_none);
 	}
 
+	event_data.type = event_type_pattern_remove_rows;
+	event_data.pattern_remove_rows.plugin = m.proxy;
+	event_data.pattern_remove_rows.column_indices = &columns.front();
+	event_data.pattern_remove_rows.indices = columns.size();
+	event_data.pattern_remove_rows.row = row;
+	event_data.pattern_remove_rows.rows = count;
+	event_data.pattern_remove_rows.index = index;
+
 	return true;
 }
 
@@ -1302,15 +1308,6 @@ bool op_pattern_remove_rows::operate(zzub::song& song) {
 }
 
 void op_pattern_remove_rows::finish(zzub::song& song, bool send_events) {
-	metaplugin& m = *song.plugins[id];
-
-	event_data.type = event_type_pattern_remove_rows;
-	event_data.pattern_remove_rows.plugin = m.proxy;
-	event_data.pattern_remove_rows.column_indices = &columns.front();
-	event_data.pattern_remove_rows.indices = columns.size();
-	event_data.pattern_remove_rows.row = row;
-	event_data.pattern_remove_rows.rows = count;
-	event_data.pattern_remove_rows.index = index;
 	if (send_events) song.plugin_invoke_event(0, event_data, true);
 }
 
@@ -1686,6 +1683,10 @@ bool op_wavetable_remove_wavelevel::prepare(zzub::song& song) {
 
 
 	w.levels.erase(w.levels.begin() + level);
+
+	event_data.type = event_type_delete_wave;
+	event_data.delete_wave.wave = song.wavetable.waves[wave]->proxy;
+
 	return true;
 }
 
@@ -1694,8 +1695,6 @@ bool op_wavetable_remove_wavelevel::operate(zzub::song& song) {
 }
 
 void op_wavetable_remove_wavelevel::finish(zzub::song& song, bool send_events) {
-	event_data.type = event_type_delete_wave;
-	event_data.delete_wave.wave = 0;//song.wavetable.waves[wave];
 	//event_data.delete_wave.level = level;
 	if (send_events) song.plugin_invoke_event(0, event_data, true);
 }
@@ -1765,6 +1764,10 @@ bool op_wavetable_wave_replace::prepare(zzub::song& song) {
 	w.envelopes = data.envelopes;
 	//w.levels = data.levels;	// ikke så lurt tror jeg
 	// flags er bidir, stereo, og evt annet sinnsykt
+
+	event_data.type = event_type_wave_changed;
+	event_data.change_wave.wave = song.wavetable.waves[wave]->proxy;
+
 	return true;
 }
 
@@ -1773,8 +1776,6 @@ bool op_wavetable_wave_replace::operate(zzub::song& song) {
 }
 
 void op_wavetable_wave_replace::finish(zzub::song& song, bool send_events) {
-	event_data.type = event_type_wave_changed;
-	event_data.change_wave.wave = song.wavetable.waves[wave]->proxy;
 	if (send_events) song.plugin_invoke_event(0, event_data, true);
 }
 
@@ -1814,6 +1815,9 @@ bool op_wavetable_wavelevel_replace::prepare(zzub::song& song) {
 		l.legacy_loop_end = data.loop_end;
 	}
 
+	event_data.type = event_type_wave_changed;
+	event_data.change_wave.wave = song.wavetable.waves[wave]->proxy;
+
 	return true;
 }
 
@@ -1822,8 +1826,6 @@ bool op_wavetable_wavelevel_replace::operate(zzub::song& song) {
 }
 
 void op_wavetable_wavelevel_replace::finish(zzub::song& song, bool send_events) {
-	event_data.type = event_type_wave_changed;
-	event_data.change_wave.wave = song.wavetable.waves[wave]->proxy;
 	if (send_events) song.plugin_invoke_event(0, event_data, true);
 }
 
@@ -1881,6 +1883,10 @@ bool op_wavetable_insert_sampledata::prepare(zzub::song& song) {
 	}
 
 	delete[] copybuffer;
+
+	event_data.type = event_type_wave_allocated;
+	event_data.allocate_wavelevel.wavelevel = song.wavetable.waves[wave]->levels[level].proxy;
+
 	return true;
 }
 
@@ -1889,8 +1895,6 @@ bool op_wavetable_insert_sampledata::operate(zzub::song& song) {
 }
 
 void op_wavetable_insert_sampledata::finish(zzub::song& song, bool send_events) {
-	event_data.type = event_type_wave_allocated;
-	event_data.allocate_wavelevel.wavelevel = song.wavetable.waves[wave]->levels[level].proxy;
 	//event_data.allocate_wavelevel.level = level;
 	if (send_events) song.plugin_invoke_event(0, event_data, true);
 }
@@ -1941,6 +1945,10 @@ bool op_wavetable_remove_sampledata::prepare(zzub::song& song) {
 		CopySamples(copybuffer, w.get_sample_ptr(level), numsamples - (pos + samples), format, format, channels, channels, (pos + samples) * channels + 1, pos * channels + 1);
 	}
 	delete[] copybuffer;
+
+	event_data.type = event_type_wave_allocated;
+	event_data.allocate_wavelevel.wavelevel = song.wavetable.waves[wave]->levels[level].proxy;
+
 	return true;
 }
 
@@ -1949,8 +1957,6 @@ bool op_wavetable_remove_sampledata::operate(zzub::song& song) {
 }
 
 void op_wavetable_remove_sampledata::finish(zzub::song& song, bool send_events) {
-	event_data.type = event_type_wave_allocated;
-	event_data.allocate_wavelevel.wavelevel = song.wavetable.waves[wave]->levels[level].proxy;
 	//event_data.allocate_wavelevel.level = level;
 	if (send_events) song.plugin_invoke_event(0, event_data, true);
 }
