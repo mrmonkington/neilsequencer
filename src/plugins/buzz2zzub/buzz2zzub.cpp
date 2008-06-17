@@ -873,18 +873,22 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 	virtual int GetEnvSize(int const wave, int const env) { 
 		if (wave<0) {
 			return ((wave*0x3E39B193) + 0x303b ) & 0x7FFFFFFF;
-		}
+		} else
+		if (wave == 0 || wave > 200)	// jeskola tracker asks for GetEnvSize(0)
+			return 0;
 		return _host->get_envelope_size(wave,env); 
 	}
 	virtual bool GetEnvPoint(int const wave, int const env, int const i, word &x, word &y, int &flags)
 	{ return _host->get_envelope_point(wave, env, i, x, y, flags); }
-	virtual CWaveLevel const *GetNearestWaveLevel(int const i, int const note)
+	virtual CWaveLevel const *GetNearestWaveLevel(int const wave, int const note)
 	{
-		if (i==-1 && note==-1) {
+		if (wave==-1 && note==-1) {
 			return (CWaveLevel*)(implementation=new CMDKImplementation());
-		}
+		} else
+		if (wave == 0 || wave > 200)	// jeskola tracker asks for GetNearestWaveLevel(0)
+			return 0;
 
-		return reinterpret_cast<CWaveLevel const*>(_host->get_nearest_wave_level(i,note));
+		return reinterpret_cast<CWaveLevel const*>(_host->get_nearest_wave_level(wave,note));
 	}
 	virtual void SetNumberOfTracks(int const n) { _host->set_track_count(n); }
 	virtual CPattern *CreatePattern(char const *name, int const length)
