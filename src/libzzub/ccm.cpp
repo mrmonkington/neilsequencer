@@ -910,7 +910,7 @@ xml_node CcmWriter::saveWave(xml_node &parent, zzub::wave_info_ex &info) {
 
 	for (int j = 0; j < info.get_levels(); j++) {
 		if (info.get_sample_count(j)) {
-			wave_level &level = info.levels[j];
+			wave_level_ex &level = info.levels[j];
 			xml_node levelnode = waves.append_child(node_element);
 			levelnode.name("wave");
 			levelnode.attribute("id") = id_from_ptr(&level);
@@ -1758,7 +1758,7 @@ bool CcmReader::loadInstruments(xml_node &instruments, zzub::player &player) {
 							if (w->has_attribute("samplerate")) {
 								info.set_samples_per_sec(index, long(w->attribute("samplerate")));
 							}
-							wave_level &level = info.levels[index];
+							wave_level_ex &level = info.levels[index];
 							xml_node slices = w->first_element_by_name("slices");
 							if (!slices.empty()) {
 								for (xml_node::child_iterator s = slices.children_begin(); s != slices.children_end(); ++s) {

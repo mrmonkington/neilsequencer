@@ -4,7 +4,7 @@ struct stream_wavetable : stream_plugin, stream_provider {
 	stereo_resampler resample;
 	stream_resampler* resampler;
 
-	int index, level;
+	int play_wave, play_level;
 	unsigned int currentPosition;
 	unsigned int lastCurrentPosition;
 

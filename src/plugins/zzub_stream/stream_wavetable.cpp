@@ -47,8 +47,8 @@ stream_wavetable::~stream_wavetable() {
 }
 
 void stream_wavetable::init(zzub::archive * const pi) {
-	this->index = 0;
-	this->level = 0;
+	this->play_wave = 0;
+	this->play_level = 0;
 
 	this->currentPosition = 0;
 	this->lastCurrentPosition = 0;
@@ -61,8 +61,8 @@ void stream_wavetable::save(zzub::archive* po) {
 }
 
 void stream_wavetable::set_stream_source(const char* resource) {
-	index = atoi(resource);
-	level = 0;
+	play_wave = atoi(resource);
+	play_level = 0;
 
 	currentPosition = 0;
 	lastCurrentPosition = 0;
@@ -70,16 +70,17 @@ void stream_wavetable::set_stream_source(const char* resource) {
 	if (resampler) delete resampler;
 	resampler = new stream_resampler(this);
 
-	const zzub::wave_info* wave = _host->get_wave(index);
-	if (wave) {
-		zzub::wave_level* l = wave->get_level(level);
-		if (l) resampler->stream_sample_rate = l->samples_per_second;
+	const zzub::wave_level* level = _host->get_wave_level(play_wave, play_level);
+	//zzub_wave_t* wave = _host->get_wave(index);
+	if (level) {
+		//wave->get_level(level);
+		resampler->stream_sample_rate = level->samples_per_second;
 	}
 }
 
 const char* stream_wavetable::get_stream_source() {
 	static char src[32];
-	sprintf(src, "%i", index);
+	sprintf(src, "%i", play_wave);
     return src;
 }
 
@@ -107,12 +108,12 @@ void stream_wavetable::process_events() {
 	}
 
 	if (aval.offsetfromsong) {
-		const zzub::wave_info* wave = _host->get_wave(index);
+		const zzub::wave_info* wave = _host->get_wave(play_wave);
 		if (wave) {
-			zzub::wave_level* l = wave->get_level(level);
+			const zzub::wave_level* l = _host->get_wave_level(play_wave, play_level);
 			if (l) {
 				bool looping = wave->flags&zzub::wave_flag_loop?true:false;
-				unsigned int sample_count = wave->get_sample_count(level);
+				unsigned int sample_count = l->sample_count;
 				double samplespertick = (double)_master_info->samples_per_tick + (double)_master_info->samples_per_tick_frac;
 				double samplepos = (double)_host->get_play_position() * samplespertick;
 				currentPosition = (int)(samplepos+0.5f);
@@ -145,18 +146,14 @@ inline float sample_scale(zzub::wave_buffer_type format, void* buffer) {
 }
 
 bool stream_wavetable::generate_samples(float** pout, int numsamples) {
-	const zzub::wave_info* wave = _host->get_wave(index);
-	if (!wave) {
-		return false;
-	}
+	const zzub::wave_info* wave = _host->get_wave(play_wave);
+	if (!wave) return false;
 
-	zzub::wave_level* l = wave->get_level(level);
-	if (!l) {
-		return false;
-	}
+	const zzub::wave_level* level = _host->get_wave_level(play_wave, play_level);
+	if (!level ) return false;
     
 	bool looping = wave->flags&zzub::wave_flag_loop?true:false;
-	unsigned int sample_count = wave->get_sample_count(level);
+	unsigned int sample_count = level->sample_count;
 
 	int maxread = numsamples;
 	if (!looping && currentPosition + maxread > sample_count) 
@@ -168,10 +165,10 @@ bool stream_wavetable::generate_samples(float** pout, int numsamples) {
 
 	float amp = wave->volume;
 
-	char* sample_ptrc = (char*)wave->get_sample_ptr(level);
-	int bytes_per_sample = wave->get_bytes_per_sample(level);
-	int channels = wave->get_stereo()?2:1;
-	zzub::wave_buffer_type format = wave->get_wave_format(level);
+	char* sample_ptrc = (char*)level->samples;
+	int bytes_per_sample = level->get_bytes_per_sample();
+	int channels = (wave->flags & zzub::wave_flag_stereo)?2:1;
+	zzub::wave_buffer_type format = (zzub::wave_buffer_type)level->format;
 
 	sample_ptrc += (bytes_per_sample * channels) * currentPosition;
 
@@ -186,9 +183,9 @@ bool stream_wavetable::generate_samples(float** pout, int numsamples) {
 			sample_ptrc += bytes_per_sample;
 		}
 
-		if (looping && currentPosition >= wave->get_loop_end(level) - 1) {
-			currentPosition = wave->get_loop_start(level);
-			sample_ptrc = (char*)wave->get_sample_ptr(level);
+		if (looping && currentPosition >= level->loop_end - 1) {
+			currentPosition = level->loop_start;
+			sample_ptrc = (char*)level->samples;
 			sample_ptrc += (bytes_per_sample * channels) * currentPosition;
 		} else
 			currentPosition++;
@@ -217,17 +214,17 @@ void stream_wavetable::command(int index) {
 		int selindex = 0;
 		for (int i = 0; i < 0xC8; ++i) {
 			const zzub::wave_info* wave = _host->get_wave(i+1);
-			if (wave->get_sample_count(0) > 0)
+			const zzub::wave_level* level = _host->get_wave_level(i+1, 0);
+			if (level->sample_count > 0)
 			{
 				selindex++;
 				if (selindex == index) {
-					zzub::wave_level* level = wave->get_level(0);
-					std::cout << wave->name << std::endl;
+					std::cout << _host->get_wave_name(i + 1) << std::endl;
 					if (!level) return ;
 					
 					resampler->playing = false;
-					this->index = i+1;
-					this->level = 0;
+					this->play_wave = i+1;
+					this->play_level = 0;
 					this->currentPosition = 0;
 					char pc[256];
 				}
@@ -242,9 +239,10 @@ void stream_wavetable::get_sub_menu(int index, zzub::outstream* outs) {
 		case 0:
 			for (int i = 0; i<0xC8; i++) {
 				const zzub::wave_info* wave = _host->get_wave(i+1);
-				if (wave->get_sample_count(0) > 0)
+				const zzub::wave_level* level = _host->get_wave_level(i+1, 0);
+				if (level->sample_count > 0)
 				{
-					string name = "Wave " + stringFromInt(i+1, 2, ' ') + (string)": " + wave->name;
+					string name = "Wave " + stringFromInt(i+1, 2, ' ') + (string)": " + _host->get_wave_name(i + 1);
 					outs->write(name.c_str());
 				}
 			}

@@ -117,8 +117,8 @@ typedef struct _zzub_pattern zzub_pattern_t;
 //typedef struct _zzub_audio_connection zzub_audio_connection_t;
 //typedef struct _zzub_event_connection zzub_event_connection_t;
 typedef struct _zzub_event_connection_binding zzub_event_connection_binding_t;
-//typedef struct _zzub_wave zzub_wave_t;
-//typedef struct _zzub_wavelevel zzub_wavelevel_t;
+typedef struct _zzub_wave zzub_wave_t;
+typedef struct _zzub_wavelevel zzub_wavelevel_t;
 typedef struct _zzub_parameter zzub_parameter_t;
 typedef struct _zzub_attribute zzub_attribute_t;
 typedef struct _zzub_envelope zzub_envelope_t;
@@ -245,16 +245,16 @@ typedef struct zzub_event_data_osc_message {
 } zzub_event_data_osc_message_t;
 
 typedef struct zzub_event_data_change_wave {
-	int wave, level;
+	zzub_wave_t* wave;
 } zzub_event_data_change_wave_t;
 
 typedef struct zzub_event_data_delete_wave {
-	int wave, level;
+	zzub_wave_t* wave;
 } zzub_event_data_delete_wave_t;
 
-typedef struct zzub_event_data_allocate_wave {
-	int wave, level;
-} zzub_event_data_allocate_wave_t;
+typedef struct zzub_event_data_allocate_wavelevel {
+	zzub_wavelevel_t* wavelevel;
+} zzub_event_data_allocate_wavelevel_t;
 
 typedef struct zzub_event_data_custom {
 	int id;
@@ -289,7 +289,7 @@ struct zzub_event_data {
 		zzub_event_data_pattern_changed_t pattern_changed;
 		zzub_event_data_change_wave_t change_wave;
 		zzub_event_data_delete_wave_t delete_wave;
-		zzub_event_data_allocate_wave_t allocate_wave;
+		zzub_event_data_allocate_wavelevel_t allocate_wavelevel;
 		zzub_event_data_pattern_insert_rows_t pattern_insert_rows;
 		zzub_event_data_pattern_remove_rows_t pattern_remove_rows;
 		zzub_event_data_custom_t custom;

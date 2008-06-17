@@ -452,9 +452,9 @@ zzub_wave_t* zzub_player_get_wave(zzub_player_t* player, int index) {
 	player->merge_backbuffer_flags(flags);
 
 	if (index == -1) // monitor wave
-		return &player->back.wavetable.monitorwave;
+		return player->back.wavetable.monitorwave.proxy;
 	else
-		return player->back.wavetable.waves[index];
+		return player->back.wavetable.waves[index]->proxy;
 }
 
 void zzub_player_set_callback(zzub_player_t* player, ZzubCallback callback, void* tag) {
@@ -2047,113 +2047,134 @@ int zzub_mididriver_close_all(zzub_player_t *player) {
 
 // Wave table
 
-const char* zzub_wavetable_get_wave_name(zzub_player_t* player, int wave) {
+int zzub_wave_get_index(zzub_wave_t* wave) {
+	return wave->wave;
+}
+
+const char* zzub_wave_get_name(zzub_wave_t* wave) {
 
 	operation_copy_flags flags;
 	flags.copy_wavetable = true;
-	player->merge_backbuffer_flags(flags);
+	wave->_player->merge_backbuffer_flags(flags);
 
-	return player->back.wavetable.waves[wave]->name.c_str();
+	return wave->_player->back.wavetable.waves[wave->wave]->name.c_str();
 }
 
-void zzub_wavetable_set_wave_name(zzub_player_t* player, int wave, const char* name) {
+void zzub_wave_set_name(zzub_wave_t* wave, const char* name) {
 
-	player->wave_set_name(wave, name);
+	wave->_player->wave_set_name(wave->wave, name);
 }
 
-const char* zzub_wavetable_get_wave_path(zzub_player_t* player, int wave) {
+const char* zzub_wave_get_path(zzub_wave_t* wave) {
 
 	operation_copy_flags flags;
 	flags.copy_wavetable = true;
-	player->merge_backbuffer_flags(flags);
+	wave->_player->merge_backbuffer_flags(flags);
 
-	return player->back.wavetable.waves[wave]->fileName.c_str();
+	return wave->_player->back.wavetable.waves[wave->wave]->fileName.c_str();
 }
 
-void zzub_wavetable_set_wave_path(zzub_player_t* player, int wave, const char* path) {
+void zzub_wave_set_path(zzub_wave_t* wave, const char* path) {
 
-	player->wave_set_path(wave, path);
+	wave->_player->wave_set_path(wave->wave, path);
 }
 
-int zzub_wavetable_get_wave_flags(zzub_player_t* player, int wave) {
+int zzub_wave_get_flags(zzub_wave_t* wave) {
 
 	operation_copy_flags flags;
 	flags.copy_wavetable = true;
-	player->merge_backbuffer_flags(flags);
+	wave->_player->merge_backbuffer_flags(flags);
 
-	return player->back.wavetable.waves[wave]->flags;
+	return wave->_player->back.wavetable.waves[wave->wave]->flags;
 }
 
-void zzub_wavetable_set_wave_flags(zzub_player_t* player, int wave, int flags) {
+void zzub_wave_set_flags(zzub_wave_t* wave, int flags) {
 
-	player->wave_set_flags(wave, flags);
+	wave->_player->wave_set_flags(wave->wave, flags);
 }
 
-float zzub_wavetable_get_wave_volume(zzub_player_t* player, int wave) {
+float zzub_wave_get_volume(zzub_wave_t* wave) {
 
 	operation_copy_flags flags;
 	flags.copy_wavetable = true;
-	player->merge_backbuffer_flags(flags);
+	wave->_player->merge_backbuffer_flags(flags);
 
-	return player->back.wavetable.waves[wave]->volume;
+	return wave->_player->back.wavetable.waves[wave->wave]->volume;
 }
 
-void zzub_wavetable_set_wave_volume(zzub_player_t* player, int wave, float volume) {
+void zzub_wave_set_volume(zzub_wave_t* wave, float volume) {
 
-	player->wave_set_volume(wave, volume);
+	wave->_player->wave_set_volume(wave->wave, volume);
 }
 
-int zzub_wavetable_load_sample(zzub_player_t* player, int wave, int level, int offset, int clear, const char* path, zzub_input_t* datastream) {
+int zzub_wave_load_sample(zzub_wave_t* wave, int level, int offset, int clear, const char* path, zzub_input_t* datastream) {
 
 	bool result = true;
-	int loaded_samples = player->wave_load_sample(wave, level, offset, clear != 0, path, datastream);
+	int loaded_samples = wave->_player->wave_load_sample(wave->wave, level, offset, clear != 0, path, datastream);
 	return loaded_samples;
 }
 
-void zzub_wavetable_remove_sample_range(zzub_player_t* player, int wave, int level, int start, int end) {
+void zzub_wavelevel_remove_sample_range(zzub_wavelevel_t* level, int start, int end) {
 
-	player->wave_remove_samples(wave, level, start, end - start + 1);
+	level->_player->wave_remove_samples(level->wave, level->level, start, end - start + 1);
 }
 
-void zzub_wavetable_insert_sample_range(zzub_player_t* player, int wave, int level, int start, void* buffer, int channels, int format, int numsamples) {
+void zzub_wave_insert_sample_range(zzub_player_t* player, int wave, int level, int start, void* buffer, int channels, int format, int numsamples) {
 	assert(false);
 }
 
-int zzub_wavetable_clear_level(zzub_player_t* player, int wave, int level) {
-	player->wave_clear_level(wave, level);
+int zzub_wavelevel_clear(zzub_wavelevel_t* level) {
+	level->_player->wave_clear_level(level->wave, level->level);
 	return 0;
 }
 
-int zzub_wavetable_clear_wave(zzub_player_t* player, int wave) {
-	player->wave_clear(wave);
+zzub_wave_t* zzub_wavelevel_get_wave(zzub_wavelevel_t* level) {
+	operation_copy_flags flags;
+	flags.copy_wavetable = true;
+	level->_player->merge_backbuffer_flags(flags);
+
+	return level->_player->back.wavetable.waves[level->wave]->proxy;
+}
+
+int zzub_wave_clear(zzub_wave_t* wave) {
+	wave->_player->wave_clear(wave->wave);
 	return 0;
 }
 
-int zzub_wavetable_get_level_count(zzub_player_t* player, int wave) {
+int zzub_wave_get_level_count(zzub_wave_t* wave) {
 
 	operation_copy_flags flags;
 	flags.copy_wavetable = true;
-	player->merge_backbuffer_flags(flags);
+	wave->_player->merge_backbuffer_flags(flags);
 
-	return player->back.wavetable.waves[wave]->levels.size();
+	return wave->_player->back.wavetable.waves[wave->wave]->levels.size();
 }
 
-int zzub_wavetable_get_envelope_count(zzub_player_t* player, int wave) {
+zzub_wavelevel_t* zzub_wave_get_level(zzub_wave_t* wave, int index) {
 
 	operation_copy_flags flags;
 	flags.copy_wavetable = true;
-	player->merge_backbuffer_flags(flags);
+	wave->_player->merge_backbuffer_flags(flags);
 
-	return player->back.wavetable.waves[wave]->envelopes.size();
+	return wave->_player->back.wavetable.waves[wave->wave]->levels[index].proxy;
 }
 
-void zzub_wavetable_set_envelope_count(zzub_player_t* player, int wave, int count) {
+int zzub_wave_get_envelope_count(zzub_wave_t* wave) {
 
 	operation_copy_flags flags;
 	flags.copy_wavetable = true;
-	player->merge_backbuffer_flags(flags);
+	wave->_player->merge_backbuffer_flags(flags);
 
-	vector<envelope_entry> envelopes = player->back.wavetable.waves[wave]->envelopes;
+	return wave->_player->back.wavetable.waves[wave->wave]->envelopes.size();
+}
+
+void zzub_wave_set_envelope_count(zzub_wave_t* wave, int count) {
+
+	operation_copy_flags flags;
+	flags.copy_wavetable = true;
+	wave->_player->merge_backbuffer_flags(flags);
+
+	vector<envelope_entry> envelopes = wave->_player->back.wavetable.waves[wave->wave]->envelopes;
 	if (count >= envelopes.size()) {
 		for (int i = envelopes.size(); i < count; i++) {
 			envelopes.push_back(envelope_entry());
@@ -2162,109 +2183,109 @@ void zzub_wavetable_set_envelope_count(zzub_player_t* player, int wave, int coun
 	if (count < envelopes.size())
 		envelopes.erase(envelopes.begin() + count, envelopes.end());
 
-	player->wave_set_envelopes(wave, envelopes);
+	wave->_player->wave_set_envelopes(wave->wave, envelopes);
 
 }
 
-zzub_envelope_t* zzub_wavetable_get_envelope(zzub_player_t* player, int wave, int index) {
+zzub_envelope_t* zzub_wave_get_envelope(zzub_wave_t* wave, int index) {
 
 	operation_copy_flags flags;
 	flags.copy_wavetable = true;
-	player->merge_backbuffer_flags(flags);
+	wave->_player->merge_backbuffer_flags(flags);
 
-	assert(index >= 0 && index < player->back.wavetable.waves[wave]->envelopes.size());
-	return &player->back.wavetable.waves[wave]->envelopes[index];
+	assert(index >= 0 && index < wave->_player->back.wavetable.waves[wave->wave]->envelopes.size());
+	return &wave->_player->back.wavetable.waves[wave->wave]->envelopes[index];
 }
 
-void zzub_wavetable_set_envelope(zzub_player_t* player, int wave, int index, zzub_envelope_t* env) {
+void zzub_wave_set_envelope(zzub_wave_t* wave, int index, zzub_envelope_t* env) {
 
 	operation_copy_flags flags;
 	flags.copy_wavetable = true;
-	player->merge_backbuffer_flags(flags);
+	wave->_player->merge_backbuffer_flags(flags);
 
-	vector<envelope_entry> envelopes = player->back.wavetable.waves[wave]->envelopes;
+	vector<envelope_entry> envelopes = wave->_player->back.wavetable.waves[wave->wave]->envelopes;
 	assert(index >= 0 && index < envelopes.size());
 	envelopes[index] = *env;
-	player->wave_set_envelopes(wave, envelopes);
+	wave->_player->wave_set_envelopes(wave->wave, envelopes);
 
 }
 
-int zzub_wavetable_get_sample_count(zzub_player_t* player, int wave, int level) {
+int zzub_wavelevel_get_sample_count(zzub_wavelevel_t* level) {
 
 	operation_copy_flags flags;
 	flags.copy_wavetable = true;
-	player->merge_backbuffer_flags(flags);
+	level->_player->merge_backbuffer_flags(flags);
 
-	return player->back.wavetable.waves[wave]->get_sample_count(level);
+	return level->_player->back.wavetable.waves[level->wave]->get_sample_count(level->level);
 }
 
-void zzub_wavetable_set_sample_count(zzub_player_t* player, int wave, int level, int count) {
+void zzub_wavelevel_set_sample_count(zzub_wavelevel_t* level, int count) {
 	assert(false);
 }
 
-int zzub_wavetable_get_root_note(zzub_player_t* player, int wave, int level) {
+int zzub_wavelevel_get_root_note(zzub_wavelevel_t* level) {
 
 	operation_copy_flags flags;
 	flags.copy_wavetable = true;
-	player->merge_backbuffer_flags(flags);
+	level->_player->merge_backbuffer_flags(flags);
 
-	return player->back.wavetable.waves[wave]->get_root_note(level);
+	return level->_player->back.wavetable.waves[level->wave]->get_root_note(level->level);
 }
 
-void zzub_wavetable_set_root_note(zzub_player_t* player, int wave, int level, int note) {
+void zzub_wavelevel_set_root_note(zzub_wavelevel_t* level, int note) {
 
-	player->wave_set_root_note(wave, level, note);
+	level->_player->wave_set_root_note(level->wave, level->level, note);
 }
 
-int zzub_wavetable_get_samples_per_second(zzub_player_t* player, int wave, int level) {
+int zzub_wavelevel_get_samples_per_second(zzub_wavelevel_t* level) {
 
 	operation_copy_flags flags;
 	flags.copy_wavetable = true;
-	player->merge_backbuffer_flags(flags);
+	level->_player->merge_backbuffer_flags(flags);
 
-	return player->back.wavetable.waves[wave]->get_samples_per_sec(level);
+	return level->_player->back.wavetable.waves[level->wave]->get_samples_per_sec(level->level);
 }
 
-void zzub_wavetable_set_samples_per_second(zzub_player_t* player, int wave, int level, int sps) {
+void zzub_wavelevel_set_samples_per_second(zzub_wavelevel_t* level, int sps) {
 
-	player->wave_set_samples_per_second(wave, level, sps);
+	level->_player->wave_set_samples_per_second(level->wave, level->level, sps);
 }
 
-int zzub_wavetable_get_loop_start(zzub_player_t* player, int wave, int level) {
+int zzub_wavelevel_get_loop_start(zzub_wavelevel_t* level) {
 
 	operation_copy_flags flags;
 	flags.copy_wavetable = true;
-	player->merge_backbuffer_flags(flags);
+	level->_player->merge_backbuffer_flags(flags);
 
-	return player->back.wavetable.waves[wave]->get_loop_start(level);
+	return level->_player->back.wavetable.waves[level->wave]->get_loop_start(level->level);
 }
 
-void zzub_wavetable_set_loop_start(zzub_player_t* player, int wave, int level, int pos) {
+void zzub_wavelevel_set_loop_start(zzub_wavelevel_t* level, int pos) {
 
-	player->wave_set_loop_begin(wave, level, pos);
+	level->_player->wave_set_loop_begin(level->wave, level->level, pos);
 }
 
-int zzub_wavetable_get_loop_end(zzub_player_t* player, int wave, int level) {
+int zzub_wavelevel_get_loop_end(zzub_wavelevel_t* level) {
 
 	operation_copy_flags flags;
 	flags.copy_wavetable = true;
-	player->merge_backbuffer_flags(flags);
+	level->_player->merge_backbuffer_flags(flags);
 
-	return player->back.wavetable.waves[wave]->get_loop_end(level);
+	return level->_player->back.wavetable.waves[level->wave]->get_loop_end(level->level);
 }
 
-void zzub_wavetable_set_loop_end(zzub_player_t* player, int wave, int level, int pos) {
+void zzub_wavelevel_set_loop_end(zzub_wavelevel_t* level, int pos) {
 
-	player->wave_set_loop_end(wave, level, pos);
+	level->_player->wave_set_loop_end(level->wave, level->level, pos);
 }
 
-int zzub_wavetable_get_format(zzub_player_t* player, int wave, int level) {
+int zzub_wavelevel_get_format(zzub_wavelevel_t* level) {
 
 	operation_copy_flags flags;
 	flags.copy_wavetable = true;
-	player->merge_backbuffer_flags(flags);
+	level->_player->merge_backbuffer_flags(flags);
 
-	return player->back.wavetable.waves[wave]->get_wave_format(level);
+	return level->_player->back.wavetable.waves[level->wave]->get_wave_format(level->level);
 }
 
 
@@ -2304,14 +2325,14 @@ static sf_count_t outstream_tell (void *user_data){
 #endif
 
 //int zzub_wave_save_sample_range(zzub_wave_t* wave, int level, const char *path, int start, int end) {
-int zzub_wavetable_save_sample_range(zzub_player_t* player, int wave, int level, zzub_output_t* datastream, int start, int end) {
+int zzub_wave_save_sample_range(zzub_wave_t* wave, int level, zzub_output_t* datastream, int start, int end) {
 #if defined(USE_SNDFILE)
 
 	operation_copy_flags flags;
 	flags.copy_wavetable = true;
-	player->merge_backbuffer_flags(flags);
+	wave->_player->merge_backbuffer_flags(flags);
 
-	wave_info_ex& w = *player->back.wavetable.waves[wave];
+	wave_info_ex& w = *wave->_player->back.wavetable.waves[wave->wave];
 
 	int result = -1;
 	SF_INFO sfinfo;
@@ -2350,28 +2371,28 @@ int zzub_wavetable_save_sample_range(zzub_player_t* player, int wave, int level,
 #endif
 }
 
-int zzub_wavetable_save_sample(zzub_player_t* player, int wave, int level, zzub_output_t* datastream) {
+int zzub_wave_save_sample(zzub_wave_t* wave, int level, zzub_output_t* datastream) {
 
 	operation_copy_flags flags;
 	flags.copy_wavetable = true;
-	player->merge_backbuffer_flags(flags);
+	wave->_player->merge_backbuffer_flags(flags);
 
-	wave_info_ex& w = *player->back.wavetable.waves[wave];
-	return zzub_wavetable_save_sample_range(player, wave, level, datastream, 0, w.get_sample_count(level));
+	wave_info_ex& w = *wave->_player->back.wavetable.waves[wave->wave];
+	return zzub_wave_save_sample_range(wave, level, datastream, 0, w.get_sample_count(level));
 }
 
-void zzub_wavetable_get_samples_digest(zzub_player_t* player, int wave, int level, int channel, int start, int end, float *mindigest, float *maxdigest, float *ampdigest, int digestsize) {
+void zzub_wavelevel_get_samples_digest(zzub_wavelevel_t* level, int channel, int start, int end, float *mindigest, float *maxdigest, float *ampdigest, int digestsize) {
 
 	operation_copy_flags flags;
 	flags.copy_wavetable = true;
-	player->merge_backbuffer_flags(flags);
+	level->_player->merge_backbuffer_flags(flags);
 
-	wave_info_ex& w = *player->back.wavetable.waves[wave];
-	unsigned char *samples = (unsigned char*)w.get_sample_ptr(level);
-	int bitsps = w.get_bits_per_sample(level);
+	wave_info_ex& w = *level->_player->back.wavetable.waves[level->wave];
+	unsigned char *samples = (unsigned char*)w.get_sample_ptr(level->level);
+	int bitsps = w.get_bits_per_sample(level->level);
 	int bps = bitsps / 8;
 	float scaler = 1.0f / (1<<(bitsps-1));
-	int samplecount = zzub_wavetable_get_sample_count(player, wave, level);
+	int samplecount = zzub_wavelevel_get_sample_count(level);
 	int samplerange = end - start;
 	assert((start >= 0) && (start < samplecount));
 	assert((end > start) && (end <= samplecount));

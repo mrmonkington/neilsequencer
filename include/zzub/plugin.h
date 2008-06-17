@@ -362,32 +362,6 @@ struct master_info {
 	float samples_per_tick_frac;    // zzub extension
 };
 
-struct wave_info_ex;
-
-struct wave_level {
-	int sample_count;
-	short *samples;
-	int root_note;
-	int samples_per_second;
-	int loop_start;
-	int loop_end;
-
-	std::string stream_plugin_uri;
-	std::string stream_data_url;
-	std::vector<int> slices; // slice offsets in the wave
-	wave_info_ex* wave;
-	int level;
-
-	wave_level() {
-		level = 0;
-		samples = 0;
-		sample_count = 0;
-		loop_start = 0;
-		loop_end = 0;
-		samples_per_second = 0;
-		wave = 0;
-	}
-};
 
 struct envelope_point {
 	unsigned short x, y;
@@ -407,136 +381,38 @@ struct envelope_entry {
 struct wave_info {
 	int flags;
 	float volume;
-
-	std::string fileName;
-	std::string name;
-	std::vector<envelope_entry> envelopes;
-	std::vector<wave_level> levels;
-
-	int get_levels() const {
-		return (int)levels.size();
-	}
-
-	wave_level* get_level(int level) const {
-		if (level < 0 || (size_t)level >= levels.size()) return 0;
-		return &(wave_level&)levels[level];
-	}
-
-	bool get_extended() const {
-		return flags&wave_flag_extended?true:false;
-	}
-
-	bool get_stereo() const {
-		return flags&zzub::wave_flag_stereo?true:false;
-	}
-
-	void set_stereo(bool state) {
-		unsigned f = ((unsigned)flags)&(0xFFFFFFFF^zzub::wave_flag_stereo);
-
-		if (state)
-			flags = f|zzub::wave_flag_stereo; else
-			flags = f;
-	}
-
-	void* get_sample_ptr(int level, int offset=0) const {
-		wave_level* l = get_level(level);
-		if (!l) return 0;
-		offset *= get_bytes_per_sample(level) * (get_stereo()?2:1);
-		if (get_extended()) {
-			return (char*)&l->samples[4] + offset;
-		} else
-			return (char*)l->samples + offset;
-	}
-
-	int get_bits_per_sample(int level) const {
-		wave_level* l = get_level(level);
-		if (!l) return 0;
-
-		if (!get_extended()) return 16;
-
-		switch (l->samples[0]) {
-			case zzub::wave_buffer_type_si16:
-				return 16;
-			case zzub::wave_buffer_type_si24:
-				return 24;
-			case zzub::wave_buffer_type_f32:
-			case zzub::wave_buffer_type_si32:
-				return 32;
-			default:
-				//std::cerr << "Unknown extended sample format:" << l->samples[0] << std::endl;
-				return 16;
-		}
-	}
-
-	inline int get_bytes_per_sample(int level) const {
-		return get_bits_per_sample(level) / 8;
-	}
-
-	inline unsigned int get_extended_samples(int level, int samples) const {
-		int channels = get_stereo()?2:1;
-		return ((samples-(4/channels)) *2 ) / get_bytes_per_sample(level);
-	}
-
-	inline unsigned int get_unextended_samples(int level, int samples) const {
-		int channels = get_stereo()?2:1;
-		return ((samples * get_bytes_per_sample(level)) / 2) + (4/channels);
-	}
-
-	unsigned int get_sample_count(int level) const {
-		wave_level* l = get_level(level);
-		if (!l) return 0;
-		if (get_extended())
-			return get_extended_samples(level, l->sample_count); else
-			return l->sample_count;
-	}
-
-	unsigned int get_loop_start(int level) const {
-		wave_level* l = get_level(level);
-		if (!l) return 0;
-		if (get_extended())
-			return get_extended_samples(level, l->loop_start); else
-			return l->loop_start;
-	}
-
-	unsigned int get_loop_end(int level) const {
-		wave_level* l = get_level(level);
-		if (!l) return 0;
-		if (get_extended())
-			return get_extended_samples(level, l->loop_end); else
-			return l->loop_end;
-	}
-
-	void set_loop_start(int level, unsigned int value) {
-		wave_level* l = get_level(level);
-		if (!l) return ;
-		if (get_extended()) {
-			l->loop_start = get_unextended_samples(level, value);
-		} else {
-			l->loop_start = value;
-		}
-	}
-
-	void set_loop_end(int level, int value) {
-		wave_level* l = get_level(level);
-		if (!l) return ;
-		if (get_extended()) {
-			l->loop_end = get_unextended_samples(level, value);
-		} else {
-			l->loop_end = value;
-		}
-	}
-
-	wave_buffer_type get_wave_format(int level) const {
-		wave_level* l = get_level(level);
-		if (!l) return wave_buffer_type_si16;
-		if (get_extended() && l->sample_count > 0) {
-			return (wave_buffer_type)l->samples[0];
-		} else
-			return wave_buffer_type_si16;
-	}
-
 };
 
+// the order of the members in wave_level are matched with buzz' CWaveInfo
+// members prefixed with legacy_ should be handled in buzz2zzub and removed from here
+struct wave_level {
+	int legacy_sample_count;
+	short *legacy_sample_ptr;
+	int root_note;
+	int samples_per_second;
+	int legacy_loop_start;
+	int legacy_loop_end;
+	int sample_count;
+	short* samples;
+	int loop_start;
+	int loop_end;
+	int format;	// zzub_wave_buffer_type
+
+	int get_bytes_per_sample() const {
+		switch (format) {
+			case wave_buffer_type_si16:
+				return 2;
+			case wave_buffer_type_si24:
+				return 3;
+			case wave_buffer_type_si32:
+			case wave_buffer_type_f32:
+				return 4;
+			default:
+				assert(false);
+				return 0;
+		}
+	}
+};
 
 struct pattern;
 struct sequence;
@@ -554,8 +430,8 @@ struct event_handler {
 };
 
 struct host {
-	virtual const wave_info * get_wave(int index);
-	virtual const wave_level * get_wave_level(int index, int level);
+	virtual const wave_info* get_wave(int index);
+	virtual const wave_level* get_wave_level(int index, int level);
 	virtual void message(const char *text);
 	virtual void lock ();
 	virtual void unlock();
@@ -570,7 +446,7 @@ struct host {
 	virtual void midi_out(int time, unsigned int data);
 	virtual int get_envelope_size(int wave, int envelope);
 	virtual bool get_envelope_point(int wave, int envelope, int index, unsigned short &x, unsigned short &y, int &flags);
-	virtual const wave_level * get_nearest_wave_level(int index, int note);
+	virtual const wave_level* get_nearest_wave_level(int index, int note);
 	virtual void set_track_count(int count);
 	virtual pattern * create_pattern(const char *name, int length);
 	virtual pattern * get_pattern(int index);

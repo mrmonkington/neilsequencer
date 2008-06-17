@@ -1637,7 +1637,8 @@ void op_wavetable_allocate_wavelevel::finish(zzub::song& song, bool send_events)
 //
 // ---------------------------------------------------------------------------
 
-op_wavetable_add_wavelevel::op_wavetable_add_wavelevel(int _wave) {
+op_wavetable_add_wavelevel::op_wavetable_add_wavelevel(zzub::player* _player, int _wave) {
+	player = _player;
 	wave = _wave;
 	copy_flags.copy_wavetable = true;
 	operation_copy_wave_flags wave_flags;
@@ -1648,9 +1649,8 @@ op_wavetable_add_wavelevel::op_wavetable_add_wavelevel(int _wave) {
 
 bool op_wavetable_add_wavelevel::prepare(zzub::song& song) {
 	wave_info_ex& w = *song.wavetable.waves[wave];
-	wave_level wl;
-	wl.wave = &w;
-	wl.level = w.levels.size();
+	wave_level_ex wl;
+	wl.proxy = new wavelevel_proxy(player, wave, w.levels.size());
 	w.levels.push_back(wl);
 	return true;
 }
@@ -1695,8 +1695,8 @@ bool op_wavetable_remove_wavelevel::operate(zzub::song& song) {
 
 void op_wavetable_remove_wavelevel::finish(zzub::song& song, bool send_events) {
 	event_data.type = event_type_delete_wave;
-	event_data.delete_wave.wave = wave;
-	event_data.delete_wave.level = level;
+	event_data.delete_wave.wave = 0;//song.wavetable.waves[wave];
+	//event_data.delete_wave.level = level;
 	if (send_events) song.plugin_invoke_event(0, event_data, true);
 }
 
@@ -1721,7 +1721,7 @@ op_wavetable_move_wavelevel::op_wavetable_move_wavelevel(int _wave, int _level, 
 bool op_wavetable_move_wavelevel::prepare(zzub::song& song) {
 	wave_info_ex& w = *song.wavetable.waves[wave];
 
-	wave_level copylevel = w.levels[level];
+	wave_level_ex copylevel = w.levels[level];
 
 	w.levels.erase(w.levels.begin() + level);
 	if (w.levels.empty())
@@ -1743,7 +1743,7 @@ void op_wavetable_move_wavelevel::finish(zzub::song& song, bool send_events) {
 //
 // ---------------------------------------------------------------------------
 
-op_wavetable_wave_replace::op_wavetable_wave_replace(int _wave, const wave_info& _data) {
+op_wavetable_wave_replace::op_wavetable_wave_replace(int _wave, const wave_info_ex& _data) {
 	wave = _wave;
 	data = _data;
 
@@ -1774,8 +1774,7 @@ bool op_wavetable_wave_replace::operate(zzub::song& song) {
 
 void op_wavetable_wave_replace::finish(zzub::song& song, bool send_events) {
 	event_data.type = event_type_wave_changed;
-	event_data.change_wave.wave = wave;
-	event_data.change_wave.level = -1;
+	event_data.change_wave.wave = song.wavetable.waves[wave]->proxy;
 	if (send_events) song.plugin_invoke_event(0, event_data, true);
 }
 
@@ -1786,7 +1785,7 @@ void op_wavetable_wave_replace::finish(zzub::song& song, bool send_events) {
 //
 // ---------------------------------------------------------------------------
 
-op_wavetable_wavelevel_replace::op_wavetable_wavelevel_replace(int _wave, int _level, const wave_level& _data) {
+op_wavetable_wavelevel_replace::op_wavetable_wavelevel_replace(int _wave, int _level, const wave_level_ex& _data) {
 	wave = _wave;
 	level = _level;
 	data = _data;
@@ -1798,11 +1797,23 @@ op_wavetable_wavelevel_replace::op_wavetable_wavelevel_replace(int _wave, int _l
 }
 
 bool op_wavetable_wavelevel_replace::prepare(zzub::song& song) {
-	wave_level& l = song.wavetable.waves[wave]->levels[level];
+	wave_level_ex& l = song.wavetable.waves[wave]->levels[level];
 	l.loop_start = data.loop_start;
 	l.loop_end = data.loop_end;
 	l.root_note = data.root_note;
 	l.samples_per_second = data.samples_per_second;
+
+	// update legacy values
+	wave_info_ex& w = *song.wavetable.waves[wave];
+	bool is_extended = w.get_extended();
+	if (is_extended) {
+		l.legacy_loop_start = w.get_unextended_samples(level, data.loop_start);
+		l.legacy_loop_end = w.get_unextended_samples(level, data.loop_end);
+	} else {
+		l.legacy_loop_start = data.loop_start;
+		l.legacy_loop_end = data.loop_end;
+	}
+
 	return true;
 }
 
@@ -1812,8 +1823,7 @@ bool op_wavetable_wavelevel_replace::operate(zzub::song& song) {
 
 void op_wavetable_wavelevel_replace::finish(zzub::song& song, bool send_events) {
 	event_data.type = event_type_wave_changed;
-	event_data.change_wave.wave = wave;
-	event_data.change_wave.level = level;
+	event_data.change_wave.wave = song.wavetable.waves[wave]->proxy;
 	if (send_events) song.plugin_invoke_event(0, event_data, true);
 }
 
@@ -1880,8 +1890,8 @@ bool op_wavetable_insert_sampledata::operate(zzub::song& song) {
 
 void op_wavetable_insert_sampledata::finish(zzub::song& song, bool send_events) {
 	event_data.type = event_type_wave_allocated;
-	event_data.allocate_wave.wave = wave;
-	event_data.allocate_wave.level = level;
+	event_data.allocate_wavelevel.wavelevel = song.wavetable.waves[wave]->levels[level].proxy;
+	//event_data.allocate_wavelevel.level = level;
 	if (send_events) song.plugin_invoke_event(0, event_data, true);
 }
 
@@ -1940,8 +1950,8 @@ bool op_wavetable_remove_sampledata::operate(zzub::song& song) {
 
 void op_wavetable_remove_sampledata::finish(zzub::song& song, bool send_events) {
 	event_data.type = event_type_wave_allocated;
-	event_data.allocate_wave.wave = wave;
-	event_data.allocate_wave.level = level;
+	event_data.allocate_wavelevel.wavelevel = song.wavetable.waves[wave]->levels[level].proxy;
+	//event_data.allocate_wavelevel.level = level;
 	if (send_events) song.plugin_invoke_event(0, event_data, true);
 }
 

@@ -339,18 +339,19 @@ struct op_midimapping_remove : operation {
 
 struct op_wavetable_wave_replace : operation {
 	int wave;
-	wave_info data;
+	wave_info_ex data;
 	
-	op_wavetable_wave_replace(int _wave, const wave_info& _data);
+	op_wavetable_wave_replace(int _wave, const wave_info_ex& _data);
 	virtual bool prepare(zzub::song& song);
 	virtual bool operate(zzub::song& song);
 	virtual void finish(zzub::song& song, bool send_events);
 };
 
 struct op_wavetable_add_wavelevel : operation {
+	zzub::player* player;
 	int wave;
 
-	op_wavetable_add_wavelevel(int _wave);
+	op_wavetable_add_wavelevel(zzub::player* _player, int _wave);
 	virtual bool prepare(zzub::song& song);
 	virtual bool operate(zzub::song& song);
 	virtual void finish(zzub::song& song, bool send_events);
@@ -388,9 +389,9 @@ struct op_wavetable_allocate_wavelevel : operation {
 
 struct op_wavetable_wavelevel_replace : operation {
 	int wave, level;
-	wave_level data;
+	wave_level_ex data;
 	
-	op_wavetable_wavelevel_replace(int _wave, int _level, const wave_level& _data);
+	op_wavetable_wavelevel_replace(int _wave, int _level, const wave_level_ex& _data);
 	virtual bool prepare(zzub::song& song);
 	virtual bool operate(zzub::song& song);
 	virtual void finish(zzub::song& song, bool send_events);

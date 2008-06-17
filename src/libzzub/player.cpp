@@ -425,7 +425,9 @@ bool player::initialize() {
 
 	front.wavetable.waves.resize(200);
 	for (size_t i = 0; i < front.wavetable.waves.size(); i++) {
-		front.wavetable.waves[i] = new wave_info_ex();
+		wave_info_ex* wave = new wave_info_ex();
+		wave->proxy = new wave_proxy(this, i);
+		front.wavetable.waves[i] = wave;
 	}
 
 	front.state = player_state_stopped;
@@ -1491,7 +1493,7 @@ void player::wave_allocate_level(int wave, int level, int sample_count, int chan
 }
 
 void player::wave_add_level(int wave) {
-	op_wavetable_add_wavelevel* redo = new op_wavetable_add_wavelevel(wave);
+	op_wavetable_add_wavelevel* redo = new op_wavetable_add_wavelevel(this, wave);
 	prepare_operation_redo(redo);
 
 	op_wavetable_remove_wavelevel* undo = new op_wavetable_remove_wavelevel(wave, -1);
@@ -1506,7 +1508,7 @@ void player::wave_remove_level(int wave, int level) {
 	op_wavetable_move_wavelevel* undo_move = new op_wavetable_move_wavelevel(wave, back.wavetable.waves[wave]->levels.size(), level);
 	prepare_operation_undo(undo_move);
 
-	op_wavetable_add_wavelevel* undo = new op_wavetable_add_wavelevel(wave);
+	op_wavetable_add_wavelevel* undo = new op_wavetable_add_wavelevel(this, wave);
 	prepare_operation_undo(undo);
 }
 
@@ -1527,7 +1529,7 @@ void player::wave_set_name(int wave, std::string name) {
 	op_wavetable_wave_replace* undo = new op_wavetable_wave_replace(wave, *back.wavetable.waves[wave]);
 	prepare_operation_undo(undo);
 
-	wave_info data;
+	wave_info_ex data;
 	data = *back.wavetable.waves[wave];
 	data.name = name;
 	op_wavetable_wave_replace* redo = new op_wavetable_wave_replace(wave, data);
@@ -1544,7 +1546,7 @@ void player::wave_set_volume(int wave, float volume) {
 	op_wavetable_wave_replace* undo = new op_wavetable_wave_replace(wave, *back.wavetable.waves[wave]);
 	prepare_operation_undo(undo);
 
-	wave_info data;
+	wave_info_ex data;
 	data = *back.wavetable.waves[wave];
 	data.volume = volume;
 	op_wavetable_wave_replace* redo = new op_wavetable_wave_replace(wave, data);
@@ -1560,7 +1562,7 @@ void player::wave_set_flags(int wave, int waveflags) {
 	op_wavetable_wave_replace* undo = new op_wavetable_wave_replace(wave, *back.wavetable.waves[wave]);
 	prepare_operation_undo(undo);
 
-	wave_info data;
+	wave_info_ex data;
 	data = *back.wavetable.waves[wave];
 	data.flags = waveflags;
 	op_wavetable_wave_replace* redo = new op_wavetable_wave_replace(wave, data);
@@ -1575,7 +1577,7 @@ void player::wave_set_path(int wave, std::string name) {
 	op_wavetable_wave_replace* undo = new op_wavetable_wave_replace(wave, *back.wavetable.waves[wave]);
 	prepare_operation_undo(undo);
 
-	wave_info data;
+	wave_info_ex data;
 	data = *back.wavetable.waves[wave];
 	data.fileName = name;
 	op_wavetable_wave_replace* redo = new op_wavetable_wave_replace(wave, data);
@@ -1590,7 +1592,7 @@ void player::wave_set_loop_begin(int wave, int level, int pos) {
 	op_wavetable_wavelevel_replace* undo = new op_wavetable_wavelevel_replace(wave, level, back.wavetable.waves[wave]->levels[level]);
 	prepare_operation_undo(undo);
 
-	wave_level data;
+	wave_level_ex data;
 	data = back.wavetable.waves[wave]->levels[level];
 	data.loop_start = pos;
 	op_wavetable_wavelevel_replace* redo = new op_wavetable_wavelevel_replace(wave, level, data);
@@ -1606,7 +1608,7 @@ void player::wave_set_loop_end(int wave, int level, int pos) {
 	op_wavetable_wavelevel_replace* undo = new op_wavetable_wavelevel_replace(wave, level, back.wavetable.waves[wave]->levels[level]);
 	prepare_operation_undo(undo);
 
-	wave_level data;
+	wave_level_ex data;
 	data = back.wavetable.waves[wave]->levels[level];
 	data.loop_end = pos;
 	op_wavetable_wavelevel_replace* redo = new op_wavetable_wavelevel_replace(wave, level, data);
@@ -1622,7 +1624,7 @@ void player::wave_set_samples_per_second(int wave, int level, int sps) {
 	op_wavetable_wavelevel_replace* undo = new op_wavetable_wavelevel_replace(wave, level, back.wavetable.waves[wave]->levels[level]);
 	prepare_operation_undo(undo);
 
-	wave_level data;
+	wave_level_ex data;
 	data = back.wavetable.waves[wave]->levels[level];
 	data.samples_per_second = sps;
 	op_wavetable_wavelevel_replace* redo = new op_wavetable_wavelevel_replace(wave, level, data);
@@ -1637,7 +1639,7 @@ void player::wave_set_root_note(int wave, int level, int note) {
 	op_wavetable_wavelevel_replace* undo = new op_wavetable_wavelevel_replace(wave, level, back.wavetable.waves[wave]->levels[level]);
 	prepare_operation_undo(undo);
 
-	wave_level data;
+	wave_level_ex data;
 	data = back.wavetable.waves[wave]->levels[level];
 	data.root_note = note;
 	op_wavetable_wavelevel_replace* redo = new op_wavetable_wavelevel_replace(wave, level, data);
@@ -1728,7 +1730,7 @@ void player::wave_set_envelopes(int wave, const vector<zzub::envelope_entry>& en
 	op_wavetable_wave_replace* undo = new op_wavetable_wave_replace(wave, *back.wavetable.waves[wave]);
 	prepare_operation_undo(undo);
 
-	wave_info data;
+	wave_info_ex data;
 	data = *back.wavetable.waves[wave];
 	data.envelopes = envelopes;
 	op_wavetable_wave_replace* redo = new op_wavetable_wave_replace(wave, data);

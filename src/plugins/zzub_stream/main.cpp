@@ -57,14 +57,6 @@ const char* get_open_filename(const char* fileName, const char* filter) {
 	return 0;
 }
 
-int find_level_index(const zzub::wave_info* info, const zzub::wave_level* level) {
-	for (int i = 0; i<info->get_levels(); i++) {
-		if (info->get_level(i) == level) return i;
-	}
-	return -1;
-}
-
-
 float lognote(int freq) {
 	return (logf(freq) - logf(440.0)) / logf(2.0) + 4.0;
 }

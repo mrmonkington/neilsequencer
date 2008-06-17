@@ -76,15 +76,17 @@ wave_info_ex::wave_info_ex() {
 	flags = 0;
 	volume = 0;
 	envelopes.push_back(envelope_entry());
+	proxy = 0;
 }
 
-wave_info_ex::wave_info_ex(const wave_info& w) {
+wave_info_ex::wave_info_ex(const wave_info_ex& w) {
 	name = w.name;
 	flags = w.flags;
 	volume = w.volume;
 	envelopes = w.envelopes;
 	fileName = w.fileName;
 	levels = w.levels;
+	proxy = w.proxy;
 }
 
 
@@ -132,17 +134,21 @@ bool wave_info_ex::reallocate_level(size_t level, size_t samples) {
 	short* pSamples = new short[samplesIn16Bit*waveChannels];
 	memset(pSamples, 0, sizeof(short) * samplesIn16Bit * waveChannels);
 
-	if (l->samples) {
+	if (l->legacy_sample_ptr) {
 		size_t copySize = std::min(oldSamplesIn16Bit, samplesIn16Bit)*waveChannels;
-		memcpy(pSamples, l->samples, copySize*sizeof(short));
-		delete[] l->samples;
+		memcpy(pSamples, l->legacy_sample_ptr, copySize*sizeof(short));
+		delete[] l->legacy_sample_ptr;
 	}
 
-	l->sample_count = samplesIn16Bit;
-	l->samples = pSamples;
+	l->sample_count = (int)samples;
+	l->legacy_sample_count = samplesIn16Bit;
+	l->legacy_sample_ptr = pSamples;
+	l->samples = pSamples + (get_extended()?4:0);
 	if (!get_looping()) {
 		l->loop_start = 0;
-		l->loop_end = samplesIn16Bit;
+		l->legacy_loop_start = 0;
+		l->loop_end = (int)samples;
+		l->legacy_loop_end = samplesIn16Bit;
 	}
 
 	return true;
@@ -165,8 +171,7 @@ bool wave_info_ex::allocate_level(size_t level, size_t numSamples, zzub::wave_bu
 
 		levels.resize(level+1);
 		for (size_t i = 0; i < levels.size(); ++i) {
-			levels[i].wave = this; // make sure they all carry a pointer back
-			levels[i].level = i; // and an index
+			levels[i].proxy = new wavelevel_proxy(proxy->_player, proxy->wave, level);
 		}
 	} else
 	if (levels.size() == 1 && stereo != get_stereo()) {
@@ -211,20 +216,24 @@ bool wave_info_ex::allocate_level(size_t level, size_t numSamples, zzub::wave_bu
 	}
 
 	zzub::wave_level* l = &levels[level];
-	if (l->samples) delete[] l->samples;
+	if (l->legacy_sample_ptr) delete[] l->legacy_sample_ptr;
 
-	l->sample_count = samplesIn16bit;
-	l->samples = (short*)new char[waveBufferSize];
-	l->samples_per_second = 44100;
+	l->legacy_sample_ptr = (short*)new char[waveBufferSize];
+	l->samples = l->legacy_sample_ptr + (allocExtended?4:0);
+	l->sample_count = numSamples;
 	l->loop_start = 0;
-	l->loop_end = samplesIn16bit;
+	l->loop_end = numSamples;
+	l->legacy_sample_count = samplesIn16bit;
+	l->legacy_loop_start = 0;
+	l->legacy_loop_end = samplesIn16bit;
+	l->samples_per_second = 44100;
 	l->root_note = note_value_c4;
 
-	memset(l->samples, 0, waveBufferSize);
+	memset(l->legacy_sample_ptr, 0, waveBufferSize);
 
 	if (allocExtended) {
 		flags |= zzub::wave_flag_extended;	// ensure extended flag is set
-		l->samples[0] = waveFormat;
+		l->legacy_sample_ptr[0] = waveFormat;
 	}
 
 	return true;

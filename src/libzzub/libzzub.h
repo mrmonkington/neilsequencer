@@ -222,7 +222,7 @@ int zzub_player_get_currently_playing_pattern_row(zzub_plugin_t *plugin, int pat
 
 int zzub_player_get_wave_count(zzub_player_t* player);
 
-//zzub_wave_t* zzub_player_get_wave(zzub_player_t* player, int index);
+zzub_wave_t* zzub_player_get_wave(zzub_player_t* player, int index);
 
 //void zzub_player_play_wave(zzub_player_t* player, zzub_wave_t* wave, int level, int note);
 //void zzub_player_stop_wave(zzub_player_t* player);
@@ -691,48 +691,49 @@ void zzub_pattern_interpolate(zzub_pattern_t* pattern);
 /** @name Wave table */
 /*@{*/
 
-int zzub_wavetable_load_sample(zzub_player_t* player, int wave, int level, int offset, int clear, const char* path, zzub_input_t* datastream);
-int zzub_wavetable_clear_wave(zzub_player_t* player, int wave);
-const char* zzub_wavetable_get_wave_name(zzub_player_t* player, int wave);
-void zzub_wavetable_set_wave_name(zzub_player_t* player, int wave, const char* name);
-const char* zzub_wavetable_get_wave_path(zzub_player_t* player, int wave);
-void zzub_wavetable_set_wave_path(zzub_player_t* player, int wave, const char* path);
-int zzub_wavetable_get_wave_flags(zzub_player_t* player, int wave);
-void zzub_wavetable_set_wave_flags(zzub_player_t* player, int wave, int flags);
-float zzub_wavetable_get_wave_volume(zzub_player_t* player, int wave);
-void zzub_wavetable_set_wave_volume(zzub_player_t* player, int wave, float volume);
+int zzub_wave_get_index(zzub_wave_t* wave);
+int zzub_wave_load_sample(zzub_wave_t* wave, int level, int offset, int clear, const char* path, zzub_input_t* datastream);
+int zzub_wave_save_sample(zzub_wave_t* wave, int level, zzub_output_t* datastream);
+int zzub_wave_save_sample_range(zzub_wave_t* wave, int level, zzub_output_t* datastream, int start, int end); 
+int zzub_wave_clear(zzub_wave_t* wave);
+const char* zzub_wave_get_name(zzub_wave_t* wave);
+void zzub_wave_set_name(zzub_wave_t* wave, const char* name);
+const char* zzub_wave_get_path(zzub_wave_t* wave);
+void zzub_wave_set_path(zzub_wave_t* wave, const char* path);
+int zzub_wave_get_flags(zzub_wave_t* wave);
+void zzub_wave_set_flags(zzub_wave_t* wave, int flags);
+float zzub_wave_get_volume(zzub_wave_t* wave);
+void zzub_wave_set_volume(zzub_wave_t* wave, float volume);
+int zzub_wave_get_envelope_count(zzub_wave_t* wave);
+void zzub_wave_set_envelope_count(zzub_wave_t* wave, int count);
+zzub_envelope_t* zzub_wave_get_envelope(zzub_wave_t* wave, int index);
+void zzub_wave_set_envelope(zzub_wave_t* wave, int index, zzub_envelope_t* env);
+int zzub_wave_get_level_count(zzub_wave_t* wave);
+zzub_wavelevel_t* zzub_wave_get_level(zzub_wave_t* wave, int index);
 
-int zzub_wavetable_get_level_count(zzub_player_t* player, int wave);
-int zzub_wavetable_clear_level(zzub_player_t* player, int wave, int level);
 // 0.3: DEAD // void zzub_wavetable_add_level(zzub_player_t* player, int wave);
 // 0.3: DEAD // void zzub_wavetable_remove_level(zzub_player_t* player, int wave, int level);
 
-int zzub_wavetable_get_sample_count(zzub_player_t* player, int wave, int level);
-void zzub_wavetable_set_sample_count(zzub_player_t* player, int wave, int level, int count);
-int zzub_wavetable_get_root_note(zzub_player_t* player, int wave, int level);
-void zzub_wavetable_set_root_note(zzub_player_t* player, int wave, int level, int note);
-int zzub_wavetable_get_samples_per_second(zzub_player_t* player, int wave, int level);
-void zzub_wavetable_set_samples_per_second(zzub_player_t* player, int wave, int level, int sps);
-int zzub_wavetable_get_loop_start(zzub_player_t* player, int wave, int level);
-void zzub_wavetable_set_loop_start(zzub_player_t* player, int wave, int level, int pos);
-int zzub_wavetable_get_loop_end(zzub_player_t* player, int wave, int level);
-void zzub_wavetable_set_loop_end(zzub_player_t* player, int wave, int level, int pos);
-int zzub_wavetable_get_format(zzub_player_t* player, int wave, int level);
+int zzub_wavelevel_get_index(zzub_wavelevel_t* wave);
+zzub_wave_t* zzub_wavelevel_get_wave(zzub_wavelevel_t* level);
+int zzub_wavelevel_clear(zzub_wavelevel_t* level);
+int zzub_wavelevel_get_sample_count(zzub_wavelevel_t* level);
+void zzub_wavelevel_set_sample_count(zzub_wavelevel_t* level, int count);
+int zzub_wavelevel_get_root_note(zzub_wavelevel_t* level);
+void zzub_wavelevel_set_root_note(zzub_wavelevel_t* level, int note);
+int zzub_wavelevel_get_samples_per_second(zzub_wavelevel_t* level);
+void zzub_wavelevel_set_samples_per_second(zzub_wavelevel_t* level, int sps);
+int zzub_wavelevel_get_loop_start(zzub_wavelevel_t* level);
+void zzub_wavelevel_set_loop_start(zzub_wavelevel_t* level, int pos);
+int zzub_wavelevel_get_loop_end(zzub_wavelevel_t* level);
+void zzub_wavelevel_set_loop_end(zzub_wavelevel_t* level, int pos);
+int zzub_wavelevel_get_format(zzub_wavelevel_t* level);
 // 0.3: DEAD // void zzub_wavetable_set_format(zzub_player_t* player, int wave, int level, int format);
 
-void zzub_wavetable_remove_sample_range(zzub_player_t* player, int wave, int level, int start, int end);
-void zzub_wavetable_insert_sample_range(zzub_player_t* player, int wave, int level, int start, void* buffer, int channels, int format, int numsamples);
+void zzub_wavelevel_remove_sample_range(zzub_wavelevel_t* level, int start, int end);
+void zzub_wavelevel_insert_sample_range(zzub_wavelevel_t* level, int start, void* buffer, int channels, int format, int numsamples);
+void zzub_wavelevel_get_samples_digest(zzub_wavelevel_t* level, int channel, int start, int end, float *mindigest, float *maxdigest, float *ampdigest, int digestsize);
 
-void zzub_wavetable_get_samples_digest(zzub_player_t* player, int wave, int level, int channel, int start, int end, float *mindigest, float *maxdigest, float *ampdigest, int digestsize);
-
-int zzub_wavetable_get_envelope_count(zzub_player_t* player, int wave);
-void zzub_wavetable_set_envelope_count(zzub_player_t* player, int wave, int count);
-
-zzub_envelope_t* zzub_wavetable_get_envelope(zzub_player_t* player, int wave, int index);
-void zzub_wavetable_set_envelope(zzub_player_t* player, int wave, int index, zzub_envelope_t* env);
-
-int zzub_wavetable_save_sample(zzub_player_t* player, int wave, int level, zzub_output_t* datastream);
-int zzub_wavetable_save_sample_range(zzub_player_t* player, int wave, int level, zzub_output_t* datastream, int start, int end); 
 
 /*@}*/
 /** @name Envelopes */

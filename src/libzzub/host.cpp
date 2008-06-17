@@ -45,10 +45,9 @@ host::~host() {
 	}
 }
  
-const wave_info* host::get_wave(int const i) {
+const wave_info* host::get_wave(int i) {
 	if (i<1 || i>0xc8) return 0;
-	wave_info_ex* wi = plugin_player->wavetable.waves[i-1];
-	return wi;
+	return plugin_player->wavetable.waves[i-1];
 }
 
 const wave_level* host::get_wave_level(int i, int level) {
@@ -174,7 +173,8 @@ void host::midi_out(int time, unsigned int data) {
 // envelopes
 
 int host::get_envelope_size(int wave, int env) {
-	wave_info_ex* wi = (wave_info_ex*)get_wave(wave);
+	assert(wave - 1 >= 0 && wave - 1 < 200);
+	wave_info_ex* wi = plugin_player->wavetable.waves[wave - 1];
 
 	if (env < 0) return 0;
 	if (wi == 0) return 0;
@@ -187,7 +187,8 @@ int host::get_envelope_size(int wave, int env) {
 }
 
 bool host::get_envelope_point(int wave, int env, int i, unsigned short &x, unsigned short &y, int &flags) {
-	wave_info_ex* wi = (wave_info_ex*)get_wave(wave);
+	assert(wave - 1 >= 0 && wave - 1 < 200);
+	wave_info_ex* wi = plugin_player->wavetable.waves[wave - 1];
 
 	if (env < 0) return false;
 	if (wi == 0) return false;
@@ -202,9 +203,9 @@ bool host::get_envelope_point(int wave, int env, int i, unsigned short &x, unsig
 }
 
 
-const wave_level* host::get_nearest_wave_level(int i, int note) {
-	wave_info_ex* wi = (wave_info_ex*)get_wave(i);
-	if (wi == 0) return 0;
+const wave_level* host::get_nearest_wave_level(int wave, int note) {
+	assert(wave - 1 >= 0 && wave - 1 < 200);
+	wave_info_ex* wi = plugin_player->wavetable.waves[wave - 1];
 	
 	int nearestIndex = -1;
 	int nearestNote = 0;
@@ -218,7 +219,7 @@ const wave_level* host::get_nearest_wave_level(int i, int note) {
 
 	if (nearestIndex<0) nearestIndex = 0;
 
-	return get_wave_level(i, nearestIndex);
+	return wi->get_level(nearestIndex);
 }
 
 

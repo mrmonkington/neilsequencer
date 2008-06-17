@@ -10,7 +10,6 @@
 
 const char* get_open_filename(const char* fileName, const char* filter);
 int buzz_to_midi_note(int note);
-int find_level_index(const zzub::wave_info* info, const zzub::wave_level* level);
 void add_samples(float *pout, float *pin, int numsamples, float amp);
 float lognote(int freq);
 

@@ -306,8 +306,17 @@ struct libwrap : public zzub::lib {
 	virtual void get_instrument_list(zzub::outstream* os);
 };
 
+class CWaveLevelImpl : public CWaveLevel {
+};
+
+class CWaveInfoImpl : public CWaveInfo {
+	std::string name;
+	std::vector<CWaveLevelImpl> wave_levels;
+};
+
 class CMachineManager {
 public:
+	std::vector<CWaveInfoImpl> buzz_waves;
 	std::map<zzub_plugin_t*, CMachine*> plugin_to_machine;
 
 	CMachine* get(zzub::host* host, zzub_plugin_t* metaplugin);
