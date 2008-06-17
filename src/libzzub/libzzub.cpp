@@ -334,10 +334,11 @@ zzub_plugin_t* zzub_player_get_plugin(zzub_player_t *player, int index) {
 
 	operation_copy_flags flags;
 	flags.copy_graph = true;
+	flags.copy_plugins = true;
 	player->merge_backbuffer_flags(flags);
 
 	int id = player->back.graph[index].id;
-	return zzub_player_get_plugin_by_id(player, id);
+	return player->back.plugins[id]->proxy;
 }
 
 int zzub_plugin_set_midi_connection_device(zzub_plugin_t *to_plugin, zzub_plugin_t* from_plugin, const char* name) {

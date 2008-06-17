@@ -156,6 +156,7 @@ struct undo_manager {
 	//void execute_single_operation(operation* singleop);
 	void write_swap_song(zzub::song& song, const operation_copy_flags& flags);
 	void wait_swap_song_pointers();
+	void clear_swap_song(zzub::song& song, const operation_copy_flags& flags);
 
 	void commit_to_history(std::string description);
 	void flush_from_history();

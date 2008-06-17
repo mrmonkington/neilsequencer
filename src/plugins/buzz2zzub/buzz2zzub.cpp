@@ -629,7 +629,7 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 	{
 		machineInfo->machines->destroy(_host->get_metaplugin());
 		if (machineInfo->lockAddInput || machineInfo->lockSetTracks)
-			_host->remove_event_handler(0, &mevents);	// listen to event_type_pre_xxx-messages sent to the master
+			_host->remove_event_handler(_host->get_metaplugin("Master"), &mevents);	// listen to event_type_pre_xxx-messages sent to the master
 
 		delete this->machine;
 	}
@@ -653,7 +653,7 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 
 		// need event handlers
 		if (machineInfo->lockAddInput || machineInfo->lockSetTracks)
-			_host->set_event_handler(0, &mevents);	// listen to event_type_pre_xxx-messages sent to the master
+			_host->set_event_handler(_host->get_metaplugin("Master"), &mevents);	// listen to event_type_pre_xxx-messages sent to the master
 		c = 0;
 	}
 	virtual void process_controller_events() {}

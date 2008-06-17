@@ -218,12 +218,14 @@ void undo_manager::wait_swap_song_pointers() {
 	if (swap_mode) {
 		swap_operations_commit = true;
 		swap_operations_signal.wait();
+		clear_swap_song(back, backbuffer_flags);
 	} else {
 		swap_lock.lock();
 		write_swap_song(back, backbuffer_flags);
 		for (size_t i = 0; i < backbuffer_operations.size(); i++) {
 			backbuffer_operations[i]->operate(front);
 		}
+		clear_swap_song(back, backbuffer_flags);
 		swap_lock.unlock();
 	}
 }
@@ -472,8 +474,9 @@ void undo_manager::merge_backbuffer_flags(operation_copy_flags flags) {
 				int numsamples = sw.get_sample_count(wflags.level);
 				int sample_bytes = bytes_per_sample * channels * numsamples + extended_bytes;
 				void* newsamples = new char[sample_bytes];
-				memcpy(newsamples, sw.levels[wflags.level].samples, sample_bytes);
-				sw.levels[wflags.level].samples = (short*)newsamples;
+				memcpy(newsamples, sw.levels[wflags.level].legacy_sample_ptr, sample_bytes);
+				sw.levels[wflags.level].legacy_sample_ptr = (short*)newsamples;
+				sw.levels[wflags.level].samples = (short*)(((char*)newsamples) + extended_bytes);
 			}
 		}
 	}
@@ -540,6 +543,9 @@ void undo_manager::write_swap_song(zzub::song& song, const operation_copy_flags&
 
 	if (flags.copy_work_order)
 		front.work_order.swap(song.work_order);
+}
+
+void undo_manager::clear_swap_song(zzub::song& song, const operation_copy_flags& flags) {
 
 	// TODO: the following code is cleanup code and does not belong in the player thread!
 	// maybe in reset()? or in wait_swap_pointers(), or maybe all these belong in one method?
@@ -570,7 +576,7 @@ void undo_manager::write_swap_song(zzub::song& song, const operation_copy_flags&
 		const operation_copy_wavelevel_flags& wflags = flags.wavelevel_flags[i];
 		if (wflags.copy_samples)
 			if (wflags.level < song.wavetable.waves[wflags.wave]->levels.size())
-				delete[] song.wavetable.waves[wflags.wave]->levels[wflags.level].samples;
+				delete[] song.wavetable.waves[wflags.wave]->levels[wflags.level].legacy_sample_ptr;
 	}
 
 	for (size_t i = 0; i < flags.wave_flags.size(); i++) {
@@ -592,5 +598,7 @@ void undo_manager::write_swap_song(zzub::song& song, const operation_copy_flags&
 		metaplugin& tp = *back.plugins[pflags.plugin_id];
 		delete tp.patterns[pflags.index];
 	}
+
 }
+
 };
