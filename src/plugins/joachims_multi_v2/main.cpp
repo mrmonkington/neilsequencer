@@ -119,7 +119,7 @@ public:
 	virtual const char* describe_param(int) { return 0; }
 	virtual bool set_instrument(const char*) { return false; }
 	virtual void get_sub_menu(int, zzub::outstream*) {}
-	virtual void add_input(const char*) {}
+	virtual void add_input(const char*, zzub::connection_type) {}
 	virtual void delete_input(const char*) {}
 	virtual void rename_input(const char*, const char*) {}
 	virtual void input(float**, int, float) {}

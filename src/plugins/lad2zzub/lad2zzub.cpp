@@ -1269,12 +1269,12 @@ void CLadspa::get_sub_menu(int index,outstream *os)
 
 }
 
-void CLadspa::add_input(const char *name)
+void CLadspa::add_input(const char *name, zzub::connection_type type)
 {
 
 }
 
-void CLadspa::delete_input(const char *name)
+void CLadspa::delete_input(const char *name, zzub::connection_type type)
 {
 
 }

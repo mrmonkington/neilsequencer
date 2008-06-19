@@ -54,8 +54,8 @@ class graue_softsat: public zzub::plugin
 		virtual const char* describe_param(int) { return 0; }
 		virtual bool set_instrument(const char*) { return false; }
 		virtual void get_sub_menu(int, zzub::outstream*) {}
-		virtual void add_input(const char*) {}
-		virtual void delete_input(const char*) {}
+		virtual void add_input(const char*, zzub::connection_type) {}
+		virtual void delete_input(const char*, zzub::connection_type) {}
 		virtual void rename_input(const char*, const char*) {}
 		virtual void input(float**, int, float) {}
 		virtual void midi_control_change(int, int, int) {}

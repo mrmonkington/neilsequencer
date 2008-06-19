@@ -470,7 +470,7 @@ bool op_plugin_connect::prepare(zzub::song& song) {
 }
 
 bool op_plugin_connect::operate(zzub::song& song) {
-	song.plugins[to_id]->plugin->add_input(from_name.c_str());
+	song.plugins[to_id]->plugin->add_input(from_name.c_str(), type);
 	return true;
 }
 
@@ -563,7 +563,7 @@ bool op_plugin_disconnect::prepare(zzub::song& song) {
 
 bool op_plugin_disconnect::operate(zzub::song& song) {
 	metaplugin& m = *song.plugins[to_id];
-	m.plugin->delete_input(from_name.c_str());
+	m.plugin->delete_input(from_name.c_str(), type);
 	return true;
 }
 

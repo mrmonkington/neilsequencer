@@ -135,8 +135,8 @@ struct miditracker : public zzub::plugin {
 	virtual int get_wave_envelope_play_position(int) { return -1; }
 	virtual const char* describe_param(int) { return 0; }
 	virtual bool set_instrument(const char*) { return false; }
-	virtual void add_input(const char*) {}
-	virtual void delete_input(const char*) {}
+	virtual void add_input(const char*, zzub::connection_type type) {}
+	virtual void delete_input(const char*, zzub::connection_type type) {}
 	virtual void rename_input(const char*, const char*) {}
 	virtual void input(float**, int, float) {}
 	virtual void midi_control_change(int, int, int) {}

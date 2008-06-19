@@ -705,8 +705,8 @@ struct plugin {
 	virtual const char* describe_param(int param) = 0;//{ return 0; }
 	virtual bool set_instrument(const char *name) = 0;//{ return false; }
 	virtual void get_sub_menu(int index, zzub::outstream *os) = 0;//{}
-	virtual void add_input(const char *name) = 0;//{}
-	virtual void delete_input(const char *name) = 0;//{}
+	virtual void add_input(const char *name, zzub::connection_type type) = 0;//{}
+	virtual void delete_input(const char *name, zzub::connection_type type) = 0;//{}
 	virtual void rename_input(const char *oldname, const char *newname) = 0;//{}
 	virtual void input(float **samples, int size, float amp) = 0;//{}
 	virtual void midi_control_change(int ctrl, int channel, int value) = 0;//{}

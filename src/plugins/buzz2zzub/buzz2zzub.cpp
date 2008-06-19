@@ -1025,9 +1025,10 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 		return machineInfo->machines->get(_host, plugin);
 	}
 
-	virtual CMachineInfo const *GetMachineInfo(CMachine *pmac) {		
+	virtual CMachineInfo const *GetMachineInfo(CMachine *pmac) {	
+		if (pmac == 0) return 0;	// could happen after deleting a peer controlled machine
 		const zzub::info *_info = _host->get_info(pmac->plugin);
-		if (!_info) return 0;	// could happen after deleting a peer controlled machine
+		if (!_info) return 0;
 		
 		if (pmac->buzzinfo != 0) return pmac->buzzinfo;
 
@@ -1090,8 +1091,10 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 		CMachineDataOutputWrap mdow(os);
 		machine2->GetSubMenu(index, &mdow);
 	}
-	virtual void add_input(const char *name) {
+	virtual void add_input(const char *name, zzub::connection_type type) {
 		if (!machine2) return;
+		if (type != connection_type_audio) return ;
+
 		machine2->AddInput(name, true);
 		
 		// force stereo input:
@@ -1103,7 +1106,7 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 		// a bmx saved in buze where a mono machine runs into pvst will cause garbled sound in buzz.
 		machine2->SetInputChannels(name, true);
 	}
-	virtual void delete_input(const char *name) {
+	virtual void delete_input(const char *name, zzub::connection_type type) {
 		if (!machine2) return ;
 		machine2->DeleteInput(name);
 	}

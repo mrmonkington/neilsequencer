@@ -401,8 +401,8 @@ struct recorder_wavetable_plugin : plugin {
 	virtual const char* describe_param(int param) { return 0; }
 	virtual bool set_instrument(const char *name) { return false; }
 	virtual void get_sub_menu(int index, zzub::outstream *os) {}
-	virtual void add_input(const char *name) {}
-	virtual void delete_input(const char *name) {}
+	virtual void add_input(const char *name, zzub::connection_type type) {}
+	virtual void delete_input(const char *name, zzub::connection_type type) {}
 	virtual void rename_input(const char *oldname, const char *newname) {}
 	virtual void input(float **samples, int size, float amp) {}
 	virtual void midi_control_change(int ctrl, int channel, int value) {}
@@ -522,8 +522,8 @@ struct recorder_file_plugin : plugin {
 	virtual const char* describe_param(int param) { return 0; }
 	virtual bool set_instrument(const char *name) { return false; }
 	virtual void get_sub_menu(int index, zzub::outstream *os) {}
-	virtual void add_input(const char *name) {}
-	virtual void delete_input(const char *name) {}
+	virtual void add_input(const char *name, zzub::connection_type type) {}
+	virtual void delete_input(const char *name, zzub::connection_type type) {}
 	virtual void rename_input(const char *oldname, const char *newname) {}
 	virtual void input(float **samples, int size, float amp) {}
 	virtual void midi_control_change(int ctrl, int channel, int value) {}

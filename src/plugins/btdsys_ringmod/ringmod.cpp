@@ -129,8 +129,8 @@ public:
   virtual const char* describe_param(int) { return 0; }
   virtual bool set_instrument(const char*) { return false; }
   virtual void get_sub_menu(int, zzub::outstream*) {}
-  virtual void add_input(const char*);
-  virtual void delete_input(const char*);
+  virtual void add_input(const char*, zzub::connection_type);
+  virtual void delete_input(const char*, zzub::connection_type);
   virtual void rename_input(const char*, const char*);
   virtual void input(float**, int, float);
   virtual void midi_control_change(int, int, int) {}
@@ -189,7 +189,7 @@ void ringmod::process_events()
 //For some reason it is called once with macname pointing to the name
 //of the machine, then again with macname == NULL. We'll just ignore
 //the NULL one.
-void ringmod::add_input(const char *macname)
+void ringmod::add_input(const char *macname, zzub::connection_type type)
 {
 	if (macname != NULL)
 	{
@@ -218,7 +218,7 @@ int ringmod::find_input(const char *macname)
 ////////////////////////////////////////////////////////////////////////
 
 //This is called when a machine gets disconnected from our input.
-void ringmod::delete_input(const char *macname)
+void ringmod::delete_input(const char *macname, zzub::connection_type type)
 {
 	int i = find_input(macname);
 	if (i != -1) Inputs.erase(Inputs.begin() + i);

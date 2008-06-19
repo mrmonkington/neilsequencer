@@ -313,8 +313,8 @@ public:
 	bool set_instrument(const char *name);
 	void get_sub_menu(int index,outstream *os);
 	
-	void add_input(const char *name);
-	void delete_input(const char *name);
+	void add_input(const char *name, zzub::connection_type type);
+	void delete_input(const char *name, zzub::connection_type type);
 	void rename_input(const char *oldname,const char *newname);
 	void input(float **samples,int size,float amp);
 	bool handle_input(int index,int amp,int pan);

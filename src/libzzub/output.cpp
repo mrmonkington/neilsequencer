@@ -99,8 +99,8 @@ struct output_plugin : plugin {
 		}
 		os->write("\0");
 	}
-	virtual void add_input(const char *name) {}
-	virtual void delete_input(const char *name) {}
+	virtual void add_input(const char *name, zzub::connection_type type) {}
+	virtual void delete_input(const char *name, zzub::connection_type type) {}
 	virtual void rename_input(const char *oldname, const char *newname) {}
 	virtual void input(float **samples, int size, float amp) {}
 	virtual void midi_control_change(int ctrl, int channel, int value) {}
