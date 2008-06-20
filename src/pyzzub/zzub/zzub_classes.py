@@ -555,10 +555,6 @@ class _Player(object):
 		assert self._handle
 		return zzub_mididriver_open(self._handle,index)
 	
-	def add_midimapping(self, plugin, group, track, param, channel, controller):
-		assert self._handle
-		return Midimapping(zzub_player_add_midimapping(self._handle,plugin,group,track,param,channel,controller))
-	
 	def add_plugin_path(self, path):
 		assert self._handle
 		zzub_player_add_plugin_path(self._handle,path)
@@ -573,7 +569,7 @@ class _Player(object):
 	
 	def create_plugin(self, input, dataSize, instanceName, loader):
 		assert self._handle
-		return zzub_player_create_plugin(self._handle,input._handle,dataSize,instanceName,loader._handle)
+		return Plugin(zzub_player_create_plugin(self._handle,input._handle,dataSize,instanceName,loader._handle))
 	
 	def destroy(self):
 		assert self._handle
@@ -590,14 +586,6 @@ class _Player(object):
 	def get_bpm(self):
 		assert self._handle
 		return zzub_player_get_bpm(self._handle)
-	
-	def get_currently_playing_pattern(self, plugin, pattern, row):
-		assert self._handle
-		return zzub_player_get_currently_playing_pattern(self._handle,plugin,pattern,row)
-	
-	def get_currently_playing_pattern_row(self, plugin, pattern, row):
-		assert self._handle
-		return zzub_player_get_currently_playing_pattern_row(self._handle,plugin,pattern,row)
 	
 	def get_infotext(self):
 		assert self._handle
@@ -617,7 +605,7 @@ class _Player(object):
 	
 	def get_midi_plugin(self):
 		assert self._handle
-		return zzub_player_get_midi_plugin(self._handle)
+		return Plugin(zzub_player_get_midi_plugin(self._handle))
 	
 	def get_midi_transport(self):
 		assert self._handle
@@ -635,13 +623,17 @@ class _Player(object):
 		assert self._handle
 		zzub_player_get_new_plugin_name(self._handle,uri,name,maxLen)
 	
+	def get_plugin(self, index):
+		assert self._handle
+		return Plugin(zzub_player_get_plugin(self._handle,index))
+	
 	def get_plugin_by_id(self, id):
 		assert self._handle
-		return zzub_player_get_plugin_by_id(self._handle,id)
+		return Plugin(zzub_player_get_plugin_by_id(self._handle,id))
 	
 	def get_plugin_by_name(self, name):
 		assert self._handle
-		return zzub_player_get_plugin_by_name(self._handle,name)
+		return Plugin(zzub_player_get_plugin_by_name(self._handle,name))
 	
 	def get_plugin_count(self):
 		assert self._handle
@@ -686,6 +678,10 @@ class _Player(object):
 	def get_tpb(self):
 		assert self._handle
 		return zzub_player_get_tpb(self._handle)
+	
+	def get_wave(self, index):
+		assert self._handle
+		return Wave(zzub_player_get_wave(self._handle,index))
 	
 	def get_wave_count(self):
 		assert self._handle
@@ -735,10 +731,6 @@ class _Player(object):
 		assert self._handle
 		zzub_player_redo(self._handle)
 	
-	def remove_midimapping(self, plugin, group, track, param):
-		assert self._handle
-		return zzub_player_remove_midimapping(self._handle,plugin,group,track,param)
-	
 	def reset_keyjazz(self):
 		assert self._handle
 		zzub_player_reset_keyjazz(self._handle)
@@ -781,7 +773,7 @@ class _Player(object):
 	
 	def set_midi_plugin(self, plugin):
 		assert self._handle
-		zzub_player_set_midi_plugin(self._handle,plugin)
+		zzub_player_set_midi_plugin(self._handle,plugin._handle)
 	
 	def set_midi_transport(self, enable):
 		assert self._handle
@@ -815,325 +807,13 @@ class _Player(object):
 		assert self._handle
 		return zzub_player_work_stereo(self._handle,numSamples)
 	
-	def plugin_add_event_connection_binding(self, plugin, from_plugin, sourceparam, targetgroup, targettrack, targetparam):
-		assert self._handle
-		zzub_plugin_add_event_connection_binding(self._handle,plugin,from_plugin,sourceparam,targetgroup,targettrack,targetparam)
-	
-	def plugin_add_input(self, plugin, fromMachine, type):
-		assert self._handle
-		return zzub_plugin_add_input(self._handle,plugin,fromMachine,type)
-	
-	def plugin_add_pattern(self, plugin, pattern):
-		assert self._handle
-		zzub_plugin_add_pattern(self._handle,plugin,pattern._handle)
-	
-	def plugin_command(self, plugin, i):
-		assert self._handle
-		zzub_plugin_command(self._handle,plugin,i)
-	
-	def plugin_create_pattern(self, plugin, rows):
-		assert self._handle
-		return Pattern(zzub_plugin_create_pattern(self._handle,plugin,rows))
-	
 	def plugin_create_range_pattern(self, columns, rows):
 		assert self._handle
 		return Pattern(zzub_plugin_create_range_pattern(self._handle,columns,rows))
 	
-	def plugin_delete_input(self, plugin, fromMachine, type):
+	def sequence_create_track(self, plugin):
 		assert self._handle
-		zzub_plugin_delete_input(self._handle,plugin,fromMachine,type)
-	
-	def plugin_describe_value(self, plugin, group, column, value, name, maxlen):
-		assert self._handle
-		return zzub_plugin_describe_value(self._handle,plugin,group,column,value,name,maxlen)
-	
-	def plugin_destroy(self, plugin):
-		assert self._handle
-		return zzub_plugin_destroy(self._handle,plugin)
-	
-	def plugin_get_attribute_value(self, plugin, index):
-		assert self._handle
-		return zzub_plugin_get_attribute_value(self._handle,plugin,index)
-	
-	def plugin_get_bypass(self, plugin):
-		assert self._handle
-		return zzub_plugin_get_bypass(self._handle,plugin)
-	
-	def plugin_get_commands(self, plugin, commands, maxlen):
-		assert self._handle
-		return zzub_plugin_get_commands(self._handle,plugin,commands,maxlen)
-	
-	def plugin_get_envelope_count(self, plugin):
-		assert self._handle
-		return zzub_plugin_get_envelope_count(self._handle,plugin)
-	
-	def plugin_get_envelope_flags(self, plugin, index):
-		assert self._handle
-		return zzub_plugin_get_envelope_flags(self._handle,plugin,index)
-	
-	def plugin_get_envelope_name(self, plugin, index):
-		assert self._handle
-		return zzub_plugin_get_envelope_name(self._handle,plugin,index)
-	
-	def plugin_get_flags(self, plugin):
-		assert self._handle
-		return zzub_plugin_get_flags(self._handle,plugin)
-	
-	def plugin_get_id(self, plugin):
-		assert self._handle
-		return zzub_plugin_get_id(self._handle,plugin)
-	
-	def plugin_get_input_connection_by_type(self, plugin, from_plugin, type):
-		assert self._handle
-		return zzub_plugin_get_input_connection_by_type(self._handle,plugin,from_plugin,type)
-	
-	def plugin_get_input_connection_count(self, plugin):
-		assert self._handle
-		return zzub_plugin_get_input_connection_count(self._handle,plugin)
-	
-	def plugin_get_input_connection_plugin(self, plugin, index):
-		assert self._handle
-		return zzub_plugin_get_input_connection_plugin(self._handle,plugin,index)
-	
-	def plugin_get_input_connection_type(self, plugin, index):
-		assert self._handle
-		return zzub_plugin_get_input_connection_type(self._handle,plugin,index)
-	
-	def plugin_get_last_audio_result(self, machine):
-		assert self._handle
-		return zzub_plugin_get_last_audio_result(self._handle,machine)
-	
-	def plugin_get_last_cpu_load(self, plugin):
-		assert self._handle
-		return zzub_plugin_get_last_cpu_load(self._handle,plugin)
-	
-	def plugin_get_last_midi_result(self, machine):
-		assert self._handle
-		return zzub_plugin_get_last_midi_result(self._handle,machine)
-	
-	def plugin_get_last_peak(self, plugin, maxL, maxR):
-		assert self._handle
-		zzub_plugin_get_last_peak(self._handle,plugin,maxL,maxR)
-	
-	def plugin_get_last_worktime(self, plugin):
-		assert self._handle
-		return zzub_plugin_get_last_worktime(self._handle,plugin)
-	
-	def plugin_get_midi_output_device(self, plugin, index):
-		assert self._handle
-		return zzub_plugin_get_midi_output_device(self._handle,plugin,index)
-	
-	def plugin_get_midi_output_device_count(self, plugin):
-		assert self._handle
-		return zzub_plugin_get_midi_output_device_count(self._handle,plugin)
-	
-	def plugin_get_mixbuffer(self, plugin, leftbuffer, rightbuffer, size, samplepos):
-		assert self._handle
-		return zzub_plugin_get_mixbuffer(self._handle,plugin,leftbuffer,rightbuffer,size,samplepos)
-	
-	def plugin_get_mute(self, plugin):
-		assert self._handle
-		return zzub_plugin_get_mute(self._handle,plugin)
-	
-	def plugin_get_name(self, plugin, name, maxlen):
-		assert self._handle
-		return zzub_plugin_get_name(self._handle,plugin,name,maxlen)
-	
-	def plugin_get_new_pattern_name(self, plugin, name, maxLen):
-		assert self._handle
-		zzub_plugin_get_new_pattern_name(self._handle,plugin,name,maxLen)
-	
-	def plugin_get_output_connection_by_type(self, plugin, from_plugin, type):
-		assert self._handle
-		return zzub_plugin_get_output_connection_by_type(self._handle,plugin,from_plugin,type)
-	
-	def plugin_get_output_connection_count(self, plugin):
-		assert self._handle
-		return zzub_plugin_get_output_connection_count(self._handle,plugin)
-	
-	def plugin_get_output_connection_plugin(self, plugin, index):
-		assert self._handle
-		return zzub_plugin_get_output_connection_plugin(self._handle,plugin,index)
-	
-	def plugin_get_output_connection_type(self, plugin, index):
-		assert self._handle
-		return zzub_plugin_get_output_connection_type(self._handle,plugin,index)
-	
-	def plugin_get_parameter(self, plugin, group, track, column):
-		assert self._handle
-		return Parameter(zzub_plugin_get_parameter(self._handle,plugin,group,track,column))
-	
-	def plugin_get_parameter_count(self, plugin, group, track):
-		assert self._handle
-		return zzub_plugin_get_parameter_count(self._handle,plugin,group,track)
-	
-	def plugin_get_parameter_value(self, plugin, group, track, column):
-		assert self._handle
-		return zzub_plugin_get_parameter_value(self._handle,plugin,group,track,column)
-	
-	def plugin_get_pattern(self, plugin, index):
-		assert self._handle
-		return Pattern(zzub_plugin_get_pattern(self._handle,plugin,index))
-	
-	def plugin_get_pattern_by_name(self, plugin, name):
-		assert self._handle
-		return zzub_plugin_get_pattern_by_name(self._handle,plugin,name)
-	
-	def plugin_get_pattern_column_count(self, plugin):
-		assert self._handle
-		return zzub_plugin_get_pattern_column_count(self._handle,plugin)
-	
-	def plugin_get_pattern_count(self, plugin):
-		assert self._handle
-		return zzub_plugin_get_pattern_count(self._handle,plugin)
-	
-	def plugin_get_pattern_length(self, plugin, index):
-		assert self._handle
-		return zzub_plugin_get_pattern_length(self._handle,plugin,index)
-	
-	def plugin_get_pattern_name(self, plugin, index):
-		assert self._handle
-		return zzub_plugin_get_pattern_name(self._handle,plugin,index)
-	
-	def plugin_get_pattern_value(self, plugin, pattern, group, track, column, row):
-		assert self._handle
-		return zzub_plugin_get_pattern_value(self._handle,plugin,pattern,group,track,column,row)
-	
-	def plugin_get_pluginloader(self, plugin):
-		assert self._handle
-		return Pluginloader(zzub_plugin_get_pluginloader(self._handle,plugin))
-	
-	def plugin_get_position(self, plugin, x, y):
-		assert self._handle
-		zzub_plugin_get_position(self._handle,plugin,x,y)
-	
-	def plugin_get_sub_commands(self, plugin, i, commands, maxlen):
-		assert self._handle
-		return zzub_plugin_get_sub_commands(self._handle,plugin,i,commands,maxlen)
-	
-	def plugin_get_track_count(self, plugin):
-		assert self._handle
-		return zzub_plugin_get_track_count(self._handle,plugin)
-	
-	def plugin_insert_pattern_rows(self, plugin_id, pattern, column_indices, num_indices, start, rows):
-		assert self._handle
-		zzub_plugin_insert_pattern_rows(self._handle,plugin_id,pattern,column_indices,num_indices,start,rows)
-	
-	def plugin_invoke_event(self, plugin, data, immediate):
-		assert self._handle
-		return zzub_plugin_invoke_event(self._handle,plugin,data,immediate)
-	
-	def plugin_linear_to_pattern(self, plugin, index, group, track, column):
-		assert self._handle
-		return zzub_plugin_linear_to_pattern(self._handle,plugin,index,group,track,column)
-	
-	def plugin_load(self, plugin, input):
-		assert self._handle
-		return zzub_plugin_load(self._handle,plugin,input._handle)
-	
-	def plugin_move_pattern(self, plugin, index, newIndex):
-		assert self._handle
-		zzub_plugin_move_pattern(self._handle,plugin,index,newIndex)
-	
-	def plugin_pattern_to_linear(self, plugin, group, track, column, index):
-		assert self._handle
-		return zzub_plugin_pattern_to_linear(self._handle,plugin,group,track,column,index)
-	
-	def plugin_play_midi_note(self, plugin, note, prevNote, velocity):
-		assert self._handle
-		zzub_plugin_play_midi_note(self._handle,plugin,note,prevNote,velocity)
-	
-	def plugin_play_pattern_row(self, plugin, pattern, row):
-		assert self._handle
-		zzub_plugin_play_pattern_row(self._handle,plugin,pattern._handle,row)
-	
-	def plugin_play_pattern_row_ref(self, plugin, pattern, row):
-		assert self._handle
-		zzub_plugin_play_pattern_row_ref(self._handle,plugin,pattern,row)
-	
-	def plugin_remove_pattern(self, plugin, pattern):
-		assert self._handle
-		zzub_plugin_remove_pattern(self._handle,plugin,pattern)
-	
-	def plugin_remove_pattern_rows(self, plugin_id, pattern, column_indices, num_indices, start, rows):
-		assert self._handle
-		zzub_plugin_remove_pattern_rows(self._handle,plugin_id,pattern,column_indices,num_indices,start,rows)
-	
-	def plugin_save(self, plugin, ouput):
-		assert self._handle
-		return zzub_plugin_save(self._handle,plugin,ouput._handle)
-	
-	def plugin_set_attribute_value(self, plugin, index, value):
-		assert self._handle
-		zzub_plugin_set_attribute_value(self._handle,plugin,index,value)
-	
-	def plugin_set_bypass(self, plugin, muted):
-		assert self._handle
-		zzub_plugin_set_bypass(self._handle,plugin,muted)
-	
-	def plugin_set_instrument(self, plugin, name):
-		assert self._handle
-		return zzub_plugin_set_instrument(self._handle,plugin,name)
-	
-	def plugin_set_midi_connection_device(self, plugin, from_plugin, name):
-		assert self._handle
-		return zzub_plugin_set_midi_connection_device(self._handle,plugin,from_plugin,name)
-	
-	def plugin_set_mute(self, plugin, muted):
-		assert self._handle
-		zzub_plugin_set_mute(self._handle,plugin,muted)
-	
-	def plugin_set_name(self, plugin, name):
-		assert self._handle
-		return zzub_plugin_set_name(self._handle,plugin,name)
-	
-	def plugin_set_parameter_value(self, plugin, group, track, column, value, record):
-		assert self._handle
-		zzub_plugin_set_parameter_value(self._handle,plugin,group,track,column,value,record)
-	
-	def plugin_set_parameter_value_direct(self, plugin, group, track, column, value, record):
-		assert self._handle
-		zzub_plugin_set_parameter_value_direct(self._handle,plugin,group,track,column,value,record)
-	
-	def plugin_set_pattern_length(self, plugin, index, rows):
-		assert self._handle
-		zzub_plugin_set_pattern_length(self._handle,plugin,index,rows)
-	
-	def plugin_set_pattern_name(self, plugin, index, name):
-		assert self._handle
-		zzub_plugin_set_pattern_name(self._handle,plugin,index,name)
-	
-	def plugin_set_pattern_value(self, plugin, pattern, group, track, column, row, value):
-		assert self._handle
-		zzub_plugin_set_pattern_value(self._handle,plugin,pattern,group,track,column,row,value)
-	
-	def plugin_set_position(self, plugin, x, y):
-		assert self._handle
-		zzub_plugin_set_position(self._handle,plugin,x,y)
-	
-	def plugin_set_position_direct(self, plugin, x, y):
-		assert self._handle
-		zzub_plugin_set_position_direct(self._handle,plugin,x,y)
-	
-	def plugin_set_stream_source(self, plugin, resource):
-		assert self._handle
-		zzub_plugin_set_stream_source(self._handle,plugin,resource)
-	
-	def plugin_set_track_count(self, plugin, count):
-		assert self._handle
-		zzub_plugin_set_track_count(self._handle,plugin,count)
-	
-	def plugin_tick(self, plugin):
-		assert self._handle
-		zzub_plugin_tick(self._handle,plugin)
-	
-	def plugin_update_pattern(self, plugin, index, pattern):
-		assert self._handle
-		zzub_plugin_update_pattern(self._handle,plugin,index,pattern._handle)
-	
-	def sequence_create_track(self, machine):
-		assert self._handle
-		zzub_sequence_create_track(self._handle,machine)
+		zzub_sequence_create_track(self._handle,plugin._handle)
 	
 	def sequence_get_event_action(self, index, action, track, pos, value):
 		assert self._handle
@@ -1157,7 +837,7 @@ class _Player(object):
 	
 	def sequence_get_plugin(self, track):
 		assert self._handle
-		return zzub_sequence_get_plugin(self._handle,track)
+		return Plugin(zzub_sequence_get_plugin(self._handle,track))
 	
 	def sequence_insert_events(self, track_indices, num_indices, start, ticks):
 		assert self._handle
@@ -1171,141 +851,358 @@ class _Player(object):
 		assert self._handle
 		return zzub_sequence_remove_events(self._handle,track_indices,num_indices,start,ticks)
 	
-	def sequence_remove_track(self, machine):
+	def sequence_remove_track(self, index):
 		assert self._handle
-		zzub_sequence_remove_track(self._handle,machine)
+		zzub_sequence_remove_track(self._handle,index)
 	
 	def sequence_set_event(self, track, pos, value):
 		assert self._handle
 		zzub_sequence_set_event(self._handle,track,pos,value)
 	
-	def wavetable_clear_level(self, wave, level):
-		assert self._handle
-		return zzub_wavetable_clear_level(self._handle,wave,level)
+class _Plugin(object):
+	_handle = None
+	_hash = 0
 	
-	def wavetable_clear_wave(self, wave):
+	def __init__(self,handle):
+		self._handle = handle
+		self._hash = cast(self._handle, c_void_p).value
+
+	def __hash__(self):
+		return self._hash
+
+	def __eq__(self,other):
+		return self._hash == hash(other)
+
+	def __ne__(self,other):
+		return self._hash != hash(other)
+
+	def player_add_midimapping(self, group, track, param, channel, controller):
 		assert self._handle
-		return zzub_wavetable_clear_wave(self._handle,wave)
+		return Midimapping(zzub_player_add_midimapping(self._handle,group,track,param,channel,controller))
 	
-	def wavetable_get_envelope(self, wave, index):
+	def player_get_currently_playing_pattern(self, pattern, row):
 		assert self._handle
-		return Envelope(zzub_wavetable_get_envelope(self._handle,wave,index))
+		return zzub_player_get_currently_playing_pattern(self._handle,pattern,row)
 	
-	def wavetable_get_envelope_count(self, wave):
+	def player_get_currently_playing_pattern_row(self, pattern, row):
 		assert self._handle
-		return zzub_wavetable_get_envelope_count(self._handle,wave)
+		return zzub_player_get_currently_playing_pattern_row(self._handle,pattern,row)
 	
-	def wavetable_get_format(self, wave, level):
+	def player_remove_midimapping(self, group, track, param):
 		assert self._handle
-		return zzub_wavetable_get_format(self._handle,wave,level)
+		return zzub_player_remove_midimapping(self._handle,group,track,param)
 	
-	def wavetable_get_level_count(self, wave):
+	def add_event_connection_binding(self, from_plugin, sourceparam, targetgroup, targettrack, targetparam):
 		assert self._handle
-		return zzub_wavetable_get_level_count(self._handle,wave)
+		zzub_plugin_add_event_connection_binding(self._handle,from_plugin._handle,sourceparam,targetgroup,targettrack,targetparam)
 	
-	def wavetable_get_loop_end(self, wave, level):
+	def add_input(self, from_plugin, type):
 		assert self._handle
-		return zzub_wavetable_get_loop_end(self._handle,wave,level)
+		return zzub_plugin_add_input(self._handle,from_plugin._handle,type)
 	
-	def wavetable_get_loop_start(self, wave, level):
+	def add_pattern(self, pattern):
 		assert self._handle
-		return zzub_wavetable_get_loop_start(self._handle,wave,level)
+		zzub_plugin_add_pattern(self._handle,pattern._handle)
 	
-	def wavetable_get_root_note(self, wave, level):
+	def command(self, i):
 		assert self._handle
-		return zzub_wavetable_get_root_note(self._handle,wave,level)
+		zzub_plugin_command(self._handle,i)
 	
-	def wavetable_get_sample_count(self, wave, level):
+	def create_pattern(self, rows):
 		assert self._handle
-		return zzub_wavetable_get_sample_count(self._handle,wave,level)
+		return Pattern(zzub_plugin_create_pattern(self._handle,rows))
 	
-	def wavetable_get_samples_digest(self, wave, level, channel, start, end, mindigest, maxdigest, ampdigest, digestsize):
+	def delete_input(self, from_plugin, type):
 		assert self._handle
-		zzub_wavetable_get_samples_digest(self._handle,wave,level,channel,start,end,mindigest,maxdigest,ampdigest,digestsize)
+		zzub_plugin_delete_input(self._handle,from_plugin._handle,type)
 	
-	def wavetable_get_samples_per_second(self, wave, level):
+	def describe_value(self, group, column, value, name, maxlen):
 		assert self._handle
-		return zzub_wavetable_get_samples_per_second(self._handle,wave,level)
+		return zzub_plugin_describe_value(self._handle,group,column,value,name,maxlen)
 	
-	def wavetable_get_wave_flags(self, wave):
+	def destroy(self):
 		assert self._handle
-		return zzub_wavetable_get_wave_flags(self._handle,wave)
+		return zzub_plugin_destroy(self._handle)
 	
-	def wavetable_get_wave_name(self, wave):
+	def get_attribute_value(self, index):
 		assert self._handle
-		return zzub_wavetable_get_wave_name(self._handle,wave)
+		return zzub_plugin_get_attribute_value(self._handle,index)
 	
-	def wavetable_get_wave_path(self, wave):
+	def get_bypass(self):
 		assert self._handle
-		return zzub_wavetable_get_wave_path(self._handle,wave)
+		return zzub_plugin_get_bypass(self._handle)
 	
-	def wavetable_get_wave_volume(self, wave):
+	def get_commands(self, commands, maxlen):
 		assert self._handle
-		return zzub_wavetable_get_wave_volume(self._handle,wave)
+		return zzub_plugin_get_commands(self._handle,commands,maxlen)
 	
-	def wavetable_insert_sample_range(self, wave, level, start, buffer, channels, format, numsamples):
+	def get_envelope_count(self):
 		assert self._handle
-		zzub_wavetable_insert_sample_range(self._handle,wave,level,start,buffer,channels,format,numsamples)
+		return zzub_plugin_get_envelope_count(self._handle)
 	
-	def wavetable_load_sample(self, wave, level, offset, clear, path, datastream):
+	def get_envelope_flags(self, index):
 		assert self._handle
-		return zzub_wavetable_load_sample(self._handle,wave,level,offset,clear,path,datastream._handle)
+		return zzub_plugin_get_envelope_flags(self._handle,index)
 	
-	def wavetable_remove_sample_range(self, wave, level, start, end):
+	def get_envelope_name(self, index):
 		assert self._handle
-		zzub_wavetable_remove_sample_range(self._handle,wave,level,start,end)
+		return zzub_plugin_get_envelope_name(self._handle,index)
 	
-	def wavetable_save_sample(self, wave, level, datastream):
+	def get_flags(self):
 		assert self._handle
-		return zzub_wavetable_save_sample(self._handle,wave,level,datastream._handle)
+		return zzub_plugin_get_flags(self._handle)
 	
-	def wavetable_save_sample_range(self, wave, level, datastream, start, end):
+	def get_id(self):
 		assert self._handle
-		return zzub_wavetable_save_sample_range(self._handle,wave,level,datastream._handle,start,end)
+		return zzub_plugin_get_id(self._handle)
 	
-	def wavetable_set_envelope(self, wave, index, env):
+	def get_input_connection_by_type(self, from_plugin, type):
 		assert self._handle
-		zzub_wavetable_set_envelope(self._handle,wave,index,env._handle)
+		return zzub_plugin_get_input_connection_by_type(self._handle,from_plugin._handle,type)
 	
-	def wavetable_set_envelope_count(self, wave, count):
+	def get_input_connection_count(self):
 		assert self._handle
-		zzub_wavetable_set_envelope_count(self._handle,wave,count)
+		return zzub_plugin_get_input_connection_count(self._handle)
 	
-	def wavetable_set_loop_end(self, wave, level, pos):
+	def get_input_connection_plugin(self, index):
 		assert self._handle
-		zzub_wavetable_set_loop_end(self._handle,wave,level,pos)
+		return Plugin(zzub_plugin_get_input_connection_plugin(self._handle,index))
 	
-	def wavetable_set_loop_start(self, wave, level, pos):
+	def get_input_connection_type(self, index):
 		assert self._handle
-		zzub_wavetable_set_loop_start(self._handle,wave,level,pos)
+		return zzub_plugin_get_input_connection_type(self._handle,index)
 	
-	def wavetable_set_root_note(self, wave, level, note):
+	def get_last_audio_result(self):
 		assert self._handle
-		zzub_wavetable_set_root_note(self._handle,wave,level,note)
+		return zzub_plugin_get_last_audio_result(self._handle)
 	
-	def wavetable_set_sample_count(self, wave, level, count):
+	def get_last_cpu_load(self):
 		assert self._handle
-		zzub_wavetable_set_sample_count(self._handle,wave,level,count)
+		return zzub_plugin_get_last_cpu_load(self._handle)
 	
-	def wavetable_set_samples_per_second(self, wave, level, sps):
+	def get_last_midi_result(self):
 		assert self._handle
-		zzub_wavetable_set_samples_per_second(self._handle,wave,level,sps)
+		return zzub_plugin_get_last_midi_result(self._handle)
 	
-	def wavetable_set_wave_flags(self, wave, flags):
+	def get_last_peak(self, maxL, maxR):
 		assert self._handle
-		zzub_wavetable_set_wave_flags(self._handle,wave,flags)
+		zzub_plugin_get_last_peak(self._handle,maxL,maxR)
 	
-	def wavetable_set_wave_name(self, wave, name):
+	def get_last_worktime(self):
 		assert self._handle
-		zzub_wavetable_set_wave_name(self._handle,wave,name)
+		return zzub_plugin_get_last_worktime(self._handle)
 	
-	def wavetable_set_wave_path(self, wave, path):
+	def get_midi_output_device(self, index):
 		assert self._handle
-		zzub_wavetable_set_wave_path(self._handle,wave,path)
+		return zzub_plugin_get_midi_output_device(self._handle,index)
 	
-	def wavetable_set_wave_volume(self, wave, volume):
+	def get_midi_output_device_count(self):
 		assert self._handle
-		zzub_wavetable_set_wave_volume(self._handle,wave,volume)
+		return zzub_plugin_get_midi_output_device_count(self._handle)
+	
+	def get_mixbuffer(self, leftbuffer, rightbuffer, size, samplepos):
+		assert self._handle
+		return zzub_plugin_get_mixbuffer(self._handle,leftbuffer,rightbuffer,size,samplepos)
+	
+	def get_mute(self):
+		assert self._handle
+		return zzub_plugin_get_mute(self._handle)
+	
+	def get_name(self, name, maxlen):
+		assert self._handle
+		return zzub_plugin_get_name(self._handle,name,maxlen)
+	
+	def get_new_pattern_name(self, name, maxLen):
+		assert self._handle
+		zzub_plugin_get_new_pattern_name(self._handle,name,maxLen)
+	
+	def get_output_connection_by_type(self, from_plugin, type):
+		assert self._handle
+		return zzub_plugin_get_output_connection_by_type(self._handle,from_plugin._handle,type)
+	
+	def get_output_connection_count(self):
+		assert self._handle
+		return zzub_plugin_get_output_connection_count(self._handle)
+	
+	def get_output_connection_plugin(self, index):
+		assert self._handle
+		return Plugin(zzub_plugin_get_output_connection_plugin(self._handle,index))
+	
+	def get_output_connection_type(self, index):
+		assert self._handle
+		return zzub_plugin_get_output_connection_type(self._handle,index)
+	
+	def get_parameter(self, group, track, column):
+		assert self._handle
+		return Parameter(zzub_plugin_get_parameter(self._handle,group,track,column))
+	
+	def get_parameter_count(self, group, track):
+		assert self._handle
+		return zzub_plugin_get_parameter_count(self._handle,group,track)
+	
+	def get_parameter_value(self, group, track, column):
+		assert self._handle
+		return zzub_plugin_get_parameter_value(self._handle,group,track,column)
+	
+	def get_pattern(self, index):
+		assert self._handle
+		return Pattern(zzub_plugin_get_pattern(self._handle,index))
+	
+	def get_pattern_by_name(self, name):
+		assert self._handle
+		return zzub_plugin_get_pattern_by_name(self._handle,name)
+	
+	def get_pattern_column_count(self):
+		assert self._handle
+		return zzub_plugin_get_pattern_column_count(self._handle)
+	
+	def get_pattern_count(self):
+		assert self._handle
+		return zzub_plugin_get_pattern_count(self._handle)
+	
+	def get_pattern_length(self, index):
+		assert self._handle
+		return zzub_plugin_get_pattern_length(self._handle,index)
+	
+	def get_pattern_name(self, index):
+		assert self._handle
+		return zzub_plugin_get_pattern_name(self._handle,index)
+	
+	def get_pattern_value(self, pattern, group, track, column, row):
+		assert self._handle
+		return zzub_plugin_get_pattern_value(self._handle,pattern,group,track,column,row)
+	
+	def get_pluginloader(self):
+		assert self._handle
+		return Pluginloader(zzub_plugin_get_pluginloader(self._handle))
+	
+	def get_position(self, x, y):
+		assert self._handle
+		zzub_plugin_get_position(self._handle,x,y)
+	
+	def get_sub_commands(self, i, commands, maxlen):
+		assert self._handle
+		return zzub_plugin_get_sub_commands(self._handle,i,commands,maxlen)
+	
+	def get_track_count(self):
+		assert self._handle
+		return zzub_plugin_get_track_count(self._handle)
+	
+	def insert_pattern_rows(self, pattern, column_indices, num_indices, start, rows):
+		assert self._handle
+		zzub_plugin_insert_pattern_rows(self._handle,pattern,column_indices,num_indices,start,rows)
+	
+	def invoke_event(self, data, immediate):
+		assert self._handle
+		return zzub_plugin_invoke_event(self._handle,data,immediate)
+	
+	def linear_to_pattern(self, index, group, track, column):
+		assert self._handle
+		return zzub_plugin_linear_to_pattern(self._handle,index,group,track,column)
+	
+	def load(self, input):
+		assert self._handle
+		return zzub_plugin_load(self._handle,input._handle)
+	
+	def move_pattern(self, index, newIndex):
+		assert self._handle
+		zzub_plugin_move_pattern(self._handle,index,newIndex)
+	
+	def pattern_to_linear(self, group, track, column, index):
+		assert self._handle
+		return zzub_plugin_pattern_to_linear(self._handle,group,track,column,index)
+	
+	def play_midi_note(self, note, prevNote, velocity):
+		assert self._handle
+		zzub_plugin_play_midi_note(self._handle,note,prevNote,velocity)
+	
+	def play_pattern_row(self, pattern, row):
+		assert self._handle
+		zzub_plugin_play_pattern_row(self._handle,pattern._handle,row)
+	
+	def play_pattern_row_ref(self, pattern, row):
+		assert self._handle
+		zzub_plugin_play_pattern_row_ref(self._handle,pattern,row)
+	
+	def remove_pattern(self, pattern):
+		assert self._handle
+		zzub_plugin_remove_pattern(self._handle,pattern)
+	
+	def remove_pattern_rows(self, pattern, column_indices, num_indices, start, rows):
+		assert self._handle
+		zzub_plugin_remove_pattern_rows(self._handle,pattern,column_indices,num_indices,start,rows)
+	
+	def save(self, ouput):
+		assert self._handle
+		return zzub_plugin_save(self._handle,ouput._handle)
+	
+	def set_attribute_value(self, index, value):
+		assert self._handle
+		zzub_plugin_set_attribute_value(self._handle,index,value)
+	
+	def set_bypass(self, muted):
+		assert self._handle
+		zzub_plugin_set_bypass(self._handle,muted)
+	
+	def set_instrument(self, name):
+		assert self._handle
+		return zzub_plugin_set_instrument(self._handle,name)
+	
+	def set_midi_connection_device(self, from_plugin, name):
+		assert self._handle
+		return zzub_plugin_set_midi_connection_device(self._handle,from_plugin._handle,name)
+	
+	def set_mute(self, muted):
+		assert self._handle
+		zzub_plugin_set_mute(self._handle,muted)
+	
+	def set_name(self, name):
+		assert self._handle
+		return zzub_plugin_set_name(self._handle,name)
+	
+	def set_parameter_value(self, group, track, column, value, record):
+		assert self._handle
+		zzub_plugin_set_parameter_value(self._handle,group,track,column,value,record)
+	
+	def set_parameter_value_direct(self, group, track, column, value, record):
+		assert self._handle
+		zzub_plugin_set_parameter_value_direct(self._handle,group,track,column,value,record)
+	
+	def set_pattern_length(self, index, rows):
+		assert self._handle
+		zzub_plugin_set_pattern_length(self._handle,index,rows)
+	
+	def set_pattern_name(self, index, name):
+		assert self._handle
+		zzub_plugin_set_pattern_name(self._handle,index,name)
+	
+	def set_pattern_value(self, pattern, group, track, column, row, value):
+		assert self._handle
+		zzub_plugin_set_pattern_value(self._handle,pattern,group,track,column,row,value)
+	
+	def set_position(self, x, y):
+		assert self._handle
+		zzub_plugin_set_position(self._handle,x,y)
+	
+	def set_position_direct(self, x, y):
+		assert self._handle
+		zzub_plugin_set_position_direct(self._handle,x,y)
+	
+	def set_stream_source(self, resource):
+		assert self._handle
+		zzub_plugin_set_stream_source(self._handle,resource)
+	
+	def set_track_count(self, count):
+		assert self._handle
+		zzub_plugin_set_track_count(self._handle,count)
+	
+	def tick(self):
+		assert self._handle
+		zzub_plugin_tick(self._handle)
+	
+	def update_pattern(self, index, pattern):
+		assert self._handle
+		zzub_plugin_update_pattern(self._handle,index,pattern._handle)
 	
 class _Plugincollection(object):
 	_handle = None
@@ -1405,19 +1302,192 @@ class _Pluginloader(object):
 		assert self._handle
 		return zzub_pluginloader_get_uri(self._handle)
 	
+class _Wave(object):
+	_handle = None
+	_hash = 0
+	
+	def __init__(self,handle):
+		self._handle = handle
+		self._hash = cast(self._handle, c_void_p).value
+
+	def __hash__(self):
+		return self._hash
+
+	def __eq__(self,other):
+		return self._hash == hash(other)
+
+	def __ne__(self,other):
+		return self._hash != hash(other)
+
+	def clear(self):
+		assert self._handle
+		return zzub_wave_clear(self._handle)
+	
+	def get_envelope(self, index):
+		assert self._handle
+		return Envelope(zzub_wave_get_envelope(self._handle,index))
+	
+	def get_envelope_count(self):
+		assert self._handle
+		return zzub_wave_get_envelope_count(self._handle)
+	
+	def get_flags(self):
+		assert self._handle
+		return zzub_wave_get_flags(self._handle)
+	
+	def get_index(self):
+		assert self._handle
+		return zzub_wave_get_index(self._handle)
+	
+	def get_level(self, index):
+		assert self._handle
+		return Wavelevel(zzub_wave_get_level(self._handle,index))
+	
+	def get_level_count(self):
+		assert self._handle
+		return zzub_wave_get_level_count(self._handle)
+	
+	def get_name(self):
+		assert self._handle
+		return zzub_wave_get_name(self._handle)
+	
+	def get_path(self):
+		assert self._handle
+		return zzub_wave_get_path(self._handle)
+	
+	def get_volume(self):
+		assert self._handle
+		return zzub_wave_get_volume(self._handle)
+	
+	def load_sample(self, level, offset, clear, path, datastream):
+		assert self._handle
+		return zzub_wave_load_sample(self._handle,level,offset,clear,path,datastream._handle)
+	
+	def save_sample(self, level, datastream):
+		assert self._handle
+		return zzub_wave_save_sample(self._handle,level,datastream._handle)
+	
+	def save_sample_range(self, level, datastream, start, end):
+		assert self._handle
+		return zzub_wave_save_sample_range(self._handle,level,datastream._handle,start,end)
+	
+	def set_envelope(self, index, env):
+		assert self._handle
+		zzub_wave_set_envelope(self._handle,index,env._handle)
+	
+	def set_envelope_count(self, count):
+		assert self._handle
+		zzub_wave_set_envelope_count(self._handle,count)
+	
+	def set_flags(self, flags):
+		assert self._handle
+		zzub_wave_set_flags(self._handle,flags)
+	
+	def set_name(self, name):
+		assert self._handle
+		zzub_wave_set_name(self._handle,name)
+	
+	def set_path(self, path):
+		assert self._handle
+		zzub_wave_set_path(self._handle,path)
+	
+	def set_volume(self, volume):
+		assert self._handle
+		zzub_wave_set_volume(self._handle,volume)
+	
+class _Wavelevel(object):
+	_handle = None
+	_hash = 0
+	
+	def __init__(self,handle):
+		self._handle = handle
+		self._hash = cast(self._handle, c_void_p).value
+
+	def __hash__(self):
+		return self._hash
+
+	def __eq__(self,other):
+		return self._hash == hash(other)
+
+	def __ne__(self,other):
+		return self._hash != hash(other)
+
+	def clear(self):
+		assert self._handle
+		return zzub_wavelevel_clear(self._handle)
+	
+	def get_format(self):
+		assert self._handle
+		return zzub_wavelevel_get_format(self._handle)
+	
+	def get_loop_end(self):
+		assert self._handle
+		return zzub_wavelevel_get_loop_end(self._handle)
+	
+	def get_loop_start(self):
+		assert self._handle
+		return zzub_wavelevel_get_loop_start(self._handle)
+	
+	def get_root_note(self):
+		assert self._handle
+		return zzub_wavelevel_get_root_note(self._handle)
+	
+	def get_sample_count(self):
+		assert self._handle
+		return zzub_wavelevel_get_sample_count(self._handle)
+	
+	def get_samples_digest(self, channel, start, end, mindigest, maxdigest, ampdigest, digestsize):
+		assert self._handle
+		zzub_wavelevel_get_samples_digest(self._handle,channel,start,end,mindigest,maxdigest,ampdigest,digestsize)
+	
+	def get_samples_per_second(self):
+		assert self._handle
+		return zzub_wavelevel_get_samples_per_second(self._handle)
+	
+	def get_wave(self):
+		assert self._handle
+		return Wave(zzub_wavelevel_get_wave(self._handle))
+	
+	def remove_sample_range(self, start, end):
+		assert self._handle
+		zzub_wavelevel_remove_sample_range(self._handle,start,end)
+	
+	def set_loop_end(self, pos):
+		assert self._handle
+		zzub_wavelevel_set_loop_end(self._handle,pos)
+	
+	def set_loop_start(self, pos):
+		assert self._handle
+		zzub_wavelevel_set_loop_start(self._handle,pos)
+	
+	def set_root_note(self, note):
+		assert self._handle
+		zzub_wavelevel_set_root_note(self._handle,note)
+	
+	def set_sample_count(self, count):
+		assert self._handle
+		zzub_wavelevel_set_sample_count(self._handle,count)
+	
+	def set_samples_per_second(self, sps):
+		assert self._handle
+		zzub_wavelevel_set_samples_per_second(self._handle,sps)
+	
 
 # you can override these
-Midimapping = _Midimapping
 Mididriver = _Mididriver
-EventConnectionBinding = _EventConnectionBinding
-Output = _Output
-Plugincollection = _Plugincollection
-Parameter = _Parameter
-Archive = _Archive
-Audiodriver = _Audiodriver
-Envelope = _Envelope
-Pattern = _Pattern
-Attribute = _Attribute
-Player = _Player
-Input = _Input
 Pluginloader = _Pluginloader
+Parameter = _Parameter
+Plugin = _Plugin
+Player = _Player
+Envelope = _Envelope
+Input = _Input
+Audiodriver = _Audiodriver
+Pattern = _Pattern
+Wavelevel = _Wavelevel
+Attribute = _Attribute
+Wave = _Wave
+Archive = _Archive
+Output = _Output
+Midimapping = _Midimapping
+EventConnectionBinding = _EventConnectionBinding
+Plugincollection = _Plugincollection

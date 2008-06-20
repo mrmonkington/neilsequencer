@@ -24,6 +24,14 @@ import zzub_classes as libzzub
 import array
 import ctypes
 
+class Audiodriver(libzzub._Audiodriver):
+	def get_name(self, index):
+		name = (ctypes.c_char * 1024)()
+		libzzub._Audiodriver.get_name(self, index, name, 1024)
+		return name.value
+
+libzzub.Audiodriver = Audiodriver
+
 class Pluginloader(libzzub._Pluginloader):
 	def get_parameter_list(self, group):
 		return [self.get_parameter(group,index) for index in range(self.get_parameter_count(group))]
@@ -60,79 +68,79 @@ class Pattern(libzzub._Pattern):
 
 libzzub.Pattern = Pattern
 
-#~ class Plugin(libzzub._Plugin):
-	#~ def create_pattern(self, row):
-		#~ return Pattern(libzzub.zzub_plugin_create_pattern(self._handle,row))
+class Plugin(libzzub._Plugin):
+	def create_pattern(self, row):
+		return Pattern(libzzub.zzub_plugin_create_pattern(self._handle,row))
 	
-	#~ def add_post_process(self, mixcallback, tag):	
-		#~ _cb = libzzub.ZzubMixCallback(mixcallback)
-		#~ pp = libzzub._Plugin.add_post_process(self, _cb, None)
-		#~ pp._cb = _cb
-		#~ return pp
+	def add_post_process(self, mixcallback, tag):	
+		_cb = libzzub.ZzubMixCallback(mixcallback)
+		pp = libzzub._Plugin.add_post_process(self, _cb, None)
+		pp._cb = _cb
+		return pp
 
-	#~ def get_name(self):
-		#~ name = (ctypes.c_char * 1024)()
-		#~ libzzub._Plugin.get_name(self, name, 1024)
-		#~ return name.value
+	def get_name(self):
+		name = (ctypes.c_char * 1024)()
+		libzzub._Plugin.get_name(self, name, 1024)
+		return name.value
 	
-	#~ def describe_value(self, group, column, value):
-		#~ name = (ctypes.c_char * 1024)()
-		#~ libzzub._Plugin.describe_value(self,group,column,value,name,1024)
-		#~ return name.value
+	def describe_value(self, group, column, value):
+		name = (ctypes.c_char * 1024)()
+		libzzub._Plugin.describe_value(self,group,column,value,name,1024)
+		return name.value
 
-	#~ def get_commands(self):
-		#~ commands = (ctypes.c_char * 32768)()
-		#~ libzzub._Plugin.get_commands(self,commands,32768)
-		#~ if commands.value:
-			#~ return commands.value.split('\n')
-		#~ return []
+	def get_commands(self):
+		commands = (ctypes.c_char * 32768)()
+		libzzub._Plugin.get_commands(self,commands,32768)
+		if commands.value:
+			return commands.value.split('\n')
+		return []
 
-	#~ def get_sub_commands(self, i):
-		#~ commands = (ctypes.c_char * 32768)()
-		#~ libzzub._Plugin.get_sub_commands(self,i,commands,32768)
-		#~ if commands.value:
-			#~ return commands.value.split('\n')
-		#~ return []
+	def get_sub_commands(self, i):
+		commands = (ctypes.c_char * 32768)()
+		libzzub._Plugin.get_sub_commands(self,i,commands,32768)
+		if commands.value:
+			return commands.value.split('\n')
+		return []
 
-	#~ def get_last_peak(self):
-		#~ maxL, maxR = ctypes.c_float(), ctypes.c_float()
-		#~ libzzub._Plugin.get_last_peak(self,ctypes.byref(maxL),ctypes.byref(maxR))
-		#~ return maxL.value, maxR.value
+	def get_last_peak(self):
+		maxL, maxR = ctypes.c_float(), ctypes.c_float()
+		libzzub._Plugin.get_last_peak(self,ctypes.byref(maxL),ctypes.byref(maxR))
+		return maxL.value, maxR.value
 	
-	#~ def get_pluginloader(self):
-		#~ return Pluginloader(libzzub.zzub_plugin_get_pluginloader(self._handle))
+	def get_pluginloader(self):
+		return Pluginloader(libzzub.zzub_plugin_get_pluginloader(self._handle))
 	
-	#~ def get_pattern(self, index):
-		#~ return Pattern(libzzub.zzub_plugin_get_pattern(self._handle,index))
+	def get_pattern(self, index):
+		return Pattern(libzzub.zzub_plugin_get_pattern(self._handle,index))
 		
-	#~ def get_pattern_list(self):
-		#~ return [self.get_pattern(index) for index in range(self.get_pattern_count())]
+	def get_pattern_list(self):
+		return [self.get_pattern(index) for index in range(self.get_pattern_count())]
 
-	#~ def get_position(self):
-		#~ x = ctypes.c_float()
-		#~ y = ctypes.c_float()
-		#~ libzzub._Plugin.get_position(self,ctypes.byref(x),ctypes.byref(y))
-		#~ return x.value,y.value
+	def get_position(self):
+		x = ctypes.c_float()
+		y = ctypes.c_float()
+		libzzub._Plugin.get_position(self,ctypes.byref(x),ctypes.byref(y))
+		return x.value,y.value
 		
-	#~ def get_input_connection_list(self):
-		#~ return [self.get_input_connection(index) for index in range(self.get_input_connection_count())]
+	def get_input_connection_list(self):
+		return [self.get_input_connection(index) for index in range(self.get_input_connection_count())]
 
-	#~ def get_output_connection_list(self):
-		#~ return [self.get_output_connection(index) for index in range(self.get_output_connection_count())]
+	def get_output_connection_list(self):
+		return [self.get_output_connection(index) for index in range(self.get_output_connection_count())]
 
-	#~ def get_input_connection(self, index):
-		#~ return Connection(libzzub.zzub_plugin_get_input_connection(self._handle,index))
+	def get_input_connection(self, index):
+		return Connection(libzzub.zzub_plugin_get_input_connection(self._handle,index))
 	
-	#~ def get_output_connection(self, index):
-		#~ return Connection(libzzub.zzub_plugin_get_output_connection(self._handle,index))
+	def get_output_connection(self, index):
+		return Connection(libzzub.zzub_plugin_get_output_connection(self._handle,index))
 		
-	#~ def get_group_track_count(self, group):
-		#~ return [self.get_input_connection_count, lambda: 1, self.get_track_count][group]()
+	def get_group_track_count(self, group):
+		return [self.get_input_connection_count, lambda: 1, self.get_track_count][group]()
 
-	#~ def invoke_event(self, data, immediate):
-		#~ return libzzub._Plugin.invoke_event(self,ctypes.byref(data),immediate)
+	def invoke_event(self, data, immediate):
+		return libzzub._Plugin.invoke_event(self,ctypes.byref(data),immediate)
 
-#~ libzzub.Plugin = Plugin
+libzzub.Plugin = Plugin
 
 #~ class Sequence(libzzub._Sequence):
 	#~ def get_plugin(self):
@@ -165,7 +173,7 @@ class Player(libzzub._Player):
 	callback = None
 	
 	def get_current_sequencer(self):
-		return Sequencer(libzzub.zzub_player_get_current_sequencer(self._handle))
+		return self #Sequencer(libzzub.zzub_player_get_current_sequencer(self._handle))
 		
 	def create_plugin(self, input, dataSize, instanceName, loader):
 		if not input:
@@ -196,11 +204,6 @@ class Player(libzzub._Player):
 	def get_pluginloader(self, index):
 		return Pluginloader(libzzub.zzub_player_get_pluginloader(self._handle,index))
 
-	def audiodriver_get_name(self, index):
-		name = (ctypes.c_char * 1024)()
-		libzzub._Player.audiodriver_get_name(self, index, name, 1024)
-		return name.value
-
 	def get_wave(self, index):
 		return Wave(libzzub.zzub_player_get_wave(self._handle,index))
 		
@@ -220,27 +223,27 @@ class Player(libzzub._Player):
 
 libzzub.Player = Player
 
-#~ class Wave(libzzub._Wave):
-	#~ def get_envelope(self, index):
-		#~ return Envelope(libzzub.zzub_wave_get_envelope(self._handle,index))
+class Wave(libzzub._Wave):
+	def get_envelope(self, index):
+		return Envelope(libzzub.zzub_wave_get_envelope(self._handle,index))
 		
-	#~ def get_envelope_list(self):
-		#~ return [self.get_envelope(index) for index in range(self.get_envelope_count())]
+	def get_envelope_list(self):
+		return [self.get_envelope(index) for index in range(self.get_envelope_count())]
 
-#~ libzzub.Wave = Wave
+libzzub.Wave = Wave
 
-#~ class Wavelevel(libzzub._Wavelevel):
-	#~ def get_samples_digest(self, channel, start, end, digestsize):
-		#~ mindigest = (ctypes.c_float * digestsize)()
-		#~ maxdigest = (ctypes.c_float * digestsize)()
-		#~ ampdigest = (ctypes.c_float * digestsize)()
-		#~ libzzub._Wavelevel.get_samples_digest(self,channel,start,end,mindigest,maxdigest,ampdigest,digestsize)
-		#~ return mindigest,maxdigest,ampdigest
+class Wavelevel(libzzub._Wavelevel):
+	def get_samples_digest(self, channel, start, end, digestsize):
+		mindigest = (ctypes.c_float * digestsize)()
+		maxdigest = (ctypes.c_float * digestsize)()
+		ampdigest = (ctypes.c_float * digestsize)()
+		libzzub._Wavelevel.get_samples_digest(self,channel,start,end,mindigest,maxdigest,ampdigest,digestsize)
+		return mindigest,maxdigest,ampdigest
 		
-	#~ def get_slices(self):
-		#~ return [self.get_slice_value(index) for index in range(self.get_slice_count())]
+	def get_slices(self):
+		return [self.get_slice_value(index) for index in range(self.get_slice_count())]
 
-#~ libzzub.Wavelevel = Wavelevel
+libzzub.Wavelevel = Wavelevel
 
 class Envelope(libzzub._Envelope):
 	def get_point(self, index):
@@ -257,14 +260,15 @@ libzzub.Envelope = Envelope
 
 
 __all__ = [
+	'Audiodriver',
 	'Pluginloader',
-	'Connection',
+	#~ 'Connection',
 	'Pattern',
-	#~ 'Plugin',
+	'Plugin',
 	#~ 'Sequence',
 	#~ 'Sequencer',
 	'Player',
-	#~ 'Wave',
+	'Wave',
 	'Envelope',
 ]
 
