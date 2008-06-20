@@ -930,6 +930,7 @@ void player::plugin_destroy(int id) {
 	prepare_operation_undo(undo_pos);
 
 	std::vector<char> bytes;
+	// TODO: plugin->save() into the bytes vector so we can persist e.g pvst stuff
 	op_plugin_create* undo = new op_plugin_create(this, id, m.name, bytes, m.info);
 	prepare_operation_undo(undo);
 

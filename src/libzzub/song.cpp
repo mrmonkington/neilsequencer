@@ -698,6 +698,7 @@ bool song::plugin_invoke_event(int plugin_id, zzub_event_data data, bool immedia
 void song::process_plugin_events(int plugin_id) {
 
 	metaplugin& m = *plugins[plugin_id];
+	assert(m.descriptor != graph_traits<plugin_map>::null_vertex());
 
 	// transfer state_write to live
 	zzub::out_edge_iterator out, out_end;
@@ -876,22 +877,18 @@ int mixer::determine_chunk_size(int sample_count, double& tick_fracs, int& next_
 
 void mixer::process_keyjazz_noteoff_events() {
 	// check for delayed note offs
-	// create_play_note_pattern may modify keyjazz so we use a copy
+	// plugin_update_keyjazz may modify keyjazz so we use a copy
 	std::vector<keyjazz_note> keycopy = keyjazz;
 	for (size_t i = 0; i < keycopy.size(); i++) {
 		if (keycopy[i].delay_off == true) {
 			cerr << "playing delayed off" << endl;
 
 			int plugin_id = keycopy[i].plugin_id;
-			pattern p = create_play_note_pattern(plugin_id, note_value_off, keycopy[i].note, 0, keyjazz);
-
-			if (p.rows != 0) {
-				transfer_plugin_parameter_row(plugin_id, 1, p, plugins[plugin_id]->state_write, 0, 0, false);
-				transfer_plugin_parameter_row(plugin_id, 2, p, plugins[plugin_id]->state_write, 0, 0, false);
-
-				// record
-				transfer_plugin_parameter_row(plugin_id, 1, p, plugins[plugin_id]->state_automation, 0, 0, false);
-				transfer_plugin_parameter_row(plugin_id, 2, p, plugins[plugin_id]->state_automation, 0, 0, false);
+			int note_group = -1, note_track = -1, note_column = -1;
+			int velocity_column = -1;
+			plugin_update_keyjazz(plugin_id, note_value_off, keycopy[i].note, 0, note_group, note_track, note_column, velocity_column);
+			if (note_group != -1) {
+				plugin_set_parameter_direct(plugin_id, note_group, note_track, note_column, note_value_off, true);
 			}
 		}
 	}
@@ -1303,7 +1300,7 @@ bool mixer::plugin_update_keyjazz(int plugin_id, int note, int prev_note, int ve
 	return false;
 }
 
-pattern mixer::create_play_note_pattern(int plugin_id, int note, int prevNote, int _velocity, std::vector<keyjazz_note>& keyjazz) {
+/*pattern mixer::create_play_note_pattern(int plugin_id, int note, int prevNote, int _velocity, std::vector<keyjazz_note>& keyjazz) {
 
 	assert(plugin_id >= 0 && plugin_id < plugins.size());
 	assert(plugins[plugin_id] != 0);
@@ -1423,7 +1420,7 @@ pattern mixer::create_play_note_pattern(int plugin_id, int note, int prevNote, i
 	return p;
 }
 
-
+*/
 void mixer::midi_event(unsigned short status, unsigned char data1, unsigned char data2) {
 	// look up mapping(s) and send value to plugin
 	int channel = status&0xF;

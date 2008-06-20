@@ -1262,12 +1262,10 @@ CMachine* CMachineManager::create(buzz2zzub::plugin* plugin) {
 void CMachineManager::destroy(zzub_plugin_t* metaplugin) {
 	std::map<zzub_plugin_t*, CMachine*>::iterator i = plugin_to_machine.find(metaplugin);
 	if (i != plugin_to_machine.end()) {
-		delete i->second->_internal_global_state;
-		delete i->second->_internal_track_state;
+		delete[] i->second->_internal_global_state;
+		delete[] i->second->_internal_track_state;
 		if (i->second->buzzinfo) {
 			delete[] i->second->buzzinfo->Parameters;
-			if (i->second->buzzinfo->pLI)
-				delete i->second->buzzinfo->pLI;
 			delete i->second->buzzinfo;
 		}
 		delete i->second;

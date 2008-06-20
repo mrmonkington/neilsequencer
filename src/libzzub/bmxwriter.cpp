@@ -63,7 +63,6 @@ bool BuzzWriter::validateClassesForSave() {
 	for (size_t i = 0; i < machines.size(); i++) {
 		zzub::plugin_descriptor plugin = machines[i];
 		if (song.get_plugin(plugin).info->flags & zzub::plugin_flag_is_root) continue;
-		//if (song.get_plugin(plugin).non_song_plugin) continue;
 
 		string pluginName = rewriteBuzzWrapperName(song.get_plugin(plugin).info->uri);
 		if (!pluginName.size()) {
@@ -83,18 +82,20 @@ void BuzzWriter::setMachines(std::vector<zzub::plugin_descriptor>& machineSelect
 	// save all machines except those with no_output-flag
 	for (size_t i = 0; i < machineSelection.size(); i++) {
 		zzub::plugin_descriptor machine = machineSelection[i];
-		if (machine != -1 && machine != 0/* && !player->get_plugin(machine).non_song_plugin*/) {
+		zzub::metaplugin& m = player->front.get_plugin(machine);
+		if (machine != -1 && machine != 0 && ((m.info->flags & plugin_flag_no_output) == 0) ) {
 			machines.push_back(machine);
 		}
 	}
-/*
+
 	// save all no_output-machines last
 	for (size_t i = 0; i < machineSelection.size(); i++) {
-		zzub::metaplugin* machine = machineSelection[i];
-		if (machine->isNoOutput() && machine != master) {
+		zzub::plugin_descriptor machine = machineSelection[i];
+		zzub::metaplugin& m = player->front.get_plugin(machine);
+		if (machine != 0 && ((m.info->flags & plugin_flag_no_output) != 0)) {
 			machines.push_back(machine);
 		}
-	}*/
+	}
 }
 
 bool BuzzWriter::writePlayer(zzub::player* pl, std::vector<zzub::plugin_descriptor> machineSelection, bool saveWaveSections) {

@@ -184,6 +184,7 @@ struct song {
 	wave_table wavetable;
 	int song_begin, song_end, song_loop_begin, song_loop_end, song_loop_enabled;
 	string song_comment;
+	vector<keyjazz_note> keyjazz;
 
 	song();
 	virtual ~song() { }
@@ -270,7 +271,6 @@ struct mixer : song {
 
 	string load_error;
 	string load_warning;
-	vector<keyjazz_note> keyjazz;
 
 	mixer();
 

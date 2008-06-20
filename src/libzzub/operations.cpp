@@ -267,6 +267,7 @@ bool op_plugin_delete::operate(zzub::song& song) {
 	plugin = song.plugins[id];
 	song.plugins[id] = 0;
 
+	// clear events targeted for this plugin:
 	int read_pos = song.user_event_queue_read;
 	while (read_pos != song.user_event_queue_write) {
 		event_message& ev = song.user_event_queue[read_pos];
@@ -275,6 +276,14 @@ bool op_plugin_delete::operate(zzub::song& song) {
 			read_pos = 0; else
 			read_pos++;
 	}
+
+	// remove currently playing keyjazz notes for this plugin
+	for (size_t i = 0; i < song.keyjazz.size(); ) {
+		if (song.keyjazz[i].plugin_id == id)
+			song.keyjazz.erase(song.keyjazz.begin() + i); else
+			i++;
+	}
+
 	return true;
 }
 
@@ -799,6 +808,7 @@ op_plugin_play_note::op_plugin_play_note(int _id, int _note, int _prev_note, int
 	note = _note;
 	prev_note = _prev_note;
 	velocity = _velocity;
+	copy_flags.copy_plugins = true;
 }
 
 bool op_plugin_play_note::prepare(zzub::song& song) {
@@ -819,6 +829,7 @@ bool op_plugin_play_note::operate(zzub::song& song) {
 	song.plugin_update_keyjazz(id, note, prev_note, velocity, note_group, note_track, note_column, velocity_column);
 
 	if (note_group != -1) {
+		m.sequencer_state = sequencer_event_type_none;
 		song.plugin_set_parameter_direct(id, note_group, note_track, note_column, note, true);
 		if (velocity_column != -1 && velocity != 0)
 			song.plugin_set_parameter_direct(id, note_group, note_track, velocity_column, velocity, true);
