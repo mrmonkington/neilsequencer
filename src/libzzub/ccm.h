@@ -96,8 +96,8 @@ class CcmWriter {
 	xml_node saveEventBinding(xml_node &parent, zzub::event_connection_binding &binding);
 	xml_node saveParameterValue(xml_node &parent, std::string &group, int track, int param, int value);
 	xml_node saveArchive(xml_node &parent, const std::string&, zzub::mem_archive &arc);
-	xml_node saveInit(xml_node &parent, zzub::song &player, zzub::plugin_descriptor plugin);
-	xml_node saveAttributes(xml_node &parent, zzub::song &player, zzub::plugin_descriptor plugin);
+	xml_node saveInit(xml_node &parent, zzub::song &player, int plugin_id);
+	xml_node saveAttributes(xml_node &parent, zzub::song &player, int plugin_id);
 	xml_node savePatterns(xml_node &parent, zzub::song &player, int plugin_id);
 	xml_node savePatternTrack(xml_node &parent, const std::string &colname, double fac, zzub::song &player, int plugin_id, zzub::pattern &p, int group, int track);
 	xml_node savePattern(xml_node &parent, zzub::song &player, int plugin_id, zzub::pattern &p);

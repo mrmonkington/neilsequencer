@@ -535,31 +535,32 @@ xml_node CcmWriter::saveArchive(xml_node &parent, const std::string &pathbase, z
 	return xml_node();
 }
 
-xml_node CcmWriter::saveInit(xml_node &parent, zzub::song &player, zzub::plugin_descriptor plugin) {
+xml_node CcmWriter::saveInit(xml_node &parent, zzub::song &player, int plugin) {
 	xml_node item = parent.append_child(node_element);
 	item.name("init");
 	
 	mem_archive arc;
-	player.get_plugin(plugin).plugin->save(&arc);
+	metaplugin& m = *player.plugins[plugin];
+	m.plugin->save(&arc);
 	saveArchive(item, id_from_ptr((const void*)plugin), arc);
 
-	if (player.get_plugin(plugin).info->global_parameters.size()) {
+	if (m.info->global_parameters.size()) {
 		xml_node global = item.append_child(node_element);
 		global.name("global");
 		
-		for (size_t i = 0; i != player.get_plugin(plugin).info->global_parameters.size(); ++i) {
+		for (size_t i = 0; i != m.info->global_parameters.size(); ++i) {
 			xml_node n = global.append_child(node_element);
 			n.name("n");
-			n.attribute("ref") = id_from_ptr(player.get_plugin(plugin).info->global_parameters[i]);
+			n.attribute("ref") = id_from_ptr(m.info->global_parameters[i]);
 			n.attribute("v") = (long)player.plugin_get_parameter(plugin, 1, 0, i);
 		}
 	}
 
-	if (player.get_plugin(plugin).tracks > 0) {
+	if (m.tracks > 0) {
 		xml_node tracks = item.append_child(node_element);
 		tracks.name("tracks");
 		
-		for (int t = 0; t != player.get_plugin(plugin).tracks; ++t) {
+		for (int t = 0; t != m.tracks; ++t) {
 			xml_node track = tracks.append_child(node_element);
 			track.name("track");
 			track.attribute("index") = (long)t;
@@ -574,23 +575,25 @@ xml_node CcmWriter::saveInit(xml_node &parent, zzub::song &player, zzub::plugin_
 	}
 	
 	
-    if (player.get_plugin(plugin).plugin->attributes && player.get_plugin(plugin).info->attributes.size() > 0)
+    if (m.plugin->attributes && m.info->attributes.size() > 0)
 		saveAttributes(item, player, plugin);
 	
 	return item;
 }
 
-xml_node CcmWriter::saveAttributes(xml_node &parent, zzub::song &player, zzub::plugin_descriptor plugin) {
+xml_node CcmWriter::saveAttributes(xml_node &parent, zzub::song &player, int plugin) {
 	xml_node item = parent.append_child(node_element);
 	item.name("attributes");
 	
+	metaplugin& m = *player.plugins[plugin];
+
     // save attributes
-	for (size_t i = 0; i < player.get_plugin(plugin).info->attributes.size(); i++) {
+	for (size_t i = 0; i < m.info->attributes.size(); i++) {
 		const attribute& attr = *player.get_plugin(plugin).info->attributes[i];
 		xml_node n = item.append_child(node_element);
 		n.name("n");
 		n.attribute("name") = attr.name;
-		n.attribute("v") = (long)player.get_plugin(plugin).plugin->attributes[i];
+		n.attribute("v") = (long)m.plugin->attributes[i];
 	}
 
 	return item;
@@ -780,7 +783,7 @@ xml_node CcmWriter::savePlugin(xml_node &parent, zzub::song &player, int plugin)
 	position.attribute("y") = player.plugins[plugin]->y;
 
 	if (player.plugin_get_input_connection_count(plugin) > 0) {
-		xml_node connections = parent.append_child(node_element);
+		xml_node connections = item.append_child(node_element);
 		connections.name("connections");
 
 		for (int i = 0; i < player.plugin_get_input_connection_count(plugin); i++) {
@@ -1343,6 +1346,11 @@ struct ccache { // connection and node cache
 
 bool CcmReader::loadPlugins(xml_node plugins, zzub::player &player) {
 	
+	operation_copy_flags flags;
+	flags.copy_plugins = true;
+	flags.copy_graph = true;
+	player.merge_backbuffer_flags(flags);
+
 	std::map<std::string, int> id2plugin;
 	
 	std::vector<ccache> conns;
@@ -1405,14 +1413,13 @@ bool CcmReader::loadPlugins(xml_node plugins, zzub::player &player) {
 				std::vector<char> &b = arc.get_buffer("");
 
 				plugin_id = player.create_plugin(b, i->attribute("name").value(), loader);
-				player.flush_operations(0, 0);
 
 			} else {
 				std::cerr << "ccm: unable to find loader for uri " << i->attribute("ref").value() << std::endl;
 			}
 
-			if (plugin_id != -1 && player.front.plugins[plugin_id] != 0) {
-				metaplugin& m = *player.front.plugins[plugin_id];
+			if (plugin_id != -1 && player.back.plugins[plugin_id] != 0) {
+				metaplugin& m = *player.back.plugins[plugin_id];
 
 				id2plugin.insert(std::pair<std::string, int>(i->attribute("id").value(), plugin_id));
 
@@ -1443,7 +1450,6 @@ bool CcmReader::loadPlugins(xml_node plugins, zzub::player &player) {
 					}
 
 					player.plugin_set_track_count(plugin_id, trackcount);
-					player.flush_operations(0, 0);
 				}
 
 				// plugin default parameter values are read after connections are made
@@ -1477,7 +1483,7 @@ bool CcmReader::loadPlugins(xml_node plugins, zzub::player &player) {
 							if (player.plugin_add_input(c->target, iplug->second, connection_type_audio)) {
 								int amp = double_to_amp((double)i->attribute("amplitude"));
 								int pan = double_to_pan((double)i->attribute("panning"));
-								int track = player.front.plugin_get_input_connection_count(c->target) - 1;
+								int track = player.back.plugin_get_input_connection_count(c->target) - 1;
 
 								player.plugin_set_parameter(c->target, 0, track, 0, amp, false, false, false);
 								player.plugin_set_parameter(c->target, 0, track, 1, pan, false, false, false);
@@ -1529,16 +1535,16 @@ bool CcmReader::loadPlugins(xml_node plugins, zzub::player &player) {
 						// test if the parameter names correspond with index position
 						int plugin = c->target;
 						long index = long(paraminfo.attribute("index"));
-						const parameter* param = player.front.plugin_get_parameter_info(plugin, 1, 0, index);
+						const parameter* param = player.back.plugin_get_parameter_info(plugin, 1, 0, index);
 						std::string name = paraminfo.attribute("name").value();
-						const zzub::info* info = player.front.plugins[plugin]->info;
+						const zzub::info* info = player.back.plugins[plugin]->info;
 						
 						if (index < info->global_parameters.size() && param->name == name) {
 							player.plugin_set_parameter(plugin, 1, 0, index, long(i->attribute("v")), false, false, false);
 						} else {
 							// else search for a parameter name that matches
 							for (size_t pg = 0; pg != info->global_parameters.size(); ++pg) {
-								const parameter* pgp = player.front.plugin_get_parameter_info(plugin, 1, 0, pg);
+								const parameter* pgp = player.back.plugin_get_parameter_info(plugin, 1, 0, pg);
 								if (pgp->name == name) {
 									player.plugin_set_parameter(plugin, 1, 0, pg, long(i->attribute("v")), false, false, false);
 									break;
@@ -1561,16 +1567,16 @@ bool CcmReader::loadPlugins(xml_node plugins, zzub::player &player) {
 								// test if the parameter names correspond with index position
 								int plugin = c->target;
 								long index = long(paraminfo.attribute("index"));
-								const parameter* param = player.front.plugin_get_parameter_info(plugin, 2, t, index);
+								const parameter* param = player.back.plugin_get_parameter_info(plugin, 2, t, index);
 								std::string name = paraminfo.attribute("name").value();
-								const zzub::info* info = player.front.plugins[plugin]->info;
+								const zzub::info* info = player.back.plugins[plugin]->info;
 
 								if ((index < info->track_parameters.size()) && param->name == name) {
 									player.plugin_set_parameter(plugin, 2, t, index, long(j->attribute("v")), false, false, false);
 								} else {
 									// else search for a parameter name that matches
 									for (size_t pt = 0; pt != info->track_parameters.size(); ++pt) {
-										const parameter* ptp = player.front.plugin_get_parameter_info(plugin, 2, t, pt);
+										const parameter* ptp = player.back.plugin_get_parameter_info(plugin, 2, t, pt);
 										if (ptp->name == name) {
 											player.plugin_set_parameter(plugin, 2, t, pt, long(j->attribute("v")), false, false, false);
 											break;
@@ -1585,14 +1591,14 @@ bool CcmReader::loadPlugins(xml_node plugins, zzub::player &player) {
 			}
 		}
 
-		player.flush_operations(0, 0);
-		
-		player.front.process_plugin_events(c->target);
+		player.back.process_plugin_events(c->target);
 	}
+
+
 		
 	// we need to create patterns in the second iteration, since the master
 	// might not be neccessarily the first plugin to be initialized
-	double tpbfac = double(player.front.plugin_get_parameter(0, 1, 0, 2));
+	double tpbfac = double(player.back.plugin_get_parameter(0, 1, 0, 2));
 
 
 	for (std::vector<ccache>::iterator c = conns.begin(); c != conns.end(); ++c) {
@@ -1603,7 +1609,7 @@ bool CcmReader::loadPlugins(xml_node plugins, zzub::player &player) {
 				if (i->has_name("events")) {
 					int rows = int(double(i->attribute("length")) * tpbfac + 0.5);
 					int plugin = c->target;
-					pattern p = player.front.create_pattern(plugin, rows);
+					pattern p = player.back.create_pattern(plugin, rows);
 					p.name = i->attribute("name").value();
 					player.plugin_add_pattern(plugin, p);
 					int pattern_index = player.back.plugins[plugin]->patterns.size() - 1;
@@ -1712,8 +1718,9 @@ bool CcmReader::loadPlugins(xml_node plugins, zzub::player &player) {
 			}
 		}
 
-		player.flush_operations(0, 0);
 	}
+
+	player.flush_operations(0, 0);
 
 	return true;
 }
@@ -1903,6 +1910,8 @@ bool CcmReader::open(std::string fileName, zzub::player* player) {
 		std::cerr << "ccm: error opening " << fileName << std::endl;
 	}
 	
+	player->flush_operations(0, 0);
+	player->flush_from_history();	// TODO: ccm loading doesnt support undo yet
 	player->set_state(player_state_stopped);
 
 	setlocale(LC_NUMERIC, loc);

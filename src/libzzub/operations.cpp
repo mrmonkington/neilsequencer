@@ -765,7 +765,12 @@ op_plugin_set_parameters_and_tick::op_plugin_set_parameters_and_tick(int _id, zz
 }
 
 bool op_plugin_set_parameters_and_tick::prepare(zzub::song& song) {
-	event_data.type = -1;
+	assert(song.plugins[id] != 0);
+	metaplugin& m = *song.plugins[id];
+	// write to backbuffer so we can read them later
+	song.transfer_plugin_parameter_row(id, 0, pattern, m.state_write, row, 0, false);
+	song.transfer_plugin_parameter_row(id, 1, pattern, m.state_write, row, 0, false);
+	song.transfer_plugin_parameter_row(id, 2, pattern, m.state_write, row, 0, false);
 	return true;
 }
 
