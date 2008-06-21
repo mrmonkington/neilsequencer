@@ -95,8 +95,8 @@ struct player : undo_manager, audioworker, midiworker {
 	void sequencer_remove_track(int index);
 	void sequencer_move_track(int index, int newindex);
 	void sequencer_set_event(int track, int pos, int value);
-	void sequencer_insert_events(int* track_indices, int num_indices, int start, int ticks);
-	void sequencer_remove_events(int* track_indices, int num_indices, int start, int ticks);
+	void sequencer_insert_events(int track, int start, int ticks);
+	void sequencer_remove_events(int track, int start, int ticks);
 
 	void wave_set_name(int wave, std::string name);
 	void wave_set_path(int wave, std::string name);

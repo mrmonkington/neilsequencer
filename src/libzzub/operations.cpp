@@ -222,7 +222,7 @@ op_plugin_delete::op_plugin_delete(zzub::player* _player, int _id) {
 	copy_flags.copy_work_order = true;
 	copy_flags.copy_plugins = true;
 	copy_flags.copy_plugins_deep = true;
-	copy_flags.copy_sequencer_track_order = true;
+	copy_flags.copy_sequencer_tracks = true;
 }
 
 bool op_plugin_delete::prepare(zzub::song& song) {
@@ -231,7 +231,6 @@ bool op_plugin_delete::prepare(zzub::song& song) {
 
 	plugin_descriptor plugin = mpl.descriptor;
 	assert(plugin != graph_traits<plugin_map>::null_vertex());
-
 
 	// send delete notification now - before any changes occur in any back/front buffers
 	event_data.type = event_type_pre_delete_plugin;
@@ -244,13 +243,7 @@ bool op_plugin_delete::prepare(zzub::song& song) {
 	mpl.descriptor = graph_traits<plugin_map>::null_vertex();
 	song.make_work_order();
 
-	// adjust all descriptors in plugins and song_events
-
-	for (size_t i = 0; i < song.sequencer_tracks.size(); i++) {
-		if (song.sequencer_tracks[i] > plugin)
-			song.sequencer_tracks[i]--;
-	}
-
+	// adjust descriptors in plugins
 	for (size_t i = 0; i < song.plugins.size(); i++) {
 		if (song.plugins[i] != 0 && song.plugins[i]->descriptor != graph_traits<plugin_map>::null_vertex() && song.plugins[i]->descriptor > plugin)
 			song.plugins[i]->descriptor--;
@@ -1012,8 +1005,7 @@ op_pattern_remove::op_pattern_remove(int _id, int _index) {
 	index = _index;
 	copy_flags.copy_graph = true;
 	copy_flags.copy_plugins = true;
-	copy_flags.copy_song_events = true;
-	copy_flags.copy_sequencer_track_order = true;
+	copy_flags.copy_sequencer_tracks = true;
 
 	operation_copy_plugin_flags pluginflags;
 	pluginflags.plugin_id = _id;
@@ -1044,19 +1036,15 @@ bool op_pattern_remove::prepare(zzub::song& song) {
 
 	// adjust pattern indices in the sequencer
 
-	for (size_t i = 0; i < song.song_events.size(); i++) {
-		sequencer_event& ev = song.song_events[i];
-		for (size_t j = 0; j < ev.actions.size(); j++) {
-			sequencer_event::track_action& ta = ev.actions[j];
-			if (song.sequencer_tracks[ta.first] == m.descriptor) {
-				if (ta.second >= 0x10) {
-					int pattern = ta.second - 0x10;
-					//if (index == pattern) {
-					//	remove_ops.push_back(op_sequencer_set_event(ev.timestamp, ta.first, -1));
-					//} else
+	for (size_t i = 0; i < song.sequencer_tracks.size(); i++) {
+		if (song.sequencer_tracks[i].plugin_id == id) {
+			for (size_t j = 0; j < song.sequencer_tracks[i].events.size(); j++) {
+				sequencer_track::time_value& ev = song.sequencer_tracks[i].events[j];
+				if (ev.second >= 0x10) {
+					int pattern = ev.second - 0x10;
 					assert(pattern != index);	// you should have deleted these already
 					if (index < pattern) {
-						ta.second--;
+						ev.second--;
 					}
 				}
 			}
@@ -1086,8 +1074,7 @@ op_pattern_move::op_pattern_move(int _id, int _index, int _newindex) {
 	newindex = _newindex;
 	copy_flags.copy_graph = true;
 	copy_flags.copy_plugins = true;
-	copy_flags.copy_song_events = true;
-	copy_flags.copy_sequencer_track_order = true;
+	copy_flags.copy_sequencer_tracks = true;
 
 	operation_copy_plugin_flags pluginflags;
 	pluginflags.plugin_id = id;
@@ -1115,21 +1102,20 @@ bool op_pattern_move::prepare(zzub::song& song) {
 		patterns.insert(patterns.begin() + newindex, patterncopy);
 
 	// update sequencer events
-	for (size_t i = 0; i < song.song_events.size(); i++) {
-		sequencer_event& ev = song.song_events[i];
-		for (size_t j = 0; j < ev.actions.size(); j++) {
-			sequencer_event::track_action& ta = ev.actions[j];
-			if (song.sequencer_tracks[ta.first] == plugin) {
-				if (ta.second >= 0x10) {
-					int pattern = ta.second - 0x10;
+	for (size_t i = 0; i < song.sequencer_tracks.size(); i++) {
+		if (song.sequencer_tracks[i].plugin_id == id) {
+			for (size_t j = 0; j < song.sequencer_tracks[i].events.size(); j++) {
+				sequencer_track::time_value& ev = song.sequencer_tracks[i].events[j];
+				if (ev.second >= 0x10) {
+					int pattern = ev.second - 0x10;
 					if (pattern == index) {
-						ta.second = newindex;
+						ev.second = newindex;
 					} else
 					if (newindex < index && pattern >= newindex && pattern < index) {
-						ta.second++;
+						ev.second++;
 					} else
 					if (newindex > index && pattern > index && pattern <= newindex) {
-						ta.second--;
+						ev.second--;
 					}
 				}
 			}
@@ -1333,57 +1319,41 @@ op_sequencer_set_event::op_sequencer_set_event(int _timestamp, int _track, int _
 	track = _track;
 	action = _action;
 
-	copy_flags.copy_plugins = true;
-	copy_flags.copy_graph = true;
-	copy_flags.copy_song_events = true;
+	copy_flags.copy_sequencer_tracks = true;
 }
 
 bool op_sequencer_set_event::prepare(zzub::song& song) {
 
-	std::vector<zzub::sequencer_event>::iterator pos = song.song_events.begin();
+	zzub::sequencer_track& seqtrack = song.sequencer_tracks[track];
+
+	std::vector<zzub::sequencer_track::time_value>::iterator pos = seqtrack.events.begin();
 	int index = 0;
 
-	while (song.song_events.size() && (size_t)index < song.song_events.size() && pos->timestamp < timestamp) {
+	while (seqtrack.events.size() && (size_t)index < seqtrack.events.size() && pos->first < timestamp) {
 		pos++;
 		index++;
 	}
 
-	if (song.song_events.size() == 0 || pos == song.song_events.end()) {
+	if (seqtrack.events.size() == 0 || pos == seqtrack.events.end()) {
 		if (action != -1) {
-			sequencer_event se;
-			se.timestamp = timestamp;
-			se.actions.push_back(sequencer_event::track_action(track, action));//[pt] = action;
-			song.song_events.push_back(se);
+			sequencer_track::time_value ev;
+			ev.first = timestamp;
+			ev.second = action;
+			seqtrack.events.push_back(ev);
 		}
 	} else
-	if (pos->timestamp == timestamp) {
-		bool found = false;
-		for (size_t i = 0; i < pos->actions.size(); i++) {
-			if (pos->actions[i].first == track) {
-				if (action == -1) {
-					pos->actions.erase(pos->actions.begin() + i);
-				} else {
-					pos->actions[i].second = action;
-				}
-				found = true;
-				break;
-			}
+	if (pos->first == timestamp) {
+		if (action == -1) {
+			seqtrack.events.erase(pos);
+		} else {
+			pos->second = action;
 		}
-		if (action != -1 && !found) {
-			pos->actions.push_back(sequencer_event::track_action(track, action));//[pt] = action;
-		} else
-		if (action == -1 && found) {
-			if (pos->actions.size() == 0) {
-				song.song_events.erase(pos);
-			}
-		}
-		//pos->actions[pt] = action;
 	} else {
-		if (action != -1 && pos != song.song_events.end()) {
-			sequencer_event se;
-			se.timestamp = timestamp;
-			se.actions.push_back(sequencer_event::track_action(track, action));//[pt] = action;
-			song.song_events.insert(pos, se);
+		if (action != -1 && pos != seqtrack.events.end()) {
+			sequencer_track::time_value ev;
+			ev.first = timestamp;
+			ev.second = action;
+			seqtrack.events.insert(pos, ev);
 		}
 	}
 
@@ -1408,18 +1378,17 @@ void op_sequencer_set_event::finish(zzub::song& song, bool send_events) {
 //
 // ---------------------------------------------------------------------------
 
-op_sequencer_create_track::op_sequencer_create_track(int _id) {
+op_sequencer_create_track::op_sequencer_create_track(zzub::player* _player, int _id) {
+	player = _player;
 	id = _id;
-	copy_flags.copy_graph = true;
-	copy_flags.copy_plugins = true;
-	copy_flags.copy_sequencer_track_order = true;
+	copy_flags.copy_sequencer_tracks = true;
 }
 
 bool op_sequencer_create_track::prepare(zzub::song& song) {
-	plugin_descriptor plugin = song.plugins[id]->descriptor;
-	assert(plugin != graph_traits<plugin_map>::null_vertex());
-
-	song.sequencer_tracks.push_back(plugin);
+	zzub::sequencer_track t;
+	t.plugin_id = id;
+	t.proxy = new sequence_proxy(player, (int)song.sequencer_tracks.size());
+	song.sequencer_tracks.push_back(t);
 	return true;
 }
 
@@ -1441,22 +1410,17 @@ void op_sequencer_create_track::finish(zzub::song& song, bool send_events) {
 
 op_sequencer_remove_track::op_sequencer_remove_track(int _track) {
 	track = _track;
-	copy_flags.copy_song_events = true;
-	copy_flags.copy_sequencer_track_order = true;
+	copy_flags.copy_sequencer_tracks = true;
 }
 
 bool op_sequencer_remove_track::prepare(zzub::song& song) {
 	if (track == -1) track = song.sequencer_tracks.size() - 1;
 	assert(track >= 0 && track < song.sequencer_tracks.size());
 
-	// adjust track indices
-	for (size_t i = 0; i < song.song_events.size(); i++) {
-		zzub::sequencer_event& ev = song.song_events[i];
-		for (size_t j = 0; j < ev.actions.size(); j++) {
-			zzub::sequencer_event::track_action& ta = ev.actions[j];
-			if (ta.first > track)
-				ta.first--;
-		}
+	// adjust proxy object indices
+	for (size_t i = 0; i < song.sequencer_tracks.size(); i++) {
+		sequencer_track& seqtrack = song.sequencer_tracks[i];
+		if (seqtrack.proxy->track > track) seqtrack.proxy->track--;
 	}
 
 	// after removing the events, finally let go of the plugin data
@@ -1466,6 +1430,7 @@ bool op_sequencer_remove_track::prepare(zzub::song& song) {
 }
 
 bool op_sequencer_remove_track::operate(zzub::song& song) {
+
 	return true;
 }
 
@@ -1484,8 +1449,7 @@ void op_sequencer_remove_track::finish(zzub::song& song, bool send_events) {
 op_sequencer_move_track::op_sequencer_move_track(int _track, int _newtrack) {
 	track = _track;
 	newtrack = _newtrack;
-	copy_flags.copy_song_events = true;
-	copy_flags.copy_sequencer_track_order = true;
+	copy_flags.copy_sequencer_tracks = true;
 }
 
 bool op_sequencer_move_track::prepare(zzub::song& song) {
@@ -1496,28 +1460,23 @@ bool op_sequencer_move_track::prepare(zzub::song& song) {
 	
 	if (track == newtrack) return true;
 
-	// TODO: move track in song.sequencer_tracks 
-
-	plugin_descriptor trackcopy = song.sequencer_tracks[track];
+	sequencer_track trackcopy = song.sequencer_tracks[track];
 	song.sequencer_tracks.erase(song.sequencer_tracks.begin() + track);
 	if (song.sequencer_tracks.empty())
 		song.sequencer_tracks.push_back(trackcopy); else
 		song.sequencer_tracks.insert(song.sequencer_tracks.begin() + newtrack, trackcopy);
 
-	// adjust all track indices in song.song_events
-	for (size_t i = 0; i < song.song_events.size(); i++) {
-		sequencer_event& ev = song.song_events[i];
-		for (size_t j = 0; j < ev.actions.size(); j++) {
-			sequencer_event::track_action& ta = ev.actions[j];
-			if (ta.first == track) {
-				ta.first = newtrack;
-			} else
-			if (newtrack < track && ta.first >= newtrack && ta.first < track) {
-				ta.first++;
-			} else
-			if (newtrack > track && ta.first > track && ta.first <= newtrack) {
-				ta.first--;
-			}
+	// adjust proxy object indices
+	for (size_t i = 0; i < song.sequencer_tracks.size(); i++) {
+		sequencer_track& seqtrack = song.sequencer_tracks[i];
+		if (seqtrack.proxy->track == track) {
+			seqtrack.proxy->track = newtrack;
+		} else
+		if (newtrack < track && seqtrack.proxy->track >= newtrack && seqtrack.proxy->track < track) {
+			seqtrack.proxy->track++;
+		} else
+		if (newtrack > track && seqtrack.proxy->track > track && seqtrack.proxy->track <= newtrack) {
+			seqtrack.proxy->track--;
 		}
 	}
 
@@ -1540,13 +1499,13 @@ void op_sequencer_move_track::finish(zzub::song& song, bool send_events) {
 //
 // ---------------------------------------------------------------------------
 
-op_sequencer_replace::op_sequencer_replace(const std::vector<sequencer_event>& _events) {
-	song_events = _events;
-	copy_flags.copy_song_events = true;
+op_sequencer_replace::op_sequencer_replace(const std::vector<sequencer_track>& _events) {
+	tracks = _events;
+	copy_flags.copy_sequencer_tracks = true;
 }
 
 bool op_sequencer_replace::prepare(zzub::song& song) {
-	song.song_events = song_events;
+	song.sequencer_tracks = tracks;
 	return true;
 }
 

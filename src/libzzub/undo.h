@@ -77,8 +77,7 @@ struct operation_copy_flags {
 	bool copy_work_order;
 	bool copy_keyjazz;
 	bool copy_midi_mappings;
-	bool copy_song_events;
-	bool copy_sequencer_track_order;
+	bool copy_sequencer_tracks;
 	bool copy_wavetable;
 	bool copy_song_variables;
 	bool copy_plugins;
@@ -94,8 +93,7 @@ struct operation_copy_flags {
 		copy_work_order = false;
 		copy_keyjazz = false;
 		copy_midi_mappings = false;
-		copy_song_events = false;
-		copy_sequencer_track_order = false;
+		copy_sequencer_tracks = false;
 		copy_wavetable = false;
 		copy_song_variables = false;
 		copy_plugins = false;

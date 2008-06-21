@@ -275,18 +275,19 @@ struct op_pattern_remove_rows : operation {
 };
 
 struct op_sequencer_replace : operation {
-	std::vector<zzub::sequencer_event> song_events;
+	std::vector<zzub::sequencer_track> tracks;
 
-	op_sequencer_replace(const std::vector<zzub::sequencer_event>& _events);
+	op_sequencer_replace(const std::vector<zzub::sequencer_track>& _events);
 	virtual bool prepare(zzub::song& song);
 	virtual bool operate(zzub::song& song);
 	virtual void finish(zzub::song& song, bool send_events);
 };
 
 struct op_sequencer_create_track : operation {
+	zzub::player* player;
 	int id;
 
-	op_sequencer_create_track(int _id);
+	op_sequencer_create_track(zzub::player* _player, int _id);
 	virtual bool prepare(zzub::song& song);
 	virtual bool operate(zzub::song& song);
 	virtual void finish(zzub::song& song, bool send_events);

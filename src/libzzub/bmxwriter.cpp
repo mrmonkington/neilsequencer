@@ -510,7 +510,7 @@ bool BuzzWriter::saveSequences() {
 	// count tracks for machine selection
 	unsigned short sequencerTracks = 0;
 	for (int i = 0; i < (int)song.sequencer_tracks.size(); i++) {
-		int machineIndex = getMachineIndex(song.sequencer_tracks[i]);
+		int machineIndex = getMachineIndex(song.plugins[song.sequencer_tracks[i].plugin_id]->descriptor);
 		if (machineIndex == -1) continue;
 		sequencerTracks++;
 	}
@@ -520,7 +520,7 @@ bool BuzzWriter::saveSequences() {
 	f->write((unsigned int)song.song_loop_end);
 	f->write(sequencerTracks);
 	for (int i = 0; i < (int)song.sequencer_tracks.size(); i++) {
-		int machineIndex = getMachineIndex(song.sequencer_tracks[i]);
+		int machineIndex = getMachineIndex(song.plugins[song.sequencer_tracks[i].plugin_id]->descriptor);
 		if (machineIndex == -1) continue;
 		f->write((unsigned short)machineIndex);
 
@@ -535,35 +535,22 @@ bool BuzzWriter::saveSequenceTrack(int track) {
 
 	zzub::song& song = player->front;
 
-	int eventcount = 0;
-	std::vector<pair<int, int> > data;
-	for (size_t i = 0; i < song.song_events.size(); i++) {
-		sequencer_event& ev = song.song_events[i];
-		for (size_t j = 0; j < ev.actions.size(); j++) {
-			sequencer_event::track_action& ta = ev.actions[j];
-			int trackplugin = getMachineIndex(song.sequencer_tracks[ta.first]);
-			if (trackplugin == -1 || ta.first != track) continue;
-			data.push_back(pair<int, int>(ev.timestamp, ta.second));
-			eventcount++;
-
-		}
-	}
-
-	f->write((unsigned int)eventcount);
+	f->write((unsigned int)song.sequencer_tracks[track].events.size());
 
 	// TODO: optimize sizes for smallest bytesize - now assuming largest possible values
 	// TODO: scan event list, this may not work if end marker is set before last sequencer entries
 	char eventPosSize = 4;
 	char eventSize = 2;
-	if (data.size() > 0) {
+	if (song.sequencer_tracks[track].events.size() > 0) {
 		//if (song.getSongEndLoop()>65535) eventPosSize=4;
 		f->write(eventPosSize);
 		//if (tr->getMachine()->getPatterns()>112) eventSize=2;
 		f->write(eventSize);
 	}
-	for (int j = 0; j < (int)data.size(); j++) {
-		f->write(&data[j].first, eventPosSize);
-		f->write(&data[j].second, eventSize);
+	for (size_t i = 0; i < song.sequencer_tracks[track].events.size(); i++) {
+		sequencer_track::time_value& ev = song.sequencer_tracks[track].events[i];
+		f->write(&ev.first, eventPosSize);
+		f->write(&ev.second, eventSize);
 	}
 	return true;
 }

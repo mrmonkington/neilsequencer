@@ -414,12 +414,20 @@ int zzub_player_get_loop_enabled(zzub_player_t *player) {
 int zzub_player_get_sequence_track_count(zzub_player_t *player) {
 
 	operation_copy_flags flags;
-	flags.copy_sequencer_track_order = true;
-	flags.copy_song_events = true;
+	flags.copy_sequencer_tracks = true;
 	flags.copy_plugins = true;
 	player->merge_backbuffer_flags(flags);
 
 	return (int)player->back.sequencer_tracks.size();
+}
+
+zzub_sequence_t* zzub_player_get_sequence(zzub_player_t *player, int index) {
+
+	operation_copy_flags flags;
+	flags.copy_sequencer_tracks = true;
+	player->merge_backbuffer_flags(flags);
+
+	return player->back.sequencer_tracks[index].proxy;
 }
 
 
@@ -901,6 +909,8 @@ int zzub_plugin_get_envelope_count(zzub_plugin_t *plugin) {
 	plugin->_player->merge_backbuffer_flags(flags);
 
 	const zzub::envelope_info** infos = plugin->_player->back.plugins[plugin->id]->plugin->get_envelope_infos();
+	if (!infos) return 0;
+
 	int count = 0;
 	while (*infos) { count++; infos++; }
 	return count;
@@ -913,6 +923,8 @@ const zzub::envelope_info* get_envelope_info(zzub_plugin_t *plugin, int index) {
 	plugin->_player->merge_backbuffer_flags(flags);
 
 	const zzub::envelope_info** infos = plugin->_player->back.plugins[plugin->id]->plugin->get_envelope_infos();
+	if (!infos) return 0;
+
 	int count = 0;
 	while (*infos && count < index) { count++; infos++; }
 	return *infos;
@@ -1582,119 +1594,81 @@ int zzub_plugin_set_instrument(zzub_plugin_t *plugin, const char *name) {
 
 ***/
 
-int zzub_sequence_get_event_at(zzub_player_t *player, int track, unsigned long timestamp) {
+int zzub_sequence_get_event_at(zzub_sequence_t* sequence, unsigned long pos) {
 	int song_index = 0;
-	while (zzub_sequence_get_event_count(player) > 0 
-		&& song_index < zzub_sequence_get_event_count(player) 
-		&& zzub_sequence_get_event_timestamp(player, song_index) < (int)timestamp) 
+	int timestamp, value;
+	int event_count = zzub_sequence_get_event_count(sequence);
+	while (event_count > 0 && song_index < event_count) 
 	{
+		zzub_sequence_get_event(sequence, song_index, &timestamp, &value);
+		if (pos >= timestamp) break;
 		song_index++;
 	}
 
-	if (song_index >= zzub_sequence_get_event_count(player) || zzub_sequence_get_event_timestamp(player, song_index) != timestamp) return -1;
+	if (song_index >= event_count || pos != timestamp) return -1;
 
-	for (int i = 0; i < zzub_sequence_get_event_action_count(player, song_index); i++) {
-		int t, p, v;
-		zzub_sequence_get_event_action(player, song_index, i, &t, &p, &v);
-		if (p == timestamp && t == track)
-			return v;
-	}
-
-	return -1;
+	return value;
 }
 
-void zzub_sequence_set_event(zzub_player_t *player, int track, int timestamp, int value) {
+void zzub_sequence_set_event(zzub_sequence_t* sequence, int timestamp, int value) {
 
-	player->sequencer_set_event(track, timestamp, value);
+	sequence->_player->sequencer_set_event(sequence->track, timestamp, value);
 }
-/*
-void zzub_sequence_set_events(zzub_player_t *player, int* events, int num_events) {
 
-
-	for (int i = 0; i < num_events; i++) {
-		int track = events[i * 3 + 0];
-		int timestamp = events[i * 3 + 1];
-		int value = events[i * 3 + 2];
-		player->sequencer_set_event(track, timestamp, value);
-	}
-}*/
-
-int zzub_sequence_get_event_count(zzub_player_t *player) {
+int zzub_sequence_get_event_count(zzub_sequence_t* sequence) {
 
 	operation_copy_flags flags;
-	flags.copy_song_events = true;
-	player->merge_backbuffer_flags(flags);
+	flags.copy_sequencer_tracks = true;
+	sequence->_player->merge_backbuffer_flags(flags);
 
-	return (int)player->back.song_events.size();
+	return (int)sequence->_player->back.sequencer_tracks[sequence->track].events.size();
 }
 
-int zzub_sequence_get_event_timestamp(zzub_player_t *player, int index) {
-
+int zzub_sequence_get_event(zzub_sequence_t* sequence, int index, int* pos, int* value) {
 	operation_copy_flags flags;
-	flags.copy_song_events = true;
-	player->merge_backbuffer_flags(flags);
-
-	return player->back.song_events[index].timestamp;
-}
-
-int zzub_sequence_get_event_action_count(zzub_player_t *player, int index) {
-
-	operation_copy_flags flags;
-	flags.copy_song_events = true;
-	player->merge_backbuffer_flags(flags);
-
-	return (int)player->back.song_events[index].actions.size();
-}
-
-int zzub_sequence_get_event_action(zzub_player_t *player, int index, int action, int* track, int* pos, int* value) {
-
-	operation_copy_flags flags;
-	flags.copy_song_events = true;
-	player->merge_backbuffer_flags(flags);
-
-	zzub::sequencer_event::track_action& pta = player->back.song_events[index].actions[action];
-	*track = pta.first;
-	*pos = player->back.song_events[index].timestamp;
-	*value = pta.second;
+	flags.copy_sequencer_tracks = true;
+	sequence->_player->merge_backbuffer_flags(flags);
+	
+	sequencer_track::time_value& ev = sequence->_player->back.sequencer_tracks[sequence->track].events[index];
+	*pos = ev.first;
+	*value = ev.second;
 	return 0;
 }
 
-zzub_plugin_t* zzub_sequence_get_plugin(zzub_player_t *player, int track) {
+zzub_plugin_t* zzub_sequence_get_plugin(zzub_sequence_t* sequence) {
 
 	operation_copy_flags flags;
-	flags.copy_sequencer_track_order = true;
-	flags.copy_graph = true;
-	player->merge_backbuffer_flags(flags);
+	flags.copy_sequencer_tracks = true;
+	sequence->_player->merge_backbuffer_flags(flags);
 
-	plugin_descriptor plugindesc = (plugin_descriptor)player->back.sequencer_tracks[track];
-	int id = player->back.graph[plugindesc].id;
-	return zzub_player_get_plugin_by_id(player, id);
+	int id = sequence->_player->back.sequencer_tracks[sequence->track].plugin_id;
+	return sequence->_player->back.plugins[id]->proxy;
 }
 
-void zzub_sequence_create_track(zzub_player_t *player, zzub_plugin_t* plugin) {
-
+zzub_sequence_t* zzub_player_create_sequence(zzub_player_t *player, zzub_plugin_t* plugin) {
 	player->sequencer_add_track(plugin->id);
+	return player->back.sequencer_tracks.back().proxy;
 }
 
-void zzub_sequence_remove_track(zzub_player_t *player, int index) {
+void zzub_sequence_destroy(zzub_sequence_t* sequence) {
 
-	player->sequencer_remove_track(index);
+	sequence->_player->sequencer_remove_track(sequence->track);
 }
 
-void zzub_sequence_move_track(zzub_player_t *player, int index, int newIndex) {
+void zzub_sequence_move(zzub_sequence_t* sequence, int newIndex) {
 
-	player->sequencer_move_track(index, newIndex);
+	sequence->_player->sequencer_move_track(sequence->track, newIndex);
 }
 
-int zzub_sequence_insert_events(zzub_player_t *player, int* track_indices, int num_indices, int start, int ticks) {
+int zzub_sequence_insert_events(zzub_sequence_t* sequence, int start, int ticks) {
 
-	player->sequencer_insert_events(track_indices, num_indices, start, ticks);
+	sequence->_player->sequencer_insert_events(sequence->track, start, ticks);
 	return 0;
 }
 
-int zzub_sequence_remove_events(zzub_player_t *player, int* track_indices, int num_indices, int start, int ticks) {
+int zzub_sequence_remove_events(zzub_sequence_t* sequence, int start, int ticks) {
 
-	player->sequencer_remove_events(track_indices, num_indices, start, ticks);
+	sequence->_player->sequencer_remove_events(sequence->track, start, ticks);
 	return 0;
 }
 

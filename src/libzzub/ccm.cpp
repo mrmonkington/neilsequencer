@@ -682,27 +682,24 @@ xml_node CcmWriter::saveSequence(xml_node &parent, double fac, zzub::song &playe
 	xml_node item = parent.append_child(node_element);
 	item.name("sequence");
 	
-	for (size_t i = 0; i < player.song_events.size(); ++i) {
-		sequencer_event &ev = player.song_events[i];
-		for (size_t j = 0; j < ev.actions.size(); j++) {
-			sequencer_event::track_action& ta = ev.actions[j];
-			if (ta.first != track) continue;
+	int plugin_id = player.sequencer_tracks[track].plugin_id;
+	for (size_t i = 0; i < player.sequencer_tracks[track].events.size(); ++i) {
+		sequencer_track::time_value &ev = player.sequencer_tracks[track].events[i];
 
-			xml_node e = item.append_child(node_element);
-			e.name("e");
-			e.attribute("t") = fac * double(ev.timestamp);
-			if (ta.second == sequencer_event_type_mute) {
-				e.attribute("mute") = true;
-			} else if (ta.second == sequencer_event_type_break) {
-				e.attribute("break") = true;
-			} else if (ta.second == sequencer_event_type_thru) {
-				e.attribute("thru") = true;
-			} else if (ta.second >= 0x10) {
-				zzub::pattern& p = *player.plugins[player.sequencer_tracks[track]]->patterns[ta.second - 0x10];
-				e.attribute("ref") = id_from_ptr(&p);
-			} else {
-				assert(0);
-			}
+		xml_node e = item.append_child(node_element);
+		e.name("e");
+		e.attribute("t") = fac * double(ev.first);
+		if (ev.second == sequencer_event_type_mute) {
+			e.attribute("mute") = true;
+		} else if (ev.second == sequencer_event_type_break) {
+			e.attribute("break") = true;
+		} else if (ev.second == sequencer_event_type_thru) {
+			e.attribute("thru") = true;
+		} else if (ev.second >= 0x10) {
+			zzub::pattern& p = *player.plugins[plugin_id]->patterns[ev.second - 0x10];
+			e.attribute("ref") = id_from_ptr(&p);
+		} else {
+			assert(0);
 		}
 	}
 
@@ -720,8 +717,7 @@ xml_node CcmWriter::saveSequences(xml_node &parent, zzub::song &player, int plug
 	item.name("sequences");
 
 	for (int i = 0; i != player.sequencer_tracks.size(); i++) {
-		zzub::plugin_descriptor plugindesc = player.plugins[plugin]->descriptor;
-		if (player.sequencer_tracks[i] == plugindesc) {
+		if (player.sequencer_tracks[i].plugin_id == plugin) {
 			saveSequence(item, tpbfac, player, i);
 		}
 	}

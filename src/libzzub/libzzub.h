@@ -213,6 +213,7 @@ void zzub_player_set_song_end(zzub_player_t *player, int v);
 void zzub_player_set_loop_enabled(zzub_player_t *player, int enable);
 int zzub_player_get_loop_enabled(zzub_player_t *player);
 int zzub_player_get_sequence_track_count(zzub_player_t *player);
+zzub_sequence_t* zzub_player_get_sequence(zzub_player_t *player, int index);
 
 /** \brief Retreive the currently playing pattern and row for a plugin. */
 int zzub_player_get_currently_playing_pattern(zzub_plugin_t *plugin, int* pattern, int* row);
@@ -605,9 +606,6 @@ void zzub_plugin_play_midi_note(zzub_plugin_t *plugin, int note, int prevNote, i
 void zzub_plugin_play_pattern_row_ref(zzub_plugin_t *plugin, int pattern, int row);
 void zzub_plugin_play_pattern_row(zzub_plugin_t *plugin, zzub_pattern_t* pattern, int row);
 
-// 0.3: DEAD // int zzub_plugin_is_non_song_plugin(zzub_plugin_t *plugin);
-// 0.3: DEAD // void zzub_plugin_set_non_song_plugin(zzub_plugin_t *plugin, int state);
-
 // Connection methods
 
 /*@}*/
@@ -639,23 +637,17 @@ void zzub_plugin_add_event_connection_binding(zzub_plugin_t *plugin, zzub_plugin
 /** @name Sequencer methods */
 /*@{*/
 
-void zzub_sequence_create_track(zzub_player_t *player, zzub_plugin_t* plugin);
-void zzub_sequence_remove_track(zzub_player_t *player, int index);
-void zzub_sequence_move_track(zzub_player_t *player, int index, int newIndex);
-
-int zzub_sequence_insert_events(zzub_player_t *player, int* track_indices, int num_indices, int start, int ticks);
-int zzub_sequence_remove_events(zzub_player_t *player, int* track_indices, int num_indices, int start, int ticks);
-
-void zzub_sequence_set_event(zzub_player_t *player, int track, int pos, int value);
-// 0.3: DEAD // void zzub_sequence_set_events(zzub_player_t *player, int* events, int num_events);
-
-zzub_plugin_t* zzub_sequence_get_plugin(zzub_player_t *player, int track);
-int zzub_sequence_get_event_at(zzub_player_t *player, int track, unsigned long pos);
-
-int zzub_sequence_get_event_count(zzub_player_t *player);
-int zzub_sequence_get_event_timestamp(zzub_player_t *player, int index);
-int zzub_sequence_get_event_action_count(zzub_player_t *player, int index);
-int zzub_sequence_get_event_action(zzub_player_t *player, int index, int action, int* track, int* pos, int* value);
+zzub_sequence_t* zzub_player_create_sequence(zzub_player_t *player, zzub_plugin_t* plugin);
+int zzub_sequence_get_index(zzub_sequence_t* sequence);
+void zzub_sequence_destroy(zzub_sequence_t* sequence);
+void zzub_sequence_move(zzub_sequence_t* sequence, int newIndex);
+int zzub_sequence_insert_events(zzub_sequence_t* sequence, int start, int ticks);
+int zzub_sequence_remove_events(zzub_sequence_t* sequence, int start, int ticks);
+void zzub_sequence_set_event(zzub_sequence_t* sequence, int pos, int value);
+zzub_plugin_t* zzub_sequence_get_plugin(zzub_sequence_t* sequence);
+int zzub_sequence_get_event_at(zzub_sequence_t* sequence, unsigned long pos);
+int zzub_sequence_get_event_count(zzub_sequence_t* sequence);
+int zzub_sequence_get_event(zzub_sequence_t* sequence, int index, int* pos, int* value);
 
 /*@}*/
 /** @name Offline pattern methods 

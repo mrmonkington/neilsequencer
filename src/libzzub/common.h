@@ -79,6 +79,7 @@ namespace zzub {
 	struct event_connection_binding;
 	struct wave_proxy;
 	struct wavelevel_proxy;
+	struct sequence_proxy;
 	struct parameter;
 	struct attribute;
 	struct envelope_entry;
@@ -100,6 +101,7 @@ typedef zzub::metaplugin_proxy zzub_plugin_t;
 typedef const zzub::info zzub_pluginloader_t;
 typedef zzub::pluginlib zzub_plugincollection_t;
 typedef zzub::pattern zzub_pattern_t;
+typedef zzub::sequence_proxy zzub_sequence_t;
 typedef zzub::event_connection_binding zzub_event_connection_binding_t;
 typedef zzub::wave_proxy zzub_wave_t;
 typedef zzub::wavelevel_proxy zzub_wavelevel_t;

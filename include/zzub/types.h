@@ -112,6 +112,7 @@ typedef struct _zzub_plugin zzub_plugin_t;
 typedef struct _zzub_pluginloader zzub_pluginloader_t;
 typedef struct _zzub_plugincollection zzub_plugincollection_t;
 typedef struct _zzub_pattern zzub_pattern_t;
+typedef struct _zzub_sequence zzub_sequence_t;
 //typedef struct _zzub_patterntrack zzub_patterntrack_t;
 //typedef struct _zzub_connection zzub_connection_t;
 //typedef struct _zzub_audio_connection zzub_audio_connection_t;

@@ -540,7 +540,6 @@ void player::clear() {
 	front.is_recording_parameters = false;
 	front.midi_mappings.clear();
 	front.keyjazz.clear();
-	front.song_events.clear();
 	front.sequencer_tracks.clear();
 	front.midi_plugin = graph_traits<plugin_map>::null_vertex();
 	//front.user_event_queue_read = 0;
@@ -588,8 +587,7 @@ void player::clear_plugin(int id) {
 	operation_copy_flags flags;
 	flags.copy_plugins = true;
 	flags.copy_graph = true;
-	flags.copy_sequencer_track_order = true;
-	flags.copy_song_events = true;
+	flags.copy_sequencer_tracks = true;
 	merge_backbuffer_flags(flags);
 
 	for (int j = 0; j < back.plugin_get_input_connection_count(id); ) {
@@ -607,7 +605,7 @@ void player::clear_plugin(int id) {
 	}
 
 	for (int j = 0; j < (int)back.sequencer_tracks.size(); ) {
-		if (back.sequencer_tracks[j] == back.plugins[id]->descriptor) {
+		if (back.sequencer_tracks[j].plugin_id == id) {
 			sequencer_remove_track(j);
 		} else
 			j++;
@@ -1001,13 +999,14 @@ void player::plugin_remove_pattern(int id, int pattern) {
 
 	// remove all sequence events for this pattern in an undoable manner
 	std::vector<std::pair<int, int> > remove_events;
-	for (size_t i = 0; i < back.song_events.size(); i++) {
-		sequencer_event& ev = back.song_events[i];
-		for (size_t j = 0; j < ev.actions.size(); j++) {
-			sequencer_event::track_action& ta = ev.actions[j];
-			if (back.sequencer_tracks[ta.first] == plugin && ta.second >= 0x10) {
-				if (pattern == ta.second - 0x10) {
-					remove_events.push_back(std::pair<int, int>(ta.first, ev.timestamp));
+	for (size_t i = 0; i < back.sequencer_tracks.size(); i++) {
+		if (back.sequencer_tracks[i].plugin_id == id) {
+			for (size_t j = 0; j < back.sequencer_tracks[i].events.size(); j++) {
+				sequencer_track::time_value& ta = back.sequencer_tracks[i].events[j];
+				if (ta.second >= 0x10) {
+					if (pattern == ta.second - 0x10) {
+						remove_events.push_back(std::pair<int, int>(i, ta.first));
+					}
 				}
 			}
 		}
@@ -1253,7 +1252,7 @@ void player::plugin_set_stream_source(int plugin_id, std::string data_url) {
 
 
 void player::sequencer_add_track(int id) {
-	op_sequencer_create_track* redo = new op_sequencer_create_track(id);
+	op_sequencer_create_track* redo = new op_sequencer_create_track(this, id);
 	prepare_operation_redo(redo);
 
 	op_sequencer_remove_track* undo = new op_sequencer_remove_track(-1);
@@ -1264,20 +1263,21 @@ void player::sequencer_remove_track(int index) {
 	operation_copy_flags flags;
 	flags.copy_graph = true;
 	flags.copy_plugins = true;
-	flags.copy_sequencer_track_order = true;
+	flags.copy_sequencer_tracks = true;
 
 	merge_backbuffer_flags(flags);
 
-	int plugin = (int)back.sequencer_tracks[index];
+	int plugin_id = (int)back.sequencer_tracks[index].plugin_id;
 
 	// remove the events in this track in an undoable fashion
-	vector<sequencer_event> events = back.song_events;
-	for (int i = 0; i < (int)events.size(); i++) {
-		sequencer_event& se = events[i];
-		for (int j = 0; j < (int)se.actions.size(); j++) {
-			sequencer_event::track_action& ta = se.actions[j];
-			if (ta.first == index) sequencer_set_event(ta.first, se.timestamp, -1);
-		}
+	std::vector<std::pair<int, int> > remove_events;
+	for (size_t j = 0; j < back.sequencer_tracks[index].events.size(); j++) {
+		sequencer_track::time_value& ev = back.sequencer_tracks[index].events[j];
+		remove_events.push_back(std::pair<int, int>(index, ev.first));
+	}
+
+	for (size_t i = 0; i < remove_events.size(); i++) {
+		sequencer_set_event(remove_events[i].first, remove_events[i].second, -1);
 	}
 
 	op_sequencer_remove_track* redo = new op_sequencer_remove_track(index);
@@ -1287,7 +1287,7 @@ void player::sequencer_remove_track(int index) {
 	op_sequencer_move_track* undo_pos = new op_sequencer_move_track(-1, index);
 	prepare_operation_undo(undo_pos);
 
-	op_sequencer_create_track* undo = new op_sequencer_create_track(back.get_plugin_id(plugin));
+	op_sequencer_create_track* undo = new op_sequencer_create_track(this, plugin_id);
 	prepare_operation_undo(undo);
 
 }
@@ -1311,30 +1311,21 @@ void player::sequencer_set_event(int track, int pos, int value) {
 	prepare_operation_redo(redo);
 }
 
-void player::sequencer_insert_events(int* _track_indices, int num_indices, int start, int ticks) {
+void player::sequencer_insert_events(int track, int start, int ticks) {
 	operation_copy_flags flags;
-	flags.copy_song_events = true;
+	flags.copy_sequencer_tracks = true;
 	merge_backbuffer_flags(flags);
 
-	std::vector<int> track_indices(_track_indices, _track_indices + num_indices);
-
-	op_sequencer_replace* undo = new op_sequencer_replace(back.song_events);
+	op_sequencer_replace* undo = new op_sequencer_replace(back.sequencer_tracks);
 
 	// set up temporary operation-objects to perform the sequencer editing on the back buffer
 	std::vector<op_sequencer_set_event> remove_ops;
 	std::vector<op_sequencer_set_event> insert_ops;
-	for (size_t i = 0; i < back.song_events.size(); i++) {
-		sequencer_event& ev = back.song_events[i];
-		for (size_t j = 0; j < ev.actions.size(); j++) {
-			sequencer_event::track_action& ta = ev.actions[j];
-			if (ev.timestamp >= start) {
-				std::vector<int>::iterator ti = find(track_indices.begin(), track_indices.end(), ta.first);
-				if (ti != track_indices.end()) {
-					// this event is subject to moving
-					remove_ops.push_back(op_sequencer_set_event(ev.timestamp, ta.first, -1));
-					insert_ops.push_back(op_sequencer_set_event(ev.timestamp + ticks, ta.first, ta.second));
-				}
-			}
+	for (size_t i = 0; i < back.sequencer_tracks[track].events.size(); i++) {
+		sequencer_track::time_value& ev =  back.sequencer_tracks[track].events[i];
+		if (ev.first >= start) {
+			remove_ops.push_back(op_sequencer_set_event(ev.first, track, -1));
+			insert_ops.push_back(op_sequencer_set_event(ev.first+ ticks, track, ev.second));
 		}
 	}
 
@@ -1350,37 +1341,29 @@ void player::sequencer_insert_events(int* _track_indices, int num_indices, int s
 	}
 
 	// put the backbuffer-sequencer into the undo buffer
-	op_sequencer_replace* redo = new op_sequencer_replace(back.song_events);
+	op_sequencer_replace* redo = new op_sequencer_replace(back.sequencer_tracks);
 	prepare_operation_redo(redo);
 	prepare_operation_undo(undo);
 
 }
 
-void player::sequencer_remove_events(int* _track_indices, int num_indices, int start, int ticks) {
+void player::sequencer_remove_events(int track, int start, int ticks) {
 	operation_copy_flags flags;
-	flags.copy_song_events = true;
+	flags.copy_sequencer_tracks = true;
 	merge_backbuffer_flags(flags);
 
-	std::vector<int> track_indices(_track_indices, _track_indices + num_indices);
-
-	op_sequencer_replace* undo = new op_sequencer_replace(back.song_events);
+	op_sequencer_replace* undo = new op_sequencer_replace(back.sequencer_tracks);
 
 	// set up temporary operation-objects to perform the sequencer editing on the back buffer
 	std::vector<op_sequencer_set_event> remove_ops;
 	std::vector<op_sequencer_set_event> insert_ops;
-	for (size_t i = 0; i < back.song_events.size(); i++) {
-		sequencer_event& ev = back.song_events[i];
-		for (size_t j = 0; j < ev.actions.size(); j++) {
-			sequencer_event::track_action& ta = ev.actions[j];
-			if (ev.timestamp >= start) {
-				std::vector<int>::iterator ti = find(track_indices.begin(), track_indices.end(), ta.first);
-				if (ti != track_indices.end()) {
-					// this event is subject to moving
-					remove_ops.push_back(op_sequencer_set_event(ev.timestamp, ta.first, -1));
-					if (ev.timestamp - ticks >= start)
-						insert_ops.push_back(op_sequencer_set_event(ev.timestamp - ticks, ta.first, ta.second));
-				}
-			}
+	for (size_t i = 0; i < back.sequencer_tracks[track].events.size(); i++) {
+		sequencer_track::time_value& ev = back.sequencer_tracks[track].events[i];
+		if (ev.first >= start) {
+			// this event is subject to moving
+			remove_ops.push_back(op_sequencer_set_event(ev.first, track, -1));
+			if (ev.first - ticks >= start)
+				insert_ops.push_back(op_sequencer_set_event(ev.first - ticks, track, ev.second));
 		}
 	}
 
@@ -1396,7 +1379,7 @@ void player::sequencer_remove_events(int* _track_indices, int num_indices, int s
 	}
 
 	// put the backbuffer-sequencer into the undo buffer
-	op_sequencer_replace* redo = new op_sequencer_replace(back.song_events);
+	op_sequencer_replace* redo = new op_sequencer_replace(back.sequencer_tracks);
 	prepare_operation_redo(redo);
 	prepare_operation_undo(undo);
 }

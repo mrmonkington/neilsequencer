@@ -87,7 +87,6 @@ struct metaplugin {
 	const zzub::info* info;
 	host* callbacks;
 	bool initialized;
-	//std::vector<int> sequencer_tracks_event_positions; // keeps track of currently playing sequencer positions for each plugin
 	vector<vector<float> > work_buffer;
 	string name;
 	int tracks;
@@ -164,10 +163,17 @@ struct event_message {
 	zzub_event_data data;
 };
 
-struct sequencer_event {
-	int timestamp;
-	typedef pair<int, int> track_action;
-	vector<track_action> actions;
+struct sequence_proxy {
+	player* _player;
+	int track;
+	sequence_proxy(player* _playr, int _track):_player(_playr),track(_track){}
+};
+
+struct sequencer_track {
+	int plugin_id;
+	typedef pair<int, int> time_value;
+	vector<time_value> events;
+	sequence_proxy* proxy;
 };
 
 struct song {
@@ -179,8 +185,7 @@ struct song {
 	vector<event_message> user_event_queue;
 	int user_event_queue_read, user_event_queue_write;
 	vector<midimapping> midi_mappings;
-	vector<sequencer_event> song_events;
-	vector<plugin_descriptor> sequencer_tracks;
+	vector<sequencer_track> sequencer_tracks;
 	wave_table wavetable;
 	int song_begin, song_end, song_loop_begin, song_loop_end, song_loop_enabled;
 	string song_comment;
@@ -252,14 +257,13 @@ struct song {
 struct mixer : song {
 	bool is_recording_parameters;
 	bool is_syncing_midi_transport;
-	int song_index;
 	int song_position;
 	int work_position;								// total accumulation of samples processed
 	int work_chunk_size;							// size of chunk in current buffer we're mixing
 	int last_tick_work_position;					// at which workPos we last ticked
 	int last_tick_position;							// at which song position we last ticked
 	double work_tick_fracs;							// accumulated fractions of samples not processed
-	std::vector<int> sequencer_positions;
+	std::vector<int> sequencer_indices;				// currently playing index in each track
 	master_plugin_info master_plugininfo;
 	plugin_descriptor solo_plugin;
 	plugin_descriptor midi_plugin;

@@ -69,8 +69,7 @@ void operation_copy_flags::merge(const operation_copy_flags& flags) {
 	copy_midi_mappings |= flags.copy_midi_mappings;
 	copy_plugins |= flags.copy_plugins;
 	copy_plugins_deep |= flags.copy_plugins_deep;
-	copy_sequencer_track_order |= flags.copy_sequencer_track_order;
-	copy_song_events |= flags.copy_song_events;
+	copy_sequencer_tracks |= flags.copy_sequencer_tracks;
 	copy_song_variables |= flags.copy_song_variables;
 	copy_wavetable |= flags.copy_wavetable;
 	copy_work_order |= flags.copy_work_order;
@@ -382,11 +381,9 @@ void undo_manager::merge_backbuffer_flags(operation_copy_flags flags) {
 	if (!backbuffer_flags.copy_plugins && flags.copy_plugins)
 		back.plugins = front.plugins;
 
-	if (!backbuffer_flags.copy_sequencer_track_order && flags.copy_sequencer_track_order)
+	if (!backbuffer_flags.copy_sequencer_tracks && flags.copy_sequencer_tracks) {
 		back.sequencer_tracks = front.sequencer_tracks;
-
-	if (!backbuffer_flags.copy_song_events && flags.copy_song_events)
-		back.song_events = front.song_events;
+	}
 
 	if (!backbuffer_flags.copy_song_variables && flags.copy_song_variables) {
 		back.song_begin = front.song_begin;
@@ -512,21 +509,18 @@ void undo_manager::write_swap_song(zzub::song& song, const operation_copy_flags&
 		front.plugins.swap(song.plugins);
 
 	bool update_seq_pos = false;
-	if (flags.copy_sequencer_track_order) {
+	if (flags.copy_sequencer_tracks) {
 		front.sequencer_tracks.swap(song.sequencer_tracks);
-		update_seq_pos = true;
-	}
-
-	if (flags.copy_song_events) {
-		front.song_events.swap(song.song_events);
 		update_seq_pos = true;
 	}
 
 	if (update_seq_pos) {
 		// the sequencer was modified - update internal sequencer states
 		front.sequencer_update_play_pattern_positions();
-		if (front.song_index >= front.song_events.size())
-			front.song_index = front.song_events.size() - 1;
+		for (size_t i = 0; i < front.sequencer_indices.size(); i++) {
+			if (front.sequencer_indices[i] >= front.sequencer_tracks[i].events.size())
+				front.sequencer_indices[i] = front.sequencer_tracks[i].events.size() - 1;
+		}
 	}
 
 	if (flags.copy_song_variables) {
