@@ -272,7 +272,7 @@ class zzub_event_data_unknown(Structure):
 
 zzub_event_data_unknown_t = zzub_event_data_unknown
 
-class union__d455c50a(Union):
+class union__5f7963da(Union):
 	_fields_ = [
 		('new_plugin', zzub_event_data_new_plugin_t),
 		('delete_plugin', zzub_event_data_delete_plugin_t),
@@ -305,7 +305,7 @@ class union__d455c50a(Union):
 class zzub_event_data(Structure):
 	_fields_ = [
 		('type', c_int),
-		('', union__d455c50a),
+		('', union__5f7963da),
 	]
 
 zzub_event_data_t = zzub_event_data
@@ -333,6 +333,12 @@ class _zzub_pluginloader(Structure):
 	]
 
 zzub_pluginloader_t = _zzub_pluginloader
+
+class _zzub_sequence(Structure):
+	_fields_ = [
+	]
+
+zzub_sequence_t = _zzub_sequence
 
 class _zzub_pattern(Structure):
 	_fields_ = [
@@ -582,6 +588,7 @@ zzub_player_set_song_end                 = dlsym(libzzub, 'zzub_player_set_song_
 zzub_player_set_loop_enabled             = dlsym(libzzub, 'zzub_player_set_loop_enabled'          , None, ('player'  ,POINTER(zzub_player_t)),('enable'  ,c_int     ))
 zzub_player_get_loop_enabled             = dlsym(libzzub, 'zzub_player_get_loop_enabled'          , c_int, ('player'  ,POINTER(zzub_player_t)))
 zzub_player_get_sequence_track_count     = dlsym(libzzub, 'zzub_player_get_sequence_track_count'  , c_int, ('player'  ,POINTER(zzub_player_t)))
+zzub_player_get_sequence                 = dlsym(libzzub, 'zzub_player_get_sequence'              , POINTER(zzub_sequence_t), ('player'  ,POINTER(zzub_player_t)),('index'   ,c_int     ))
 zzub_player_get_currently_playing_pattern = dlsym(libzzub, 'zzub_player_get_currently_playing_pattern', c_int, ('plugin'  ,POINTER(zzub_plugin_t)),('pattern' ,POINTER(c_int)),('row'     ,POINTER(c_int)))
 zzub_player_get_currently_playing_pattern_row = dlsym(libzzub, 'zzub_player_get_currently_playing_pattern_row', c_int, ('plugin'  ,POINTER(zzub_plugin_t)),('pattern' ,c_int     ),('row'     ,POINTER(c_int)))
 zzub_player_get_wave_count               = dlsym(libzzub, 'zzub_player_get_wave_count'            , c_int, ('player'  ,POINTER(zzub_player_t)))
@@ -722,18 +729,16 @@ zzub_plugin_play_pattern_row_ref         = dlsym(libzzub, 'zzub_plugin_play_patt
 zzub_plugin_play_pattern_row             = dlsym(libzzub, 'zzub_plugin_play_pattern_row'          , None, ('plugin'  ,POINTER(zzub_plugin_t)),('pattern' ,POINTER(zzub_pattern_t)),('row'     ,c_int     ))
 zzub_plugin_set_midi_connection_device   = dlsym(libzzub, 'zzub_plugin_set_midi_connection_device', c_int, ('to_plugin',POINTER(zzub_plugin_t)),('from_plugin',POINTER(zzub_plugin_t)),('name'    ,c_char_p  ))
 zzub_plugin_add_event_connection_binding = dlsym(libzzub, 'zzub_plugin_add_event_connection_binding', None, ('plugin'  ,POINTER(zzub_plugin_t)),('from_plugin',POINTER(zzub_plugin_t)),('sourceparam',c_int     ),('targetgroup',c_int     ),('targettrack',c_int     ),('targetparam',c_int     ))
-zzub_sequence_create_track               = dlsym(libzzub, 'zzub_sequence_create_track'            , None, ('player'  ,POINTER(zzub_player_t)),('plugin'  ,POINTER(zzub_plugin_t)))
-zzub_sequence_remove_track               = dlsym(libzzub, 'zzub_sequence_remove_track'            , None, ('player'  ,POINTER(zzub_player_t)),('index'   ,c_int     ))
-zzub_sequence_move_track                 = dlsym(libzzub, 'zzub_sequence_move_track'              , None, ('player'  ,POINTER(zzub_player_t)),('index'   ,c_int     ),('newIndex',c_int     ))
-zzub_sequence_insert_events              = dlsym(libzzub, 'zzub_sequence_insert_events'           , c_int, ('player'  ,POINTER(zzub_player_t)),('track_indices',POINTER(c_int)),('num_indices',c_int     ),('start'   ,c_int     ),('ticks'   ,c_int     ))
-zzub_sequence_remove_events              = dlsym(libzzub, 'zzub_sequence_remove_events'           , c_int, ('player'  ,POINTER(zzub_player_t)),('track_indices',POINTER(c_int)),('num_indices',c_int     ),('start'   ,c_int     ),('ticks'   ,c_int     ))
-zzub_sequence_set_event                  = dlsym(libzzub, 'zzub_sequence_set_event'               , None, ('player'  ,POINTER(zzub_player_t)),('track'   ,c_int     ),('pos'     ,c_int     ),('value'   ,c_int     ))
-zzub_sequence_get_plugin                 = dlsym(libzzub, 'zzub_sequence_get_plugin'              , POINTER(zzub_plugin_t), ('player'  ,POINTER(zzub_player_t)),('track'   ,c_int     ))
-zzub_sequence_get_event_at               = dlsym(libzzub, 'zzub_sequence_get_event_at'            , c_int, ('player'  ,POINTER(zzub_player_t)),('track'   ,c_int     ),('pos'     ,c_ulong   ))
-zzub_sequence_get_event_count            = dlsym(libzzub, 'zzub_sequence_get_event_count'         , c_int, ('player'  ,POINTER(zzub_player_t)))
-zzub_sequence_get_event_timestamp        = dlsym(libzzub, 'zzub_sequence_get_event_timestamp'     , c_int, ('player'  ,POINTER(zzub_player_t)),('index'   ,c_int     ))
-zzub_sequence_get_event_action_count     = dlsym(libzzub, 'zzub_sequence_get_event_action_count'  , c_int, ('player'  ,POINTER(zzub_player_t)),('index'   ,c_int     ))
-zzub_sequence_get_event_action           = dlsym(libzzub, 'zzub_sequence_get_event_action'        , c_int, ('player'  ,POINTER(zzub_player_t)),('index'   ,c_int     ),('action'  ,c_int     ),('track'   ,POINTER(c_int)),('pos'     ,POINTER(c_int)),('value'   ,POINTER(c_int)))
+zzub_player_create_sequence              = dlsym(libzzub, 'zzub_player_create_sequence'           , POINTER(zzub_sequence_t), ('player'  ,POINTER(zzub_player_t)),('plugin'  ,POINTER(zzub_plugin_t)))
+zzub_sequence_destroy                    = dlsym(libzzub, 'zzub_sequence_destroy'                 , None, ('sequence',POINTER(zzub_sequence_t)))
+zzub_sequence_move                       = dlsym(libzzub, 'zzub_sequence_move'                    , None, ('sequence',POINTER(zzub_sequence_t)),('newIndex',c_int     ))
+zzub_sequence_insert_events              = dlsym(libzzub, 'zzub_sequence_insert_events'           , c_int, ('sequence',POINTER(zzub_sequence_t)),('start'   ,c_int     ),('ticks'   ,c_int     ))
+zzub_sequence_remove_events              = dlsym(libzzub, 'zzub_sequence_remove_events'           , c_int, ('sequence',POINTER(zzub_sequence_t)),('start'   ,c_int     ),('ticks'   ,c_int     ))
+zzub_sequence_set_event                  = dlsym(libzzub, 'zzub_sequence_set_event'               , None, ('sequence',POINTER(zzub_sequence_t)),('pos'     ,c_int     ),('value'   ,c_int     ))
+zzub_sequence_get_plugin                 = dlsym(libzzub, 'zzub_sequence_get_plugin'              , POINTER(zzub_plugin_t), ('sequence',POINTER(zzub_sequence_t)))
+zzub_sequence_get_event_at               = dlsym(libzzub, 'zzub_sequence_get_event_at'            , c_int, ('sequence',POINTER(zzub_sequence_t)),('pos'     ,c_ulong   ))
+zzub_sequence_get_event_count            = dlsym(libzzub, 'zzub_sequence_get_event_count'         , c_int, ('sequence',POINTER(zzub_sequence_t)))
+zzub_sequence_get_event                  = dlsym(libzzub, 'zzub_sequence_get_event'               , c_int, ('sequence',POINTER(zzub_sequence_t)),('index'   ,c_int     ),('pos'     ,POINTER(c_int)),('value'   ,POINTER(c_int)))
 zzub_plugin_create_pattern               = dlsym(libzzub, 'zzub_plugin_create_pattern'            , POINTER(zzub_pattern_t), ('plugin'  ,POINTER(zzub_plugin_t)),('rows'    ,c_int     ))
 zzub_plugin_create_range_pattern         = dlsym(libzzub, 'zzub_plugin_create_range_pattern'      , POINTER(zzub_pattern_t), ('player'  ,POINTER(zzub_player_t)),('columns' ,c_int     ),('rows'    ,c_int     ))
 zzub_pattern_destroy                     = dlsym(libzzub, 'zzub_pattern_destroy'                  , None, ('pattern' ,POINTER(zzub_pattern_t)))

@@ -638,7 +638,7 @@ void zzub_plugin_add_event_connection_binding(zzub_plugin_t *plugin, zzub_plugin
 /*@{*/
 
 zzub_sequence_t* zzub_player_create_sequence(zzub_player_t *player, zzub_plugin_t* plugin);
-int zzub_sequence_get_index(zzub_sequence_t* sequence);
+// 0.3: DEAD // int zzub_sequence_get_index(zzub_sequence_t* sequence);
 void zzub_sequence_destroy(zzub_sequence_t* sequence);
 void zzub_sequence_move(zzub_sequence_t* sequence, int newIndex);
 int zzub_sequence_insert_events(zzub_sequence_t* sequence, int start, int ticks);

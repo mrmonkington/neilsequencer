@@ -571,6 +571,10 @@ class _Player(object):
 		assert self._handle
 		return Plugin(zzub_player_create_plugin(self._handle,input._handle,dataSize,instanceName,loader._handle))
 	
+	def create_sequence(self, plugin):
+		assert self._handle
+		return Sequence(zzub_player_create_sequence(self._handle,plugin._handle))
+	
 	def destroy(self):
 		assert self._handle
 		zzub_player_destroy(self._handle)
@@ -658,6 +662,10 @@ class _Player(object):
 	def get_position(self):
 		assert self._handle
 		return zzub_player_get_position(self._handle)
+	
+	def get_sequence(self, index):
+		assert self._handle
+		return Sequence(zzub_player_get_sequence(self._handle,index))
 	
 	def get_sequence_track_count(self):
 		assert self._handle
@@ -810,54 +818,6 @@ class _Player(object):
 	def plugin_create_range_pattern(self, columns, rows):
 		assert self._handle
 		return Pattern(zzub_plugin_create_range_pattern(self._handle,columns,rows))
-	
-	def sequence_create_track(self, plugin):
-		assert self._handle
-		zzub_sequence_create_track(self._handle,plugin._handle)
-	
-	def sequence_get_event_action(self, index, action, track, pos, value):
-		assert self._handle
-		return zzub_sequence_get_event_action(self._handle,index,action,track,pos,value)
-	
-	def sequence_get_event_action_count(self, index):
-		assert self._handle
-		return zzub_sequence_get_event_action_count(self._handle,index)
-	
-	def sequence_get_event_at(self, track, pos):
-		assert self._handle
-		return zzub_sequence_get_event_at(self._handle,track,pos)
-	
-	def sequence_get_event_count(self):
-		assert self._handle
-		return zzub_sequence_get_event_count(self._handle)
-	
-	def sequence_get_event_timestamp(self, index):
-		assert self._handle
-		return zzub_sequence_get_event_timestamp(self._handle,index)
-	
-	def sequence_get_plugin(self, track):
-		assert self._handle
-		return Plugin(zzub_sequence_get_plugin(self._handle,track))
-	
-	def sequence_insert_events(self, track_indices, num_indices, start, ticks):
-		assert self._handle
-		return zzub_sequence_insert_events(self._handle,track_indices,num_indices,start,ticks)
-	
-	def sequence_move_track(self, index, newIndex):
-		assert self._handle
-		zzub_sequence_move_track(self._handle,index,newIndex)
-	
-	def sequence_remove_events(self, track_indices, num_indices, start, ticks):
-		assert self._handle
-		return zzub_sequence_remove_events(self._handle,track_indices,num_indices,start,ticks)
-	
-	def sequence_remove_track(self, index):
-		assert self._handle
-		zzub_sequence_remove_track(self._handle,index)
-	
-	def sequence_set_event(self, track, pos, value):
-		assert self._handle
-		zzub_sequence_set_event(self._handle,track,pos,value)
 	
 class _Plugin(object):
 	_handle = None
@@ -1302,6 +1262,59 @@ class _Pluginloader(object):
 		assert self._handle
 		return zzub_pluginloader_get_uri(self._handle)
 	
+class _Sequence(object):
+	_handle = None
+	_hash = 0
+	
+	def __init__(self,handle):
+		self._handle = handle
+		self._hash = cast(self._handle, c_void_p).value
+
+	def __hash__(self):
+		return self._hash
+
+	def __eq__(self,other):
+		return self._hash == hash(other)
+
+	def __ne__(self,other):
+		return self._hash != hash(other)
+
+	def destroy(self):
+		assert self._handle
+		zzub_sequence_destroy(self._handle)
+	
+	def get_event(self, index, pos, value):
+		assert self._handle
+		return zzub_sequence_get_event(self._handle,index,pos,value)
+	
+	def get_event_at(self, pos):
+		assert self._handle
+		return zzub_sequence_get_event_at(self._handle,pos)
+	
+	def get_event_count(self):
+		assert self._handle
+		return zzub_sequence_get_event_count(self._handle)
+	
+	def get_plugin(self):
+		assert self._handle
+		return Plugin(zzub_sequence_get_plugin(self._handle))
+	
+	def insert_events(self, start, ticks):
+		assert self._handle
+		return zzub_sequence_insert_events(self._handle,start,ticks)
+	
+	def move(self, newIndex):
+		assert self._handle
+		zzub_sequence_move(self._handle,newIndex)
+	
+	def remove_events(self, start, ticks):
+		assert self._handle
+		return zzub_sequence_remove_events(self._handle,start,ticks)
+	
+	def set_event(self, pos, value):
+		assert self._handle
+		zzub_sequence_set_event(self._handle,pos,value)
+	
 class _Wave(object):
 	_handle = None
 	_hash = 0
@@ -1474,20 +1487,21 @@ class _Wavelevel(object):
 	
 
 # you can override these
-Mididriver = _Mididriver
+Sequence = _Sequence
 Pluginloader = _Pluginloader
 Parameter = _Parameter
 Plugin = _Plugin
-Player = _Player
-Envelope = _Envelope
-Input = _Input
-Audiodriver = _Audiodriver
-Pattern = _Pattern
-Wavelevel = _Wavelevel
-Attribute = _Attribute
-Wave = _Wave
-Archive = _Archive
 Output = _Output
-Midimapping = _Midimapping
+Audiodriver = _Audiodriver
+Wave = _Wave
 EventConnectionBinding = _EventConnectionBinding
+Midimapping = _Midimapping
+Player = _Player
+Wavelevel = _Wavelevel
+Envelope = _Envelope
+Attribute = _Attribute
+Pattern = _Pattern
+Archive = _Archive
 Plugincollection = _Plugincollection
+Input = _Input
+Mididriver = _Mididriver
