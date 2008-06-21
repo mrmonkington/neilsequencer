@@ -22,6 +22,7 @@ import config
 
 DEFAULT_PACKAGES = [
 	'+eventbus',
+	'+driver',
 	'+router',
 	'+patterns',
 	'+sequencer',

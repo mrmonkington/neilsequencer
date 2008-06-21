@@ -348,6 +348,7 @@ class PatternToolBar(gtk.HBox):
 			plugin = store.get_value(iter, 1)
 			if mp == plugin:
 				self.select_plugin(store.get_path(iter)[0])
+				break
 			iter = store.iter_next(iter)
 
 	def get_combo_plugin(self, index):

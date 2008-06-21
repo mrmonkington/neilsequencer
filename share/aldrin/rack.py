@@ -75,11 +75,13 @@ class ParameterView(gtk.VBox):
 		classname = prepstr(pl.get_name())
 		self.rootwindow = rootwindow
 		title = "%s - %s" % (name,classname)
-		oc = self.plugin.get_output_channels()
-		if oc  == 2:
-			title += " (Stereo Output)"
-		elif oc == 1:
-			title += " (Mono Output)"
+		# 0.3: DEAD
+		# output channels are always 2
+		#~ oc = self.plugin.get_output_channels()
+		#~ if oc  == 2:
+			#~ title += " (Stereo Output)"
+		#~ elif oc == 1:
+			#~ title += " (Mono Output)"
 		self._title = title
 
 		self.presetbox = gtk.combo_box_entry_new_text()
@@ -388,6 +390,9 @@ class ParameterView(gtk.VBox):
 		self.update_namelabel(g,t,i)
 		
 	def get_event_connection_bindings(self, g,t,i):
+		# 0.3: DEAD
+		# no event connection implementation right now
+		return []
 		result = []
 		if g == 3:
 			# we are the source

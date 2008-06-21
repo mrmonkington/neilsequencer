@@ -62,7 +62,8 @@ class HDRecorderDialog(gtk.Dialog):
 		self.btnrec = btnrec
 		self.btnstop = btnstop
 		self.chkauto = chkauto
-		self.chkauto.set_active(self.master.get_auto_write())
+		# 0.3: DEAD
+		#self.chkauto.set_active(self.master.get_auto_write())
 		sizer = gtk.VBox(False, MARGIN)		
 		sizer.pack_start(btnsaveas, expand=False)
 		sizer.pack_start(textposition, expand=False)

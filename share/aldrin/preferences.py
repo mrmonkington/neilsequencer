@@ -164,12 +164,13 @@ class DriverPanel(gtk.VBox):
 		vbox.set_border_width(MARGIN)
 		sizer1.add(vbox)
 		inputname, outputname, samplerate, buffersize = config.get_config().get_audiodriver_config()
+		audiodriver = com.get('aldrin.core.driver.audio')
 		if not outputname:
-			outputname = player.audiodriver_get_name(-1)
-		for i in range(player.audiodriver_get_count()):
-			name = prepstr(player.audiodriver_get_name(i))
+			outputname = audiodriver.get_name(-1)
+		for i in range(audiodriver.get_count()):
+			name = prepstr(audiodriver.get_name(i))
 			self.cboutput.append_text(name)
-			if player.audiodriver_get_name(i) == outputname:
+			if audiodriver.get_name(i) == outputname:
 				self.cboutput.set_active(i)
 		for sr in samplerates:
 			self.cbsamplerate.append_text("%iHz" % sr)
@@ -201,14 +202,14 @@ class DriverPanel(gtk.VBox):
 			raise CancelException
 		iname = ""
 		player = com.get('aldrin.core.player')
-		oname = player.audiodriver_get_name(o)
+		audiodriver = com.get('aldrin.core.driver.audio')
+		oname = audiodriver.get_name(o)
 		inputname, outputname, samplerate, buffersize = config.get_config().get_audiodriver_config()
 		if (oname != outputname) or (samplerate != sr) or (bs != buffersize):
 			config.get_config().set_audiodriver_config(iname, oname, sr, bs) # write back
-			import driver
 			try:
-				driver.get_audiodriver().init()
-			except driver.AudioInitException:
+				audiodriver.init()
+			except audiodriver.AudioInitException:
 				import traceback
 				traceback.print_exc()
 				error(self, "<b><big>There was an error initializing the audio driver.</big></b>\n\nChange settings and try again.")

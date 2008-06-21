@@ -30,7 +30,6 @@ import common
 import config
 import errordlg
 from common import MARGIN, MARGIN2, MARGIN3, MARGIN0
-import driver
 import sequencer, router, patterns, wavetable, preferences, hdrecorder, cpumonitor, info, common, rack
 from utils import make_submenu_item, make_stock_menu_item, make_stock_tool_item, make_stock_toggle_item, \
 	make_stock_radio_item, make_menu_item, make_check_item, make_radio_item, new_theme_image
@@ -109,16 +108,18 @@ class AldrinFrame(gtk.Window):
 		self.set_geometry_hints(self,600,400)
 		self.set_position(gtk.WIN_POS_CENTER)
 		audiotrouble = False
+		audiodriver = com.get('aldrin.core.driver.audio')
 		try:
-			driver.get_audiodriver().init()
-		except driver.AudioInitException:
+			audiodriver.init()
+		except audiodriver.AudioInitException:
 			import traceback
 			traceback.print_exc()
 			audiotrouble = True
 		miditrouble = False
+		mididriver = com.get('aldrin.core.driver.midi')
 		try:
-			driver.get_mididriver().init()
-		except driver.MidiInitException:
+			mididriver.init()
+		except mididriver.MidiInitException:
 			import traceback
 			traceback.print_exc()
 			miditrouble = True
@@ -616,11 +617,11 @@ class AldrinFrame(gtk.Window):
 		@param event command event.
 		@type event: CommandEvent
 		"""
-		player = com.get('aldrin.core.player')
+		driver = com.get('aldrin.core.driver.audio')
 		if widget.get_active():
-			player.audiodriver_enable(0)
+			driver.enable(0)
 		else:
-			player.audiodriver_enable(1)
+			driver.enable(1)
 		self.mastertoolbar.button_up(1,1)
 
 	def on_toggle_panic_accel(self, event):
@@ -631,13 +632,13 @@ class AldrinFrame(gtk.Window):
 		@param event command event.
 		@type event: CommandEvent
 		"""
-		player = com.get('aldrin.core.player')
+		driver = com.get('aldrin.core.driver.audio')
 		if not self.aldrinframe_toolbar.GetToolState(self.PANIC):
 			self.aldrinframe_toolbar.ToggleTool(self.PANIC, True)
-			player.audiodriver_enable(0)
+			driver.enable(0)
 		else:
 			self.aldrinframe_toolbar.ToggleTool(self.PANIC, False)
-			player.audiodriver_enable(1)
+			driver.enable(1)
 
 
 	def on_handle_events(self):

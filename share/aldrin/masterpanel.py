@@ -173,7 +173,7 @@ class MasterPanel(gtk.VBox):
 		master = player.get_plugin(0)
 		vol = master.get_parameter_value(1, 0, 0)
 		self.masterslider.set_value(16384 - vol)
-		self.latency = driver.get_audiodriver().get_latency()
+		self.latency = com.get('aldrin.core.driver.audio').get_latency()
 
 	def button_up(self, widget, event):
 		"""

@@ -398,7 +398,7 @@ class SequencerView(gtk.DrawingArea):
 		"""
 		player = com.get('aldrin.core.player')
 		seq = player.get_current_sequencer()
-		track = max(min(track, seq.get_track_count()-1),0)
+		track = max(min(track, seq.get_sequence_track_count()-1),0)
 		row = max(row,0)
 		if (track,row) == (self.track,self.row):
 			return
@@ -439,8 +439,8 @@ class SequencerView(gtk.DrawingArea):
 	def get_track(self):
 		player = com.get('aldrin.core.player')
 		seq = player.get_current_sequencer()
-		if (self.track != -1) and (self.track < seq.get_track_count()):
-			return seq.get_track(self.track)
+		if (self.track != -1) and (self.track < seq.get_sequence_track_count()):
+			return seq.get_sequence(self.track)
 		return None
 
 	def create_track(self, plugin):
@@ -638,7 +638,7 @@ class SequencerView(gtk.DrawingArea):
 		player = com.get('aldrin.core.player')
 		seq = player.get_current_sequencer()
 		seq.remove_track(self.track)
-		track_count = seq.get_track_count()
+		track_count = seq.get_sequence_track_count()
 		# moves cursor if beyond existing tracks
 		if self.track > track_count-1:			
 			self.set_cursor_pos(track_count-1, self.row)
@@ -668,7 +668,7 @@ class SequencerView(gtk.DrawingArea):
 		seq = player.get_current_sequencer()
 		x, y = int(event.x), int(event.y)
 		track, row = self.pos_to_track_row((x,y))
-		self.set_cursor_pos(max(min(track,seq.get_track_count()),0),self.row)
+		self.set_cursor_pos(max(min(track,seq.get_sequence_track_count()),0),self.row)
 		
 		def make_submenu_item(submenu, name):
 			item = gtk.MenuItem(label=name)
@@ -822,7 +822,7 @@ class SequencerView(gtk.DrawingArea):
 					self.track -= 1
 					self.redraw()	
 			elif k == 'Down' or k == 'KP_Down':
-				if self.track < (seq.get_track_count()-1):
+				if self.track < (seq.get_sequence_track_count()-1):
 					seq.move_track(self.track, self.track+1)
 					self.track += 1
 					self.redraw()
@@ -1017,7 +1017,7 @@ class SequencerView(gtk.DrawingArea):
 		self.grab_focus()
 		if event.button == 1:
 			seq = player.get_current_sequencer()
-			track_count = seq.get_track_count()
+			track_count = seq.get_sequence_track_count()
 			x, y = int(event.x), int(event.y)
 			track, row = self.pos_to_track_row((x,y))		
 			if track < track_count:
@@ -1052,7 +1052,7 @@ class SequencerView(gtk.DrawingArea):
 			if self.selection_start:
 				player = com.get('aldrin.core.player')
 				seq = player.get_current_sequencer()
-				select_track = min(seq.get_track_count()-1, max(select_track, 0))
+				select_track = min(seq.get_sequence_track_count()-1, max(select_track, 0))
 				select_row = max(select_row, 0)
 				self.selection_end = (select_track, select_row)
 				self.redraw()
@@ -1161,7 +1161,7 @@ class SequencerView(gtk.DrawingArea):
 		"""
 		player = com.get('aldrin.core.player')
 		seq = player.get_current_sequencer()
-		h = seq.get_track_count()
+		h = seq.get_sequence_track_count()
 		w = (max(self.row,player.get_song_end(), player.get_loop_end())/self.step)+3
 		return w,h
 
@@ -1186,7 +1186,7 @@ class SequencerView(gtk.DrawingArea):
 		gc.set_background(bbrush)
 
 		seq = player.get_current_sequencer()
-		track_count = seq.get_track_count()
+		track_count = seq.get_sequence_track_count()
 		# draw cursor
 		if track_count > 0:
 			if self.row >= self.startseqtime and self.track >= self.starttrack:

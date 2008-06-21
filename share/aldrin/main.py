@@ -75,8 +75,8 @@ class AldrinApplication:
 		player = com.get('aldrin.core.player')
 		rootwindows = com.get_from_category('rootwindow')
 		gtk.main()
-		driver.get_mididriver().destroy()
-		driver.get_audiodriver().destroy()
+		com.get('aldrin.core.driver.audio').destroy()
+		com.get('aldrin.core.driver.midi').destroy()
 		return 1
 
 def run(argv):

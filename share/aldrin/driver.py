@@ -27,13 +27,14 @@ import common
 
 from aldrincom import com
 
-class AudioInitException(Exception):
-	pass
-
-class MidiInitException(Exception):
-	pass
-	
 class MidiDriver:
+	__aldrin__ = dict(
+		id = 'aldrin.core.driver.midi',
+		singleton = True,
+	)
+	
+	class MidiInitException(Exception):
+		pass
 	def __init__(self):
 		self.enabled = False
 
@@ -64,65 +65,80 @@ class MidiDriver:
 		self.enabled = True
 
 class AudioDriver:
+	__aldrin__ = dict(
+		id = 'aldrin.core.driver.audio',
+		singleton = True,
+	)
+	
+	class AudioInitException(Exception):
+		pass
+	
 	def __init__(self):
 		self.enabled = False
 		self.samplerate = 44100
 		self.buffersize = 256
+		self.driver = None
 		
 	def destroy(self):
 		if not self.enabled:
 			return
 		print "uninitializing audio driver..."
-		player = com.get('aldrin.core.player')
-		player.audiodriver_destroy()
+		self.driver.destroy()
 		self.enabled = False
+		
+	def get_cpu_load(self):
+		return self.driver.get_cpu_load()
 		
 	def get_latency(self):
 		return float(self.buffersize) / float(self.samplerate)
+		
+	def get_count(self):
+		return self.driver.get_count()
+		
+	def get_name(self, *args,**kargs):
+		return self.driver.get_name(*args,**kargs)
 		
 	def init(self):
 		if self.enabled:
 			self.destroy()
 		inputname, outputname, samplerate, buffersize = config.get_config().get_audiodriver_config()
 		player = com.get('aldrin.core.player')
-		if not player.audiodriver_get_count():
+		self.driver = player.audiodriver_create()
+		if not self.driver.get_count():
 			raise AudioInitException
 		print "available drivers:"
 		bestpick = -1
-		for i in range(player.audiodriver_get_count()):
+		for i in range(self.driver.get_count()):
 			io = ''
-			if player.audiodriver_is_input(i):
+			if self.driver.is_input(i):
 				io += 'I'
 			else:
 				io += ' '
-			if player.audiodriver_is_output(i):
+			if self.driver.is_output(i):
 				io += 'O'
 			else:
 				io += ' '
-			print "#%i: %s [%s]" % (i,player.audiodriver_get_name(i), io)
-			if player.audiodriver_get_name(i) == outputname:
+			print "#%i: %s [%s]" % (i,self.driver.get_name(i), io)
+			if self.driver.get_name(i) == outputname:
 				bestpick = i
 		print "best output pick:"
-		print player.audiodriver_get_name(bestpick)
-		player.audiodriver_set_samplerate(samplerate)
-		player.audiodriver_set_buffersize(buffersize)
+		print self.driver.get_name(bestpick)
+		self.driver.set_samplerate(samplerate)
+		self.driver.set_buffersize(buffersize)
 		idriver = -1
-		if player.audiodriver_is_input(bestpick):
+		if self.driver.is_input(bestpick):
 			idriver = bestpick
-		initres = player.audiodriver_create(bestpick, idriver)
+		initres = self.driver.create_device(bestpick, idriver)
 		if initres != 0:
 			raise AudioInitException
-		player.audiodriver_enable(1)
+		self.driver.enable(1)
 		self.samplerate = samplerate
 		self.buffersize = buffersize
 		self.enabled = True
-		
-audiodriver = AudioDriver()
-mididriver = MidiDriver()
 
-def get_audiodriver():
-	return audiodriver
-	
-def get_mididriver():
-	return mididriver
-
+__aldrin__ = dict(
+	classes = [
+		AudioDriver,
+		MidiDriver,
+	],
+)

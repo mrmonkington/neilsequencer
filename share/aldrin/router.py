@@ -949,13 +949,13 @@ class RouteView(gtk.DrawingArea):
 			pattern = mp.create_pattern(com.get('aldrin.core.sequencerpanel').view.step)
 			pattern.set_name('00')
 			seq = player.get_current_sequencer()
-			t=seq.create_track(mp)
+			t=seq.create_sequence(mp)
 			t.set_event(0,16)
 			if not(mask & gtk.gdk.SHIFT_MASK):
 				if self.autoconnect_target==None:
-					player.get_plugin_list()[0].add_audio_input(mp, 16384, 16384)
+					player.get_plugin_list()[0].add_input(mp, zzub.zzub_connection_type_audio)
 				else:
-					self.autoconnect_target.add_audio_input(mp, 16384, 16384)
+					self.autoconnect_target.add_input(mp, zzub.zzub_connection_type_audio)
 		mp.set_position(*self.pixel_to_float(self.contextmenupos))
 		# if we have a context plugin, prepend connections
 		if 'plugin' in kargs:
@@ -1002,6 +1002,7 @@ class RouteView(gtk.DrawingArea):
 			except:
 				import traceback
 				print traceback.format_exc()
+		player.history_commit("new plugin")
 		self.rootwindow.document_changed()
 		# add plugin information
 		common.get_plugin_infos().add_plugin(mp)
@@ -1389,7 +1390,8 @@ class RouteView(gtk.DrawingArea):
 					#mp.add_event_input(self.current_plugin)
 					pass
 				else:
-					mp.add_audio_input(self.current_plugin, 0x4000, 0x4000)
+					mp.add_input(self.current_plugin, zzub.zzub_connection_type_audio)
+					com.get('aldrin.core.player').history_commit("New Connection")
 		self.current_plugin = None
 		self.connecting = False
 		self.redraw()
@@ -1448,8 +1450,9 @@ class RouteView(gtk.DrawingArea):
 		PW, PH = PLUGINWIDTH / 2, PLUGINHEIGHT / 2
 
 		pluginlist = player.get_plugin_list()
-
-		cpu = min(player.audiodriver_get_cpu_load(), 100.0)
+		
+		audiodriver = com.get('aldrin.core.driver.audio')
+		cpu = min(audiodriver.get_cpu_load(), 100.0)
 		cpu_loads = {}
 		biggestload = 0
 		try:

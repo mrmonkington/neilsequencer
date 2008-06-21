@@ -37,8 +37,9 @@ class AldrinPlayer(Player):
 		for name in get_plugin_blacklist():
 			self.blacklist_plugin(name)
 		# load aliases file and add aliases
-		for name,uri in get_plugin_aliases():
-			self.add_plugin_alias(name, uri)
+		# 0.3: DEAD
+		#~ for name,uri in get_plugin_aliases():
+			#~ self.add_plugin_alias(name, uri)
 		config = com.get('aldrin.core.config')
 		pluginpath = os.environ.get('ALDRIN_PLUGIN_PATH',None)
 		if pluginpath:
@@ -63,6 +64,12 @@ class AldrinPlayer(Player):
 		self.initialize(samplerate)
 		self.init_lunar()		
 		self.playstarttime = time.time()
+		
+	def get_track_list(self):
+		"""
+		Returns a list of sequences
+		"""
+		return [self.get_sequence(i) for i in xrange(self.get_sequence_track_count())]
 		
 	def init_lunar(self):
 		"""
