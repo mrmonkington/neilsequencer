@@ -63,17 +63,24 @@ class AldrinPlayer(Player):
 		inputname, outputname, samplerate, buffersize = config.get_audiodriver_config()
 		self.initialize(samplerate)
 		self.init_lunar()		
-		self.playstarttime = time.time()
+		self.playstarttime = time.time()		
+		self.document_unchanged()
+		
+	def document_unchanged(self):
+		self.last_history_pos = self.history_get_position()
 		
 	def can_undo(self):
-		pos = self.history_get_position()		
+		pos = self.history_get_position()
 		historysize = self.history_get_size()
 		return (pos > 0) and ((pos-1) < historysize)
-
+		
 	def can_redo(self):
-		pos = self.history_get_position()		
+		pos = self.history_get_position()
 		historysize = self.history_get_size()
-		return (pos < historysize)		
+		return (pos < historysize)
+		
+	def document_changed(self):
+		return self.last_history_pos != self.history_get_position()
 		
 	def get_track_list(self):
 		"""

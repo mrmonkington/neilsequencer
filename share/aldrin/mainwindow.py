@@ -266,7 +266,7 @@ class AldrinFrame(gtk.Window):
 		vbox.pack_start(self.transport, expand=False)
 		vbox.pack_end(self.aldrinframe_statusbar, expand=False)
 
-		self.set_title(self.title)
+		self.update_title()
 		gtk.window_set_default_icon_list(
 			gtk.gdk.pixbuf_new_from_file(filepath("../icons/hicolor/48x48/apps/aldrin.png")),
 			gtk.gdk.pixbuf_new_from_file(filepath("../icons/hicolor/32x32/apps/aldrin.png")),
@@ -284,6 +284,7 @@ class AldrinFrame(gtk.Window):
 			self.framepanel.set_current_page(defaultpanelindex)
 		
 		gobject.timeout_add(1000/25, self.on_handle_events)
+		gobject.timeout_add(500, self.update_title)
 		self.framepanel.connect('switch-page', self.on_activate_page)
 		self.framepanel.connect('button-release-event', self.button_up)
 		self.activated=0
@@ -878,7 +879,16 @@ class AldrinFrame(gtk.Window):
 		Updates the title to display the filename of the currently
 		loaded document.
 		"""
-		self.set_title("%s - %s" % (self.title, os.path.basename(self.filename)))
+		player = com.get('aldrin.core.player')
+		title = self.title
+		filename = os.path.basename(self.filename)
+		if not filename:
+			filename = 'Unnamed'
+		if player.document_changed():
+			filename = '*'+filename
+		title += ' - ' + filename
+		self.set_title(title)
+		return True
 		
 	def open_file(self, filename):
 		"""
@@ -898,6 +908,7 @@ class AldrinFrame(gtk.Window):
 			#~ progress = ProgressDialog("Aldrin", "Loading BMX Song...")
 			#~ Yield()
 			player.load_bmx(self.filename)
+			player.document_unchanged()
 			#~ Yield()
 			#~ progress.Update(100)
 		elif ext.lower() in ('.ccm'):
@@ -923,6 +934,7 @@ class AldrinFrame(gtk.Window):
 			gobject.timeout_add(1000/25, progress_callback)
 			progBar.pulse()
 			player.load_ccm(self.filename)
+			player.document_unchanged()
 			progBar.set_fraction(1.0)
 			dlg.destroy()
 		else:
@@ -971,7 +983,9 @@ class AldrinFrame(gtk.Window):
 			base,ext = os.path.splitext(self.filename)
 			#~ progress = ProgressDialog("Aldrin", "Saving '%s'..." % prepstr(self.filename))
 			#~ Yield()
-			assert player.save_ccm(self.filename) == 0
+			result = player.save_ccm(self.filename)
+			assert result == 0
+			player.document_unchanged()
 		except:
 			import traceback
 			text = traceback.format_exc()
@@ -1129,6 +1143,9 @@ class AldrinFrame(gtk.Window):
 		Asks whether to save changes or not. Throws a {CancelException} if
 		cancelled.
 		"""
+		player = com.get('aldrin.core.player')
+		if not player.document_changed():
+			return
 		if self.filename:
 			text = "<big><b>Save changes to <i>%s</i>?</b></big>" % os.path.basename(self.filename)
 		else:
@@ -1148,8 +1165,9 @@ class AldrinFrame(gtk.Window):
 		"""
 		try:
 			self.save_changes()
-			self.set_title(self.title)
 			self.clear()
+			self.update_title()
+			com.get('aldrin.core.player').document_unchanged()
 		except CancelException:
 			pass
 			

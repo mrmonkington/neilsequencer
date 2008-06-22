@@ -536,7 +536,7 @@ class VolumeSlider(gtk.Window):
 		self.y = newpos
 		self.amp = max(min(self.amp + (float(delta) / VOLBARHEIGHT), 1.0), 0.0)
 		amp = min(max(int(db2linear(self.amp * -48.0, -48.0) * 16384.0), 0), 16384)
-		self.conn.get_audio_connection().set_amplitude(amp)
+		self.conn.set_amplitude(amp)
 		self.redraw()
 		return True
 		
@@ -579,7 +579,7 @@ class VolumeSlider(gtk.Window):
 		"""
 		self.y = VOLBARHEIGHT / 2
 		self.conn = conn
-		self.amp = (linear2db((self.conn.get_audio_connection().get_amplitude()/ 16384.0), -48.0) / -48.0)
+		self.amp = (linear2db((self.conn.get_amplitude()/ 16384.0), -48.0) / -48.0)
 		self.move(int(mx - VOLBARWIDTH*0.5), int(my - VOLBARHEIGHT*0.5))
 		self.show_all()
 		self.drawingarea.grab_add()
