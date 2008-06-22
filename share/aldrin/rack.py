@@ -893,7 +893,6 @@ class RackPanel(gtk.VBox):
 		"""
 		print "rack:update_all"
 		addlist, rmlist = diff(self.panels.keys(), common.get_plugin_infos().keys())
-		print addlist, rmlist
 		for plugin in rmlist:
 			self.panels[plugin].destroy()
 			del self.panels[plugin]

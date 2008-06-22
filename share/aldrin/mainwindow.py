@@ -1171,7 +1171,8 @@ class AldrinFrame(gtk.Window):
 		"""
 		Event handler triggered when the window is being destroyed.
 		"""
-		gtk.main_quit()
+		eventbus = com.get('aldrin.core.eventbus')
+		eventbus.shutdown()
 			
 	def on_exit(self, widget):
 		"""

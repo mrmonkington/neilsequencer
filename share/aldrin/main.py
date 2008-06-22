@@ -72,12 +72,16 @@ class AldrinApplication:
 		"""
 		Called when the main loop initializes.
 		"""
+		eventbus = com.get('aldrin.core.eventbus')
+		eventbus.shutdown += self.shutdown
+		
 		player = com.get('aldrin.core.player')
 		rootwindows = com.get_from_category('rootwindow')
 		gtk.main()
-		com.get('aldrin.core.driver.audio').destroy()
-		com.get('aldrin.core.driver.midi').destroy()
 		return 1
+	
+	def shutdown(self):
+		gtk.main_quit()
 
 def run(argv):
 	"""

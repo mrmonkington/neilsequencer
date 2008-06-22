@@ -37,6 +37,8 @@ class MidiDriver:
 		pass
 	def __init__(self):
 		self.enabled = False
+		eventbus = com.get('aldrin.core.eventbus')
+		eventbus.shutdown += self.destroy
 
 	def destroy(self):
 		if not self.enabled:
@@ -78,6 +80,8 @@ class AudioDriver:
 		self.samplerate = 44100
 		self.buffersize = 256
 		self.driver = None
+		eventbus = com.get('aldrin.core.eventbus')
+		eventbus.shutdown += self.destroy
 		
 	def destroy(self):
 		if not self.enabled:
