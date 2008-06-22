@@ -99,7 +99,8 @@ class MasterPanel(gtk.VBox):
 		gtk.VBox.__init__(self)
 		self.latency = 0
 		self.rootwindow = rootwindow
-		self.rootwindow.event_handlers.append(self.on_player_callback)
+		eventbus = com.get('aldrin.core.eventbus')
+		eventbus.zzub_callback += self.on_player_callback
 		self.masterslider = gtk.VScale()
 		self.masterslider.set_draw_value(False)
 		self.masterslider.set_range(0,16384)

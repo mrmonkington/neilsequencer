@@ -18,9 +18,11 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+import zzub
 from zzub import Player
 from aldrincom import com
 
+import gobject
 import os,sys 
 import time
 from config import get_plugin_aliases, get_plugin_blacklist
@@ -30,16 +32,81 @@ class AldrinPlayer(Player):
 		id = 'aldrin.core.player',
 		singleton = True,
 	)
+		
+	_event_types_ = dict(
+		zzub_event_type_double_click = dict(args=None),
+		zzub_event_type_new_plugin = dict(args='new_plugin'),
+		zzub_event_type_delete_plugin = dict(args='delete_plugin'),
+		zzub_event_type_pre_delete_plugin = dict(args='delete_plugin'),
+		zzub_event_type_disconnect = dict(args='disconnect_plugin'),
+		zzub_event_type_connect = dict(args='connect_plugin'),
+		zzub_event_type_plugin_changed = dict(args='plugin_changed'),
+		zzub_event_type_parameter_changed = dict(args='change_parameter'),
+		zzub_event_type_set_tracks = dict(args=None),
+		zzub_event_type_set_sequence_tracks = dict(args='set_sequence_tracks'),
+		zzub_event_type_set_sequence_event = dict(args='set_sequence_event'),
+		zzub_event_type_new_pattern = dict(args='new_pattern'),
+		zzub_event_type_delete_pattern = dict(args='delete_pattern'),
+		zzub_event_type_pre_delete_pattern = dict(args=None),
+		zzub_event_type_edit_pattern = dict(args='edit_pattern'),
+		zzub_event_type_pattern_changed = dict(args='pattern_changed'),
+		zzub_event_type_pattern_insert_rows = dict(args='pattern_insert_rows'),
+		zzub_event_type_pattern_remove_rows = dict(args='pattern_remove_rows'),
+		zzub_event_type_sequencer_add_track = dict(args=None),
+		zzub_event_type_sequencer_remove_track = dict(args=None),
+		zzub_event_type_sequencer_changed = dict(args=None),
+		zzub_event_type_pre_disconnect = dict(args=None),
+		zzub_event_type_pre_connect = dict(args=None),
+		zzub_event_type_post_connect = dict(args=None),
+		zzub_event_type_pre_set_tracks = dict(args=None),
+		zzub_event_type_post_set_tracks = dict(args=None),
+		zzub_event_type_envelope_changed = dict(args=None),
+		zzub_event_type_slices_changed = dict(args=None),
+		zzub_event_type_wave_changed = dict(args='change_wave'),
+		zzub_event_type_delete_wave = dict(args='delete_wave'),
+		zzub_event_type_load_progress = dict(args=None),
+		zzub_event_type_midi_control = dict(args='midi_message'),
+		zzub_event_type_wave_allocated = dict(args='allocate_wavelevel'),
+		zzub_event_type_player_state_changed = dict(args='player_state_changed'),
+		zzub_event_type_osc_message = dict(args='osc_message'),
+		zzub_event_type_vu = dict(args='vu'),
+		zzub_event_type_custom = dict(args='custom'),
+		zzub_event_type_all = dict(args='all'),	
+	)
 	
 	def __init__(self):
 		Player.__init__(self)
+		self._cbtime = time.time()
+		self._cbcalls = 0
+		self._hevcalls = 0
+		self._hevtimes = 0		
+		self.set_callback(self.handle_callback)
+		# enumerate zzub_event_types and prepare unwrappers for the different types
+		self.event_id_to_name = {}		
+		for enumname,cfg in self._event_types_.iteritems():
+			val = getattr(zzub, enumname)
+			assert val not in self.event_id_to_name, "value %s (%s) already registered." % (val,eventname)
+			eventname = 'zzub_' + enumname[len('zzub_event_type_'):]
+			membername = cfg.get('args',None)
+			args = []
+			if membername:
+				union = None
+				datatype = None
+				for argname,argtype in zzub.zzub_event_data_t._fields_:
+					if argname == '': # union
+						union = argtype
+						break
+				for argname,argtype in union._fields_:
+					if argname == membername:
+						datatype = argtype
+				assert datatype, "couldn't find member %s in zzub_event_data_t" % membername
+				for argname,argtype in datatype._fields_:
+					args.append(argname)
+			self.event_id_to_name[val] = (eventname, membername, args)
+			#print "'%s', # ( %s )" % (eventname, ','.join(args + ["..."]))
 		# load blacklist file and add blacklist entries
 		for name in get_plugin_blacklist():
 			self.blacklist_plugin(name)
-		# load aliases file and add aliases
-		# 0.3: DEAD
-		#~ for name,uri in get_plugin_aliases():
-			#~ self.add_plugin_alias(name, uri)
 		config = com.get('aldrin.core.config')
 		pluginpath = os.environ.get('ALDRIN_PLUGIN_PATH',None)
 		if pluginpath:
@@ -65,7 +132,59 @@ class AldrinPlayer(Player):
 		self.init_lunar()		
 		self.playstarttime = time.time()		
 		self.document_unchanged()
+		gobject.timeout_add(int(1000/25), self.on_handle_events)
 		
+	def on_handle_events(self):
+		"""
+		Handler triggered by the default timer. Calls self.handle_events()
+		to work off the players message queue.
+		"""
+		player = com.get('aldrin.core.player')
+		t1 = time.time()
+		player.handle_events()
+		t2 = time.time() - t1
+		self._hevtimes = (self._hevtimes * 0.9) + (t2 * 0.1)
+		self._hevcalls += 1
+		t = time.time()
+		if (t - self._cbtime) > 1:
+			#print self._hevcalls, self._cbcalls, "%.2fms" % (self._hevtimes*1000)
+			self._cbcalls = 0
+			self._hevcalls = 0
+			self._cbtime = t
+		#called only if loop pattern is off when song ends:
+		#~ if player.get_state() != zzub.zzub_player_state_playing and self.btnplay.get_active():
+			#~ self.btnplay.set_active(False)
+		return True
+		
+	def handle_callback(self, player, plugin, data):
+		"""
+		Default callback for ui events sent by zzub.
+		
+		@param player: player instance.
+		@type player: zzub.Player
+		@param plugin: plugin instance
+		@type plugin: zzub.Plugin
+		@param data: event data.
+		@type data: zzub_event_data_t
+		"""
+		eventbus = com.get('aldrin.core.eventbus')
+		
+		# prepare arguments for the specific callback
+		eventname,membername,argnames = self.event_id_to_name[data.type]
+		args = []
+		if membername:
+			specdata = getattr(data,'')
+			specdata = getattr(specdata,membername)
+			for argname in argnames:
+				args.append(getattr(specdata, argname))
+		print eventname,[('%s=%r' % (a,b)) for a,b in zip(argnames,args)]
+		result = getattr(eventbus, eventname)(*args)
+		
+		# call the global callback (deprecated)
+		result = eventbus.zzub_callback(player,plugin,data) or False
+		self._cbcalls += 1
+		return result
+
 	def document_unchanged(self):
 		self.last_history_pos = self.history_get_position()
 		
@@ -96,7 +215,7 @@ class AldrinPlayer(Player):
 
 		# return if lunar is missing
 		if not pc._handle:
-			print >> sys.stderr, "not supporting lunar."
+			print >> sys.stderr, "lunar plugin collection not found, not supporting lunar."
 			return
 
 		config = com.get('aldrin.core.config')
@@ -112,3 +231,7 @@ __aldrin__ = dict(
 		AldrinPlayer,
 	],
 )
+
+if __name__ == '__main__':
+	com.load_packages()
+	player = com.get('aldrin.core.player')

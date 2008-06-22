@@ -807,19 +807,6 @@ class WavetablePanel(gtk.Notebook):
 			return False
 		return True
 		
-	def get_filelist_selection(self):
-		"""
-		yields the filelist selection.
-		
-		@return: a generator
-		"""
-		item = -1
-		while True:
-			item = self.filelist.GetNextItem(item, wx.LIST_NEXT_ALL, wx.LIST_STATE_SELECTED)
-			if item == -1:
-				break
-			yield item
-		
 	def update_subsamplelist(self):
 		"""
 		Updates the subsample list, containing specifics about the wave length, rate and loop range.

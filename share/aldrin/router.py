@@ -644,7 +644,8 @@ class RouteView(gtk.DrawingArea):
 		self.panel = parent
 		self.routebitmap = None
 		self.rootwindow = rootwindow
-		self.rootwindow.event_handlers.append(self.on_player_callback)
+		eventbus = com.get('aldrin.core.eventbus')
+		eventbus.zzub_callback += self.on_player_callback
 		self.solo_plugin = None
 		self.selected_plugin = None
 		self.autoconnect_target=None

@@ -34,12 +34,6 @@ import sequencer, router, patterns, wavetable, preferences, hdrecorder, cpumonit
 from utils import make_submenu_item, make_stock_menu_item, make_stock_tool_item, make_stock_toggle_item, \
 	make_stock_radio_item, make_menu_item, make_check_item, make_radio_item, new_theme_image, add_accelerator
 
-from sequencer import SequencerPanel
-from router import RoutePanel
-from patterns import PatternPanel
-from wavetable import WavetablePanel
-from rack import RackPanel
-from info import InfoPanel
 from preferences import show_preferences
 
 from utils import CancelException
@@ -78,30 +72,10 @@ class AldrinFrame(gtk.Window):
 
 	event_to_name = dict([(getattr(zzub,x),x) for x in dir(zzub) if x.startswith('zzub_event_type_')])
 	
-	# IRootWindow.refresh_view
-	def refresh_view(self, target):
-		"""
-		Refreshes a view.
-		
-		@param target: The uri of the target.
-		@type target: str
-		"""
-		if target == interface.UIVIEW_ALL:
-			self.document_changed()
-
-		
 	def __init__(self):
 		"""
 		Initializer.
 		"""
-		self._cbtime = time.time()
-		self._cbcalls = 0
-		self._hevcalls = 0
-		self._hevtimes = 0		
-		self.event_handlers = []
-		
-		player = com.get('aldrin.core.player')
-		player.set_callback(self.player_callback)
 		
 		gtk.Window.__init__(self, gtk.WINDOW_TOPLEVEL)
 		errordlg.install(self)
@@ -196,8 +170,6 @@ class AldrinFrame(gtk.Window):
 		#~ # Menu Bar end
 
 		# Tool Bar
-		def def_bmp(i):
-			return get_stock_bmp(i)
 		self.aldrinframe_toolbar = gtk.Toolbar()
 		vbox.pack_start(self.aldrinframe_toolbar, expand=False)
 		
@@ -216,15 +188,6 @@ class AldrinFrame(gtk.Window):
 
 		self.mastertoolbar = com.get('aldrin.core.panel.master', self)
 		self.transport = com.get('aldrin.core.panel.transport', self)
-		
-		for name in ('btnplay','btnrecord','btnstop','btnloop','btnpanic'):
-			setattr(self, name, getattr(self.transport, name))
-			
-		self.btnplay.connect('clicked', self.play)
-		self.btnrecord.connect('clicked', self.on_toggle_automation)
-		self.btnstop.connect('clicked', self.stop)
-		self.btnloop.connect('clicked', self.on_toggle_loop)
-		self.btnpanic.connect('clicked', self.on_toggle_panic)
 
 		self.framepanel = gtk.Notebook()
 		self.framepanel.set_tab_pos(gtk.POS_LEFT)
@@ -283,7 +246,6 @@ class AldrinFrame(gtk.Window):
 		if defaultpanelindex != -1:
 			self.framepanel.set_current_page(defaultpanelindex)
 		
-		gobject.timeout_add(1000/25, self.on_handle_events)
 		gobject.timeout_add(500, self.update_title)
 		self.framepanel.connect('switch-page', self.on_activate_page)
 		self.framepanel.connect('button-release-event', self.button_up)
@@ -415,29 +377,6 @@ class AldrinFrame(gtk.Window):
 		self.filemenu.append(make_stock_menu_item(gtk.STOCK_QUIT, self.on_exit))
 		self.filemenu.show_all()
 
-	def player_callback(self, player, plugin, data):
-		"""
-		Default callback for ui events sent by zzub.
-		
-		@param player: player instance.
-		@type player: zzub.Player
-		@param plugin: plugin instance
-		@type plugin: zzub.Plugin
-		@param data: event data.
-		@type data: zzub_event_data_t
-		"""
-		result = False
-		for handler in self.event_handlers:
-			result = handler(player,plugin,data) or result
-		if data.type == zzub.zzub_event_type_player_state_changed:
-			state = getattr(data,'').player_state_changed.player_state
-			if state == zzub.zzub_player_state_playing:
-				self.btnplay.set_active(True)
-			else:
-				self.btnplay.set_active(False)
-		self._cbcalls += 1
-		return result
-		
 	def get_active_view(self):
 		"""
 		Returns the active panel view.
@@ -714,29 +653,6 @@ class AldrinFrame(gtk.Window):
 			self.aldrinframe_toolbar.ToggleTool(self.PANIC, False)
 			driver.enable(1)
 
-
-	def on_handle_events(self):
-		"""
-		Handler triggered by the default timer. Calls player.handle_events()
-		to work off the players message queue.
-		"""
-		player = com.get('aldrin.core.player')
-		t1 = time.time()
-		player.handle_events()
-		t2 = time.time() - t1
-		self._hevtimes = (self._hevtimes * 0.9) + (t2 * 0.1)
-		self._hevcalls += 1
-		t = time.time()
-		if (t - self._cbtime) > 1:
-			#print self._hevcalls, self._cbcalls, "%.2fms" % (self._hevtimes*1000)
-			self._cbcalls = 0
-			self._hevcalls = 0
-			self._cbtime = t
-		#called only if loop pattern is off when song ends:
-		if player.get_state() != zzub.zzub_player_state_playing and self.btnplay.get_active():
-			self.btnplay.set_active(False)
-		return True
-		
 	def on_help_contents(self, event):
 		"""
 		Event handler triggered by the help menu option.
@@ -869,9 +785,6 @@ class AldrinFrame(gtk.Window):
 				panel.update_all()
 		self.mastertoolbar.update_all()
 		self.transport.update_all()
-		player = com.get('aldrin.core.player')
-		self.btnloop.set_active(player.get_loop_enabled())
-		self.btnrecord.set_active(player.get_automation())
 		self.select_page(self.framepanel.get_current_page())
 		
 	def update_title(self):
@@ -931,7 +844,7 @@ class AldrinFrame(gtk.Window):
 			progBar.pulse()
 			while gtk.events_pending():
 				gtk.main_iteration()
-			gobject.timeout_add(1000/25, progress_callback)
+			gobject.timeout_add(int(1000/25), progress_callback)
 			progBar.pulse()
 			player.load_ccm(self.filename)
 			player.document_unchanged()
@@ -1087,13 +1000,7 @@ class AldrinFrame(gtk.Window):
 		@type event: MenuEvent
 		"""
 		player = com.get('aldrin.core.player')
-		if self.btnplay.get_active():
-			player.playstarttime = time.time()
-			player.play()
-		elif player.get_state() == zzub.zzub_player_state_playing:
-			# keep on
-			self.btnplay.set_active(True)
-		self.mastertoolbar.button_up(1,1)
+		player.play()
 
 	def play_from_cursor(self, event):
 		"""

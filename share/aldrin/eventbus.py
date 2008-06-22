@@ -40,6 +40,47 @@ EVENTS = [
 	'connection-changed', #() called when a connection between machines is deleted.
 	'plugin-created', # (plugin, ... ) called when a plugin is created by the user.
 	'show-plugin', # (plugin, ...) called when a plugin should be visualized overall.
+	
+	'zzub-callback', # (player, plugin, data, ...) triggered by the lib on document changes. this is deprecated. use one of the specialized handlers.
+	
+	'zzub-plugin-changed', # ( plugin,... )
+	'zzub-osc-message', # ( path,types,argv,argc,msg,... )
+	'zzub-pattern-insert-rows', # ( plugin,index,row,rows,column_indices,indices,... )
+	'zzub-pre-disconnect', # ( from_plugin,to_plugin,type,... )
+	'zzub-slices-changed', # ( ... )
+	'zzub-envelope-changed', # ( ... )
+	'zzub-new-pattern', # ( plugin,index,... )
+	'zzub-new-plugin', # ( plugin,... )
+	'zzub-set-sequence-tracks', # ( plugin,... )
+	'zzub-post-set-tracks', # ( plugin,... )
+	'zzub-sequencer-remove-track', # ( plugin,... )
+	'zzub-sequencer-add-track', # ( plugin,... )
+	'zzub-wave-allocated', # ( wavelevel,... )
+	'zzub-pre-set-tracks', # ( plugin,... )
+	'zzub-wave-changed', # ( wave,... )
+	'zzub-pre-delete-pattern', # ( plugin,index,... )
+	'zzub-custom', # ( id,data,... )
+	'zzub-sequencer-changed', # ( plugin,track,time,... )
+	'zzub-pre-delete-plugin', # ( plugin,... )
+	'zzub-edit-pattern', # ( plugin,index,group,track,column,row,value,... )
+	'zzub-pattern-changed', # ( plugin,index,... )
+	'zzub-set-sequence-event', # ( plugin,track,time,... )
+	'zzub-pre-connect', # ( from_plugin,to_plugin,type,... )
+	'zzub-delete-wave', # ( wave,... )
+	'zzub-parameter-changed', # ( plugin,group,track,param,value,... )
+	'zzub-delete-plugin', # ( plugin,... )
+	'zzub-connect', # ( from_plugin,to_plugin,type,... )
+	'zzub-midi-control', # ( status,data1,data2,... )
+	'zzub-delete-pattern', # ( plugin,index,... )
+	'zzub-vu', # ( size,left_amp,right_amp,time,... )
+	'zzub-disconnect', # ( from_plugin,to_plugin,type,... )
+	'zzub-post-connect', # ( from_plugin,to_plugin,type,... )
+	'zzub-load-progress', # ( ... )
+	'zzub-player-state-changed', # ( player_state,... )
+	'zzub-all', # ( data,... )
+	'zzub-double-click', # ( ... )
+	'zzub-pattern-remove-rows', # ( plugin,index,row,rows,column_indices,indices,... )
+	'zzub-set-tracks', # ( plugin,... )
 ]
 
 class EventHandlerList:
@@ -81,8 +122,8 @@ class EventHandlerList:
 		self.handlers = [(ref,funcname,args) for ref,funcname,args in self.handlers if ref()]
 		
 	def __call__(self, *cargs):
-		print 'call event [%s]' % self.name
 		self.filter_dead_references()
+		result = None
 		for ref,funcname,args in self:
 			if funcname:
 				func = getattr(ref(), funcname)
@@ -90,15 +131,10 @@ class EventHandlerList:
 				func = ref()
 			try:
 				fargs = cargs + args
-				funcname = func.__name__
-				if hasattr(func, 'im_class'):
-					funcname = func.im_class.__name__ + '.' + funcname
-				print " => %s(%s)" % (funcname,','.join([repr(x) for x in fargs]))
-				result = func(*fargs)
-				if result:
-					return result
+				result = func(*fargs) or result
 			except:
 				sys.excepthook(*sys.exc_info())
+		return result
 				
 	def __iter__(self):
 		return iter(self.handlers)

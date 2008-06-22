@@ -61,8 +61,8 @@ class ComponentManager:
 			elif modulename.startswith('-'):
 				modulename = modulename[1:]
 				if modulename.startswith(':'):
-					id = modulename[1:]
-					self.factory_excludes.append(id)
+					moduleid = modulename[1:]
+					self.factory_excludes.append(moduleid)
 				else:
 					excludes.append(modulename)
 			else:
@@ -87,16 +87,16 @@ class ComponentManager:
 			if not hasattr(class_, '__aldrin__'):
 				continue
 			classinfo = class_.__aldrin__
-			id = classinfo['id']
-			if id in self.factory_excludes:
+			classid = classinfo['id']
+			if classid in self.factory_excludes:
 				print "excluding factory '%s'" % id
 				continue
-			self.factories[id] = dict(classobj=class_, modulename=modulename)
-			self.factories[id].update(classinfo)
+			self.factories[classid] = dict(classobj=class_, modulename=modulename)
+			self.factories[classid].update(classinfo)
 			# register categories
 			for category in classinfo.get('categories', []):
 				catlist = self.categories.get(category, [])
-				catlist.append(id)
+				catlist.append(classid)
 				self.categories[category] = catlist
 					
 	def get(self, id, *args, **kwargs):
@@ -123,7 +123,7 @@ class ComponentManager:
 		return self.categories.get(category,[])
 		
 	def get_from_category(self, category, *args, **kwargs):
-		return [self.get(id, *args, **kwargs) for id in self.categories.get(category,[])]
+		return [self.get(classid, *args, **kwargs) for classid in self.categories.get(category,[])]
 
 com = ComponentManager()
 

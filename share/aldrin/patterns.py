@@ -467,7 +467,8 @@ class PatternPanel(gtk.VBox):
 		"""
 		gtk.VBox.__init__(self)
 		self.rootwindow = rootwindow
-		self.rootwindow.event_handlers.append(self.on_player_callback)
+		eventbus = com.get('aldrin.core.eventbus')
+		eventbus.zzub_callback += self.on_player_callback
 		self.statusbar = gtk.HBox(False, MARGIN)
 		self.statusbar.set_border_width(MARGIN0)
 		vscroll = gtk.VScrollbar()

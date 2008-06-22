@@ -142,7 +142,8 @@ class ParameterView(gtk.VBox):
 		toplevelgroup.add(scrollwindow)
 
 		self.add(toplevelgroup)		
-		self.rootwindow.event_handlers.append(self.on_callback)
+		eventbus = com.get('aldrin.core.eventbus')
+		eventbus.zzub_callback += self.on_callback		
 		self.update_preset_buttons()
 		
 	def create_sliders(self, rowgroup):
@@ -739,9 +740,6 @@ class ParameterView(gtk.VBox):
 		"""
 		Handles destroy events.
 		"""
-		print "rack:on_destroy"
-		if self.on_callback in self.rootwindow.event_handlers:
-			self.rootwindow.event_handlers.remove(self.on_callback)
 		
 	def on_mousewheel(self, widget, event, (g,t,i)):
 		"""
@@ -865,7 +863,8 @@ class RackPanel(gtk.VBox):
 		self.rowgroup = rowgroup
 		self.connect('realize', self.on_realize)
 		self.add(self.scrollwindow)
-		self.rootwindow.event_handlers.append(self.on_player_callback)
+		eventbus = com.get('aldrin.core.eventbus')
+		eventbus.zzub_callback += self.on_player_callback
 		
 	def handle_focus(self):
 		self.scrollwindow.grab_focus()

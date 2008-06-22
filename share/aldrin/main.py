@@ -39,26 +39,6 @@ import errordlg
 errordlg.install()
 
 from gtkimport import gtk
-import time
-
-from utils import format_time, ticks_to_time, prepstr, linear2db, db2linear, filepath, \
-	is_debug, question, error, add_scrollbars, file_filter, new_stock_image_toggle_button, \
-	new_stock_image_button, message
-import utils
-
-from zzub import Player
-import zzub
-
-import config
-import about
-import envelope
-import driver
-import cairo
-from common import MARGIN, MARGIN2, MARGIN3, MARGIN0
-
-import os, sys
-
-import audiogui
 
 from aldrincom import com
 
@@ -78,7 +58,7 @@ class AldrinApplication:
 		# instantiate the drivers
 		com.get_from_category('driver')
 		
-		rootwindows = com.get_from_category('rootwindow')
+		com.get_from_category('rootwindow')
 		
 		gtk.main()
 		return 1

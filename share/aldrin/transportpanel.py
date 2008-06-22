@@ -45,7 +45,8 @@ class TransportPanel(gtk.HBox):
 		"""		
 		gtk.HBox.__init__(self)
 		self.rootwindow = rootwindow
-		self.rootwindow.event_handlers.append(self.on_player_callback)
+		eventbus = com.get('aldrin.core.eventbus')
+		eventbus.zzub_callback += self.on_player_callback
 		self.cpulabel = gtk.Label("CPU")
 		self.cpu = gtk.ProgressBar()
 		self.cpu.set_size_request(80,-1)
@@ -152,7 +153,30 @@ class TransportPanel(gtk.HBox):
 		self.tpb.connect('focus-in-event', self.spin_focus)
 		gobject.timeout_add(100, self.update_label)
 		gobject.timeout_add(500, self.update_cpu)
+		
+		self.btnplay.connect('clicked', self.play)
+		self.btnrecord.connect('clicked', self.on_toggle_automation)
+		self.btnstop.connect('clicked', self.stop)
+		self.btnloop.connect('clicked', self.on_toggle_loop)
+		self.btnpanic.connect('clicked', self.on_toggle_panic)
+		
 		self.update_all()
+		
+	def play(self, widget):
+		player = com.get('aldrin.core.player')
+		player.play()
+		
+	def on_toggle_automation(self, widget):
+		pass
+		
+	def stop(self, widget):
+		pass
+		
+	def on_toggle_loop(self, widget):
+		pass
+		
+	def on_toggle_panic(self, widget):
+		pass
 		
 	def update_cpu(self):
 		cpu = min(com.get('aldrin.core.driver.audio').get_cpu_load(), 100)
@@ -263,6 +287,9 @@ class TransportPanel(gtk.HBox):
 		"""
 		self.update_bpm()
 		self.update_tpb()
+		player = com.get('aldrin.core.player')
+		self.btnloop.set_active(player.get_loop_enabled())
+		self.btnrecord.set_active(player.get_automation())
 
 __aldrin__ = dict(
 	classes = [
