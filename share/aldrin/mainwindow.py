@@ -351,6 +351,20 @@ class AldrinFrame(gtk.Window):
 			print s
 		print "----"
 		
+	def can_activate_undo(self, widget, sigid):
+		"""
+		handler for can-activate-accel signal by Undo menuitem. Checks if undo can be executed.
+		"""
+		player = com.get('aldrin.core.player')
+		return player.can_undo()
+		
+	def can_activate_redo(self, widget, sigid):
+		"""
+		handler for can-activate-accel signal by Redo menuitem. Checks if redo can be executed.
+		"""
+		player = com.get('aldrin.core.player')
+		return player.can_redo()
+		
 	def update_editmenu(self, widget):
 		"""
 		Updates the edit menu, including the undo menu.
@@ -371,6 +385,7 @@ class AldrinFrame(gtk.Window):
 			item.get_children()[0].set_label('Undo "%s"' % player.history_get_description(pos-1))
 		else:
 			item.set_sensitive(False)
+		item.connect('can-activate-accel', self.can_activate_undo)
 		self.editmenu.append(item)
 		
 		item = add_accelerator(make_menu_item("Redo", "", self.on_redo), self, "<Control>Y")
@@ -378,6 +393,7 @@ class AldrinFrame(gtk.Window):
 			item.get_children()[0].set_label('Redo "%s"' % player.history_get_description(pos))
 		else:
 			item.set_sensitive(False)
+		item.connect('can-activate-accel', self.can_activate_redo)
 		self.editmenu.append(item)
 		
 		self.editmenu.append(gtk.SeparatorMenuItem())

@@ -809,16 +809,15 @@ def make_submenu_item(submenu, name):
 	item.set_submenu(submenu)
 	return item
 
-def add_accelerator(menuitem, frame, shortcut):
+def add_accelerator(widget, frame, shortcut, signal="activate"):
 	key, modifier = gtk.accelerator_parse(shortcut)
-	menuitem.add_accelerator("activate", frame.accelerators,  key,  modifier, gtk.ACCEL_VISIBLE)
-	return menuitem
+	widget.add_accelerator(signal, frame.accelerators,  key,  modifier, gtk.ACCEL_VISIBLE)
+	return widget
 
 def make_stock_menu_item(stockid, func, frame=None, shortcut=None, *args):
 	item = gtk.ImageMenuItem(stockid)
 	if frame and shortcut:
-		key, modifier = gtk.accelerator_parse(shortcut)
-		item.add_accelerator("activate", frame.accelerators,  key,  modifier, gtk.ACCEL_VISIBLE)
+		add_accelerator(item, frame, shortcut)
 	if func:
 		item.connect('activate', func, *args)
 	return item
