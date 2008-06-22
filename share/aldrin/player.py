@@ -132,6 +132,7 @@ class AldrinPlayer(Player):
 		self.init_lunar()		
 		self.playstarttime = time.time()		
 		self.document_unchanged()
+		eventbus = com.get('aldrin.core.eventbus')
 		gobject.timeout_add(int(1000/25), self.on_handle_events)
 		
 	def on_handle_events(self):
@@ -156,6 +157,16 @@ class AldrinPlayer(Player):
 			#~ self.btnplay.set_active(False)
 		return True
 		
+	def play(self):
+		self.playstarttime = time.time()
+		Player.play(self)
+		
+	def stop(self):
+		if self.get_state() != zzub.zzub_player_state_playing:
+			self.set_position(0)
+		else:
+			Player.stop(self)
+		
 	def handle_callback(self, player, plugin, data):
 		"""
 		Default callback for ui events sent by zzub.
@@ -177,11 +188,8 @@ class AldrinPlayer(Player):
 			specdata = getattr(specdata,membername)
 			for argname in argnames:
 				args.append(getattr(specdata, argname))
-		print eventname,[('%s=%r' % (a,b)) for a,b in zip(argnames,args)]
-		result = getattr(eventbus, eventname)(*args)
-		
-		# call the global callback (deprecated)
-		result = eventbus.zzub_callback(player,plugin,data) or False
+		print "[%s](%s)" % (eventname,','.join([('%s=%r' % (a,b)) for a,b in zip(argnames,args)]))
+		result = getattr(eventbus, eventname)(*args) or False
 		self._cbcalls += 1
 		return result
 

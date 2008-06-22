@@ -858,6 +858,41 @@ def make_radio_item(label, desc, func, *args):
 		item.connect('toggled', func, *args)
 	return item
 
+class ObjectHandlerGroup:
+	"""
+	allows to block/unblock a bank of handlers
+	"""
+	
+	class Unblocker:
+		def __init__(self, ohg):
+			self.ohg = ohg
+		def __del__(self):
+			self.ohg.unblock()
+	
+	def __init__(self):
+		self.handlers = []
+	
+	def connect(self, widget, eventname, *args):
+		handler = widget.connect(eventname, *args)
+		self.handlers.append((widget,handler))
+		
+	def autoblock(self):
+		"""
+		autoblock will return a token which calls
+		unblock() when going out of scope. you must
+		not store the token permanently.
+		"""
+		self.block()
+		return self.Unblocker(self)
+	
+	def block(self):
+		for widget,handler in self.handlers:
+			widget.handler_block(handler)
+
+	def unblock(self):
+		for widget,handler in self.handlers:
+			widget.handler_unblock(handler)
+
 __all__ = [
 'is_frozen',
 'get_root_folder_path',

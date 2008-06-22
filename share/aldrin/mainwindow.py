@@ -93,14 +93,14 @@ class AldrinFrame(gtk.Window):
 			buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_OPEN, gtk.RESPONSE_OK)
 		)
 		self.open_dlg.add_shortcut_folder(filepath('demosongs'))
-		for filter in self.OPEN_SONG_FILTER:
-			self.open_dlg.add_filter(filter)
+		for filefilter in self.OPEN_SONG_FILTER:
+			self.open_dlg.add_filter(filefilter)
 		self.save_dlg = gtk.FileChooserDialog(title="Save", parent=self, action=gtk.FILE_CHOOSER_ACTION_SAVE,
 			buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_SAVE, gtk.RESPONSE_OK)
 		)
 		self.save_dlg.set_do_overwrite_confirmation(True)
-		for filter in self.SAVE_SONG_FILTER:
-			self.save_dlg.add_filter(filter)
+		for filefilter in self.SAVE_SONG_FILTER:
+			self.save_dlg.add_filter(filefilter)
 
 		vbox = gtk.VBox()
 		self.add(vbox)
@@ -258,7 +258,6 @@ class AldrinFrame(gtk.Window):
 		eventbus = com.get('aldrin.core.eventbus')
 		eventbus.print_mapping()
 
-		import sys
 		options, args = com.get('aldrin.core.options').get_options_args()
 		if len(args) > 1:
 			self.open_file(args[1])
@@ -383,7 +382,7 @@ class AldrinFrame(gtk.Window):
 		"""
 		for pindex,(ctrlid,(panel,menuitem)) in self.pages.iteritems():
 			if panel.window and panel.window.is_visible() and hasattr(panel,'view'):
-				return getattr(panel,'view')
+				return panel.view
 
 	def on_copy(self, event):
 		"""
@@ -576,83 +575,6 @@ class AldrinFrame(gtk.Window):
 		"""
 		self.show_mastertoolbar(widget.get_active())
 		
-	def on_toggle_automation(self, widget):
-		"""
-		handler triggered by the record toolbar button. Decides whether
-		changes to parameters are recorded or not.
-		
-		@param event: Command event.
-		@type event: CommandEvent
-		"""
-		player = com.get('aldrin.core.player')
-		if widget.get_active():
-			player.set_automation(1)
-		else:
-			player.set_automation(0)
-		self.mastertoolbar.button_up(1,1)
-
-	def on_toggle_automation_accel(self, event):
-		"""
-		Handler triggered by the f7 accellerator. Enables/disables
-		automation.
-		
-		@param event command event.
-		@type event: CommandEvent
-		"""
-		player = com.get('aldrin.core.player')
-		if not self.aldrinframe_toolbar.GetToolState(self.RECORD):
-			self.aldrinframe_toolbar.ToggleTool(self.RECORD, True)
-			player.set_automation(1)
-		else:
-			self.aldrinframe_toolbar.ToggleTool(self.RECORD, False)
-			player.set_automation(0)
-		
-	def on_toggle_loop(self, widget):
-		"""
-		Handler triggered by the loop toolbar button. Decides whether
-		the song loops or not.
-		
-		@param event command event.
-		@type event: CommandEvent
-		"""
-		player = com.get('aldrin.core.player')
-		if widget.get_active():
-			player.set_loop_enabled(1)
-		else:
-			player.set_loop_enabled(0)
-		self.mastertoolbar.button_up(1,1)
-			
-	def on_toggle_panic(self, widget):
-		"""
-		Handler triggered by the mute toolbar button. Deinits/reinits
-		sound device.
-		
-		@param event command event.
-		@type event: CommandEvent
-		"""
-		driver = com.get('aldrin.core.driver.audio')
-		if widget.get_active():
-			driver.enable(0)
-		else:
-			driver.enable(1)
-		self.mastertoolbar.button_up(1,1)
-
-	def on_toggle_panic_accel(self, event):
-		"""
-		Handler triggered by the f12 accellerator. Deinits/reinits
-		sound device.
-		
-		@param event command event.
-		@type event: CommandEvent
-		"""
-		driver = com.get('aldrin.core.driver.audio')
-		if not self.aldrinframe_toolbar.GetToolState(self.PANIC):
-			self.aldrinframe_toolbar.ToggleTool(self.PANIC, True)
-			driver.enable(0)
-		else:
-			self.aldrinframe_toolbar.ToggleTool(self.PANIC, False)
-			driver.enable(1)
-
 	def on_help_contents(self, event):
 		"""
 		Event handler triggered by the help menu option.
@@ -742,16 +664,8 @@ class AldrinFrame(gtk.Window):
 			if k == shortcut:
 				self.select_page(index)
 				return True
-		if k == 'F5':
-			self.btnplay.set_active(True)
-		elif k == 'F6':
+		if k == 'F6':
 			self.play_from_cursor(event)
-		elif k == 'F7':
-			self.btnrecord.set_active(not self.btnrecord.get_active())
-		elif k == 'F8':
-			self.stop(event)
-		elif k == 'F12':
-			self.btnpanic.set_active(not self.btnpanic.get_active())
 		else:
 			return False
 		return True
@@ -854,8 +768,7 @@ class AldrinFrame(gtk.Window):
 			message(self, "'%s' is not a supported file format." % ext)
 			return
 		self.update_title()
-		config.get_config().add_recent_file_config(self.filename)
-		self.btnplay.set_active(False)
+		config.get_config().add_recent_file_config(self.filename)		
 		self.document_changed()
 		
 	def save_file(self, filename):
@@ -1009,10 +922,7 @@ class AldrinFrame(gtk.Window):
 		@param event: menu event.
 		@type event: MenuEvent
 		"""
-		if not self.btnplay.get_active():
-			self.btnplay.set_active(True)
 		player = com.get('aldrin.core.player')
-		player.playstarttime = time.time()
 		player.set_position(max(com.get('aldrin.core.sequencerpanel').view.row,0))
 		player.play()		
 		
@@ -1039,10 +949,6 @@ class AldrinFrame(gtk.Window):
 		"""
 		player = com.get('aldrin.core.player')
 		player.stop()
-		if self.btnplay.get_active() == False:
-			player.set_position(0)
-		else:
-			self.btnplay.set_active(False)
 		self.mastertoolbar.button_up(1,1)
 		
 	def save_changes(self):
@@ -1107,19 +1013,6 @@ class AldrinFrame(gtk.Window):
 		except CancelException:
 			return True
 					
-
-	#########################
-	# IMainFrame interface
-	#########################
-	
-	def get_window(self):
-		"""
-		Returns the window object associated with the mainframe.
-		
-		@return: Window object.
-		@rtype: Window
-		"""
-		return self
 
 
 __aldrin__ = dict(

@@ -100,7 +100,7 @@ class MasterPanel(gtk.VBox):
 		self.latency = 0
 		self.rootwindow = rootwindow
 		eventbus = com.get('aldrin.core.eventbus')
-		eventbus.zzub_callback += self.on_player_callback
+		eventbus.zzub_parameter_changed += self.on_zzub_parameter_changed
 		self.masterslider = gtk.VScale()
 		self.masterslider.set_draw_value(False)
 		self.masterslider.set_range(0,16384)
@@ -120,21 +120,10 @@ class MasterPanel(gtk.VBox):
 		self.pack_start(hbox, expand=False, fill=False)
 		self.update_all()
 
-	def on_player_callback(self, player, plugin, data):
-		"""
-		callback for ui events sent by zzub.
-		
-		@param player: player instance.
-		@type player: zzub.Player
-		@param plugin: plugin instance
-		@type plugin: zzub.Plugin
-		@param data: event data.
-		@type data: zzub_event_data_t
-		"""
+	def on_zzub_parameter_changed(self, plugin,group,track,param,value):
 		player = com.get('aldrin.core.player')
-		if plugin == player.get_plugin(0):
-			if data.type == zzub.zzub_event_type_parameter_changed:
-				self.update_all()
+		if zzub.Plugin(plugin) == player.get_plugin(0):
+			self.update_all()
 
 	def on_scroll_changed(self, widget, scroll, value):
 		"""

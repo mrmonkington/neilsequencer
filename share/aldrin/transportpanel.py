@@ -22,13 +22,14 @@ from gtkimport import gtk
 from common import MARGIN, MARGIN2, MARGIN3, MARGIN0
 import gobject
 from utils import new_stock_image_toggle_button, new_stock_image_button, format_time, \
-	ticks_to_time, new_theme_image_toggle_button
+	ticks_to_time, new_theme_image_toggle_button, add_accelerator
 import audiogui
 import time
 import config
 from aldrincom import com
 import zzub
 import common
+from utils import ObjectHandlerGroup
 
 class TransportPanel(gtk.HBox):
 	"""
@@ -46,7 +47,8 @@ class TransportPanel(gtk.HBox):
 		gtk.HBox.__init__(self)
 		self.rootwindow = rootwindow
 		eventbus = com.get('aldrin.core.eventbus')
-		eventbus.zzub_callback += self.on_player_callback
+		eventbus.zzub_parameter_changed += self.on_zzub_parameter_changed
+		eventbus.zzub_player_state_changed += self.on_zzub_player_state_changed
 		self.cpulabel = gtk.Label("CPU")
 		self.cpu = gtk.ProgressBar()
 		self.cpu.set_size_request(80,-1)
@@ -154,11 +156,17 @@ class TransportPanel(gtk.HBox):
 		gobject.timeout_add(100, self.update_label)
 		gobject.timeout_add(500, self.update_cpu)
 		
-		self.btnplay.connect('clicked', self.play)
-		self.btnrecord.connect('clicked', self.on_toggle_automation)
-		self.btnstop.connect('clicked', self.stop)
-		self.btnloop.connect('clicked', self.on_toggle_loop)
-		self.btnpanic.connect('clicked', self.on_toggle_panic)
+		self.hgroup = ObjectHandlerGroup()
+		self.hgroup.connect(self.btnplay, 'clicked', self.play)
+		self.hgroup.connect(self.btnrecord, 'clicked', self.on_toggle_automation)
+		self.hgroup.connect(self.btnstop, 'clicked', self.stop)
+		self.hgroup.connect(self.btnloop, 'clicked', self.on_toggle_loop)
+		self.hgroup.connect(self.btnpanic, 'clicked', self.on_toggle_panic)
+		
+		add_accelerator(self.btnplay, self.rootwindow, 'F5', 'clicked')
+		add_accelerator(self.btnrecord, self.rootwindow, 'F7', 'clicked')
+		add_accelerator(self.btnstop, self.rootwindow, 'F8', 'clicked')
+		add_accelerator(self.btnpanic, self.rootwindow, 'F12', 'clicked')
 		
 		self.update_all()
 		
@@ -167,16 +175,43 @@ class TransportPanel(gtk.HBox):
 		player.play()
 		
 	def on_toggle_automation(self, widget):
-		pass
+		player = com.get('aldrin.core.player')
+		if widget.get_active():
+			player.set_automation(1)
+		else:
+			player.set_automation(0)
 		
 	def stop(self, widget):
-		pass
+		player = com.get('aldrin.core.player')
+		player.stop()
 		
 	def on_toggle_loop(self, widget):
-		pass
+		"""
+		Handler triggered by the loop toolbar button. Decides whether
+		the song loops or not.
+		
+		@param event command event.
+		@type event: CommandEvent
+		"""
+		player = com.get('aldrin.core.player')
+		if widget.get_active():
+			player.set_loop_enabled(1)
+		else:
+			player.set_loop_enabled(0)
 		
 	def on_toggle_panic(self, widget):
-		pass
+		"""
+		Handler triggered by the mute toolbar button. Deinits/reinits
+		sound device.
+		
+		@param event command event.
+		@type event: CommandEvent
+		"""
+		driver = com.get('aldrin.core.driver.audio')
+		if widget.get_active():
+			driver.enable(0)
+		else:
+			driver.enable(1)
 		
 	def update_cpu(self):
 		cpu = min(com.get('aldrin.core.driver.audio').get_cpu_load(), 100)
@@ -205,33 +240,36 @@ class TransportPanel(gtk.HBox):
 			#~ if text != control.get_text():
 			control.set_text(text)
 		return True
-
-	def on_player_callback(self, player, plugin, data):
-		"""
-		callback for ui events sent by zzub.
 		
-		@param player: player instance.
-		@type player: zzub.Player
-		@param plugin: plugin instance
-		@type plugin: zzub.Plugin
-		@param data: event data.
-		@type data: zzub_event_data_t
+	def update_btnplay(self):
+		state = com.get('aldrin.core.player').get_state()
+		token = self.hgroup.autoblock()
+		if state == zzub.zzub_player_state_playing:
+			self.btnplay.set_active(True)
+		elif state == zzub.zzub_player_state_stopped:
+			self.btnplay.set_active(False)
+		
+	def on_zzub_player_state_changed(self,state):
 		"""
-		player = com.get('aldrin.core.player')
-		if plugin == player.get_plugin(0):
-			if data.type == zzub.zzub_event_type_parameter_changed:
-				data = getattr(data,'').change_parameter
-				g,t,i,v = data.group, data.track, data.param, data.value
-				if (g,t) == (1,0):
-					if i == 1:
-						self.update_bpm()
-						try:
-							com.get('aldrin.core.wavetablepanel').waveedit.view.view_changed()
-						except AttributeError:
-							pass
-					
-					elif i == 2:
-						self.update_tpb()
+		called when the player state changes. updates the play button.
+		"""
+		self.update_btnplay()
+		
+	def on_zzub_parameter_changed(self,plugin,group,track,param,value):
+		"""
+		called when a parameter changes in zzub. checks whether this parameter
+		is related to master bpm or tpb and updates the view.
+		"""
+		if (group,track) == (1,0):
+			if param == 1:
+				self.update_bpm()
+				try:
+					com.get('aldrin.core.wavetablepanel').waveedit.view.view_changed()
+				except AttributeError:
+					pass
+			
+			elif param == 2:
+				self.update_tpb()
 		
 	def on_bpm(self, widget):
 		"""

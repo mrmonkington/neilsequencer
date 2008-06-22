@@ -645,7 +645,9 @@ class RouteView(gtk.DrawingArea):
 		self.routebitmap = None
 		self.rootwindow = rootwindow
 		eventbus = com.get('aldrin.core.eventbus')
-		eventbus.zzub_callback += self.on_player_callback
+		eventbus.zzub_delete_plugin += self.on_zzub_delete_plugin
+		eventbus.zzub_connect += self.on_zzub_redraw_event
+		eventbus.zzub_disconnect += self.on_zzub_redraw_event
 		self.solo_plugin = None
 		self.selected_plugin = None
 		self.autoconnect_target=None
@@ -705,27 +707,14 @@ class RouteView(gtk.DrawingArea):
 			self.flags2brushes[flags] = brushes
 		common.get_plugin_infos().reset_plugingfx()
 		
-	def on_player_callback(self, player, plugin, data):
-		"""
-		callback for ui events sent by zzub.
+	def on_zzub_redraw_event(self, *args):
+		self.redraw()
 		
-		@param player: player instance.
-		@type player: zzub.Player
-		@param plugin: plugin instance
-		@type plugin: zzub.Plugin
-		@param data: event data.
-		@type data: zzub_event_data_t
-		"""
-		if data.type == zzub.zzub_event_type_delete_plugin:
-			plugin = zzub.Plugin(getattr(data,'').delete_plugin.plugin)
-			dlg = self.plugin_dialogs.get(plugin,None)
-			if dlg:
-				dlg.destroy()
-		elif data.type == zzub.zzub_event_type_disconnect:
-			self.redraw()
-		elif data.type == zzub.zzub_event_type_connect:
-			self.redraw()
-
+	def on_zzub_delete_plugin(self, plugin):
+		dlg = self.plugin_dialogs.get(plugin,None)
+		if dlg:
+			dlg.destroy()
+		
 	def reset(self):
 		"""
 		Destroys all parameter dialogs. Used when

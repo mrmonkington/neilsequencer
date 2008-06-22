@@ -121,6 +121,9 @@ class AudioDriver:
 	def get_name(self, *args,**kargs):
 		return self.driver.get_name(*args,**kargs)
 		
+	def enable(self, *args,**kargs):
+		self.driver.enable(*args,**kargs)
+		
 	def init(self):
 		if self.enabled:
 			self.destroy()

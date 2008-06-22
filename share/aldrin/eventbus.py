@@ -41,8 +41,6 @@ EVENTS = [
 	'plugin-created', # (plugin, ... ) called when a plugin is created by the user.
 	'show-plugin', # (plugin, ...) called when a plugin should be visualized overall.
 	
-	'zzub-callback', # (player, plugin, data, ...) triggered by the lib on document changes. this is deprecated. use one of the specialized handlers.
-	
 	'zzub-plugin-changed', # ( plugin,... )
 	'zzub-osc-message', # ( path,types,argv,argc,msg,... )
 	'zzub-pattern-insert-rows', # ( plugin,index,row,rows,column_indices,indices,... )

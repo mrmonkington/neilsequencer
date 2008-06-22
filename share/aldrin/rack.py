@@ -143,8 +143,30 @@ class ParameterView(gtk.VBox):
 
 		self.add(toplevelgroup)		
 		eventbus = com.get('aldrin.core.eventbus')
-		eventbus.zzub_callback += self.on_callback		
+		eventbus.zzub_parameter_changed += self.on_zzub_parameter_changed
 		self.update_preset_buttons()
+		
+	def on_zzub_parameter_changed(self, plugin,group,track,param,value):
+		"""
+		parameter window callback for ui events sent by zzub.
+		
+		@param player: player instance.
+		@type player: zzub.Player
+		@param plugin: plugin instance
+		@type plugin: zzub.Plugin
+		@param data: event data.
+		@type data: zzub_event_data_t
+		"""
+		dlg = com.get('aldrin.core.routerpanel').view.plugin_dialogs.get(self.plugin,None)
+		if dlg:
+			if zzub.Plugin(plugin) == self.plugin:
+				g,t,i,v = group, track, param, value
+				p = self.pluginloader.get_parameter(g,i)
+				if p.get_flags() & zzub.zzub_parameter_flag_state:
+					nl,s,vl = self.pid2ctrls[(g,t,i)]
+					v = self.plugin.get_parameter_value(g,t,i)
+					s.set_value(v)
+					self.update_valuelabel(g,t,i)
 		
 	def create_sliders(self, rowgroup):
 		plugin = self.plugin
@@ -509,30 +531,6 @@ class ParameterView(gtk.VBox):
 			menu.attach_to_widget(self, None)
 			menu.popup(None, None, None, event.button, event.time)
 			return True
-		
-	def on_callback(self, player, plugin, data):
-		"""
-		parameter window callback for ui events sent by zzub.
-		
-		@param player: player instance.
-		@type player: zzub.Player
-		@param plugin: plugin instance
-		@type plugin: zzub.Plugin
-		@param data: event data.
-		@type data: zzub_event_data_t
-		"""
-		dlg = com.get('aldrin.core.routerpanel').view.plugin_dialogs.get(self.plugin,None)
-		if dlg:			
-			if plugin == self.plugin:
-				if data.type == zzub.zzub_event_type_parameter_changed:
-					data = getattr(data,'').change_parameter				
-					g,t,i,v = data.group, data.track, data.param, data.value
-					p = self.pluginloader.get_parameter(g,i)
-					if p.get_flags() & zzub.zzub_parameter_flag_state:
-						nl,s,vl = self.pid2ctrls[(g,t,i)]
-						v = self.plugin.get_parameter_value(g,t,i)
-						s.set_value(v)
-						self.update_valuelabel(g,t,i)
 					
 	def update_presets(self):
 		"""
@@ -864,29 +862,15 @@ class RackPanel(gtk.VBox):
 		self.connect('realize', self.on_realize)
 		self.add(self.scrollwindow)
 		eventbus = com.get('aldrin.core.eventbus')
-		eventbus.zzub_callback += self.on_player_callback
+		eventbus.zzub_delete_plugin += self.update_all
 		
 	def handle_focus(self):
 		self.scrollwindow.grab_focus()
 
-	def on_player_callback(self, player, plugin, data):
-		"""
-		callback for ui events sent by zzub.
-		
-		@param player: player instance.
-		@type player: zzub.Player
-		@param plugin: plugin instance
-		@type plugin: zzub.Plugin
-		@param data: event data.
-		@type data: zzub_event_data_t
-		"""
-		if data.type == zzub.zzub_event_type_delete_plugin:
-			self.update_all()
-
 	def on_realize(self, widget):
 		self.update_all()
 
-	def update_all(self):
+	def update_all(self, *args):
 		"""
 		Updates the full view.
 		"""

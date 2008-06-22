@@ -468,7 +468,8 @@ class PatternPanel(gtk.VBox):
 		gtk.VBox.__init__(self)
 		self.rootwindow = rootwindow
 		eventbus = com.get('aldrin.core.eventbus')
-		eventbus.zzub_callback += self.on_player_callback
+		eventbus.zzub_delete_plugin += self.update_all
+		eventbus.zzub_new_plugin += self.update_all
 		self.statusbar = gtk.HBox(False, MARGIN)
 		self.statusbar.set_border_width(MARGIN0)
 		vscroll = gtk.VScrollbar()
@@ -500,25 +501,6 @@ class PatternPanel(gtk.VBox):
 		except AttributeError: #no pattern in current machine
 			pass
 		self.view.grab_focus()
-		
-	def on_player_callback(self, player, plugin, data):
-		"""
-		callback for ui events sent by zzub.
-		
-		@param player: player instance.
-		@type player: zzub.Player
-		@param plugin: plugin instance
-		@type plugin: zzub.Plugin
-		@param data: event data.
-		@type data: zzub_event_data_t
-		"""
-		if data.type == zzub.zzub_event_type_delete_plugin:
-			self.update_all()
-		elif data.type == zzub.zzub_event_type_new_plugin:
-			self.update_all()
-		#elif data.type == zzub.zzub_event_type_parameter_changed and player.get_automation():
-		#	self.view.update_line(player.get_position()) 
-		#	self.view.redraw() 
 
 	def reset(self):
 		"""
