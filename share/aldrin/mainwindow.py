@@ -733,6 +733,7 @@ class AldrinFrame(gtk.Window):
 		if ext.lower() in ('.bmx','.bmw'):
 			#~ progress = ProgressDialog("Aldrin", "Loading BMX Song...")
 			#~ Yield()
+			player.clear()
 			player.load_bmx(self.filename)
 			player.document_unchanged()
 			#~ Yield()
@@ -759,6 +760,7 @@ class AldrinFrame(gtk.Window):
 				gtk.main_iteration()
 			gobject.timeout_add(int(1000/25), progress_callback)
 			progBar.pulse()
+			player.clear()
 			player.load_ccm(self.filename)
 			player.document_unchanged()
 			progBar.set_fraction(1.0)

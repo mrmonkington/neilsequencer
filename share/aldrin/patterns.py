@@ -23,18 +23,21 @@ Contains all classes and functions needed to render the pattern
 editor and its associated dialogs.
 """
 
-import os, sys
+import os
 from gtkimport import gtk
 import gobject
 import pango
 from utils import prepstr, filepath, get_item_count, get_clipboard_text, set_clipboard_text, question, error, get_new_pattern_name, \
-	new_liststore, new_combobox
-import pickle
+	new_liststore, new_combobox, db2linear, make_menu_item, make_check_item
+
 import zzub
 import time
 import random
 import common
-from common import MARGIN, MARGIN2, MARGIN3, MARGIN0
+MARGIN = common.MARGIN
+MARGIN2 = common.MARGIN2
+MARGIN3 = common.MARGIN3
+MARGIN0 = common.MARGIN0
 from aldrincom import com
 
 from utils import NOTES, roundint
@@ -262,7 +265,6 @@ class PatternToolBar(gtk.HBox):
 		player = com.get('aldrin.core.player')
 		w = player.get_wave(wave)
 		if w.get_level_count() >= 1:
-			from utils import db2linear
 			vol = min(max(config.get_config().get_sample_preview_volume(),-76.0),0.0)
 			amp = db2linear(vol,limit=-76.0)
 			player.set_wave_amp(amp)
@@ -343,13 +345,13 @@ class PatternToolBar(gtk.HBox):
 		Selects a plugin by instance handle.
 		"""
 		store = self.pluginselect.get_model()
-		iter = store.get_iter_first()
-		while iter:
-			plugin = store.get_value(iter, 1)
+		iteritem = store.get_iter_first()
+		while iteritem:
+			plugin = store.get_value(iteritem, 1)
 			if mp == plugin:
-				self.select_plugin(store.get_path(iter)[0])
+				self.select_plugin(store.get_path(iteritem)[0])
 				break
-			iter = store.iter_next(iter)
+			iteritem = store.iter_next(iteritem)
 
 	def get_combo_plugin(self, index):
 		"""
@@ -474,6 +476,23 @@ class PatternPanel(gtk.VBox):
 		self.statusbar.set_border_width(MARGIN0)
 		vscroll = gtk.VScrollbar()
 		hscroll = gtk.HScrollbar()
+		self.statuslabels = []
+		
+		label = gtk.Label()
+		self.statuslabels.append(label)
+		self.statusbar.pack_start(label, expand=False)
+		self.statusbar.pack_start(gtk.VSeparator(), expand=False)
+		
+		label = gtk.Label()
+		self.statuslabels.append(label)
+		self.statusbar.pack_start(label, expand=False)
+		self.statusbar.pack_start(gtk.VSeparator(), expand=False)
+		
+		label = gtk.Label()
+		self.statuslabels.append(label)
+		self.statusbar.pack_start(label, expand=False)
+		self.statusbar.pack_start(gtk.VSeparator(), expand=False)
+		
 		self.view = PatternView(rootwindow, self, hscroll, vscroll)
 		self.toolbar = PatternToolBar(self.view)
 		self.view.toolbar = self.toolbar
@@ -487,13 +506,6 @@ class PatternPanel(gtk.VBox):
 		self.pack_start(scrollwin)
 		self.pack_end(self.statusbar, expand=False)
 		self.toolbar.update_all()
-		self.statuslabels = []
-		for i in range(3):
-			label = gtk.Label()
-			self.statuslabels.append(label)
-			self.statusbar.pack_start(label, expand=False)
-			self.statusbar.pack_start(gtk.VSeparator(), expand=False)
-		self.view.statuslabels = self.statuslabels
 		
 	def handle_focus(self):
 		try:
@@ -650,6 +662,7 @@ class PatternView(gtk.DrawingArea):
 		@param rootwindow: Window that contains the component.
 		@type rootwindow: main.AldrinFrame
 		"""
+		self.statuslabels = panel.statuslabels
 		self.rootwindow = rootwindow
 		self.panel = panel
 		self.hscroll = hscroll
@@ -726,7 +739,7 @@ class PatternView(gtk.DrawingArea):
 			self.show_cursor_right()
 			self.refresh_view()
 		
-	def plugin_created(self, mp):
+	def plugin_created(self, *args):
 		self.jump_to_note = True # mark that we want tab_to_second_track on next update
 	
 	def on_copy(self, widget):
@@ -751,24 +764,8 @@ class PatternView(gtk.DrawingArea):
 		"""
 		Callback that constructs and displays the popup menu
 		"""
-		def make_submenu_item(submenu, name):
-			item = gtk.MenuItem(label=name)
-			item.set_submenu(submenu)
-			return item
-		def make_menu_item(label, desc, func, *args):
-			item = gtk.MenuItem(label=label)
-			if func:
-				item.connect('activate', func, *args)
-			return item
-		def make_check_item(toggled, label, desc, func, *args):
-			item = gtk.CheckMenuItem(label=label)
-			item.set_active(toggled)
-			if func:
-				item.connect('toggled', func, *args)
-			return item
 			
 		menu = gtk.Menu()
-		mx,my = int(event.x), int(event.y)
 		menu.append(make_menu_item("Add track", "", self.on_popup_add_track))
 		menu.append(make_menu_item("Delete last track", "", self.on_popup_delete_track))
 		menu.append(gtk.SeparatorMenuItem())
@@ -840,26 +837,35 @@ class PatternView(gtk.DrawingArea):
 		if datasource:
 			# plugin loader, pattern data
 			self.plugin, self.pattern = datasource
-			plugin = self.get_plugin()			
-			self.row, self.group, self.track, self.index, self.subindex = self.plugin_info.get(plugin).pattern_position
-			self.selection = self.plugin_info.get(plugin).selection
+			self.row, self.group, self.track, self.index, self.subindex = self.plugin_info.get(self.plugin).pattern_position
+			self.selection = self.plugin_info.get(self.plugin).selection
 			self.input_connection_count = self.get_plugin().get_input_connection_count()
 			# track count
-			track_count = self.get_plugin().get_track_count()
+			track_count = self.plugin.get_track_count()
 			# global track not considered a track
 			#~ if self.plugin.get_parameter_count(1) > 0:
 				#~ self.track_count -= 1
 			self.group_track_count = [self.input_connection_count, 1, track_count] # track count by group
-			 # parameter counts
-			self.parameter_count = [self.plugin.get_parameter_count(g) for g in range(3)]
-			# parameter widths in columns
-			self.parameter_width = [[get_length_from_param(self.plugin.get_parameter(g,i)) \
-				for i in range(self.parameter_count[g])] for g in range(3)]
-			# parameter type in columns
-			self.parameter_type = [[self.plugin.get_parameter(g,i).get_type() \
-				for i in range(self.parameter_count[g])] for g in range(3)]
-			# track width in columns			
-			self.track_width = [sum(self.parameter_width[g]) + self.parameter_count[g] for g in range(3)]
+			self.parameter_count = []
+			self.parameter_width = []
+			self.parameter_type = []
+			self.track_width = []
+			for group in xrange(3):
+				# parameter counts
+				group_parameter_count = self.plugin.get_parameter_count(group,0)
+				self.parameter_count.append(group_parameter_count)
+				# parameter widths in columns
+				widths = []
+				types = []
+				for group_param in xrange(group_parameter_count):
+					param = self.plugin.get_parameter(group,0,group_param)
+					paramtype = param.get_type()
+					paramwidth = get_length_from_param(param)
+					types.append(paramtype)
+					widths.append(paramwidth)
+				self.track_width.append(sum(widths) + group_parameter_count)
+				self.parameter_width.append(widths)
+				self.parameter_type.append(types)
 			# group positions
 			self.group_position = [
 				0, 
@@ -873,13 +879,13 @@ class PatternView(gtk.DrawingArea):
 				x = 0
 				for i in range(self.parameter_count[g]):
 					pp.append(x)
-					x += get_length_from_param(self.plugin.get_parameter(g,i)) + 1
+					x += get_length_from_param(self.plugin.get_parameter(g,0,i)) + 1
 				self.parameter_position.append(pp)
 			# sub index counts
-			self.subindex_count = [[get_subindexcount_from_param(self.plugin.get_parameter(g,i)) \
+			self.subindex_count = [[get_subindexcount_from_param(self.plugin.get_parameter(g,0,i)) \
 				for i in range(self.parameter_count[g])] for g in range(3)]
 			# sub index offsets
-			self.subindex_offset = [[get_subindexoffsets_from_param(self.plugin.get_parameter(g,i)) \
+			self.subindex_offset = [[get_subindexoffsets_from_param(self.plugin.get_parameter(g,0,i)) \
 				for i in range(self.parameter_count[g])] for g in range(3)] 
 			self.row_count = self.pattern.get_row_count() # row count
 			self.prepare_textbuffer()
@@ -1005,12 +1011,12 @@ class PatternView(gtk.DrawingArea):
 			return
 		self.subindex = min(max(si,0), self.subindex_count[self.group][self.index] - 1)
 		
-	def expose(self, widget, event):
+	def expose(self, widget, *args):
 		self.context = widget.window.cairo_create()
 		self.draw(self.context)
 		return False
 		
-	def redraw(self,row=None,rows=None,fulldraw=True):
+	def redraw(self,*args):
 		if self.window:
 			w,h = self.get_client_size()
 			self.window.invalidate_rect((0,0,w,h), False)
@@ -1596,7 +1602,7 @@ class PatternView(gtk.DrawingArea):
 			self.adjust_selection()
 			self.redraw()
 	
-	def on_motion(self, widget, event):
+	def on_motion(self, widget, *args):
 		"""
 		Callback that responds to mouse motion in sequence view.
 		
@@ -1634,7 +1640,7 @@ class PatternView(gtk.DrawingArea):
 		if event.button == 1:
 			self.dragging = False
 
-	def on_popup_remove_pattern(self, event=None):
+	def on_popup_remove_pattern(self, *args):
 		"""
 		Callback that removes the current pattern.
 		"""		
@@ -1645,7 +1651,7 @@ class PatternView(gtk.DrawingArea):
 				m.remove_pattern(self.pattern)
 			self.toolbar.select_pattern(0)		
 			
-	def on_popup_create_pattern(self, event=None, m=None):
+	def on_popup_create_pattern(self, widget=None, m=None):
 		"""
 		Callback that creates a pattern.
 		"""
@@ -1664,7 +1670,7 @@ class PatternView(gtk.DrawingArea):
 					self.toolbar.select_pattern(i)
 					break
 	
-	def on_popup_double(self, event=None):
+	def on_popup_double(self, *args):
 		"""
 		Callback that doubles the length of the current pattern while
 		keeping notes intact
@@ -1683,7 +1689,7 @@ class PatternView(gtk.DrawingArea):
 			item+=1
 		self.pattern_changed()
 		
-	def on_popup_halve(self, event=None):
+	def on_popup_halve(self, *args):
 		"""
 		Callback that halves the length of the current pattern while
 		keeping notes intact
@@ -1697,7 +1703,7 @@ class PatternView(gtk.DrawingArea):
 		self.pattern.set_row_count(self.pattern.get_row_count()/2)
 		self.pattern_changed()
 		
-	def on_popup_create_copy(self, event=None):
+	def on_popup_create_copy(self, *args):
 		"""
 		Callback that creates a copy of the current pattern.
 		"""
@@ -1717,14 +1723,14 @@ class PatternView(gtk.DrawingArea):
 					self.toolbar.select_pattern(i)
 					break
 	
-	def on_popup_solo(self, event=None):
+	def on_popup_solo(self, *args):
 		"""
 		Callback that solos current plugin.
 		"""		
 		plugin = self.get_plugin()
 		com.get('aldrin.core.routerpanel').view.solo(plugin)
 		
-	def on_popup_properties(self, event=None):
+	def on_popup_properties(self, *args):
 		"""
 		Callback that shows the properties of the current pattern.
 		"""
@@ -1740,7 +1746,7 @@ class PatternView(gtk.DrawingArea):
 		self.toolbar.update_all()
 		self.pattern_changed()
 		
-	def on_popup_add_track(self, event=None):
+	def on_popup_add_track(self, *args):
 		"""
 		Callback that adds a track.
 		"""
@@ -1765,7 +1771,7 @@ class PatternView(gtk.DrawingArea):
 			dlg.show_all()
 
 	
-	def on_popup_delete_track(self, event=None):
+	def on_popup_delete_track(self, *args):
 		"""
 		Callback that deletes last track.
 		"""		
@@ -1782,25 +1788,25 @@ class PatternView(gtk.DrawingArea):
 				pv.create_sliders(pv.rowgroup)
 				dlg.show_all()
 	
-	def on_popup_cut(self, event=None):
+	def on_popup_cut(self, *args):
 		"""
 		Callback that cuts selection
 		"""
 		self.cut()
 	
-	def on_popup_copy(self, event=None):
+	def on_popup_copy(self, *args):
 		"""
 		Callback that copies selection
 		"""
 		self.copy()
 		
-	def on_popup_paste(self, event=None):
+	def on_popup_paste(self, *args):
 		"""
 		Callback that pastes selection
 		"""
 		self.paste()
 	
-	def on_popup_delete(self, event=None):
+	def on_popup_delete(self, *args):
 		"""
 		Callback that deletes selection
 		"""
@@ -2140,7 +2146,7 @@ class PatternView(gtk.DrawingArea):
 			if (k == 'Shift_L' or k=='Shift_R'):
 				self.shiftselect = None
 			if self.plugin:
-				parameter_list = self.plugin.get_parameter_list(self.group)
+				parameter_list = self.plugin.get_parameter_list(self.group,0)
 				if parameter_list[self.index].get_description() == "Note" and kv<256:
 					on = key_to_note(kv)
 					if on:
@@ -2337,9 +2343,9 @@ class PatternView(gtk.DrawingArea):
 					self.statuslabels[0].set_label('Row %s, Globals' % (self.row,))
 				else:
 					self.statuslabels[0].set_label('Row %s, Track %s' % (self.row,self.track))
-				parameter_list = self.plugin.get_parameter_list(self.group)
+				parameter_list = self.plugin.get_parameter_list(self.group,0)
 				self.statuslabels[2].set_label(prepstr(parameter_list[self.index].get_description() or ""))
-				p = self.plugin.get_parameter(self.group,self.index)
+				p = self.plugin.get_parameter(self.group,self.track,self.index)
 				v = self.pattern.get_value(self.row, self.group, self.track, self.index)
 				if v != p.get_value_none():
 					text = prepstr(self.get_plugin().describe_value(self.group,self.index,v))
@@ -2383,9 +2389,6 @@ class PatternView(gtk.DrawingArea):
 		if not hasattr(self, "xor_gc"):
 			self.create_xor_gc()
 		gc = self.xor_gc
-		PATROWHEIGHT = self.row_height
-		PATTOPMARGIN = self.top_margin
-		PATCOLWIDTH = self.column_width	
 		cx,cy = self.pattern_to_pos(self.row, self.group, self.track, self.index, self.subindex)
 		if (cx >= (PATLEFTMARGIN+4)) and (cy >= self.top_margin):
 			drawable.draw_rectangle(gc, True,cx,cy,self.column_width,self.row_height)
@@ -2403,8 +2406,8 @@ class PatternView(gtk.DrawingArea):
 		player = com.get('aldrin.core.player')
 		current_position = self.playpos
 		seq = player.get_current_sequencer()
-		for i in range(seq.get_track_count()):
-			track = seq.get_track(i)
+		for i in range(seq.get_sequence_track_count()):
+			track = seq.get_sequence(i)
 			track_plugin = track.get_plugin()
 			plugin = self.get_plugin()			
 			if plugin == track_plugin and self.pattern:			
@@ -2452,14 +2455,11 @@ class PatternView(gtk.DrawingArea):
 		"""	
 		tb = self.toolbar
 		plugin = self.get_plugin()
-		pl = plugin.get_pluginloader()
-		if not pl._handle:
-			return
 		pi = min(tb.pattern, plugin.get_pattern_count()-1)
 		if pi == -1:
 			return
 		pattern = plugin.get_pattern(pi)		
-		return pl, pattern
+		return plugin, pattern
 		
 	def update_line(self, row):
 		"""
@@ -2486,7 +2486,7 @@ class PatternView(gtk.DrawingArea):
 		count = self.parameter_count[group]
 		cols = [None] * count
 		for i in range(count):
-			param = self.plugin.get_parameter(group, i)
+			param = self.plugin.get_parameter(group, 0, i)
 			get_value = self.pattern.get_value
 			cols[i] = [get_str_from_param(param, get_value(row, group, track, i))
 				   for row in range(self.row_count)]
@@ -2535,7 +2535,6 @@ class PatternView(gtk.DrawingArea):
 		Overriding a L{Canvas} method that paints onto an offscreen buffer.
 		Draws the pattern view graphics.
 		"""	
-		st = time.time()
 		row=None
 		rows=None
 		fulldraw=True
@@ -2544,7 +2543,6 @@ class PatternView(gtk.DrawingArea):
 		cfg = config.get_config()
 		w,h = self.get_client_size()
 		PATROWHEIGHT = self.row_height
-		PATTOPMARGIN = self.top_margin
 		PATCOLWIDTH = self.column_width
 		
 		gc = self.window.new_gc()
@@ -2618,14 +2616,6 @@ class PatternView(gtk.DrawingArea):
 				px,py = layout.get_pixel_size()
 				drawable.draw_layout(gc, x, y, layout)
 				return x + px
-			def draw_parameters(row, group, track=0):
-				"""Draw the parameter values"""
-				x,y = self.pattern_to_pos(row, group, track, 0)
-				s = self.lines[group][track][row]
-				w = PATCOLWIDTH * len(s)
-				layout.set_text(s)
-				px,py = layout.get_pixel_size()
-				drawable.draw_layout(gc, x,y + PATROWHEIGHT/2 - (py/2), layout)
 			
 			# draw track background
 			gc.set_foreground(bgbrush)
@@ -2697,7 +2687,6 @@ class PatternView(gtk.DrawingArea):
 				layout.set_text(s)
 				px,py = layout.get_pixel_size()
 				drawable.draw_layout(gc, x + width/2 - px/2, PATROWHEIGHT/2 - (py/2), layout)
-			parameter_list = self.plugin.get_parameter_list(TRACK)
 			num_rows = min(rows - row, (h - clipy1) / PATROWHEIGHT + 1)
 			out_of_bounds = False
 			for t in range(self.group_track_count[CONN]):
@@ -2739,9 +2728,9 @@ __aldrin__ = dict(
 
 
 if __name__ == '__main__':
-	import testplayer, utils
+	import testplayer
 	player = testplayer.get_player()
-	player.load_ccm(utils.filepath('demosongs/paniq-knark.ccm'))
+	player.load_ccm(filepath('demosongs/paniq-knark.ccm'))
 	window = testplayer.TestWindow()
 	# update_position() needs the index to be set:
 	# (main.AldrinFrame.PAGE_PATTERN = 0)

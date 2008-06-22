@@ -175,7 +175,7 @@ class ParameterView(gtk.VBox):
 		sslidergroup = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
 		svaluegroup = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
 		def add_controller(g,t,i):
-			p = pl.get_parameter(g,i)
+			p = plugin.get_parameter(g,t,i)
 			name = "CC-%s" % prepstr(p.get_name())
 			namelabel = gtk.Label()
 			namelabel._default_name = name
@@ -199,7 +199,7 @@ class ParameterView(gtk.VBox):
 			self.update_namelabel(g,t,i)
 
 		def add_nonstate_param(g,t,i):
-			p = pl.get_parameter(g,i)
+			p = plugin.get_parameter(g,t,i)
 			if g == 2:
 				name = "%i-%s" % (t,prepstr(p.get_name()))
 			else:
@@ -225,7 +225,7 @@ class ParameterView(gtk.VBox):
 			self.update_namelabel(g,t,i)
 
 		def add_slider(g,t,i):
-			p = pl.get_parameter(g,i)
+			p = plugin.get_parameter(g,t,i)
 			if not (p.get_flags() & zzub.zzub_parameter_flag_state):
 				return add_nonstate_param(g,t,i)
 			if g == 0:
