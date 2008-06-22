@@ -18,26 +18,31 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-import sys, os
+import os
 from gtkimport import gtk
 from utils import format_time, ticks_to_time, prepstr, linear2db, db2linear, filepath, \
 	is_debug, question, error, add_scrollbars, file_filter, new_stock_image_toggle_button, \
 	new_stock_image_button, message
 import zzub
 import gobject
-import time
-import common
 import config
 import errordlg
-from common import MARGIN, MARGIN2, MARGIN3, MARGIN0
-import sequencer, router, patterns, wavetable, preferences, hdrecorder, cpumonitor, info, common, rack
+
+import common
+MARGIN = common.MARGIN
+MARGIN2 = common.MARGIN2
+MARGIN3 = common.MARGIN3
+MARGIN0 = common.MARGIN0
+
+import hdrecorder, cpumonitor
+
 from utils import make_submenu_item, make_stock_menu_item, make_stock_tool_item, make_stock_toggle_item, \
 	make_stock_radio_item, make_menu_item, make_check_item, make_radio_item, new_theme_image, add_accelerator
 
-from preferences import show_preferences
+import preferences
+show_preferences = preferences.show_preferences
 
 from utils import CancelException
-from config import get_plugin_aliases, get_plugin_blacklist
 
 from aldrincom import com
 
@@ -158,7 +163,6 @@ class AldrinFrame(gtk.Window):
 		self.toolsmenu = gtk.Menu()
 		item = make_submenu_item(self.toolsmenu, "_Tools")
 		self.aldrinframe_menubar.append(item)
-		added = False
 		toolitems = com.get_from_category('menuitem.tool', self.toolsmenu)
 		if not toolitems:
 			item.destroy()
@@ -194,7 +198,8 @@ class AldrinFrame(gtk.Window):
 		self.framepanel.set_show_border(False)
 		#self.framepanel.set_show_tabs(False)
 		
-		icons = com.get("aldrin.core.icons") # make sure theme icons are loaded
+		com.get("aldrin.core.icons") # make sure theme icons are loaded
+		
 		defaultpanelindex = -1
 		for index,panel in enumerate(self.pages):
 			if not hasattr(panel, '__view__'):
@@ -264,10 +269,10 @@ class AldrinFrame(gtk.Window):
 			
 		for driver in com.get_from_category('driver'):
 			if driver.init_failed:
-				show_preferences(self,self)
+				show_preferences(self)
 				break
 			
-	def on_undo(self, widget):
+	def on_undo(self, *args):
 		"""
 		Called when an undo item is being called.
 		"""
@@ -275,7 +280,7 @@ class AldrinFrame(gtk.Window):
 		com.get('aldrin.core.player').undo()
 		self.print_history()
 			
-	def on_redo(self, widget):
+	def on_redo(self, *args):
 		"""
 		Called when an undo item is being called.
 		"""
@@ -299,33 +304,29 @@ class AldrinFrame(gtk.Window):
 			print s
 		print "----"
 		
-	def can_activate_undo(self, widget, sigid):
+	def can_activate_undo(self, *args):
 		"""
 		handler for can-activate-accel signal by Undo menuitem. Checks if undo can be executed.
 		"""
 		player = com.get('aldrin.core.player')
 		return player.can_undo()
 		
-	def can_activate_redo(self, widget, sigid):
+	def can_activate_redo(self, *args):
 		"""
 		handler for can-activate-accel signal by Redo menuitem. Checks if redo can be executed.
 		"""
 		player = com.get('aldrin.core.player')
 		return player.can_redo()
 		
-	def update_editmenu(self, widget):
+	def update_editmenu(self, *args):
 		"""
 		Updates the edit menu, including the undo menu.
-		
-		@param widget: the Menu item.
-		@type widget: gtk.MenuItem
 		"""
 		for item in self.editmenu:
 			item.destroy()
 		player = com.get('aldrin.core.player')
 		
 		pos = player.history_get_position()		
-		historysize = player.history_get_size()
 		self.print_history()
 		
 		item = add_accelerator(make_menu_item("Undo", "", self.on_undo), self, "<Control>Z")
@@ -352,7 +353,7 @@ class AldrinFrame(gtk.Window):
 		self.editmenu.append(make_stock_menu_item(gtk.STOCK_PREFERENCES, self.on_preferences))
 		self.editmenu.show_all()
 			
-	def update_filemenu(self, widget):
+	def update_filemenu(self, *args):
 		"""
 		Updates the most recent files in the file menu.
 		
@@ -453,7 +454,7 @@ class AldrinFrame(gtk.Window):
 		self.item_transport.set_active(self.transport.get_property('visible'))
 		self.save_view()
 		
-	def on_close_cpumonitor(self, widget, event):
+	def on_close_cpumonitor(self, *args):
 		"""
 		Called when the cpu monitor is closed manually.
 		
@@ -464,7 +465,7 @@ class AldrinFrame(gtk.Window):
 		self.update_view()
 		return True
 		
-	def on_close_hdrecorder(self, widget, event):
+	def on_close_hdrecorder(self, *args):
 		"""
 		Called when the hd recorder is closed manually.
 		"""
@@ -575,7 +576,7 @@ class AldrinFrame(gtk.Window):
 		"""
 		self.show_mastertoolbar(widget.get_active())
 		
-	def on_help_contents(self, event):
+	def on_help_contents(self, *args):
 		"""
 		Event handler triggered by the help menu option.
 		
@@ -585,7 +586,7 @@ class AldrinFrame(gtk.Window):
 		import webbrowser		
 		webbrowser.open_new(filepath('../doc/aldrin/html/index.html'))
 			
-	def on_about(self, event):
+	def on_about(self, *args):
 		"""
 		Event handler triggered by the "About" menu option.
 		
@@ -633,27 +634,26 @@ class AldrinFrame(gtk.Window):
 			panel.handle_focus()
 		self.activated=0
 		
-	def button_up(self, widget, event):
+	def button_up(self, *args):
 		"""
 		selects panel after button up
 		"""
 		panel = self.get_current_panel()		
 		panel.handle_focus()
 			
-	def on_preferences(self, event):
+	def on_preferences(self, *args):
 		"""
 		Event handler triggered by the "Preferences" menu option.
 		
 		@param event: menu event.
 		@type event: MenuEvent
 		"""
-		show_preferences(self,self)
+		show_preferences(self)
 
 	def on_key_down(self, widget, event):
 		"""
 		Event handler for key events.
 		"""
-		kv = event.keyval
 		k = gtk.gdk.keyval_name(event.keyval)
 		for index,panel in enumerate(self.pages):
 			if not hasattr(panel, '__view__'):
@@ -670,9 +670,8 @@ class AldrinFrame(gtk.Window):
 			return False
 		return True
 			
-	def on_activate_page(self, notebook, page, page_num):
+	def on_activate_page(self, widget, unused, page_num):
 		self.select_page(page_num)
-			
 
 	def open_recent_file(self, widget, filename):
 		"""
@@ -821,7 +820,7 @@ class AldrinFrame(gtk.Window):
 		self.update_title()
 		config.get_config().add_recent_file_config(self.filename)
 		
-	def on_open(self, event):
+	def on_open(self, *args):
 		"""
 		Event handler triggered by the "Open File" menu option.
 		
@@ -844,7 +843,7 @@ class AldrinFrame(gtk.Window):
 		if response == gtk.RESPONSE_OK:
 			self.open_file(self.open_dlg.get_filename())
 			
-	def on_save(self, event):
+	def on_save(self, *args):
 		"""
 		Event handler triggered by the "Save" menu option.
 		"""
@@ -875,7 +874,7 @@ class AldrinFrame(gtk.Window):
 		else:
 			raise CancelException
 		
-	def on_save_as(self, event):
+	def on_save_as(self, *args):
 		"""
 		Event handler triggered by the "Save As" menu option.
 		
@@ -905,7 +904,7 @@ class AldrinFrame(gtk.Window):
 		self.document_changed()
 		self.update_title()
 		
-	def play(self, widget):
+	def play(self, *args):
 		"""
 		Event handler triggered by the "Play" toolbar button.
 		
@@ -915,7 +914,7 @@ class AldrinFrame(gtk.Window):
 		player = com.get('aldrin.core.player')
 		player.play()
 
-	def play_from_cursor(self, event):
+	def play_from_cursor(self, *args):
 		"""
 		Event handler triggered by the F6 key.
 		
@@ -940,7 +939,7 @@ class AldrinFrame(gtk.Window):
 			cfg.select_theme(data)
 		self.document_changed()
 		
-	def stop(self, event):
+	def stop(self, *args):
 		"""
 		Event handler triggered by the "Stop" toolbar button.
 		
@@ -949,7 +948,6 @@ class AldrinFrame(gtk.Window):
 		"""
 		player = com.get('aldrin.core.player')
 		player.stop()
-		self.mastertoolbar.button_up(1,1)
 		
 	def save_changes(self):
 		"""
@@ -969,7 +967,7 @@ class AldrinFrame(gtk.Window):
 		elif response == int(gtk.RESPONSE_YES):
 			self.save()
 
-	def new(self, event):
+	def new(self, *args):
 		"""
 		Event handler triggered by the "New" menu option.
 		
@@ -984,14 +982,14 @@ class AldrinFrame(gtk.Window):
 		except CancelException:
 			pass
 			
-	def on_destroy(self, widget):
+	def on_destroy(self, *args):
 		"""
 		Event handler triggered when the window is being destroyed.
 		"""
 		eventbus = com.get('aldrin.core.eventbus')
 		eventbus.shutdown()
 			
-	def on_exit(self, widget):
+	def on_exit(self, *args):
 		"""
 		Event handler triggered by the "Exit" menu option.
 		
@@ -1001,7 +999,7 @@ class AldrinFrame(gtk.Window):
 		if not self.on_close(None, None):
 			self.destroy()
 			
-	def on_close(self, widget, event):
+	def on_close(self, *args):
 		"""
 		Event handler triggered when the window is being closed.
 		"""

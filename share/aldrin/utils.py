@@ -413,7 +413,6 @@ def run_function_with_progress(parent, msg, allow_cancel, func, *args):
 	def update_progress(dlg):
 		dlg._progress.set_fraction(dlg.fraction)
 		dlg._label.set_markup(dlg.markup)
-		import time
 		time.sleep(0.01)
 		return True
 	def on_response(dialog, response):
@@ -443,7 +442,7 @@ def gettext(parent, msg, text=''):
 	label.set_alignment(0,0.5)
 	entry = gtk.Entry()
 	entry.set_text(text)
-	entry.connect('activate', lambda x: dialog.response(gtk.RESPONSE_OK))
+	entry.connect('activate', lambda widget: dialog.response(gtk.RESPONSE_OK))
 	vbox = gtk.VBox(False, 6)
 	vbox.set_border_width(6)
 	vbox.pack_start(label)
@@ -792,12 +791,6 @@ def get_new_pattern_name(plugin):
 			break
 	return s
 		
-def get_stock_bmp(artid):
-	fullpath = filepath('res/'+artid+'.png')
-	if os.path.isfile(fullpath):
-		return wx.Bitmap(fullpath, wx.BITMAP_TYPE_ANY)
-	return wx.NullBitmap
-
 class CancelException(Exception):
 	"""
 	Is being thrown when the user hits cancel in a sequence of
@@ -842,18 +835,24 @@ def make_stock_radio_item(stockid, func, *args):
 
 def make_menu_item(label, desc, func, *args):
 	item = gtk.MenuItem(label=label)
+	if desc:
+		item.set_tooltip_text(desc)
 	if func:
 		item.connect('activate', func, *args)
 	return item
 
 def make_check_item(label, desc, func, *args):
 	item = gtk.CheckMenuItem(label=label)
+	if desc:
+		item.set_tooltip_text(desc)
 	if func:
 		item.connect('toggled', func, *args)
 	return item
 
 def make_radio_item(label, desc, func, *args):
 	item = gtk.RadioMenuItem(label=label)
+	if desc:
+		item.set_tooltip_text(desc)
 	if func:
 		item.connect('toggled', func, *args)
 	return item
@@ -945,7 +944,6 @@ __all__ = [
 ]
 
 if __name__ == '__main__':
-	import time
 	def testfunc(dlg):
 		print "starting"
 		for i in range(100):
@@ -958,6 +956,6 @@ if __name__ == '__main__':
 		return True
 	win = gtk.Window()
 	win.show_all()	
-	win.connect('destroy', lambda x: gtk.main_quit())
+	win.connect('destroy', lambda widget: gtk.main_quit())
 	dlg = run_function_with_progress(win, "Vorsicht, wurst.", False, testfunc)
 	gtk.main()

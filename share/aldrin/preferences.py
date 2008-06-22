@@ -22,15 +22,12 @@
 Contains panels and dialogs related to application preferences.
 """
 
-import sys, os
+import os
 from gtkimport import gtk
-import zzub
 import webbrowser
 
 from utils import prepstr, buffersize_to_latency, filepath, error, add_scrollbars, new_listview
-import utils
 import config
-import common
 from common import MARGIN, MARGIN2, MARGIN3
 
 from controller import learn_controller
@@ -155,7 +152,6 @@ class DriverPanel(gtk.VBox):
 			row.pack_start(c2)
 			return row
 			
-		player = com.get('aldrin.core.player')
 		sizer1 = gtk.Frame("Audio Output")
 		vbox = gtk.VBox(False, MARGIN)
 		vbox.pack_start(add_row(gtk.Label("Driver"), self.cboutput), expand=False)
@@ -201,7 +197,6 @@ class DriverPanel(gtk.VBox):
 			error(self, "You did not select a valid output device.")
 			raise CancelException
 		iname = ""
-		player = com.get('aldrin.core.player')
 		audiodriver = com.get('aldrin.core.driver.audio')
 		oname = audiodriver.get_name(o)
 		inputname, outputname, samplerate, buffersize = config.get_config().get_audiodriver_config()
@@ -289,13 +284,8 @@ class WavetablePanel(gtk.HBox):
 		lalign = gtk.HBox()
 		lalign.pack_start(fsvisit, expand=False)
 		fssizer.pack_start(lalign, expand=False)
-		#~ self.add(frame1)
 		self.add(frame2)
-		#~ self.btnadd.connect('clicked', self.on_add_path)
-		#~ self.btnremove.connect('clicked', self.on_remove_path)
 		fsvisit.connect('clicked', lambda widget: webbrowser.open("http://www.freesound.org/"))
-		#~ for path in config.get_config().get_wavetable_paths():
-			#~ self.pathstore.append([path])
 
 	def apply(self):
 		"""
@@ -314,36 +304,8 @@ class WavetablePanel(gtk.HBox):
 			except:
 				import traceback
 				traceback.print_exc()
-				utils.error(self, "<b><big>There was an error logging into freesound.</big></b>\n\nPlease make sure username and password are correct.")
+				error(self, "<b><big>There was an error logging into freesound.</big></b>\n\nPlease make sure username and password are correct.")
 				raise CancelException
-		#~ pathlist = []
-		#~ for row in self.pathstore:
-			#~ pathlist.append(row[0])
-		#~ config.get_config().set_wavetable_paths(pathlist)
-		
-	def on_add_path(self, event):
-		"""
-		Handles 'Add' button click. Opens a directory selection dialog.
-		"""
-		dlg = gtk.FileChooserDialog(
-			"Add Sound Folder", None,
-			gtk.FILE_CHOOSER_ACTION_SELECT_FOLDER,
-			(gtk.STOCK_OK, gtk.RESPONSE_OK, gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL))
-		response = dlg.run()
-		if response == gtk.RESPONSE_OK:
-			found = [row for row in self.pathstore if row[0] == dlg.get_filename()]
-			if not found:
-				self.pathstore.append([dlg.get_filename()])
-		dlg.destroy()
-		
-	def on_remove_path(self, event):
-		"""
-		Handles 'Remove' button click. Removes the selected path from list.
-		"""
-		store, sel = self.pathlist.get_selection().get_selected_rows()
-		refs = [gtk.TreeRowReference(store, row) for row in sel]
-		for ref in refs:
-			store.remove(store.get_iter(ref.get_path()))
 
 class ControllerPanel(gtk.VBox):
 	"""
@@ -398,7 +360,7 @@ class ControllerPanel(gtk.VBox):
 		for name,channel,ctrlid in config.get_config().get_midi_controllers():
 			self.store.append([name, str(channel), str(ctrlid)])
 		
-	def on_add_controller(self, event):
+	def on_add_controller(self, widget):
 		"""
 		Handles 'Add' button click. Opens a popup that records controller events.
 		"""
@@ -407,7 +369,7 @@ class ControllerPanel(gtk.VBox):
 			name, channel, ctrlid = res
 			self.store.append([name, str(channel), str(ctrlid)])
 		
-	def on_remove_controller(self, event):
+	def on_remove_controller(self, widget):
 		"""
 		Handles 'Remove' button click. Removes the selected controller from list.
 		"""
@@ -423,7 +385,6 @@ class ControllerPanel(gtk.VBox):
 		informed and asked to change the settings.
 		"""
 		ctrllist = []
-		item = -1
 		for row in self.store:
 			name = row[0]
 			channel = int(row[1])
@@ -556,7 +517,7 @@ class PreferencesDialog(gtk.Dialog):
 	This Dialog aggregates the different panels and allows
 	the user to switch between them using a tab control.
 	"""
-	def __init__(self, rootwindow,parent):
+	def __init__(self, parent):
 		gtk.Dialog.__init__(self,
 			"Preferences",
 			parent,
@@ -589,13 +550,13 @@ class PreferencesDialog(gtk.Dialog):
 		
 		btnok = self.add_button(gtk.STOCK_OK, gtk.RESPONSE_OK)
 		self.add_button(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL)
-		btnapply = self.add_button(gtk.STOCK_APPLY, gtk.RESPONSE_APPLY)
+		self.add_button(gtk.STOCK_APPLY, gtk.RESPONSE_APPLY)
 		btnok.grab_default()
 
 		self.connect('response', self.on_response)
 		self.show_all()
 		
-	def on_response(self, dialog, response):
+	def on_response(self, widget, response):
 		if response == gtk.RESPONSE_OK:
 			self.on_ok()
 		elif response == gtk.RESPONSE_APPLY:
@@ -633,7 +594,7 @@ class PreferencesDialog(gtk.Dialog):
 		except CancelException:
 			pass
 
-def show_preferences(rootwindow, parent):
+def show_preferences(parent):
 	"""
 	Shows the {PreferencesDialog}.
 	
@@ -642,7 +603,7 @@ def show_preferences(rootwindow, parent):
 	@param parent: Parent window.
 	@type parent: wx.Window
 	"""
-	dlg = PreferencesDialog(rootwindow, parent)
+	PreferencesDialog(parent)
 
 __aldrin__ = dict(
 	classes = [
@@ -668,9 +629,9 @@ __all__ = [
 ]
 
 if __name__ == '__main__':
-	import testplayer, utils
+	import testplayer
 	player = testplayer.get_player()
 	window = testplayer.TestWindow()
 	window.show_all()
-	show_preferences(window, window)
+	show_preferences(window)
 	gtk.main()
