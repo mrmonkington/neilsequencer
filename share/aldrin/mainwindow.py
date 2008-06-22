@@ -107,22 +107,6 @@ class AldrinFrame(gtk.Window):
 		errordlg.install(self)
 		self.set_geometry_hints(self,600,400)
 		self.set_position(gtk.WIN_POS_CENTER)
-		audiotrouble = False
-		audiodriver = com.get('aldrin.core.driver.audio')
-		try:
-			audiodriver.init()
-		except audiodriver.AudioInitException:
-			import traceback
-			traceback.print_exc()
-			audiotrouble = True
-		miditrouble = False
-		mididriver = com.get('aldrin.core.driver.midi')
-		try:
-			mididriver.init()
-		except mididriver.MidiInitException:
-			import traceback
-			traceback.print_exc()
-			miditrouble = True
 		
 		self.cpumonitor = cpumonitor.CPUMonitorDialog(self)
 		self.cpumonitor.connect('delete-event', self.on_close_cpumonitor)
@@ -315,9 +299,11 @@ class AldrinFrame(gtk.Window):
 		options, args = com.get('aldrin.core.options').get_options_args()
 		if len(args) > 1:
 			self.open_file(args[1])
-		if audiotrouble:
-			error(self, "<b><big>Aldrin tried to guess an audio driver but that didn't work.</big></b>\n\nYou need to select your own. Hit OK to show the preferences dialog.")
-			show_preferences(self,self)
+			
+		for driver in com.get_from_category('driver'):
+			if driver.init_failed:
+				show_preferences(self,self)
+				break
 			
 	def on_undo(self, widget):
 		"""

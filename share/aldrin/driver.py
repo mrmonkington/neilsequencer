@@ -26,11 +26,15 @@ import config
 import common
 
 from aldrincom import com
+from utils import error
 
 class MidiDriver:
 	__aldrin__ = dict(
 		id = 'aldrin.core.driver.midi',
 		singleton = True,
+		categories = [
+			'driver',
+		],		
 	)
 	
 	class MidiInitException(Exception):
@@ -39,6 +43,12 @@ class MidiDriver:
 		self.enabled = False
 		eventbus = com.get('aldrin.core.eventbus')
 		eventbus.shutdown += self.destroy
+		self.init_failed = False
+		try:
+			self.init()
+		except self.MidiInitException:
+			self.init_failed = True
+			error(self, "<b><big>Aldrin was unable to initialize MIDI output.</big></b>\n\nPlease check your MIDI settings.")
 
 	def destroy(self):
 		if not self.enabled:
@@ -70,6 +80,9 @@ class AudioDriver:
 	__aldrin__ = dict(
 		id = 'aldrin.core.driver.audio',
 		singleton = True,
+		categories = [
+			'driver',
+		],		
 	)
 	
 	class AudioInitException(Exception):
@@ -82,6 +95,12 @@ class AudioDriver:
 		self.driver = None
 		eventbus = com.get('aldrin.core.eventbus')
 		eventbus.shutdown += self.destroy
+		self.init_failed = False
+		try:
+			self.init()
+		except self.AudioInitException:
+			self.init_failed = True
+			error(self, "<b><big>Aldrin was unable to initialize audio output.</big></b>\n\nPlease check your audio settings in the preferences dialog.")
 		
 	def destroy(self):
 		if not self.enabled:
@@ -146,3 +165,7 @@ __aldrin__ = dict(
 		MidiDriver,
 	],
 )
+
+if __name__ == '__main__':
+	com.load_packages()
+	com.get_from_category('driver')

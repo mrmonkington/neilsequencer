@@ -75,8 +75,11 @@ class AldrinApplication:
 		eventbus = com.get('aldrin.core.eventbus')
 		eventbus.shutdown += self.shutdown
 		
-		player = com.get('aldrin.core.player')
+		# instantiate the drivers
+		com.get_from_category('driver')
+		
 		rootwindows = com.get_from_category('rootwindow')
+		
 		gtk.main()
 		return 1
 	
