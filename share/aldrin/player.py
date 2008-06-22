@@ -32,6 +32,10 @@ class AldrinPlayer(Player):
 		id = 'aldrin.core.player',
 		singleton = True,
 	)
+	
+	_exclude_event_debug_ = [
+		zzub.zzub_event_type_parameter_changed,
+	]
 		
 	_event_types_ = dict(
 		zzub_event_type_double_click = dict(args=None),
@@ -179,7 +183,6 @@ class AldrinPlayer(Player):
 		@type data: zzub_event_data_t
 		"""
 		eventbus = com.get('aldrin.core.eventbus')
-		
 		# prepare arguments for the specific callback
 		eventname,membername,argnames = self.event_id_to_name[data.type]
 		args = []
@@ -188,7 +191,8 @@ class AldrinPlayer(Player):
 			specdata = getattr(specdata,membername)
 			for argname in argnames:
 				args.append(getattr(specdata, argname))
-		print "[%s](%s)" % (eventname,','.join([('%s=%r' % (a,b)) for a,b in zip(argnames,args)]))
+		if not data.type in self._exclude_event_debug_:
+			print "[%s](%s)" % (eventname,','.join([('%s=%r' % (a,b)) for a,b in zip(argnames,args)]))
 		result = getattr(eventbus, eventname)(*args) or False
 		self._cbcalls += 1
 		return result
