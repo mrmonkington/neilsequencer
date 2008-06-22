@@ -228,6 +228,7 @@ bool wave_info_ex::allocate_level(size_t level, size_t numSamples, zzub::wave_bu
 	l->legacy_loop_end = samplesIn16bit;
 	l->samples_per_second = 44100;
 	l->root_note = note_value_c4;
+	l->format = waveFormat;
 
 	memset(l->legacy_sample_ptr, 0, waveBufferSize);
 

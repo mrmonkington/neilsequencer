@@ -1825,35 +1825,39 @@ op_wavetable_insert_sampledata::op_wavetable_insert_sampledata(int _wave, int _l
 
 bool op_wavetable_insert_sampledata::prepare(zzub::song& song) {
 	// we shall reallocate the backbuffer wave and insert the sample datas given to us
+
 	wave_info_ex& w = *song.wavetable.waves[wave];
-	int numsamples = w.get_sample_count(level);
-	int newsamples = w.get_sample_count(level) + samples_length;
-	int channels = w.get_stereo() ? 2 : 1;
-	int bytes_per_sample = w.get_bytes_per_sample(level);
-	wave_buffer_type format = w.get_wave_format(level);
+	wave_level_ex& l = song.wavetable.waves[wave]->levels[level];
+
+	int bytes_per_sample = l.get_bytes_per_sample();
+	int newsamples = l.sample_count + samples_length;
+	int numsamples = l.sample_count;
+	int channels = (w.flags & wave_flag_stereo) ? 2 : 1;
+	int format = l.format;
 
 	void* copybuffer = new char[bytes_per_sample * channels * numsamples];
 	memcpy(copybuffer, w.get_sample_ptr(level), bytes_per_sample * channels * numsamples);
 	
-	bool allocw = w.allocate_level(level, newsamples, format, channels == 2 ? true : false);
+	bool allocw = w.allocate_level(level, newsamples, (wave_buffer_type)format, channels == 2 ? true : false);
 	assert(allocw);
 
-	CopySamples(copybuffer, w.get_sample_ptr(level), pos, format, format, samples_channels, channels, 0, 0);
-	CopySamples(samples, w.get_sample_ptr(level), samples_length, samples_format, format, samples_channels, channels, 0, pos * channels);
-	CopySamples(copybuffer, w.get_sample_ptr(level), numsamples - pos, format, format, samples_channels, channels, pos * samples_channels, (pos + samples_length) * channels);
+	void* dst = w.get_sample_ptr(level);
+	CopySamples(copybuffer, dst, pos, format, format, samples_channels, channels, 0, 0);
+	CopySamples(samples, dst, samples_length, samples_format, format, samples_channels, channels, 0, pos * channels);
+	CopySamples(copybuffer, dst, numsamples - pos, format, format, samples_channels, channels, pos * samples_channels, (pos + samples_length) * channels);
 
 	if (channels == 2) {
-		CopySamples(copybuffer, w.get_sample_ptr(level), pos, format, format, samples_channels, channels, 1, 1);
+		CopySamples(copybuffer, dst, pos, format, format, samples_channels, channels, 1, 1);
 
 		if (samples_channels == 2) {
 			// copy stereo sample to stereo sample
-			CopySamples(samples, w.get_sample_ptr(level), samples_length, samples_format, format, samples_channels, channels, 1, pos * channels + 1);
+			CopySamples(samples, dst, samples_length, samples_format, format, samples_channels, channels, 1, pos * channels + 1);
 		} else {
 			// copy mono sample to stereo sample
-			CopySamples(samples, w.get_sample_ptr(level), samples_length, samples_format, format, samples_channels, channels, 0, pos * channels + 1);
+			CopySamples(samples, dst, samples_length, samples_format, format, samples_channels, channels, 0, pos * channels + 1);
 		}
 
-		CopySamples(copybuffer, w.get_sample_ptr(level), numsamples - pos, format, format, samples_channels, channels, pos * samples_channels + 1, (pos + samples_length) * channels + 1);
+		CopySamples(copybuffer, dst, numsamples - pos, format, format, samples_channels, channels, pos * samples_channels + 1, (pos + samples_length) * channels + 1);
 
 	}
 
@@ -1898,12 +1902,13 @@ op_wavetable_remove_sampledata::op_wavetable_remove_sampledata(int _wave, int _l
 
 bool op_wavetable_remove_sampledata::prepare(zzub::song& song) {
 	wave_info_ex& w = *song.wavetable.waves[wave];
+	wave_level_ex& l = song.wavetable.waves[wave]->levels[level];
 
-	int bytes_per_sample = w.get_bytes_per_sample(level);
-	int newsamples = w.get_sample_count(level) - samples;
-	int numsamples = w.get_sample_count(level);
-	int channels = w.get_stereo() ? 2 : 1;
-	int format = w.get_wave_format(level);
+	int bytes_per_sample = l.get_bytes_per_sample();
+	int newsamples = l.sample_count - samples;
+	int numsamples = l.sample_count;
+	int channels = (w.flags & wave_flag_stereo) ? 2 : 1;
+	int format = l.format;
 
 	void* copybuffer = new char[numsamples * bytes_per_sample * channels];
 	memcpy(copybuffer, w.get_sample_ptr(level), numsamples * bytes_per_sample * channels);
@@ -1912,12 +1917,13 @@ bool op_wavetable_remove_sampledata::prepare(zzub::song& song) {
 	w.reallocate_level(level, newsamples);
 
 	// copy non-erased parts of copybuffer back to sampledata
-	CopySamples(copybuffer, w.get_sample_ptr(level), pos, format, format, channels, channels, 0, 0);
-	CopySamples(copybuffer, w.get_sample_ptr(level), numsamples - (pos + samples), format, format, channels, channels, (pos + samples) * channels, pos * channels);
+	void* dst = w.get_sample_ptr(level);
+	CopySamples(copybuffer, dst, pos, format, format, channels, channels, 0, 0);
+	CopySamples(copybuffer, dst, numsamples - (pos + samples), format, format, channels, channels, (pos + samples) * channels, pos * channels);
 
 	if (channels == 2) {
-		CopySamples(copybuffer, w.get_sample_ptr(level), pos, format, format, channels, channels, 1, 1);
-		CopySamples(copybuffer, w.get_sample_ptr(level), numsamples - (pos + samples), format, format, channels, channels, (pos + samples) * channels + 1, pos * channels + 1);
+		CopySamples(copybuffer, dst, pos, format, format, channels, channels, 1, 1);
+		CopySamples(copybuffer, dst, numsamples - (pos + samples), format, format, channels, channels, (pos + samples) * channels + 1, pos * channels + 1);
 	}
 	delete[] copybuffer;
 

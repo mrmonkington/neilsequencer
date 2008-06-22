@@ -67,6 +67,7 @@ void Copy24(void* srcbuf, void* targetbuf, size_t numSamples, size_t srcstep=1, 
 void CopyS32(void* srcbuf, void* targetbuf, size_t numSamples, size_t srcstep=1, size_t dststep=1, size_t srcoffset=0, size_t dstoffset=0);
 void CopyF32(void* srcbuf, void* targetbuf, size_t numSamples, size_t srcstep=1, size_t dststep=1, size_t srcoffset=0, size_t dstoffset=0);
 
+#pragma pack(push, 1)
 struct S24 {
 	union {
 		struct {
@@ -78,6 +79,7 @@ struct S24 {
 		};
 	};
 };
+#pragma pack(pop)
 
 // auto select based on waveformat
 void CopySamples(void *srcbuf, void *targetbuf, size_t numSamples, int srcWaveFormat, int dstWaveFormat, size_t srcstep=1, size_t dststep=1, size_t srcoffset=0, size_t dstoffset=0);

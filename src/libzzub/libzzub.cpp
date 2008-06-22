@@ -615,7 +615,7 @@ const char *zzub_pluginloader_get_short_name(zzub_pluginloader_t* loader) {
 int zzub_pluginloader_get_parameter_count(zzub_pluginloader_t* loader, int group) {
 	switch (group) {
 		case 0: // input connections
-			return 2;
+			return 0;
 		case 1: // globals
 			return (int)loader->global_parameters.size();
 		case 2: // track params
@@ -2191,7 +2191,7 @@ int zzub_wavelevel_get_sample_count(zzub_wavelevel_t* level) {
 	flags.copy_wavetable = true;
 	level->_player->merge_backbuffer_flags(flags);
 
-	return level->_player->back.wavetable.waves[level->wave]->get_sample_count(level->level);
+	return level->_player->back.wavetable.waves[level->wave]->levels[level->level].sample_count;
 }
 
 void zzub_wavelevel_set_sample_count(zzub_wavelevel_t* level, int count) {
@@ -2204,7 +2204,7 @@ int zzub_wavelevel_get_root_note(zzub_wavelevel_t* level) {
 	flags.copy_wavetable = true;
 	level->_player->merge_backbuffer_flags(flags);
 
-	return level->_player->back.wavetable.waves[level->wave]->get_root_note(level->level);
+	return level->_player->back.wavetable.waves[level->wave]->levels[level->level].root_note;
 }
 
 void zzub_wavelevel_set_root_note(zzub_wavelevel_t* level, int note) {
@@ -2218,7 +2218,7 @@ int zzub_wavelevel_get_samples_per_second(zzub_wavelevel_t* level) {
 	flags.copy_wavetable = true;
 	level->_player->merge_backbuffer_flags(flags);
 
-	return level->_player->back.wavetable.waves[level->wave]->get_samples_per_sec(level->level);
+	return level->_player->back.wavetable.waves[level->wave]->levels[level->level].samples_per_second;
 }
 
 void zzub_wavelevel_set_samples_per_second(zzub_wavelevel_t* level, int sps) {
@@ -2232,7 +2232,7 @@ int zzub_wavelevel_get_loop_start(zzub_wavelevel_t* level) {
 	flags.copy_wavetable = true;
 	level->_player->merge_backbuffer_flags(flags);
 
-	return level->_player->back.wavetable.waves[level->wave]->get_loop_start(level->level);
+	return level->_player->back.wavetable.waves[level->wave]->levels[level->level].loop_start;
 }
 
 void zzub_wavelevel_set_loop_start(zzub_wavelevel_t* level, int pos) {
@@ -2246,7 +2246,7 @@ int zzub_wavelevel_get_loop_end(zzub_wavelevel_t* level) {
 	flags.copy_wavetable = true;
 	level->_player->merge_backbuffer_flags(flags);
 
-	return level->_player->back.wavetable.waves[level->wave]->get_loop_end(level->level);
+	return level->_player->back.wavetable.waves[level->wave]->levels[level->level].loop_end;
 }
 
 void zzub_wavelevel_set_loop_end(zzub_wavelevel_t* level, int pos) {
@@ -2260,7 +2260,7 @@ int zzub_wavelevel_get_format(zzub_wavelevel_t* level) {
 	flags.copy_wavetable = true;
 	level->_player->merge_backbuffer_flags(flags);
 
-	return level->_player->back.wavetable.waves[level->wave]->get_wave_format(level->level);
+	return level->_player->back.wavetable.waves[level->wave]->levels[level->level].format;
 }
 
 
@@ -2363,11 +2363,14 @@ void zzub_wavelevel_get_samples_digest(zzub_wavelevel_t* level, int channel, int
 	level->_player->merge_backbuffer_flags(flags);
 
 	wave_info_ex& w = *level->_player->back.wavetable.waves[level->wave];
-	unsigned char *samples = (unsigned char*)w.get_sample_ptr(level->level);
-	int bitsps = w.get_bits_per_sample(level->level);
-	int bps = bitsps / 8;
+	wave_level_ex& l = level->_player->back.wavetable.waves[level->wave]->levels[level->level];
+
+	unsigned char *samples = (unsigned char*)l.samples;
+	int bitsps = l.get_bytes_per_sample() * 8;
+	int bps = l.get_bytes_per_sample();
+	wave_buffer_type format = (wave_buffer_type)l.format;
 	float scaler = 1.0f / (1<<(bitsps-1));
-	int samplecount = zzub_wavelevel_get_sample_count(level);
+	int samplecount = l.sample_count;
 	int samplerange = end - start;
 	assert((start >= 0) && (start < samplecount));
 	assert((end > start) && (end <= samplecount));
@@ -2385,12 +2388,24 @@ void zzub_wavelevel_get_samples_digest(zzub_wavelevel_t* level, int channel, int
 			for (int s = (int)blockstart; s < (int)blockend; ++s) {
 				int offset = (s*channels + channel)*bps;
 				int isample = 0;
-		  switch (bps) {
-			case 1: isample = *(char*)&samples[offset]; break;
-			case 2: isample = *(short*)&samples[offset]; break;
-			case 3: isample = *(int*)&samples[offset]; break; // TODO
-			case 4: isample = *(int*)&samples[offset]; break;
-		  }
+				switch (bps) {
+					case 1: isample = *(char*)&samples[offset]; break;
+					case 2: isample = *(short*)&samples[offset]; break;
+					case 3: 
+						isample = *(int*)&samples[offset] & 0x00ffffff; 
+						if (isample & 0x00800000) isample = isample | 0xFF000000;
+						break; // TODO
+					case 4: 
+						switch (format) {
+							case wave_buffer_type_si32:
+								isample = *(int*)&samples[offset];
+								break;
+							case wave_buffer_type_f32:
+								isample = (int)((*(float*)&samples[offset]) / scaler);
+								break;
+						}
+						break;
+				}
 				float sample = (float)(isample) * scaler;
 				minsample = std::min(minsample, sample);
 				maxsample = std::max(maxsample, sample);

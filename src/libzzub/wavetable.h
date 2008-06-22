@@ -102,9 +102,9 @@ struct wave_info_ex : wave_info {
 		if (!l) return 0;
 		offset *= get_bytes_per_sample(level) * (get_stereo()?2:1);
 		if (get_extended()) {
-			return (char*)&l->samples[4] + offset;
+			return (char*)&l->legacy_sample_ptr[4] + offset;
 		} else
-			return (char*)l->samples + offset;
+			return (char*)l->legacy_sample_ptr + offset;
 	}
 
 	int get_bits_per_sample(int level) {
@@ -113,7 +113,7 @@ struct wave_info_ex : wave_info {
 
 		if (!get_extended()) return 16;
 
-		switch (l->samples[0]) {
+		switch (l->legacy_sample_ptr[0]) {
 			case zzub::wave_buffer_type_si16:
 				return 16;
 			case zzub::wave_buffer_type_si24:
@@ -138,40 +138,40 @@ struct wave_info_ex : wave_info {
 
 	inline unsigned int get_unextended_samples(int level, int samples) {
 		int channels = get_stereo()?2:1;
-		return ((samples * get_bytes_per_sample(level)) / 2) + (4/channels);
+		return ceil((samples * get_bytes_per_sample(level)) / 2.0f) + (4/channels);
 	}
 
 	unsigned int get_sample_count(int level) {
 		wave_level* l = get_level(level);
 		if (!l) return 0;
 		if (get_extended())
-			return get_extended_samples(level, l->sample_count); else
-			return l->sample_count;
+			return get_extended_samples(level, l->legacy_sample_count); else
+			return l->legacy_sample_count;
 	}
 
 	unsigned int get_loop_start(int level) {
 		wave_level* l = get_level(level);
 		if (!l) return 0;
 		if (get_extended())
-			return get_extended_samples(level, l->loop_start); else
-			return l->loop_start;
+			return get_extended_samples(level, l->legacy_loop_start); else
+			return l->legacy_loop_start;
 	}
 
 	unsigned int get_loop_end(int level) {
 		wave_level* l = get_level(level);
 		if (!l) return 0;
 		if (get_extended())
-			return get_extended_samples(level, l->loop_end); else
-			return l->loop_end;
+			return get_extended_samples(level, l->legacy_loop_end); else
+			return l->legacy_loop_end;
 	}
 
 	void set_loop_start(int level, unsigned int value) {
 		wave_level* l = get_level(level);
 		if (!l) return ;
 		if (get_extended()) {
-			l->loop_start = get_unextended_samples(level, value);
+			l->legacy_loop_start = get_unextended_samples(level, value);
 		} else {
-			l->loop_start = value;
+			l->legacy_loop_start = value;
 		}
 	}
 
@@ -179,17 +179,17 @@ struct wave_info_ex : wave_info {
 		wave_level* l = get_level(level);
 		if (!l) return ;
 		if (get_extended()) {
-			l->loop_end = get_unextended_samples(level, value);
+			l->legacy_loop_end = get_unextended_samples(level, value);
 		} else {
-			l->loop_end = value;
+			l->legacy_loop_end = value;
 		}
 	}
 
 	wave_buffer_type get_wave_format(int level) {
 		wave_level* l = get_level(level);
 		if (!l) return wave_buffer_type_si16;
-		if (get_extended() && l->sample_count > 0) {
-			return (wave_buffer_type)l->samples[0];
+		if (get_extended() && l->legacy_sample_count > 0) {
+			return (wave_buffer_type)l->legacy_sample_ptr[0];
 		} else
 			return wave_buffer_type_si16;
 	}

@@ -785,20 +785,27 @@ bool BuzzReader::loadWaveTable() {
 			player->wave_set_loop_begin(index, j, loopStart);
 			player->wave_set_loop_end(index, j, loopEnd);
 			player->wave_set_samples_per_second(index, j, samplesPerSec);
-
-			/*wave.allocate_level(j, numSamples, zzub::wave_buffer_type_si16, stereo);
-			wave.set_root_note(j, rootNote);
-			wave.set_loop_start(j, loopStart);
-			wave.set_loop_end(j, loopEnd);
-			wave.set_samples_per_sec(j, samplesPerSec);*/
 		}
 
-		//wave.volume = vol;
 		player->wave_set_flags(index, wave.flags);
 		player->wave_set_volume(index, vol);
 		player->wave_set_name(index, wave.name);
 		player->wave_set_path(index, wave.fileName);
 		player->wave_set_envelopes(index, wave.envelopes);
+
+		// if this was an extended wave; we need to update the extended fields,
+		// but we dont know the target format yet.
+		// IF there is an extended sample, we'll get race conditions if:
+		// - the song is playing when loading
+		// - the machines and wavetable description is flushed
+		// - a machine is playing the initialized but unloaded sampledata
+		// - and we load the extended buffer directly into the levels 
+		//   sampledata
+		// so: 1) if we insisit on flushing, the waveloading should work on 
+		//        the backbuffer (= require bunch of extra ram)
+		// or: 2) dont flush at all when loading bmxes (= harder to debug: some
+		//        errors appear only after everything is loaded)
+
 	}
 
 	player->flush_operations(0, 0);
@@ -826,25 +833,23 @@ bool BuzzReader::loadWaves() {
 		}
 		unsigned char format;
 		f->read(format);
+		wave_info_ex& entry = *player->front.wavetable.waves[index];
 		if (format == 0) {
 			unsigned int totalBytes;
 			f->read(totalBytes);
-			wave_info_ex& entry = *player->front.wavetable.waves[index];
 			for (int j = 0; j < entry.get_levels(); j++) {
 				zzub::wave_level* level = entry.get_level(j);
-				short* pSamples = (short*)level->samples;
+				short* pSamples = (short*)level->legacy_sample_ptr;
 				f->read(pSamples, level->sample_count * 2 * (entry.get_stereo()?2:1));
 			}
 		} else 
 		if (format == 1) {
-			wave_info_ex& entry = *player->front.wavetable.waves[index];
 			WAVEUNPACK wup;
 			InitWaveUnpack(&wup, f, section->size);
 
 			for (int j = 0; j < entry.get_levels(); j++) {
 				zzub::wave_level* level = entry.get_level(j);
-				unsigned short* pSamples = (unsigned short*)level->samples; //(short*)entry.getSampleData(j);
-
+				unsigned short* pSamples = (unsigned short*)level->legacy_sample_ptr; //(short*)entry.getSampleData(j);
 				DecompressWave(&wup, pSamples, level->sample_count, entry.get_stereo()?TRUE:FALSE);
 			}
 
@@ -856,6 +861,20 @@ bool BuzzReader::loadWaves() {
 			strm << "Error: Unknown compression format (" << format << ") on wave " << i << "/" << waveCount << " at #" << index << endl;
 			lastError = strm.str();
 			break;
+		}
+
+		// update non-legacy fields using the extended section
+		// a potential race condition is described in the wavetable description section
+		// this also doesnt work with undo when importing
+		if (entry.get_extended()) {
+			for (int j = 0; j < entry.get_levels(); j++) {		
+				zzub::wave_level* level = entry.get_level(j);
+				level->sample_count = entry.get_sample_count(j);
+				level->loop_start = entry.get_loop_start(j);
+				level->loop_end = entry.get_loop_end(j);
+				level->samples = (short*)entry.get_sample_ptr(j);
+				level->format = entry.get_wave_format(j);
+			}
 		}
 
 	}
