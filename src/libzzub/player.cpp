@@ -293,7 +293,22 @@ bool import_sndfile::get_wave_level_info(int i, int level, importwave_info& info
 	assert(level == 0);
 	if (i != 0 && level != 0) return false;
 	info.channels = sfinfo.channels;
-	info.format = wave_buffer_type_si16;
+	switch (sfinfo.format) {
+		case SF_FORMAT_WAV|SF_FORMAT_PCM_16:
+			info.format = wave_buffer_type_si16;
+			break;
+		case SF_FORMAT_WAV|SF_FORMAT_PCM_24:
+			info.format = wave_buffer_type_si24;
+			break;
+		case SF_FORMAT_WAV|SF_FORMAT_PCM_32:
+			info.format = wave_buffer_type_si32;
+			break;
+		case SF_FORMAT_WAV|SF_FORMAT_FLOAT:
+			info.format = wave_buffer_type_f32;
+			break;
+		default:
+			return false;
+	}
 	info.sample_count = (int)sfinfo.frames;
 	info.samples_per_second = sfinfo.samplerate;
 	return true;
@@ -304,7 +319,9 @@ void import_sndfile::read_wave_level_samples(int i, int level, void* buffer) {
 	assert(level == 0);
 	importwave_info iwi;
 	if (!get_wave_level_info(i, level, iwi)) return ;
-	sf_readf_short(sf, (short*)buffer, iwi.sample_count);
+
+	sf_read_raw(sf, buffer, iwi.sample_count * iwi.channels * sizeFromWaveFormat(iwi.format));
+//	sf_readf_short(sf, (short*)buffer, iwi.sample_count);
 
 }
 
@@ -1440,6 +1457,7 @@ int player::wave_load_sample(int wave, int level, int offset, bool clear, std::s
 		// TODO: set the wave format here as well
 		// allocate_level = wave_set_format + wave_insert_sample_data ?
 		//wave_set_format(wave, level, wavedata.sample_count);
+		wave_allocate_level(wave, level, 0, wavedata.channels, wavedata.format);
 	}
 
 	assert(offset <= back.wavetable.waves[wave]->get_sample_count(level));

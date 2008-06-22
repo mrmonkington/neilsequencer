@@ -262,7 +262,7 @@ void CopyF32To24(void* srcbuf, void* targetbuf, size_t numSamples, size_t srcste
 }
 
 void CopyF32ToS32(void* srcbuf, void* targetbuf, size_t numSamples, size_t srcstep, size_t dststep, size_t srcoffset, size_t dstoffset) {
-	CopySamplesT((float*)srcbuf, (float*)targetbuf, numSamples, srcstep, dststep, srcoffset, dstoffset);
+	CopySamplesT((float*)srcbuf, (int*)targetbuf, numSamples, srcstep, dststep, srcoffset, dstoffset);
 }
 
 

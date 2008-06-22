@@ -1842,12 +1842,12 @@ bool op_wavetable_insert_sampledata::prepare(zzub::song& song) {
 	assert(allocw);
 
 	void* dst = w.get_sample_ptr(level);
-	CopySamples(copybuffer, dst, pos, format, format, samples_channels, channels, 0, 0);
+	CopySamples(copybuffer, dst, pos, format, format, channels, channels, 0, 0);
 	CopySamples(samples, dst, samples_length, samples_format, format, samples_channels, channels, 0, pos * channels);
-	CopySamples(copybuffer, dst, numsamples - pos, format, format, samples_channels, channels, pos * samples_channels, (pos + samples_length) * channels);
+	CopySamples(copybuffer, dst, numsamples - pos, format, format, channels, channels, pos * channels, (pos + samples_length) * channels);
 
 	if (channels == 2) {
-		CopySamples(copybuffer, dst, pos, format, format, samples_channels, channels, 1, 1);
+		CopySamples(copybuffer, dst, pos, format, format, channels, channels, 1, 1);
 
 		if (samples_channels == 2) {
 			// copy stereo sample to stereo sample
@@ -1857,7 +1857,7 @@ bool op_wavetable_insert_sampledata::prepare(zzub::song& song) {
 			CopySamples(samples, dst, samples_length, samples_format, format, samples_channels, channels, 0, pos * channels + 1);
 		}
 
-		CopySamples(copybuffer, dst, numsamples - pos, format, format, samples_channels, channels, pos * samples_channels + 1, (pos + samples_length) * channels + 1);
+		CopySamples(copybuffer, dst, numsamples - pos, format, format, channels, channels, pos * channels + 1, (pos + samples_length) * channels + 1);
 
 	}
 

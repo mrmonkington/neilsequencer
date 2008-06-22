@@ -2299,7 +2299,6 @@ static sf_count_t outstream_tell (void *user_data){
 
 #endif
 
-//int zzub_wave_save_sample_range(zzub_wave_t* wave, int level, const char *path, int start, int end) {
 int zzub_wave_save_sample_range(zzub_wave_t* wave, int level, zzub_output_t* datastream, int start, int end) {
 #if defined(USE_SNDFILE)
 
@@ -2308,23 +2307,31 @@ int zzub_wave_save_sample_range(zzub_wave_t* wave, int level, zzub_output_t* dat
 	wave->_player->merge_backbuffer_flags(flags);
 
 	wave_info_ex& w = *wave->_player->back.wavetable.waves[wave->wave];
+	wave_level_ex& l = wave->_player->back.wavetable.waves[wave->wave]->levels[level];
 
+	int channels = (w.flags & wave_flag_stereo) ?2:1;
 	int result = -1;
 	SF_INFO sfinfo;
 	memset(&sfinfo, 0, sizeof(sfinfo));
-	sfinfo.samplerate = w.get_samples_per_sec(level);
-	sfinfo.channels = w.get_stereo()?2:1;
+	sfinfo.samplerate = l.samples_per_second;
+	sfinfo.channels = channels;
 	sfinfo.format = SF_FORMAT_WAV;
-	if (w.get_bits_per_sample(level) == 16)
-		sfinfo.format |= SF_FORMAT_PCM_16;
-	else if (w.get_bits_per_sample(level) == 8)
-		sfinfo.format |= SF_FORMAT_PCM_S8;
-	else if (w.get_bits_per_sample(level) == 24)
-		sfinfo.format |= SF_FORMAT_PCM_24;
-	else if (w.get_bits_per_sample(level) == 32)
-		sfinfo.format |= SF_FORMAT_PCM_32;
-	else
-		return -1;
+	switch (l.format) {
+		case wave_buffer_type_si16:
+			sfinfo.format |= SF_FORMAT_PCM_16;
+			break;
+		case wave_buffer_type_si24:
+			sfinfo.format |= SF_FORMAT_PCM_24;
+			break;
+		case wave_buffer_type_si32:
+			sfinfo.format |= SF_FORMAT_PCM_32;
+			break;
+		case wave_buffer_type_f32:
+			sfinfo.format |= SF_FORMAT_FLOAT;
+			break;
+		default:
+			return -1;
+	}
 
 	SF_VIRTUAL_IO vio;
 	vio.get_filelen = outstream_filelen ;
@@ -2334,10 +2341,13 @@ int zzub_wave_save_sample_range(zzub_wave_t* wave, int level, zzub_output_t* dat
 	vio.tell = outstream_tell;
 	SNDFILE* sf = sf_open_virtual(&vio, SFM_WRITE, &sfinfo, datastream);
 
-	//SNDFILE *sf = sf_open(path, SFM_WRITE, &sfinfo);
 	if (!sf)
 		return -1;
-	sf_writef_short(sf, (short*)w.get_sample_ptr(level, start), end - start);
+//	sf_writef_short(sf, (short*)w.get_sample_ptr(level, start), end - start);
+	int bytes_per_sample = l.get_bytes_per_sample();
+	char* sample_ptr = (char*)l.samples;
+	sample_ptr += start * channels * bytes_per_sample;
+	sf_write_raw(sf, sample_ptr, (end - start) * channels * bytes_per_sample);
 	sf_close(sf); // so close it
 	return 0;
 #else
