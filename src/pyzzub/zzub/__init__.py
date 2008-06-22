@@ -58,7 +58,7 @@ class Connection:
 		return self.plugin.get_parameter_value(0, self.index, 0)
 		
 	def set_amplitude(self, amp):
-		self.plugin.set_parameter_value(0, self.index, 0, amp)
+		self.plugin.set_parameter_value(0, self.index, 0, amp, True)
 		
 	def get_type(self):
 		return self.type
@@ -126,6 +126,9 @@ class Plugin(libzzub._Plugin):
 		libzzub._Plugin.get_last_peak(self,ctypes.byref(maxL),ctypes.byref(maxR))
 		return maxL.value, maxR.value
 	
+	def get_parameter_list(self, group, track):
+		return [self.get_parameter(group,track,index) for index in range(self.get_parameter_count(group,track))]
+		
 	def get_pluginloader(self):
 		return Pluginloader(libzzub.zzub_plugin_get_pluginloader(self._handle))
 	
