@@ -45,12 +45,20 @@ class Connection:
 	def __init__(self, in_plugin, out_plugin, index):
 		self.in_plugin = in_plugin
 		self.out_plugin = out_plugin
+		self.plugin = in_plugin or out_plugin
+		self.index = index
 		if self.in_plugin:
 			self.type = self.in_plugin.get_input_connection_type(index)
 			self.out_plugin = self.in_plugin.get_input_connection_plugin(index)
 		elif self.out_plugin:
 			self.type = self.out_plugin.get_output_connection_type(index)
 			self.in_plugin = self.out_plugin.get_output_connection_plugin(index)
+			
+	def get_amplitude(self):
+		return self.plugin.get_parameter_value(0, self.index, 0)
+		
+	def set_amplitude(self, amp):
+		self.plugin.set_parameter_value(0, self.index, 0, amp)
 		
 	def get_type(self):
 		return self.type
