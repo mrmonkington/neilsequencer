@@ -809,6 +809,11 @@ def make_submenu_item(submenu, name):
 	item.set_submenu(submenu)
 	return item
 
+def add_accelerator(menuitem, frame, shortcut):
+	key, modifier = gtk.accelerator_parse(shortcut)
+	menuitem.add_accelerator("activate", frame.accelerators,  key,  modifier, gtk.ACCEL_VISIBLE)
+	return menuitem
+
 def make_stock_menu_item(stockid, func, frame=None, shortcut=None, *args):
 	item = gtk.ImageMenuItem(stockid)
 	if frame and shortcut:
@@ -902,6 +907,7 @@ __all__ = [
 'is_root',
 'get_new_pattern_name',
 'new_theme_image',
+'add_accelerator',
 ]
 
 if __name__ == '__main__':

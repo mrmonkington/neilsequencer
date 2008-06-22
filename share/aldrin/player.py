@@ -65,6 +65,16 @@ class AldrinPlayer(Player):
 		self.init_lunar()		
 		self.playstarttime = time.time()
 		
+	def can_undo(self):
+		pos = self.history_get_position()		
+		historysize = self.history_get_size()
+		return (pos > 0) and ((pos-1) < historysize)
+
+	def can_redo(self):
+		pos = self.history_get_position()		
+		historysize = self.history_get_size()
+		return (pos < historysize)		
+		
 	def get_track_list(self):
 		"""
 		Returns a list of sequences

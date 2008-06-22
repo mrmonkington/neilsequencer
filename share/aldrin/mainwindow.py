@@ -32,7 +32,7 @@ import errordlg
 from common import MARGIN, MARGIN2, MARGIN3, MARGIN0
 import sequencer, router, patterns, wavetable, preferences, hdrecorder, cpumonitor, info, common, rack
 from utils import make_submenu_item, make_stock_menu_item, make_stock_tool_item, make_stock_toggle_item, \
-	make_stock_radio_item, make_menu_item, make_check_item, make_radio_item, new_theme_image
+	make_stock_radio_item, make_menu_item, make_check_item, make_radio_item, new_theme_image, add_accelerator
 
 from sequencer import SequencerPanel
 from router import RoutePanel
@@ -155,16 +155,17 @@ class AldrinFrame(gtk.Window):
 		self.aldrinframe_menubar = gtk.MenuBar()
 		vbox.pack_start(self.aldrinframe_menubar, expand=False)
 		self.filemenu = gtk.Menu()
-		self.aldrinframe_menubar.append(make_submenu_item(self.filemenu, "_File"))
-		self.update_filemenu()
+		filemenuitem = make_submenu_item(self.filemenu, "_File")
+		filemenuitem.connect('activate', self.update_filemenu)
+		self.aldrinframe_menubar.append(filemenuitem)
+		self.update_filemenu(None)
 		
-		tempmenu = gtk.Menu()
-		tempmenu.append(make_stock_menu_item(gtk.STOCK_CUT, self.on_cut))
-		tempmenu.append(make_stock_menu_item(gtk.STOCK_COPY, self.on_copy))
-		tempmenu.append(make_stock_menu_item(gtk.STOCK_PASTE, self.on_paste))
-		tempmenu.append(gtk.SeparatorMenuItem())
-		tempmenu.append(make_stock_menu_item(gtk.STOCK_PREFERENCES, self.on_preferences))
-		self.aldrinframe_menubar.append(make_submenu_item(tempmenu, "_Edit"))
+		self.editmenu = gtk.Menu()
+		editmenuitem = make_submenu_item(self.editmenu, "_Edit")
+		editmenuitem.connect('activate', self.update_editmenu)
+		self.update_editmenu(None)
+		
+		self.aldrinframe_menubar.append(editmenuitem)
 		tempmenu = gtk.Menu()
 		self.item_cpumon = make_check_item("_CPU monitor", "Show or hide CPU Monitor", self.on_toggle_cpu_monitor)
 		tempmenu.append(self.item_cpumon)
@@ -317,14 +318,84 @@ class AldrinFrame(gtk.Window):
 		if audiotrouble:
 			error(self, "<b><big>Aldrin tried to guess an audio driver but that didn't work.</big></b>\n\nYou need to select your own. Hit OK to show the preferences dialog.")
 			show_preferences(self,self)
-
-	def update_filemenu(self, event=None):
+			
+	def on_undo(self, widget):
+		"""
+		Called when an undo item is being called.
+		"""
+		print "UNDO"
+		com.get('aldrin.core.player').undo()
+		self.print_history()
+			
+	def on_redo(self, widget):
+		"""
+		Called when an undo item is being called.
+		"""
+		print "REDO"
+		com.get('aldrin.core.player').redo()
+		self.print_history()
+		
+	def print_history(self):
+		"""
+		Dumps the current undo history to console.
+		"""
+		player = com.get('aldrin.core.player')
+		pos = player.history_get_position()		
+		historysize = player.history_get_size()
+		print "----"
+		for index in xrange(historysize):
+			desc = str(player.history_get_description(index))
+			s = '#%i: "%s"' % (index,desc)
+			if pos == index:
+				s += ' <-'
+			print s
+		print "----"
+		
+	def update_editmenu(self, widget):
+		"""
+		Updates the edit menu, including the undo menu.
+		
+		@param widget: the Menu item.
+		@type widget: gtk.MenuItem
+		"""
+		for item in self.editmenu:
+			item.destroy()
+		player = com.get('aldrin.core.player')
+		
+		pos = player.history_get_position()		
+		historysize = player.history_get_size()
+		self.print_history()
+		
+		item = add_accelerator(make_menu_item("Undo", "", self.on_undo), self, "<Control>Z")
+		if player.can_undo():
+			item.get_children()[0].set_label('Undo "%s"' % player.history_get_description(pos-1))
+		else:
+			item.set_sensitive(False)
+		self.editmenu.append(item)
+		
+		item = add_accelerator(make_menu_item("Redo", "", self.on_redo), self, "<Control>Y")
+		if player.can_redo():
+			item.get_children()[0].set_label('Redo "%s"' % player.history_get_description(pos))
+		else:
+			item.set_sensitive(False)
+		self.editmenu.append(item)
+		
+		self.editmenu.append(gtk.SeparatorMenuItem())
+		self.editmenu.append(make_stock_menu_item(gtk.STOCK_CUT, self.on_cut))
+		self.editmenu.append(make_stock_menu_item(gtk.STOCK_COPY, self.on_copy))
+		self.editmenu.append(make_stock_menu_item(gtk.STOCK_PASTE, self.on_paste))
+		self.editmenu.append(gtk.SeparatorMenuItem())
+		self.editmenu.append(make_stock_menu_item(gtk.STOCK_PREFERENCES, self.on_preferences))
+		self.editmenu.show_all()
+			
+	def update_filemenu(self, widget):
 		"""
 		Updates the most recent files in the file menu.
 		
-		@param event: Event.
-		@type event: Event
+		@param widget: the Menu item.
+		@type widget: gtk.MenuItem
 		"""
+		print "update_filemenu"
 		for item in self.filemenu:
 			item.destroy()
 		self.filemenu.append(make_stock_menu_item(gtk.STOCK_NEW, self.new, frame=self, shortcut="<Control>N"))
@@ -858,7 +929,6 @@ class AldrinFrame(gtk.Window):
 		self.update_title()
 		config.get_config().add_recent_file_config(self.filename)
 		self.btnplay.set_active(False)
-		self.update_filemenu()
 		self.document_changed()
 		
 	def save_file(self, filename):
@@ -908,7 +978,6 @@ class AldrinFrame(gtk.Window):
 		#~ progress.Update(100)
 		self.update_title()
 		config.get_config().add_recent_file_config(self.filename)
-		self.update_filemenu()
 		
 	def on_open(self, event):
 		"""
