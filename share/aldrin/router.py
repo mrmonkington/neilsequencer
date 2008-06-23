@@ -648,6 +648,7 @@ class RouteView(gtk.DrawingArea):
 		eventbus.zzub_delete_plugin += self.on_zzub_delete_plugin
 		eventbus.zzub_connect += self.on_zzub_redraw_event
 		eventbus.zzub_disconnect += self.on_zzub_redraw_event
+		eventbus.zzub_plugin_changed += self.on_zzub_redraw_event
 		self.solo_plugin = None
 		self.selected_plugin = None
 		self.autoconnect_target=None
@@ -1366,10 +1367,20 @@ class RouteView(gtk.DrawingArea):
 		@param event: Mouse event.
 		@type event: wx.MouseEvent
 		"""
+		mx,my = int(event.x), int(event.y)
+		player = com.get('aldrin.core.player')
 		if self.dragging:
 			self.dragging = False
 			self.grab_remove()
-		mx,my = int(event.x), int(event.y)
+			ox,oy = self.dragoffset
+			size = self.get_allocation()
+			x,y = max(0, min(mx - ox, size.width)), max(0, min(my - oy, size.height))
+			if (event.state & gtk.gdk.CONTROL_MASK):
+				# quantize position
+				x = int(float(x)/QUANTIZEX + 0.5) * QUANTIZEX
+				y = int(float(y)/QUANTIZEY + 0.5) * QUANTIZEY
+			self.current_plugin.set_position(*self.pixel_to_float((x,y)))
+			player.history_commit("move plugin")
 		if self.connecting:
 			res = self.get_plugin_at((mx,my))
 			if res:
@@ -1381,7 +1392,7 @@ class RouteView(gtk.DrawingArea):
 					pass
 				else:
 					mp.add_input(self.current_plugin, zzub.zzub_connection_type_audio)
-					com.get('aldrin.core.player').history_commit("New Connection")
+					player.history_commit("new nonnection")
 		self.current_plugin = None
 		self.connecting = False
 		self.redraw()
