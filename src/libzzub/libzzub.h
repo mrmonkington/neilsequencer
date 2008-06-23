@@ -752,20 +752,18 @@ void zzub_envelope_insert_point(zzub_envelope_t *env, int index);
 void zzub_envelope_delete_point(zzub_envelope_t *env, int index);
 
 // recording functions
-/*
-zzub_recorder_t* zzub_file_recorder_create();
-int zzub_file_recorder_set_wave_path(zzub_recorder_t*, char* wavefile);
-void zzub_file_recorder_get_wave_path(zzub_recorder_t*, char* wavefile, int maxlen);
+// zzub_recorder_t* zzub_file_recorder_create();
+// int zzub_file_recorder_set_wave_path(zzub_recorder_t*, char* wavefile);
+// void zzub_file_recorder_get_wave_path(zzub_recorder_t*, char* wavefile, int maxlen);
 
-zzub_recorder_t* zzub_wavetable_recorder_create();
-int zzub_wavetable_recorder_set_waveindex(zzub_recorder_t*, int index);
-int zzub_wavetable_recorder_get_waveindex(zzub_recorder_t*);
-void zzub_recorder_destroy(zzub_recorder_t*);
-*/
+// zzub_recorder_t* zzub_wavetable_recorder_create();
+// int zzub_wavetable_recorder_set_waveindex(zzub_recorder_t*, int index);
+// int zzub_wavetable_recorder_get_waveindex(zzub_recorder_t*);
+// void zzub_recorder_destroy(zzub_recorder_t*);
 
  /** @name Memory and file streams - load/save from/to file/clipboard
 	Create file or memory data streams for use by e.g 
-	zzub_wavetable_load_sample()/zzub_wavetable_save_sample() and 
+	zzub_wavetable_load_sample() and 
 	zzub_player_load_bmx()/zzub_player_save_bmx().
 
 	In-memory streams are implemented via the zzub_archive_t object
