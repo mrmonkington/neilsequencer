@@ -27,6 +27,7 @@ import utils
 from aldrincom import com
 import driver
 import zzub
+import sys
 
 class AmpView(gtk.DrawingArea):
 	"""

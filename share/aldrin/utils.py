@@ -33,7 +33,10 @@ def is_debug():
 	if os.environ.get('ALDRIN_DEBUG'):
 		return True
 	return False
- 
+
+def is_win32():
+	return sys.platform == 'win32'
+
 def is_frozen():
 	"""
 	Determines whether the application is being executed by
@@ -67,13 +70,20 @@ def filepath(path):
 	"""
 	Translates a path relative to a base dir into an absolute
 	path.
+	WIN32: If the path leads to an svg and there is a similar file with
+	png extension, use that one instead.
 	
 	@param path: Relative path to file.
 	@type path: str
 	@return: Absolute path to file.
 	@rtype: str
 	"""
-	return os.path.abspath(os.path.normpath(os.path.join(basedir,path)))
+	path = os.path.abspath(os.path.normpath(os.path.join(basedir,path)))
+	if is_win32() and path.lower().endswith('.svg'):
+		pngpath = os.path.splitext(path)[0] + '.png'
+		if os.path.isfile(pngpath):
+			return pngpath
+	return path
 
 def db2linear(val, limit = -48.0):
 	"""

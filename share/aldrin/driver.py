@@ -99,7 +99,7 @@ class AudioDriver:
 			self.init()
 		except self.AudioInitException:
 			self.init_failed = True
-			error(self, "<b><big>Aldrin was unable to initialize audio output.</big></b>\n\nPlease check your audio settings in the preferences dialog.")
+			error(None, "<b><big>Aldrin was unable to initialize audio output.</big></b>\n\nPlease check your audio settings in the preferences dialog.")
 		
 	def destroy(self):
 		if not self.enabled:
@@ -127,33 +127,54 @@ class AudioDriver:
 		if self.enabled:
 			self.destroy()
 		inputname, outputname, samplerate, buffersize = config.get_config().get_audiodriver_config()
+		print inputname, outputname
 		player = com.get('aldrin.core.player')
 		self.driver = player.audiodriver_create()
 		if not self.driver.get_count():
 			raise self.AudioInitException
 		print "available drivers:"
-		bestpick = -1
+		input = -1
+		output = -1
 		for i in range(self.driver.get_count()):
 			io = ''
-			if self.driver.is_input(i):
-				io += 'I'
-			else:
-				io += ' '
 			if self.driver.is_output(i):
 				io += 'O'
 			else:
 				io += ' '
-			print "#%i: %s [%s]" % (i,self.driver.get_name(i), io)
-			if self.driver.get_name(i) == outputname:
-				bestpick = i
-		print "best output pick:"
-		print self.driver.get_name(bestpick)
+			if self.driver.is_input(i):
+				io += 'I'
+			else:
+				io += ' '
+			drivername = self.driver.get_name(i)
+			print "#%i: %s [%s]" % (i,drivername, io)
+			if drivername == inputname:
+				input = i
+			if drivername == outputname:
+				output = i
+		
+		# second round: if we didnt find them from the config,
+		# pick good alternatives.
+		
+		if output == -1:
+			for i in range(self.driver.get_count()):
+				if self.driver.is_output(i):
+					output = i
+					if self.driver.is_input(i):
+						input = i
+		
+		# take output channel if it supports input		
+		if input == -1:
+			for i in range(self.driver.get_count()):
+				if self.driver.is_input(i):
+					input = i
+			
+		if output == -1:
+			raise self.AudioInitException
+		print "best input/output pick:"
+		print self.driver.get_name(input),"/",self.driver.get_name(output)
 		self.driver.set_samplerate(samplerate)
 		self.driver.set_buffersize(buffersize)
-		idriver = -1
-		if self.driver.is_input(bestpick):
-			idriver = bestpick
-		initres = self.driver.create_device(bestpick, idriver)
+		initres = self.driver.create_device(input, output)
 		if initres != 0:
 			raise self.AudioInitException
 		self.driver.enable(1)
