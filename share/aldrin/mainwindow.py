@@ -266,10 +266,9 @@ class AldrinFrame(gtk.Window):
 		options, args = com.get('aldrin.core.options').get_options_args()
 		if len(args) > 1:
 			self.open_file(args[1])
-			
 		for driver in com.get_from_category('driver'):
 			if driver.init_failed:
-				show_preferences(self)
+				gobject.timeout_add(50, show_preferences, self)
 				break
 			
 	def on_undo(self, *args):
