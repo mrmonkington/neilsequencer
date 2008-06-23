@@ -28,14 +28,14 @@ import pango
 import gobject
 from utils import PLUGIN_FLAGS_MASK, ROOT_PLUGIN_FLAGS, GENERATOR_PLUGIN_FLAGS, EFFECT_PLUGIN_FLAGS, CONTROLLER_PLUGIN_FLAGS
 from utils import prepstr, from_hsb, to_hsb, get_item_count, get_clipboard_text, set_clipboard_text, add_scrollbars
-from utils import is_effect,is_generator,is_controller,is_root,get_new_pattern_name
+from utils import is_effect,is_generator,is_controller,is_root,get_new_pattern_name, filepath
 import random
-import ctypes
-import zzub
 import config
-import time
 import common
-from common import MARGIN, MARGIN2, MARGIN3, MARGIN0
+MARGIN = common.MARGIN
+MARGIN2 = common.MARGIN2
+MARGIN3 = common.MARGIN3
+MARGIN0 = common.MARGIN0
 from aldrincom import com
 
 SEQKEYS = '0123456789abcdefghijklmnopqrstuvwxyz'
@@ -267,11 +267,14 @@ class SequencerPanel(gtk.VBox):
 		"""
 		# begin wxGlade: SequencerFrame.__set_properties
 		self.statuslabels = []
-		for i in range(2):
-			label = gtk.Label()
-			self.statuslabels.append(label)
-			self.statusbar.pack_start(label, expand=False)
-			self.statusbar.pack_start(gtk.VSeparator(), expand=False)
+		label = gtk.Label()
+		self.statuslabels.append(label)
+		self.statusbar.pack_start(label, expand=False)
+		self.statusbar.pack_start(gtk.VSeparator(), expand=False)
+		label = gtk.Label()
+		self.statuslabels.append(label)
+		self.statusbar.pack_start(label, expand=False)
+		self.statusbar.pack_start(gtk.VSeparator(), expand=False)
 		# end wxGlade
 
 	def __do_layout(self):
@@ -461,8 +464,6 @@ class SequencerView(gtk.DrawingArea):
 		"""
 		Inserts a space at cursor.
 		"""
-		player = com.get('aldrin.core.player')
-		seq = player.get_current_sequencer()
 		t = self.get_track()
 		if not t:
 			return
@@ -515,7 +516,7 @@ class SequencerView(gtk.DrawingArea):
 			value,d = int(d[:4],16),d[4:]			
 			yield track, row, value
 	
-	def on_popup_copy(self, event=None):
+	def on_popup_copy(self, *args):
 		"""
 		Copies the current selection into the clipboard
 		"""
@@ -528,7 +529,7 @@ class SequencerView(gtk.DrawingArea):
 			data += "%04x%08x%04x" % (track, row - startrow, value)
 		set_clipboard_text(data)
 		
-	def on_popup_create_pattern(self, event=None):
+	def on_popup_create_pattern(self, *args):
 		player = com.get('aldrin.core.player')
 		seq = player.get_current_sequencer()
 		try:
@@ -539,7 +540,6 @@ class SequencerView(gtk.DrawingArea):
 		except TypeError:
 			# There is no selection.
 			return
-		eventlist = []
 		eventbus = com.get('aldrin.core.eventbus')
 		for track in range(start[0], end[0]+1):
 			t = seq.get_track(track)
@@ -554,7 +554,7 @@ class SequencerView(gtk.DrawingArea):
 					t.set_event(start[1], 0x10+i)
 					break
 		
-	def on_popup_merge(self, event=None):
+	def on_popup_merge(self, *args):
 		player = com.get('aldrin.core.player')
 		seq = player.get_current_sequencer()
 		try:
@@ -597,11 +597,11 @@ class SequencerView(gtk.DrawingArea):
 						t.set_event(start[1], 0x10+i)
 						break
 		
-	def on_popup_cut(self, event=None):
-		self.on_popup_copy(event)
-		self.on_popup_delete(event)
+	def on_popup_cut(self, *args):
+		self.on_popup_copy(*args)
+		self.on_popup_delete(*args)
 		
-	def on_popup_paste(self, event=None):	
+	def on_popup_paste(self, *args):	
 		player = com.get('aldrin.core.player')
 		seq = player.get_current_sequencer()
 		data = get_clipboard_text()
@@ -614,7 +614,7 @@ class SequencerView(gtk.DrawingArea):
 		
 		self.redraw()
 		
-	def on_popup_delete(self, event):
+	def on_popup_delete(self, *args):
 		player = com.get('aldrin.core.player')
 		seq = player.get_current_sequencer()
 		print self.selection_start
@@ -628,7 +628,7 @@ class SequencerView(gtk.DrawingArea):
 				t.remove_event_at(row)
 		self.redraw()
 		
-	def on_popup_delete_track(self, event):
+	def on_popup_delete_track(self, *args):
 		"""
 		Callback that handles track deletion via the popup menu
 		
@@ -731,7 +731,7 @@ class SequencerView(gtk.DrawingArea):
 					break
 		dlg.destroy()
 
-	def set_loop_start(self, event=None):
+	def set_loop_start(self, *args):
 		"""
 		Set loop startpoint
 		"""
@@ -741,7 +741,7 @@ class SequencerView(gtk.DrawingArea):
 			player.set_loop_end(self.row + self.step)
 		self.redraw()
 		
-	def set_loop_end(self, event=None):
+	def set_loop_end(self, *args):
 		player = com.get('aldrin.core.player')
 		pos = self.row# + self.step
 		if player.get_loop_end() != pos:
@@ -837,9 +837,6 @@ class SequencerView(gtk.DrawingArea):
 			self.adjust_scrollbars()
 		elif k == 'Right' or k == 'KP_Right':
 			self.set_cursor_pos(self.track, self.row + self.step)
-			w=self.get_allocation().width
-			#if self.row>(self.wmax+int((w-SEQLEFTMARGIN)/float(SEQROWSIZE)-2)*self.step):
-			#	self.set_cursor_pos(self.track, self.wmax+int((w-SEQLEFTMARGIN)/float(SEQROWSIZE)-2)*self.step)
 			self.adjust_scrollbars()
 		elif k == 'Up' or k == 'KP_Up':
 			self.set_cursor_pos(self.track-1, self.row)
@@ -958,8 +955,6 @@ class SequencerView(gtk.DrawingArea):
 		@return: Tuple containing plugin and pattern index.
 		@rtype: (zzub.Plugin, int)		
 		"""		
-		player = com.get('aldrin.core.player')
-		seq = player.get_current_sequencer()
 		track = self.get_track()
 		if not track:
 			return None, None, -1
@@ -1035,7 +1030,7 @@ class SequencerView(gtk.DrawingArea):
 		elif event.button == 3:
 			self.on_context_menu(event)
 	
-	def on_motion(self, widget, event):
+	def on_motion(self, widget, *args):
 		"""
 		Callback that responds to mouse motion in sequence view.
 		
@@ -1061,7 +1056,7 @@ class SequencerView(gtk.DrawingArea):
 		rect = self.get_allocation()
 		return rect.width, rect.height
 			
-	def expose(self, widget, event):
+	def expose(self, widget, *args):
 		self.adjust_scrollbars()
 		self.context = widget.window.cairo_create()
 		self.draw(self.context)
@@ -1107,7 +1102,6 @@ class SequencerView(gtk.DrawingArea):
 		"""
 		Handles vertical window scrolling.
 		"""
-		endtrack = self.get_endtrack()
 		adj = widget.get_adjustment()
 		minv = adj.get_property('lower')
 		maxv = adj.get_property('upper')
@@ -1214,7 +1208,6 @@ class SequencerView(gtk.DrawingArea):
 		Draws the pattern view graphics.
 		"""	
 		player = com.get('aldrin.core.player')
-		st = time.time()
 		w,h = self.get_client_size()
 		gc = self.window.new_gc()
 		cm = gc.get_colormap()
@@ -1231,8 +1224,6 @@ class SequencerView(gtk.DrawingArea):
 			CONTROLLER_PLUGIN_FLAGS : cm.alloc_color(cfg.get_color('MV Controller')),
 		}
 		bgbrush = cm.alloc_color(cfg.get_color('SE BG'))
-		fbrush1 = cm.alloc_color(cfg.get_color('SE BG Very Dark'))
-		fbrush2 = cm.alloc_color(cfg.get_color('SE BG Dark'))
 		sbrushes = [cm.alloc_color(cfg.get_color('SE Mute')), cm.alloc_color(cfg.get_color('SE Break'))]
 		select_brush = cm.alloc_color(cfg.get_color('SE Sel BG'))
 		vlinepen = cm.alloc_color(cfg.get_color('SE BG Dark'))
@@ -1273,7 +1264,6 @@ class SequencerView(gtk.DrawingArea):
 			i += self.step
 		gc.set_foreground(pen)
 		drawable.draw_line(gc, 0, y, w, y)
-		endrow = self.startseqtime + (w / SEQROWSIZE) * self.step
 		tracklist = seq.get_track_list()
 		solo_plugin = com.get('aldrin.core.routerpanel').view.solo_plugin
 		sel = False
@@ -1321,10 +1311,8 @@ class SequencerView(gtk.DrawingArea):
 						name,length = prepstr(pat.get_name()), pat.get_row_count()
 					elif value == 0x00:
 						name,length = "X", 1
-						special = True
 					elif value == 0x01:
 						name,length = "<", 1
-						special = True
 					else:
 						print "unknown value:",value
 						name,length = "???",0
@@ -1344,15 +1332,14 @@ class SequencerView(gtk.DrawingArea):
 						r,g,b = from_hsb(hue, 0.5, cb*bgb*0.5)
 						gc.set_foreground(cm.alloc_color('#%02X%02X%02X' % (int(r*255),int(g*255),int(b*255))))
 						pat = m.get_pattern(value-0x10)
-						group_track_count = [m.get_input_connection_count(), 1, m.get_track_count()]
-						pl = m.get_pluginloader()
 						bh = SEQTRACKSIZE-2-4
 						bw = max(psize-2-2, 1)
-						digest = pat.get_bandwidth_digest(bw)
-						for evx,evh in enumerate(digest):
-							if evh:
-								evh = max(int(bh * (0.5 + evh*0.5) + 0.5), 1)
-								bb.draw_rectangle(gc, True, 1+evx, 2+bh-evh, 1, evh )
+						# 0.3: DEAD - no get_bandwidth_digest
+						#~ digest = pat.get_bandwidth_digest(bw)
+						#~ for evx,evh in enumerate(digest):
+							#~ if evh:
+								#~ evh = max(int(bh * (0.5 + evh*0.5) + 0.5), 1)
+								#~ bb.draw_rectangle(gc, True, 1+evx, 2+bh-evh, 1, evh )
 						r,g,b = from_hsb(hue, 1.0, cb*bgb*0.7)
 						gc.set_foreground(cm.alloc_color('#%02X%02X%02X' % (int(r*255),int(g*255),int(b*255))))
 						bb.draw_rectangle(gc, False, 0, 0, psize-2, SEQTRACKSIZE-2)
@@ -1409,9 +1396,9 @@ __aldrin__ = dict(
 )
 
 if __name__ == '__main__':
-	import testplayer, utils, zzub
+	import testplayer
 	player = testplayer.get_player()
-	player.load_ccm(utils.filepath('demosongs/paniq-knark.ccm'))
+	player.load_ccm(filepath('demosongs/paniq-knark.ccm'))
 	#~ player.set_state(zzub.zzub_player_state_playing)
 	window = testplayer.TestWindow()
 	window.add(SequencerPanel(window))
