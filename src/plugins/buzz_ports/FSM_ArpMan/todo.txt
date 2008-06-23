@@ -1,4 +1,0 @@
-- glide przyzerowe
-- zmieniæ filtry tak, aby mia³y mniejsze piki rezonansowe (wzi¹æ z WMPro2 - theviderness
-factor)
-- rezonans 0 a 1

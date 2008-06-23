@@ -1,9 +1,0 @@
-1.06
-- improved about text information, prints info about the compiled .dll name and type
-- added miMACHINETYPESTRING
-- improved inertia handling
-- added resetInertiaCounts
-- added track support for doLinearInertia
-- renamed handleLinearInertia to doLinearInertia
-1.05 and below
-- lots of undocumented work
