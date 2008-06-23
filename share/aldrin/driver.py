@@ -23,7 +23,6 @@ Contains tool functions to deal with audio and midi drivers.
 """
 
 import config
-import common
 
 from aldrincom import com
 from utils import error
@@ -69,11 +68,11 @@ class MidiDriver:
 			if player.mididriver_is_input(i) and drivername in midiinputs:
 				print "Opening MIDI input device '%s'..." % drivername
 				if player.mididriver_open(i) != 0:
-					raise MidiInitException
+					raise self.MidiInitException
 			elif player.mididriver_is_output(i) and drivername in midioutputs:
 				print "Opening MIDI output device '%s'..." % drivername
 				if player.mididriver_open(i) != 0:
-					raise MidiInitException
+					raise self.MidiInitException
 		self.enabled = True
 
 class AudioDriver:
@@ -131,7 +130,7 @@ class AudioDriver:
 		player = com.get('aldrin.core.player')
 		self.driver = player.audiodriver_create()
 		if not self.driver.get_count():
-			raise AudioInitException
+			raise self.AudioInitException
 		print "available drivers:"
 		bestpick = -1
 		for i in range(self.driver.get_count()):
@@ -156,7 +155,7 @@ class AudioDriver:
 			idriver = bestpick
 		initres = self.driver.create_device(bestpick, idriver)
 		if initres != 0:
-			raise AudioInitException
+			raise self.AudioInitException
 		self.driver.enable(1)
 		self.samplerate = samplerate
 		self.buffersize = buffersize
