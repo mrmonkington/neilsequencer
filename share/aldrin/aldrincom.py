@@ -101,8 +101,8 @@ class ComponentManager:
 					
 	def get(self, id, *args, **kwargs):
 		# try to get a singleton first
-		instance = self.singletons.get(id, None)
-		if instance:
+		instance = self.singletons.get(id, False)
+		if instance != False:
 			return instance
 		# get metainfo for object
 		metainfo = self.factories.get(id, None)
@@ -114,7 +114,15 @@ class ComponentManager:
 		if not class_:
 			print "no factory found for classid '%s'" % id
 			return None
-		obj = class_(*args,**kwargs)
+		if class_.__aldrin__.get('singleton',False):
+			self.singletons[id] = None # fill with an empty slot so we get no recursive loop
+		try:
+			obj = class_(*args,**kwargs)
+		except:
+			print "error during instantiation from classid '%s':" % id
+			import traceback
+			traceback.print_exc()
+			obj = None # store an empty object so we dont get recursive loops
 		if class_.__aldrin__.get('singleton',False):
 			self.singletons[id] = obj # register as singleton
 		return obj
