@@ -186,7 +186,7 @@ public:
     float omega=(float)(2*PI*fc/esr);
     float sn=(float)sin(omega);
     float cs=(float)cos(omega);
-    float alpha=(float)(sn/sinh(log(2)/2*bw*omega/sn));
+    float alpha=(float)(sn/sinh(log(2.0f)/2*bw*omega/sn));
 
     float inv=(float)(1.0/(1.0+alpha));
 
@@ -201,7 +201,7 @@ public:
     float omega=(float)(2*PI*fc/esr);
     float sn=(float)sin(omega);
     float cs=(float)cos(omega);
-    float alpha=(float)(sn/sinh(log(2)/2*bw*omega/sn));
+    float alpha=(float)(sn/sinh(log(2.0f)/2*bw*omega/sn));
 
     float inv=(float)(1.0/(1.0+alpha));
 
@@ -791,11 +791,6 @@ inline float LfoRateToDeltaPhase(byte lforate, int TicksPerSec, float SamplesPer
 #define HANDLE_PARAM(ptvalName, paraName) if (ptval->ptvalName != para##paraName.NoValue) pt->paraName = ptval->ptvalName;
 #define HANDLE_PARAM2(ptvalName) if (ptval->ptvalName != 255) pt->ptvalName = ptval->ptvalName;
 
-inline void Brk()
-{
-  __asm (" int 0x03; ");
-}
-
 inline int DelayLenToSamples(int DelayUnit, int DelayLen, int SamplesPerTick, int SamplesPerSec)
 {
   if (DelayUnit==0) return (int)(DelayLen*SamplesPerTick);
@@ -991,7 +986,7 @@ inline void KaiserWindow(float *vector, int samples, float alpha) // USELESS CRA
   float M=float((samples-1)/2.0);
   double den=I0(alpha);
 	for (int n=0; n<samples; n++)
-    vector[n]*=float(I0(alpha*sqrt(n*(samples-1-n))/M)/den);
+    vector[n]*=float(I0(alpha*sqrt((float)n*(samples-1-n))/M)/den);
 }
 
 
@@ -1114,12 +1109,12 @@ inline float CalcLFO(int nShape, float LFOPhase)
     case 8: LFO=(float)(0.5*sin(2*Phs)+0.5*cos(3*Phs)); break;
     case 9: LFO=(float)(0.25*f2i(((Phs-PI)/PI-0.5f)*2.0f*4.0)); break;
     case 10: LFO=(float)(-0.25*f2i(((Phs-PI)/PI-0.5f)*2.0f*4.0)); break;
-    case 11: LFO=(float)(0.125*f2i(((Phs-PI)/PI-0.5f)*2.0f*4.0)+0.5*fmod(Phs,PI/4)/(PI/4)); break;
-    case 12: LFO=(float)(-0.125*f2i(((Phs-PI)/PI-0.5f)*2.0f*4.0)+0.5*fmod(Phs,PI/4)/(PI/4)); break;
-    case 13: LFO=(float)(0.125*f2i(((Phs-PI)/PI-0.5f)*2.0f*4.0)+0.5*fmod(2*PI-Phs,PI/4)/(PI/4)); break;
-    case 14: LFO=(float)(-0.125*f2i(((Phs-PI)/PI-0.5f)*2.0f*4.0)+0.5*fmod(2*PI-Phs,PI/4)/(PI/4)); break;
-    case 15: LFO=(float)(0.5*(sin(19123*f2i(LFOPhase*8/PI)+40*sin(12*f2i(LFOPhase*8/PI))))); break; // 8 zmian/takt
-    case 16: LFO=(float)(0.5*(sin(1239543*f2i(LFOPhase*4/PI)+40*sin(15*f2i(LFOPhase*16/PI))))); break; // 8 zmian/takt
+    case 11: LFO=(float)(0.125*f2i(((Phs-PI)/PI-0.5f)*2.0f*4.0)+0.5*fmod((float)Phs,(float)PI/4)/(PI/4)); break;
+    case 12: LFO=(float)(-0.125*f2i(((Phs-PI)/PI-0.5f)*2.0f*4.0)+0.5*fmod((float)Phs,(float)PI/4)/(PI/4)); break;
+    case 13: LFO=(float)(0.125*f2i(((Phs-PI)/PI-0.5f)*2.0f*4.0)+0.5*fmod((float)(2*PI-Phs),(float)(PI/4))/(PI/4)); break;
+    case 14: LFO=(float)(-0.125*f2i(((Phs-PI)/PI-0.5f)*2.0f*4.0)+0.5*fmod((float)(2*PI-Phs),(float)(PI/4))/(PI/4)); break;
+    case 15: LFO=(float)(0.5*(sin((float)(19123*f2i(LFOPhase*8/PI)+40*sin((float)(12*f2i(LFOPhase*8/PI))))))); break; // 8 zmian/takt
+    case 16: LFO=(float)(0.5*(sin((float)(1239543*f2i(LFOPhase*4/PI)+40*sin((float)(15*f2i(LFOPhase*16/PI))))))); break; // 8 zmian/takt
   }
   return LFO;
 }
