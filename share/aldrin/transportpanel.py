@@ -214,9 +214,9 @@ class TransportPanel(gtk.HBox):
 			driver.enable(1)
 		
 	def update_cpu(self):
-		cpu = min(com.get('aldrin.core.driver.audio').get_cpu_load(), 100)
-		self.cpu.set_fraction(cpu / 100.0)
-		self.cpuvalue.set_label("%i%%" % int(cpu + 0.5))
+		cpu = com.get('aldrin.core.driver.audio').get_cpu_load()
+		self.cpu.set_fraction(cpu)
+		self.cpuvalue.set_label("%i%%" % int((cpu*100) + 0.5))
 		return True
 		
 	def update_label(self):

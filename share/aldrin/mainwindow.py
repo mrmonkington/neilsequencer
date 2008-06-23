@@ -706,13 +706,15 @@ class AldrinFrame(gtk.Window):
 		loaded document.
 		"""
 		player = com.get('aldrin.core.player')
-		title = self.title
 		filename = os.path.basename(self.filename)
 		if not filename:
-			filename = 'Unnamed'
+			filename = 'Unsaved'
 		if player.document_changed():
 			filename = '*'+filename
-		title += ' - ' + filename
+		if filename:
+			title = filename + ' - ' + self.title
+		else:
+			title = self.title
 		self.set_title(title)
 		return True
 		
