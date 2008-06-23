@@ -12,6 +12,37 @@ import traceback
 import os
 from path import path
 
+ESCAPE_BEGIN = "\033[0;34m"
+ESCAPE_END = "\033[0;0m"
+
+ERROR_ESCAPE_BEGIN = "\033[0;31m"
+
+class StdErrAnnotator:
+	def __init__(self):
+		import sys
+		self.stderr = sys.stderr
+		sys.stderr = self
+		self.annotate_next = True
+		print >> sys.stderr, "annotating stderr"
+		
+	def write(self, text):
+		for c in text:
+			if self.annotate_next:
+				self.annotate_next = False
+				self.stderr.write(ERROR_ESCAPE_BEGIN)
+				#self.annotate(traceback.extract_stack())
+			if c == '\n':
+				if not self.annotate_next:
+					self.annotate_next = True
+					self.stderr.write(ESCAPE_END)
+			self.stderr.write(c)
+		
+	def flush(self):
+		self.stderr.flush()
+		
+	def close(self):
+		self.stderr.close()
+
 class StdOutAnnotator:
 	def __init__(self):
 		import sys
@@ -30,7 +61,7 @@ class StdOutAnnotator:
 				line = entry[1]
 		if not str(filename.relpath()).startswith('..'):
 			filename = filename.relpath()
-		self.stdout.write("%s:%s:" % (filename,line))
+		self.stdout.write("%s%s:%s:%s" % (ESCAPE_BEGIN,filename,line,ESCAPE_END))
 	
 	def write(self, text):
 		for c in text:
@@ -47,21 +78,25 @@ class StdOutAnnotator:
 	def close(self):
 		self.stdout.close()
 
-_annotator = None
+_stderr_annotator = None
+_stdout_annotator = None
 
 def init():
 	"""
 	enables log annotation.
 	"""
-	global _annotator
-	if not _annotator:
-		_annotator = StdOutAnnotator()	
-	return _annotator
+	global _stderr_annotator
+	global _stdout_annotator
+	
+	if not _stderr_annotator:
+		_stderr_annotator = StdErrAnnotator()	
+	if not _stdout_annotator:
+		_stdout_annotator = StdOutAnnotator()	
 
 def clean_next_line():
-	if not _annotator:
+	if not _stdout_annotator:
 		return
-	_annotator.annotate_next = False
+	_stdout_annotator.annotate_next = False
 
 __all__ = [
 	'init',
@@ -74,3 +109,4 @@ if __name__ == '__main__':
 	clean_next_line()
 	print "hello again."
 	print "and hello once more."
+	raise Exception
