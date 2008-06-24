@@ -1,0 +1,390 @@
+#!/usr/bin/env python
+# encoding: latin-1
+# zzub IDL parser
+
+import sys,re
+from optparse import OptionParser
+
+class ParseError(Exception):
+	pass
+
+class Token:
+	def __init__(self, name, exp, vgroup = 1, rgroup = 2, **kargs):
+		self.name = name
+		self.rname = kargs.get('rname', self.name)
+		self.exp = re.compile('^[ ]*(%s)[ ]*(.*)$' % exp)
+		self.vgroup = vgroup
+		self.rgroup = rgroup
+		self.replaces = kargs.get('replaces', [])
+
+def match_scan_try_funcs(postfix):		
+	match = lambda self: self.match(getattr(self, 'tok_'+postfix))
+	scan = lambda self: self.scan(getattr(self, 'tok_'+postfix))
+	_try = lambda self: self._try(getattr(self, 'tok_'+postfix))
+	return match, scan, _try
+
+class Parser:	
+	string_replaces = [
+		('\\"', '"'),
+		("\\'", "'"),
+		("\\t", "\t"),
+		("\\n", "\n"),
+		("\\r", "\r"),
+	]
+	for i in range(256):
+		string_replaces.append(('\\x%02x' % i, chr(i)))
+	tok_symbol = Token('symbol', r'[A-Za-z_][A-Za-z0-9_]*')
+	tok_colon = Token('colon', r':')
+	tok_bo = Token('bo', r'\(')
+	tok_bc = Token('bc', r'\)')
+	tok_sbo = Token('sbo', r'\[')
+	tok_sbc = Token('sbc', r'\]')
+	tok_eq = Token('eq', r'==')
+	tok_equal = Token('equal', r'(=)([^=].*)', 2, 3)
+	tok_ne = Token('ne', r'!=')
+	tok_excl = Token('excl', r'!')
+	tok_gt = Token('gt', r'(>)([^=].*)', 2, 3)
+	tok_lt = Token('lt', r'(<)([^=].*)', 2, 3)
+	tok_ge = Token('ge', r'>=')
+	tok_le = Token('le', r'<=')
+	tok_at = Token('at', r'\@')
+	tok_asterisk = Token('asterisk', r'\*')
+	tok_add = Token('add', r'(\+)([^\+].*)', 2, 3)
+	tok_sub = Token('sub', r'(\-)([^\-].*)', 2, 3)
+	tok_mul = Token('mul', r'(\*)([^\*].*)', 2, 3)
+	tok_div = Token('div', r'(\/)([^\/].*)', 2, 3)
+	tok_float = Token('float', r'(-?[0-9]*[.]?[0-9]+)([A-Za-z_0-9\%\xb0]+)?', (2,3), 4)
+	tok_to = Token('to', r'->')
+	tok_dot = Token('dot', r'\.')
+	tok_comma = Token('comma', r',')
+	tok_plus = Token('plus', r'\+')
+	tok_minus = Token('minus', r'\-')
+	tok_string1 = Token('string1', r'["]((\\"|[^"])*)["]', 2, 4, replaces=string_replaces)
+	tok_string2 = Token('string2', r"[']((\\'|[^'])*)[']", 2, 4, replaces=string_replaces)
+	
+	tokens = [
+		tok_colon,
+		tok_string1, tok_string2,
+		tok_float, tok_asterisk,
+		tok_symbol, tok_excl, tok_dot,
+		tok_bo, tok_bc, tok_sbo, tok_sbc, tok_to, tok_comma,
+		tok_eq, tok_ne, tok_gt, tok_lt, tok_ge, tok_le,
+		tok_add, tok_sub, tok_mul, tok_div, tok_at, tok_plus, tok_minus, tok_equal
+	]
+
+	aliases = {}
+	
+	def __init__(self):
+		self.context = dict(file='',lineno=0,line='')
+		self.level = 0
+		self.line = ''
+		self.pos = 0
+		self.consts = []
+		for tok in self.tokens:
+			import new
+			m,s,t = match_scan_try_funcs(tok.name)
+			setattr(self, 'match_'+tok.name, new.instancemethod(m,self,Parser))
+			setattr(self, 'scan_'+tok.name, new.instancemethod(s,self,Parser))
+			setattr(self, 'try_'+tok.name, new.instancemethod(t,self,Parser))
+
+	def warning(self, msg, context=None):
+		if not context:
+			context = self.context
+		traceback = self.format_context(context)
+		print >> sys.stderr, traceback
+		print >> sys.stderr, "Warning: %s" % msg
+		
+	def format_context(self, context):
+		return '  File "%s", line %i\n    %s' % (context['file'], context['lineno'], context['line'])
+
+	def error(self, msg, context=None):
+		if not context:
+			context = self.context
+		traceback = self.format_context(context)
+		print >> sys.stderr, traceback
+		print >> sys.stderr, "Compile Error: %s" % msg
+		raise ParseError
+		
+	def match(self,token):
+		m = token.exp.match(self.line)
+		if m:
+			line = m.group(token.rgroup)
+			if type(token.vgroup) in (list, tuple):
+				value = [m.group(v) for v in token.vgroup]
+			else:
+				value = m.group(token.vgroup)
+				for before,after in token.replaces:
+					value = value.replace(before,after)
+			return value, line
+		return None
+		
+	def match_any(self):
+		for tok in self.tokens:
+			m = self.match(tok)
+			if m:
+				return tok, m
+		return None
+			
+	def _try(self,token):
+		m = self.match(token)
+		if m:
+			value, self.line = m
+			return value
+			
+	def scan(self,token):
+		value = self._try(token)
+		if not value:
+			self.error('%s expected at %r.' % (token.rname, self.line))
+		return value
+		
+	def match_name(self):
+		m = self.match_symbol()
+		if m and (m[0] in self.consts):
+			return None
+		return m
+		
+	def try_name(self):
+		m = self.match_symbol()
+		if m and (m[0] in self.consts):
+			return None
+		value = self.try_symbol()
+		if value:
+			value = self.aliases.get(value, value)
+		return value
+		
+	def scan_name(self):
+		m = self.match_symbol()
+		if m and (m[0] in self.consts):
+			self.error('symbol expected, but got constant.')
+		value = self.scan_symbol()
+		if value:
+			value = self.aliases.get(value, value)
+		return value
+		
+	def parse(self):
+		try:
+			while self.lines.next():
+				while self.line:
+					tok,(value,line) = self.match_any()
+					if not tok:
+						self.error('syntax error.')
+					else:
+						value = self.scan(tok)
+						print self.level,tok.name,repr(value)
+		except StopIteration:
+			pass
+			
+	def scan_keyword(self, kw):
+		v = self.scan_name()
+		if not v:
+			self.error('keyword %s expected.' % kw)
+		if v != kw:
+			self.error('keyword %s expected, got %s.' % (kw, v))
+		return v
+			
+	def match_keyword(self, kw):
+		m = self.match_name()
+		if not m:
+			return None
+		value, line = m
+		if value != kw:
+			return None
+		return value
+		
+	def try_keyword(self, kw):		
+		m = self.match_keyword(kw)
+		if not m:
+			return
+		self.scan_keyword(kw)
+		return m
+	
+	def scan_lines(self, infile):
+		prefixline = ''
+		prefixlineno = 0
+		lineno = 0
+		for l in file(infile,'r'):
+			lineno += 1
+			level = 0
+			# strip commentary
+			if '#' in l:
+				l = l[:l.index('#')]
+			# strip right side spaces
+			l = l.rstrip()
+			if prefixline:
+				l = prefixline + l
+				thisline = prefixlineno
+				prefixline = ''
+			else:
+				thisline = lineno
+			# if empty, skip
+			if not l:
+				continue
+			# if right side is backspace, store to prefix
+			if l.endswith('\\'):
+				if not prefixlineno:
+					prefixlineno = lineno
+				l = l[:-1] + ' '
+				prefixline += l
+				continue
+			else:
+				prefixlineno = 0
+			# count left hand tabs
+			while l[0] == '\t':
+				level += 1
+				l = l[1:]
+			# replace all other tabs with spaces
+			l = l.replace('\t', ' ')
+			# fold multiple spaces down to one
+			while '  ' in l:
+				l = l.replace('  ',' ')
+			# now we should have a quite sane string
+			self.context['file'] = infile
+			self.context['lineno'] = thisline
+			self.context['line'] = l
+			self.level = level
+			self.line = l
+			self.pos = 0
+			yield True
+		yield False
+		
+	def read(self, infile):
+		self.infile = infile
+		self.lines = self.scan_lines(infile)
+		self.parse()
+
+	def parse_file(self, infile):
+		self.read(infile)
+
+class Namespace(object):
+	def __init__(self):
+		self.namespaces = []
+		self.classes = []
+		self.name = ''
+		self.functions = []
+
+	def parse(self, parser):
+		parser.top().add_namespace(self)
+		self.name = parser.scan_symbol()
+		parser.scan_colon()
+		
+	def add_namespace(self, ns):
+		self.namespaces.append(ns)
+		
+	def add_class(self, class_):
+		self.classes.append(class_)
+		
+	def add_function(self, func):
+		self.functions.append(func)
+		
+	def write(self, parent, f):
+		pass
+	
+class Class(object):
+	def __init__(self):
+		self.functions = []
+
+	def parse(self, parser):
+		parser.top().add_class(self)
+		self.name = parser.scan_symbol()
+		parser.scan_colon()
+		
+	def add_function(self, func):
+		self.functions.append(func)
+
+	def write(self, parent, f):
+		pass
+
+class Argument(object):
+	def parse(self, parser):
+		typename = parser.scan_symbol()
+		name = parser.scan_symbol()
+
+	def write(self, parent, f):
+		pass
+
+class Function(object):
+	def __init__(self):
+		self.in_args = []
+		self.out_args = []
+		
+	def parse(self, parser):
+		parser.top().add_function(self)
+		self.name = parser.scan_symbol()		
+		parser.scan_bo()
+		while not parser.try_bc():
+			arg = Argument()
+			self.in_args.append(arg)
+			arg.parse(parser)
+			parser.try_comma()
+		if parser.try_colon():
+			parser.scan_bo()
+			while not parser.try_bc():
+				arg = Argument()
+				self.out_args.append(arg)
+				arg.parse(parser)
+				parser.try_comma()
+
+	def write(self, parent, f):
+		pass
+
+class zzubIDLParser(Parser):
+	symbols = {
+		'namespace' : dict(factory=Namespace, parent=[Namespace]),
+		'class' : dict(factory=Class, parent=[Namespace]),
+		'def' : dict(factory=Function, parent=[Class,Namespace]),
+	}
+
+	def __init__(self):
+		Parser.__init__(self)
+		self.stack = []
+		self.root = Namespace()
+		
+	def top(self):
+		if not self.stack:
+			return self.root
+		return self.stack[-1]
+		
+	def last_stack_class(self):
+		item = self.top()
+		return item and item.__class__
+		
+	def write_c_header(self, filename):
+		self.root.write(self, file(filename, 'w'))
+		
+	def parse(self):
+		try:
+			while self.lines.next():
+				if self.level < len(self.stack):
+					self.stack = self.stack[:self.level]
+				name = self.scan_symbol()
+				if not name in self.symbols:
+					self.error('unknown symbol: '+name)
+				cfg = self.symbols[name]
+				class_ = cfg['factory']
+				parent = cfg.get('parent', [None])
+				stackclass = self.last_stack_class()
+				if not stackclass in parent:
+					self.error("%s can't be a child of %s" % (name,stackclass.__name__))
+				obj = class_()
+				obj.parse(self)
+				if self.line:
+					self.error("unexpected characters at end of line: "+self.line)
+				self.stack.append(obj)
+				
+		except StopIteration:
+			pass
+
+if __name__ == '__main__':
+	parser = OptionParser(version="zzub IDL parser 0.1")
+	parser.add_option("--c-header", dest="cheader", help="specifies path to write C header file", metavar="<filename.h>")
+	parser.add_option("--py-ctypes", dest="pyctypes", help="specifies path to write Python ctypes wrapper module", metavar="<filename.py>")
+	options,args = parser.parse_args()
+	if not args:
+		print >> sys.stderr, "no input file(s)."
+		raise SystemExit, 1
+	parser = zzubIDLParser()
+	try:
+		parser.parse_file(args[0])
+	except ParseError:
+		raise SystemExit, 1	if options.cheader:
+		parser.write_c_header(options.cheader)
