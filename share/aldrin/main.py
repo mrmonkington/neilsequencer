@@ -33,10 +33,8 @@ if not modulepath in sys.path:
 	sys.path = [modulepath] + sys.path
 
 import contextlog
-contextlog.init()
 
 import errordlg
-errordlg.install()
 
 from gtkimport import gtk
 
@@ -74,6 +72,8 @@ def run(argv):
 	@type argv: str list
 	"""
 	global app
+	contextlog.init()
+	errordlg.install()
 	com.load_packages()
 	options = com.get('aldrin.core.options')
 	options.parse_args(argv)
@@ -99,6 +99,4 @@ __all__ = [
 ]
 
 if __name__ == '__main__':
-	#~ import profile
-	#~ profile.run('run(sys.argv)', 'aldrinprofile')
 	run(sys.argv)
