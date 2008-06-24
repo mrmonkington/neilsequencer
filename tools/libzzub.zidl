@@ -1,0 +1,26 @@
+include "zzub/types.h"
+
+namespace zzub:
+	class AudioDriver:
+		"Create an audio driver that uses the PortAudio API."
+		def create_portaudio(): AudioDriver
+
+		"Create an audio driver that uses the RtAudio API."
+		def create_rtaudio(): AudioDriver
+
+		"Create a silent, non-processing audio driver that has one device with the specified properties."
+		def create_silent(string name, int out_channels, int in_channels, int[num_rates] supported_rates, int num_rates): AudioDriver
+
+		"Creates the preferred audio driver."
+		def create(): AudioDriver
+
+		"Get number of detected input and output audio devices"
+		def get_count(): int
+
+		"Get name of specified audio device"
+		def get_name(int index, int max_len): string name
+
+		def get_supported_samplerates(int index, int maxrates): int[maxrates] result
+		def get_supported_output_channels(int index): int
+		def get_supported_input_channels(int index): int
+
