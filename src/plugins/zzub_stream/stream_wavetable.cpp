@@ -215,7 +215,7 @@ void stream_wavetable::command(int index) {
 		for (int i = 0; i < 0xC8; ++i) {
 			const zzub::wave_info* wave = _host->get_wave(i+1);
 			const zzub::wave_level* level = _host->get_wave_level(i+1, 0);
-			if (level->sample_count > 0)
+			if (level && level->sample_count > 0)
 			{
 				selindex++;
 				if (selindex == index) {
@@ -240,7 +240,7 @@ void stream_wavetable::get_sub_menu(int index, zzub::outstream* outs) {
 			for (int i = 0; i<0xC8; i++) {
 				const zzub::wave_info* wave = _host->get_wave(i+1);
 				const zzub::wave_level* level = _host->get_wave_level(i+1, 0);
-				if (level->sample_count > 0)
+				if (level && level->sample_count > 0)
 				{
 					string name = "Wave " + stringFromInt(i+1, 2, ' ') + (string)": " + _host->get_wave_name(i + 1);
 					outs->write(name.c_str());

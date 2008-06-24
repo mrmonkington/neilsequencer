@@ -1708,7 +1708,7 @@ void zzub_pattern_destroy(zzub_pattern_t *pattern) {
 
 void zzub_plugin_get_new_pattern_name(zzub_plugin_t *plugin, char* name, int maxLen) {
 	std::stringstream strm;
-	for (int i = 0; i < 9999; i++) {
+	for (int i = zzub_plugin_get_pattern_count(plugin); i < 9999; i++) {
 		if (i < 100)
 			strm << std::setw(2) << std::setfill('0') << i; else
 		if (i < 1000)

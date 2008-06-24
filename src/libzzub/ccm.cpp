@@ -1416,6 +1416,7 @@ bool CcmReader::loadPlugins(xml_node plugins, zzub::player &player) {
 
 			} else {
 				std::cerr << "ccm: unable to find loader for uri " << i->attribute("ref").value() << std::endl;
+				plugin_id = -1;
 			}
 
 			if (plugin_id != -1 && player.back.plugins[plugin_id] != 0) {
