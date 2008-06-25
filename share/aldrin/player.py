@@ -96,7 +96,7 @@ class AldrinPlayer(Player):
 			if membername:
 				union = None
 				datatype = None
-				for argname,argtype in zzub.zzub_event_data_t._fields_:
+				for argname,argtype in zzub.zzub_event_data._fields_:
 					if argname == '': # union
 						union = argtype
 						break
@@ -223,7 +223,7 @@ class AldrinPlayer(Player):
 		"""
 		Initializes the lunar dsp scripting system
 		"""
-		pc = self.get_plugincollection_by_uri("@zzub.org/plugincollections/lunar")
+		pc = self.plugincollection_get_by_uri("@zzub.org/plugincollections/lunar")
 
 		# return if lunar is missing
 		if not pc._handle:
