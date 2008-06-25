@@ -92,7 +92,7 @@ class Plugin(libzzub._Plugin):
 		return Pattern(libzzub.zzub_plugin_create_pattern(self._handle,row))
 	
 	def add_post_process(self, mixcallback, tag):	
-		_cb = libzzub.ZzubMixCallback(mixcallback)
+		_cb = libzzub.zzub_mix_callback_t(mixcallback)
 		pp = libzzub._Plugin.add_post_process(self, _cb, None)
 		pp._cb = _cb
 		return pp
@@ -239,7 +239,7 @@ class Player(libzzub._Player):
 		
 	def set_callback(self, cb):
 		self.callback = cb
-		_cb = libzzub.ZzubCallback(self.pre_callback)
+		_cb = libzzub.zzub_callback_t(self.pre_callback)
 		libzzub._Player.set_callback(self, _cb, None)
 		self._callback = _cb
 
