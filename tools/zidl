@@ -357,6 +357,7 @@ class Argument(zzubIDLObject):
 		'string' : dict(c_type='const char *', c_out_type='char *'),
 		'bool' : dict(c_type='int', c_out_type='int *', comment='bool'),
 		'int' : dict(c_type='int', c_out_type='int *'),
+		'uint' : dict(c_type='unsigned int', c_out_type='unsigned int *'),
 		'long' : dict(c_type='long', c_out_type='long *'),
 		'float' : dict(c_type='float', c_out_type='float *'),
 		'double' : dict(c_type='double', c_out_type='double *'),
@@ -365,13 +366,21 @@ class Argument(zzubIDLObject):
 	def __init__(self):
 		self.typename = ''
 		self.name = ''
+		self.argdirs = []
 		self.c_type = ''
-		self.c_out_type = ''
+		self.retval = False
 		self.comment = ''
 		self.array_count = ''
 		self.array = False
 
-	def parse(self, parser):
+	def parse(self, parser, retval=False):
+		self.retval = retval
+		if not retval:
+			for adt in ['in', 'out']:
+				if parser.try_keyword(adt):
+					if adt in self.argdirs:
+						parser.error('argument direction already specified: ' + adt)
+					self.argdirs.append(adt)
 		self.typename = parser.scan_symbol()
 		if parser.try_sbo():
 			self.array = True
@@ -384,11 +393,13 @@ class Argument(zzubIDLObject):
 		else:
 			parser.error('unknown type: '+self.typename)
 		self.comment = tm.get('comment','')
-		self.c_type = tm['c_type']
-		if self.array:
-			self.c_type = self.c_type + ' *'
-		self.c_out_type = tm['c_out_type']
-		if parser.match_symbol():
+		if 'out' in self.argdirs:
+			self.c_type = tm['c_out_type']
+		else:
+			self.c_type = tm['c_type']
+			if self.array:
+				self.c_type = 'const ' + self.c_type + ' *'
+		if not self.retval:
 			self.name = parser.scan_symbol()
 		
 	def write_c_header(self, parent, f):
@@ -396,8 +407,8 @@ class Argument(zzubIDLObject):
 		
 class Function(zzubIDLObject):
 	def __init__(self):
-		self.in_args = []
-		self.out_args = []
+		self.ret_arg = None
+		self.args = []
 		
 	def parse(self, parser):
 		parser.top().add_function(self)
@@ -405,28 +416,23 @@ class Function(zzubIDLObject):
 		parser.scan_bo()
 		while not parser.try_bc():
 			arg = Argument()
-			self.in_args.append(arg)
+			self.args.append(arg)
 			arg.parse(parser)
 			if not parser.match_bc():
 				parser.scan_comma()
 		if parser.try_colon():
-			while parser.line:
-				arg = Argument()
-				self.out_args.append(arg)
-				arg.parse(parser)
-				if not parser.try_comma():
-					break
+			self.ret_arg = Argument()
+			self.ret_arg.parse(parser, retval=True)
 
 	def write_c_header(self, parent, f):
 		if parent.c_name:
 			self.c_name = parent.c_name + '_'
 		self.c_name += self.name.lower()
 		retval = 'void'
-		out_args = self.out_args
-		if len(out_args) == 1:
-			retval = self.out_args[0].c_type
-			if self.out_args[0].comment:
-				retval = '/*'+self.out_args[0].comment+'*/ ' + retval
+		if self.ret_arg:
+			retval = self.ret_arg.c_type
+			if self.ret_arg.comment:
+				retval = '/*'+self.ret_arg.comment+'*/ ' + retval
 			out_args = []
 		args = []
 		def make_arg(typename, argname):
@@ -435,10 +441,8 @@ class Function(zzubIDLObject):
 			return typename + ' ' + argname
 		if isinstance(parent, Class):
 			args.append(parent.struct_name + ' *' + parent.name.lower())
-		for arg in self.in_args:
+		for arg in self.args:
 			args.append(make_arg(arg.c_type, arg.name))
-		for arg in out_args:
-			args.append(make_arg(arg.c_out_type, arg.name))
 		print >> f
 		retval = make_arg(retval, '')
 		self.write_c_doc(f)
@@ -535,7 +539,7 @@ class zzubIDLParser(Parser):
 						if not stackclass in parent:
 							self.error("%s can't be a child of %s" % (name,stackclass.__name__))
 						obj = class_()
-						obj.doc = self.cleanup_doc(self.comment)
+						obj.doc = self.comment #self.cleanup_doc(self.comment)
 						self.comment = []
 						obj.parse(self)
 						self.stack.append(obj)

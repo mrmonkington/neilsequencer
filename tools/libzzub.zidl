@@ -1,6 +1,8 @@
 include "zzub/types.h"
 
 namespace zzub:
+	"@name Audio Driver Methods"
+	"Configure and create an audio driver instance."
 	class AudioDriver:
 		"Create an audio driver that uses the PortAudio API."
 		def create_portaudio(): AudioDriver
@@ -9,7 +11,7 @@ namespace zzub:
 		def create_rtaudio(): AudioDriver
 
 		"Create a silent, non-processing audio driver that has one device with the specified properties."
-		def create_silent(string name, int out_channels, int in_channels, int[num_rates] supported_rates, int num_rates): AudioDriver
+		def create_silent(string name, int out_channels, int in_channels, out int[num_rates] supported_rates, int num_rates): AudioDriver
 
 		"Creates the preferred audio driver."
 		def create(): AudioDriver
@@ -18,9 +20,210 @@ namespace zzub:
 		def get_count(): int
 
 		"Get name of specified audio device"
-		def get_name(int index, int max_len): string name
+		def get_name(int index, out string name, int max_len): int
 
-		def get_supported_samplerates(int index, int maxrates): int[maxrates] result
+		def get_supported_samplerates(int index, out int[maxrates] result, int maxrates): int
 		def get_supported_output_channels(int index): int
 		def get_supported_input_channels(int index): int
+
+		"Create specified audio device."
+		def create_device(int input_index, int output_index): int
+	
+		"Enable or disable current audio driver"
+		def enable(bool state)
+
+		"Returns whether current audio driver is enabled or disabled"
+		def get_enabled(): bool
+
+		"Disassociate audio driver and player"
+		def destroy()
+
+		"De-allocate the current device."
+		def destroy_device()
+
+		"Set audio driver sample rate"
+		def set_samplerate(uint samplerate)
+
+		"Retreive audio driver sample rate"
+		def get_samplerate(): uint
+
+		def set_buffersize(uint buffersize)
+		def get_buffersize(): uint
+		def get_cpu_load(): double
+		def is_output(int index): bool
+		def is_input(int index): bool
+		def get_master_channel(): int
+		def set_master_channel(int index)
+		
+	"@name MIDI Driver Methods"
+	"Open midi devices."
+	class MidiDriver:
+		def get_count(): int
+		def get_name(int index): string
+		def is_input(int index): bool
+		def is_output(int index): bool
+		def open(int index): int
+		def close_all(): int
+
+	"@name Plugin Collection Methods"
+	"For enumerating and configuring plugin collections."
+	class PluginCollection:
+		def configure(string key, string value)
+#zzub_plugincollection_t *get_plugincollection_by_uri(const char *uri)
+
+	class Input:
+	
+	class Output:
+	
+	class Plugin:
+	
+	class PluginLoader:
+	
+	class Sequence:
+	
+	class Wave:
+	
+	class MidiMapping:
+
+	"@name Player Methods"
+	class Player:
+		"Create a player instance."
+		def create(): Player
+
+		"Destroy a player instance and all its resources."
+		def destroy()
+
+		"Adds a directory that will be scanned for plugins upon initialization."
+		"The path *must* be terminated with an ending (back)slash. "
+		def add_plugin_path(string path)
+
+		"Blacklist plugin."
+		def blacklist_plugin(string uri)
+		# def add_plugin_alias(string name, string uri)
+
+		"Inititializes the player."
+		"initialize() must be called only after the audio driver,"
+		"plugin directories and optional blacklists are set up."
+		def initialize(int samplesPerSecond): int
+
+		"Loads a BMX from memory or file."
+		" "
+		"Load warnings and error messages are placed in the messages string."
+		def load_bmx(Input datastream, out string[maxLen] messages, int maxLen): int
+
+		"Saves a BMX to memory or file."
+		" "
+		"plugins is an array of ints containing the plugin ids to save in the song. If plugins is NULL,"
+		"everything in the running graph is saved. Optionally without waves, when save_waves is zero."
+		def save_bmx(Plugin[num_plugins] plugins, int num_plugins, int save_waves, Output datastream): int
+
+		"Load a project in CCM file format from disk."
+		def load_ccm(string fileName): int
+
+		"Save current project in the CCM file format to disk."
+		def save_ccm(string fileName): int
+
+		"Returns one of the values in the state enumeration."
+		def get_state(): int
+
+		"Set player state. Takes one of the values in the state enumeration as parameter."
+		def set_state(int state)
+
+		def set_position(int tick)
+		def get_bpm(): float
+		def get_tpb(): int
+		def set_bpm(float bpm)
+		def set_tpb(int tpb)
+
+		"Returns number of plugin loaders."
+		def get_pluginloader_count(): int
+
+		"Returns a zzub_pluginloader_t handle by index."
+		def get_pluginloader(int index): PluginLoader
+
+		"Finds a zzub_pluginloader_t handle by uri."
+		def get_pluginloader_by_name(string name): PluginLoader
+
+		"Returns number of plugins in the current song."
+		def get_plugin_count(): int
+
+		# def get_plugin(int index): Plugin
+
+		"Returns the plugin object given the plugins name."
+		def get_plugin_by_name(string name): Plugin
+
+		"Returns the plugin object given the plugin id. See also zzub_plugin_get_id()."
+		def get_plugin_by_id(int id): Plugin
+
+		"Returns the plugin object given the plugins index in the graph."
+		def get_plugin(int index): Plugin
+
+		def work_stereo(out int numSamples)#: float[][numSamples]
+		def clear()
+		def get_position(): int
+		def set_position(int pos)
+
+		def get_loop_start(): int
+		def get_loop_end(): int
+		def get_song_start(): int
+		def set_loop_start(int v)
+		def set_loop_end(int v)
+		def set_song_start(int v)
+		def get_song_end(): int
+		def set_song_end(int v)
+		# def lock_tick()
+		# def unlock_tick()
+		# def lock()
+		# def unlock()
+		def set_loop_enabled(int enable)
+		def get_loop_enabled(): int
+		def get_sequence_track_count(): int
+		def get_sequence(int index): Sequence
+
+		"Retreive the currently playing pattern and row for a plugin."
+		def get_currently_playing_pattern(out int pattern, out int row): int
+
+		"Retreive the currently playing row for a plugin and a pattern."
+		def get_currently_playing_pattern_row(int pattern, out int row): int
+
+		def get_wave_count(): int
+
+		def get_wave(int index): Wave
+
+		# def play_wave(Wave, int level, int note)
+		# def stop_wave()
+		# def set_wave_amp(float amp)
+		# def get_wave_amp(): float
+
+		"Sets a function that receives events."
+		# TODO: def set_callback(ZzubCallback callback, void* tag)
+
+		"Process player events. Intended to be called by the host in a timer"
+		"or on idle processing to receive events about parameter changes etc."
+		def handle_events()
+
+		def get_midimapping(int index): MidiMapping
+		def get_midimapping_count(): int
+
+		def get_automation(): bool
+		def set_automation(bool enable)
+		def get_midi_transport(): bool
+		def set_midi_transport(bool enable)
+
+		def get_infotext(): string
+		def set_infotext(string text)
+
+		"Sets the plugin to receive MIDI data if the plugin's internal MIDI"
+		"channel is set to the special channel 17 (\"Play if selected\")."
+		def set_midi_plugin(Plugin plugin)
+
+		def get_midi_plugin(): Plugin
+
+		"Generates a new plugin name that can be used in a call to create_plugin()."
+		def get_new_plugin_name(string uri, out string name, int maxLen)
+
+		def reset_keyjazz()
+
+		#def add_midimapping(zzub_plugin_t *plugin, int group, int track, int param, int channel, int controller): MidiMapping
+		#def remove_midimapping(zzub_plugin_t *plugin, int group, int track, int param): int
 
