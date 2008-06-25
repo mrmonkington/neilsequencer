@@ -320,6 +320,9 @@ class zzubIDLObject(object):
 		
 	def write_c_fwddecl(self, parent, f):
 		pass
+		
+	def write_c_def(self, parent, f):
+		pass
 	
 class Namespace(zzubIDLObject):
 	def __init__(self):
@@ -366,6 +369,12 @@ class Namespace(zzubIDLObject):
 	def write_c_fwddecl(self, parent, f):
 		for class_ in self.classes:
 			class_.write_c_fwddecl(self, f)
+			
+	def write_c_def(self, parent, f):
+		for ns in self.namespaces:
+			ns.write_c_def(self, f)
+		for class_ in self.classes:
+			class_.write_c_def(self, f)
 		
 class Class(zzubIDLObject):
 	def __init__(self):
@@ -420,6 +429,12 @@ class Class(zzubIDLObject):
 			print >> f, '#if !defined(NO_' + self.c_name.upper() + '_TYPE)'
 			print >> f, 'typedef struct ' + self.typestruct_name + ' ' + self.struct_name + ';'
 			print >> f, '#endif'
+			
+	def write_c_def(self, parent, f):
+		for class_ in self.classes:
+			class_.write_c_def(self, f)
+		for function in self.functions:
+			function.write_c_def(self, f)
 		
 class Union(zzubIDLObject):
 	def __init__(self):
@@ -606,12 +621,17 @@ class Function(zzubIDLObject):
 		self.ret_arg = None
 		self.args = []
 		self.static = False
+		self.c_name = ''
 		
 	def parse(self, parser):
-		parser.top().add_function(self)
+		parent = parser.top()
+		parent.add_function(self)
 		if parser.try_keyword('static'):
 			self.static = True
 		self.name = parser.scan_symbol()
+		if parent and parent.c_name:
+			self.c_name = parent.c_name + '_'
+		self.c_name += self.name.lower()
 		parser.scan_bo()
 		while not parser.try_bc():
 			arg = Argument()
@@ -624,9 +644,6 @@ class Function(zzubIDLObject):
 			self.ret_arg.parse(parser, retval=True)
 
 	def write_c_header(self, parent, f):
-		if parent.c_name:
-			self.c_name = parent.c_name + '_'
-		self.c_name += self.name.lower()
 		retval = 'void'
 		if self.ret_arg:
 			self.ret_arg.resolve()
@@ -647,6 +664,9 @@ class Function(zzubIDLObject):
 		retval = make_arg(retval, '')
 		self.write_c_doc(f)
 		print >> f, retval + self.c_name + '(' + ', '.join(args) + ');'
+
+	def write_c_def(self, parent, f):
+		print >> f, '\t' + self.c_name
 
 class zzubIDLParser(Parser):
 	symbols = {
@@ -677,6 +697,11 @@ class zzubIDLParser(Parser):
 	def last_stack_class(self):
 		item = self.top()
 		return item and item.__class__
+		
+	def write_c_def(self, filename):
+		f = file(filename, 'w')
+		print >> f, 'EXPORTS'
+		self.root.write_c_def(None, f)
 		
 	def write_c_header(self, filename):
 		basename = os.path.basename(filename)
@@ -756,6 +781,7 @@ class zzubIDLParser(Parser):
 if __name__ == '__main__':
 	parser = OptionParser(version="zzub IDL parser 0.1")
 	parser.add_option("--c-header", dest="cheader", help="specifies path to write C header file", metavar="<filename.h>")
+	parser.add_option("--c-def", dest="cdef", help="specifies path to write C win32 .def file", metavar="<filename.def>")
 	parser.add_option("--py-ctypes", dest="pyctypes", help="specifies path to write Python ctypes wrapper module", metavar="<filename.py>")
 	options,args = parser.parse_args()
 	if not args:
@@ -765,6 +791,8 @@ if __name__ == '__main__':
 	try:
 		parser.parse_file(args[0])
 		if options.cheader:
-			parser.write_c_header(options.cheader)		
+			parser.write_c_header(options.cheader)
+		if options.cdef:
+			parser.write_c_def(options.cdef)
 	except ParseError:
 		raise SystemExit, 1

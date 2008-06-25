@@ -617,14 +617,25 @@ def build_buildconfig(target, source, env):
 
 def build_python_extension(target, source, env):
 	pass
-
+	
 builders = dict(
 	BuildConfig = Builder(action = build_buildconfig),
 	Signature = Builder(action = build_signature),
 	PyExtension = Builder(action = build_python_extension),
+	ZIDLCHeader = Builder(action = 'python ${ROOTPATH}/tools/zidl --c-header $TARGET $SOURCE'),
+	ZIDLCDef = Builder(action = 'python ${ROOTPATH}/tools/zidl --c-def $TARGET $SOURCE'),
 )
 
 env['BUILDERS'].update(builders)
+
+#######################################
+#
+# zidl
+#
+#######################################
+
+env.ZIDLCHeader('${ROOTPATH}/include/zzub/zzub.h', '${ROOTPATH}/include/zzub/zzub.zidl')
+env.ZIDLCDef('${LIBZZUB_SRC_PATH}/libzzub.def', '${ROOTPATH}/include/zzub/zzub.zidl')
 
 #######################################
 #
@@ -677,4 +688,5 @@ if hasattr(env, 'MSVSSolution'):
 # install zzub plugin and type headers
 install(includepath+'/zzub', 'include/zzub/plugin.h')
 install(includepath+'/zzub', 'include/zzub/types.h')
+install(includepath+'/zzub', 'include/zzub/zzub.h')
 install(includepath+'/zzub', 'include/zzub/signature.h')
