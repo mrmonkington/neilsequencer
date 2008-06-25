@@ -38,7 +38,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "ccm.h"
 
-#include "libzzub.h"
+#include "zzub/zzub.h"
 
 #if defined(USE_RTAUDIO)
 #include "driver_rtaudio.h"
@@ -53,7 +53,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 struct zzub_flatapi_player : zzub::player {
 	//zzub::audiodriver_rtaudio driver;
 	zzub::mididriver _midiDriver;
-	ZzubCallback callback;
+	zzub_callback_t callback;
 	void *callbackTag;
 	
 	zzub_flatapi_player() {
@@ -216,7 +216,7 @@ int zzub_player_get_pluginloader_count(zzub_player_t *player) {
 	return (int)player->plugin_infos.size();
 }
 
-zzub_plugincollection_t *zzub_player_get_plugincollection_by_uri(zzub_player_t *player, const char *uri) {
+zzub_plugincollection_t *zzub_plugincollection_get_by_uri(zzub_player_t *player, const char *uri) {
 	return 0;//player->getPluginlibByUri(uri);
 }
 
@@ -251,12 +251,12 @@ int zzub_player_load_bmx(zzub_player_t *player, zzub_input_t* datastream, char* 
 	return 0;
 }
 
-int zzub_player_save_bmx(zzub_player_t *player, zzub_plugin_t** _plugins, int num_plugins, int save_waves, zzub_output_t* datastream) {
+int zzub_player_save_bmx(zzub_player_t *player, const zzub_plugin_t** _plugins, int num_plugins, int save_waves, zzub_output_t* datastream) {
 
 	// incoming plugins are plugin_id's. bmxwriter takes plugin_descriptors, so lets remap
 	std::vector<zzub::plugin_descriptor> plugins(num_plugins);
 	for (int i = 0; i < num_plugins; i++) {
-		zzub_plugin_t* plugin = _plugins[i];
+		const zzub_plugin_t* plugin = _plugins[i];
 		metaplugin& m = *player->front.plugins[plugin->id];
 		plugins[i] = m.descriptor;
 	}
@@ -352,9 +352,9 @@ void zzub_plugin_add_event_connection_binding(zzub_plugin_t *to_plugin, zzub_plu
 	to_plugin->_player->plugin_add_event_connection_binding(to_plugin->id, from_plugin->id, sourceparam, targetgroup, targettrack, targetparam);
 }
 
-float** zzub_player_work_stereo(zzub_player_t *player, int* numSamples) {
+const float** zzub_player_work_stereo(zzub_player_t *player, int* numSamples) {
 	player->work_stereo(*numSamples);
-	static float* workBuffer[] = { player->work_out_buffer[0], player->work_out_buffer[1] };
+	static const float* workBuffer[] = { player->work_out_buffer[0], player->work_out_buffer[1] };
 	return workBuffer;
 }
 
@@ -466,7 +466,7 @@ zzub_wave_t* zzub_player_get_wave(zzub_player_t* player, int index) {
 		return player->back.wavetable.waves[index]->proxy;
 }
 
-void zzub_player_set_callback(zzub_player_t* player, ZzubCallback callback, void* tag) {
+void zzub_player_set_callback(zzub_player_t* player, zzub_callback_t callback, void* tag) {
 	// order is important here
 	// once we set the callback, threaded calls might use it
 	// so the tag should be available.
@@ -627,16 +627,16 @@ int zzub_pluginloader_get_parameter_count(zzub_pluginloader_t* loader, int group
 	}
 }
 
-const zzub_parameter_t *zzub_pluginloader_get_parameter(zzub_pluginloader_t* loader, int group, int index) {
+zzub_parameter_t *zzub_pluginloader_get_parameter(zzub_pluginloader_t* loader, int group, int index) {
 	switch (group) {
 		case 0: // input connections
 			return 0;//connectionParameters[index];
 		case 1: // globals
-			return loader->global_parameters[index];
+			return (zzub_parameter_t*)loader->global_parameters[index];
 		case 2: // track params
-			return loader->track_parameters[index];
+			return (zzub_parameter_t*)loader->track_parameters[index];
 		case 3: // controller params
-			return loader->controller_parameters[index];
+			return (zzub_parameter_t*)loader->controller_parameters[index];
 		default:
 			return 0;
 	}
@@ -658,8 +658,8 @@ int zzub_pluginloader_get_attribute_count(zzub_pluginloader_t* loader) {
 	return (int)loader->attributes.size();
 }
 
-const zzub_attribute_t *zzub_pluginloader_get_attribute(zzub_pluginloader_t* loader, int index) {
-	return loader->attributes[index];
+zzub_attribute_t *zzub_pluginloader_get_attribute(zzub_pluginloader_t* loader, int index) {
+	return (zzub_attribute_t *)loader->attributes[index];
 }
 
 int zzub_pluginloader_get_instrument_list(zzub_pluginloader_t* loader, char* result, int maxbytes) {
@@ -697,53 +697,53 @@ const char* zzub_pluginloader_get_stream_format_ext(zzub_pluginloader_t* loader,
 
 // parameter methods
 
-int zzub_parameter_get_type(const zzub_parameter_t* param) {
+int zzub_parameter_get_type(zzub_parameter_t* param) {
 	return param->type;
 }
 
-const char *zzub_parameter_get_name(const zzub_parameter_t* param) {
+const char *zzub_parameter_get_name(zzub_parameter_t* param) {
 	return param->name;
 }
 
-const char *zzub_parameter_get_description(const zzub_parameter_t* param) {
+const char *zzub_parameter_get_description(zzub_parameter_t* param) {
 	return param->description;
 }
 
-int zzub_parameter_get_value_min(const zzub_parameter_t* param) {
+int zzub_parameter_get_value_min(zzub_parameter_t* param) {
 	return param->value_min;
 }
 
-int zzub_parameter_get_value_max(const zzub_parameter_t* param) {
+int zzub_parameter_get_value_max(zzub_parameter_t* param) {
 	return param->value_max;
 }
 
-int zzub_parameter_get_value_none(const zzub_parameter_t* param) {
+int zzub_parameter_get_value_none(zzub_parameter_t* param) {
 	return param->value_none;
 }
 
-int zzub_parameter_get_value_default(const zzub_parameter_t* param) {
+int zzub_parameter_get_value_default(zzub_parameter_t* param) {
 	return param->value_default;
 }
 
-int zzub_parameter_get_flags(const zzub_parameter_t* param) {
+int zzub_parameter_get_flags(zzub_parameter_t* param) {
 	return param->flags;
 }
 
 // attribute methods
 
-const char *zzub_attribute_get_name(const zzub_attribute_t *attrib) {
+const char *zzub_attribute_get_name(zzub_attribute_t *attrib) {
 	return attrib->name;
 }
 
-int zzub_attribute_get_value_min(const zzub_attribute_t *attrib) {
+int zzub_attribute_get_value_min(zzub_attribute_t *attrib) {
 	return attrib->value_min;
 }
 
-int zzub_attribute_get_value_max(const zzub_attribute_t *attrib) {
+int zzub_attribute_get_value_max(zzub_attribute_t *attrib) {
 	return attrib->value_max;
 }
 
-int zzub_attribute_get_value_default(const zzub_attribute_t *attrib) {
+int zzub_attribute_get_value_default(zzub_attribute_t *attrib) {
 	return attrib->value_default;
 }
 
@@ -817,7 +817,7 @@ void zzub_plugin_command(zzub_plugin_t *plugin, int i) {
 	plugin->_player->back.plugins[plugin->id]->plugin->command(i);
 }
 
-int zzub_plugin_set_name(zzub_plugin_t *plugin, char* name) {
+int zzub_plugin_set_name(zzub_plugin_t *plugin, const char* name) {
 
 	plugin->_player->plugin_set_name(plugin->id, name);
 	return 0;
@@ -1000,7 +1000,7 @@ int zzub_plugin_get_pattern_index(zzub_plugin_t *plugin, zzub_pattern_t *pattern
 }
 
 
-int zzub_plugin_get_pattern_by_name(zzub_plugin_t *plugin, char* name) {
+int zzub_plugin_get_pattern_by_name(zzub_plugin_t *plugin, const char* name) {
 	// copy necessary fields to the back buffer (if neccessary) and fetch the value from there
 	// (note to self: separating read/write flags seems appropriate now)
 
@@ -1066,14 +1066,14 @@ int zzub_plugin_get_parameter_count(zzub_plugin_t *plugin, int group, int track)
 	return plugin->_player->back.plugin_get_parameter_count(plugin->id, group, track);
 }
 
-const zzub_parameter_t* zzub_plugin_get_parameter(zzub_plugin_t *plugin, int group, int track, int column) {
+zzub_parameter_t* zzub_plugin_get_parameter(zzub_plugin_t *plugin, int group, int track, int column) {
 
 	operation_copy_flags flags;
 	flags.copy_graph = true;
 	flags.copy_plugins = true;
 	plugin->_player->merge_backbuffer_flags(flags);
 
-	return plugin->_player->back.plugin_get_parameter_info(plugin->id, group, track, column);
+	return (zzub_parameter_t*)plugin->_player->back.plugin_get_parameter_info(plugin->id, group, track, column);
 }
 
 void zzub_plugin_set_pattern_value(zzub_plugin_t *plugin, int pattern, int group, int track, int column, int row, int value) {
@@ -1084,14 +1084,14 @@ void zzub_plugin_set_pattern_value(zzub_plugin_t *plugin, int pattern, int group
 	plugin->_player->plugin_set_pattern_value(plugin->id, pattern, group, track, column, row, value);
 }
 
-void zzub_plugin_insert_pattern_rows(zzub_plugin_t *plugin, int pattern, int* column_indices, int num_indices, int start, int rows) {
+void zzub_plugin_insert_pattern_rows(zzub_plugin_t *plugin, int pattern, const int* column_indices, int num_indices, int start, int rows) {
 
-	plugin->_player->plugin_insert_pattern_rows(plugin->id, pattern, column_indices, num_indices, start, rows);
+	plugin->_player->plugin_insert_pattern_rows(plugin->id, pattern, (int*)column_indices, num_indices, start, rows);
 }
 
-void zzub_plugin_remove_pattern_rows(zzub_plugin_t *plugin, int pattern, int* column_indices, int num_indices, int start, int rows) {
+void zzub_plugin_remove_pattern_rows(zzub_plugin_t *plugin, int pattern, const int* column_indices, int num_indices, int start, int rows) {
 
-	plugin->_player->plugin_remove_pattern_rows(plugin->id, pattern, column_indices, num_indices, start, rows);
+	plugin->_player->plugin_remove_pattern_rows(plugin->id, pattern, (int*)column_indices, num_indices, start, rows);
 }
 
 /*void zzub_plugin_set_pattern_values(zzub_player_t* player, int plugin, int pattern, int target_row, zzub_pattern_t* src_pattern, int* mappings, int mappings_count) {
@@ -1594,7 +1594,7 @@ int zzub_plugin_set_instrument(zzub_plugin_t *plugin, const char *name) {
 
 ***/
 
-int zzub_sequence_get_event_at(zzub_sequence_t* sequence, unsigned long pos) {
+int zzub_sequence_get_event_at(zzub_sequence_t* sequence, int pos) {
 	int song_index = 0;
 	int timestamp, value;
 	int event_count = zzub_sequence_get_event_count(sequence);
@@ -2619,7 +2619,7 @@ int zzub_envelope_get_point_count(zzub_envelope_t *env) {
 	return env->points.size();
 }
 
-void zzub_envelope_get_point(zzub_envelope_t *env, int index, unsigned short *x, unsigned short *y, unsigned char *flags) {
+void zzub_envelope_get_point(zzub_envelope_t *env, int index, unsigned short *x, unsigned short *y, char *flags) {
 	envelope_point *pt = &env->points[index];
 	if (x)
 		*x = pt->x;
@@ -2629,7 +2629,7 @@ void zzub_envelope_get_point(zzub_envelope_t *env, int index, unsigned short *x,
 		*flags = pt->flags;
 }
 
-void zzub_envelope_set_point(zzub_envelope_t *env, int index, unsigned short x, unsigned short y, unsigned char flags) {
+void zzub_envelope_set_point(zzub_envelope_t *env, int index, unsigned short x, unsigned short y, char flags) {
 	envelope_point *pt = &env->points[index];
 	if (index == 0)
 	{
@@ -2711,7 +2711,7 @@ void zzub_input_destroy(zzub_input_t* inf) {
 	delete inf;
 }
 
-void zzub_input_read(zzub_input_t* f, void* buffer, int bytes) {
+void zzub_input_read(zzub_input_t* f, char* buffer, int bytes) {
 	f->read(buffer, bytes);
 }
 
@@ -2727,8 +2727,8 @@ void zzub_input_seek(zzub_input_t* f, int a, int b) {
 	f->seek(a, b);
 }
 
-void zzub_output_write(zzub_output_t* f, void* buffer, int bytes) {
-	f->write(buffer, bytes);
+void zzub_output_write(zzub_output_t* f, const char* buffer, int bytes) {
+	f->write((void*)buffer, bytes);
 }
 
 int zzub_output_position(zzub_output_t* f) {

@@ -1,3 +1,6 @@
+
+include "zzub/types.h"
+
 namespace zzub:
 	enum:
 		set version = 15
@@ -206,8 +209,8 @@ namespace zzub:
 			member noref All all
 			member noref Unknown unknown
 
-	#typedef int (*ZzubCallback)(player_t *player plugin_t* machine event_data_t* data void *tag)
-	#typedef void (*ZzubMixCallback)(float *left float *right int size void *tag)
+	pdef callback(Player player, Plugin plugin, EventData data, pvoid tag): int
+	pdef mix_callback(out float left, out float right, int size, pvoid tag)
 
 	enum ParameterType:
 		# parameter types
@@ -315,16 +318,16 @@ namespace zzub:
 	"Configure and create an audio driver instance."
 	class Audiodriver:
 		"Create an audio driver that uses the PortAudio API."
-		def static create_portaudio(): Audiodriver
+		def static create_portaudio(Player player): Audiodriver
 
 		"Create an audio driver that uses the RtAudio API."
-		def static create_rtaudio(): Audiodriver
+		def static create_rtaudio(Player player): Audiodriver
 
 		"Create a silent, non-processing audio driver that has one device with the specified properties."
-		def static create_silent(string name, int out_channels, int in_channels, out int[num_rates] supported_rates, int num_rates): Audiodriver
+		def static create_silent(Player player, string name, int out_channels, int in_channels, out int[num_rates] supported_rates, int num_rates): Audiodriver
 
 		"Creates the preferred audio driver."
-		def static create(): Audiodriver
+		def static create(Player player): Audiodriver
 
 		"Get number of detected input and output audio devices"
 		def get_count(): int
@@ -368,17 +371,17 @@ namespace zzub:
 	"@name MIDI Driver Methods"
 	"Open midi devices."
 	class Mididriver:
-		def get_count(): int
-		def get_name(int index): string
-		def is_input(int index): bool
-		def is_output(int index): bool
-		def open(int index): int
-		def close_all(): int
+		def static get_count(Player player): int
+		def static get_name(Player player, int index): string
+		def static is_input(Player player, int index): bool
+		def static is_output(Player player, int index): bool
+		def static open(Player player, int index): int
+		def static close_all(Player player): int
 	
 	"@name Plugin Collection Methods"
 	"For enumerating and configuring plugin collections."
 	class Plugincollection:
-		def static get_by_uri(string uri): Plugincollection
+		def static get_by_uri(Player player, string uri): Plugincollection
 		def configure(string key, string value)
 	
 	class Input:
@@ -442,8 +445,8 @@ namespace zzub:
 		def get_track_count(int group): int
 		def get_column_count(int group, int track): int
 		def get_value(int row, int group, int track, int column): int
-		def set_value(int row, int group, int track, int column, int value): int
-		def interpolate(): int
+		def set_value(int row, int group, int track, int column, int value)
+		def interpolate()
 		# void zzub_pattern_get_bandwidth_digest(out float[digestsize] digest, int digestsize): int
 	
 	"@name Parameter methods"
@@ -490,7 +493,7 @@ namespace zzub:
 		def get_uri(): string
 		def get_author(): string
 
-		def get_instrument_list(): int
+		def get_instrument_list(out char[maxbytes] result, int maxbytes): int
 
 		def get_tracks_min(): int
 		def get_tracks_max(): int
@@ -507,8 +510,6 @@ namespace zzub:
 	"@name Plugin methods"
 	"Retreive more details about plugins."
 	class Plugin:
-		def add_midimapping(int group, int track, int param, int channel, int controller): Midimapping
-		def remove_midimapping(int group, int track, int param): int
 		"Deletes a plugin"
 		def destroy(): int
 
@@ -588,6 +589,9 @@ namespace zzub:
 
 		#/** @name Plugin pattern methods
 		#	Manipulate patterns belonging to a plugin in the graph directly.*/
+
+		"Creates a non-playable pattern with given columns and rows in group 0, track 0. All values are set to 0 by default."
+		def static create_range_pattern(Player player, int columns, int rows): Pattern
 
 		"Creates a pattern compatible with given plugin. The pattern becomes incompatible if the plugin has tracks or incoming connections added."
 		def create_pattern(int rows): Pattern
@@ -794,7 +798,7 @@ namespace zzub:
 		def get_flags(): char
 		def set_flags(char flags)
 		def is_enabled(): int
-		def enable(int enable): int
+		def enable(int enable)
 		def get_point_count(): int
 		def get_point(int index, out ushort x, out ushort y, out char flags)
 		def set_point(int index, ushort x, ushort y, char flags)
@@ -850,7 +854,7 @@ namespace zzub:
 	"@name Player Methods"
 	class Player:
 		"Create a player instance."
-		def create(): Player
+		def static create(): Player
 
 		"Destroy a player instance and all its resources."
 		def destroy()
@@ -911,6 +915,9 @@ namespace zzub:
 
 		# def get_plugin(int index): Plugin
 
+		def static add_midimapping(Plugin plugin, int group, int track, int param, int channel, int controller): Midimapping
+		def static remove_midimapping(Plugin plugin, int group, int track, int param): int
+
 		"Returns the plugin object given the plugins name."
 		def get_plugin_by_name(string name): Plugin
 
@@ -943,10 +950,10 @@ namespace zzub:
 		def get_sequence(int index): Sequence
 
 		"Retreive the currently playing pattern and row for a plugin."
-		def get_currently_playing_pattern(out int pattern, out int row): int
+		def static get_currently_playing_pattern(Plugin plugin, out int pattern, out int row): int
 
 		"Retreive the currently playing row for a plugin and a pattern."
-		def get_currently_playing_pattern_row(int pattern, out int row): int
+		def static get_currently_playing_pattern_row(Plugin plugin, int pattern, out int row): int
 
 		def get_wave_count(): int
 
@@ -958,7 +965,7 @@ namespace zzub:
 		# def get_wave_amp(): float
 
 		"Sets a function that receives events."
-		# TODO: def set_callback(ZzubCallback callback, void* tag)
+		def set_callback(callback callback, pvoid tag)
 
 		"Process player events. Intended to be called by the host in a timer"
 		"or on idle processing to receive events about parameter changes etc."
@@ -990,9 +997,6 @@ namespace zzub:
 		def create_plugin(Input input, int dataSize, string instanceName, Pluginloader loader): Plugin
 		
 		def create_sequence(Plugin plugin): Sequence
-
-		"Creates a non-playable pattern with given columns and rows in group 0, track 0. All values are set to 0 by default."
-		def create_range_pattern(int columns, int rows): Pattern
 
 		"Write changes made to the graph since zzub_player_begin()."
 		""

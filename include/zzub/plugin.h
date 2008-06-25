@@ -21,7 +21,7 @@
 #include <vector>
 #include <string>
 #include <cassert>
-#include "types.h"
+#include "zzub.h"
 
 
 namespace zzub {

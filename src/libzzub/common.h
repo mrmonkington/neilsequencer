@@ -68,7 +68,24 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <boost/graph/visitors.hpp>
 #include <boost/graph/depth_first_search.hpp>
 
-#define ZZUB_NO_CTYPES
+#define NO_ZZUB_AUDIODRIVER_TYPE
+#define NO_ZZUB_MIDIDRIVER_TYPE
+#define NO_ZZUB_PLUGINCOLLECTION_TYPE
+#define NO_ZZUB_INPUT_TYPE
+#define NO_ZZUB_OUTPUT_TYPE
+#define NO_ZZUB_ARCHIVE_TYPE
+#define NO_ZZUB_MIDIMAPPING_TYPE
+#define NO_ZZUB_PATTERN_TYPE
+#define NO_ZZUB_PARAMETER_TYPE
+#define NO_ZZUB_ATTRIBUTE_TYPE
+#define NO_ZZUB_PLUGINLOADER_TYPE
+#define NO_ZZUB_PLUGIN_TYPE
+#define NO_ZZUB_SEQUENCE_TYPE
+#define NO_ZZUB_WAVELEVEL_TYPE
+#define NO_ZZUB_ENVELOPE_TYPE
+#define NO_ZZUB_WAVE_TYPE
+#define NO_ZZUB_RECORDER_TYPE
+#define NO_ZZUB_PLAYER_TYPE
 
 struct zzub_flatapi_player;
 
