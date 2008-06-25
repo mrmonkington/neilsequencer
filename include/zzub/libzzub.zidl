@@ -1,6 +1,316 @@
-include "zzub/types.h"
-
 namespace zzub:
+	enum:
+		set version = 15
+		set buffer_size = 256
+
+	enum EventType:
+		set pre_flag = 16384
+
+		# plugin events
+		set double_click = 0
+		set new_plugin = 1
+		set delete_plugin = 2
+		set pre_delete_plugin = 9
+		set disconnect = 3
+		set connect = 4
+		set plugin_changed = 30
+		set parameter_changed = 7
+		set set_tracks = 13
+		set set_sequence_tracks = 23
+		set set_sequence_event = 24
+
+		set new_pattern = 25
+		set delete_pattern = 26
+		set pre_delete_pattern = 47
+		set edit_pattern = 27
+		set pattern_changed = 31
+		set pattern_insert_rows = 42
+		set pattern_remove_rows = 43
+
+		set sequencer_add_track = 32
+		set sequencer_remove_track = 33
+		set sequencer_changed = 41
+
+		set pre_disconnect = 34
+		set pre_connect = 35
+		set post_connect = 46
+		set pre_set_tracks = 36
+		set post_set_tracks = 45
+
+		set envelope_changed = 37
+		set slices_changed = 38
+		set wave_changed = 39
+		set delete_wave = 40
+
+		# global/master events
+		set load_progress	= 8
+		set midi_control	= 11
+		set wave_allocated	= 12
+	
+		set player_state_changed = 20
+		set osc_message = 21
+		set vu = 22
+	
+		set custom = 44
+
+		# catch all event
+		set all = 255
+	
+	enum PlayerState:
+		set playing = 0
+		set stopped = 1
+		set muted = 2
+		set released = 3
+		
+	class EventData:
+	
+		class All:
+			member EventData data
+	
+		class NewPlugin:
+			member Plugin plugin
+	
+		class DeletePlugin:
+			member Plugin plugin
+	
+		class Connect:
+			member Plugin from_plugin
+			member Plugin to_plugin
+			member int type
+
+		class PluginChanged:
+			member Plugin plugin
+		
+		class SetTracks:
+			member Plugin plugin
+		
+		class SetSequenceTracks:
+			member Plugin plugin
+		
+		class SetSequenceEvent:
+			member Plugin plugin
+			member int track
+			member int time
+
+		class NewPattern:
+			member Plugin plugin
+			member int index
+			
+		class DeletePattern:
+			member Plugin plugin
+			member int index
+			
+		class EditPattern:
+			member Plugin plugin
+			member int index
+			member int group
+			member int track
+			member int column
+			member int row
+			member int value
+			
+		class PatternInsertRows:
+			member Plugin plugin
+			member int index
+			member int row
+			member int rows
+			member int[indices] column_indices
+			member int indices
+
+		class PatternRemoveRows:
+			member Plugin plugin
+			member int index
+			member int row
+			member int rows
+			member int[indices] column_indices
+			member int indices
+			
+		class PatternChanged:
+			member Plugin plugin
+			member int index
+			
+		class MidiMessage:
+			member uchar status
+			member uchar data1
+			member uchar data2
+		
+		class ChangeParameter:
+			member Plugin plugin
+			member int group
+			member int track
+			member int param
+			member int value
+			
+		class PlayerStateChanged:
+			member int player_state
+			
+		class Vu:
+			member int size
+			member float left_amp
+			member float right_amp
+			member float time
+			
+		class Serialize:
+			member char mode
+			member Archive archive
+			
+		class Unknown:
+			member pvoid param
+
+		class OscMessage:
+			member string path
+			member string types
+			member pvoid[argc] argv
+			member int argc
+			member pvoid msg
+		
+		class ChangeWave:
+			member Wave wave
+			
+		class DeleteWave:
+			member Wave wave
+			
+		class AllocateWavelevel:
+			member Wavelevel wavelevel
+			
+		class Custom:
+			member int id
+			member pvoid data
+
+		member int type
+		union:
+			member noref NewPlugin new_plugin
+			member noref DeletePlugin delete_plugin
+			member noref MidiMessage midi_message
+			member noref Connect connect_plugin
+			member noref Connect disconnect_plugin
+			member noref PluginChanged plugin_changed
+			member noref ChangeParameter change_parameter
+			member noref SetTracks set_tracks
+			member noref PlayerStateChanged player_state_changed
+			member noref OscMessage osc_message
+			member noref Vu vu
+			member noref Serialize serialize
+			member noref SetSequenceTracks set_sequence_tracks
+			member noref SetSequenceEvent set_sequence_event
+			member noref NewPattern new_pattern
+			member noref DeletePattern delete_pattern
+			member noref EditPattern edit_pattern
+			member noref PatternChanged pattern_changed
+			member noref ChangeWave change_wave
+			member noref DeleteWave delete_wave
+			member noref AllocateWavelevel allocate_wavelevel
+			member noref PatternInsertRows pattern_insert_rows
+			member noref PatternRemoveRows pattern_remove_rows
+			member noref Custom custom
+			member noref All all
+			member noref Unknown unknown
+
+	#typedef int (*ZzubCallback)(player_t *player plugin_t* machine event_data_t* data void *tag)
+	#typedef void (*ZzubMixCallback)(float *left float *right int size void *tag)
+
+	enum ParameterType:
+		# parameter types
+		set note	= 0
+		set switch	= 1
+		set byte	= 2
+		set word	= 3
+
+	enum WaveBufferType:
+		set si16	= 0    # signed int 16bit
+		set f32		= 1    # float 32bit
+		set si32	= 2    # signed int 32bit
+		set si24	= 3    # signed int 24bit
+
+	enum OscillatorType:
+		set sine	= 0
+		set sawtooth	= 1
+		set pulse	= 2
+		set triangle	= 3
+		set noise	= 4
+		set sawtooth_303 = 5
+
+	enum NoteValue:
+		# predefined values for notes
+		set none	= 0
+		set off	= 255
+		set min	= 1
+		set max	= 156 # ((16 * 9) + 12)
+		set c4 = 65 # ((16 * 4) + 1)
+
+	enum SwitchValue:
+		# predefined values for switches
+		set none	= 255
+		set off	= 0
+		set on	= 1
+
+	enum WavetableIndexValue:
+		# predefined values for wavetable indices
+		set none	= 0
+		set min	= 1
+		set max	= 200
+
+	enum ParameterFlag:
+		# parameter flags
+		set wavetable_index	= bit 0
+		set state	= bit 1
+		set event_on_edit	= bit 2
+
+	enum PluginFlag:
+		# plugin flags
+		set mono_to_stereo	= bit 0
+		set plays_waves	= bit 1
+		set uses_lib_interface	= bit 2
+		set uses_instruments	= bit 3
+		set does_input_mixing	= bit 4
+		set no_output	= bit 5 # deprecated
+		set control_plugin	= bit 6
+		set auxiliary	= bit 7
+	
+		set is_root = bit 16 # master plugin only
+		set has_audio_input = bit 17 # for audio effects
+		set has_audio_output = bit 18 # for audio generators and effects
+		set has_event_input = bit 19 # for event effects
+		set has_event_output = bit 20 # for event generators and effects
+	
+		set offline = bit 21 # works on fixed ranges of data no realtime processing
+		set stream = bit 22 # stream plugin
+		set import = bit 25 # import plugin
+
+		set has_midi_input = bit 23 # for midi effects
+		set has_midi_output = bit 24 # for midi generators and effects
+
+	enum StateFlag:
+		# player state flags
+		set playing	= 1
+		set recording = 2
+	
+
+	enum WaveFlag:
+		set loop	= bit 0
+		set extended	= bit 2
+		set stereo = bit 3
+		set pingpong	= bit 4
+		set envelope	= bit 7
+	
+
+	enum EnvelopeFlag:
+		set sustain	= bit 0
+		set loop	= bit 1
+	
+
+	enum ProcessMode:
+		# processing modes
+		set no_io	= 0
+		set read	= bit 0
+		set write	= bit 1
+		set read_write = bit 0,1
+
+	enum ConnectionType:
+		set audio = 0
+		set event = 1
+		set midi = 2
+
 	"@name Audio Driver Methods"
 	"Configure and create an audio driver instance."
 	class Audiodriver:
@@ -194,8 +504,6 @@ namespace zzub:
 		# def get_import_format_count(): int
 		# def get_import_format_ext(int index): string
 		
-	class EventData:
-	
 	"@name Plugin methods"
 	"Retreive more details about plugins."
 	class Plugin:
@@ -323,7 +631,7 @@ namespace zzub:
 		"Sets a value in a pattern."
 		def set_pattern_value(int pattern, int group, int track, int column, int row, int value)
 
-		def get_new_pattern_name(string[maxLen] name, int maxLen)
+		def get_new_pattern_name(out string[maxLen] name, int maxLen)
 		def linear_to_pattern(int index, out int group, out int track, out int column): int
 		def pattern_to_linear(int group, int track, int column, out int index): int
 		def get_pattern_column_count(): int
@@ -724,4 +1032,5 @@ namespace zzub:
 		# 0.3: DEAD # int zzub_event_connection_binding_get_track(zzub_event_connection_binding_t *binding)
 		# 0.3: DEAD # int zzub_event_connection_binding_get_column(zzub_event_connection_binding_t *binding)
 		# 0.3: DEAD # int zzub_event_connection_binding_get_controller(zzub_event_connection_binding_t *binding)
+
 
