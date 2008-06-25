@@ -3,18 +3,18 @@ include "zzub/types.h"
 namespace zzub:
 	"@name Audio Driver Methods"
 	"Configure and create an audio driver instance."
-	class AudioDriver:
+	class Audiodriver:
 		"Create an audio driver that uses the PortAudio API."
-		def create_portaudio(): AudioDriver
+		def static create_portaudio(): Audiodriver
 
 		"Create an audio driver that uses the RtAudio API."
-		def create_rtaudio(): AudioDriver
+		def static create_rtaudio(): Audiodriver
 
 		"Create a silent, non-processing audio driver that has one device with the specified properties."
-		def create_silent(string name, int out_channels, int in_channels, out int[num_rates] supported_rates, int num_rates): AudioDriver
+		def static create_silent(string name, int out_channels, int in_channels, out int[num_rates] supported_rates, int num_rates): Audiodriver
 
 		"Creates the preferred audio driver."
-		def create(): AudioDriver
+		def static create(): Audiodriver
 
 		"Get number of detected input and output audio devices"
 		def get_count(): int
@@ -57,33 +57,487 @@ namespace zzub:
 		
 	"@name MIDI Driver Methods"
 	"Open midi devices."
-	class MidiDriver:
+	class Mididriver:
 		def get_count(): int
 		def get_name(int index): string
 		def is_input(int index): bool
 		def is_output(int index): bool
 		def open(int index): int
 		def close_all(): int
-
+	
 	"@name Plugin Collection Methods"
 	"For enumerating and configuring plugin collections."
-	class PluginCollection:
+	class Plugincollection:
+		def static get_by_uri(string uri): Plugincollection
 		def configure(string key, string value)
-#zzub_plugincollection_t *get_plugincollection_by_uri(const char *uri)
-
+	
 	class Input:
+		"Create an input stream that reads from a file."
+		def static open_file(string filename): Input
+
+		"Closes an input stream created with zzub_create_output_XXX."
+		def destroy()
+
+		def read(out char[bytes] buffer, int bytes)
+		def size(): int
+		def position(): int
+		def seek(int pos, int mode)
 	
 	class Output:
+		"Create an output stream that writes to a file."
+		def static create_file(string filename): Output
+
+		"Closes an output stream created with zzub_create_output_XXX."
+		def destroy()
+		
+		def write(char[bytes] buffer, int bytes)
+		def position(): int
+		def seek(int pos, int mode)
+		
+	class Archive:
+		"Create an in-memory archive of keyed input and output streams."
+		def static create_memory(): Archive
+		
+		"Returns an output stream object for writing."
+		def get_output(string path): Output
+
+		"Returns an input stream object for reading."
+		def get_input(string path): Input
+
+		def destroy()
 	
+	"MIDI Mapping Methods"
+	class Midimapping:
+		def get_plugin(): int
+		def get_group(): int
+		def get_track(): int
+		def get_column(): int
+		def get_channel(): int
+		def get_controller(): int
+		
+	"@name Offline pattern methods"
+	"These functions are meant to help editing patterns. Note you cannot"
+	"retreive a direct zzub_pattern_t object for a \"live pattern\". You can"
+	"however, use zzub_plugin_get_pattern to retreive copies of live patterns,"
+	"and then call zzub_plugin_update_pattern to write the changed pattern back"
+	"to the engine."
+	"Alternately, zzub_plugin_get_pattern_value/zzub_plugin_set_pattern_value"
+	"can also be used to edit single values in live patterns."
+	class Pattern:
+		def destroy()
+		def get_name(out string[maxLen] name, int maxLen)
+		def set_name(string name)
+		def get_row_count(): int
+		def get_group_count(): int
+		def get_track_count(int group): int
+		def get_column_count(int group, int track): int
+		def get_value(int row, int group, int track, int column): int
+		def set_value(int row, int group, int track, int column, int value): int
+		def interpolate(): int
+		# void zzub_pattern_get_bandwidth_digest(out float[digestsize] digest, int digestsize): int
+	
+	"@name Parameter methods"
+	"Retreive more details from zzub_parameter_t objects."
+	class Parameter:
+		"Returns one of the values in the zzub_parameter_type enumeration."
+		def get_type(): int
+
+		def get_name(): string
+		def get_description(): string
+		def get_value_min(): int
+		def get_value_max(): int
+		def get_value_none(): int
+		def get_value_default(): int
+
+		"A parameter flag is combined by zero or more values in the zzub_parameter_flag enumeration."
+		def get_flags(): int
+	
+	"@name Attribute methods"
+	"Retreive more details from zzub_attribute_t objects."
+	class Attribute:
+		def get_name(): string
+		def get_value_min(): int
+		def get_value_max(): int
+		def get_value_default(): int
+	
+	"Plugin loading methods"
+	"Retreive more details from zzub_pluginloader_t objects."
+	class Pluginloader:
+		def get_name(): string
+		def get_short_name(): string
+		def get_parameter_count(int group): int
+
+		"Returns the parameter for a group and column. See also zzub_plugin_get_parameter() which also returns parameters in group 0."
+		def get_parameter(int group, int index): Parameter
+
+		def get_attribute_count(): int
+		def get_attribute(int index): Attribute
+		def get_loader_name(): string
+
+		"Returns the flags for this plugin loader. Combined by zero or more values in the zzub_plugin_flag enumeration."
+		def get_flags(): int
+
+		def get_uri(): string
+		def get_author(): string
+
+		def get_instrument_list(): int
+
+		def get_tracks_min(): int
+		def get_tracks_max(): int
+
+		"Returns the number of supported stream formats. Used with plugins flagged zzub_plugin_flag_stream."
+		def get_stream_format_count(): int
+
+		"Returns a supported stream file format extension stream. Used with plugins flagged zzub_plugin_flag_stream."
+		def get_stream_format_ext(int index): string
+
+		# def get_import_format_count(): int
+		# def get_import_format_ext(int index): string
+		
+	class EventData:
+	
+	"@name Plugin methods"
+	"Retreive more details about plugins."
 	class Plugin:
+		def add_midimapping(int group, int track, int param, int channel, int controller): Midimapping
+		def remove_midimapping(int group, int track, int param): int
+		"Deletes a plugin"
+		def destroy(): int
+
+		"Load plugin state."
+		def load(Input input): int
+
+		"Save plugin state."
+		def save(Output ouput): int
+
+		"Renames a plugin. Should fail and return -1 if the name already exists."
+		def set_name(string name): int
+
+		"Retreive the name of a plugin."
+		def get_name(out string[maxlen] name, int maxlen): int
+
+		"Retreive the unique per-session id of a plugin. See also zzub_player_get_plugin_by_id()."
+		def get_id(): int
+
+		"Returns the screen position coordinates for the plugin. Values are expected to be in the range -1..1."
+		def get_position(out float x, out float y)
+
+		"Sets the plugin screen position. Values are expected to be in the range -1..1."
+		def set_position(float x, float y)
+
+		"Sets the plugin screen position. Values are expected to be in the range -1..1. This method is not undoable."
+		def set_position_direct(float x, float y)
+
+		"Returns flags for this plugin. Shorthand for using zzub_pluginloader_get_flags(). Combined by zero or more values in the zzub_plugin_flag enumeration."
+		def get_flags(): int
+
+		"Returns the number of tracks."
+		def get_track_count(): int
+
+		"Sets the number of tracks. Will call plugin::set_track_count() from the player thread."
+		def set_track_count(int count)
+
+		"Returns 1 if plugin is muted, otherwise 0."
+		def get_mute(): int
+
+		"Set whether plugin is muted. 1 for muted, 0 for normal."
+		"A muted machine does not produce any sound."
+		def set_mute(int muted)
+
+		"Returns 1 if plugin is bypassed, otherwise 0."
+		def get_bypass(): int
+
+		"Set whether plugin is bypassed. 1 for bypass, 0 for normal."
+		"Bypass causes no processing to occur in the given machine."
+		def set_bypass(int muted)
+
+		"Returns a string of \\\\n-separated command strings"
+		def get_commands(out string[maxlen] commands, int maxlen): int
+
+		"When a plugin command string starts with the char '\\', it has subcommands."
+		"Unexpectedly, zzub_plugin_get_sub_commands returns a \\\\n-separated string (like get_commands)."
+		"Some plugins need to be ticked before calling get_sub_commands."
+		def get_sub_commands(int i, out string[maxlen] commands, int maxlen): int
+
+		"Invoke a command on the plugin."
+		def command(int i)
+
+		"Returns the pluginloader used to create this plugin."
+		def get_pluginloader(): Pluginloader
+
+		def get_midi_output_device_count(): int
+		def get_midi_output_device(int index): string
+
+		def get_envelope_count(): int
+		def get_envelope_flags(int index): int
+		def get_envelope_name(int index): string
+
+		def set_stream_source(string resource)
+		# 0.3: DEAD # def get_stream_source()
+
+		"Sets the plugin instrument (d'oh!)"
+		def set_instrument(string name): int
+
+		#/** @name Plugin pattern methods
+		#	Manipulate patterns belonging to a plugin in the graph directly.*/
+
+		"Creates a pattern compatible with given plugin. The pattern becomes incompatible if the plugin has tracks or incoming connections added."
+		def create_pattern(int rows): Pattern
+
+		"Returns how many patterns are associated with the plugin."
+		def get_pattern_count(): int
+
+		"Adds a pattern at the end of the plugins list of patterns"
+		def add_pattern(Pattern pattern)
+
+		"Remove the pattern from the plugin"
+		def remove_pattern(int pattern)
+
+		"Change the order of patterns"
+		def move_pattern(int index, int newIndex)
+
+		"Replaces pattern contents "
+		def update_pattern(int index, Pattern pattern)
+
+		"Returns a copy of the requested pattern. Callers must destroy the pattern returned from get_pattern"
+		def get_pattern(int index): Pattern
+
+		"Returns the index of the pattern with the given name"
+		def get_pattern_by_name(string name): int
+
+		"Returns the name of given pattern."
+		def get_pattern_name(int index): string
+
+		"Updates the name of the pattern."
+		def set_pattern_name(int index, string name)
+
+		"Returns the length of the pattern."
+		def get_pattern_length(int index): int
+
+		"Updates the number of rows in the pattern."
+		def set_pattern_length(int index, int rows)
+
+		"Returns a value from the requested pattern."
+		def get_pattern_value(int pattern, int group, int track, int column, int row): int
+
+		"Sets a value in a pattern."
+		def set_pattern_value(int pattern, int group, int track, int column, int row, int value)
+
+		def get_new_pattern_name(string[maxLen] name, int maxLen)
+		def linear_to_pattern(int index, out int group, out int track, out int column): int
+		def pattern_to_linear(int group, int track, int column, out int index): int
+		def get_pattern_column_count(): int
+
+		"Inserts rows in a pattern. column_indices has a total length of 3 * num_indices, where each index is a triple of group, track and column."
+		def insert_pattern_rows(int pattern, int[num_indices*3] column_indices, int num_indices, int start, int rows)
+
+		"Removes rows in a pattern. column_indices has a total length of 3 * num_indices, where each index is a triple of group, track and column."
+		def remove_pattern_rows(int pattern, int[num_indices*3] column_indices, int num_indices, int start, int rows)
+
+		"Copies columns from an offline pattern to a live pattern. Source and target columns are set up in"
+		"the mappings array, which has 6 ints for each mapping: group, track and column for source and target"
+		"plugins."
+		# 0.3: DEAD # def set_pattern_values(zzub_player_t* player, int plugin, int pattern, int target_row, zzub_pattern_t* src_pattern, int* mappings, int mappings_count)
+
+		#/*@}*/
+		#/** @name Plugin parameter methods
+		#	Manipulate plugin parameters.*/
+		#/*@{*/
+
+		"Creates a textual description of the given value. The return value is the number of characters in the output string."
+		def describe_value(int group, int column, int value, out string[maxlen] name, int maxlen): int
+
+		"Returns the last written value of the requested parameter."
+		def get_parameter_value(int group, int track, int column): int
+
+		"Sets the value of a plugin parameter. The method will wait for the player thread to pick up the modified value and call process_events()."
+		def set_parameter_value(int group, int track, int column, int value, int record)
+
+		"Sets the value of a plugin parameter. Unlike zzub_plugin_set_parameter_value(), this method returns immediately. The parameter will be changed later when the player thread notices the modified value. Is also not undoable."
+		def set_parameter_value_direct(int group, int track, int column, int value, int record)
+
+		def get_parameter_count(int group, int track): int
+
+		def get_parameter(int group, int track, int column): Parameter
+
+		# Plugin connection methods
+
+		"Returns the number of input connections for given plugin."
+		def get_input_connection_count(): int
+
+		"Returns the input connection index for given plugin and connection type."
+		def get_input_connection_by_type(Plugin from_plugin, int type): int
+
+		"Returns the connection type for given plugin and connection index."
+		def get_input_connection_type(int index): int
+
+		"Returns the plugin index for given plugin and connection index."
+		def get_input_connection_plugin(int index): Plugin
+
+		"Returns the number of output connections for given plugin."
+		def get_output_connection_count(): int
+
+		"Returns the output connection index for given plugin and connection type."
+		def get_output_connection_by_type(Plugin from_plugin, int type): int
+
+		"Returns the connection type for given plugin and connection index."
+		def get_output_connection_type(int index): int
+
+		"Returns the plugin index for given plugin and connection index."
+		def get_output_connection_plugin(int index): Plugin
+
+		"Connect two plugins"
+		def add_input(Plugin from_plugin, int type): int
+
+		"Disconnect two plugins"
+		def delete_input(Plugin from_plugin, int type)
+		#/*@}*/
+		#/** @name Plugin statistics 
+		#	Retreiving statistics is not exact unless the graph is locked.
+		#*/
+		#/*@{*/
+
+		"Copies the given plugins work buffer."
+		def get_mixbuffer(out float[size] leftbuffer, out float[size] rightbuffer, out int size, out int64 samplepos): int
+
+		def get_last_peak(out float maxL, out float maxR)
+		def get_last_worktime(): double
+		def get_last_cpu_load(): double
+		def get_last_midi_result(): int
+		def get_last_audio_result(): int
+
+		#/*@}*/
+		#/** @name Other plugin methdos"
+		#/*@{*/
+
+		def invoke_event(EventData data, int immediate): int
+		def tick()
+		def get_attribute_value(int index): int
+		def set_attribute_value(int index, int value)
+		def play_midi_note(int note, int prevNote, int velocity)
+		def play_pattern_row_ref(int pattern, int row)
+		def play_pattern_row(Pattern pattern, int row)
+
+		# Connection methods
+
+		#/*@}*/
+		#/** @name Midi connection methods"
+		#/*@{*/
+
+		def set_midi_connection_device(Plugin from_plugin, string name): int
+		# 0.3: DEAD # def get_midi_connection_device(int from_plugin): string
+
+		#/*@}*/
+		#/** @name Event connection methods"
+		#/*@{*/
+
+		def add_event_connection_binding(Plugin from_plugin, int sourceparam, int targetgroup, int targettrack, int targetparam)
+		# 0.3: DEAD # def get_event_connection_binding_count(int from_plugin): int
+		# 0.3: DEAD # zzub_event_connection_binding_t *zzub_plugin_get_event_connection_binding(int from_plugin, int index)
+		# 0.3: DEAD # def remove_event_connection_binding(int from_plugin, int index): int
+
 	
-	class PluginLoader:
-	
+	"@name Sequencer methods"
 	class Sequence:
+		# 0.3: DEAD # def get_index(): int
+		def destroy()
+		def move(int newIndex)
+		def insert_events(int start, int ticks): int
+		def remove_events(int start, int ticks): int
+		def set_event(int pos, int value)
+		def get_plugin(): Plugin
+		def get_event_at(int pos): int
+		def get_event_count(): int
+		def get_event(int index, out int pos, out int value): int
+		
+	"@name Wavelevel"
+	class Wavelevel:
+		def get_wave(): Wave
+		def clear(): int
+		def get_sample_count(): int
+		def set_sample_count(int count)
+		def get_root_note(): int
+		def set_root_note(int note)
+		def get_samples_per_second(): int
+		def set_samples_per_second(int sps)
+		def get_loop_start(): int
+		def set_loop_start(int pos)
+		def get_loop_end(): int
+		def set_loop_end(int pos)
+		def get_format(): int
+		# 0.3: DEAD # void zzub_wavetable_set_format(zzub_player_t* player, int wave, int level, int format)
+
+		def remove_sample_range(int start, int end)
+		# 0.3: DEAD # void zzub_wavelevel_insert_sample_range(zzub_wavelevel_t* level, int start, void* buffer, int channels, int format, int numsamples)
+		def get_samples_digest(int channel, int start, int end, out float[digestsize] mindigest, out float[digestsize] maxdigest, out float[digestsize] ampdigest, int digestsize)
 	
+	"@name Envelopes"
+	class Envelope:
+		def get_attack(): ushort
+		def get_decay(): ushort
+		def get_sustain(): ushort
+		def get_release(): ushort
+		def set_attack(ushort attack)
+		def set_decay(ushort decay)
+		def set_sustain(ushort sustain)
+		def set_release(ushort release)
+		def get_subdivision(): char
+		def set_subdivision(char subdiv)
+		def get_flags(): char
+		def set_flags(char flags)
+		def is_enabled(): int
+		def enable(int enable): int
+		def get_point_count(): int
+		def get_point(int index, out ushort x, out ushort y, out char flags)
+		def set_point(int index, ushort x, ushort y, char flags)
+		def insert_point(int index)
+		def delete_point(int index)
+	
+	"@name Wave table"
 	class Wave:
+		def get_index(): int
+		def load_sample(int level, int offset, int clear, string path, Input datastream): int
+		def save_sample(int level, Output datastream): int
+		def save_sample_range(int level, Output datastream, int start, int end): int
+		def clear(): int
+		def get_name(): string
+		def set_name(string name)
+		def get_path(): string
+		def set_path(string path)
+		def get_flags(): int
+		def set_flags(int flags)
+		def get_volume(): float
+		def set_volume(float volume)
+		def get_envelope_count(): int
+		def set_envelope_count(int count)
+		def get_envelope(int index): Envelope
+		def set_envelope(int index, Envelope env)
+		def get_level_count(): int
+		def get_level(int index): Wavelevel
+		# 0.3: DEAD # def add_level(zzub_player_t* player, int wave)
+		# 0.3: DEAD # def remove_level(zzub_player_t* player, int wave, int level)
+
+		# 0.3: DEAD # def get_index(zzub_wavelevel_t* wave): int
 	
-	class MidiMapping:
+	"@name Memory and file streams - load/save from/to file/clipboard"
+	"Create file or memory data streams for use by e.g "
+	"zzub_wavetable_load_sample() and" 
+	"zzub_player_load_bmx()/zzub_player_save_bmx()."
+	""
+	"In-memory streams are implemented via the zzub_archive_t object"
+	"and destroyed via zzub_archive_destroy()."
+	"File-streams are created with zzub_input_open_file and zzub_output_create_file()"
+	"and closed/destroyed with zzub_input_destroy() and zzub_output_destroy()."
+	class Recorder:
+		# recording functions
+		# zzub_recorder_t* zzub_file_recorder_create()
+		# int zzub_file_recorder_set_wave_path(zzub_recorder_t*, char* wavefile)
+		# void zzub_file_recorder_get_wave_path(zzub_recorder_t*, char* wavefile, int maxlen)
+
+		# zzub_recorder_t* zzub_wavetable_recorder_create()
+		# int zzub_wavetable_recorder_set_waveindex(zzub_recorder_t*, int index)
+		# int zzub_wavetable_recorder_get_waveindex(zzub_recorder_t*)
+		# void zzub_recorder_destroy(zzub_recorder_t*)
 
 	"@name Player Methods"
 	class Player:
@@ -139,10 +593,10 @@ namespace zzub:
 		def get_pluginloader_count(): int
 
 		"Returns a zzub_pluginloader_t handle by index."
-		def get_pluginloader(int index): PluginLoader
+		def get_pluginloader(int index): Pluginloader
 
 		"Finds a zzub_pluginloader_t handle by uri."
-		def get_pluginloader_by_name(string name): PluginLoader
+		def get_pluginloader_by_name(string name): Pluginloader
 
 		"Returns number of plugins in the current song."
 		def get_plugin_count(): int
@@ -158,7 +612,7 @@ namespace zzub:
 		"Returns the plugin object given the plugins index in the graph."
 		def get_plugin(int index): Plugin
 
-		def work_stereo(out int numSamples)#: float[][numSamples]
+		def work_stereo(out int numSamples): float[2][numSamples]
 		def clear()
 		def get_position(): int
 		def set_position(int pos)
@@ -202,7 +656,7 @@ namespace zzub:
 		"or on idle processing to receive events about parameter changes etc."
 		def handle_events()
 
-		def get_midimapping(int index): MidiMapping
+		def get_midimapping(int index): Midimapping
 		def get_midimapping_count(): int
 
 		def get_automation(): bool
@@ -224,6 +678,50 @@ namespace zzub:
 
 		def reset_keyjazz()
 
-		#def add_midimapping(zzub_plugin_t *plugin, int group, int track, int param, int channel, int controller): MidiMapping
-		#def remove_midimapping(zzub_plugin_t *plugin, int group, int track, int param): int
+		"Create a new plugin"
+		def create_plugin(Input input, int dataSize, string instanceName, Pluginloader loader): Plugin
+		
+		def create_sequence(Plugin plugin): Sequence
+
+		"Creates a non-playable pattern with given columns and rows in group 0, track 0. All values are set to 0 by default."
+		def create_range_pattern(int columns, int rows): Pattern
+
+		"Write changes made to the graph since zzub_player_begin()."
+		""
+		"When redo_event and/or undo_event are NULL, zzub will invoke the callback for every editing operation."
+		"If a custom event is specified, the callback is invoked only once with either redo_event or undo_event"
+		"as its parameter."
+		def flush(EventData redo_event, EventData undo_event)
+
+		"Rolls back all editing operations one step. Each step is defined with a call to zzub_player_history_commit()."
+		def undo()
+
+		"Redoes all editing operations since last call to zzub_player_history_commit()."
+		def zzub_player_redo()
+
+		"Commits the last operations to the undo buffer and marks a new undo step."
+		def history_commit(string description)
+
+		"Causes the last operations to not appear in the undo buffer."
+		def history_flush_last()
+
+		"Clears the undo buffer and frees all associated resources."
+		def history_flush()
+
+		"Returns the size of the undo buffer."
+		def history_get_size(): int
+
+		"Returns the current position in the undo buffer."
+		def history_get_position(): int
+
+		"Returns the description of an operation in the undo buffer."
+		def history_get_description(int position): string	
+		#/*@}*/
+		#/** @name Event connection binding methods"
+		#/*@{*/
+
+		# 0.3: DEAD # int zzub_event_connection_binding_get_group(zzub_event_connection_binding_t *binding)
+		# 0.3: DEAD # int zzub_event_connection_binding_get_track(zzub_event_connection_binding_t *binding)
+		# 0.3: DEAD # int zzub_event_connection_binding_get_column(zzub_event_connection_binding_t *binding)
+		# 0.3: DEAD # int zzub_event_connection_binding_get_controller(zzub_event_connection_binding_t *binding)
 

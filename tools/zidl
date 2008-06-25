@@ -73,6 +73,7 @@ class Parser:
 	tok_mul = Token('mul', r'(\*)([^\*].*)', 2, 3)
 	tok_div = Token('div', r'(\/)([^\/].*)', 2, 3)
 	tok_float = Token('float', r'(-?[0-9]*[.]?[0-9]+)([A-Za-z_0-9\%\xb0]+)?', (2,3), 4)
+	tok_int = Token('int', r'[1-9][0-9]*')
 	tok_to = Token('to', r'->')
 	tok_dot = Token('dot', r'\.')
 	tok_comma = Token('comma', r',')
@@ -84,7 +85,7 @@ class Parser:
 	tokens = [
 		tok_colon,
 		tok_string1, tok_string2,
-		tok_float, tok_asterisk,
+		tok_float, tok_int, tok_asterisk,
 		tok_symbol, tok_excl, tok_dot,
 		tok_bo, tok_bc, tok_sbo, tok_sbc, tok_to, tok_comma,
 		tok_eq, tok_ne, tok_gt, tok_lt, tok_ge, tok_le,
@@ -109,19 +110,22 @@ class Parser:
 	def warning(self, msg, context=None):
 		if not context:
 			context = self.context
-		traceback = self.format_context(context)
+		traceback = self.format_context('warning: '  + msg, context)
 		print >> sys.stderr, traceback
-		print >> sys.stderr, "Warning: %s" % msg
 		
-	def format_context(self, context):
-		return '  File "%s", line %i\n    %s' % (context['file'], context['lineno'], context['line'])
+	def format_context(self, msg, context):
+		if sys.platform == 'win32':
+			s = '%s(%s) : %s' % (os.path.abspath(context['file']), context['lineno'], msg)
+		else:
+			s = '%s:%s:%s\n' % (context['file'], context['lineno'], msg)
+			s += context['line']
+		return s
 
 	def error(self, msg, context=None):
 		if not context:
 			context = self.context
-		traceback = self.format_context(context)
+		traceback = self.format_context('error: '  + msg, context)
 		print >> sys.stderr, traceback
-		print >> sys.stderr, "Compile Error: %s" % msg
 		raise ParseError
 		
 	def match(self,token):
@@ -152,7 +156,7 @@ class Parser:
 			
 	def scan(self,token):
 		value = self._try(token)
-		if not value:
+		if value == None:
 			self.error('%s expected at %r.' % (token.rname, self.line))
 		return value
 		
@@ -334,6 +338,7 @@ class Class(zzubIDLObject):
 		parent = parser.top()
 		parent.add_class(self)
 		self.name = parser.scan_symbol()
+		self.c_name = ''
 		if parent.c_name:
 			self.c_name = parent.c_name + '_'
 		self.c_name += self.name.lower()
@@ -357,8 +362,10 @@ class Argument(zzubIDLObject):
 		'string' : dict(c_type='const char *', c_out_type='char *'),
 		'bool' : dict(c_type='int', c_out_type='int *', comment='bool'),
 		'int' : dict(c_type='int', c_out_type='int *'),
+		'int64' : dict(c_type='long long', c_out_type='long long *'),
 		'uint' : dict(c_type='unsigned int', c_out_type='unsigned int *'),
-		'long' : dict(c_type='long', c_out_type='long *'),
+		'char' : dict(c_type='char', c_out_type='char *'),
+		'ushort' : dict(c_type='unsigned short', c_out_type='unsigned short *'),
 		'float' : dict(c_type='float', c_out_type='float *'),
 		'double' : dict(c_type='double', c_out_type='double *'),
 	}
@@ -370,10 +377,13 @@ class Argument(zzubIDLObject):
 		self.c_type = ''
 		self.retval = False
 		self.comment = ''
-		self.array_count = ''
-		self.array = False
+		self.arrayinfo = []
+		self.context = None
+		self.parser = None
 
 	def parse(self, parser, retval=False):
+		self.parser = parser
+		self.context = dict(parser.context)
 		self.retval = retval
 		if not retval:
 			for adt in ['in', 'out']:
@@ -382,25 +392,37 @@ class Argument(zzubIDLObject):
 						parser.error('argument direction already specified: ' + adt)
 					self.argdirs.append(adt)
 		self.typename = parser.scan_symbol()
-		if parser.try_sbo():
-			self.array = True
-			self.array_count = parser.scan_symbol()
+		while parser.try_sbo():
+			self.arrayinfo.append(dict(count=0,mul=1))
+			if parser.match_symbol():
+				self.arrayinfo[-1]['count'] = parser.scan_symbol()
+				if parser.try_mul():
+					self.arrayinfo[-1]['mul'] = parser.scan_int()
+			else:
+				self.arrayinfo[-1]['count'] = parser.scan_int()
 			parser.scan_sbc()
+		if not self.retval:
+			self.name = parser.scan_symbol()
+			
+	def resolve(self):
 		if self.typename in self.typemap:
 			tm = self.typemap[self.typename]
-		elif self.typename in parser.typemap:
-			tm = parser.typemap[self.typename]
+		elif self.typename in self.parser.typemap:
+			tm = self.parser.typemap[self.typename]
 		else:
-			parser.error('unknown type: '+self.typename)
+			self.parser.error('unknown type: '+self.typename, self.context)
 		self.comment = tm.get('comment','')
 		if 'out' in self.argdirs:
 			self.c_type = tm['c_out_type']
+			for ai in self.arrayinfo[1:]:
+				self.c_type = self.c_type + ' *'
 		else:
 			self.c_type = tm['c_type']
-			if self.array:
-				self.c_type = 'const ' + self.c_type + ' *'
-		if not self.retval:
-			self.name = parser.scan_symbol()
+			for i,ai in enumerate(self.arrayinfo):
+				if i == 0:
+					self.c_type = 'const ' + self.c_type + ' *'
+				else:
+					self.c_type = self.c_type + ' *'
 		
 	def write_c_header(self, parent, f):
 		pass
@@ -409,10 +431,13 @@ class Function(zzubIDLObject):
 	def __init__(self):
 		self.ret_arg = None
 		self.args = []
+		self.static = False
 		
 	def parse(self, parser):
 		parser.top().add_function(self)
-		self.name = parser.scan_symbol()		
+		if parser.try_keyword('static'):
+			self.static = True
+		self.name = parser.scan_symbol()
 		parser.scan_bo()
 		while not parser.try_bc():
 			arg = Argument()
@@ -430,6 +455,7 @@ class Function(zzubIDLObject):
 		self.c_name += self.name.lower()
 		retval = 'void'
 		if self.ret_arg:
+			self.ret_arg.resolve()
 			retval = self.ret_arg.c_type
 			if self.ret_arg.comment:
 				retval = '/*'+self.ret_arg.comment+'*/ ' + retval
@@ -442,6 +468,7 @@ class Function(zzubIDLObject):
 		if isinstance(parent, Class):
 			args.append(parent.struct_name + ' *' + parent.name.lower())
 		for arg in self.args:
+			arg.resolve()
 			args.append(make_arg(arg.c_type, arg.name))
 		print >> f
 		retval = make_arg(retval, '')
@@ -560,6 +587,7 @@ if __name__ == '__main__':
 	parser = zzubIDLParser()
 	try:
 		parser.parse_file(args[0])
+		if options.cheader:
+			parser.write_c_header(options.cheader)		
 	except ParseError:
-		raise SystemExit, 1	if options.cheader:
-		parser.write_c_header(options.cheader)
+		raise SystemExit, 1
