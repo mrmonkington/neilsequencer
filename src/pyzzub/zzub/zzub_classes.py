@@ -117,9 +117,9 @@ class _Audiodriver(object):
 		assert self._handle
 		return zzub_audiodriver_get_master_channel(self._handle)
 	
-	def get_name(self, index, name, maxLen):
+	def get_name(self, index, name, max_len):
 		assert self._handle
-		return zzub_audiodriver_get_name(self._handle,index,name,maxLen)
+		return zzub_audiodriver_get_name(self._handle,index,name,max_len)
 	
 	def get_samplerate(self):
 		assert self._handle
@@ -250,23 +250,6 @@ class _Envelope(object):
 		assert self._handle
 		zzub_envelope_set_sustain(self._handle,sustain)
 	
-class _EventConnectionBinding(object):
-	_handle = None
-	_hash = 0
-	
-	def __init__(self,handle):
-		self._handle = handle
-		self._hash = cast(self._handle, c_void_p).value
-
-	def __hash__(self):
-		return self._hash
-
-	def __eq__(self,other):
-		return self._hash == hash(other)
-
-	def __ne__(self,other):
-		return self._hash != hash(other)
-
 class _Input(object):
 	_handle = None
 	_hash = 0
@@ -295,9 +278,9 @@ class _Input(object):
 		assert self._handle
 		zzub_input_read(self._handle,buffer,bytes)
 	
-	def seek(self, arg2, arg3):
+	def seek(self, pos, mode):
 		assert self._handle
-		zzub_input_seek(self._handle,arg2,arg3)
+		zzub_input_seek(self._handle,pos,mode)
 	
 	def size(self):
 		assert self._handle
@@ -385,9 +368,9 @@ class _Output(object):
 		assert self._handle
 		return zzub_output_position(self._handle)
 	
-	def seek(self, arg2, arg3):
+	def seek(self, pos, mode):
 		assert self._handle
-		zzub_output_seek(self._handle,arg2,arg3)
+		zzub_output_seek(self._handle,pos,mode)
 	
 	def write(self, buffer, bytes):
 		assert self._handle
@@ -643,10 +626,6 @@ class _Player(object):
 		assert self._handle
 		return zzub_player_get_plugin_count(self._handle)
 	
-	def get_plugincollection_by_uri(self, uri):
-		assert self._handle
-		return Plugincollection(zzub_player_get_plugincollection_by_uri(self._handle,uri))
-	
 	def get_pluginloader(self, index):
 		assert self._handle
 		return Pluginloader(zzub_player_get_pluginloader(self._handle,index))
@@ -818,6 +797,10 @@ class _Player(object):
 	def plugin_create_range_pattern(self, columns, rows):
 		assert self._handle
 		return Pattern(zzub_plugin_create_range_pattern(self._handle,columns,rows))
+	
+	def plugincollection_get_by_uri(self, uri):
+		assert self._handle
+		return Plugincollection(zzub_plugincollection_get_by_uri(self._handle,uri))
 	
 class _Plugin(object):
 	_handle = None
@@ -1262,6 +1245,23 @@ class _Pluginloader(object):
 		assert self._handle
 		return zzub_pluginloader_get_uri(self._handle)
 	
+class _Recorder(object):
+	_handle = None
+	_hash = 0
+	
+	def __init__(self,handle):
+		self._handle = handle
+		self._hash = cast(self._handle, c_void_p).value
+
+	def __hash__(self):
+		return self._hash
+
+	def __eq__(self,other):
+		return self._hash == hash(other)
+
+	def __ne__(self,other):
+		return self._hash != hash(other)
+
 class _Sequence(object):
 	_handle = None
 	_hash = 0
@@ -1487,21 +1487,21 @@ class _Wavelevel(object):
 	
 
 # you can override these
-Sequence = _Sequence
-Pluginloader = _Pluginloader
-Parameter = _Parameter
-Plugin = _Plugin
-Output = _Output
-Audiodriver = _Audiodriver
-Wave = _Wave
-EventConnectionBinding = _EventConnectionBinding
+Input = _Input
+Recorder = _Recorder
 Midimapping = _Midimapping
+Envelope = _Envelope
+Plugin = _Plugin
+Wave = _Wave
+Mididriver = _Mididriver
+Sequence = _Sequence
+Plugincollection = _Plugincollection
 Player = _Player
 Wavelevel = _Wavelevel
-Envelope = _Envelope
 Attribute = _Attribute
-Pattern = _Pattern
 Archive = _Archive
-Plugincollection = _Plugincollection
-Input = _Input
-Mididriver = _Mididriver
+Parameter = _Parameter
+Audiodriver = _Audiodriver
+Pluginloader = _Pluginloader
+Pattern = _Pattern
+Output = _Output

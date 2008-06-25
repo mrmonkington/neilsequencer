@@ -13,26 +13,7 @@ ssize_t = c_uint
 # ZZUB_CALLING_CONVENTION = __attribute__((cdecl))
 # ZZUB_EXTERN_C = extern "C"
 
-# using file "/home/paniq/devel/zzub/include/zzub/types.h"
-# using file "src/libzzub/libzzub.h"
-class _zzub_attribute(Structure):
-	_fields_ = [
-	]
-
-zzub_attribute_t = _zzub_attribute
-
-class _zzub_parameter(Structure):
-	_fields_ = [
-	]
-
-zzub_parameter_t = _zzub_parameter
-
-class _zzub_player(Structure):
-	_fields_ = [
-	]
-
-zzub_player_t = _zzub_player
-
+# using file "include/zzub/zzub.h"
 class _zzub_plugin(Structure):
 	_fields_ = [
 	]
@@ -272,7 +253,7 @@ class zzub_event_data_unknown(Structure):
 
 zzub_event_data_unknown_t = zzub_event_data_unknown
 
-class union__5f7963da(Union):
+class union__9a11a0a5(Union):
 	_fields_ = [
 		('new_plugin', zzub_event_data_new_plugin_t),
 		('delete_plugin', zzub_event_data_delete_plugin_t),
@@ -305,10 +286,14 @@ class union__5f7963da(Union):
 class zzub_event_data(Structure):
 	_fields_ = [
 		('type', c_int),
-		('', union__5f7963da),
+		('', union__9a11a0a5),
 	]
 
-zzub_event_data_t = zzub_event_data
+class _zzub_player(Structure):
+	_fields_ = [
+	]
+
+zzub_player_t = _zzub_player
 
 class _zzub_audiodriver(Structure):
 	_fields_ = [
@@ -322,23 +307,17 @@ class _zzub_plugincollection(Structure):
 
 zzub_plugincollection_t = _zzub_plugincollection
 
-class _zzub_midimapping(Structure):
+class _zzub_attribute(Structure):
 	_fields_ = [
 	]
 
-zzub_midimapping_t = _zzub_midimapping
+zzub_attribute_t = _zzub_attribute
 
-class _zzub_pluginloader(Structure):
+class _zzub_parameter(Structure):
 	_fields_ = [
 	]
 
-zzub_pluginloader_t = _zzub_pluginloader
-
-class _zzub_sequence(Structure):
-	_fields_ = [
-	]
-
-zzub_sequence_t = _zzub_sequence
+zzub_parameter_t = _zzub_parameter
 
 class _zzub_pattern(Structure):
 	_fields_ = [
@@ -352,17 +331,47 @@ class _zzub_envelope(Structure):
 
 zzub_envelope_t = _zzub_envelope
 
+class _zzub_output(Structure):
+	_fields_ = [
+	]
+
+zzub_output_t = _zzub_output
+
+class _zzub_midimapping(Structure):
+	_fields_ = [
+	]
+
+zzub_midimapping_t = _zzub_midimapping
+
+class _zzub_pluginloader(Structure):
+	_fields_ = [
+	]
+
+zzub_pluginloader_t = _zzub_pluginloader
+
 class _zzub_input(Structure):
 	_fields_ = [
 	]
 
 zzub_input_t = _zzub_input
 
-class _zzub_output(Structure):
+class _zzub_sequence(Structure):
 	_fields_ = [
 	]
 
-zzub_output_t = _zzub_output
+zzub_sequence_t = _zzub_sequence
+
+class _zzub_mididriver(Structure):
+	_fields_ = [
+	]
+
+zzub_mididriver_t = _zzub_mididriver
+
+class _zzub_recorder(Structure):
+	_fields_ = [
+	]
+
+zzub_recorder_t = _zzub_recorder
 
 # enumeration ._0
 zzub_version = 15
@@ -414,22 +423,6 @@ zzub_player_state_playing = 0
 zzub_player_state_stopped = 1
 zzub_player_state_muted = 2
 zzub_player_state_released = 3
-
-class _zzub_mididriver(Structure):
-	_fields_ = [
-	]
-
-zzub_mididriver_t = _zzub_mididriver
-
-class _zzub_event_connection_binding(Structure):
-	_fields_ = [
-	]
-
-zzub_event_connection_binding_t = _zzub_event_connection_binding
-
-ZzubCallback = CFUNCTYPE(c_int,POINTER(zzub_player_t),POINTER(zzub_plugin_t),POINTER(zzub_event_data_t),c_void_p)
-
-ZzubMixCallback = CFUNCTYPE(None,POINTER(c_float),POINTER(c_float),c_int,c_void_p)
 
 # enumeration zzub_parameter_type
 zzub_parameter_type_note = 0
@@ -519,139 +512,100 @@ zzub_connection_type_audio = 0
 zzub_connection_type_event = 1
 zzub_connection_type_midi = 2
 
+zzub_callback_t = CFUNCTYPE(c_int,POINTER(zzub_player_t),POINTER(zzub_plugin_t),POINTER(zzub_event_data_t),c_void_p)
+
+zzub_mix_callback_t = CFUNCTYPE(None,POINTER(c_float),POINTER(c_float),c_int,c_void_p)
+
 libzzub = dlopen('zzub',version='0.3')
 zzub_audiodriver_create_portaudio        = dlsym(libzzub, 'zzub_audiodriver_create_portaudio'     , POINTER(zzub_audiodriver_t), ('player'  ,POINTER(zzub_player_t)))
 zzub_audiodriver_create_rtaudio          = dlsym(libzzub, 'zzub_audiodriver_create_rtaudio'       , POINTER(zzub_audiodriver_t), ('player'  ,POINTER(zzub_player_t)))
 zzub_audiodriver_create_silent           = dlsym(libzzub, 'zzub_audiodriver_create_silent'        , POINTER(zzub_audiodriver_t), ('player'  ,POINTER(zzub_player_t)),('name'    ,c_char_p  ),('out_channels',c_int     ),('in_channels',c_int     ),('supported_rates',POINTER(c_int)),('num_rates',c_int     ))
 zzub_audiodriver_create                  = dlsym(libzzub, 'zzub_audiodriver_create'               , POINTER(zzub_audiodriver_t), ('player'  ,POINTER(zzub_player_t)))
-zzub_audiodriver_get_count               = dlsym(libzzub, 'zzub_audiodriver_get_count'            , c_int, ('driver'  ,POINTER(zzub_audiodriver_t)))
-zzub_audiodriver_get_name                = dlsym(libzzub, 'zzub_audiodriver_get_name'             , c_int, ('driver'  ,POINTER(zzub_audiodriver_t)),('index'   ,c_int     ),('name'    ,c_char_p  ),('maxLen'  ,c_int     ))
-zzub_audiodriver_get_supported_samplerates = dlsym(libzzub, 'zzub_audiodriver_get_supported_samplerates', c_int, ('driver'  ,POINTER(zzub_audiodriver_t)),('index'   ,c_int     ),('result'  ,POINTER(c_int)),('maxrates',c_int     ))
-zzub_audiodriver_get_supported_output_channels = dlsym(libzzub, 'zzub_audiodriver_get_supported_output_channels', c_int, ('driver'  ,POINTER(zzub_audiodriver_t)),('index'   ,c_int     ))
-zzub_audiodriver_get_supported_input_channels = dlsym(libzzub, 'zzub_audiodriver_get_supported_input_channels', c_int, ('driver'  ,POINTER(zzub_audiodriver_t)),('index'   ,c_int     ))
-zzub_audiodriver_create_device           = dlsym(libzzub, 'zzub_audiodriver_create_device'        , c_int, ('driver'  ,POINTER(zzub_audiodriver_t)),('input_index',c_int     ),('output_index',c_int     ))
-zzub_audiodriver_enable                  = dlsym(libzzub, 'zzub_audiodriver_enable'               , None, ('driver'  ,POINTER(zzub_audiodriver_t)),('state'   ,c_int     ))
-zzub_audiodriver_get_enabled             = dlsym(libzzub, 'zzub_audiodriver_get_enabled'          , c_int, ('driver'  ,POINTER(zzub_audiodriver_t)))
-zzub_audiodriver_destroy                 = dlsym(libzzub, 'zzub_audiodriver_destroy'              , None, ('driver'  ,POINTER(zzub_audiodriver_t)))
-zzub_audiodriver_destroy_device          = dlsym(libzzub, 'zzub_audiodriver_destroy_device'       , None, ('driver'  ,POINTER(zzub_audiodriver_t)))
-zzub_audiodriver_set_samplerate          = dlsym(libzzub, 'zzub_audiodriver_set_samplerate'       , None, ('driver'  ,POINTER(zzub_audiodriver_t)),('samplerate',c_uint    ))
-zzub_audiodriver_get_samplerate          = dlsym(libzzub, 'zzub_audiodriver_get_samplerate'       , c_uint, ('driver'  ,POINTER(zzub_audiodriver_t)))
-zzub_audiodriver_set_buffersize          = dlsym(libzzub, 'zzub_audiodriver_set_buffersize'       , None, ('driver'  ,POINTER(zzub_audiodriver_t)),('buffersize',c_uint    ))
-zzub_audiodriver_get_buffersize          = dlsym(libzzub, 'zzub_audiodriver_get_buffersize'       , c_uint, ('driver'  ,POINTER(zzub_audiodriver_t)))
-zzub_audiodriver_get_cpu_load            = dlsym(libzzub, 'zzub_audiodriver_get_cpu_load'         , c_double, ('driver'  ,POINTER(zzub_audiodriver_t)))
-zzub_audiodriver_is_output               = dlsym(libzzub, 'zzub_audiodriver_is_output'            , c_int, ('driver'  ,POINTER(zzub_audiodriver_t)),('index'   ,c_int     ))
-zzub_audiodriver_is_input                = dlsym(libzzub, 'zzub_audiodriver_is_input'             , c_int, ('driver'  ,POINTER(zzub_audiodriver_t)),('index'   ,c_int     ))
-zzub_audiodriver_get_master_channel      = dlsym(libzzub, 'zzub_audiodriver_get_master_channel'   , c_int, ('driver'  ,POINTER(zzub_audiodriver_t)))
-zzub_audiodriver_set_master_channel      = dlsym(libzzub, 'zzub_audiodriver_set_master_channel'   , None, ('driver'  ,POINTER(zzub_audiodriver_t)),('index'   ,c_int     ))
+zzub_audiodriver_get_count               = dlsym(libzzub, 'zzub_audiodriver_get_count'            , c_int, ('audiodriver',POINTER(zzub_audiodriver_t)))
+zzub_audiodriver_get_name                = dlsym(libzzub, 'zzub_audiodriver_get_name'             , c_int, ('audiodriver',POINTER(zzub_audiodriver_t)),('index'   ,c_int     ),('name'    ,c_char_p  ),('max_len' ,c_int     ))
+zzub_audiodriver_get_supported_samplerates = dlsym(libzzub, 'zzub_audiodriver_get_supported_samplerates', c_int, ('audiodriver',POINTER(zzub_audiodriver_t)),('index'   ,c_int     ),('result'  ,POINTER(c_int)),('maxrates',c_int     ))
+zzub_audiodriver_get_supported_output_channels = dlsym(libzzub, 'zzub_audiodriver_get_supported_output_channels', c_int, ('audiodriver',POINTER(zzub_audiodriver_t)),('index'   ,c_int     ))
+zzub_audiodriver_get_supported_input_channels = dlsym(libzzub, 'zzub_audiodriver_get_supported_input_channels', c_int, ('audiodriver',POINTER(zzub_audiodriver_t)),('index'   ,c_int     ))
+zzub_audiodriver_create_device           = dlsym(libzzub, 'zzub_audiodriver_create_device'        , c_int, ('audiodriver',POINTER(zzub_audiodriver_t)),('input_index',c_int     ),('output_index',c_int     ))
+zzub_audiodriver_enable                  = dlsym(libzzub, 'zzub_audiodriver_enable'               , None, ('audiodriver',POINTER(zzub_audiodriver_t)),('state'   ,c_int     ))
+zzub_audiodriver_get_enabled             = dlsym(libzzub, 'zzub_audiodriver_get_enabled'          , c_int, ('audiodriver',POINTER(zzub_audiodriver_t)))
+zzub_audiodriver_destroy                 = dlsym(libzzub, 'zzub_audiodriver_destroy'              , None, ('audiodriver',POINTER(zzub_audiodriver_t)))
+zzub_audiodriver_destroy_device          = dlsym(libzzub, 'zzub_audiodriver_destroy_device'       , None, ('audiodriver',POINTER(zzub_audiodriver_t)))
+zzub_audiodriver_set_samplerate          = dlsym(libzzub, 'zzub_audiodriver_set_samplerate'       , None, ('audiodriver',POINTER(zzub_audiodriver_t)),('samplerate',c_uint    ))
+zzub_audiodriver_get_samplerate          = dlsym(libzzub, 'zzub_audiodriver_get_samplerate'       , c_uint, ('audiodriver',POINTER(zzub_audiodriver_t)))
+zzub_audiodriver_set_buffersize          = dlsym(libzzub, 'zzub_audiodriver_set_buffersize'       , None, ('audiodriver',POINTER(zzub_audiodriver_t)),('buffersize',c_uint    ))
+zzub_audiodriver_get_buffersize          = dlsym(libzzub, 'zzub_audiodriver_get_buffersize'       , c_uint, ('audiodriver',POINTER(zzub_audiodriver_t)))
+zzub_audiodriver_get_cpu_load            = dlsym(libzzub, 'zzub_audiodriver_get_cpu_load'         , c_double, ('audiodriver',POINTER(zzub_audiodriver_t)))
+zzub_audiodriver_is_output               = dlsym(libzzub, 'zzub_audiodriver_is_output'            , c_int, ('audiodriver',POINTER(zzub_audiodriver_t)),('index'   ,c_int     ))
+zzub_audiodriver_is_input                = dlsym(libzzub, 'zzub_audiodriver_is_input'             , c_int, ('audiodriver',POINTER(zzub_audiodriver_t)),('index'   ,c_int     ))
+zzub_audiodriver_get_master_channel      = dlsym(libzzub, 'zzub_audiodriver_get_master_channel'   , c_int, ('audiodriver',POINTER(zzub_audiodriver_t)))
+zzub_audiodriver_set_master_channel      = dlsym(libzzub, 'zzub_audiodriver_set_master_channel'   , None, ('audiodriver',POINTER(zzub_audiodriver_t)),('index'   ,c_int     ))
 zzub_mididriver_get_count                = dlsym(libzzub, 'zzub_mididriver_get_count'             , c_int, ('player'  ,POINTER(zzub_player_t)))
 zzub_mididriver_get_name                 = dlsym(libzzub, 'zzub_mididriver_get_name'              , c_char_p, ('player'  ,POINTER(zzub_player_t)),('index'   ,c_int     ))
 zzub_mididriver_is_input                 = dlsym(libzzub, 'zzub_mididriver_is_input'              , c_int, ('player'  ,POINTER(zzub_player_t)),('index'   ,c_int     ))
 zzub_mididriver_is_output                = dlsym(libzzub, 'zzub_mididriver_is_output'             , c_int, ('player'  ,POINTER(zzub_player_t)),('index'   ,c_int     ))
 zzub_mididriver_open                     = dlsym(libzzub, 'zzub_mididriver_open'                  , c_int, ('player'  ,POINTER(zzub_player_t)),('index'   ,c_int     ))
 zzub_mididriver_close_all                = dlsym(libzzub, 'zzub_mididriver_close_all'             , c_int, ('player'  ,POINTER(zzub_player_t)))
-zzub_player_get_plugincollection_by_uri  = dlsym(libzzub, 'zzub_player_get_plugincollection_by_uri', POINTER(zzub_plugincollection_t), ('player'  ,POINTER(zzub_player_t)),('uri'     ,c_char_p  ))
-zzub_plugincollection_configure          = dlsym(libzzub, 'zzub_plugincollection_configure'       , None, ('collection',POINTER(zzub_plugincollection_t)),('key'     ,c_char_p  ),('value'   ,c_char_p  ))
-zzub_player_create                       = dlsym(libzzub, 'zzub_player_create'                    , POINTER(zzub_player_t), )
-zzub_player_destroy                      = dlsym(libzzub, 'zzub_player_destroy'                   , None, ('player'  ,POINTER(zzub_player_t)))
-zzub_player_add_plugin_path              = dlsym(libzzub, 'zzub_player_add_plugin_path'           , None, ('player'  ,POINTER(zzub_player_t)),('path'    ,c_char_p  ))
-zzub_player_blacklist_plugin             = dlsym(libzzub, 'zzub_player_blacklist_plugin'          , None, ('player'  ,POINTER(zzub_player_t)),('uri'     ,c_char_p  ))
-zzub_player_initialize                   = dlsym(libzzub, 'zzub_player_initialize'                , c_int, ('player'  ,POINTER(zzub_player_t)),('samplesPerSecond',c_int     ))
-zzub_player_load_bmx                     = dlsym(libzzub, 'zzub_player_load_bmx'                  , c_int, ('player'  ,POINTER(zzub_player_t)),('datastream',POINTER(zzub_input_t)),('messages',c_char_p  ),('maxLen'  ,c_int     ))
-zzub_player_save_bmx                     = dlsym(libzzub, 'zzub_player_save_bmx'                  , c_int, ('player'  ,POINTER(zzub_player_t)),('plugins' ,POINTER(POINTER(zzub_plugin_t))),('num_plugins',c_int     ),('save_waves',c_int     ),('datastream',POINTER(zzub_output_t)))
-zzub_player_load_ccm                     = dlsym(libzzub, 'zzub_player_load_ccm'                  , c_int, ('player'  ,POINTER(zzub_player_t)),('fileName',c_char_p  ))
-zzub_player_save_ccm                     = dlsym(libzzub, 'zzub_player_save_ccm'                  , c_int, ('player'  ,POINTER(zzub_player_t)),('fileName',c_char_p  ))
-zzub_player_get_state                    = dlsym(libzzub, 'zzub_player_get_state'                 , c_int, ('arg1'    ,POINTER(zzub_player_t)))
-zzub_player_set_state                    = dlsym(libzzub, 'zzub_player_set_state'                 , None, ('player'  ,POINTER(zzub_player_t)),('state'   ,c_int     ))
-zzub_player_set_position                 = dlsym(libzzub, 'zzub_player_set_position'              , None, ('player'  ,POINTER(zzub_player_t)),('tick'    ,c_int     ))
-zzub_player_get_bpm                      = dlsym(libzzub, 'zzub_player_get_bpm'                   , c_float, ('player'  ,POINTER(zzub_player_t)))
-zzub_player_get_tpb                      = dlsym(libzzub, 'zzub_player_get_tpb'                   , c_int, ('player'  ,POINTER(zzub_player_t)))
-zzub_player_set_bpm                      = dlsym(libzzub, 'zzub_player_set_bpm'                   , None, ('player'  ,POINTER(zzub_player_t)),('bpm'     ,c_float   ))
-zzub_player_set_tpb                      = dlsym(libzzub, 'zzub_player_set_tpb'                   , None, ('player'  ,POINTER(zzub_player_t)),('tpb'     ,c_int     ))
-zzub_player_get_pluginloader_count       = dlsym(libzzub, 'zzub_player_get_pluginloader_count'    , c_int, ('player'  ,POINTER(zzub_player_t)))
-zzub_player_get_pluginloader             = dlsym(libzzub, 'zzub_player_get_pluginloader'          , POINTER(zzub_pluginloader_t), ('player'  ,POINTER(zzub_player_t)),('index'   ,c_int     ))
-zzub_player_get_pluginloader_by_name     = dlsym(libzzub, 'zzub_player_get_pluginloader_by_name'  , POINTER(zzub_pluginloader_t), ('player'  ,POINTER(zzub_player_t)),('name'    ,c_char_p  ))
-zzub_player_get_plugin_count             = dlsym(libzzub, 'zzub_player_get_plugin_count'          , c_int, ('player'  ,POINTER(zzub_player_t)))
-zzub_player_get_plugin_by_name           = dlsym(libzzub, 'zzub_player_get_plugin_by_name'        , POINTER(zzub_plugin_t), ('player'  ,POINTER(zzub_player_t)),('name'    ,c_char_p  ))
-zzub_player_get_plugin_by_id             = dlsym(libzzub, 'zzub_player_get_plugin_by_id'          , POINTER(zzub_plugin_t), ('player'  ,POINTER(zzub_player_t)),('id'      ,c_int     ))
-zzub_player_get_plugin                   = dlsym(libzzub, 'zzub_player_get_plugin'                , POINTER(zzub_plugin_t), ('player'  ,POINTER(zzub_player_t)),('index'   ,c_int     ))
-zzub_player_work_stereo                  = dlsym(libzzub, 'zzub_player_work_stereo'               , POINTER(POINTER(c_float)), ('player'  ,POINTER(zzub_player_t)),('numSamples',POINTER(c_int)))
-zzub_player_clear                        = dlsym(libzzub, 'zzub_player_clear'                     , None, ('player'  ,POINTER(zzub_player_t)))
-zzub_player_get_position                 = dlsym(libzzub, 'zzub_player_get_position'              , c_int, ('player'  ,POINTER(zzub_player_t)))
-zzub_player_get_loop_start               = dlsym(libzzub, 'zzub_player_get_loop_start'            , c_int, ('player'  ,POINTER(zzub_player_t)))
-zzub_player_get_loop_end                 = dlsym(libzzub, 'zzub_player_get_loop_end'              , c_int, ('player'  ,POINTER(zzub_player_t)))
-zzub_player_get_song_start               = dlsym(libzzub, 'zzub_player_get_song_start'            , c_int, ('player'  ,POINTER(zzub_player_t)))
-zzub_player_set_loop_start               = dlsym(libzzub, 'zzub_player_set_loop_start'            , None, ('player'  ,POINTER(zzub_player_t)),('v'       ,c_int     ))
-zzub_player_set_loop_end                 = dlsym(libzzub, 'zzub_player_set_loop_end'              , None, ('player'  ,POINTER(zzub_player_t)),('v'       ,c_int     ))
-zzub_player_set_song_start               = dlsym(libzzub, 'zzub_player_set_song_start'            , None, ('player'  ,POINTER(zzub_player_t)),('v'       ,c_int     ))
-zzub_player_get_song_end                 = dlsym(libzzub, 'zzub_player_get_song_end'              , c_int, ('player'  ,POINTER(zzub_player_t)))
-zzub_player_set_song_end                 = dlsym(libzzub, 'zzub_player_set_song_end'              , None, ('player'  ,POINTER(zzub_player_t)),('v'       ,c_int     ))
-zzub_player_set_loop_enabled             = dlsym(libzzub, 'zzub_player_set_loop_enabled'          , None, ('player'  ,POINTER(zzub_player_t)),('enable'  ,c_int     ))
-zzub_player_get_loop_enabled             = dlsym(libzzub, 'zzub_player_get_loop_enabled'          , c_int, ('player'  ,POINTER(zzub_player_t)))
-zzub_player_get_sequence_track_count     = dlsym(libzzub, 'zzub_player_get_sequence_track_count'  , c_int, ('player'  ,POINTER(zzub_player_t)))
-zzub_player_get_sequence                 = dlsym(libzzub, 'zzub_player_get_sequence'              , POINTER(zzub_sequence_t), ('player'  ,POINTER(zzub_player_t)),('index'   ,c_int     ))
-zzub_player_get_currently_playing_pattern = dlsym(libzzub, 'zzub_player_get_currently_playing_pattern', c_int, ('plugin'  ,POINTER(zzub_plugin_t)),('pattern' ,POINTER(c_int)),('row'     ,POINTER(c_int)))
-zzub_player_get_currently_playing_pattern_row = dlsym(libzzub, 'zzub_player_get_currently_playing_pattern_row', c_int, ('plugin'  ,POINTER(zzub_plugin_t)),('pattern' ,c_int     ),('row'     ,POINTER(c_int)))
-zzub_player_get_wave_count               = dlsym(libzzub, 'zzub_player_get_wave_count'            , c_int, ('player'  ,POINTER(zzub_player_t)))
-zzub_player_get_wave                     = dlsym(libzzub, 'zzub_player_get_wave'                  , POINTER(zzub_wave_t), ('player'  ,POINTER(zzub_player_t)),('index'   ,c_int     ))
-zzub_player_set_callback                 = dlsym(libzzub, 'zzub_player_set_callback'              , None, ('player'  ,POINTER(zzub_player_t)),('callback',ZzubCallback),('tag'     ,c_void_p  ))
-zzub_player_handle_events                = dlsym(libzzub, 'zzub_player_handle_events'             , None, ('player'  ,POINTER(zzub_player_t)))
-zzub_player_add_midimapping              = dlsym(libzzub, 'zzub_player_add_midimapping'           , POINTER(zzub_midimapping_t), ('plugin'  ,POINTER(zzub_plugin_t)),('group'   ,c_int     ),('track'   ,c_int     ),('param'   ,c_int     ),('channel' ,c_int     ),('controller',c_int     ))
-zzub_player_remove_midimapping           = dlsym(libzzub, 'zzub_player_remove_midimapping'        , c_int, ('plugin'  ,POINTER(zzub_plugin_t)),('group'   ,c_int     ),('track'   ,c_int     ),('param'   ,c_int     ))
-zzub_player_get_midimapping              = dlsym(libzzub, 'zzub_player_get_midimapping'           , POINTER(zzub_midimapping_t), ('player'  ,POINTER(zzub_player_t)),('index'   ,c_int     ))
-zzub_player_get_midimapping_count        = dlsym(libzzub, 'zzub_player_get_midimapping_count'     , c_int, ('player'  ,POINTER(zzub_player_t)))
-zzub_player_get_automation               = dlsym(libzzub, 'zzub_player_get_automation'            , c_int, ('player'  ,POINTER(zzub_player_t)))
-zzub_player_set_automation               = dlsym(libzzub, 'zzub_player_set_automation'            , None, ('player'  ,POINTER(zzub_player_t)),('enable'  ,c_int     ))
-zzub_player_get_midi_transport           = dlsym(libzzub, 'zzub_player_get_midi_transport'        , c_int, ('player'  ,POINTER(zzub_player_t)))
-zzub_player_set_midi_transport           = dlsym(libzzub, 'zzub_player_set_midi_transport'        , None, ('player'  ,POINTER(zzub_player_t)),('enable'  ,c_int     ))
-zzub_player_get_infotext                 = dlsym(libzzub, 'zzub_player_get_infotext'              , c_char_p, ('player'  ,POINTER(zzub_player_t)))
-zzub_player_set_infotext                 = dlsym(libzzub, 'zzub_player_set_infotext'              , None, ('player'  ,POINTER(zzub_player_t)),('text'    ,c_char_p  ))
-zzub_player_set_midi_plugin              = dlsym(libzzub, 'zzub_player_set_midi_plugin'           , None, ('player'  ,POINTER(zzub_player_t)),('plugin'  ,POINTER(zzub_plugin_t)))
-zzub_player_get_midi_plugin              = dlsym(libzzub, 'zzub_player_get_midi_plugin'           , POINTER(zzub_plugin_t), ('player'  ,POINTER(zzub_player_t)))
-zzub_player_get_new_plugin_name          = dlsym(libzzub, 'zzub_player_get_new_plugin_name'       , None, ('player'  ,POINTER(zzub_player_t)),('uri'     ,c_char_p  ),('name'    ,c_char_p  ),('maxLen'  ,c_int     ))
-zzub_player_reset_keyjazz                = dlsym(libzzub, 'zzub_player_reset_keyjazz'             , None, ('player'  ,POINTER(zzub_player_t)))
-zzub_player_flush                        = dlsym(libzzub, 'zzub_player_flush'                     , None, ('player'  ,POINTER(zzub_player_t)),('redo_event',POINTER(zzub_event_data_t)),('undo_event',POINTER(zzub_event_data_t)))
-zzub_player_undo                         = dlsym(libzzub, 'zzub_player_undo'                      , None, ('player'  ,POINTER(zzub_player_t)))
-zzub_player_redo                         = dlsym(libzzub, 'zzub_player_redo'                      , None, ('player'  ,POINTER(zzub_player_t)))
-zzub_player_history_commit               = dlsym(libzzub, 'zzub_player_history_commit'            , None, ('player'  ,POINTER(zzub_player_t)),('description',c_char_p  ))
-zzub_player_history_flush_last           = dlsym(libzzub, 'zzub_player_history_flush_last'        , None, ('player'  ,POINTER(zzub_player_t)))
-zzub_player_history_flush                = dlsym(libzzub, 'zzub_player_history_flush'             , None, ('player'  ,POINTER(zzub_player_t)))
-zzub_player_history_get_size             = dlsym(libzzub, 'zzub_player_history_get_size'          , c_int, ('player'  ,POINTER(zzub_player_t)))
-zzub_player_history_get_position         = dlsym(libzzub, 'zzub_player_history_get_position'      , c_int, ('player'  ,POINTER(zzub_player_t)))
-zzub_player_history_get_description      = dlsym(libzzub, 'zzub_player_history_get_description'   , c_char_p, ('player'  ,POINTER(zzub_player_t)),('position',c_int     ))
-zzub_midimapping_get_plugin              = dlsym(libzzub, 'zzub_midimapping_get_plugin'           , c_int, ('mapping' ,POINTER(zzub_midimapping_t)))
-zzub_midimapping_get_group               = dlsym(libzzub, 'zzub_midimapping_get_group'            , c_int, ('mapping' ,POINTER(zzub_midimapping_t)))
-zzub_midimapping_get_track               = dlsym(libzzub, 'zzub_midimapping_get_track'            , c_int, ('mapping' ,POINTER(zzub_midimapping_t)))
-zzub_midimapping_get_column              = dlsym(libzzub, 'zzub_midimapping_get_column'           , c_int, ('mapping' ,POINTER(zzub_midimapping_t)))
-zzub_midimapping_get_channel             = dlsym(libzzub, 'zzub_midimapping_get_channel'          , c_int, ('mapping' ,POINTER(zzub_midimapping_t)))
-zzub_midimapping_get_controller          = dlsym(libzzub, 'zzub_midimapping_get_controller'       , c_int, ('mapping' ,POINTER(zzub_midimapping_t)))
-zzub_pluginloader_get_name               = dlsym(libzzub, 'zzub_pluginloader_get_name'            , c_char_p, ('loader'  ,POINTER(zzub_pluginloader_t)))
-zzub_pluginloader_get_short_name         = dlsym(libzzub, 'zzub_pluginloader_get_short_name'      , c_char_p, ('loader'  ,POINTER(zzub_pluginloader_t)))
-zzub_pluginloader_get_parameter_count    = dlsym(libzzub, 'zzub_pluginloader_get_parameter_count' , c_int, ('loader'  ,POINTER(zzub_pluginloader_t)),('group'   ,c_int     ))
-zzub_pluginloader_get_parameter          = dlsym(libzzub, 'zzub_pluginloader_get_parameter'       , POINTER(zzub_parameter_t), ('loader'  ,POINTER(zzub_pluginloader_t)),('group'   ,c_int     ),('index'   ,c_int     ))
-zzub_pluginloader_get_attribute_count    = dlsym(libzzub, 'zzub_pluginloader_get_attribute_count' , c_int, ('loader'  ,POINTER(zzub_pluginloader_t)))
-zzub_pluginloader_get_attribute          = dlsym(libzzub, 'zzub_pluginloader_get_attribute'       , POINTER(zzub_attribute_t), ('loader'  ,POINTER(zzub_pluginloader_t)),('index'   ,c_int     ))
-zzub_pluginloader_get_loader_name        = dlsym(libzzub, 'zzub_pluginloader_get_loader_name'     , c_char_p, ('loader'  ,POINTER(zzub_pluginloader_t)))
-zzub_pluginloader_get_flags              = dlsym(libzzub, 'zzub_pluginloader_get_flags'           , c_int, ('loader'  ,POINTER(zzub_pluginloader_t)))
-zzub_pluginloader_get_uri                = dlsym(libzzub, 'zzub_pluginloader_get_uri'             , c_char_p, ('loader'  ,POINTER(zzub_pluginloader_t)))
-zzub_pluginloader_get_author             = dlsym(libzzub, 'zzub_pluginloader_get_author'          , c_char_p, ('loader'  ,POINTER(zzub_pluginloader_t)))
-zzub_pluginloader_get_instrument_list    = dlsym(libzzub, 'zzub_pluginloader_get_instrument_list' , c_int, ('loader'  ,POINTER(zzub_pluginloader_t)),('result'  ,c_char_p  ),('maxbytes',c_int     ))
-zzub_pluginloader_get_tracks_min         = dlsym(libzzub, 'zzub_pluginloader_get_tracks_min'      , c_int, ('loader'  ,POINTER(zzub_pluginloader_t)))
-zzub_pluginloader_get_tracks_max         = dlsym(libzzub, 'zzub_pluginloader_get_tracks_max'      , c_int, ('loader'  ,POINTER(zzub_pluginloader_t)))
-zzub_pluginloader_get_stream_format_count = dlsym(libzzub, 'zzub_pluginloader_get_stream_format_count', c_int, ('loader'  ,POINTER(zzub_pluginloader_t)))
-zzub_pluginloader_get_stream_format_ext  = dlsym(libzzub, 'zzub_pluginloader_get_stream_format_ext', c_char_p, ('loader'  ,POINTER(zzub_pluginloader_t)),('index'   ,c_int     ))
-zzub_parameter_get_type                  = dlsym(libzzub, 'zzub_parameter_get_type'               , c_int, ('param'   ,POINTER(zzub_parameter_t)))
-zzub_parameter_get_name                  = dlsym(libzzub, 'zzub_parameter_get_name'               , c_char_p, ('param'   ,POINTER(zzub_parameter_t)))
-zzub_parameter_get_description           = dlsym(libzzub, 'zzub_parameter_get_description'        , c_char_p, ('param'   ,POINTER(zzub_parameter_t)))
-zzub_parameter_get_value_min             = dlsym(libzzub, 'zzub_parameter_get_value_min'          , c_int, ('param'   ,POINTER(zzub_parameter_t)))
-zzub_parameter_get_value_max             = dlsym(libzzub, 'zzub_parameter_get_value_max'          , c_int, ('param'   ,POINTER(zzub_parameter_t)))
-zzub_parameter_get_value_none            = dlsym(libzzub, 'zzub_parameter_get_value_none'         , c_int, ('param'   ,POINTER(zzub_parameter_t)))
-zzub_parameter_get_value_default         = dlsym(libzzub, 'zzub_parameter_get_value_default'      , c_int, ('param'   ,POINTER(zzub_parameter_t)))
-zzub_parameter_get_flags                 = dlsym(libzzub, 'zzub_parameter_get_flags'              , c_int, ('param'   ,POINTER(zzub_parameter_t)))
-zzub_attribute_get_name                  = dlsym(libzzub, 'zzub_attribute_get_name'               , c_char_p, ('attrib'  ,POINTER(zzub_attribute_t)))
-zzub_attribute_get_value_min             = dlsym(libzzub, 'zzub_attribute_get_value_min'          , c_int, ('attrib'  ,POINTER(zzub_attribute_t)))
-zzub_attribute_get_value_max             = dlsym(libzzub, 'zzub_attribute_get_value_max'          , c_int, ('attrib'  ,POINTER(zzub_attribute_t)))
-zzub_attribute_get_value_default         = dlsym(libzzub, 'zzub_attribute_get_value_default'      , c_int, ('attrib'  ,POINTER(zzub_attribute_t)))
-zzub_player_create_plugin                = dlsym(libzzub, 'zzub_player_create_plugin'             , POINTER(zzub_plugin_t), ('player'  ,POINTER(zzub_player_t)),('input'   ,POINTER(zzub_input_t)),('dataSize',c_int     ),('instanceName',c_char_p  ),('loader'  ,POINTER(zzub_pluginloader_t)))
+zzub_plugincollection_get_by_uri         = dlsym(libzzub, 'zzub_plugincollection_get_by_uri'      , POINTER(zzub_plugincollection_t), ('player'  ,POINTER(zzub_player_t)),('uri'     ,c_char_p  ))
+zzub_plugincollection_configure          = dlsym(libzzub, 'zzub_plugincollection_configure'       , None, ('plugincollection',POINTER(zzub_plugincollection_t)),('key'     ,c_char_p  ),('value'   ,c_char_p  ))
+zzub_input_open_file                     = dlsym(libzzub, 'zzub_input_open_file'                  , POINTER(zzub_input_t), ('filename',c_char_p  ))
+zzub_input_destroy                       = dlsym(libzzub, 'zzub_input_destroy'                    , None, ('input'   ,POINTER(zzub_input_t)))
+zzub_input_read                          = dlsym(libzzub, 'zzub_input_read'                       , None, ('input'   ,POINTER(zzub_input_t)),('buffer'  ,c_char_p  ),('bytes'   ,c_int     ))
+zzub_input_size                          = dlsym(libzzub, 'zzub_input_size'                       , c_int, ('input'   ,POINTER(zzub_input_t)))
+zzub_input_position                      = dlsym(libzzub, 'zzub_input_position'                   , c_int, ('input'   ,POINTER(zzub_input_t)))
+zzub_input_seek                          = dlsym(libzzub, 'zzub_input_seek'                       , None, ('input'   ,POINTER(zzub_input_t)),('pos'     ,c_int     ),('mode'    ,c_int     ))
+zzub_output_create_file                  = dlsym(libzzub, 'zzub_output_create_file'               , POINTER(zzub_output_t), ('filename',c_char_p  ))
+zzub_output_destroy                      = dlsym(libzzub, 'zzub_output_destroy'                   , None, ('output'  ,POINTER(zzub_output_t)))
+zzub_output_write                        = dlsym(libzzub, 'zzub_output_write'                     , None, ('output'  ,POINTER(zzub_output_t)),('buffer'  ,c_char_p  ),('bytes'   ,c_int     ))
+zzub_output_position                     = dlsym(libzzub, 'zzub_output_position'                  , c_int, ('output'  ,POINTER(zzub_output_t)))
+zzub_output_seek                         = dlsym(libzzub, 'zzub_output_seek'                      , None, ('output'  ,POINTER(zzub_output_t)),('pos'     ,c_int     ),('mode'    ,c_int     ))
+zzub_archive_create_memory               = dlsym(libzzub, 'zzub_archive_create_memory'            , POINTER(zzub_archive_t), )
+zzub_archive_get_output                  = dlsym(libzzub, 'zzub_archive_get_output'               , POINTER(zzub_output_t), ('archive' ,POINTER(zzub_archive_t)),('path'    ,c_char_p  ))
+zzub_archive_get_input                   = dlsym(libzzub, 'zzub_archive_get_input'                , POINTER(zzub_input_t), ('archive' ,POINTER(zzub_archive_t)),('path'    ,c_char_p  ))
+zzub_archive_destroy                     = dlsym(libzzub, 'zzub_archive_destroy'                  , None, ('archive' ,POINTER(zzub_archive_t)))
+zzub_midimapping_get_plugin              = dlsym(libzzub, 'zzub_midimapping_get_plugin'           , c_int, ('midimapping',POINTER(zzub_midimapping_t)))
+zzub_midimapping_get_group               = dlsym(libzzub, 'zzub_midimapping_get_group'            , c_int, ('midimapping',POINTER(zzub_midimapping_t)))
+zzub_midimapping_get_track               = dlsym(libzzub, 'zzub_midimapping_get_track'            , c_int, ('midimapping',POINTER(zzub_midimapping_t)))
+zzub_midimapping_get_column              = dlsym(libzzub, 'zzub_midimapping_get_column'           , c_int, ('midimapping',POINTER(zzub_midimapping_t)))
+zzub_midimapping_get_channel             = dlsym(libzzub, 'zzub_midimapping_get_channel'          , c_int, ('midimapping',POINTER(zzub_midimapping_t)))
+zzub_midimapping_get_controller          = dlsym(libzzub, 'zzub_midimapping_get_controller'       , c_int, ('midimapping',POINTER(zzub_midimapping_t)))
+zzub_pattern_destroy                     = dlsym(libzzub, 'zzub_pattern_destroy'                  , None, ('pattern' ,POINTER(zzub_pattern_t)))
+zzub_pattern_get_name                    = dlsym(libzzub, 'zzub_pattern_get_name'                 , None, ('pattern' ,POINTER(zzub_pattern_t)),('name'    ,c_char_p  ),('maxLen'  ,c_int     ))
+zzub_pattern_set_name                    = dlsym(libzzub, 'zzub_pattern_set_name'                 , None, ('pattern' ,POINTER(zzub_pattern_t)),('name'    ,c_char_p  ))
+zzub_pattern_get_row_count               = dlsym(libzzub, 'zzub_pattern_get_row_count'            , c_int, ('pattern' ,POINTER(zzub_pattern_t)))
+zzub_pattern_get_group_count             = dlsym(libzzub, 'zzub_pattern_get_group_count'          , c_int, ('pattern' ,POINTER(zzub_pattern_t)))
+zzub_pattern_get_track_count             = dlsym(libzzub, 'zzub_pattern_get_track_count'          , c_int, ('pattern' ,POINTER(zzub_pattern_t)),('group'   ,c_int     ))
+zzub_pattern_get_column_count            = dlsym(libzzub, 'zzub_pattern_get_column_count'         , c_int, ('pattern' ,POINTER(zzub_pattern_t)),('group'   ,c_int     ),('track'   ,c_int     ))
+zzub_pattern_get_value                   = dlsym(libzzub, 'zzub_pattern_get_value'                , c_int, ('pattern' ,POINTER(zzub_pattern_t)),('row'     ,c_int     ),('group'   ,c_int     ),('track'   ,c_int     ),('column'  ,c_int     ))
+zzub_pattern_set_value                   = dlsym(libzzub, 'zzub_pattern_set_value'                , None, ('pattern' ,POINTER(zzub_pattern_t)),('row'     ,c_int     ),('group'   ,c_int     ),('track'   ,c_int     ),('column'  ,c_int     ),('value'   ,c_int     ))
+zzub_pattern_interpolate                 = dlsym(libzzub, 'zzub_pattern_interpolate'              , None, ('pattern' ,POINTER(zzub_pattern_t)))
+zzub_parameter_get_type                  = dlsym(libzzub, 'zzub_parameter_get_type'               , c_int, ('parameter',POINTER(zzub_parameter_t)))
+zzub_parameter_get_name                  = dlsym(libzzub, 'zzub_parameter_get_name'               , c_char_p, ('parameter',POINTER(zzub_parameter_t)))
+zzub_parameter_get_description           = dlsym(libzzub, 'zzub_parameter_get_description'        , c_char_p, ('parameter',POINTER(zzub_parameter_t)))
+zzub_parameter_get_value_min             = dlsym(libzzub, 'zzub_parameter_get_value_min'          , c_int, ('parameter',POINTER(zzub_parameter_t)))
+zzub_parameter_get_value_max             = dlsym(libzzub, 'zzub_parameter_get_value_max'          , c_int, ('parameter',POINTER(zzub_parameter_t)))
+zzub_parameter_get_value_none            = dlsym(libzzub, 'zzub_parameter_get_value_none'         , c_int, ('parameter',POINTER(zzub_parameter_t)))
+zzub_parameter_get_value_default         = dlsym(libzzub, 'zzub_parameter_get_value_default'      , c_int, ('parameter',POINTER(zzub_parameter_t)))
+zzub_parameter_get_flags                 = dlsym(libzzub, 'zzub_parameter_get_flags'              , c_int, ('parameter',POINTER(zzub_parameter_t)))
+zzub_attribute_get_name                  = dlsym(libzzub, 'zzub_attribute_get_name'               , c_char_p, ('attribute',POINTER(zzub_attribute_t)))
+zzub_attribute_get_value_min             = dlsym(libzzub, 'zzub_attribute_get_value_min'          , c_int, ('attribute',POINTER(zzub_attribute_t)))
+zzub_attribute_get_value_max             = dlsym(libzzub, 'zzub_attribute_get_value_max'          , c_int, ('attribute',POINTER(zzub_attribute_t)))
+zzub_attribute_get_value_default         = dlsym(libzzub, 'zzub_attribute_get_value_default'      , c_int, ('attribute',POINTER(zzub_attribute_t)))
+zzub_pluginloader_get_name               = dlsym(libzzub, 'zzub_pluginloader_get_name'            , c_char_p, ('pluginloader',POINTER(zzub_pluginloader_t)))
+zzub_pluginloader_get_short_name         = dlsym(libzzub, 'zzub_pluginloader_get_short_name'      , c_char_p, ('pluginloader',POINTER(zzub_pluginloader_t)))
+zzub_pluginloader_get_parameter_count    = dlsym(libzzub, 'zzub_pluginloader_get_parameter_count' , c_int, ('pluginloader',POINTER(zzub_pluginloader_t)),('group'   ,c_int     ))
+zzub_pluginloader_get_parameter          = dlsym(libzzub, 'zzub_pluginloader_get_parameter'       , POINTER(zzub_parameter_t), ('pluginloader',POINTER(zzub_pluginloader_t)),('group'   ,c_int     ),('index'   ,c_int     ))
+zzub_pluginloader_get_attribute_count    = dlsym(libzzub, 'zzub_pluginloader_get_attribute_count' , c_int, ('pluginloader',POINTER(zzub_pluginloader_t)))
+zzub_pluginloader_get_attribute          = dlsym(libzzub, 'zzub_pluginloader_get_attribute'       , POINTER(zzub_attribute_t), ('pluginloader',POINTER(zzub_pluginloader_t)),('index'   ,c_int     ))
+zzub_pluginloader_get_loader_name        = dlsym(libzzub, 'zzub_pluginloader_get_loader_name'     , c_char_p, ('pluginloader',POINTER(zzub_pluginloader_t)))
+zzub_pluginloader_get_flags              = dlsym(libzzub, 'zzub_pluginloader_get_flags'           , c_int, ('pluginloader',POINTER(zzub_pluginloader_t)))
+zzub_pluginloader_get_uri                = dlsym(libzzub, 'zzub_pluginloader_get_uri'             , c_char_p, ('pluginloader',POINTER(zzub_pluginloader_t)))
+zzub_pluginloader_get_author             = dlsym(libzzub, 'zzub_pluginloader_get_author'          , c_char_p, ('pluginloader',POINTER(zzub_pluginloader_t)))
+zzub_pluginloader_get_instrument_list    = dlsym(libzzub, 'zzub_pluginloader_get_instrument_list' , c_int, ('pluginloader',POINTER(zzub_pluginloader_t)),('result'  ,c_char_p  ),('maxbytes',c_int     ))
+zzub_pluginloader_get_tracks_min         = dlsym(libzzub, 'zzub_pluginloader_get_tracks_min'      , c_int, ('pluginloader',POINTER(zzub_pluginloader_t)))
+zzub_pluginloader_get_tracks_max         = dlsym(libzzub, 'zzub_pluginloader_get_tracks_max'      , c_int, ('pluginloader',POINTER(zzub_pluginloader_t)))
+zzub_pluginloader_get_stream_format_count = dlsym(libzzub, 'zzub_pluginloader_get_stream_format_count', c_int, ('pluginloader',POINTER(zzub_pluginloader_t)))
+zzub_pluginloader_get_stream_format_ext  = dlsym(libzzub, 'zzub_pluginloader_get_stream_format_ext', c_char_p, ('pluginloader',POINTER(zzub_pluginloader_t)),('index'   ,c_int     ))
 zzub_plugin_destroy                      = dlsym(libzzub, 'zzub_plugin_destroy'                   , c_int, ('plugin'  ,POINTER(zzub_plugin_t)))
 zzub_plugin_load                         = dlsym(libzzub, 'zzub_plugin_load'                      , c_int, ('plugin'  ,POINTER(zzub_plugin_t)),('input'   ,POINTER(zzub_input_t)))
 zzub_plugin_save                         = dlsym(libzzub, 'zzub_plugin_save'                      , c_int, ('plugin'  ,POINTER(zzub_plugin_t)),('ouput'   ,POINTER(zzub_output_t)))
@@ -679,6 +633,8 @@ zzub_plugin_get_envelope_flags           = dlsym(libzzub, 'zzub_plugin_get_envel
 zzub_plugin_get_envelope_name            = dlsym(libzzub, 'zzub_plugin_get_envelope_name'         , c_char_p, ('plugin'  ,POINTER(zzub_plugin_t)),('index'   ,c_int     ))
 zzub_plugin_set_stream_source            = dlsym(libzzub, 'zzub_plugin_set_stream_source'         , None, ('plugin'  ,POINTER(zzub_plugin_t)),('resource',c_char_p  ))
 zzub_plugin_set_instrument               = dlsym(libzzub, 'zzub_plugin_set_instrument'            , c_int, ('plugin'  ,POINTER(zzub_plugin_t)),('name'    ,c_char_p  ))
+zzub_plugin_create_range_pattern         = dlsym(libzzub, 'zzub_plugin_create_range_pattern'      , POINTER(zzub_pattern_t), ('player'  ,POINTER(zzub_player_t)),('columns' ,c_int     ),('rows'    ,c_int     ))
+zzub_plugin_create_pattern               = dlsym(libzzub, 'zzub_plugin_create_pattern'            , POINTER(zzub_pattern_t), ('plugin'  ,POINTER(zzub_plugin_t)),('rows'    ,c_int     ))
 zzub_plugin_get_pattern_count            = dlsym(libzzub, 'zzub_plugin_get_pattern_count'         , c_int, ('plugin'  ,POINTER(zzub_plugin_t)))
 zzub_plugin_add_pattern                  = dlsym(libzzub, 'zzub_plugin_add_pattern'               , None, ('plugin'  ,POINTER(zzub_plugin_t)),('pattern' ,POINTER(zzub_pattern_t)))
 zzub_plugin_remove_pattern               = dlsym(libzzub, 'zzub_plugin_remove_pattern'            , None, ('plugin'  ,POINTER(zzub_plugin_t)),('pattern' ,c_int     ))
@@ -705,15 +661,15 @@ zzub_plugin_set_parameter_value_direct   = dlsym(libzzub, 'zzub_plugin_set_param
 zzub_plugin_get_parameter_count          = dlsym(libzzub, 'zzub_plugin_get_parameter_count'       , c_int, ('plugin'  ,POINTER(zzub_plugin_t)),('group'   ,c_int     ),('track'   ,c_int     ))
 zzub_plugin_get_parameter                = dlsym(libzzub, 'zzub_plugin_get_parameter'             , POINTER(zzub_parameter_t), ('plugin'  ,POINTER(zzub_plugin_t)),('group'   ,c_int     ),('track'   ,c_int     ),('column'  ,c_int     ))
 zzub_plugin_get_input_connection_count   = dlsym(libzzub, 'zzub_plugin_get_input_connection_count', c_int, ('plugin'  ,POINTER(zzub_plugin_t)))
-zzub_plugin_get_input_connection_by_type = dlsym(libzzub, 'zzub_plugin_get_input_connection_by_type', c_int, ('to_plugin',POINTER(zzub_plugin_t)),('from_plugin',POINTER(zzub_plugin_t)),('type'    ,c_int     ))
+zzub_plugin_get_input_connection_by_type = dlsym(libzzub, 'zzub_plugin_get_input_connection_by_type', c_int, ('plugin'  ,POINTER(zzub_plugin_t)),('from_plugin',POINTER(zzub_plugin_t)),('type'    ,c_int     ))
 zzub_plugin_get_input_connection_type    = dlsym(libzzub, 'zzub_plugin_get_input_connection_type' , c_int, ('plugin'  ,POINTER(zzub_plugin_t)),('index'   ,c_int     ))
 zzub_plugin_get_input_connection_plugin  = dlsym(libzzub, 'zzub_plugin_get_input_connection_plugin', POINTER(zzub_plugin_t), ('plugin'  ,POINTER(zzub_plugin_t)),('index'   ,c_int     ))
 zzub_plugin_get_output_connection_count  = dlsym(libzzub, 'zzub_plugin_get_output_connection_count', c_int, ('plugin'  ,POINTER(zzub_plugin_t)))
-zzub_plugin_get_output_connection_by_type = dlsym(libzzub, 'zzub_plugin_get_output_connection_by_type', c_int, ('to_plugin',POINTER(zzub_plugin_t)),('from_plugin',POINTER(zzub_plugin_t)),('type'    ,c_int     ))
+zzub_plugin_get_output_connection_by_type = dlsym(libzzub, 'zzub_plugin_get_output_connection_by_type', c_int, ('plugin'  ,POINTER(zzub_plugin_t)),('from_plugin',POINTER(zzub_plugin_t)),('type'    ,c_int     ))
 zzub_plugin_get_output_connection_type   = dlsym(libzzub, 'zzub_plugin_get_output_connection_type', c_int, ('plugin'  ,POINTER(zzub_plugin_t)),('index'   ,c_int     ))
 zzub_plugin_get_output_connection_plugin = dlsym(libzzub, 'zzub_plugin_get_output_connection_plugin', POINTER(zzub_plugin_t), ('plugin'  ,POINTER(zzub_plugin_t)),('index'   ,c_int     ))
-zzub_plugin_add_input                    = dlsym(libzzub, 'zzub_plugin_add_input'                 , c_int, ('to_plugin',POINTER(zzub_plugin_t)),('from_plugin',POINTER(zzub_plugin_t)),('type'    ,c_int     ))
-zzub_plugin_delete_input                 = dlsym(libzzub, 'zzub_plugin_delete_input'              , None, ('to_plugin',POINTER(zzub_plugin_t)),('from_plugin',POINTER(zzub_plugin_t)),('type'    ,c_int     ))
+zzub_plugin_add_input                    = dlsym(libzzub, 'zzub_plugin_add_input'                 , c_int, ('plugin'  ,POINTER(zzub_plugin_t)),('from_plugin',POINTER(zzub_plugin_t)),('type'    ,c_int     ))
+zzub_plugin_delete_input                 = dlsym(libzzub, 'zzub_plugin_delete_input'              , None, ('plugin'  ,POINTER(zzub_plugin_t)),('from_plugin',POINTER(zzub_plugin_t)),('type'    ,c_int     ))
 zzub_plugin_get_mixbuffer                = dlsym(libzzub, 'zzub_plugin_get_mixbuffer'             , c_int, ('plugin'  ,POINTER(zzub_plugin_t)),('leftbuffer',POINTER(c_float)),('rightbuffer',POINTER(c_float)),('size'    ,POINTER(c_int)),('samplepos',POINTER(c_longlong)))
 zzub_plugin_get_last_peak                = dlsym(libzzub, 'zzub_plugin_get_last_peak'             , None, ('plugin'  ,POINTER(zzub_plugin_t)),('maxL'    ,POINTER(c_float)),('maxR'    ,POINTER(c_float)))
 zzub_plugin_get_last_worktime            = dlsym(libzzub, 'zzub_plugin_get_last_worktime'         , c_double, ('plugin'  ,POINTER(zzub_plugin_t)))
@@ -727,30 +683,51 @@ zzub_plugin_set_attribute_value          = dlsym(libzzub, 'zzub_plugin_set_attri
 zzub_plugin_play_midi_note               = dlsym(libzzub, 'zzub_plugin_play_midi_note'            , None, ('plugin'  ,POINTER(zzub_plugin_t)),('note'    ,c_int     ),('prevNote',c_int     ),('velocity',c_int     ))
 zzub_plugin_play_pattern_row_ref         = dlsym(libzzub, 'zzub_plugin_play_pattern_row_ref'      , None, ('plugin'  ,POINTER(zzub_plugin_t)),('pattern' ,c_int     ),('row'     ,c_int     ))
 zzub_plugin_play_pattern_row             = dlsym(libzzub, 'zzub_plugin_play_pattern_row'          , None, ('plugin'  ,POINTER(zzub_plugin_t)),('pattern' ,POINTER(zzub_pattern_t)),('row'     ,c_int     ))
-zzub_plugin_set_midi_connection_device   = dlsym(libzzub, 'zzub_plugin_set_midi_connection_device', c_int, ('to_plugin',POINTER(zzub_plugin_t)),('from_plugin',POINTER(zzub_plugin_t)),('name'    ,c_char_p  ))
+zzub_plugin_set_midi_connection_device   = dlsym(libzzub, 'zzub_plugin_set_midi_connection_device', c_int, ('plugin'  ,POINTER(zzub_plugin_t)),('from_plugin',POINTER(zzub_plugin_t)),('name'    ,c_char_p  ))
 zzub_plugin_add_event_connection_binding = dlsym(libzzub, 'zzub_plugin_add_event_connection_binding', None, ('plugin'  ,POINTER(zzub_plugin_t)),('from_plugin',POINTER(zzub_plugin_t)),('sourceparam',c_int     ),('targetgroup',c_int     ),('targettrack',c_int     ),('targetparam',c_int     ))
-zzub_player_create_sequence              = dlsym(libzzub, 'zzub_player_create_sequence'           , POINTER(zzub_sequence_t), ('player'  ,POINTER(zzub_player_t)),('plugin'  ,POINTER(zzub_plugin_t)))
 zzub_sequence_destroy                    = dlsym(libzzub, 'zzub_sequence_destroy'                 , None, ('sequence',POINTER(zzub_sequence_t)))
 zzub_sequence_move                       = dlsym(libzzub, 'zzub_sequence_move'                    , None, ('sequence',POINTER(zzub_sequence_t)),('newIndex',c_int     ))
 zzub_sequence_insert_events              = dlsym(libzzub, 'zzub_sequence_insert_events'           , c_int, ('sequence',POINTER(zzub_sequence_t)),('start'   ,c_int     ),('ticks'   ,c_int     ))
 zzub_sequence_remove_events              = dlsym(libzzub, 'zzub_sequence_remove_events'           , c_int, ('sequence',POINTER(zzub_sequence_t)),('start'   ,c_int     ),('ticks'   ,c_int     ))
 zzub_sequence_set_event                  = dlsym(libzzub, 'zzub_sequence_set_event'               , None, ('sequence',POINTER(zzub_sequence_t)),('pos'     ,c_int     ),('value'   ,c_int     ))
 zzub_sequence_get_plugin                 = dlsym(libzzub, 'zzub_sequence_get_plugin'              , POINTER(zzub_plugin_t), ('sequence',POINTER(zzub_sequence_t)))
-zzub_sequence_get_event_at               = dlsym(libzzub, 'zzub_sequence_get_event_at'            , c_int, ('sequence',POINTER(zzub_sequence_t)),('pos'     ,c_ulong   ))
+zzub_sequence_get_event_at               = dlsym(libzzub, 'zzub_sequence_get_event_at'            , c_int, ('sequence',POINTER(zzub_sequence_t)),('pos'     ,c_int     ))
 zzub_sequence_get_event_count            = dlsym(libzzub, 'zzub_sequence_get_event_count'         , c_int, ('sequence',POINTER(zzub_sequence_t)))
 zzub_sequence_get_event                  = dlsym(libzzub, 'zzub_sequence_get_event'               , c_int, ('sequence',POINTER(zzub_sequence_t)),('index'   ,c_int     ),('pos'     ,POINTER(c_int)),('value'   ,POINTER(c_int)))
-zzub_plugin_create_pattern               = dlsym(libzzub, 'zzub_plugin_create_pattern'            , POINTER(zzub_pattern_t), ('plugin'  ,POINTER(zzub_plugin_t)),('rows'    ,c_int     ))
-zzub_plugin_create_range_pattern         = dlsym(libzzub, 'zzub_plugin_create_range_pattern'      , POINTER(zzub_pattern_t), ('player'  ,POINTER(zzub_player_t)),('columns' ,c_int     ),('rows'    ,c_int     ))
-zzub_pattern_destroy                     = dlsym(libzzub, 'zzub_pattern_destroy'                  , None, ('pattern' ,POINTER(zzub_pattern_t)))
-zzub_pattern_get_name                    = dlsym(libzzub, 'zzub_pattern_get_name'                 , None, ('pattern' ,POINTER(zzub_pattern_t)),('name'    ,c_char_p  ),('maxLen'  ,c_int     ))
-zzub_pattern_set_name                    = dlsym(libzzub, 'zzub_pattern_set_name'                 , None, ('pattern' ,POINTER(zzub_pattern_t)),('name'    ,c_char_p  ))
-zzub_pattern_get_row_count               = dlsym(libzzub, 'zzub_pattern_get_row_count'            , c_int, ('pattern' ,POINTER(zzub_pattern_t)))
-zzub_pattern_get_group_count             = dlsym(libzzub, 'zzub_pattern_get_group_count'          , c_int, ('pattern' ,POINTER(zzub_pattern_t)))
-zzub_pattern_get_track_count             = dlsym(libzzub, 'zzub_pattern_get_track_count'          , c_int, ('pattern' ,POINTER(zzub_pattern_t)),('group'   ,c_int     ))
-zzub_pattern_get_column_count            = dlsym(libzzub, 'zzub_pattern_get_column_count'         , c_int, ('pattern' ,POINTER(zzub_pattern_t)),('group'   ,c_int     ),('track'   ,c_int     ))
-zzub_pattern_get_value                   = dlsym(libzzub, 'zzub_pattern_get_value'                , c_int, ('pattern' ,POINTER(zzub_pattern_t)),('row'     ,c_int     ),('group'   ,c_int     ),('track'   ,c_int     ),('column'  ,c_int     ))
-zzub_pattern_set_value                   = dlsym(libzzub, 'zzub_pattern_set_value'                , None, ('pattern' ,POINTER(zzub_pattern_t)),('row'     ,c_int     ),('group'   ,c_int     ),('track'   ,c_int     ),('column'  ,c_int     ),('value'   ,c_int     ))
-zzub_pattern_interpolate                 = dlsym(libzzub, 'zzub_pattern_interpolate'              , None, ('pattern' ,POINTER(zzub_pattern_t)))
+zzub_wavelevel_get_wave                  = dlsym(libzzub, 'zzub_wavelevel_get_wave'               , POINTER(zzub_wave_t), ('wavelevel',POINTER(zzub_wavelevel_t)))
+zzub_wavelevel_clear                     = dlsym(libzzub, 'zzub_wavelevel_clear'                  , c_int, ('wavelevel',POINTER(zzub_wavelevel_t)))
+zzub_wavelevel_get_sample_count          = dlsym(libzzub, 'zzub_wavelevel_get_sample_count'       , c_int, ('wavelevel',POINTER(zzub_wavelevel_t)))
+zzub_wavelevel_set_sample_count          = dlsym(libzzub, 'zzub_wavelevel_set_sample_count'       , None, ('wavelevel',POINTER(zzub_wavelevel_t)),('count'   ,c_int     ))
+zzub_wavelevel_get_root_note             = dlsym(libzzub, 'zzub_wavelevel_get_root_note'          , c_int, ('wavelevel',POINTER(zzub_wavelevel_t)))
+zzub_wavelevel_set_root_note             = dlsym(libzzub, 'zzub_wavelevel_set_root_note'          , None, ('wavelevel',POINTER(zzub_wavelevel_t)),('note'    ,c_int     ))
+zzub_wavelevel_get_samples_per_second    = dlsym(libzzub, 'zzub_wavelevel_get_samples_per_second' , c_int, ('wavelevel',POINTER(zzub_wavelevel_t)))
+zzub_wavelevel_set_samples_per_second    = dlsym(libzzub, 'zzub_wavelevel_set_samples_per_second' , None, ('wavelevel',POINTER(zzub_wavelevel_t)),('sps'     ,c_int     ))
+zzub_wavelevel_get_loop_start            = dlsym(libzzub, 'zzub_wavelevel_get_loop_start'         , c_int, ('wavelevel',POINTER(zzub_wavelevel_t)))
+zzub_wavelevel_set_loop_start            = dlsym(libzzub, 'zzub_wavelevel_set_loop_start'         , None, ('wavelevel',POINTER(zzub_wavelevel_t)),('pos'     ,c_int     ))
+zzub_wavelevel_get_loop_end              = dlsym(libzzub, 'zzub_wavelevel_get_loop_end'           , c_int, ('wavelevel',POINTER(zzub_wavelevel_t)))
+zzub_wavelevel_set_loop_end              = dlsym(libzzub, 'zzub_wavelevel_set_loop_end'           , None, ('wavelevel',POINTER(zzub_wavelevel_t)),('pos'     ,c_int     ))
+zzub_wavelevel_get_format                = dlsym(libzzub, 'zzub_wavelevel_get_format'             , c_int, ('wavelevel',POINTER(zzub_wavelevel_t)))
+zzub_wavelevel_remove_sample_range       = dlsym(libzzub, 'zzub_wavelevel_remove_sample_range'    , None, ('wavelevel',POINTER(zzub_wavelevel_t)),('start'   ,c_int     ),('end'     ,c_int     ))
+zzub_wavelevel_get_samples_digest        = dlsym(libzzub, 'zzub_wavelevel_get_samples_digest'     , None, ('wavelevel',POINTER(zzub_wavelevel_t)),('channel' ,c_int     ),('start'   ,c_int     ),('end'     ,c_int     ),('mindigest',POINTER(c_float)),('maxdigest',POINTER(c_float)),('ampdigest',POINTER(c_float)),('digestsize',c_int     ))
+zzub_envelope_get_attack                 = dlsym(libzzub, 'zzub_envelope_get_attack'              , c_ushort, ('envelope',POINTER(zzub_envelope_t)))
+zzub_envelope_get_decay                  = dlsym(libzzub, 'zzub_envelope_get_decay'               , c_ushort, ('envelope',POINTER(zzub_envelope_t)))
+zzub_envelope_get_sustain                = dlsym(libzzub, 'zzub_envelope_get_sustain'             , c_ushort, ('envelope',POINTER(zzub_envelope_t)))
+zzub_envelope_get_release                = dlsym(libzzub, 'zzub_envelope_get_release'             , c_ushort, ('envelope',POINTER(zzub_envelope_t)))
+zzub_envelope_set_attack                 = dlsym(libzzub, 'zzub_envelope_set_attack'              , None, ('envelope',POINTER(zzub_envelope_t)),('attack'  ,c_ushort  ))
+zzub_envelope_set_decay                  = dlsym(libzzub, 'zzub_envelope_set_decay'               , None, ('envelope',POINTER(zzub_envelope_t)),('decay'   ,c_ushort  ))
+zzub_envelope_set_sustain                = dlsym(libzzub, 'zzub_envelope_set_sustain'             , None, ('envelope',POINTER(zzub_envelope_t)),('sustain' ,c_ushort  ))
+zzub_envelope_set_release                = dlsym(libzzub, 'zzub_envelope_set_release'             , None, ('envelope',POINTER(zzub_envelope_t)),('release' ,c_ushort  ))
+zzub_envelope_get_subdivision            = dlsym(libzzub, 'zzub_envelope_get_subdivision'         , c_char, ('envelope',POINTER(zzub_envelope_t)))
+zzub_envelope_set_subdivision            = dlsym(libzzub, 'zzub_envelope_set_subdivision'         , None, ('envelope',POINTER(zzub_envelope_t)),('subdiv'  ,c_char    ))
+zzub_envelope_get_flags                  = dlsym(libzzub, 'zzub_envelope_get_flags'               , c_char, ('envelope',POINTER(zzub_envelope_t)))
+zzub_envelope_set_flags                  = dlsym(libzzub, 'zzub_envelope_set_flags'               , None, ('envelope',POINTER(zzub_envelope_t)),('flags'   ,c_char    ))
+zzub_envelope_is_enabled                 = dlsym(libzzub, 'zzub_envelope_is_enabled'              , c_int, ('envelope',POINTER(zzub_envelope_t)))
+zzub_envelope_enable                     = dlsym(libzzub, 'zzub_envelope_enable'                  , None, ('envelope',POINTER(zzub_envelope_t)),('enable'  ,c_int     ))
+zzub_envelope_get_point_count            = dlsym(libzzub, 'zzub_envelope_get_point_count'         , c_int, ('envelope',POINTER(zzub_envelope_t)))
+zzub_envelope_get_point                  = dlsym(libzzub, 'zzub_envelope_get_point'               , None, ('envelope',POINTER(zzub_envelope_t)),('index'   ,c_int     ),('x'       ,POINTER(c_ushort)),('y'       ,POINTER(c_ushort)),('flags'   ,c_char_p  ))
+zzub_envelope_set_point                  = dlsym(libzzub, 'zzub_envelope_set_point'               , None, ('envelope',POINTER(zzub_envelope_t)),('index'   ,c_int     ),('x'       ,c_ushort  ),('y'       ,c_ushort  ),('flags'   ,c_char    ))
+zzub_envelope_insert_point               = dlsym(libzzub, 'zzub_envelope_insert_point'            , None, ('envelope',POINTER(zzub_envelope_t)),('index'   ,c_int     ))
+zzub_envelope_delete_point               = dlsym(libzzub, 'zzub_envelope_delete_point'            , None, ('envelope',POINTER(zzub_envelope_t)),('index'   ,c_int     ))
 zzub_wave_get_index                      = dlsym(libzzub, 'zzub_wave_get_index'                   , c_int, ('wave'    ,POINTER(zzub_wave_t)))
 zzub_wave_load_sample                    = dlsym(libzzub, 'zzub_wave_load_sample'                 , c_int, ('wave'    ,POINTER(zzub_wave_t)),('level'   ,c_int     ),('offset'  ,c_int     ),('clear'   ,c_int     ),('path'    ,c_char_p  ),('datastream',POINTER(zzub_input_t)))
 zzub_wave_save_sample                    = dlsym(libzzub, 'zzub_wave_save_sample'                 , c_int, ('wave'    ,POINTER(zzub_wave_t)),('level'   ,c_int     ),('datastream',POINTER(zzub_output_t)))
@@ -770,52 +747,72 @@ zzub_wave_get_envelope                   = dlsym(libzzub, 'zzub_wave_get_envelop
 zzub_wave_set_envelope                   = dlsym(libzzub, 'zzub_wave_set_envelope'                , None, ('wave'    ,POINTER(zzub_wave_t)),('index'   ,c_int     ),('env'     ,POINTER(zzub_envelope_t)))
 zzub_wave_get_level_count                = dlsym(libzzub, 'zzub_wave_get_level_count'             , c_int, ('wave'    ,POINTER(zzub_wave_t)))
 zzub_wave_get_level                      = dlsym(libzzub, 'zzub_wave_get_level'                   , POINTER(zzub_wavelevel_t), ('wave'    ,POINTER(zzub_wave_t)),('index'   ,c_int     ))
-zzub_wavelevel_get_wave                  = dlsym(libzzub, 'zzub_wavelevel_get_wave'               , POINTER(zzub_wave_t), ('level'   ,POINTER(zzub_wavelevel_t)))
-zzub_wavelevel_clear                     = dlsym(libzzub, 'zzub_wavelevel_clear'                  , c_int, ('level'   ,POINTER(zzub_wavelevel_t)))
-zzub_wavelevel_get_sample_count          = dlsym(libzzub, 'zzub_wavelevel_get_sample_count'       , c_int, ('level'   ,POINTER(zzub_wavelevel_t)))
-zzub_wavelevel_set_sample_count          = dlsym(libzzub, 'zzub_wavelevel_set_sample_count'       , None, ('level'   ,POINTER(zzub_wavelevel_t)),('count'   ,c_int     ))
-zzub_wavelevel_get_root_note             = dlsym(libzzub, 'zzub_wavelevel_get_root_note'          , c_int, ('level'   ,POINTER(zzub_wavelevel_t)))
-zzub_wavelevel_set_root_note             = dlsym(libzzub, 'zzub_wavelevel_set_root_note'          , None, ('level'   ,POINTER(zzub_wavelevel_t)),('note'    ,c_int     ))
-zzub_wavelevel_get_samples_per_second    = dlsym(libzzub, 'zzub_wavelevel_get_samples_per_second' , c_int, ('level'   ,POINTER(zzub_wavelevel_t)))
-zzub_wavelevel_set_samples_per_second    = dlsym(libzzub, 'zzub_wavelevel_set_samples_per_second' , None, ('level'   ,POINTER(zzub_wavelevel_t)),('sps'     ,c_int     ))
-zzub_wavelevel_get_loop_start            = dlsym(libzzub, 'zzub_wavelevel_get_loop_start'         , c_int, ('level'   ,POINTER(zzub_wavelevel_t)))
-zzub_wavelevel_set_loop_start            = dlsym(libzzub, 'zzub_wavelevel_set_loop_start'         , None, ('level'   ,POINTER(zzub_wavelevel_t)),('pos'     ,c_int     ))
-zzub_wavelevel_get_loop_end              = dlsym(libzzub, 'zzub_wavelevel_get_loop_end'           , c_int, ('level'   ,POINTER(zzub_wavelevel_t)))
-zzub_wavelevel_set_loop_end              = dlsym(libzzub, 'zzub_wavelevel_set_loop_end'           , None, ('level'   ,POINTER(zzub_wavelevel_t)),('pos'     ,c_int     ))
-zzub_wavelevel_get_format                = dlsym(libzzub, 'zzub_wavelevel_get_format'             , c_int, ('level'   ,POINTER(zzub_wavelevel_t)))
-zzub_wavelevel_remove_sample_range       = dlsym(libzzub, 'zzub_wavelevel_remove_sample_range'    , None, ('level'   ,POINTER(zzub_wavelevel_t)),('start'   ,c_int     ),('end'     ,c_int     ))
-zzub_wavelevel_get_samples_digest        = dlsym(libzzub, 'zzub_wavelevel_get_samples_digest'     , None, ('level'   ,POINTER(zzub_wavelevel_t)),('channel' ,c_int     ),('start'   ,c_int     ),('end'     ,c_int     ),('mindigest',POINTER(c_float)),('maxdigest',POINTER(c_float)),('ampdigest',POINTER(c_float)),('digestsize',c_int     ))
-zzub_envelope_get_attack                 = dlsym(libzzub, 'zzub_envelope_get_attack'              , c_ushort, ('env'     ,POINTER(zzub_envelope_t)))
-zzub_envelope_get_decay                  = dlsym(libzzub, 'zzub_envelope_get_decay'               , c_ushort, ('env'     ,POINTER(zzub_envelope_t)))
-zzub_envelope_get_sustain                = dlsym(libzzub, 'zzub_envelope_get_sustain'             , c_ushort, ('env'     ,POINTER(zzub_envelope_t)))
-zzub_envelope_get_release                = dlsym(libzzub, 'zzub_envelope_get_release'             , c_ushort, ('env'     ,POINTER(zzub_envelope_t)))
-zzub_envelope_set_attack                 = dlsym(libzzub, 'zzub_envelope_set_attack'              , None, ('env'     ,POINTER(zzub_envelope_t)),('attack'  ,c_ushort  ))
-zzub_envelope_set_decay                  = dlsym(libzzub, 'zzub_envelope_set_decay'               , None, ('env'     ,POINTER(zzub_envelope_t)),('decay'   ,c_ushort  ))
-zzub_envelope_set_sustain                = dlsym(libzzub, 'zzub_envelope_set_sustain'             , None, ('env'     ,POINTER(zzub_envelope_t)),('sustain' ,c_ushort  ))
-zzub_envelope_set_release                = dlsym(libzzub, 'zzub_envelope_set_release'             , None, ('env'     ,POINTER(zzub_envelope_t)),('release' ,c_ushort  ))
-zzub_envelope_get_subdivision            = dlsym(libzzub, 'zzub_envelope_get_subdivision'         , c_char, ('env'     ,POINTER(zzub_envelope_t)))
-zzub_envelope_set_subdivision            = dlsym(libzzub, 'zzub_envelope_set_subdivision'         , None, ('env'     ,POINTER(zzub_envelope_t)),('subdiv'  ,c_char    ))
-zzub_envelope_get_flags                  = dlsym(libzzub, 'zzub_envelope_get_flags'               , c_char, ('env'     ,POINTER(zzub_envelope_t)))
-zzub_envelope_set_flags                  = dlsym(libzzub, 'zzub_envelope_set_flags'               , None, ('env'     ,POINTER(zzub_envelope_t)),('flags'   ,c_char    ))
-zzub_envelope_is_enabled                 = dlsym(libzzub, 'zzub_envelope_is_enabled'              , c_int, ('env'     ,POINTER(zzub_envelope_t)))
-zzub_envelope_enable                     = dlsym(libzzub, 'zzub_envelope_enable'                  , None, ('env'     ,POINTER(zzub_envelope_t)),('enable'  ,c_int     ))
-zzub_envelope_get_point_count            = dlsym(libzzub, 'zzub_envelope_get_point_count'         , c_int, ('env'     ,POINTER(zzub_envelope_t)))
-zzub_envelope_get_point                  = dlsym(libzzub, 'zzub_envelope_get_point'               , None, ('env'     ,POINTER(zzub_envelope_t)),('index'   ,c_int     ),('x'       ,POINTER(c_ushort)),('y'       ,POINTER(c_ushort)),('flags'   ,POINTER(c_ubyte)))
-zzub_envelope_set_point                  = dlsym(libzzub, 'zzub_envelope_set_point'               , None, ('env'     ,POINTER(zzub_envelope_t)),('index'   ,c_int     ),('x'       ,c_ushort  ),('y'       ,c_ushort  ),('flags'   ,c_ubyte   ))
-zzub_envelope_insert_point               = dlsym(libzzub, 'zzub_envelope_insert_point'            , None, ('env'     ,POINTER(zzub_envelope_t)),('index'   ,c_int     ))
-zzub_envelope_delete_point               = dlsym(libzzub, 'zzub_envelope_delete_point'            , None, ('env'     ,POINTER(zzub_envelope_t)),('index'   ,c_int     ))
-zzub_archive_create_memory               = dlsym(libzzub, 'zzub_archive_create_memory'            , POINTER(zzub_archive_t), )
-zzub_archive_get_output                  = dlsym(libzzub, 'zzub_archive_get_output'               , POINTER(zzub_output_t), ('arg1'    ,POINTER(zzub_archive_t)),('path'    ,c_char_p  ))
-zzub_archive_get_input                   = dlsym(libzzub, 'zzub_archive_get_input'                , POINTER(zzub_input_t), ('arg1'    ,POINTER(zzub_archive_t)),('path'    ,c_char_p  ))
-zzub_archive_destroy                     = dlsym(libzzub, 'zzub_archive_destroy'                  , None, ('arg1'    ,POINTER(zzub_archive_t)))
-zzub_output_create_file                  = dlsym(libzzub, 'zzub_output_create_file'               , POINTER(zzub_output_t), ('filename',c_char_p  ))
-zzub_output_destroy                      = dlsym(libzzub, 'zzub_output_destroy'                   , None, ('f'       ,POINTER(zzub_output_t)))
-zzub_input_open_file                     = dlsym(libzzub, 'zzub_input_open_file'                  , POINTER(zzub_input_t), ('filename',c_char_p  ))
-zzub_input_destroy                       = dlsym(libzzub, 'zzub_input_destroy'                    , None, ('f'       ,POINTER(zzub_input_t)))
-zzub_input_read                          = dlsym(libzzub, 'zzub_input_read'                       , None, ('f'       ,POINTER(zzub_input_t)),('buffer'  ,c_void_p  ),('bytes'   ,c_int     ))
-zzub_input_size                          = dlsym(libzzub, 'zzub_input_size'                       , c_int, ('f'       ,POINTER(zzub_input_t)))
-zzub_input_position                      = dlsym(libzzub, 'zzub_input_position'                   , c_int, ('f'       ,POINTER(zzub_input_t)))
-zzub_input_seek                          = dlsym(libzzub, 'zzub_input_seek'                       , None, ('f'       ,POINTER(zzub_input_t)),('arg2'    ,c_int     ),('arg3'    ,c_int     ))
-zzub_output_write                        = dlsym(libzzub, 'zzub_output_write'                     , None, ('f'       ,POINTER(zzub_output_t)),('buffer'  ,c_void_p  ),('bytes'   ,c_int     ))
-zzub_output_position                     = dlsym(libzzub, 'zzub_output_position'                  , c_int, ('f'       ,POINTER(zzub_output_t)))
-zzub_output_seek                         = dlsym(libzzub, 'zzub_output_seek'                      , None, ('f'       ,POINTER(zzub_output_t)),('arg2'    ,c_int     ),('arg3'    ,c_int     ))
+zzub_player_create                       = dlsym(libzzub, 'zzub_player_create'                    , POINTER(zzub_player_t), )
+zzub_player_destroy                      = dlsym(libzzub, 'zzub_player_destroy'                   , None, ('player'  ,POINTER(zzub_player_t)))
+zzub_player_add_plugin_path              = dlsym(libzzub, 'zzub_player_add_plugin_path'           , None, ('player'  ,POINTER(zzub_player_t)),('path'    ,c_char_p  ))
+zzub_player_blacklist_plugin             = dlsym(libzzub, 'zzub_player_blacklist_plugin'          , None, ('player'  ,POINTER(zzub_player_t)),('uri'     ,c_char_p  ))
+zzub_player_initialize                   = dlsym(libzzub, 'zzub_player_initialize'                , c_int, ('player'  ,POINTER(zzub_player_t)),('samplesPerSecond',c_int     ))
+zzub_player_load_bmx                     = dlsym(libzzub, 'zzub_player_load_bmx'                  , c_int, ('player'  ,POINTER(zzub_player_t)),('datastream',POINTER(zzub_input_t)),('messages',c_char_p  ),('maxLen'  ,c_int     ))
+zzub_player_save_bmx                     = dlsym(libzzub, 'zzub_player_save_bmx'                  , c_int, ('player'  ,POINTER(zzub_player_t)),('plugins' ,POINTER(POINTER(zzub_plugin_t))),('num_plugins',c_int     ),('save_waves',c_int     ),('datastream',POINTER(zzub_output_t)))
+zzub_player_load_ccm                     = dlsym(libzzub, 'zzub_player_load_ccm'                  , c_int, ('player'  ,POINTER(zzub_player_t)),('fileName',c_char_p  ))
+zzub_player_save_ccm                     = dlsym(libzzub, 'zzub_player_save_ccm'                  , c_int, ('player'  ,POINTER(zzub_player_t)),('fileName',c_char_p  ))
+zzub_player_get_state                    = dlsym(libzzub, 'zzub_player_get_state'                 , c_int, ('player'  ,POINTER(zzub_player_t)))
+zzub_player_set_state                    = dlsym(libzzub, 'zzub_player_set_state'                 , None, ('player'  ,POINTER(zzub_player_t)),('state'   ,c_int     ))
+zzub_player_set_position                 = dlsym(libzzub, 'zzub_player_set_position'              , None, ('player'  ,POINTER(zzub_player_t)),('tick'    ,c_int     ))
+zzub_player_get_bpm                      = dlsym(libzzub, 'zzub_player_get_bpm'                   , c_float, ('player'  ,POINTER(zzub_player_t)))
+zzub_player_get_tpb                      = dlsym(libzzub, 'zzub_player_get_tpb'                   , c_int, ('player'  ,POINTER(zzub_player_t)))
+zzub_player_set_bpm                      = dlsym(libzzub, 'zzub_player_set_bpm'                   , None, ('player'  ,POINTER(zzub_player_t)),('bpm'     ,c_float   ))
+zzub_player_set_tpb                      = dlsym(libzzub, 'zzub_player_set_tpb'                   , None, ('player'  ,POINTER(zzub_player_t)),('tpb'     ,c_int     ))
+zzub_player_get_pluginloader_count       = dlsym(libzzub, 'zzub_player_get_pluginloader_count'    , c_int, ('player'  ,POINTER(zzub_player_t)))
+zzub_player_get_pluginloader             = dlsym(libzzub, 'zzub_player_get_pluginloader'          , POINTER(zzub_pluginloader_t), ('player'  ,POINTER(zzub_player_t)),('index'   ,c_int     ))
+zzub_player_get_pluginloader_by_name     = dlsym(libzzub, 'zzub_player_get_pluginloader_by_name'  , POINTER(zzub_pluginloader_t), ('player'  ,POINTER(zzub_player_t)),('name'    ,c_char_p  ))
+zzub_player_get_plugin_count             = dlsym(libzzub, 'zzub_player_get_plugin_count'          , c_int, ('player'  ,POINTER(zzub_player_t)))
+zzub_player_add_midimapping              = dlsym(libzzub, 'zzub_player_add_midimapping'           , POINTER(zzub_midimapping_t), ('plugin'  ,POINTER(zzub_plugin_t)),('group'   ,c_int     ),('track'   ,c_int     ),('param'   ,c_int     ),('channel' ,c_int     ),('controller',c_int     ))
+zzub_player_remove_midimapping           = dlsym(libzzub, 'zzub_player_remove_midimapping'        , c_int, ('plugin'  ,POINTER(zzub_plugin_t)),('group'   ,c_int     ),('track'   ,c_int     ),('param'   ,c_int     ))
+zzub_player_get_plugin_by_name           = dlsym(libzzub, 'zzub_player_get_plugin_by_name'        , POINTER(zzub_plugin_t), ('player'  ,POINTER(zzub_player_t)),('name'    ,c_char_p  ))
+zzub_player_get_plugin_by_id             = dlsym(libzzub, 'zzub_player_get_plugin_by_id'          , POINTER(zzub_plugin_t), ('player'  ,POINTER(zzub_player_t)),('id'      ,c_int     ))
+zzub_player_get_plugin                   = dlsym(libzzub, 'zzub_player_get_plugin'                , POINTER(zzub_plugin_t), ('player'  ,POINTER(zzub_player_t)),('index'   ,c_int     ))
+zzub_player_work_stereo                  = dlsym(libzzub, 'zzub_player_work_stereo'               , POINTER(POINTER(c_float)), ('player'  ,POINTER(zzub_player_t)),('numSamples',POINTER(c_int)))
+zzub_player_clear                        = dlsym(libzzub, 'zzub_player_clear'                     , None, ('player'  ,POINTER(zzub_player_t)))
+zzub_player_get_position                 = dlsym(libzzub, 'zzub_player_get_position'              , c_int, ('player'  ,POINTER(zzub_player_t)))
+zzub_player_get_loop_start               = dlsym(libzzub, 'zzub_player_get_loop_start'            , c_int, ('player'  ,POINTER(zzub_player_t)))
+zzub_player_get_loop_end                 = dlsym(libzzub, 'zzub_player_get_loop_end'              , c_int, ('player'  ,POINTER(zzub_player_t)))
+zzub_player_get_song_start               = dlsym(libzzub, 'zzub_player_get_song_start'            , c_int, ('player'  ,POINTER(zzub_player_t)))
+zzub_player_set_loop_start               = dlsym(libzzub, 'zzub_player_set_loop_start'            , None, ('player'  ,POINTER(zzub_player_t)),('v'       ,c_int     ))
+zzub_player_set_loop_end                 = dlsym(libzzub, 'zzub_player_set_loop_end'              , None, ('player'  ,POINTER(zzub_player_t)),('v'       ,c_int     ))
+zzub_player_set_song_start               = dlsym(libzzub, 'zzub_player_set_song_start'            , None, ('player'  ,POINTER(zzub_player_t)),('v'       ,c_int     ))
+zzub_player_get_song_end                 = dlsym(libzzub, 'zzub_player_get_song_end'              , c_int, ('player'  ,POINTER(zzub_player_t)))
+zzub_player_set_song_end                 = dlsym(libzzub, 'zzub_player_set_song_end'              , None, ('player'  ,POINTER(zzub_player_t)),('v'       ,c_int     ))
+zzub_player_set_loop_enabled             = dlsym(libzzub, 'zzub_player_set_loop_enabled'          , None, ('player'  ,POINTER(zzub_player_t)),('enable'  ,c_int     ))
+zzub_player_get_loop_enabled             = dlsym(libzzub, 'zzub_player_get_loop_enabled'          , c_int, ('player'  ,POINTER(zzub_player_t)))
+zzub_player_get_sequence_track_count     = dlsym(libzzub, 'zzub_player_get_sequence_track_count'  , c_int, ('player'  ,POINTER(zzub_player_t)))
+zzub_player_get_sequence                 = dlsym(libzzub, 'zzub_player_get_sequence'              , POINTER(zzub_sequence_t), ('player'  ,POINTER(zzub_player_t)),('index'   ,c_int     ))
+zzub_player_get_currently_playing_pattern = dlsym(libzzub, 'zzub_player_get_currently_playing_pattern', c_int, ('plugin'  ,POINTER(zzub_plugin_t)),('pattern' ,POINTER(c_int)),('row'     ,POINTER(c_int)))
+zzub_player_get_currently_playing_pattern_row = dlsym(libzzub, 'zzub_player_get_currently_playing_pattern_row', c_int, ('plugin'  ,POINTER(zzub_plugin_t)),('pattern' ,c_int     ),('row'     ,POINTER(c_int)))
+zzub_player_get_wave_count               = dlsym(libzzub, 'zzub_player_get_wave_count'            , c_int, ('player'  ,POINTER(zzub_player_t)))
+zzub_player_get_wave                     = dlsym(libzzub, 'zzub_player_get_wave'                  , POINTER(zzub_wave_t), ('player'  ,POINTER(zzub_player_t)),('index'   ,c_int     ))
+zzub_player_set_callback                 = dlsym(libzzub, 'zzub_player_set_callback'              , None, ('player'  ,POINTER(zzub_player_t)),('callback',zzub_callback_t),('tag'     ,c_void_p  ))
+zzub_player_handle_events                = dlsym(libzzub, 'zzub_player_handle_events'             , None, ('player'  ,POINTER(zzub_player_t)))
+zzub_player_get_midimapping              = dlsym(libzzub, 'zzub_player_get_midimapping'           , POINTER(zzub_midimapping_t), ('player'  ,POINTER(zzub_player_t)),('index'   ,c_int     ))
+zzub_player_get_midimapping_count        = dlsym(libzzub, 'zzub_player_get_midimapping_count'     , c_int, ('player'  ,POINTER(zzub_player_t)))
+zzub_player_get_automation               = dlsym(libzzub, 'zzub_player_get_automation'            , c_int, ('player'  ,POINTER(zzub_player_t)))
+zzub_player_set_automation               = dlsym(libzzub, 'zzub_player_set_automation'            , None, ('player'  ,POINTER(zzub_player_t)),('enable'  ,c_int     ))
+zzub_player_get_midi_transport           = dlsym(libzzub, 'zzub_player_get_midi_transport'        , c_int, ('player'  ,POINTER(zzub_player_t)))
+zzub_player_set_midi_transport           = dlsym(libzzub, 'zzub_player_set_midi_transport'        , None, ('player'  ,POINTER(zzub_player_t)),('enable'  ,c_int     ))
+zzub_player_get_infotext                 = dlsym(libzzub, 'zzub_player_get_infotext'              , c_char_p, ('player'  ,POINTER(zzub_player_t)))
+zzub_player_set_infotext                 = dlsym(libzzub, 'zzub_player_set_infotext'              , None, ('player'  ,POINTER(zzub_player_t)),('text'    ,c_char_p  ))
+zzub_player_set_midi_plugin              = dlsym(libzzub, 'zzub_player_set_midi_plugin'           , None, ('player'  ,POINTER(zzub_player_t)),('plugin'  ,POINTER(zzub_plugin_t)))
+zzub_player_get_midi_plugin              = dlsym(libzzub, 'zzub_player_get_midi_plugin'           , POINTER(zzub_plugin_t), ('player'  ,POINTER(zzub_player_t)))
+zzub_player_get_new_plugin_name          = dlsym(libzzub, 'zzub_player_get_new_plugin_name'       , None, ('player'  ,POINTER(zzub_player_t)),('uri'     ,c_char_p  ),('name'    ,c_char_p  ),('maxLen'  ,c_int     ))
+zzub_player_reset_keyjazz                = dlsym(libzzub, 'zzub_player_reset_keyjazz'             , None, ('player'  ,POINTER(zzub_player_t)))
+zzub_player_create_plugin                = dlsym(libzzub, 'zzub_player_create_plugin'             , POINTER(zzub_plugin_t), ('player'  ,POINTER(zzub_player_t)),('input'   ,POINTER(zzub_input_t)),('dataSize',c_int     ),('instanceName',c_char_p  ),('loader'  ,POINTER(zzub_pluginloader_t)))
+zzub_player_create_sequence              = dlsym(libzzub, 'zzub_player_create_sequence'           , POINTER(zzub_sequence_t), ('player'  ,POINTER(zzub_player_t)),('plugin'  ,POINTER(zzub_plugin_t)))
+zzub_player_flush                        = dlsym(libzzub, 'zzub_player_flush'                     , None, ('player'  ,POINTER(zzub_player_t)),('redo_event',POINTER(zzub_event_data_t)),('undo_event',POINTER(zzub_event_data_t)))
+zzub_player_undo                         = dlsym(libzzub, 'zzub_player_undo'                      , None, ('player'  ,POINTER(zzub_player_t)))
+zzub_player_redo                         = dlsym(libzzub, 'zzub_player_redo'                      , None, ('player'  ,POINTER(zzub_player_t)))
+zzub_player_history_commit               = dlsym(libzzub, 'zzub_player_history_commit'            , None, ('player'  ,POINTER(zzub_player_t)),('description',c_char_p  ))
+zzub_player_history_flush_last           = dlsym(libzzub, 'zzub_player_history_flush_last'        , None, ('player'  ,POINTER(zzub_player_t)))
+zzub_player_history_flush                = dlsym(libzzub, 'zzub_player_history_flush'             , None, ('player'  ,POINTER(zzub_player_t)))
+zzub_player_history_get_size             = dlsym(libzzub, 'zzub_player_history_get_size'          , c_int, ('player'  ,POINTER(zzub_player_t)))
+zzub_player_history_get_position         = dlsym(libzzub, 'zzub_player_history_get_position'      , c_int, ('player'  ,POINTER(zzub_player_t)))
+zzub_player_history_get_description      = dlsym(libzzub, 'zzub_player_history_get_description'   , c_char_p, ('player'  ,POINTER(zzub_player_t)),('position',c_int     ))

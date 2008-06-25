@@ -1,4 +1,4 @@
 cd ..
-tools/h2ctypes src/libzzub/libzzub.h libzzub.h zzub/types.h > src/pyzzub/zzub/zzub_flat.py
+tools/h2ctypes include/zzub/zzub.h zzub.h > src/pyzzub/zzub/zzub_flat.py
 cd src/pyzzub/zzub
 export PYTHONPATH=. && python ../../../tools/ctypes2classes.py zzub_flat zzub > zzub_classes.py
