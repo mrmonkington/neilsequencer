@@ -2,6 +2,8 @@
 include "zzub/types.h"
 
 namespace zzub:
+	dlname "zzub"
+
 	enum:
 		set version = 15
 		set buffer_size = 256

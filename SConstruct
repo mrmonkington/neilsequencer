@@ -245,7 +245,9 @@ if x86_64:
 import stat
 import socket
 
-env['SIGNATURE'] = 'libzzub %s r%s %s-%s %s' % (VERSION,env['REVISION'],env['CC'],sys.platform,socket.gethostname())
+
+env['LIBZZUB_VERSION'] = VERSION
+env['SIGNATURE'] = 'libzzub %s r%s %s-%s %s' % (env['LIBZZUB_VERSION'],env['REVISION'],env['CC'],sys.platform,socket.gethostname())
 
 ######################################
 #
@@ -324,8 +326,6 @@ env['PYZZUB_SRC_PATH'] = '${ROOTPATH}/src/pyzzub'
 
 env['LIB_BUILD_PATH'] = '${ROOTPATH}/lib'
 env['BIN_BUILD_PATH'] = '${ROOTPATH}/bin'
-
-env['LIBZZUB_VERSION'] = VERSION
 
 ######################################
 #
@@ -624,6 +624,7 @@ builders = dict(
 	PyExtension = Builder(action = build_python_extension),
 	ZIDLCHeader = Builder(action = 'python ${ROOTPATH}/tools/zidl --c-header $TARGET $SOURCE'),
 	ZIDLCDef = Builder(action = 'python ${ROOTPATH}/tools/zidl --c-def $TARGET $SOURCE'),
+	ZIDLPyCtypes = Builder(action = 'python ${ROOTPATH}/tools/zidl --libversion $LIBZZUB_VERSION --py-ctypes $TARGET $SOURCE'),
 )
 
 env['BUILDERS'].update(builders)
@@ -636,6 +637,7 @@ env['BUILDERS'].update(builders)
 
 env.ZIDLCHeader('${ROOTPATH}/include/zzub/zzub.h', '${ROOTPATH}/include/zzub/zzub.zidl')
 env.ZIDLCDef('${LIBZZUB_SRC_PATH}/libzzub.def', '${ROOTPATH}/include/zzub/zzub.zidl')
+env.ZIDLPyCtypes('${PYZZUB_SRC_PATH}/zzub/zzub.py', '${ROOTPATH}/include/zzub/zzub.zidl')
 
 #######################################
 #

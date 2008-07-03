@@ -25,6 +25,101 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */"""
 
+py_header = """#!/usr/bin/env python
+# encoding: latin-1
+
+from ctypes import *
+
+import sys, os
+
+def load_library(*names,**kw):
+	\"""
+	searches for a library with given names and returns a ctypes 
+	.so/.dll library object if successful. if the library can not
+	be loaded, an assertion error will be thrown.
+	
+	@type  names: list of strings
+	@param names: one or more aliases for required libraries, e.g.
+				  'SDL','SDL-1.2'.
+	@rtype: ctypes CDLL handle
+	\"""
+	import ctypes, os, sys
+	searchpaths = []
+	if os.name in ('posix', 'mac'):
+		if os.environ.has_key('LD_LIBRARY_PATH'):
+			searchpaths += os.environ['LD_LIBRARY_PATH'].split(os.pathsep)
+		searchpaths += [
+			'/usr/local/lib64',
+			'/usr/local/lib',
+			'/usr/lib64',
+			'/usr/lib',
+		]
+	elif os.name == 'nt':
+		searchpaths += ['.']
+		if 'PATH' in os.environ:
+			searchpaths += os.environ['PATH'].split(os.pathsep)
+	else:
+		assert 0, "Unknown OS: %s" % os.name
+	if 'paths' in kw:
+		searchpaths += kw['paths']
+	for name in names:
+		if os.name == 'nt':
+			libname = name + '.dll'
+		elif sys.platform == 'darwin':
+			libname = 'lib' + name + '.dylib'
+			if 'version' in kw:
+				libname += '.' + kw['version']
+		else:
+			libname = 'lib' + name + '.so'
+			if 'version' in kw:
+				libname += '.' + kw['version']
+		m = None
+		for path in searchpaths:
+			if os.path.isdir(path):
+				libpath = os.path.join(path,libname)
+				if os.path.isfile(libpath):
+					m = ctypes.CDLL(libpath)
+					break
+				for filename in reversed(sorted(os.listdir(path))):
+					if filename.startswith(libname):
+						m = ctypes.CDLL(os.path.join(path,filename))
+						break
+				if m:
+					break
+		if m:
+			break
+	assert m, "libraries %s not found in %s" % (','.join(["'%s'" % a for a in names]),','.join(searchpaths))
+	return m
+	
+def dlopen(*args,**kwds):
+	\"""
+	Opens a library by name and returns a handle object. See 
+	{library.load} for more information.
+	\"""
+	return load_library(*args,**kwds)
+
+def dlsym(lib, name, restype, *args):
+	\"""
+	Retrieves a symbol from a library loaded by dlopen and
+	assigns correct result and argument types.
+	
+	@param lib: Library object.
+	@type lib: ctypes.CDLL
+	@param name: Name of symbol.
+	@type name: str
+	@param restype: Type of function return value.
+	@param args: Types of function arguments.	
+	\"""
+	if not lib:
+		return None
+	proc = getattr(lib,name)
+	proc.restype = restype
+	proc.argtypes = [argtype for argname,argtype in args]
+	proc.o_restype = restype
+	proc.o_args = args
+	return proc
+"""
+
 class ParseError(Exception):
 	pass
 
@@ -324,6 +419,16 @@ class zzubIDLObject(object):
 		
 	def write_c_def(self, parent, f):
 		pass
+		
+	def write_py_doc(self, f):
+		if self.doc:
+			print >> f
+		for i,doc in enumerate(self.doc):
+			doc = doc.strip()
+			print >> f, '# ' + doc
+		
+	def write_py_ctypes(self, parent, f):
+		pass
 	
 class Namespace(zzubIDLObject):
 	def __init__(self):
@@ -376,6 +481,17 @@ class Namespace(zzubIDLObject):
 			ns.write_c_def(self, f)
 		for class_ in self.classes:
 			class_.write_c_def(self, f)
+			
+	def write_py_ctypes(self, parent, f):
+		self.write_py_doc(f)
+		for enum in self.enums:
+			enum.write_py_ctypes(self, f)
+		for function in self.functions:
+			function.write_py_ctypes(self, f)
+		for class_ in self.classes:
+			class_.write_py_ctypes(self, f)
+		for ns in self.namespaces:
+			ns.write_py_ctypes(self, f)
 		
 class Class(zzubIDLObject):
 	def __init__(self):
@@ -390,7 +506,13 @@ class Class(zzubIDLObject):
 		self.c_name = self.make_c_name(parent, self.name)
 		self.typestruct_name = '_' + self.c_name
 		self.struct_name = self.c_name + '_t'
-		parser.typemap[self.name] = dict(c_real_type=self.struct_name,c_type=self.struct_name + ' *', c_out_type=self.struct_name + ' * *')
+		parser.typemap[self.name] = dict(
+			py_c_type='POINTER(' + self.struct_name + ')',
+			py_c_out_type='POINTER(POINTER(' + self.struct_name + '))',
+			c_real_type=self.struct_name,
+			c_type=self.struct_name + ' *', 
+			c_out_type=self.struct_name + ' * *',
+		)
 		parser.scan_colon()
 		
 	def add_class(self, class_):
@@ -436,6 +558,17 @@ class Class(zzubIDLObject):
 			class_.write_c_def(self, f)
 		for function in self.functions:
 			function.write_c_def(self, f)
+
+	def write_py_ctypes(self, parent, f):
+		print >> f, 'class ' + self.struct_name + '(Structure):'
+		print >> f, '\t_fields_ = ['
+		for member in self.members:
+			member.write_py_ctypes(self, f)
+		print >> f, '\t]'
+		for class_ in self.classes:
+			class_.write_py_ctypes(self, f)
+		for function in self.functions:
+			function.write_py_ctypes(self, f)
 		
 class Union(zzubIDLObject):
 	def __init__(self):
@@ -485,6 +618,14 @@ class Enum(zzubIDLObject):
 			item.write_c_header(self, f)
 		print >> f, "};"
 		print >> f
+
+	def write_py_ctypes(self, parent, f):
+		self.write_py_doc(f)
+		print >> f
+		print >> f,'# enum ' + self.c_name
+		lastval = 0
+		for item in self.items:
+			lastval = item.write_py_ctypes(self, f, lastval)
 		
 class EnumItem(zzubIDLObject):
 	def __init__(self):
@@ -509,31 +650,40 @@ class EnumItem(zzubIDLObject):
 		else:
 			self.value = int(parser.scan_int())
 			
-	def write_c_header(self, parent,f):
-		self.write_c_doc(f)
+	def get_valstr(self):
 		valstr = ''
 		if self.bits:
 			valstr = '|'.join([('(1 << %i)' % bit) for bit in self.bits])
 		elif self.value != None:
 			valstr = str(self.value)
+		return valstr
+			
+	def write_c_header(self, parent,f):
+		self.write_c_doc(f)
+		valstr = self.get_valstr()
 		if valstr:
 			print >> f, "\t" + self.c_name + ' = ' + valstr + ','
 		else:
 			print >> f, "\t" + self.c_name + ','
+			
+	def write_py_ctypes(self, parent, f, lastval):
+		self.write_py_doc(f)
+		valstr = self.get_valstr()
+		print >> f, self.c_name + ' = ' + valstr
 	
 class Argument(zzubIDLObject):
 	typemap = {
-		'string' : dict(c_type='const char *', c_out_type='char *'),
-		'bool' : dict(c_type='int', c_out_type='int *', comment='bool'),
-		'int' : dict(c_type='int', c_out_type='int *'),
-		'int64' : dict(c_type='long long', c_out_type='long long *'),
-		'uint' : dict(c_type='unsigned int', c_out_type='unsigned int *'),
-		'char' : dict(c_type='char', c_out_type='char *'),
-		'uchar' : dict(c_type='unsigned char', c_out_type='unsigned char *'),
-		'pvoid' : dict(c_type='void *', c_out_type='void * *'),
-		'ushort' : dict(c_type='unsigned short', c_out_type='unsigned short *'),
-		'float' : dict(c_type='float', c_out_type='float *'),
-		'double' : dict(c_type='double', c_out_type='double *'),
+		'string' : dict(py_c_type='c_char_p', py_c_out_type='c_char_p', c_type='const char *', c_out_type='char *'),
+		'bool' : dict(py_c_type='c_int', py_c_out_type='POINTER(c_int)', c_type='int', c_out_type='int *', comment='bool'),
+		'int' : dict(py_c_type='c_int', py_c_out_type='POINTER(c_int)', c_type='int', c_out_type='int *'),
+		'int64' : dict(py_c_type='c_longlong', py_c_out_type='POINTER(c_longlong)', c_type='long long', c_out_type='long long *'),
+		'uint' : dict(py_c_type='c_uint', py_c_out_type='POINTER(c_uint)', c_type='unsigned int', c_out_type='unsigned int *'),
+		'char' : dict(py_c_type='c_char', py_c_out_type='POINTER(c_char)', c_type='char', c_out_type='char *'),
+		'uchar' : dict(py_c_type='c_ubyte', py_c_out_type='POINTER(c_ubyte)', c_type='unsigned char', c_out_type='unsigned char *'),
+		'pvoid' : dict(py_c_type='c_void_p', py_c_out_type='POINTER(c_void_p)', c_type='void *', c_out_type='void * *'),
+		'ushort' : dict(py_c_type='c_ushort', py_c_out_type='POINTER(c_ushort)', c_type='unsigned short', c_out_type='unsigned short *'),
+		'float' : dict(py_c_type='c_float', py_c_out_type='POINTER(c_float)', c_type='float', c_out_type='float *'),
+		'double' : dict(py_c_type='c_double', py_c_out_type='POINTER(c_double)', c_type='double', c_out_type='double *'),
 	}
 	
 	def __init__(self):
@@ -580,18 +730,22 @@ class Argument(zzubIDLObject):
 		self.comment = tm.get('comment','')
 		if 'out' in self.argdirs:
 			self.c_type = tm['c_out_type']
+			self.py_c_type = tm['py_c_out_type']
 			for ai in self.arrayinfo[1:]:
 				self.c_type = self.c_type + ' *'
+				self.py_c_type = 'POINTER(' + self.py_c_type + ')'
 		else:
 			if not ref and tm.has_key('c_real_type'):
 				self.c_type = tm['c_real_type']
 			else:
 				self.c_type = tm['c_type']
+			self.py_c_type = tm['py_c_type']
 			for i,ai in enumerate(self.arrayinfo):
 				if i == 0:
 					self.c_type = 'const ' + self.c_type + ' *'
 				else:
 					self.c_type = self.c_type + ' *'
+				self.py_c_type = 'POINTER(' + self.py_c_type + ')'
 		
 	def write_c_header(self, parent, f):
 		pass
@@ -616,6 +770,10 @@ class ClassMember(zzubIDLObject):
 		self.specs.resolve(self.ref)
 		self.write_c_doc(f)
 		print >> f, '\t' + make_arg(self.specs.c_type, self.specs.name) + ';'
+		
+	def write_py_ctypes(self, parent, f):
+		self.specs.resolve(self.ref)
+		print >> f, '\t\t("' + self.specs.name + '", ' + self.specs.py_c_type + '),'
 	
 class Function(zzubIDLObject):
 	def __init__(self):
@@ -634,6 +792,7 @@ class Function(zzubIDLObject):
 		if parent and parent.c_name:
 			self.c_name = parent.c_name + '_'
 		self.c_name += self.name.lower()
+		self.parser = parser
 		parser.scan_bo()
 		while not parser.try_bc():
 			arg = Argument()
@@ -645,7 +804,11 @@ class Function(zzubIDLObject):
 			self.ret_arg = Argument()
 			self.ret_arg.parse(parser, retval=True)
 		if self.func_type:
-			parser.typemap[self.name] = dict(c_type=self.c_name + '_t', c_out_type=self.c_name + '_t *')
+			parser.typemap[self.name] = dict(
+				c_type=self.c_name + '_t', 
+				c_out_type=self.c_name + '_t *',
+				py_c_type=self.c_name + '_t',
+				py_c_out_type=self.c_name + '_t')
 
 	def write_c_header(self, parent, f):
 		retval = 'void'
@@ -654,7 +817,6 @@ class Function(zzubIDLObject):
 			retval = self.ret_arg.c_type
 			if self.ret_arg.comment:
 				retval = '/*'+self.ret_arg.comment+'*/ ' + retval
-			out_args = []
 		args = []
 		def make_arg(typename, argname):
 			if typename.endswith('*'):
@@ -674,6 +836,25 @@ class Function(zzubIDLObject):
 
 	def write_c_def(self, parent, f):
 		print >> f, '\t' + self.c_name
+
+	def write_py_ctypes(self, parent, f):
+		#zzub_audiodriver_create_portaudio        = dlsym(libzzub, 
+		#'zzub_audiodriver_create_portaudio'     , POINTER(zzub_audiodriver_t), ('player'  ,POINTER(zzub_player_t)))
+		retval = 'None'
+		if self.ret_arg:
+			self.ret_arg.resolve()
+			retval = self.ret_arg.py_c_type
+		args = [
+			'lib' + self.parser.dlname,
+			'"' + self.c_name + '"',
+			retval,
+		]
+		if not self.func_type and isinstance(parent, Class) and not self.static:
+			args.append('POINTER(' + parent.struct_name + ')')
+		for arg in self.args:
+			arg.resolve()
+			args.append(arg.py_c_type)
+		print >> f, self.c_name + ' = dlsym(' + ', '.join(args) + ')'
 
 class FunctionType(Function):
 	def __init__(self):
@@ -695,11 +876,13 @@ class zzubIDLParser(Parser):
 	typemap = {
 	}
 
-	def __init__(self):
+	def __init__(self, libversion):
 		Parser.__init__(self)
 		self.stack = []
+		self.libversion = libversion
 		self.includes = []
 		self.comment = []
+		self.dlname = ''
 		self.root = Namespace()
 		
 	def top(self):
@@ -744,6 +927,14 @@ class zzubIDLParser(Parser):
 		print >> f, "#endif // " + hdef
 		file(filename, 'w').write(f.getvalue())
 		
+	def write_py_ctypes(self, filename):
+		f = StringIO()
+		print >> f, py_header
+		print >> f, 'lib' + self.dlname + ' = dlopen("' + self.dlname + '", "' + self.libversion + '")'
+		self.root.write_py_ctypes(None, f)
+		
+		file(filename, 'w').write(f.getvalue())
+		
 	def cleanup_doc(self, docs):
 		if not docs:
 			return docs
@@ -773,6 +964,8 @@ class zzubIDLParser(Parser):
 					if name == 'include':
 						self.comments = []
 						self.includes.append(self.scan_string1())
+					elif name == 'dlname':
+						self.dlname = self.scan_string1()
 					else:
 						if not name in self.symbols:
 							self.error('unknown symbol: '+name)
@@ -798,16 +991,19 @@ if __name__ == '__main__':
 	parser.add_option("--c-header", dest="cheader", help="specifies path to write C header file", metavar="<filename.h>")
 	parser.add_option("--c-def", dest="cdef", help="specifies path to write C win32 .def file", metavar="<filename.def>")
 	parser.add_option("--py-ctypes", dest="pyctypes", help="specifies path to write Python ctypes wrapper module", metavar="<filename.py>")
+	parser.add_option("--libversion", dest="libversion", help="specifies lib version to use.", metavar="<major>.<minor>")
 	options,args = parser.parse_args()
 	if not args:
 		print >> sys.stderr, "no input file(s)."
 		raise SystemExit, 255
-	parser = zzubIDLParser()
+	parser = zzubIDLParser(libversion=options.libversion)
 	try:
 		parser.parse_file(args[0])
 		if options.cheader:
 			parser.write_c_header(options.cheader)
 		if options.cdef:
 			parser.write_c_def(options.cdef)
+		if options.pyctypes:
+			parser.write_py_ctypes(options.pyctypes)
 	except ParseError:
 		raise SystemExit, 255
