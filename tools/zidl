@@ -427,7 +427,24 @@ class zzubIDLObject(object):
 			doc = doc.strip()
 			print >> f, '# ' + doc
 			
+	def write_py_docstr(self, f, ident):
+		if not self.doc:
+			return
+		tab = '\t' * ident
+		for i,doc in enumerate(self.doc):
+			if len(self.doc) == 1:
+				print >> f, tab + '"""' + doc + '"""'
+			elif i == 0:
+				print >> f, tab + '"""' + doc
+			elif i == len(self.doc)-1:
+				print >> f, tab + doc + '"""'
+			else:
+				print >> f, tab + doc
+			
 	def write_py_ctypes(self, parent, f):
+		pass
+	
+	def write_py_classes(self, parent, f):
 		pass
 	
 class Namespace(zzubIDLObject):
@@ -494,6 +511,12 @@ class Namespace(zzubIDLObject):
 			class_.write_py_ctypes_funcs(self, f)
 		for ns in self.namespaces:
 			ns.write_py_ctypes(self, f)
+			
+	def write_py_classes(self, parent, f):
+		for class_ in self.classes:
+			class_.write_py_classes(self, f)
+		for ns in self.namespaces:
+			ns.write_py_classes(self, f)
 		
 class Class(zzubIDLObject):
 	def __init__(self):
@@ -589,6 +612,32 @@ class Class(zzubIDLObject):
 			class_.write_py_ctypes_funcs(self, f)
 		for function in self.functions:
 			function.write_py_ctypes(self, f)
+			
+	def write_py_classes(self, parent, f):
+		if self.members:
+			return
+		print >> f, 'class ' + self.name + '(object):'
+		self.write_py_docstr(f, 1)
+		print >> f
+		print >> f, '\t_handle = None'
+		print >> f, '\t_hash = 0'
+		print >> f, '\t'
+		print >> f, '\tdef __init__(self, handle):'
+		print >> f, '\t\tself._handle = handle'
+		print >> f, '\t\tself._hash = cast(self._handle, c_void_p).value'
+		print >> f, '\t'
+		print >> f, '\tdef __hash__(self):'
+		print >> f, '\t\treturn self._hash'
+		print >> f, '\t'
+		print >> f, '\tdef __eq__(self,other):'
+		print >> f, '\t\treturn self._hash == hash(other)'
+		print >> f, '\t'
+		print >> f, '\tdef __ne__(self,other):'
+		print >> f, '\t\treturn self._hash != hash(other)'
+		print >> f, '\t'
+		for function in self.functions:
+			function.write_py_method(self, f)
+		print >> f
 		
 class Union(zzubIDLObject):
 	nextid = 0
@@ -753,6 +802,8 @@ class Argument(zzubIDLObject):
 		self.context = None
 		self.parser = None
 		self.typemap_cfg = None
+		self.default_value = None
+		self.opaque_class = False
 		self.py_ctypes_deps_solved = False
 
 	def solve_py_ctypes_deps(self, f, ref):
@@ -776,6 +827,8 @@ class Argument(zzubIDLObject):
 					if adt in self.argdirs:
 						parser.error('argument direction already specified: ' + adt)
 					self.argdirs.append(adt)
+		if not self.argdirs:
+			self.argdirs = ['in']
 		self.typename = parser.scan_symbol()
 		while parser.try_sbo():
 			self.arrayinfo.append(dict(count=0,mul=1))
@@ -788,6 +841,8 @@ class Argument(zzubIDLObject):
 			parser.scan_sbc()
 		if not self.retval:
 			self.name = parser.scan_symbol()
+			if parser.try_equal():
+				self.default_value = parser.scan_int()
 			
 	def resolve(self, ref=True):
 		if self.typename in self.typemap:
@@ -798,9 +853,30 @@ class Argument(zzubIDLObject):
 			self.parser.error('unknown type: '+self.typename, self.context)
 		self.comment = tm.get('comment','')
 		self.typemap_cfg = tm
+		if ('class_' in tm) and not tm['class_'].members: # handle class?
+			self.opaque_class = True
+			self.py_arg = self.name + '._handle'
+		else:
+			self.py_arg = self.name
 		if 'out' in self.argdirs:
 			self.c_type = tm['c_out_type']
 			self.py_c_type = tm['py_c_out_type']
+			if self.typename == 'string':
+				self.py_c_decl_type = 'c_char'
+				if not self.arrayinfo:
+					self.parser.error('out ' + self.typename + ' declared without size referrer', self.context)
+			else:
+				self.py_c_decl_type = tm['py_c_type']
+			countargs = []
+			for ai in self.arrayinfo:
+				count = str(ai['count'])
+				if ai['mul'] > 1:
+					count = '(' + count + '*' + str(ai[mul]) + ')'
+				countargs.append(count)
+			if countargs:
+				self.py_c_decl_type = '(' + self.py_c_decl_type + '*' + '*'.join(countargs) + ')'
+			else:
+				self.py_arg = 'byref(' + self.py_arg + ')'
 			if 'py_c_out_itype' in tm:
 				self.py_c_itype = tm['py_c_out_itype']
 			else:
@@ -901,15 +977,18 @@ class Function(zzubIDLObject):
 			if self.ret_arg.comment:
 				retval = '/*'+self.ret_arg.comment+'*/ ' + retval
 		args = []
-		def make_arg(typename, argname):
+		def make_arg(typename, argname, defval=None):
 			if typename.endswith('*'):
 				return typename + argname
-			return typename + ' ' + argname
+			if defval != None:
+				return typename + ' ' + argname + '/*=' + defval + '*/'
+			else:
+				return typename + ' ' + argname
 		if not self.func_type and isinstance(parent, Class) and not self.static:
 			args.append(parent.struct_name + ' *' + parent.name.lower())
 		for arg in self.args:
 			arg.resolve()
-			args.append(make_arg(arg.c_type, arg.name))
+			args.append(make_arg(arg.c_type, arg.name, arg.default_value))
 		retval = make_arg(retval, '')
 		self.write_c_doc(f)
 		if self.func_type:
@@ -919,6 +998,63 @@ class Function(zzubIDLObject):
 
 	def write_c_def(self, parent, f):
 		print >> f, '\t' + self.c_name
+		
+	def write_py_method(self, parent, f):
+		if self.func_type:
+			return
+		args = []
+		callargs = []
+		outargs = []
+		if isinstance(parent, Class) and not self.static:
+			args.append('self')
+			callargs.append('self._handle')
+		for arg in self.args:
+			is_in = 'in' in arg.argdirs
+			is_out = 'out' in arg.argdirs
+			is_bidi = is_in and is_out
+			callargs.append(arg.py_arg)
+			if is_bidi or is_out:
+				outargs.append(arg)
+			if is_bidi or is_in:
+				if arg.default_value != None:
+					args.append(arg.name + '=' + arg.default_value)
+				else:
+					args.append(arg.name)
+				
+		if self.static:
+			print >> f, '\t@staticmethod'
+		print >> f, '\tdef ' + self.name + '(' + ', '.join(args) + '):'
+		self.write_py_docstr(f, 2)
+		if not self.static:
+			print >> f, '\t\tassert self._handle'
+			
+		for outarg in outargs:
+			print >> f, '\t\t' + outarg.name + ' = ' + outarg.py_c_decl_type + '()'
+		
+		callfunc = self.c_name + '(' + ','.join(callargs) + ')'
+		resargs = []
+		outargnames = []
+		
+		def wrapped_retarg(arg,argname):
+			if arg.opaque_class:
+				class_ = arg.typemap_cfg['class_']
+				return class_.name + '(' + argname + ')'
+			return argname
+			
+		if not self.ret_arg:
+			print >> f, '\t\t' + callfunc
+		elif not outargs:
+			print >> f, '\t\treturn ' + wrapped_retarg(self.ret_arg, callfunc)
+		else:
+			outargnames.append(wrapped_retarg(self.ret_arg,'_ret_arg'))
+			print >> f, '\t\t_ret_arg = ' + callfunc
+		
+		for outarg in outargs:
+			outargnames.append(wrapped_retarg(outarg,outarg.name))
+		if outargnames:
+			print >> f, '\t\treturn ' + ','.join(outargnames)
+			
+		print >> f, '\t'
 
 	def write_py_ctypes(self, parent, f):
 		retval = 'None'
@@ -930,7 +1066,6 @@ class Function(zzubIDLObject):
 			args.append('lib' + self.parser.dlname)
 			args.append('"' + self.c_name + '"')
 		args.append(retval)
-		# zzub_callback_t = CFUNCTYPE(c_int,POINTER(zzub_player_t),POINTER(zzub_plugin_t),POINTER(zzub_event_data_t),c_void_p)
 		if not self.func_type and isinstance(parent, Class) and not self.static:
 			args.append('("' + parent.name.lower() + '", POINTER(' + parent.struct_name + '))')
 		for arg in self.args:
@@ -1020,7 +1155,7 @@ class zzubIDLParser(Parser):
 		print >> f, py_header
 		print >> f, 'lib' + self.dlname + ' = dlopen("' + self.dlname + '", "' + self.libversion + '")'
 		self.root.write_py_ctypes(None, f)
-		
+		self.root.write_py_classes(None, f)
 		file(filename, 'w').write(f.getvalue())
 		
 	def cleanup_doc(self, docs):

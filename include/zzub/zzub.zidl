@@ -335,7 +335,7 @@ namespace zzub:
 		def get_count(): int
 
 		"Get name of specified audio device"
-		def get_name(int index, out string name, int max_len): int
+		def get_name(int index, out string[max_len] name, int max_len=1024): int
 
 		def get_supported_samplerates(int index, out int[maxrates] result, int maxrates): int
 		def get_supported_output_channels(int index): int
@@ -991,7 +991,7 @@ namespace zzub:
 		def get_midi_plugin(): Plugin
 
 		"Generates a new plugin name that can be used in a call to create_plugin()."
-		def get_new_plugin_name(string uri, out string name, int maxLen)
+		def get_new_plugin_name(string uri, out string[maxLen] name, int maxLen)
 
 		def reset_keyjazz()
 
