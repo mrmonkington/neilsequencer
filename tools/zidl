@@ -488,10 +488,10 @@ class Namespace(zzubIDLObject):
 			enum.write_py_ctypes(self, f)
 		for class_ in self.classes:
 			class_.write_py_ctypes(self, f)
-		for class_ in self.classes:
-			class_.write_py_ctypes_funcs(self, f)
 		for function in self.functions:
 			function.write_py_ctypes(self, f)
+		for class_ in self.classes:
+			class_.write_py_ctypes_funcs(self, f)
 		for ns in self.namespaces:
 			ns.write_py_ctypes(self, f)
 		
@@ -925,17 +925,24 @@ class Function(zzubIDLObject):
 		if self.ret_arg:
 			self.ret_arg.resolve()
 			retval = self.ret_arg.py_c_type
-		args = [
-			'lib' + self.parser.dlname,
-			'"' + self.c_name + '"',
-			retval,
-		]
+		args = []
+		if not self.func_type:
+			args.append('lib' + self.parser.dlname)
+			args.append('"' + self.c_name + '"')
+		args.append(retval)
+		# zzub_callback_t = CFUNCTYPE(c_int,POINTER(zzub_player_t),POINTER(zzub_plugin_t),POINTER(zzub_event_data_t),c_void_p)
 		if not self.func_type and isinstance(parent, Class) and not self.static:
 			args.append('("' + parent.name.lower() + '", POINTER(' + parent.struct_name + '))')
 		for arg in self.args:
 			arg.resolve()
-			args.append('("' + arg.name + '",' + arg.py_c_type + ')')
-		print >> f, self.c_name + ' = dlsym(' + ', '.join(args) + ')'
+			if self.func_type:
+				args.append(arg.py_c_type)
+			else:
+				args.append('("' + arg.name + '",' + arg.py_c_type + ')')
+		if self.func_type:
+			print >> f, self.c_name + '_t' + ' = CFUNCTYPE(' + ', '.join(args) + ')'
+		else:
+			print >> f, self.c_name + ' = dlsym(' + ', '.join(args) + ')'
 
 class FunctionType(Function):
 	def __init__(self):
