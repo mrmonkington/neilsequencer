@@ -440,7 +440,7 @@ namespace zzub:
 	"can also be used to edit single values in live patterns."
 	class Pattern:
 		def destroy()
-		def get_name(out string[maxLen] name, int maxLen)
+		def get_name(out string[maxLen] name, int maxLen=1024)
 		def set_name(string name)
 		def get_row_count(): int
 		def get_group_count(): int
@@ -525,7 +525,7 @@ namespace zzub:
 		def set_name(string name): int
 
 		"Retreive the name of a plugin."
-		def get_name(out string[maxlen] name, int maxlen): int
+		def get_name(out string[maxlen] name, int maxlen=1024): int
 
 		"Retreive the unique per-session id of a plugin. See also zzub_player_get_plugin_by_id()."
 		def get_id(): int
@@ -563,12 +563,12 @@ namespace zzub:
 		def set_bypass(int muted)
 
 		"Returns a string of \\\\n-separated command strings"
-		def get_commands(out string[maxlen] commands, int maxlen): int
+		def get_commands(out string[maxlen] commands, int maxlen=1024): int
 
 		"When a plugin command string starts with the char '\\', it has subcommands."
 		"Unexpectedly, zzub_plugin_get_sub_commands returns a \\\\n-separated string (like get_commands)."
 		"Some plugins need to be ticked before calling get_sub_commands."
-		def get_sub_commands(int i, out string[maxlen] commands, int maxlen): int
+		def get_sub_commands(int i, out string[maxlen] commands, int maxlen=1024): int
 
 		"Invoke a command on the plugin."
 		def command(int i)
@@ -637,7 +637,7 @@ namespace zzub:
 		"Sets a value in a pattern."
 		def set_pattern_value(int pattern, int group, int track, int column, int row, int value)
 
-		def get_new_pattern_name(out string[maxLen] name, int maxLen)
+		def get_new_pattern_name(out string[maxLen] name, int maxLen=1024)
 		def linear_to_pattern(int index, out int group, out int track, out int column): int
 		def pattern_to_linear(int group, int track, int column, out int index): int
 		def get_pattern_column_count(): int
@@ -659,7 +659,7 @@ namespace zzub:
 		#/*@{*/
 
 		"Creates a textual description of the given value. The return value is the number of characters in the output string."
-		def describe_value(int group, int column, int value, out string[maxlen] name, int maxlen): int
+		def describe_value(int group, int column, int value, out string[maxlen] name, int maxlen=1024): int
 
 		"Returns the last written value of the requested parameter."
 		def get_parameter_value(int group, int track, int column): int
@@ -877,7 +877,7 @@ namespace zzub:
 		"Loads a BMX from memory or file."
 		" "
 		"Load warnings and error messages are placed in the messages string."
-		def load_bmx(Input datastream, out string[maxLen] messages, int maxLen): int
+		def load_bmx(Input datastream, out string[maxLen] messages, int maxLen=1024): int
 
 		"Saves a BMX to memory or file."
 		" "
@@ -991,7 +991,7 @@ namespace zzub:
 		def get_midi_plugin(): Plugin
 
 		"Generates a new plugin name that can be used in a call to create_plugin()."
-		def get_new_plugin_name(string uri, out string[maxLen] name, int maxLen)
+		def get_new_plugin_name(string uri, out string[maxLen] name, int maxLen=1024)
 
 		def reset_keyjazz()
 
