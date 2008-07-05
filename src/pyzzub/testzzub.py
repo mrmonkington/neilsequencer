@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #encoding: latin-1
 
 # pyzzub
@@ -18,7 +19,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from zzub import Player, zzub_player_state_playing, zzub_player_state_stopped
+from zzub import Player, zzub_player_state_playing, zzub_player_state_stopped, \
+	Audiodriver
 import os, sys
 
 if __name__ == "__main__":
@@ -36,7 +38,7 @@ if __name__ == "__main__":
 		print "unknown filetype: %s" % ext
 		raise SystemExit, 1
 	
-	p = Player()
+	p = Player.create()
 	p.add_plugin_path("/usr/local/lib64/zzub/")
 	p.add_plugin_path("/usr/local/lib/zzub/")
 	p.add_plugin_path("/usr/lib64/zzub/")
@@ -47,10 +49,12 @@ if __name__ == "__main__":
 		print "error initializing zzub."
 		raise SystemExit, 1
 
-	p.audiodriver_set_samplerate(44100)
-	res = p.audiodriver_create(-1, -1) # best pick
-	if res:
-		print "error creating audiodriver."
+	driver = Audiodriver.create(p)
+	driver.set_buffersize(1024)
+	driver.set_samplerate(44100)
+	res = driver.create_device(-1, -1)
+	if res != 0:
+		print "error creating device."
 		raise SystemExit, 1
 
 	print "Loading %s... " % filepath
@@ -65,17 +69,21 @@ if __name__ == "__main__":
 		raise SystemExit, 1
 
 	print "enabling audiodriver..."
-	p.audiodriver_enable(True)
+	driver.enable(True)
 	
 	print "playing. press a key to quit."
 
-	p.play()
+	p.set_state(zzub_player_state_playing)
+	
+	p.get_plugin(0).set_name("Hello!")
+	p.history_commit("yay")
+	print p.get_plugin(0).get_name()
 
 	sys.stdin.readline()
 
 	print "stopping..."
-	p.stop()
+	p.set_state(zzub_player_state_stopped)
 
 	print "destroying audiodriver..."
-	p.audiodriver_destroy()
+	driver.destroy()
 	print "finished playing."

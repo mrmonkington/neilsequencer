@@ -804,6 +804,7 @@ class Argument(zzubIDLObject):
 		self.typemap_cfg = None
 		self.default_value = None
 		self.opaque_class = False
+		self.extract_value = False
 		self.py_ctypes_deps_solved = False
 
 	def solve_py_ctypes_deps(self, f, ref):
@@ -859,6 +860,8 @@ class Argument(zzubIDLObject):
 		else:
 			self.py_arg = self.name
 		if 'out' in self.argdirs:
+			if not self.opaque_class:
+				self.extract_value = True
 			self.c_type = tm['c_out_type']
 			self.py_c_type = tm['py_c_out_type']
 			if self.typename == 'string':
@@ -1036,6 +1039,8 @@ class Function(zzubIDLObject):
 		outargnames = []
 		
 		def wrapped_retarg(arg,argname):
+			if arg.extract_value:
+				argname = argname + '.value'
 			if arg.opaque_class:
 				class_ = arg.typemap_cfg['class_']
 				return class_.name + '(' + argname + ')'
