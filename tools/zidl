@@ -426,7 +426,7 @@ class zzubIDLObject(object):
 		for i,doc in enumerate(self.doc):
 			doc = doc.strip()
 			print >> f, '# ' + doc
-		
+			
 	def write_py_ctypes(self, parent, f):
 		pass
 	
@@ -486,10 +486,12 @@ class Namespace(zzubIDLObject):
 		self.write_py_doc(f)
 		for enum in self.enums:
 			enum.write_py_ctypes(self, f)
-		for function in self.functions:
-			function.write_py_ctypes(self, f)
 		for class_ in self.classes:
 			class_.write_py_ctypes(self, f)
+		for class_ in self.classes:
+			class_.write_py_ctypes_funcs(self, f)
+		for function in self.functions:
+			function.write_py_ctypes(self, f)
 		for ns in self.namespaces:
 			ns.write_py_ctypes(self, f)
 		
@@ -498,6 +500,8 @@ class Class(zzubIDLObject):
 		self.functions = []
 		self.classes = []
 		self.members = []
+		self.py_ctypes_written = False
+		self.py_ctypes_writing = False
 		
 	def parse(self, parser):
 		parent = parser.top()
@@ -509,9 +513,12 @@ class Class(zzubIDLObject):
 		parser.typemap[self.name] = dict(
 			py_c_type='POINTER(' + self.struct_name + ')',
 			py_c_out_type='POINTER(POINTER(' + self.struct_name + '))',
+			py_c_itype='POINTER("' + self.struct_name + '")',
+			py_c_out_itype='POINTER(POINTER("' + self.struct_name + '"))',
 			c_real_type=self.struct_name,
 			c_type=self.struct_name + ' *', 
 			c_out_type=self.struct_name + ' * *',
+			class_=self
 		)
 		parser.scan_colon()
 		
@@ -560,6 +567,13 @@ class Class(zzubIDLObject):
 			function.write_c_def(self, f)
 
 	def write_py_ctypes(self, parent, f):
+		if self.py_ctypes_written:
+			return True
+		if self.py_ctypes_writing:
+			return False
+		self.py_ctypes_writing = True
+		for member in self.members:
+			member.solve_py_ctypes_deps(f)
 		print >> f, 'class ' + self.struct_name + '(Structure):'
 		print >> f, '\t_fields_ = ['
 		for member in self.members:
@@ -567,20 +581,57 @@ class Class(zzubIDLObject):
 		print >> f, '\t]'
 		for class_ in self.classes:
 			class_.write_py_ctypes(self, f)
+		self.py_ctypes_written = True
+		return True
+	
+	def write_py_ctypes_funcs(self, parent, f):
+		for class_ in self.classes:
+			class_.write_py_ctypes_funcs(self, f)
 		for function in self.functions:
 			function.write_py_ctypes(self, f)
 		
 class Union(zzubIDLObject):
+	nextid = 0
+
 	def __init__(self):
 		self.members = []
+		self.py_ctypes_written = False
 
 	def parse(self, parser):
 		parent = parser.top()
 		parent.add_member(self)
 		parser.scan_colon()
 		
+		uid = Union.nextid
+		Union.nextid += 1
+		self.name = 'union_%08x' % uid
+		self.c_name = self.make_c_name(parent, self.name)
+		self.typestruct_name = '_' + self.c_name
+		self.struct_name = self.c_name + '_t'
+		parser.typemap[self.name] = dict(
+			py_c_type='POINTER(' + self.struct_name + ')',
+			py_c_out_type='POINTER(POINTER(' + self.struct_name + '))',
+			c_real_type=self.struct_name,
+			c_type=self.struct_name + ' *', 
+			c_out_type=self.struct_name + ' * *',
+			class_=self
+		)
+		
+		
 	def add_member(self, member):
 		self.members.append(member)
+		
+	def solve_py_ctypes_deps(self, f):
+		if self.py_ctypes_written:
+			return
+		for member in self.members:
+			member.solve_py_ctypes_deps(f)
+		print >> f, 'class ' + self.struct_name + '(Union):'
+		print >> f, '\t_fields_ = ['
+		for member in self.members:
+			member.write_py_ctypes(self, f)
+		print >> f, '\t]'
+		self.py_ctypes_written = True
 		
 	def write_c_header(self, parent, f):
 		self.write_c_doc(f)
@@ -588,6 +639,9 @@ class Union(zzubIDLObject):
 		for member in self.members:
 			member.write_c_header(self, f)
 		print >> f, '\t};'
+		
+	def write_py_ctypes(self, parent, f):
+		print >> f, '\t\t("",' + self.struct_name + '),'
 		
 class Enum(zzubIDLObject):
 	def __init__(self):
@@ -691,12 +745,27 @@ class Argument(zzubIDLObject):
 		self.name = ''
 		self.argdirs = []
 		self.c_type = ''
+		self.py_c_type = ''
+		self.py_c_itype = ''
 		self.retval = False
 		self.comment = ''
 		self.arrayinfo = []
 		self.context = None
 		self.parser = None
+		self.typemap_cfg = None
+		self.py_ctypes_deps_solved = False
 
+	def solve_py_ctypes_deps(self, f, ref):
+		if self.py_ctypes_deps_solved:
+			return
+		self.resolve(ref)
+		if not 'class_' in self.typemap_cfg:
+			return
+		classobj = self.typemap_cfg['class_']
+		if not classobj.write_py_ctypes(self, f):
+			self.py_c_type = self.py_c_itype
+		self.py_ctypes_deps_solved = True
+		
 	def parse(self, parser, retval=False):
 		self.parser = parser
 		self.context = dict(parser.context)
@@ -728,24 +797,35 @@ class Argument(zzubIDLObject):
 		else:
 			self.parser.error('unknown type: '+self.typename, self.context)
 		self.comment = tm.get('comment','')
+		self.typemap_cfg = tm
 		if 'out' in self.argdirs:
 			self.c_type = tm['c_out_type']
 			self.py_c_type = tm['py_c_out_type']
+			if 'py_c_out_itype' in tm:
+				self.py_c_itype = tm['py_c_out_itype']
+			else:
+				self.py_c_itype = self.py_c_type
 			for ai in self.arrayinfo[1:]:
 				self.c_type = self.c_type + ' *'
 				self.py_c_type = 'POINTER(' + self.py_c_type + ')'
+				self.py_c_itype = 'POINTER(' + self.py_c_itype + ')'
 		else:
 			if not ref and tm.has_key('c_real_type'):
 				self.c_type = tm['c_real_type']
 			else:
 				self.c_type = tm['c_type']
 			self.py_c_type = tm['py_c_type']
+			if 'py_c_itype' in tm:
+				self.py_c_itype = tm['py_c_itype']
+			else:
+				self.py_c_itype = self.py_c_type
 			for i,ai in enumerate(self.arrayinfo):
 				if i == 0:
 					self.c_type = 'const ' + self.c_type + ' *'
 				else:
 					self.c_type = self.c_type + ' *'
 				self.py_c_type = 'POINTER(' + self.py_c_type + ')'
+				self.py_c_itype = 'POINTER(' + self.py_c_itype + ')'
 		
 	def write_c_header(self, parent, f):
 		pass
@@ -755,6 +835,9 @@ class ClassMember(zzubIDLObject):
 		self.specs = Argument()
 		self.ref = True
 
+	def solve_py_ctypes_deps(self, f):
+		self.specs.solve_py_ctypes_deps(f, self.ref)
+		
 	def parse(self, parser):
 		parent = parser.top()
 		parent.add_member(self)
@@ -772,7 +855,7 @@ class ClassMember(zzubIDLObject):
 		print >> f, '\t' + make_arg(self.specs.c_type, self.specs.name) + ';'
 		
 	def write_py_ctypes(self, parent, f):
-		self.specs.resolve(self.ref)
+		self.solve_py_ctypes_deps(f)
 		print >> f, '\t\t("' + self.specs.name + '", ' + self.specs.py_c_type + '),'
 	
 class Function(zzubIDLObject):
@@ -838,8 +921,6 @@ class Function(zzubIDLObject):
 		print >> f, '\t' + self.c_name
 
 	def write_py_ctypes(self, parent, f):
-		#zzub_audiodriver_create_portaudio        = dlsym(libzzub, 
-		#'zzub_audiodriver_create_portaudio'     , POINTER(zzub_audiodriver_t), ('player'  ,POINTER(zzub_player_t)))
 		retval = 'None'
 		if self.ret_arg:
 			self.ret_arg.resolve()
@@ -850,10 +931,10 @@ class Function(zzubIDLObject):
 			retval,
 		]
 		if not self.func_type and isinstance(parent, Class) and not self.static:
-			args.append('POINTER(' + parent.struct_name + ')')
+			args.append('("' + parent.name.lower() + '", POINTER(' + parent.struct_name + '))')
 		for arg in self.args:
 			arg.resolve()
-			args.append(arg.py_c_type)
+			args.append('("' + arg.name + '",' + arg.py_c_type + ')')
 		print >> f, self.c_name + ' = dlsym(' + ', '.join(args) + ')'
 
 class FunctionType(Function):
