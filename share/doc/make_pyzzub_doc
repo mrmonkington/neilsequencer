@@ -1,3 +1,31 @@
-export LD_LIBRARY_PATH=../lib
-export LIBRARY_LOAD_NONE=true
-epydoc --html -n "pyzzub" -o ./pyzzub --debug --css ./pyzzub.css ../../src/pyzzub/zzub
+#!/usr/bin/env python
+
+import os,sys
+
+os.environ['LD_LIBRARY_PATH'] = '../lib'
+os.environ['LIBRARY_LOAD_NONE'] = 'true'
+
+os.system('rm -rf pyzzub')
+
+command = [
+'epydoc',
+'-v',
+'--html',
+'-n',
+'"PyZZUB API"',
+'-o',
+'./pyzzub',
+'--debug',
+'--css',
+'./pyzzub.css',
+]
+
+basepath = '../../src/pyzzub/zzub'
+for filename in os.listdir(basepath):
+	if filename.endswith('.py'):
+		filename = os.path.join(basepath,filename)
+		command.append(filename)
+
+cmd = ' '.join(command)
+print cmd
+os.system(cmd)

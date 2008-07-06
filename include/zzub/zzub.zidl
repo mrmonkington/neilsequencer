@@ -316,7 +316,7 @@ namespace zzub:
 		set event = 1
 		set midi = 2
 
-	"@name Audio Driver Methods"
+	"Audio Driver Methods"
 	"Configure and create an audio driver instance."
 	class Audiodriver:
 		"Create an audio driver that uses the PortAudio API."
@@ -370,7 +370,7 @@ namespace zzub:
 		def get_master_channel(): int
 		def set_master_channel(int index)
 		
-	"@name MIDI Driver Methods"
+	"MIDI Driver Methods"
 	"Open midi devices."
 	class Mididriver:
 		def static get_count(Player player): int
@@ -380,7 +380,7 @@ namespace zzub:
 		def static open(Player player, int index): int
 		def static close_all(Player player): int
 	
-	"@name Plugin Collection Methods"
+	"Plugin Collection Methods"
 	"For enumerating and configuring plugin collections."
 	class Plugincollection:
 		def static get_by_uri(Player player, string uri): Plugincollection
@@ -430,7 +430,7 @@ namespace zzub:
 		def get_channel(): int
 		def get_controller(): int
 		
-	"@name Offline pattern methods"
+	"Offline pattern methods"
 	"These functions are meant to help editing patterns. Note you cannot"
 	"retreive a direct zzub_pattern_t object for a \"live pattern\". You can"
 	"however, use zzub_plugin_get_pattern to retreive copies of live patterns,"
@@ -451,7 +451,7 @@ namespace zzub:
 		def interpolate()
 		# void zzub_pattern_get_bandwidth_digest(out float[digestsize] digest, int digestsize): int
 	
-	"@name Parameter methods"
+	"Parameter methods"
 	"Retreive more details from zzub_parameter_t objects."
 	class Parameter:
 		"Returns one of the values in the zzub_parameter_type enumeration."
@@ -467,7 +467,7 @@ namespace zzub:
 		"A parameter flag is combined by zero or more values in the zzub_parameter_flag enumeration."
 		def get_flags(): int
 	
-	"@name Attribute methods"
+	"Attribute methods"
 	"Retreive more details from zzub_attribute_t objects."
 	class Attribute:
 		def get_name(): string
@@ -511,7 +511,7 @@ namespace zzub:
 		# def get_import_format_count(): int
 		# def get_import_format_ext(int index): string
 		
-	"@name Plugin methods"
+	"Plugin methods"
 	"Retreive more details about plugins."
 	class Plugin:
 		"Deletes a plugin"
@@ -591,7 +591,7 @@ namespace zzub:
 		"Sets the plugin instrument (d'oh!)"
 		def set_instrument(string name): int
 
-		#/** @name Plugin pattern methods
+		#/** Plugin pattern methods
 		#	Manipulate patterns belonging to a plugin in the graph directly.*/
 
 		"Creates a non-playable pattern with given columns and rows in group 0, track 0. All values are set to 0 by default."
@@ -755,7 +755,7 @@ namespace zzub:
 		# 0.3: DEAD # def remove_event_connection_binding(int from_plugin, int index): int
 
 	
-	"@name Sequencer methods"
+	"Sequencer methods"
 	class Sequence:
 		# 0.3: DEAD # def get_index(): int
 		def destroy()
@@ -769,7 +769,7 @@ namespace zzub:
 		def get_event(int index, out int pos, out int value): no_python int
 		iterator get_event_list: for get_event in get_event_count
 		
-	"@name Wavelevel"
+	"Wavelevel"
 	class Wavelevel:
 		def get_wave(): Wave
 		def clear(): int
@@ -790,7 +790,7 @@ namespace zzub:
 		# 0.3: DEAD # void zzub_wavelevel_insert_sample_range(zzub_wavelevel_t* level, int start, void* buffer, int channels, int format, int numsamples)
 		def get_samples_digest(int channel, int start, int end, out float[digestsize] mindigest, out float[digestsize] maxdigest, out float[digestsize] ampdigest, int digestsize)
 	
-	"@name Envelopes"
+	"Envelopes"
 	class Envelope:
 		def get_attack(): ushort
 		def get_decay(): ushort
@@ -813,7 +813,7 @@ namespace zzub:
 		def insert_point(int index)
 		def delete_point(int index)
 	
-	"@name Wave table"
+	"Wave table"
 	class Wave:
 		def get_index(): int
 		def load_sample(int level, int offset, int clear, string path, Input datastream): int
@@ -840,7 +840,7 @@ namespace zzub:
 
 		# 0.3: DEAD # def get_index(zzub_wavelevel_t* wave): int
 	
-	"@name Memory and file streams - load/save from/to file/clipboard"
+	"Memory and file streams - load/save from/to file/clipboard"
 	"Create file or memory data streams for use by e.g "
 	"zzub_wavetable_load_sample() and" 
 	"zzub_player_load_bmx()/zzub_player_save_bmx()."
@@ -860,7 +860,7 @@ namespace zzub:
 		# int zzub_wavetable_recorder_get_waveindex(zzub_recorder_t*)
 		# void zzub_recorder_destroy(zzub_recorder_t*)
 
-	"@name Player Methods"
+	"Player Methods"
 	class Player:
 		"Create a player instance."
 		def static create(): Player
