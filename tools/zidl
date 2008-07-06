@@ -598,6 +598,7 @@ class Class(zzubIDLObject):
 		for member in self.members:
 			member.solve_py_ctypes_deps(f)
 		print >> f, 'class ' + self.struct_name + '(Structure):'
+		self.write_py_docstr(f, 1)
 		print >> f, '\t_fields_ = ['
 		for member in self.members:
 			member.write_py_ctypes(self, f)
@@ -615,29 +616,32 @@ class Class(zzubIDLObject):
 			
 	def write_py_classes(self, parent, f):
 		if self.members:
-			return
-		print >> f, 'class ' + self.name + '(object):'
-		self.write_py_docstr(f, 1)
-		print >> f
-		print >> f, '\t_handle = None'
-		print >> f, '\t_hash = 0'
-		print >> f, '\t'
-		print >> f, '\tdef __init__(self, handle):'
-		print >> f, '\t\tself._handle = handle'
-		print >> f, '\t\tself._hash = cast(self._handle, c_void_p).value'
-		print >> f, '\t'
-		print >> f, '\tdef __hash__(self):'
-		print >> f, '\t\treturn self._hash'
-		print >> f, '\t'
-		print >> f, '\tdef __eq__(self,other):'
-		print >> f, '\t\treturn self._hash == hash(other)'
-		print >> f, '\t'
-		print >> f, '\tdef __ne__(self,other):'
-		print >> f, '\t\treturn self._hash != hash(other)'
-		print >> f, '\t'
-		for function in self.functions:
-			function.write_py_method(self, f)
-		print >> f
+			print >> f, self.name + ' = ' + self.struct_name
+			print >> f
+		else:
+			# handle class
+			print >> f, 'class ' + self.name + '(object):'
+			self.write_py_docstr(f, 1)
+			print >> f
+			print >> f, '\t_handle = None'
+			print >> f, '\t_hash = 0'
+			print >> f, '\t'
+			print >> f, '\tdef __init__(self, handle):'
+			print >> f, '\t\tself._handle = handle'
+			print >> f, '\t\tself._hash = cast(self._handle, c_void_p).value'
+			print >> f, '\t'
+			print >> f, '\tdef __hash__(self):'
+			print >> f, '\t\treturn self._hash'
+			print >> f, '\t'
+			print >> f, '\tdef __eq__(self,other):'
+			print >> f, '\t\treturn self._hash == hash(other)'
+			print >> f, '\t'
+			print >> f, '\tdef __ne__(self,other):'
+			print >> f, '\t\treturn self._hash != hash(other)'
+			print >> f, '\t'
+			for function in self.functions:
+				function.write_py_method(self, f)
+			print >> f
 		
 class Union(zzubIDLObject):
 	nextid = 0
@@ -889,6 +893,8 @@ class Argument(zzubIDLObject):
 				self.py_c_type = 'POINTER(' + self.py_c_type + ')'
 				self.py_c_itype = 'POINTER(' + self.py_c_itype + ')'
 		else:
+			if ('class_' in tm) and (not self.opaque_class):
+				self.extract_value = True
 			if not ref and tm.has_key('c_real_type'):
 				self.c_type = tm['c_real_type']
 			else:
@@ -970,7 +976,8 @@ class Function(zzubIDLObject):
 				c_type=self.c_name + '_t', 
 				c_out_type=self.c_name + '_t *',
 				py_c_type=self.c_name + '_t',
-				py_c_out_type=self.c_name + '_t')
+				py_c_out_type=self.c_name + '_t',
+				functype=self)
 
 	def write_c_header(self, parent, f):
 		retval = 'void'
@@ -1040,7 +1047,10 @@ class Function(zzubIDLObject):
 		
 		def wrapped_retarg(arg,argname):
 			if arg.extract_value:
-				argname = argname + '.value'
+				if 'class_' in arg.typemap_cfg:
+					argname = '(lambda p: p and p.contents)(' + argname + ')'
+				else:
+					argname = argname + '.value'
 			if arg.opaque_class:
 				class_ = arg.typemap_cfg['class_']
 				return class_.name + '(' + argname + ')'

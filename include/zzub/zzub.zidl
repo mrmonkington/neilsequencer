@@ -966,9 +966,16 @@ namespace zzub:
 		# def set_wave_amp(float amp)
 		# def get_wave_amp(): float
 
+		"Returns a pointer to the next event or zero. Intended to replace"
+		"the set_callback/handle_events combo. Call this periodically"
+		"in a timer or on idle processing. When calling, call get_next_event"
+		"until a NULL pointer occurs. After the call, all previously returned"
+		"pointers are invalid."
+		def get_next_event(): EventData
+
 		"Sets a function that receives events."
 		def set_callback(callback callback, pvoid tag)
-
+		
 		"Process player events. Intended to be called by the host in a timer"
 		"or on idle processing to receive events about parameter changes etc."
 		def handle_events()

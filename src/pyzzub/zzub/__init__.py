@@ -20,9 +20,3 @@
 
 from zzub import *
 
-if __name__ == '__main__':
-	first_player = Player.create()
-	player = first_player.create()
-	driver = Audiodriver.create(player)
-	help(player)
-

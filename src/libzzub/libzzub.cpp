@@ -466,6 +466,10 @@ zzub_wave_t* zzub_player_get_wave(zzub_player_t* player, int index) {
 		return player->back.wavetable.waves[index]->proxy;
 }
 
+zzub_event_data_t *zzub_player_get_next_event(zzub_player_t *player) {
+	return player->get_next_user_event();
+}
+
 void zzub_player_set_callback(zzub_player_t* player, zzub_callback_t callback, void* tag) {
 	// order is important here
 	// once we set the callback, threaded calls might use it

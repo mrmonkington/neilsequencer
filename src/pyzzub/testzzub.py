@@ -21,7 +21,24 @@
 
 from zzub import Player, zzub_player_state_playing, zzub_player_state_stopped, \
 	Audiodriver
-import os, sys
+import os, sys, thread, time
+
+closethread = False
+threadclosed = False
+def event_thread(player):
+	global threadclosed
+	while not closethread:
+		try:
+			time.sleep(0.1)
+			while True:
+				res = player.get_next_event()
+				if not res:
+					break
+		except:
+			import traceback
+			traceback.print_exc()
+			break
+	threadclosed = True
 
 if __name__ == "__main__":
 	if len(sys.argv) != 2:
@@ -71,15 +88,17 @@ if __name__ == "__main__":
 	print "enabling audiodriver..."
 	driver.enable(True)
 	
-	print "playing. press a key to quit."
-
 	p.set_state(zzub_player_state_playing)
-	
-	p.get_plugin(0).set_name("Hello!")
-	p.history_commit("yay")
-	print p.get_plugin(0).get_name()
 
+	print "playing. press a key to quit."
+	thread.start_new_thread(event_thread, (p,))
+	
 	sys.stdin.readline()
+	
+	closethread = True
+	while not threadclosed:
+		print "waiting for thread to stop..."
+		time.sleep(0.1)
 
 	print "stopping..."
 	p.set_state(zzub_player_state_stopped)
