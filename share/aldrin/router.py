@@ -934,7 +934,7 @@ class RouteView(gtk.DrawingArea):
 				break
 		print "create_plugin: ",name
 		mp = player.create_plugin(None, 0, name, pluginloader)
-		assert mp._handle
+		assert mp
 		if ((mp.get_flags() & PLUGIN_FLAGS_MASK) == GENERATOR_PLUGIN_FLAGS) and \
 			(pluginloader.get_parameter_count(1) or pluginloader.get_parameter_count(2)):
 			pattern = mp.create_pattern(com.get('aldrin.core.sequencerpanel').view.step)
@@ -944,7 +944,7 @@ class RouteView(gtk.DrawingArea):
 			t.set_event(0,16)
 			if not(mask & gtk.gdk.SHIFT_MASK):
 				if self.autoconnect_target==None:
-					player.get_plugin_list()[0].add_input(mp, zzub.zzub_connection_type_audio)
+					player.get_plugin(0).add_input(mp, zzub.zzub_connection_type_audio)
 				else:
 					self.autoconnect_target.add_input(mp, zzub.zzub_connection_type_audio)
 		mp.set_position(*self.pixel_to_float(self.contextmenupos))
@@ -1144,17 +1144,15 @@ class RouteView(gtk.DrawingArea):
 						menu.append(make_menu_item(prepstr(cmd), "", self.on_popup_command, mp, 0, index))
 			com.get_from_category('menuitem.plugin', menu, plugin=mp)
 		else:
-			try:
-				conn, index = self.get_connection_at((mx,my))
-			except TypeError:
-				conn = None
-			if conn:
-				menu.append(make_menu_item("_Disconnect plugins", "Disconnect plugins", self.on_popup_disconnect, conn))
+			res = self.get_connection_at((mx,my))
+			if res:
+				mp, index = res
+				menu.append(make_menu_item("_Disconnect plugins", "Disconnect plugins", self.on_popup_disconnect, mp, index))
 				if conn.get_type() == zzub.zzub_connection_type_audio:
 					menu.append(gtk.SeparatorMenuItem())
-					menu.append(make_submenu_item(self.get_plugin_menu(include_generators=False,include_controllers=False, conn=conn), "_Insert Effect"))
+					menu.append(make_submenu_item(self.get_plugin_menu(include_generators=False,include_controllers=False, conn=(mp, index)), "_Insert Effect"))
 					menu.append(gtk.SeparatorMenuItem())
-					menu.append(make_menu_item("_Signal Analysis", "Signal Analysis", self.on_popup_show_signalanalysis, conn))
+					menu.append(make_menu_item("_Signal Analysis", "Signal Analysis", self.on_popup_show_signalanalysis, mp, index))
 				elif conn.get_type() == zzub.zzub_connection_type_event:
 					menu.append(gtk.SeparatorMenuItem())
 					mi = conn.get_input()
@@ -1220,16 +1218,13 @@ class RouteView(gtk.DrawingArea):
 			return cx * (1+x), cy * (1+y)
 		for mp in player.get_plugin_list():
 			rx,ry = get_pixelpos(*mp.get_position())
-			for conn in mp.get_input_connection_list():
-				crx, cry = get_pixelpos(*conn.get_input().get_position())
+			for index in xrange(mp.get_input_connection_count()):
+				crx, cry = get_pixelpos(*mp.get_input_connection_plugin(index).get_position())
 				cpx,cpy = (crx + rx) * 0.5, (cry + ry) * 0.5
 				dx,dy = cpx - mx, cpy - my
 				length = (dx*dx + dy*dy) ** 0.5
-				if length <= 14:
-					for i in range(conn.get_output().get_input_connection_count()):
-						if conn.get_output().get_input_connection(i)==conn:
-							break
-					return conn, i
+				if length <= 14: # why exactly 14?
+					return mp, index
 		
 	def get_plugin_at(self, (x,y)):
 		"""
@@ -1249,7 +1244,7 @@ class RouteView(gtk.DrawingArea):
 		PW, PH = PLUGINWIDTH / 2, PLUGINHEIGHT / 2
 		area = AREA_ANY
 		player = com.get('aldrin.core.player')
-		for mp in reversed(player.get_plugin_list()):
+		for mp in reversed(list(player.get_plugin_list())):
 			x,y = mp.get_position()
 			x,y = int(cx * (1+x)), int(cy * (1+y))
 			if (mx >= (x - PW)) and (mx <= (x + PW)) and (my >= (y - PH)) and (my <= (y + PH)):
@@ -1319,15 +1314,14 @@ class RouteView(gtk.DrawingArea):
 			if hasattr(self.rootwindow, 'select_panel'):
 				self.rootwindow.select_panel(com.get('aldrin.core.routerpanel'))
 		else:
-			try:
-				conn, index = self.get_connection_at((mx,my))
-			except TypeError:
-				conn=None
-			if conn:
+			res = self.get_connection_at((mx,my))
+			if res:
+				mp, index = res
 				ox, oy = self.window.get_origin()
-				if conn.get_type() == zzub.zzub_connection_type_audio:
+				connectiontype = mp.get_input_connection_type(index)
+				if connectiontype == zzub.zzub_connection_type_audio:
 					self.volume_slider.display((ox+mx,oy+my), conn, index)
-				elif conn.get_type() == zzub.zzub_connection_type_event:
+				elif connectiontype == zzub.zzub_connection_type_event:
 					# no idea what to do when clicking on an event connection yet
 					pass
 			else:
@@ -1450,7 +1444,7 @@ class RouteView(gtk.DrawingArea):
 		#font = wx.Font(8, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
 		PW, PH = PLUGINWIDTH / 2, PLUGINHEIGHT / 2
 
-		pluginlist = player.get_plugin_list()
+		pluginlist = list(player.get_plugin_list())
 		
 		audiodriver = com.get('aldrin.core.driver.audio')
 		cpu = min(audiodriver.get_cpu_load(), 100.0)
@@ -1617,10 +1611,10 @@ class RouteView(gtk.DrawingArea):
 			mplist = [(mp,get_pixelpos(*mp.get_position())) for mp in player.get_plugin_list()]
 			
 			for mp,(rx,ry) in mplist:
-				for conn in mp.get_input_connection_list():
+				for index in xrange(mp.get_input_connection_count()):
 					#~ if not (conn.get_input().get_pluginloader().get_flags() & zzub.plugin_flag_no_output):
-					crx, cry = get_pixelpos(*conn.get_input().get_position())
-					draw_line_arrow(bmpctx,arrowcolors[conn.get_type()],int(crx),int(cry),int(rx),int(ry))
+					crx, cry = get_pixelpos(*mp.get_input_connection_plugin(index).get_position())
+					draw_line_arrow(bmpctx,arrowcolors[mp.get_input_connection_type(index)],int(crx),int(cry),int(rx),int(ry))
 		gc = self.window.new_gc()
 		self.window.draw_drawable(gc, self.routebitmap, 0, 0, 0, 0, -1, -1)
 		if self.connecting:

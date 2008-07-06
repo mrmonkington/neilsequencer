@@ -26,10 +26,18 @@ class StdErrAnnotator:
 		print >> sys.stderr, "annotating stderr"
 		
 	def write(self, text):
+		error = False
+		if text.strip().startswith('File '):
+			error = True
+		elif text.strip().startswith('Traceback'):
+			error = True
+		elif 'Error' in text:
+			error = True
 		for c in text:
 			if self.annotate_next:
 				self.annotate_next = False
-				self.stderr.write(ERROR_ESCAPE_BEGIN)
+				if error:
+					self.stderr.write(ERROR_ESCAPE_BEGIN)
 				#self.annotate(traceback.extract_stack())
 			if c == '\n':
 				if not self.annotate_next:

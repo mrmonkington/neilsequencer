@@ -6,6 +6,10 @@ if '--debug' in sys.argv:
 	sys.argv.remove('--debug')
 	os.system('gdb --eval-command=run --args python "%s"$*' % sys.argv[0])
 	raise SystemExit, 0
+if '--pydebug' in sys.argv:
+	sys.argv.remove('--pydebug')
+	os.system('winpdb "%s"$*' % sys.argv[0])
+	raise SystemExit, 0
 sourcepath = os.path.abspath(os.path.join(os.path.dirname(__file__),'..','share','aldrin'))
 os.chdir(sourcepath)
 main = imp.load_source('aldrin', os.path.join(sourcepath, 'main.py'))

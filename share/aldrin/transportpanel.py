@@ -234,7 +234,7 @@ class TransportPanel(gtk.HBox):
 		else:
 			e = format_time(0.0)
 		c = format_time(ticks_to_time(p,bpm,tpb))
-		lb,le = player.get_song_loop()		
+		lb,le = player.get_loop()
 		l = format_time(ticks_to_time(le-lb,bpm,tpb))
 		for text,control in [(e,self.elapsed),(c,self.current),(l,self.loop)]:
 			#~ if text != control.get_text():

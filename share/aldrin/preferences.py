@@ -33,6 +33,8 @@ from common import MARGIN, MARGIN2, MARGIN3
 from controller import learn_controller
 from aldrincom import com
 
+import zzub
+
 samplerates = [96000,48000,44100]
 buffersizes = [32768,16384,8192,4096,2048,1024,512,256,128,64,32,16]
 
@@ -422,9 +424,9 @@ class MidiPanel(gtk.VBox):
 		self.idevicelist.set_property('headers-visible', False)
 		inputlist = config.get_config().get_mididriver_inputs()
 		player = com.get('aldrin.core.player')
-		for i in range(player.mididriver_get_count()):
-			if player.mididriver_is_input(i):
-				name = prepstr(player.mididriver_get_name(i))
+		for i in range(zzub.Mididriver.get_count(player)):
+			if zzub.Mididriver.is_input(player,i):
+				name = prepstr(zzub.Mididriver.get_name(player,i))
 				use = name.strip() in inputlist
 				self.istore.append([use, name])
 		sizer1.add(add_scrollbars(self.idevicelist))
@@ -438,9 +440,9 @@ class MidiPanel(gtk.VBox):
 		])
 		self.odevicelist.set_property('headers-visible', False)
 		outputlist = config.get_config().get_mididriver_outputs()
-		for i in range(player.mididriver_get_count()):
-			if player.mididriver_is_output(i):
-				name = prepstr(player.mididriver_get_name(i))
+		for i in range(zzub.Mididriver.get_count(player)):
+			if zzub.Mididriver.is_output(player,i):
+				name = prepstr(zzub.Mididriver.get_name(player,i))
 				use = name in outputlist
 				self.ostore.append([use,name])
 		sizer2.add(add_scrollbars(self.odevicelist))

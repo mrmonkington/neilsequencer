@@ -23,6 +23,7 @@ Contains tool functions to deal with audio and midi drivers.
 """
 
 import config
+import zzub
 
 from aldrincom import com
 from utils import error
@@ -54,7 +55,7 @@ class MidiDriver:
 			return
 		print "uninitializing midi driver..."
 		player = com.get('aldrin.core.player')
-		player.mididriver_close_all()
+		zzub.Mididriver.close_all(player)
 		self.enabled = False
 		
 	def init(self):
@@ -63,15 +64,15 @@ class MidiDriver:
 		midiinputs = config.get_config().get_mididriver_inputs()
 		midioutputs = config.get_config().get_mididriver_outputs()
 		player = com.get('aldrin.core.player')
-		for i in range(player.mididriver_get_count()):
-			drivername = player.mididriver_get_name(i).strip() 
-			if player.mididriver_is_input(i) and drivername in midiinputs:
+		for i in range(zzub.Mididriver.get_count(player)):
+			drivername = zzub.Mididriver.get_name(player,i).strip() 
+			if zzub.Mididriver.is_input(player,i) and drivername in midiinputs:
 				print "Opening MIDI input device '%s'..." % drivername
-				if player.mididriver_open(i) != 0:
+				if zzub.Mididriver.open(player,i) != 0:
 					raise self.MidiInitException
-			elif player.mididriver_is_output(i) and drivername in midioutputs:
+			elif zzub.Mididriver.is_output(player,i) and drivername in midioutputs:
 				print "Opening MIDI output device '%s'..." % drivername
-				if player.mididriver_open(i) != 0:
+				if zzub.Mididriver.open(player,i) != 0:
 					raise self.MidiInitException
 		self.enabled = True
 
@@ -129,7 +130,7 @@ class AudioDriver:
 		inputname, outputname, samplerate, buffersize = config.get_config().get_audiodriver_config()
 		print inputname, outputname
 		player = com.get('aldrin.core.player')
-		self.driver = player.audiodriver_create()
+		self.driver = zzub.Audiodriver.create(player)
 		if not self.driver.get_count():
 			raise self.AudioInitException
 		print "available drivers:"

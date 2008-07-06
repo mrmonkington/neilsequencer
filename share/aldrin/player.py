@@ -79,12 +79,11 @@ class AldrinPlayer(Player):
 	)
 	
 	def __init__(self):
-		Player.__init__(self)
+		Player.__init__(self, Player.create())
 		self._cbtime = time.time()
 		self._cbcalls = 0
 		self._hevcalls = 0
 		self._hevtimes = 0		
-		self.set_callback(self.handle_callback)
 		# enumerate zzub_event_types and prepare unwrappers for the different types
 		self.event_id_to_name = {}		
 		for enumname,cfg in self._event_types_.iteritems():
@@ -146,7 +145,10 @@ class AldrinPlayer(Player):
 		"""
 		player = com.get('aldrin.core.player')
 		t1 = time.time()
-		player.handle_events()
+		event = player.get_next_event()
+		while event:
+			self.handle_callback(event)
+			event = player.get_next_event()
 		t2 = time.time() - t1
 		self._hevtimes = (self._hevtimes * 0.9) + (t2 * 0.1)
 		self._hevcalls += 1
@@ -171,7 +173,7 @@ class AldrinPlayer(Player):
 		else:
 			Player.stop(self)
 		
-	def handle_callback(self, player, plugin, data):
+	def handle_callback(self, data):
 		"""
 		Default callback for ui events sent by zzub.
 		
@@ -219,14 +221,17 @@ class AldrinPlayer(Player):
 		"""
 		return [self.get_sequence(i) for i in xrange(self.get_sequence_track_count())]
 		
+	def get_current_sequencer(self):
+		return self
+		
 	def init_lunar(self):
 		"""
 		Initializes the lunar dsp scripting system
 		"""
-		pc = self.get_plugincollection_by_uri("@zzub.org/plugincollections/lunar")
+		pc = zzub.Plugincollection.get_by_uri(self, "@zzub.org/plugincollections/lunar")
 
 		# return if lunar is missing
-		if not pc._handle:
+		if not pc:
 			print >> sys.stderr, "lunar plugin collection not found, not supporting lunar."
 			return
 

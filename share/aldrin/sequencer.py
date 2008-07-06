@@ -1372,7 +1372,7 @@ class SequencerView(gtk.DrawingArea):
 		gc.set_foreground(loop_pen)
 		gc.line_style = gtk.gdk.LINE_ON_OFF_DASH
 		gc.set_dashes(0, (1,1))
-		lb,le = player.get_song_loop()
+		lb,le = player.get_loop()
 		x,y = self.track_row_to_pos((0,lb))
 		if (x >= SEQLEFTMARGIN):
 			drawable.draw_line(gc, x-1, 0, x-1, h)
