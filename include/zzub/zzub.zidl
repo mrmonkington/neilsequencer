@@ -335,7 +335,7 @@ namespace zzub:
 		def get_count(): int
 
 		"Get name of specified audio device"
-		def get_name(int index, out string[max_len] name, int max_len=1024): int
+		def get_name(int index, out string[max_len] name, int max_len=1024): no_python int
 
 		def get_supported_samplerates(int index, out int[maxrates] result, int maxrates): int
 		def get_supported_output_channels(int index): int
@@ -487,6 +487,8 @@ namespace zzub:
 
 		def get_attribute_count(): int
 		def get_attribute(int index): Attribute
+		iterator get_attribute_list: for get_attribute in get_attribute_count
+		
 		def get_loader_name(): string
 
 		"Returns the flags for this plugin loader. Combined by zero or more values in the zzub_plugin_flag enumeration."
@@ -525,7 +527,7 @@ namespace zzub:
 		def set_name(string name): int
 
 		"Retreive the name of a plugin."
-		def get_name(out string[maxlen] name, int maxlen=1024): int
+		def get_name(out string[maxlen] name, int maxlen=1024): no_python int
 
 		"Retreive the unique per-session id of a plugin. See also zzub_player_get_plugin_by_id()."
 		def get_id(): int
@@ -563,12 +565,12 @@ namespace zzub:
 		def set_bypass(int muted)
 
 		"Returns a string of \\\\n-separated command strings"
-		def get_commands(out string[maxlen] commands, int maxlen=1024): int
+		def get_commands(out string[maxlen] commands, int maxlen=1024): no_python int
 
 		"When a plugin command string starts with the char '\\', it has subcommands."
 		"Unexpectedly, zzub_plugin_get_sub_commands returns a \\\\n-separated string (like get_commands)."
 		"Some plugins need to be ticked before calling get_sub_commands."
-		def get_sub_commands(int i, out string[maxlen] commands, int maxlen=1024): int
+		def get_sub_commands(int i, out string[maxlen] commands, int maxlen=1024): no_python int
 
 		"Invoke a command on the plugin."
 		def command(int i)
@@ -615,6 +617,8 @@ namespace zzub:
 
 		"Returns a copy of the requested pattern. Callers must destroy the pattern returned from get_pattern"
 		def get_pattern(int index): Pattern
+		
+		iterator get_pattern_list: for get_pattern in get_pattern_count
 
 		"Returns the index of the pattern with the given name"
 		def get_pattern_by_name(string name): int
@@ -659,7 +663,7 @@ namespace zzub:
 		#/*@{*/
 
 		"Creates a textual description of the given value. The return value is the number of characters in the output string."
-		def describe_value(int group, int column, int value, out string[maxlen] name, int maxlen=1024): int
+		def describe_value(int group, int column, int value, out string[maxlen] name, int maxlen=1024): no_python int
 
 		"Returns the last written value of the requested parameter."
 		def get_parameter_value(int group, int track, int column): int
@@ -762,7 +766,8 @@ namespace zzub:
 		def get_plugin(): Plugin
 		def get_event_at(int pos): int
 		def get_event_count(): int
-		def get_event(int index, out int pos, out int value): int
+		def get_event(int index, out int pos, out int value): no_python int
+		iterator get_event_list: for get_event in get_event_count
 		
 	"@name Wavelevel"
 	class Wavelevel:
@@ -803,6 +808,7 @@ namespace zzub:
 		def enable(int enable)
 		def get_point_count(): int
 		def get_point(int index, out ushort x, out ushort y, out char flags)
+		iterator get_point_list: for get_point in get_point_count
 		def set_point(int index, ushort x, ushort y, char flags)
 		def insert_point(int index)
 		def delete_point(int index)
@@ -828,6 +834,7 @@ namespace zzub:
 		def set_envelope(int index, Envelope env)
 		def get_level_count(): int
 		def get_level(int index): Wavelevel
+		iterator get_level_list: for get_level in get_level_count
 		# 0.3: DEAD # def add_level(zzub_player_t* player, int wave)
 		# 0.3: DEAD # def remove_level(zzub_player_t* player, int wave, int level)
 
@@ -877,7 +884,7 @@ namespace zzub:
 		"Loads a BMX from memory or file."
 		" "
 		"Load warnings and error messages are placed in the messages string."
-		def load_bmx(Input datastream, out string[maxLen] messages, int maxLen=1024): int
+		def load_bmx(Input datastream, out string[maxLen] messages, int maxLen=1024): no_python int
 
 		"Saves a BMX to memory or file."
 		" "
@@ -911,6 +918,8 @@ namespace zzub:
 
 		"Finds a zzub_pluginloader_t handle by uri."
 		def get_pluginloader_by_name(string name): Pluginloader
+		
+		iterator get_pluginloader_list: for get_pluginloader in get_pluginloader_count
 
 		"Returns number of plugins in the current song."
 		def get_plugin_count(): int
@@ -928,6 +937,8 @@ namespace zzub:
 
 		"Returns the plugin object given the plugins index in the graph."
 		def get_plugin(int index): Plugin
+		
+		iterator get_plugin_list: for get_plugin in get_plugin_count
 
 		def work_stereo(out int numSamples): float[2][numSamples]
 		def clear()
@@ -936,11 +947,17 @@ namespace zzub:
 
 		def get_loop_start(): int
 		def get_loop_end(): int
-		def get_song_start(): int
+		
 		def set_loop_start(int v)
 		def set_loop_end(int v)
-		def set_song_start(int v)
+		
+		def get_loop(out int begin, out int end)
+		def set_loop(int begin, int end)
+		
+		def get_song_start(): int
 		def get_song_end(): int
+		
+		def set_song_start(int v)
 		def set_song_end(int v)
 		# def lock_tick()
 		# def unlock_tick()
@@ -950,6 +967,7 @@ namespace zzub:
 		def get_loop_enabled(): int
 		def get_sequence_track_count(): int
 		def get_sequence(int index): Sequence
+		iterator get_sequence_list: for get_sequence in get_sequence_track_count
 
 		"Retreive the currently playing pattern and row for a plugin."
 		def static get_currently_playing_pattern(Plugin plugin, out int pattern, out int row): int
@@ -960,6 +978,8 @@ namespace zzub:
 		def get_wave_count(): int
 
 		def get_wave(int index): Wave
+		
+		iterator get_wave_list: for get_wave in get_wave_count
 
 		# def play_wave(Wave, int level, int note)
 		# def stop_wave()
@@ -982,6 +1002,7 @@ namespace zzub:
 
 		def get_midimapping(int index): Midimapping
 		def get_midimapping_count(): int
+		iterator get_midimapping_list: for get_midimapping in get_midimapping_count
 
 		def get_automation(): bool
 		def set_automation(bool enable)

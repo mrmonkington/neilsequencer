@@ -379,6 +379,18 @@ int zzub_player_get_loop_end(zzub_player_t *player) {
 	return player->front.song_loop_end;
 }
 
+void zzub_player_get_loop(zzub_player_t *player, int *begin, int *end) {
+	if (begin)
+		*begin = player->front.song_loop_begin;
+	if (end)
+		*end = player->front.song_loop_end;
+}
+
+void zzub_player_set_loop(zzub_player_t *player, int begin, int end) {
+	player->front.song_loop_begin = begin;
+	player->front.song_loop_end = end;
+}
+
 int zzub_player_get_song_start(zzub_player_t *player) {
 	return player->front.song_begin;
 }

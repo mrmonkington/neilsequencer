@@ -420,6 +420,9 @@ class zzubIDLObject(object):
 	def write_c_def(self, parent, f):
 		pass
 		
+	def write_c_header(self, parent, f):
+		pass
+		
 	def write_py_doc(self, f):
 		if self.doc:
 			print >> f
@@ -538,6 +541,8 @@ class Class(zzubIDLObject):
 			py_c_out_type='POINTER(POINTER(' + self.struct_name + '))',
 			py_c_itype='POINTER("' + self.struct_name + '")',
 			py_c_out_itype='POINTER(POINTER("' + self.struct_name + '"))',
+			py_c_real_type=self.struct_name,
+			py_c_real_itype='"' + self.struct_name + '"',
 			c_real_type=self.struct_name,
 			c_type=self.struct_name + ' *', 
 			c_out_type=self.struct_name + ' * *',
@@ -808,6 +813,7 @@ class Argument(zzubIDLObject):
 		self.typemap_cfg = None
 		self.default_value = None
 		self.opaque_class = False
+		self.python = True
 		self.extract_value = False
 		self.py_ctypes_deps_solved = False
 
@@ -826,6 +832,8 @@ class Argument(zzubIDLObject):
 		self.parser = parser
 		self.context = dict(parser.context)
 		self.retval = retval
+		if parser.try_keyword('no_python'):
+			self.python = False
 		if not retval:
 			for adt in ['in', 'out']:
 				if parser.try_keyword(adt):
@@ -899,11 +907,18 @@ class Argument(zzubIDLObject):
 				self.c_type = tm['c_real_type']
 			else:
 				self.c_type = tm['c_type']
-			self.py_c_type = tm['py_c_type']
-			if 'py_c_itype' in tm:
-				self.py_c_itype = tm['py_c_itype']
+			if not ref and tm.has_key('py_c_real_type'):
+				self.py_c_type = tm['py_c_real_type']
+				if 'py_c_real_itype' in tm:
+					self.py_c_itype = tm['py_c_real_itype']
+				else:
+					self.py_c_itype = self.py_c_type
 			else:
-				self.py_c_itype = self.py_c_type
+				self.py_c_type = tm['py_c_type']
+				if 'py_c_itype' in tm:
+					self.py_c_itype = tm['py_c_itype']
+				else:
+					self.py_c_itype = self.py_c_type
 			for i,ai in enumerate(self.arrayinfo):
 				if i == 0:
 					self.c_type = 'const ' + self.c_type + ' *'
@@ -1056,7 +1071,7 @@ class Function(zzubIDLObject):
 				return class_.name + '(' + argname + ')'
 			return argname
 			
-		if not self.ret_arg:
+		if not self.ret_arg or not self.ret_arg.python:
 			print >> f, '\t\t' + callfunc
 		elif not outargs:
 			print >> f, '\t\treturn ' + wrapped_retarg(self.ret_arg, callfunc)
@@ -1099,6 +1114,27 @@ class FunctionType(Function):
 		Function.__init__(self)
 		self.func_type = True
 
+class IteratorFunction(zzubIDLObject):
+	def parse(self, parser):
+		parent = parser.top()
+		parent.add_function(self)
+		# iterator get_plugin_list: for get_plugin in get_plugin_count
+		self.name = parser.scan_symbol()
+		self.parser = parser
+		parser.scan_colon()
+		parser.scan_keyword('for')
+		self.get_item_func = parser.scan_symbol()
+		parser.scan_keyword('in')
+		self.get_count_func = parser.scan_symbol()
+
+	def write_py_method(self, parent, f):
+		print >> f, '\tdef ' + self.name + '(self):'
+		self.write_py_docstr(f, 2)
+		print >> f, '\t\tfor index in xrange(self.' + self.get_count_func + '()):'
+		print >> f, '\t\t\tyield self.' + self.get_item_func + '(index)'
+			
+		print >> f, '\t'
+
 class zzubIDLParser(Parser):
 	symbols = {
 		'namespace' : dict(factory=Namespace, parent=[Namespace]),
@@ -1109,6 +1145,7 @@ class zzubIDLParser(Parser):
 		'member' : dict(factory=ClassMember, parent=[Class,Union]),
 		'union' : dict(factory=Union, parent=[Class,Union]),
 		'pdef' : dict(factory=FunctionType, parent=[Namespace,Class]),
+		'iterator': dict(factory=IteratorFunction, parent=[Class]),
 	}
 	
 	typemap = {
