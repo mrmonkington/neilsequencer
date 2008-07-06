@@ -95,7 +95,7 @@ class AldrinPlayer(Player):
 			if membername:
 				union = None
 				datatype = None
-				for argname,argtype in zzub.zzub_event_data_t._fields_:
+				for argname,argtype in zzub.zzub_event_data._fields_:
 					if argname == '': # union
 						union = argtype
 						break
