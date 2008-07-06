@@ -1,2 +1,0 @@
-cd ..
-tools/h2hpp src/libzzub/libzzub.h libzzub.h > include/libzzub++.hpp
