@@ -826,22 +826,6 @@ void player::process_user_event_queue() {
 	}
 }
 
-zzub_event_data_t *player::get_next_user_event() {
-	if (front.user_event_queue_read == front.user_event_queue_write)
-		return 0;
-	event_message& message = front.user_event_queue[front.user_event_queue_read];
-	zzub_event_data_t *result = NULL;
-	if (message.event != 0) {
-		last_user_event = message.data;
-		result = &last_user_event;
-	}
-	if (front.user_event_queue_read == front.user_event_queue.size() - 1)
-		front.user_event_queue_read = 0;
-	else
-		front.user_event_queue_read++;
-	return result;
-}
-
 /***
 
 	User methods for writing to the graph

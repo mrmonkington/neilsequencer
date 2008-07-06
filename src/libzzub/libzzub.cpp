@@ -56,9 +56,36 @@ struct zzub_flatapi_player : zzub::player {
 	zzub_callback_t callback;
 	void *callbackTag;
 	
+	std::vector<zzub_event_data_t> event_queue;
+	int read_event_queue;
+	int write_event_queue;
+	
+	zzub_event_data_t *pop_event() {
+		if (read_event_queue == write_event_queue)
+			return NULL;
+		zzub_event_data_t *result = &event_queue[read_event_queue];
+		read_event_queue++;
+		if (read_event_queue == event_queue.size())
+			read_event_queue = 0;
+		return result;
+	}
+	
+	void push_event(zzub_event_data_t &data) {
+		event_queue[write_event_queue] = data;
+		write_event_queue++;
+		if (write_event_queue == event_queue.size())
+			write_event_queue = 0;
+		if (write_event_queue == read_event_queue) {
+			std::cout << "warning: event queue overflow. need more calls to zzub_player_get_next_event()!" << std::endl;
+		}
+	}
+	
 	zzub_flatapi_player() {
 		callback = 0;
 		callbackTag = 0;
+		event_queue.resize(4096);
+		read_event_queue = 0;
+		write_event_queue = 0;
 		//driver.initialize(this);
 		_midiDriver.initialize(this);
 	}
@@ -117,6 +144,8 @@ struct zzub_player_callback_all_events : event_handler {
 			int res = player->callback(player, proxy, &data, player->callbackTag);
 			if (!res)
 				return true;
+		} else {
+			player->push_event(data);
 		}
 		return false;
 	}
@@ -479,7 +508,7 @@ zzub_wave_t* zzub_player_get_wave(zzub_player_t* player, int index) {
 }
 
 zzub_event_data_t *zzub_player_get_next_event(zzub_player_t *player) {
-	return player->get_next_user_event();
+	return player->pop_event();
 }
 
 void zzub_player_set_callback(zzub_player_t* player, zzub_callback_t callback, void* tag) {

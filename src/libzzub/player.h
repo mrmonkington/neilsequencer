@@ -34,7 +34,6 @@ struct player : undo_manager, audioworker, midiworker {
 	vector<pluginlib*> plugin_libraries;
 	vector<string> plugin_folders;
 	vector<const zzub::info*> plugin_infos;
-	zzub_event_data_t last_user_event;
 
 	player();
 	virtual ~player(void);
@@ -57,7 +56,6 @@ struct player : undo_manager, audioworker, midiworker {
 	// user methods (should be, but arent supported by begin_/commit_operation)
 	void clear();
 	void process_user_event_queue();
-	zzub_event_data_t *get_next_user_event();
 	void set_state(player_state state);
 	void plugin_set_parameter(int plugin_id, int group, int track, int column, int value, bool record, bool immediate, bool undoable);
 	void play_plugin_note(int plugin_id, int note, int prevNote, int velocity);
