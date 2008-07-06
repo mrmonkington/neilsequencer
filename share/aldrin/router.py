@@ -841,14 +841,16 @@ class RouteView(gtk.DrawingArea):
 			mp.destroy()
 			self.redraw()
 		
-	def on_popup_disconnect(self, widget, conn):
+	def on_popup_disconnect(self, widget, mp, index):
 		"""
 		Event handler for the "Disconnect" context menu option.
 		
 		@param event: Menu event.
 		@type event: wx.MenuEvent
 		"""
-		conn.get_output().delete_input(conn.get_input())
+		mp.delete_input_connection(index)
+		player = com.get('aldrin.core.player')
+		player.history_commit("disconnect")
 		eventbus = com.get('aldrin.core.eventbus')
 		eventbus.connection_changed()
 		self.redraw()
@@ -1148,17 +1150,18 @@ class RouteView(gtk.DrawingArea):
 			if res:
 				mp, index = res
 				menu.append(make_menu_item("_Disconnect plugins", "Disconnect plugins", self.on_popup_disconnect, mp, index))
-				if conn.get_type() == zzub.zzub_connection_type_audio:
+				conntype = mp.get_input_connection_type(index)
+				if conntype == zzub.zzub_connection_type_audio:
 					menu.append(gtk.SeparatorMenuItem())
 					menu.append(make_submenu_item(self.get_plugin_menu(include_generators=False,include_controllers=False, conn=(mp, index)), "_Insert Effect"))
 					menu.append(gtk.SeparatorMenuItem())
 					menu.append(make_menu_item("_Signal Analysis", "Signal Analysis", self.on_popup_show_signalanalysis, mp, index))
-				elif conn.get_type() == zzub.zzub_connection_type_event:
+				elif conntype == zzub.zzub_connection_type_event:
 					menu.append(gtk.SeparatorMenuItem())
 					mi = conn.get_input()
 					for param in mi.get_pluginloader().get_parameter_list(3):
 						print param
-				com.get_from_category('menuitem.connection', menu, connection=conn)
+				com.get_from_category('menuitem.connection', menu, connection=(mp,index))
 			else:
 				menu = self.get_plugin_menu()
 				com.get_from_category('menuitem.route', menu)

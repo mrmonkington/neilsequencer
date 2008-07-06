@@ -2,7 +2,6 @@
 
 import os,sys
 
-os.environ['LD_LIBRARY_PATH'] = '../lib'
 os.environ['LIBRARY_LOAD_NONE'] = 'true'
 
 os.system('rm -rf aldrinapi')
