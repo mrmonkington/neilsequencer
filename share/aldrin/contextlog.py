@@ -17,6 +17,8 @@ ESCAPE_END = "\033[0;0m"
 
 ERROR_ESCAPE_BEGIN = "\033[0;31m"
 
+LOG_BUFFER = []
+
 class StdErrAnnotator:
 	def __init__(self):
 		import sys
@@ -44,6 +46,7 @@ class StdErrAnnotator:
 					self.annotate_next = True
 					self.stderr.write(ESCAPE_END)
 			self.stderr.write(c)
+		LOG_BUFFER.append(('stderr',None,None,text))
 		
 	def flush(self):
 		self.stderr.flush()
@@ -57,6 +60,8 @@ class StdOutAnnotator:
 		self.stdout = sys.stdout
 		sys.stdout = self
 		self.annotate_next = True
+		self.last_filename = ''
+		self.last_line = 0
 		print "annotating stdout"
 		
 	def annotate(self, stack):
@@ -69,6 +74,8 @@ class StdOutAnnotator:
 				line = entry[1]
 		if not str(filename.relpath()).startswith('..'):
 			filename = filename.relpath()
+		self.last_filename = filename
+		self.last_line = line
 		self.stdout.write("%s%s:%s:%s" % (ESCAPE_BEGIN,filename,line,ESCAPE_END))
 	
 	def write(self, text):
@@ -78,7 +85,8 @@ class StdOutAnnotator:
 				self.annotate(traceback.extract_stack())
 			if c == '\n':
 				self.annotate_next = True
-			self.stdout.write(c)
+			self.stdout.write(c)		
+		LOG_BUFFER.append(('stdout',self.last_filename,self.last_line,text))
 		
 	def flush(self):
 		self.stdout.flush()

@@ -38,6 +38,7 @@ DEFAULT_PACKAGES = [
 	'+pkgbrowser',
 	'+iconfactory',
 	'+preferences',
+	'+pythonconsole',
 ]
 
 # aldrin component object model
@@ -72,14 +73,18 @@ class ComponentManager:
 				print "excluding module %s" % modulename
 				continue
 			print "importing module %s" % modulename
-			module_ = __import__(modulename)
-			names = modulename.split('.')
-			for name in names[1:]:
-				module_ = getattr(module_, name)
-			if not hasattr(module_, '__aldrin__'):
-				continue
-			self.packages.append(modulename)
-			self.register(module_.__aldrin__, modulename)
+			try:
+				module_ = __import__(modulename)
+				names = modulename.split('.')
+				for name in names[1:]:
+					module_ = getattr(module_, name)
+				if not hasattr(module_, '__aldrin__'):
+					continue
+				self.packages.append(modulename)
+				self.register(module_.__aldrin__, modulename)
+			except:
+				import errordlg
+				errordlg.print_exc()
 					
 	def register(self, pkginfo, modulename=None):
 		# enumerate class factories
@@ -117,7 +122,12 @@ class ComponentManager:
 			return None
 		if class_.__aldrin__.get('singleton',False):
 			self.singletons[id] = None # fill with an empty slot so we get no recursive loop
-		obj = class_(*args,**kwargs)
+		try:
+			obj = class_(*args,**kwargs)
+		except:
+			import errordlg
+			errordlg.print_exc()
+			obj = None
 		if class_.__aldrin__.get('singleton',False):
 			self.singletons[id] = obj # register as singleton
 		return obj
