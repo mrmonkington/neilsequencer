@@ -95,13 +95,10 @@ class AldrinPlayer(Player):
 			if membername:
 				union = None
 				datatype = None
-				for argname,argtype in zzub.EventData._fields_:
-					if argname == '': # union
-						union = argtype
-						break
-				for argname,argtype in union._fields_:
+				ed = zzub.EventData()
+				for argname in dir(ed):
 					if argname == membername:
-						datatype = argtype
+						datatype = getattr(ed, argname).__class__
 				assert datatype, "couldn't find member %s in zzub_event_data_t" % membername
 				for argname,argtype in datatype._fields_:
 					args.append(argname)
@@ -190,8 +187,7 @@ class AldrinPlayer(Player):
 		eventname,membername,argnames = self.event_id_to_name[data.type]
 		args = []
 		if membername:
-			specdata = getattr(data,'')
-			specdata = getattr(specdata,membername)
+			specdata = getattr(data,membername)
 			for argname in argnames:
 				args.append(getattr(specdata, argname))
 		if not data.type in self._exclude_event_debug_:
