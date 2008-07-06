@@ -140,14 +140,19 @@ class AldrinPlayer(Player):
 		
 	def on_handle_events(self):
 		"""
-		Handler triggered by the default timer. Calls self.handle_events()
-		to work off the players message queue.
+		Handler triggered by the default timer. Asks the player to fill
+		the event queue and fetches events from the queue to pass them to handle_event.
 		"""
 		player = com.get('aldrin.core.player')
 		t1 = time.time()
+		player.handle_events()
 		event = player.get_next_event()
 		while event:
-			self.handle_callback(event)
+			try:
+				self.handle_event(event)
+			except:
+				import errordlg
+				errordlg.print_exc()
 			event = player.get_next_event()
 		t2 = time.time() - t1
 		self._hevtimes = (self._hevtimes * 0.9) + (t2 * 0.1)
@@ -173,14 +178,10 @@ class AldrinPlayer(Player):
 		else:
 			Player.stop(self)
 		
-	def handle_callback(self, data):
+	def handle_event(self, data):
 		"""
-		Default callback for ui events sent by zzub.
+		Default handler for ui events sent by zzub.
 		
-		@param player: player instance.
-		@type player: zzub.Player
-		@param plugin: plugin instance
-		@type plugin: zzub.Plugin
 		@param data: event data.
 		@type data: zzub_event_data_t
 		"""

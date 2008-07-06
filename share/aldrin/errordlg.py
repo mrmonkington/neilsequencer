@@ -1,7 +1,7 @@
 
 from gtkimport import gtk
 import gobject
-from traceback import format_exception
+from traceback import format_exception, print_exc as traceback_print_exc
 import sys
 
 Parent = None
@@ -38,14 +38,21 @@ def error(parent, msg, msg2=None, details=None):
 	return response
 
 last_exc = None
-def local_excepthook(type, value, traceback):
+def show_exc_dialog(exc_type, value, traceback):
 	global last_exc
-	sys.__excepthook__(type, value, traceback)
-	exc = ''.join(format_exception(type, value, traceback))
+	exc = ''.join(format_exception(exc_type, value, traceback))
 	if exc == last_exc:
 		return
 	last_exc = exc
-	error(Parent, "<b>An exception (<i>%s</i>) occurred.</b>" % type.__name__, str(value), exc)
+	error(Parent, "<b>An exception (<i>%s</i>) occurred.</b>" % exc_type.__name__, str(value), exc)
+
+def print_exc():
+	traceback_print_exc()
+	show_exc_dialog(*sys.exc_info())
+
+def local_excepthook(exc_type, value, traceback):
+	sys.__excepthook__(exc_type, value, traceback)
+	show_exc_dialog(exc_type, value, traceback)
 
 def install(parent=None):
 	global Parent
@@ -54,3 +61,4 @@ def install(parent=None):
 
 if __name__ == '__main__':
 	install()
+
