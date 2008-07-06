@@ -423,6 +423,9 @@ class zzubIDLObject(object):
 	def write_c_header(self, parent, f):
 		pass
 		
+	def write_py_ctypes_anon(self, parent, f):
+		pass
+		
 	def write_py_doc(self, f):
 		if self.doc:
 			print >> f
@@ -608,6 +611,10 @@ class Class(zzubIDLObject):
 		for member in self.members:
 			member.write_py_ctypes(self, f)
 		print >> f, '\t]'
+		print >> f, '\t_anonymous_ = ['
+		for member in self.members:
+			member.write_py_ctypes_anon(self, f)
+		print >> f, '\t]'
 		for class_ in self.classes:
 			class_.write_py_ctypes(self, f)
 		self.py_ctypes_written = True
@@ -704,8 +711,11 @@ class Union(zzubIDLObject):
 			member.write_c_header(self, f)
 		print >> f, '\t};'
 		
+	def write_py_ctypes_anon(self, parent, f):
+		print >> f, '\t\t"' + self.name + '",'
+		
 	def write_py_ctypes(self, parent, f):
-		print >> f, '\t\t("",' + self.struct_name + '),'
+		print >> f, '\t\t("' + self.name + '",' + self.struct_name + '),'
 		
 class Enum(zzubIDLObject):
 	def __init__(self):
