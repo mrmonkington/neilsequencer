@@ -44,6 +44,7 @@ BUFFER_CLASS = gtk.TextBuffer
 
 import thread
 import time
+import code
 
 class PythonConsoleDialog(gtk.Dialog):
 	__aldrin__ = dict(
@@ -55,6 +56,14 @@ class PythonConsoleDialog(gtk.Dialog):
 		gtk.Dialog.__init__(self,
 			"Python Console")
 		self.resize(600,500)
+		self.locals = dict(
+			__name__ = "__console__",
+			__doc__ = None,
+			com = com,
+			embed = self.embed,
+			gtk = gtk,
+		)
+		self.compiler = code.InteractiveConsole(self.locals)
 		
 		buffer = BUFFER_CLASS()
 		
@@ -62,17 +71,38 @@ class PythonConsoleDialog(gtk.Dialog):
 		cfg = com.get('aldrin.core.config')
 		# "ProFontWindows 9"
 		view.modify_font(pango.FontDescription(cfg.get_pattern_font('Monospace')))
+		view.set_editable(False)
+		view.set_wrap_mode(gtk.WRAP_WORD)
 		self.consoleview = view
 		self.buffer = buffer
+		self.entry = gtk.Entry()
+		self.entry.modify_font(pango.FontDescription(cfg.get_pattern_font('Monospace')))
+		self.entry.connect('activate', self.on_entry_activate)
 
 		scrollwin = gtk.ScrolledWindow()
 		scrollwin.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
 		scrollwin.set_shadow_type(gtk.SHADOW_IN)
 		scrollwin.add(self.consoleview)
-		self.vbox.add(scrollwin)
+		
+		vpack = gtk.VBox()
+		vpack.pack_start(scrollwin)
+		vpack.pack_end(self.entry, False)
+		self.vbox.add(vpack)
 		
 		gobject.timeout_add(50, self.update_output)
 		self.log_buffer_pos = 0
+		self.entry.grab_focus()
+		
+	def embed(self, widget):
+		anchor = self.buffer.create_child_anchor(self.buffer.get_end_iter())
+		self.consoleview.add_child_at_anchor(widget, anchor)
+		widget.show_all()
+		
+	def on_entry_activate(self, widget):
+		text = self.entry.get_text()
+		self.entry.set_text("")
+		print '>>> ' + text
+		self.compiler.push(text)
 		
 	def update_output(self):
 		while self.log_buffer_pos != len(contextlog.LOG_BUFFER):
