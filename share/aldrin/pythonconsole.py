@@ -154,8 +154,14 @@ class PythonConsoleDialog(gtk.Dialog):
 		self.entry.child.set_text("")
 		if text.strip() == "":
 			text = ""
-		self.entry.append_text(text)
 		self.command(text)
+		model = self.entry.get_model()
+		it = model.get_iter_first()
+		while it:
+			if model.get_value(it, 0) == text:
+				return
+			it = model.iter_next(it)
+		self.entry.append_text(text)
 		
 	def update_output(self):
 		while self.log_buffer_pos != len(contextlog.LOG_BUFFER):
