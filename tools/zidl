@@ -660,6 +660,8 @@ class Class(zzubIDLObject):
 			for function in self.functions:
 				function.write_py_method(self, f)
 			print >> f
+			print >> f, self.struct_name + '._wrapper_ = ' + self.name
+			print >> f
 		
 class Union(zzubIDLObject):
 	nextid = 0
