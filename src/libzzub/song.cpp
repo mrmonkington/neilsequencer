@@ -129,22 +129,20 @@ inline void scanPeakStereo(float* l, float* r, int numSamples, float& maxL, floa
 }
 
 // http://en.wikipedia.org/wiki/Topological_sorting
-template <typename VertexListGraph, typename VertexList, typename OutputIterator>
-void topological_sort_kahn(VertexListGraph& tg, VertexList input, OutputIterator result) {
+void topological_sort_kahn(plugin_map& tg, std::deque<plugin_descriptor>& input, std::vector<plugin_descriptor>& result) {
 	while (input.size()) {
-		VertexList::value_type n = input.front();
+		plugin_descriptor n = input.front();
 		input.pop_front();
-		*result = n;
-		result++;
-		graph_traits<VertexListGraph>::out_edge_iterator out, out_end;
+		result.push_back(n);
+		graph_traits<plugin_map>::out_edge_iterator out, out_end;
 		boost::tie(out, out_end) = out_edges(n, tg);
-		VertexList adj;
-		for (graph_traits<VertexListGraph>::out_edge_iterator i = out; i != out_end; ++i) {
+		deque<plugin_descriptor> adj;
+		for (graph_traits<plugin_map>::out_edge_iterator i = out; i != out_end; ++i) {
 			adj.push_back(target(*i, tg));
 		}
-		for (VertexList::iterator i = adj.begin(); i != adj.end(); ++i) {
+		for (deque<plugin_descriptor>::iterator i = adj.begin(); i != adj.end(); ++i) {
 			remove_edge(n, *i, tg);
-			graph_traits<VertexListGraph>::in_edge_iterator in, in_end;
+			graph_traits<plugin_map>::in_edge_iterator in, in_end;
 			boost::tie(in, in_end) = in_edges(*i, tg);
 			if ((in_end - in) == 0) {
 				input.push_back(*i);
@@ -437,8 +435,7 @@ void song::make_work_order() {
 
 		// find plugins that send sound into this root, in topological order.
 		// topological_sort_kahn will remove edges from the temp graph.
-		topological_sort_kahn(tg, inputs, 
-			std::back_insert_iterator<vector<plugin_descriptor> >(outputs));
+		topological_sort_kahn(tg, inputs, outputs);
 
 		// check for master in outputs instead of checking no_output-flag to
 		// prevent problems e.g when a recorder records the output of the master(?)
