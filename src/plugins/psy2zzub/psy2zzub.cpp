@@ -249,7 +249,6 @@ namespace zzub { namespace plugins { namespace psycle_to_zzub {
 					}
 
 					zzub_info->version = zzub::version;
-					zzub_info->flags |= zzub::plugin_flag_mono_to_stereo;
 
 					zzub_info->psy_name = psycle_info->Name;
 					zzub_info->name = zzub_info->psy_name.c_str();

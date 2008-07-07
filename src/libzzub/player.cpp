@@ -293,17 +293,20 @@ bool import_sndfile::get_wave_level_info(int i, int level, importwave_info& info
 	assert(level == 0);
 	if (i != 0 && level != 0) return false;
 	info.channels = sfinfo.channels;
-	switch (sfinfo.format) {
-		case SF_FORMAT_WAV|SF_FORMAT_PCM_16:
+
+	switch (sfinfo.format & SF_FORMAT_SUBMASK) {
+		case SF_FORMAT_PCM_U8: // convert anything 8 bit to 16-bit
+		case SF_FORMAT_PCM_S8:
+		case SF_FORMAT_PCM_16:
 			info.format = wave_buffer_type_si16;
 			break;
-		case SF_FORMAT_WAV|SF_FORMAT_PCM_24:
+		case SF_FORMAT_PCM_24:
 			info.format = wave_buffer_type_si24;
 			break;
-		case SF_FORMAT_WAV|SF_FORMAT_PCM_32:
+		case SF_FORMAT_PCM_32:
 			info.format = wave_buffer_type_si32;
 			break;
-		case SF_FORMAT_WAV|SF_FORMAT_FLOAT:
+		case SF_FORMAT_FLOAT:
 			info.format = wave_buffer_type_f32;
 			break;
 		default:
@@ -320,9 +323,14 @@ void import_sndfile::read_wave_level_samples(int i, int level, void* buffer) {
 	importwave_info iwi;
 	if (!get_wave_level_info(i, level, iwi)) return ;
 
-	sf_read_raw(sf, buffer, iwi.sample_count * iwi.channels * sizeFromWaveFormat(iwi.format));
-//	sf_readf_short(sf, (short*)buffer, iwi.sample_count);
-
+	// TODO: this could use a larger buffer
+	for (int i = 0; i < iwi.sample_count; i++) {
+		float f[2];
+		sf_read_float(sf, f, iwi.channels);
+		CopySamples(&f, buffer, 1, wave_buffer_type_f32, iwi.format, 1, 1, 0, i * iwi.channels);
+		if (iwi.channels == 2) 
+			CopySamples(&f, buffer, 1, wave_buffer_type_f32, iwi.format, 1, 1, 1, (i * iwi.channels) + 1);
+	}
 }
 
 void import_sndfile::close() {
@@ -432,10 +440,11 @@ bool player::initialize() {
 	front.work_position = 0;
 	front.master_info.tick_position = 0;
 	front.master_info.samples_per_second = work_rate;
+	memset(&hostinfo, 0, sizeof(host_info));
 
 	std::vector<char> bytes;
 	create_plugin(bytes, "Master", &front.master_plugininfo);
-	flush_operations(0, 0);
+	flush_operations(0, 0, 0);
 	flush_from_history();
 
 	initialize_plugin_libraries();
@@ -527,7 +536,6 @@ void player::initialize_plugin_libraries() {
 	// add output collection
 	plugin_libraries.push_back(new pluginlib("output", *this, &outputPluginCollection));
 	// add recorder collection
-	recorderPluginCollection.setPlayer(&front);
 	plugin_libraries.push_back(new pluginlib("recorder", *this, &recorderPluginCollection));
 
 	// initialize rest like usual
@@ -540,7 +548,16 @@ void player::set_state(player_state newstate) {
 	op_state_change o(newstate);
 	backbuffer_operations.push_back(&o);
 	o.prepare(front);
-	flush_operations(0, 0);
+	flush_operations(0, 0, 0);
+	//execute_single_operation(&o);
+}
+
+void player::set_state_direct(player_state newstate) {
+	op_state_change o(newstate);
+	o.prepare(front);
+	o.operate(front);
+	o.finish(front, false);
+	front.plugin_invoke_event(0, o.event_data, false);
 	//execute_single_operation(&o);
 }
 
@@ -552,7 +569,7 @@ void player::clear() {
 	set_state(player_state_muted);
 
 	// make sure we flushed since we are manipulating the front buffer directly
-	flush_operations(0, 0);
+	flush_operations(0, 0, 0);
 
 	front.is_recording_parameters = false;
 	front.midi_mappings.clear();
@@ -586,7 +603,7 @@ void player::clear() {
 		plugin_destroy(i);
 	}
 
-	flush_operations(0, 0);
+	flush_operations(0, 0, 0);
 	clear_history();
 
 	front.song_comment = "";
@@ -740,15 +757,16 @@ void player::midiEvent(unsigned short status, unsigned char data1, unsigned char
 		if (status == 0xfa) {
 			// midi start
 			front.song_position = 0;
-			set_state(player_state_playing);
+			
+			set_state_direct(player_state_playing);
 		} else
 		if (status == 0xfb) {
 			// midi continue
-			set_state(player_state_playing);
+			set_state_direct(player_state_playing);
 		} else
 		if (status == 0xfc) {
 			// midi stop
-			set_state(player_state_stopped);
+			set_state_direct(player_state_stopped);
 		}
 	}
 
@@ -762,7 +780,7 @@ void player::play_plugin_note(int plugin_id, int note, int prevNote, int _veloci
 	merge_backbuffer_flags(o.copy_flags);
 	backbuffer_operations.push_back(&o);
 	o.prepare(back);
-	flush_operations(0, 0);
+	flush_operations(0, 0, 0);
 }
 
 void player::reset_keyjazz() {
@@ -1424,7 +1442,10 @@ int player::wave_load_sample(int wave, int level, int offset, bool clear, std::s
 	importwave_info wavedata;
 
 	if (!importer.open(name.c_str(), datastream)) return 0;
-	if (!importer.get_wave_level_info(0, 0, wavedata)) return 0;
+	if (!importer.get_wave_level_info(0, 0, wavedata)) {
+		importer.close();
+		return 0;
+	}
 
 	assert(wavedata.channels != 0);
 
@@ -1478,7 +1499,7 @@ int player::wave_load_sample(int wave, int level, int offset, bool clear, std::s
 	return wavedata.sample_count;
 }
 
-void player::wave_allocate_level(int wave, int level, int sample_count, int channels, int format) {
+void player::wave_allocate_level(int wave, int level, int sample_count, int channels, wave_buffer_type format) {
 	operation_copy_flags flags;
 	flags.copy_wavetable = true;
 	merge_backbuffer_flags(flags);

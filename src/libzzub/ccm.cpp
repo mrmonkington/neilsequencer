@@ -418,8 +418,6 @@ xml_node CcmWriter::saveClass(xml_node &parent, const zzub::info &info) {
 	xml_node item = parent.append_child(node_element);
 	item.name("pluginclass");
 	item.attribute("id") = info.uri;
-	if (info.flags & zzub::plugin_flag_mono_to_stereo)
-		item.attribute("mono_to_stereo") = true;
 	if (info.flags & zzub::plugin_flag_plays_waves)
 		item.attribute("plays_waves") = true;
 	if (info.flags & zzub::plugin_flag_uses_lib_interface)
@@ -428,10 +426,6 @@ xml_node CcmWriter::saveClass(xml_node &parent, const zzub::info &info) {
 		item.attribute("uses_instruments") = true;
 	if (info.flags & zzub::plugin_flag_does_input_mixing)
 		item.attribute("does_input_mixing") = true;
-	if (info.flags & zzub::plugin_flag_control_plugin)
-		item.attribute("control_plugin") = true;
-	if (info.flags & zzub::plugin_flag_auxiliary)
-		item.attribute("auxiliary") = true;
 	if (info.flags & zzub::plugin_flag_is_root)
 		item.attribute("is_root") = true;
 	if (info.flags & zzub::plugin_flag_has_audio_input)
@@ -565,10 +559,10 @@ xml_node CcmWriter::saveInit(xml_node &parent, zzub::song &player, int plugin) {
 			track.name("track");
 			track.attribute("index") = (long)t;
 			
-			for (size_t i = 0; i != player.get_plugin(plugin).info->track_parameters.size(); ++i) {
+			for (size_t i = 0; i != m.info->track_parameters.size(); ++i) {
 				xml_node n = track.append_child(node_element);
 				n.name("n");
-				n.attribute("ref") = id_from_ptr(player.get_plugin(plugin).info->track_parameters[i]);
+				n.attribute("ref") = id_from_ptr(m.info->track_parameters[i]);
 				n.attribute("v") = (long)player.plugin_get_parameter(plugin, 2, t, i);
 			}
 		}
@@ -589,7 +583,7 @@ xml_node CcmWriter::saveAttributes(xml_node &parent, zzub::song &player, int plu
 
     // save attributes
 	for (size_t i = 0; i < m.info->attributes.size(); i++) {
-		const attribute& attr = *player.get_plugin(plugin).info->attributes[i];
+		const attribute& attr = *m.info->attributes[i];
 		xml_node n = item.append_child(node_element);
 		n.name("n");
 		n.attribute("name") = attr.name;
@@ -1335,7 +1329,7 @@ bool CcmReader::loadClasses(xml_node &classes, zzub::player &player) {
 
 
 struct ccache { // connection and node cache
-	plugin_descriptor target;
+	int target;
 	xml_node connections;
 	xml_node global;
 	xml_node tracks;
@@ -1721,7 +1715,7 @@ bool CcmReader::loadPlugins(xml_node plugins, zzub::player &player) {
 
 	}
 
-	player.flush_operations(0, 0);
+	player.flush_operations(0, 0, 0);
 
 	return true;
 }
@@ -1911,7 +1905,7 @@ bool CcmReader::open(std::string fileName, zzub::player* player) {
 		std::cerr << "ccm: error opening " << fileName << std::endl;
 	}
 	
-	player->flush_operations(0, 0);
+	player->flush_operations(0, 0, 0);
 	player->flush_from_history();	// TODO: ccm loading doesnt support undo yet
 	player->set_state(player_state_stopped);
 

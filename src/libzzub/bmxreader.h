@@ -118,6 +118,11 @@ public:
 	std::vector<int> machines;
 	std::string lastError;
 	std::string lastWarning;
+	
+	bool ignoreWaves;
+	bool ignorePatterns;
+	bool ignoreSequences;
+	float offsetX, offsetY;
 
 	BuzzReader(zzub::instream* inf);
 	~BuzzReader();

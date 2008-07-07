@@ -44,18 +44,7 @@ DWORD UnpackBits(WAVEUNPACK * unpackinfo,DWORD dwAmount)
 			{	//run out of buffer... read more file into buffer
 				dwFileReadAmnt= (unpackinfo->dwBytesInFileRemain > unpackinfo->dwMaxBytes ) ? unpackinfo->dwMaxBytes : unpackinfo->dwBytesInFileRemain;
 				
-				long filePos = unpackinfo->pStreamIn->position();
-//				long filePos=ftell(unpackinfo->hFile);
-				if (unpackinfo->pStreamIn->read(unpackinfo->abtPackedBuffer, dwFileReadAmnt)) {
-//				if (fread(unpackinfo->abtPackedBuffer, dwFileReadAmnt, 1, unpackinfo->hFile)) {
-					dwReadFile=dwFileReadAmnt; 
-				} else {
-					dwReadFile=unpackinfo->pStreamIn->position()-filePos;
-//					dwReadFile=ftell(unpackinfo->hFile)-filePos;
-				}
-
-				//ReadFile(unpackinfo->hFile,unpackinfo->abtPackedBuffer,
-				//		 dwFileReadAmnt,&dwReadFile,NULL);
+				dwReadFile = unpackinfo->pStreamIn->read(unpackinfo->abtPackedBuffer, dwFileReadAmnt);
 
 				unpackinfo->dwBytesInFileRemain -= dwReadFile;	
 				unpackinfo->dwBytesInBuffer = dwReadFile;

@@ -1,14 +1,6 @@
-/*
-	This file is part of the Buzé base Buzz-library. 
-	
-	Please refer to LICENSE.TXT for details regarding usage.
-*/
-
-// Copyright (C) 1997-2000 Oskari Tammelin (ot@iki.fi)
+// Copyright (C) 1997-2008 Oskari Tammelin (ot@iki.fi)
 // This header file may be used to write _freeware_ DLL "machines" for Buzz
 // Using it for anything else is not allowed without a permission from the author
-
-// Modified in 2005 and 2006 for use with Buzé
    
 #ifndef __MACHINE_INTERFACE_H
 #define __MACHINE_INTERFACE_H
@@ -17,9 +9,7 @@
 #include <assert.h>
 #include <string.h>
 
-#pragma pack ( push, 4 )
-
-#define MI_VERSION				15
+#define MI_VERSION				18
   
 typedef unsigned char byte;
 typedef unsigned short word;
@@ -60,6 +50,9 @@ double const PI = 3.14159265358979323846;
 #define MIF_NO_OUTPUT			(1<<5)		// used for effect machines that don't actually use any outputs (WaveOutput, AuxSend etc.)
 #define MIF_CONTROL_MACHINE		(1<<6)		// used to control other (non MIF_CONTROL_MACHINE) machines
 #define MIF_INTERNAL_AUX		(1<<7)		// uses internal aux bus (jeskola mixer and jeskola mixer aux)
+#define MIF_EXTENDED_MENUS		(1<<8)		// uses submenus in machine menus. syntax: "submenu/another submenu/item"
+#define MIF_PATTERN_EDITOR		(1<<9)		// implements it's own pattern editor, does not use buzz patterns
+#define MIF_PE_NO_CLIENT_EDGE	(1<<10)		// remove sunken border from the pattern editor window
 
 // work modes
 #define WM_NOIO					0
@@ -75,21 +68,9 @@ double const PI = 3.14159265358979323846;
 enum BEventType
 {
 	DoubleClickMachine,					// return true to ignore default handler (open parameter dialog), no parameters
-// betyr g at den er global (dvs kalles for alle maskiner)?? jeg bare kaller resten for g for konvesjonens skyld
-	gOnCreateMachine,
 	gDeleteMachine,						// data = CMachine *, param = ThisMac
-	gMachineDisconnected,
-	gMachineConnected,
-	gOnWork,
-	gOnTick,
-	gParameterChanged,
-// sendes kun til master:
-	gLoadProgress,
-	gMidiNote,
-	gMidiNoteOff,
-	gMidiControl,
-	gWaveAllocated,
-		
+	gAddMachine,						// data = CMachine *, param = ThisMac
+	gRenameMachine						// data = CMachine *, param = ThisMac
 };
 
 class CMachineInterface;
@@ -108,7 +89,7 @@ public:
 	int MinValue;			// 0
 	int MaxValue;			// 127
 	int NoValue;			// 255
-	int Flags;				// MPF_WAVE, MPF_STATE, MPF_TICK_ON_EDIT
+	int Flags;
 	int DefValue;			// default value for params that have MPF_STATE flag set
 };
 
@@ -133,17 +114,13 @@ public:
 
 };
 
+
 // CWaveInfo flags
 #define WF_LOOP			1
 #define WF_STEREO		8
 #define WF_BIDIR_LOOP	16
 #define WF_EXTENDED		4
 #define WF_ENVELOPE		128
-
-#define WFB_16	0
-#define WFB_F32 1
-#define WFB_S32 2
-#define WFB_24  3
 
 class CWaveInfo
 {
@@ -200,54 +177,43 @@ class CMachine;
 class CMachineDataOutput;
 class CMachineInfo;
 
-#if defined(__BUZZ2ZZUB__)
-#define MI_PROTOTYPE = 0
-#else
-#define MI_PROTOTYPE
-#endif
-
-class CMICallbacks {
-#if !defined(__BUZZ2ZZUB__)
+class CMICallbacks
+{
 public:
-	CMachine* machine;
-	CMICallbacks(CMachine* machine);
-	float auxBuffer[MAX_BUFFER_LENGTH*4*4];	// because of threading issues we need one aux buf per machine instance unlike original buzz
-#endif
-public:
-	virtual CWaveInfo const *GetWave(int const i) MI_PROTOTYPE;
-	virtual CWaveLevel const *GetWaveLevel(int const i, int const level) MI_PROTOTYPE;
-	virtual void MessageBox(char const *txt) MI_PROTOTYPE;
-	virtual void Lock() MI_PROTOTYPE;
-	virtual void Unlock() MI_PROTOTYPE;
-	virtual int GetWritePos() MI_PROTOTYPE;			
-	virtual int GetPlayPos() MI_PROTOTYPE;	
-	virtual float *GetAuxBuffer() MI_PROTOTYPE;
-	virtual void ClearAuxBuffer() MI_PROTOTYPE;
-	virtual int GetFreeWave() MI_PROTOTYPE;
-	virtual bool AllocateWave(int const i, int const size, char const *name) MI_PROTOTYPE;
-	virtual void ScheduleEvent(int const time, dword const data) MI_PROTOTYPE;
-	virtual void MidiOut(int const dev, dword const data) MI_PROTOTYPE;
-	virtual short const *GetOscillatorTable(int const waveform) MI_PROTOTYPE;
+	virtual CWaveInfo const *GetWave(int const i) = 0;
+	virtual CWaveLevel const *GetWaveLevel(int const i, int const level) = 0;
+	virtual void MessageBox(char const *txt) = 0;
+	virtual void Lock() = 0;
+	virtual void Unlock() = 0;
+	virtual int GetWritePos() = 0;			
+	virtual int GetPlayPos() = 0;	
+	virtual float *GetAuxBuffer() = 0;
+	virtual void ClearAuxBuffer() = 0;
+	virtual int GetFreeWave() = 0;
+	virtual bool AllocateWave(int const i, int const size, char const *name) = 0;
+	virtual void ScheduleEvent(int const time, dword const data) = 0;
+	virtual void MidiOut(int const dev, dword const data) = 0;
+	virtual short const *GetOscillatorTable(int const waveform) = 0;
 
 	// envelopes
-	virtual int GetEnvSize(int const wave, int const env) MI_PROTOTYPE;
-	virtual bool GetEnvPoint(int const wave, int const env, int const i, word &x, word &y, int &flags) MI_PROTOTYPE;
+	virtual int GetEnvSize(int const wave, int const env) = 0;
+	virtual bool GetEnvPoint(int const wave, int const env, int const i, word &x, word &y, int &flags) = 0;
 
-	virtual CWaveLevel const *GetNearestWaveLevel(int const i, int const note) MI_PROTOTYPE;
+	virtual CWaveLevel const *GetNearestWaveLevel(int const i, int const note) = 0;
 	
 	// pattern editing
-	virtual void SetNumberOfTracks(int const n) MI_PROTOTYPE;
-	virtual CPattern *CreatePattern(char const *name, int const length) MI_PROTOTYPE;
-	virtual CPattern *GetPattern(int const index) MI_PROTOTYPE;
-	virtual char const *GetPatternName(CPattern *ppat) MI_PROTOTYPE;
-	virtual void RenamePattern(char const *oldname, char const *newname) MI_PROTOTYPE;
-	virtual void DeletePattern(CPattern *ppat) MI_PROTOTYPE;
-	virtual int GetPatternData(CPattern *ppat, int const row, int const group, int const track, int const field) MI_PROTOTYPE;
-	virtual void SetPatternData(CPattern *ppat, int const row, int const group, int const track, int const field, int const value) MI_PROTOTYPE;
+	virtual void SetNumberOfTracks(int const n) = 0;
+	virtual CPattern *CreatePattern(char const *name, int const length) = 0;
+	virtual CPattern *GetPattern(int const index) = 0;
+	virtual char const *GetPatternName(CPattern *ppat) = 0;
+	virtual void RenamePattern(char const *oldname, char const *newname) = 0;
+	virtual void DeletePattern(CPattern *ppat) = 0;
+	virtual int GetPatternData(CPattern *ppat, int const row, int const group, int const track, int const field) = 0;
+	virtual void SetPatternData(CPattern *ppat, int const row, int const group, int const track, int const field, int const value) = 0;
  		
 	// sequence editing
-	virtual CSequence *CreateSequence() MI_PROTOTYPE;
-	virtual void DeleteSequence(CSequence *pseq) MI_PROTOTYPE;
+	virtual CSequence *CreateSequence() = 0;
+	virtual void DeleteSequence(CSequence *pseq) = 0;
 	
 
 	// special ppat values for GetSequenceData and SetSequenceData 
@@ -255,50 +221,89 @@ public:
 	// <break> = (CPattern *)1
 	// <mute> = (CPattern *)2
 	// <thru> = (CPattern *)3
-	virtual CPattern *GetSequenceData(int const row) MI_PROTOTYPE;
-	virtual void SetSequenceData(int const row, CPattern *ppat) MI_PROTOTYPE;
+	virtual CPattern *GetSequenceData(int const row) = 0;
+	virtual void SetSequenceData(int const row, CPattern *ppat) = 0;
 		
 
 	// buzz v1.2 (MI_VERSION 15) additions start here
 	
-	virtual void SetMachineInterfaceEx(CMachineInterfaceEx *pex) MI_PROTOTYPE;
+	virtual void SetMachineInterfaceEx(CMachineInterfaceEx *pex) = 0;
 	// group 1=global, 2=track
-	virtual void ControlChange__obsolete__(int group, int track, int param, int value) MI_PROTOTYPE;						// set value of parameter
+	virtual void ControlChange__obsolete__(int group, int track, int param, int value) = 0;						// set value of parameter
 	
 	// direct calls to audiodriver, used by WaveInput and WaveOutput
 	// shouldn't be used for anything else
-	virtual int ADGetnumChannels(bool input) MI_PROTOTYPE;
-	virtual void ADWrite(int channel, float *psamples, int numsamples) MI_PROTOTYPE;
-	virtual void ADRead(int channel, float *psamples, int numsamples) MI_PROTOTYPE;
+	virtual int ADGetnumChannels(bool input) = 0;
+	virtual void ADWrite(int channel, float *psamples, int numsamples) = 0;
+	virtual void ADRead(int channel, float *psamples, int numsamples) = 0;
 
-	virtual CMachine *GetThisMachine() MI_PROTOTYPE;	// only call this in Init()!
-	virtual void ControlChange(CMachine *pmac, int group, int track, int param, int value) MI_PROTOTYPE;		// set value of parameter (group & 16 == don't record)
+	virtual CMachine *GetThisMachine() = 0;	// only call this in Init()!
+	virtual void ControlChange(CMachine *pmac, int group, int track, int param, int value) = 0;		// set value of parameter (group & 16 == don't record)
 
 	// returns pointer to the sequence if there is a pattern playing
-	virtual CSequence *GetPlayingSequence(CMachine *pmac) MI_PROTOTYPE;
+	virtual CSequence *GetPlayingSequence(CMachine *pmac) = 0;
 
 	// gets ptr to raw pattern data for row of a track of a currently playing pattern (or something like that)
-	virtual void *GetPlayingRow(CSequence *pseq, int group, int track) MI_PROTOTYPE;
+	virtual void *GetPlayingRow(CSequence *pseq, int group, int track) = 0;
 
-	virtual int GetStateFlags() MI_PROTOTYPE;
+	virtual int GetStateFlags() = 0;
 
-	virtual void SetnumOutputChannels(CMachine *pmac, int n) MI_PROTOTYPE;	// if n=1 Work(), n=2 WorkMonoToStereo()
+	virtual void SetnumOutputChannels(CMachine *pmac, int n) = 0;	// if n=1 Work(), n=2 WorkMonoToStereo()
 
-	virtual void SetEventHandler(CMachine *pmac, BEventType et, EVENT_HANDLER_PTR p, void *param) MI_PROTOTYPE;
+	virtual void SetEventHandler(CMachine *pmac, BEventType et, EVENT_HANDLER_PTR p, void *param) = 0;
 
-	virtual char const *GetWaveName(int const i) MI_PROTOTYPE;
+	virtual char const *GetWaveName(int const i) = 0;
 
-	virtual void SetInternalWaveName(CMachine *pmac, int const i, char const *name) MI_PROTOTYPE;	// i >= 1, NULL name to clear
+	virtual void SetInternalWaveName(CMachine *pmac, int const i, char const *name) = 0;	// i >= 1, NULL name to clear
 
-	virtual void GetMachineNames(CMachineDataOutput *pout) MI_PROTOTYPE;		// *pout will get one name per Write()
-	virtual CMachine *GetMachine(char const *name) MI_PROTOTYPE;
-	virtual CMachineInfo const *GetMachineInfo(CMachine *pmac) MI_PROTOTYPE;
-	virtual char const *GetMachineName(CMachine *pmac) MI_PROTOTYPE;
+	virtual void GetMachineNames(CMachineDataOutput *pout) = 0;		// *pout will get one name per Write()
+	virtual CMachine *GetMachine(char const *name) = 0;
+	virtual CMachineInfo const *GetMachineInfo(CMachine *pmac) = 0;
+	virtual char const *GetMachineName(CMachine *pmac) = 0;
 
-	virtual bool GetInput(int index, float *psamples, int numsamples, bool stereo, float *extrabuffer) MI_PROTOTYPE;
+	virtual bool GetInput(int index, float *psamples, int numsamples, bool stereo, float *extrabuffer) = 0;
+
+	// MI_VERSION 16
+
+	virtual int GetHostVersion() = 0;	// available if GetNearestWaveLevel(-2, -2) returns non-zero
+
+	// if host version >= 2
+	virtual int GetSongPosition() = 0;
+	virtual void SetSongPosition(int pos) = 0;
+	virtual int GetTempo() = 0;
+	virtual void SetTempo(int bpm) = 0;
+	virtual int GetTPB() = 0;
+	virtual void SetTPB(int tpb) = 0;
+	virtual int GetLoopStart() = 0;
+	virtual int GetLoopEnd() = 0;
+	virtual int GetSongEnd() = 0;
+	virtual void Play() = 0;
+	virtual void Stop() = 0;
+	virtual bool RenameMachine(CMachine *pmac, char const *name) = 0;	// returns false if name is invalid
+	virtual void SetModifiedFlag() = 0;
+	virtual int GetAudioFrame() = 0;
+	virtual bool HostMIDIFiltering() = 0;	// if true, the machine should always accept midi messages on all channels
+	virtual dword GetThemeColor(char const *name) = 0;
+	virtual void WriteProfileInt(char const *entry, int value) = 0;
+	virtual void WriteProfileString(char const *entry, char const *value) = 0;
+	virtual void WriteProfileBinary(char const *entry, byte *data, int nbytes) = 0;
+	virtual int GetProfileInt(char const *entry, int defvalue) = 0;
+	virtual void GetProfileString(char const *entry, char const *value, char const *defvalue) = 0;	
+	virtual void GetProfileBinary(char const *entry, byte **data, int *nbytes) = 0;
+	virtual void FreeProfileBinary(byte *data) = 0;
+	virtual int GetNumTracks(CMachine *pmac) = 0;
+	virtual void SetNumTracks(CMachine *pmac, int n) = 0;		// bonus trivia question: why is calling this SetNumberOfTracks not a good idea?
+	virtual void SetPatternEditorStatusText(int pane, char const *text) = 0;
+	virtual char const *DescribeValue(CMachine *pmac, int const param, int const value) = 0;
+	virtual int GetBaseOctave() = 0;
+	virtual int GetSelectedWave() = 0;
+	virtual void SelectWave(int i) = 0;
+	virtual void SetPatternLength(CPattern *p, int length) = 0;
+	virtual int GetParameterState(CMachine *pmac, int group, int track, int param) = 0;
+	virtual void ShowMachineWindow(CMachine *pmac, bool show) = 0;
+	virtual void SetPatternEditorMachine(CMachine *pmac, bool gotoeditor) = 0;
 
 };
-
 
 
 class CLibInterface
@@ -369,7 +374,7 @@ public:
 class CMachineDataInput
 {
 public:
-	virtual void Read(void *pbuf, int const numbytes) MI_PROTOTYPE;
+	virtual void Read(void *pbuf, int const numbytes) = 0;
 
 	void Read(int &d) { Read(&d, sizeof(int)); }
 	void Read(dword &d) { Read(&d, sizeof(dword)); }
@@ -381,12 +386,32 @@ public:
 	void Read(double &d) { Read(&d, sizeof(double)); }
 	void Read(bool &d) { Read(&d, sizeof(bool)); }
 
+#ifdef _AFX
+
+	CString ReadString()
+	{
+		CString s;
+
+		while(true)
+		{
+			char ch;
+			Read(ch);
+			if (ch == 0)
+				break;
+			s += ch;
+		}
+
+		return s;
+	}
+
+#endif
+
 };
 
 class CMachineDataOutput
 {
 public:
-	virtual void Write(void *pbuf, int const numbytes) MI_PROTOTYPE;
+	virtual void Write(void *pbuf, int const numbytes) = 0;
 
 	void Write(int d) { Write(&d, sizeof(int)); }
 	void Write(dword d) { Write(&d, sizeof(dword)); }
@@ -397,7 +422,7 @@ public:
 	void Write(float d) { Write(&d, sizeof(float)); }
 	void Write(double d) { Write(&d, sizeof(double)); }
 	void Write(bool d) { Write(&d, sizeof(bool)); }
-	void Write(char const *str) { Write((void *)str, (const int)strlen(str)+1); }
+	void Write(char const *str) { Write((void *)str, strlen(str)+1); }
 
 };
 
@@ -476,6 +501,19 @@ public:
 
 	virtual bool HandleInput(int index, int amp, int pan) { return false; }
 
+	// if MIF_PATTERN_EDITOR
+	virtual void CreatePattern(CPattern *p, int numrows) {}
+	virtual void CreatePatternCopy(CPattern *pnew, CPattern const *pold) {}
+	virtual void DeletePattern(CPattern *p) {}
+	virtual void RenamePattern(CPattern *p, char const *name) {}
+	virtual void SetPatternLength(CPattern *p, int length) {}
+	virtual void PlayPattern(CPattern *p) {}
+	virtual void *CreatePatternEditor(void *parenthwnd) { return NULL; }		// must return a HWND or NULL
+	virtual void SetEditorPattern(CPattern *p) {}
+	virtual void AddTrack() {}
+	virtual void DeleteLastTrack() {}
+	virtual bool EnableCommandUI(int id) { return false; }
+
 	// make some space to vtable so this interface can be extended later 
 	virtual void Dummy1() {}
 	virtual void Dummy2() {}
@@ -512,8 +550,6 @@ public:
 
 };
  
-#pragma pack (pop)
-
 class CMILock
 {
 public:
@@ -524,10 +560,6 @@ private:
 };
 
 #define MACHINE_LOCK CMILock __machinelock(pCB);
-
-#if defined(__GNUC__) && !defined(__cdecl) // gcc
-	#define __cdecl __attribute__((cdecl))
-#endif
 
 #ifdef STATIC_BUILD
 
@@ -551,21 +583,6 @@ private:
 
 #else
 
-#if defined(__GNUC__)
-
-	#define DLL_EXPORTS extern "C" { \
-	__attribute__((export)) CMachineInfo const * __cdecl GetInfo() \
-	{ \
-		return &MacInfo; \
-	} \
-	__attribute__((export)) CMachineInterface * __cdecl CreateMachine() \
-	{ \
-		return new mi; \
-	} \
-	} 
-	
-#else
-	
 	#define DLL_EXPORTS extern "C" { \
 	__declspec(dllexport) CMachineInfo const * __cdecl GetInfo() \
 	{ \
@@ -577,8 +594,6 @@ private:
 	} \
 	} 
 
-#endif
-	
 #endif
 
 #endif 

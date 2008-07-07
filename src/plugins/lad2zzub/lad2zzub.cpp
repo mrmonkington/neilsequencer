@@ -490,7 +490,7 @@ CLadspaCollection::CLadspaPlugins::CIterator CLadspaCollection::CLadspaPlugins::
 CLadspaCollection::CLadspaInfo::CLadspaInfo() : info()
 {
 	version = zzub::version;
-	flags = zzub::plugin_flag_mono_to_stereo | zzub::plugin_flag_has_audio_input | zzub::plugin_flag_has_audio_output;
+	flags = zzub::plugin_flag_has_audio_input | zzub::plugin_flag_has_audio_output;
 
 	min_tracks = CLadspa::eMinTracks;
 	max_tracks = CLadspa::eMaxTracks;	
@@ -505,7 +505,7 @@ CLadspaCollection::CLadspaInfo::CLadspaInfo() : info()
 CLadspaCollection::CLadspaInfo::CLadspaInfo(const char *path,const CLadspaCollection::SPluginInfo &pinfo) : info()
 {
 	version = zzub::version;
-	flags = zzub::plugin_flag_mono_to_stereo | zzub::plugin_flag_has_audio_input | zzub::plugin_flag_has_audio_output;
+	flags = zzub::plugin_flag_has_audio_input | zzub::plugin_flag_has_audio_output;
 
 	min_tracks = CLadspa::eMinTracks;
 	max_tracks = CLadspa::eMaxTracks;	

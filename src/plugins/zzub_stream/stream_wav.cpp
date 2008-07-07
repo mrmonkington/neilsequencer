@@ -16,7 +16,26 @@ stream_machine_info_wav::stream_machine_info_wav() {
 	this->commands = "Select .WAV...";
 	this->supported_stream_extensions.push_back("wav");
 	this->supported_stream_extensions.push_back("aif");
+	this->supported_stream_extensions.push_back("aifc");
 	this->supported_stream_extensions.push_back("aiff");
+	this->supported_stream_extensions.push_back("flac");
+	this->supported_stream_extensions.push_back("xi");
+	this->supported_stream_extensions.push_back("au");
+	this->supported_stream_extensions.push_back("paf");
+	this->supported_stream_extensions.push_back("snd");
+	this->supported_stream_extensions.push_back("voc");
+	this->supported_stream_extensions.push_back("smp");
+	this->supported_stream_extensions.push_back("iff");
+	this->supported_stream_extensions.push_back("8svx");
+	this->supported_stream_extensions.push_back("16svx");
+	this->supported_stream_extensions.push_back("w64");
+	this->supported_stream_extensions.push_back("mat4");
+	this->supported_stream_extensions.push_back("mat5");
+	this->supported_stream_extensions.push_back("pvf");
+	this->supported_stream_extensions.push_back("htk");
+	this->supported_stream_extensions.push_back("caf");
+	this->supported_stream_extensions.push_back("sd2");
+	this->supported_stream_extensions.push_back("raw");
 }
 
 /***

@@ -40,8 +40,26 @@ struct import_sndfile : importplugin  {
 		std::vector<std::string> result;
 		result.push_back("wav");
 		result.push_back("aif");
+		result.push_back("aifc");
 		result.push_back("aiff");
 		result.push_back("flac");
+		result.push_back("xi");
+		result.push_back("au");
+		result.push_back("paf");
+		result.push_back("snd");
+		result.push_back("voc");
+		result.push_back("smp");
+		result.push_back("iff");
+		result.push_back("8svx");
+		result.push_back("16svx");
+		result.push_back("w64");
+		result.push_back("mat4");
+		result.push_back("mat5");
+		result.push_back("pvf");
+		result.push_back("htk");
+		result.push_back("caf");
+		result.push_back("sd2");
+		result.push_back("raw");
 		return result;
 	}
 };

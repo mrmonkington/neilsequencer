@@ -147,7 +147,7 @@ struct undo_manager {
 	void merge_backbuffer_flags(operation_copy_flags flags);
 	bool prepare_operation_redo(operation* singleop);
 	void prepare_operation_undo(operation* singleop);
-	void flush_operations(zzub_event_data_t* redo_event, zzub_event_data_t* undo_event);
+	void flush_operations(zzub_event_data_t* do_event, zzub_event_data_t* redo_event, zzub_event_data_t* undo_event);
 
 	bool execute_operation_redo(undoableoperation& undoableop);
 	bool execute_operation_undo(undoableoperation& undoableop);

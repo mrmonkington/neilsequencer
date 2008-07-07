@@ -34,6 +34,7 @@ struct player : undo_manager, audioworker, midiworker {
 	vector<pluginlib*> plugin_libraries;
 	vector<string> plugin_folders;
 	vector<const zzub::info*> plugin_infos;
+	host_info hostinfo;
 
 	player();
 	virtual ~player(void);
@@ -57,6 +58,7 @@ struct player : undo_manager, audioworker, midiworker {
 	void clear();
 	void process_user_event_queue();
 	void set_state(player_state state);
+	void set_state_direct(player_state state);
 	void plugin_set_parameter(int plugin_id, int group, int track, int column, int value, bool record, bool immediate, bool undoable);
 	void play_plugin_note(int plugin_id, int note, int prevNote, int velocity);
 	void reset_keyjazz();
@@ -105,7 +107,7 @@ struct player : undo_manager, audioworker, midiworker {
 	void wave_add_level(int wave);
 	void wave_remove_level(int wave, int level);
 	void wave_move_level(int wave, int level, int newlevel);
-	void wave_allocate_level(int wave, int level, int sample_count, int channels, int format);
+	void wave_allocate_level(int wave, int level, int sample_count, int channels, wave_buffer_type format);
 	void wave_clear_level(int wave, int level);
 	void wave_clear(int wave);
 	void wave_set_samples(int wave, int level, int sample_count, int channels, int format, void* bytes);

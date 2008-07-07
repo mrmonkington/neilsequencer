@@ -100,7 +100,9 @@ int host::get_next_free_wave_index() {
 	return 0;
 }
 
-bool host::allocate_wave(int i, int level, int samples, wave_buffer_type type, bool stereo, char const *name) {
+// this can only be called from the audio thread
+bool host::allocate_wave_direct(int i, int level, int samples, wave_buffer_type type, bool stereo, char const *name) {
+
 	assert(i > 0);
 	wave_table& wt = plugin_player->wavetable;
 	wave_info_ex& w = *wt.waves[i - 1];
@@ -118,6 +120,15 @@ bool host::allocate_wave(int i, int level, int samples, wave_buffer_type type, b
 	zzub_event_data event_data = {event_type_wave_allocated};
 	plugin_player->plugin_invoke_event(0, event_data);
 
+	return true;
+}
+
+// this can only be called from the user/gui thread
+bool host::allocate_wave(int i, int level, int samples, wave_buffer_type type, bool stereo, char const *name) {
+	_player->wave_allocate_level(i, level, samples, stereo?2:1, type);
+	_player->wave_set_name(i, name);
+	_player->flush_operations(0, 0, 0);
+	_player->commit_to_history("Allocate Wave (From Plugin)");
 	return true;
 }
 
@@ -235,13 +246,28 @@ pattern* host::create_pattern(char const* name, int const length) {
 }
 
 pattern* host::get_pattern(int const index) {
-	assert(false);
-	return 0;
+	return (pattern*)(int)(index + 1);
 }
 
 char const* host::get_pattern_name(pattern* ppat) {
-	assert(false);
-	return "";
+	int index = ((int)ppat) - 1;
+	assert(plugin_player->plugins[_plugin->id] != 0);
+	assert(index >= 0 && index < plugin_player->plugins[_plugin->id]->patterns.size());
+
+	return plugin_player->plugins[_plugin->id]->patterns[index]->name.c_str();
+}
+
+int host::get_pattern_length(pattern* ppat) {
+	int index = ((int)ppat) - 1;
+	assert(plugin_player->plugins[_plugin->id] != 0);
+	assert(index >= 0 && index < plugin_player->plugins[_plugin->id]->patterns.size());
+
+	return plugin_player->plugins[_plugin->id]->patterns[index]->rows;
+}
+
+int host::get_pattern_count() {
+	assert(plugin_player->plugins[_plugin->id] != 0);
+	return plugin_player->plugins[_plugin->id]->patterns.size();
 }
 
 void host::rename_pattern(char const* oldname, char const* newname) {
@@ -497,6 +523,10 @@ int host::get_song_end_loop() {
 
 void host::set_song_end_loop(int pos) {
 	_player->front.song_loop_end = pos;
+}
+
+host_info* host::get_host_info() {
+	return &_player->hostinfo;
 }
 
 };

@@ -192,7 +192,7 @@ void zzub_player_end(zzub_player_t *player, zzub_event_data_t* redo_event, zzub_
 
 
 void zzub_player_flush(zzub_player_t *player, zzub_event_data_t* redo_event, zzub_event_data_t* undo_event) {
-	player->flush_operations(redo_event, undo_event);
+	player->flush_operations(redo_event, redo_event, undo_event);
 }
 
 void zzub_player_destroy(zzub_player_t *player) {
@@ -215,17 +215,17 @@ void zzub_player_redo(zzub_player_t *player) {
 }
 
 void zzub_player_history_commit(zzub_player_t *player, const char* description) {
-	player->flush_operations(0, 0);
+	player->flush_operations(0, 0, 0);
 	player->commit_to_history(description);
 }
 
 void zzub_player_history_flush(zzub_player_t *player) {
-	player->flush_operations(0, 0);
+	player->flush_operations(0, 0, 0);
 	player->clear_history();
 }
 
 void zzub_player_history_flush_last(zzub_player_t *player) {
-	player->flush_operations(0, 0);
+	player->flush_operations(0, 0, 0);
 	player->flush_from_history();
 }
 
@@ -262,8 +262,19 @@ zzub_pluginloader_t *zzub_player_get_pluginloader_by_name(zzub_player_t *player,
 	return player->plugin_get_info(name);
 }
 
-int zzub_player_load_bmx(zzub_player_t *player, zzub_input_t* datastream, char* messages, int maxLen) {
+const int bmx_flag_ignore_patterns = 1;
+const int bmx_flag_ignore_sequences = 2;
+const int bmx_flag_ignore_waves = 4;
+
+int zzub_player_load_bmx(zzub_player_t *player, zzub_input_t* datastream, char* messages, int maxLen, int flags, float x, float y) {
 	BuzzReader f(datastream);
+
+	if (flags & bmx_flag_ignore_patterns) f.ignorePatterns = true;
+	if (flags & bmx_flag_ignore_sequences) f.ignoreSequences = true;
+	if (flags & bmx_flag_ignore_waves) f.ignoreWaves = true;
+	f.offsetX = x;
+	f.offsetY = y;
+
 	bool result = f.readPlayer(player);
 		
 	if (maxLen > 0) {
@@ -616,6 +627,12 @@ zzub_plugin_t* zzub_player_get_midi_plugin(zzub_player_t *player) {
 	return zzub_player_get_plugin_by_id(player, id);
 }
 
+void zzub_player_set_host_info(zzub_player_t *player, int id, int version, void *host_ptr) {
+	player->hostinfo.id = id;
+	player->hostinfo.version = version;
+	player->hostinfo.host_ptr = host_ptr;
+}
+
 // midimapping functions
 
 int zzub_midimapping_get_plugin(zzub_midimapping_t *mapping) {
@@ -844,9 +861,11 @@ int zzub_plugin_save(zzub_plugin_t *plugin, zzub_output_t *ouput) {
 	plugin->_player->back.plugins[plugin->id]->plugin->save(arc);
 
 	instream* ins = arc->get_instream("");
-	vector<char> bytes(ins->size());
-	ins->read(&bytes.front(), (int)bytes.size());
-	ouput->write(&bytes.front(), (int)bytes.size());
+	if (ins && ins->size()) {
+		vector<char> bytes(ins->size());
+		ins->read(&bytes.front(), (int)bytes.size());
+		ouput->write(&bytes.front(), (int)bytes.size());
+	}
 
 	delete arc;
 	return -1;
@@ -1519,10 +1538,14 @@ void zzub_plugin_play_pattern_row_ref(zzub_plugin_t *plugin, int pattern, int ro
 void zzub_plugin_play_pattern_row(zzub_plugin_t *plugin, zzub_pattern_t* pattern, int row) {
 	if (pattern->rows == 0) return ;
 
+	operation_copy_flags flags;
+	flags.copy_plugins = true;
+	plugin->_player->merge_backbuffer_flags(flags);
+
 	op_plugin_set_parameters_and_tick o(plugin->id, *pattern, row, false);
 	plugin->_player->backbuffer_operations.push_back(&o);
 	o.prepare(plugin->_player->back);
-	plugin->_player->flush_operations(0, 0);
+	plugin->_player->flush_operations(0, 0, 0);
 	//player->execute_single_operation(&o);
 }
 
@@ -2352,7 +2375,9 @@ int zzub_wave_save_sample_range(zzub_wave_t* wave, int level, zzub_output_t* dat
 	wave->_player->merge_backbuffer_flags(flags);
 
 	wave_info_ex& w = *wave->_player->back.wavetable.waves[wave->wave];
-	wave_level_ex& l = wave->_player->back.wavetable.waves[wave->wave]->levels[level];
+	if (level < 0 || level >= w.levels.size()) return -1;
+
+	wave_level_ex& l = w.levels[level];
 
 	int channels = (w.flags & wave_flag_stereo) ?2:1;
 	int result = -1;

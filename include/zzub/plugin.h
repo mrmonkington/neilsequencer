@@ -162,14 +162,11 @@ enum parameter_flag {
 
 enum plugin_flag {
 	// plugin flags
-	plugin_flag_mono_to_stereo	= zzub_plugin_flag_mono_to_stereo,
 	plugin_flag_plays_waves	= zzub_plugin_flag_plays_waves,
 	plugin_flag_uses_lib_interface	= zzub_plugin_flag_uses_lib_interface,
 	plugin_flag_uses_instruments	= zzub_plugin_flag_uses_instruments,
 	plugin_flag_does_input_mixing	= zzub_plugin_flag_does_input_mixing,
 	plugin_flag_no_output	= zzub_plugin_flag_no_output,
-	plugin_flag_control_plugin	= zzub_plugin_flag_control_plugin,
-	plugin_flag_auxiliary	= zzub_plugin_flag_auxiliary,
 	plugin_flag_is_root = zzub_plugin_flag_is_root,
 	plugin_flag_has_audio_input = zzub_plugin_flag_has_audio_input,
 	plugin_flag_has_audio_output = zzub_plugin_flag_has_audio_output,
@@ -430,6 +427,12 @@ struct event_handler {
 	virtual bool invoke(zzub_event_data_t& data)=0;
 };
 
+struct host_info {
+	int id;
+	int version;
+	void* host_ptr;	// host-specific data
+};
+
 struct host {
 	virtual const wave_info* get_wave(int index);
 	virtual const wave_level* get_wave_level(int index, int level);
@@ -444,6 +447,7 @@ struct host {
 	virtual void clear_auxiliary_buffer();
 	virtual int get_next_free_wave_index();
 	virtual bool allocate_wave(int index, int level, int samples, wave_buffer_type type, bool stereo, const char *name);
+	virtual bool allocate_wave_direct(int index, int level, int samples, wave_buffer_type type, bool stereo, const char *name);
 	virtual void midi_out(int time, unsigned int data);
 	virtual int get_envelope_size(int wave, int envelope);
 	virtual bool get_envelope_point(int wave, int envelope, int index, unsigned short &x, unsigned short &y, int &flags);
@@ -452,6 +456,8 @@ struct host {
 	virtual pattern * create_pattern(const char *name, int length);
 	virtual pattern * get_pattern(int index);
 	virtual char const * get_pattern_name(pattern *_pattern);
+	virtual int get_pattern_length(pattern *_pattern);
+	virtual int get_pattern_count();
 	virtual void rename_pattern(char const *oldname, char const *newname);
 	virtual void delete_pattern(pattern *_pattern);
 	virtual int get_pattern_data(pattern *_pattern, int row, int group, int track, int field);
@@ -496,11 +502,11 @@ struct host {
 	virtual void set_song_begin_loop(int pos);
 	virtual int get_song_end_loop();
 	virtual void set_song_end_loop(int pos);
+	virtual host_info* get_host_info();
 
 	zzub::player* _player;
 	zzub::song* plugin_player;		// plugin_player is used for accessing plugins and is the same as player except during initialization
 	zzub_plugin_t* _plugin;
-	bool pre_lock_swap_mode;
 
 	host(zzub::player*, zzub_plugin_t*);
 	~host();
@@ -718,6 +724,8 @@ struct plugin {
 	// plugin_flag_stream | plugin_flag_has_audio_output
 	virtual void set_stream_source(const char* resource) = 0;//{}
 	virtual const char* get_stream_source() = 0;//{ return 0; }
+
+	virtual void play_pattern(int index) { }	// TODO: abstract
 
 	plugin() {
 		global_values = 0;

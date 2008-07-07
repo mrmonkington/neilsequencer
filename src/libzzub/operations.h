@@ -380,9 +380,10 @@ struct op_wavetable_move_wavelevel : operation {
 
 struct op_wavetable_allocate_wavelevel : operation {
 	int wave, level;
-	int sample_count, channels, format;
+	int sample_count, channels;
+	wave_buffer_type format;
 
-	op_wavetable_allocate_wavelevel(int _wave, int _level, int _sample_count, int _channels, int _format);
+	op_wavetable_allocate_wavelevel(int _wave, int _level, int _sample_count, int _channels, wave_buffer_type _format);
 	virtual bool prepare(zzub::song& song);
 	virtual bool operate(zzub::song& song);
 	virtual void finish(zzub::song& song, bool send_events);
@@ -409,6 +410,7 @@ struct op_wavetable_insert_sampledata : operation {
 	int samples_channels;
 
 	op_wavetable_insert_sampledata(int _wave, int _level, int _pos);
+	~op_wavetable_insert_sampledata();
 	virtual bool prepare(zzub::song& song);
 	virtual bool operate(zzub::song& song);
 	virtual void finish(zzub::song& song, bool send_events);

@@ -138,7 +138,7 @@ struct wave_info_ex : wave_info {
 
 	inline unsigned int get_unextended_samples(int level, int samples) {
 		int channels = get_stereo()?2:1;
-		return ceil((samples * get_bytes_per_sample(level)) / 2.0f) + (4/channels);
+		return (unsigned int)ceil((samples * get_bytes_per_sample(level)) / 2.0f) + (4/channels);
 	}
 
 	unsigned int get_sample_count(int level) {

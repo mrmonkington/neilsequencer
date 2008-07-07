@@ -53,6 +53,11 @@ BuzzReader::BuzzReader(zzub::instream* inf) {
 	sections = 0;
 	if (!open(inf))
 		f = 0;
+
+	ignoreWaves = false;
+	ignorePatterns = false;
+	ignoreSequences = false;
+	offsetX = offsetY = 0.0;
 }
 
 BuzzReader::~BuzzReader() {
@@ -82,12 +87,12 @@ bool BuzzReader::readPlayer(zzub::player* pl) {
 //	player->set_state(player_state_muted);
 
 	if (!loadPara()) goto error;
-	if (!loadWaveTable()) goto error;
+	if (!ignoreWaves && !loadWaveTable()) goto error;
 	if (!loadMachines()) goto error;
 	if (!loadConnections()) goto error;
-	if (!loadPatterns()) goto error;
-	if (!loadSequences()) goto error;
-	if (!loadWaves()) goto error;
+	if (!ignorePatterns && !loadPatterns()) goto error;
+	if (!ignoreSequences && !loadSequences()) goto error;
+	if (!ignoreWaves && !loadWaves()) goto error;
 	if (!loadMidi()) goto error;
 	if (!loadInfoText()) goto error;
 
@@ -278,6 +283,9 @@ bool BuzzReader::loadMachines() {
 		f->read(x);
 		f->read(y);
 
+		x += offsetX;
+		y += offsetY;
+
 		f->read(dataSize);
 
 		input_data.resize(dataSize);
@@ -419,7 +427,7 @@ bool BuzzReader::loadMachines() {
 		machines.push_back(plugin_id);
 		connections.insert(connectionpair(plugin_id, vector<pair<int, zzub::connection_type> >()));
 	}
-	player->flush_operations(0, 0);
+	player->flush_operations(0, 0, 0);
 
 	return returnValue;
 }
@@ -529,7 +537,7 @@ bool BuzzReader::loadPatterns() {
 			player->plugin_add_pattern(*i, p);
 		}
 	}
-	player->flush_operations(0, 0);
+	player->flush_operations(0, 0, 0);
 
 	return true;
 }
@@ -645,7 +653,7 @@ bool BuzzReader::loadConnections() {
 		connections[to_id].push_back(std::pair<int, zzub::connection_type>(from_id, zzub::connection_type_audio) );
 
 	}
-	player->flush_operations(0, 0);
+	player->flush_operations(0, 0, 0);
 	return true;
 }
 
@@ -698,7 +706,7 @@ bool BuzzReader::loadSequences() {
 		}
 	}
 
-	player->flush_operations(0, 0);
+	player->flush_operations(0, 0, 0);
 
 	return true;
 }
@@ -808,7 +816,7 @@ bool BuzzReader::loadWaveTable() {
 
 	}
 
-	player->flush_operations(0, 0);
+	player->flush_operations(0, 0, 0);
 
 	return true;
 }
@@ -960,7 +968,7 @@ bool BuzzReader::loadMidi() {
 		int plugin_id = player->front.get_plugin(mmdesc).descriptor;
 		player->add_midimapping(plugin_id, g, t, c, mc, mn);
 	}
-	player->flush_operations(0, 0);
+	player->flush_operations(0, 0, 0);
 
 	return true;
 }

@@ -22,6 +22,9 @@ Import('pluginenv', 'build_plugin')
 
 build_plugin(pluginenv, 'zzub_miditracker', files=[
 		'main.cpp',
+		'miditracker.cpp',
+		'miditime.cpp',
+		'midicc.cpp',
 	],
 	helpfiles=[
 	])

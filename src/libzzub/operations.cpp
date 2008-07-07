@@ -556,6 +556,8 @@ bool op_plugin_disconnect::prepare(zzub::song& song) {
 	conn = song.graph[conndesc].conn;
 	remove_edge(conndesc, song.graph);
 
+	song.make_work_order();
+
 	event_data.type = event_type_disconnect;
 	event_data.disconnect_plugin.to_plugin = to_mpl.proxy;
 	event_data.disconnect_plugin.from_plugin = from_mpl.proxy;
@@ -924,6 +926,19 @@ op_pattern_edit::op_pattern_edit(int _id, int _index, int _group, int _track, in
 
 bool op_pattern_edit::prepare(zzub::song& song) {
 
+	assert(id < song.plugins.size());
+	assert(song.plugins[id] != 0);
+	assert(index >= 0 && (size_t)index < song.plugins[id]->patterns.size());
+	assert(group >= 0 && group < song.plugins[id]->patterns[index]->groups.size());
+	assert(track >= 0 && track < song.plugins[id]->patterns[index]->groups[group].size());
+	assert(column >= 0 && column < song.plugins[id]->patterns[index]->groups[group][track].size());
+	assert(row >= 0 && row < song.plugins[id]->patterns[index]->groups[group][track][column].size());
+
+	const zzub::parameter* param = song.plugin_get_parameter_info(id, group, track, column);
+	assert((value >= param->value_min && value <= param->value_max) || value == param->value_none  || (param->type == zzub::parameter_type_note && value == zzub::note_value_off));
+
+	song.plugins[id]->patterns[index]->groups[group][track][column][row] = value;
+
 	event_data.type = event_type_edit_pattern;
 	event_data.edit_pattern.plugin = song.plugins[id]->proxy;
 	event_data.edit_pattern.index = index;
@@ -938,17 +953,7 @@ bool op_pattern_edit::prepare(zzub::song& song) {
 
 bool op_pattern_edit::operate(zzub::song& song) {
 
-	assert(id < song.plugins.size());
-	assert(song.plugins[id] != 0);
-	assert(index >= 0 && (size_t)index < song.plugins[id]->patterns.size());
-	assert(group >= 0 && group < song.plugins[id]->patterns[index]->groups.size());
-	assert(track >= 0 && track < song.plugins[id]->patterns[index]->groups[group].size());
-	assert(column >= 0 && column < song.plugins[id]->patterns[index]->groups[group][track].size());
-	assert(row >= 0 && row < song.plugins[id]->patterns[index]->groups[group][track][column].size());
-
-	const zzub::parameter* param = song.plugin_get_parameter_info(id, group, track, column);
-	assert((value >= param->value_min && value <= param->value_max) || value == param->value_none  || (param->type == zzub::parameter_type_note && value == zzub::note_value_off));
-
+	// TODO: may crash here if pattern/machine was deleted and edited in the same operation?
 	song.plugins[id]->patterns[index]->groups[group][track][column][row] = value;
 
 	return true;
@@ -1370,11 +1375,13 @@ bool op_sequencer_set_event::operate(zzub::song& song) {
 }
 
 void op_sequencer_set_event::finish(zzub::song& song, bool send_events) {
-	event_data.type = event_type_set_sequence_event;
-	event_data.set_sequence_event.plugin = 0;
-	event_data.set_sequence_event.track = track;
-	event_data.set_sequence_event.time = timestamp;
-	song.plugin_invoke_event(0, event_data, true);
+	if (send_events) {
+		event_data.type = event_type_set_sequence_event;
+		event_data.set_sequence_event.plugin = 0;
+		event_data.set_sequence_event.track = track;
+		event_data.set_sequence_event.time = timestamp;
+		song.plugin_invoke_event(0, event_data, true);
+	}
 }
 
 // ---------------------------------------------------------------------------
@@ -1574,7 +1581,7 @@ bool op_midimapping_remove::operate(zzub::song& song) {
 //
 // ---------------------------------------------------------------------------
 
-op_wavetable_allocate_wavelevel::op_wavetable_allocate_wavelevel(int _wave, int _level, int _sample_count, int _channels, int _format) {
+op_wavetable_allocate_wavelevel::op_wavetable_allocate_wavelevel(int _wave, int _level, int _sample_count, int _channels, wave_buffer_type _format) {
 	wave = _wave;
 	level = _level;
 	sample_count = _sample_count;
@@ -1815,6 +1822,11 @@ op_wavetable_insert_sampledata::op_wavetable_insert_sampledata(int _wave, int _l
 	wave = _wave;
 	level = _level;
 	pos = _pos;
+	samples = 0;
+	samples_length = 0;
+	samples_format = wave_buffer_type_si16;
+	samples_scale = 0;
+	samples_channels = 0;
 	copy_flags.copy_wavetable = true;
 	operation_copy_wavelevel_flags wavelevel_flags;
 	wavelevel_flags.wave = wave;
@@ -1822,6 +1834,11 @@ op_wavetable_insert_sampledata::op_wavetable_insert_sampledata(int _wave, int _l
 	wavelevel_flags.copy_samples = true;
 	copy_flags.wavelevel_flags.push_back(wavelevel_flags);
 }
+
+op_wavetable_insert_sampledata::~op_wavetable_insert_sampledata() {
+	delete[] samples;
+}
+
 
 bool op_wavetable_insert_sampledata::prepare(zzub::song& song) {
 	// we shall reallocate the backbuffer wave and insert the sample datas given to us

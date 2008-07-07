@@ -95,12 +95,21 @@ inline void ConvertSample(const S24 &src, int &dst) { assert(0); }
 inline void ConvertSample(const S24 &src, float &dst) { assert(0); }
 
 inline void ConvertSample(const int &src, short &dst) { dst = (short)(src / (1<<16)); }
-inline void ConvertSample(const int &src, S24 &dst) { assert(0); }
+inline void ConvertSample(const int &src, S24 &dst) { 
+	dst.c3[0] = (src & 0x0000ff00) >> 8;
+	dst.c3[1] = (src & 0x00ff0000) >> 16;
+	dst.c3[2] = (src & 0xff000000) >> 24;
+}
 inline void ConvertSample(const int &src, int &dst) { dst = src; }
 inline void ConvertSample(const int &src, float &dst) { dst = (float)src / 2147483648.0f; }
 
 inline void ConvertSample(const float &src, short &dst) { dst = (short)(std::max(std::min(src,1.0f),-1.0f) * 32767.0f); }
-inline void ConvertSample(const float &src, S24 &dst) { assert(0); }
+inline void ConvertSample(const float &src, S24 &dst) { 	
+	int i = (int)(src * 0x007fffff);
+	dst.c3[0] = (i & 0x000000ff);
+	dst.c3[1] = (i & 0x0000ff00) >> 8;
+	dst.c3[2] = (i & 0x00ff0000) >> 16;
+}
 inline void ConvertSample(const float &src, int &dst) { dst = (int)(std::max(std::min(src,1.0f),-1.0f) * 2147483648.0f); }
 inline void ConvertSample(const float &src, float &dst) { dst = src; }
 

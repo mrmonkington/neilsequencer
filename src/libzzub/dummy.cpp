@@ -35,7 +35,7 @@ namespace zzub {
 const size_t default_dummy_maxtracks=255;
 
 dummy_info::dummy_info() {
-	this->flags = zzub::plugin_flag_mono_to_stereo;
+	this->flags = 0; //zzub::plugin_flag_mono_to_stereo;
 	this->max_tracks = default_dummy_maxtracks;
 	this->name = "Dummy";
 	this->short_name = "Dummy";

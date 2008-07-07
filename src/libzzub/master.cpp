@@ -41,7 +41,7 @@ const int NO_MASTER_TPB = 0xFF;
 
 
 master_plugin_info::master_plugin_info() {
-	this->flags = zzub::plugin_flag_mono_to_stereo | zzub::plugin_flag_is_root | zzub::plugin_flag_has_audio_output | zzub::plugin_flag_has_audio_input | zzub::plugin_flag_has_midi_input;
+	this->flags = zzub::plugin_flag_is_root | zzub::plugin_flag_has_audio_output | zzub::plugin_flag_has_audio_input | zzub::plugin_flag_has_midi_input;
 	this->name = "Master";
 	this->short_name = "Master";
 	this->author = "n/a";

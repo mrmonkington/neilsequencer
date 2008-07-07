@@ -328,7 +328,7 @@ void undo_manager::prepare_operation_undo(operation* singleop) {
 }
 
 // this is now flush_operations
-void undo_manager::flush_operations(zzub_event_data_t* redo_event, zzub_event_data_t* undo_event) {
+void undo_manager::flush_operations(zzub_event_data_t* do_event, zzub_event_data_t* redo_event, zzub_event_data_t* undo_event) {
 	assert(!is_flushing);
 	is_flushing = true;
 	if (backbuffer_operations.size() > 0) {
@@ -357,13 +357,13 @@ void undo_manager::flush_operations(zzub_event_data_t* redo_event, zzub_event_da
 	is_flushing = false;
 
 	// invoke the alternate redo-event if one were given
-	if (redo_event) {
-		front.plugin_invoke_event(0, *redo_event, true);
+	if (do_event) {
+		front.plugin_invoke_event(0, *do_event, true);
 	}
 
 	// finish here:
 	for (size_t j = 0; j < backbuffer_operations_copy.size(); j++) {
-		backbuffer_operations_copy[j]->finish(front, redo_event == 0);
+		backbuffer_operations_copy[j]->finish(front, do_event == 0);
 	}
 }
 

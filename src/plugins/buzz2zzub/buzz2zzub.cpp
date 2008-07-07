@@ -35,6 +35,29 @@
 #include <ctime>
 #include <string>
 
+static const int WM_CUSTOMVIEW_CREATE = WM_USER+4;
+static const int WM_CUSTOMVIEW_SET_CHILD = WM_USER+5;
+static const int WM_CUSTOMVIEW_GET = WM_USER+6;
+static const int WM_CUSTOMVIEW_FOCUS = WM_USER+7;
+static const int WM_GET_THEME = WM_USER+8;
+
+// WM_CUSTOMVIEW_CREATE
+//	wParam zzub_plugin_t*
+//	lParam label of view to open.
+// if a view with the specified label exists, the method fails
+// WM_CUSTOMVIEW_GET
+//	wParam zzub_plugin_t*
+//	lParam label of view to open.
+// return the view with the specified label or NULL
+// WM_CUSTOMVIEW_FOCUS
+//	wParam zzub_plugin_t*
+//	lParam label of view to open.
+// return the view with the specified label or NULL
+// WM_CUSTOMVIEW_SET_CHILD
+//	wParam hCustomView
+//	lParam hPluginWnd
+// return the view with the specified label or NULL
+
 #ifdef min
 	#undef min
 #endif
@@ -66,6 +89,8 @@ using std::cout;
 using std::cerr;
 using std::endl;
 using std::map;
+using std::string;
+using std::vector;
 
 using namespace zzub;
 
@@ -333,6 +358,7 @@ struct buzzplugininfo : zzub::info
 	std::string m_uri;
 	std::string m_name;
 	std::string m_path;
+	int origFlags;
 	HINSTANCE hDllInstance;
 	GET_INFO GetInfo;
 	CREATE_MACHINE CreateMachine;
@@ -597,6 +623,10 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 					if (data.connect_plugin.to_plugin == _plugin->_host->get_metaplugin())
 						_plugin->post_add_input_event();
 					break;
+				case event_type_new_pattern:
+					if (data.new_pattern.plugin == _plugin->_host->get_metaplugin())
+						_plugin->on_new_pattern(data.new_pattern.index);
+					break;
 			}
 			return false;
 		}
@@ -611,7 +641,41 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 
 	int channels;
 	int track_count;
+	HWND hWndPatternEditor;
+	int pattern_editor_command;
+	int first_pattern_editor_sub_command;
+	int last_pattern_editor_sub_command;
+
+	DWORD dwThreadID;
+
+	// unhacking wavetable recording:
+	struct allocated_wave_level {
+		int wave, level;
+		CWaveLevel data;
+	};
+	std::vector<allocated_wave_level> allocated_waves;
+	std::vector<CWaveInfo*> local_wavetable;
 	
+	void parse_commands(string commands, vector<string>& result, int& sub_commands) {
+		sub_commands = 0;
+		string::iterator last = commands.begin();
+		for (;;) {
+			string::iterator i = find(last, commands.end(), '\n');
+			if (i != commands.end()) {
+				result.push_back(string(last, i));
+				if (result.back().length() && result.back()[0] == '/') sub_commands++;
+				last = i;
+				last++;
+			} else {
+				result.push_back(string(last, commands.end()));
+				if (result.back().length() && result.back()[0] == '/') sub_commands++;
+				break;
+			}
+
+		}
+		
+	}
+
 	plugin(CMachineInterface* machine, const buzzplugininfo* mi)
 	{
 		this->implementation = 0;
@@ -622,13 +686,26 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 		this->attributes = this->machine->AttrVals;
 		this->machineInfo = mi;
 		channels =1;
+		if (mi->origFlags & MIF_PATTERN_EDITOR) {
+			int num_sub_commands = 0;
+			vector<string> parsed_commands;
+			parse_commands(machineInfo->commands, parsed_commands, num_sub_commands);
+			pattern_editor_command = parsed_commands.size() - 1;
+			first_pattern_editor_sub_command = (num_sub_commands) * 256;
+			last_pattern_editor_sub_command = ((num_sub_commands + 1) * 256) - 1;
+		} else 
+			pattern_editor_command = -1;
+
+		hWndPatternEditor = 0;
+
 		track_count = machineInfo->min_tracks;
 		mevents._plugin = this;
+		local_wavetable.resize(200);
 	}
 	~plugin()
 	{
 		machineInfo->machines->destroy(_host->get_metaplugin());
-		if (machineInfo->lockAddInput || machineInfo->lockSetTracks)
+		if (machineInfo->lockAddInput || machineInfo->lockSetTracks || (machineInfo->origFlags & MIF_PATTERN_EDITOR))
 			_host->remove_event_handler(_host->get_metaplugin("Master"), &mevents);	// listen to event_type_pre_xxx-messages sent to the master
 
 		delete this->machine;
@@ -639,6 +716,7 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 	virtual void destroy() { delete this; }
 	virtual void init(archive *arc)
 	{ 
+		dwThreadID = GetCurrentThreadId();
 		machineInfo->machines->create(this);
 
 		machine->pCB = this;
@@ -652,7 +730,7 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 			machine->Init(0);
 
 		// need event handlers
-		if (machineInfo->lockAddInput || machineInfo->lockSetTracks)
+		if (machineInfo->lockAddInput || machineInfo->lockSetTracks || (machineInfo->origFlags & MIF_PATTERN_EDITOR))
 			_host->set_event_handler(_host->get_metaplugin("Master"), &mevents);	// listen to event_type_pre_xxx-messages sent to the master
 		c = 0;
 	}
@@ -735,11 +813,11 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 			float buffer[256*2*2];
 			memset(buffer, 0, 256*2*2*sizeof(float));
 			if (mode2&zzub_process_mode_read) {
-				if (machineInfo->flags&zzub_plugin_flag_mono_to_stereo)
+				if (machineInfo->origFlags & MIF_MONO_TO_STEREO)
 					CopyStereoToMono(buffer, pini, numsamples, 0x8000); else
 					CopyStereoToMono(buffer, pini, numsamples, 0x4000); // halve output volume for mono processing since mono->stereo makes a louder mix
 			}
-			if (machineInfo->flags&zzub_plugin_flag_mono_to_stereo) {
+			if (machineInfo->origFlags & MIF_MONO_TO_STEREO) {
 				if (mode2&zzub_process_mode_read)
 					Amp(pouti, numsamples*2, 0x8000);
 				ret=machine->WorkMonoToStereo(buffer, pouti, numsamples, mode2);
@@ -780,9 +858,56 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 	{
 		machine->AttributesChanged();
 	}
+
+	void open_pattern_editor(int index) {
+		cout << "Open pattern editor!" << endl;
+		host_info* hi = _host->get_host_info();
+		if (hi->id == 42 && hi->version == 0x0503) {
+			// plugin sier: åpne view med navn "X"
+			cout << "hello buzé!" << endl;
+			std::string name = _host->get_name(_host->get_metaplugin())
+				+ (std::string)" Custom Pattern Editor";
+
+			HWND hCustomView = (HWND)SendMessage((HWND)hi->host_ptr, 
+				WM_CUSTOMVIEW_GET, (WPARAM)_host->get_metaplugin(),
+				(LPARAM)name.c_str());
+
+			if (!hCustomView) {
+				hCustomView = (HWND)SendMessage((HWND)hi->host_ptr, 
+					WM_CUSTOMVIEW_CREATE, (WPARAM)_host->get_metaplugin(),
+					(LPARAM)name.c_str());
+
+				if (!hCustomView) {
+					cerr << "buzz2zzub: could not open custom view in buze" << endl;
+					return ;
+				}
+				
+				// only create pattern editor once
+				if (!hWndPatternEditor) {
+					hWndPatternEditor = (HWND)machine2->CreatePatternEditor(hCustomView);
+					cout << "got " << std::hex << (unsigned int)hWndPatternEditor << endl;
+				}
+
+				SendMessage((HWND)hi->host_ptr, WM_CUSTOMVIEW_SET_CHILD, 
+					(WPARAM)hCustomView, (LPARAM)hWndPatternEditor);
+			} else {
+				// set focus to existing pattern editor
+				SendMessage((HWND)hi->host_ptr, WM_CUSTOMVIEW_FOCUS,
+					(WPARAM)_host->get_metaplugin(), (LPARAM)name.c_str());
+			}
+
+			machine2->SetEditorPattern((CPattern*)_host->get_pattern(index));
+		}
+	}
+
 	virtual void command(int index)
 	{
-		machine->Command(index);
+		if ((machineInfo->origFlags & MIF_PATTERN_EDITOR) && index >= first_pattern_editor_sub_command && index <= last_pattern_editor_sub_command) {
+			int pattern_index = index - first_pattern_editor_sub_command;
+			open_pattern_editor(pattern_index);
+		} else {
+			machine->Command(index);
+		}
 	}
 	virtual void set_track_count(int count)
 	{
@@ -829,16 +954,28 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 	{ 
 		return machine->GetWaveEnvPlayPos(env);
 	}
+
+	void play_pattern(int index) {
+		if (machineInfo->origFlags & MIF_PATTERN_EDITOR) {
+			machine2->PlayPattern((CPattern*)_host->get_pattern(index));
+		}
+	}
 	
 	// CMICallbacks implementations
 
 	virtual CWaveInfo const *GetWave(const int i)
 	{
-		return reinterpret_cast<CWaveInfo const*>(_host->get_wave(i));
+		CWaveInfo const* w = reinterpret_cast<CWaveInfo const*>(_host->get_wave(i));
+		if (w) {
+		}
+		return w;
 	}
 	virtual CWaveLevel const *GetWaveLevel(const int i, const int level)
 	{
-		return reinterpret_cast<CWaveLevel const*>(_host->get_wave_level(i, level));
+		CWaveLevel const* l = reinterpret_cast<CWaveLevel const*>(_host->get_wave_level(i, level));
+		if (l) {
+		}
+		return l;
 	}
 	virtual void MessageBox(char const *txt)
 	{
@@ -851,7 +988,13 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 	virtual float *GetAuxBuffer() { return _host->get_auxiliary_buffer()[0]; }
 	virtual void ClearAuxBuffer() { _host->clear_auxiliary_buffer(); }
 	virtual int GetFreeWave() { return _host->get_next_free_wave_index(); }
-	virtual bool AllocateWave(int const i, int const size, char const *name) { return _host->allocate_wave(i,0,size,wave_buffer_type_si16,false,name); }
+	virtual bool AllocateWave(int const i, int const size, char const *name) { 
+		// TODO: should we use GetThreadId() to determine whether we are in the user thread 
+		// or the audio thread...? (allocate_wave_direct vs allocate_wave)
+		// TODO: we need to return a fake wave to the plugin and allocate a proper wave
+		// in zzub after the plugin messes with the const datas.
+		return _host->allocate_wave_direct(i,0,size,wave_buffer_type_si16,false,name); 
+	}
 	virtual void ScheduleEvent(int const time, dword const data) { 
 		MessageBox("ScheduleEvent not implemented");
 		//_host->schedule_event(time,data); 
@@ -885,7 +1028,10 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 		if (wave==-1 && note==-1) {
 			return (CWaveLevel*)(implementation=new CMDKImplementation());
 		} else
-		if (wave == 0 || wave > 200)	// jeskola tracker asks for GetNearestWaveLevel(0)
+		if (wave==-2 && note==-2) {
+			return (CWaveLevel*)1;
+		} else
+		if (wave < 1 || wave > 200)	// jeskola tracker asks for GetNearestWaveLevel(0)
 			return 0;
 
 		return reinterpret_cast<CWaveLevel const*>(_host->get_nearest_wave_level(wave,note));
@@ -1075,6 +1221,141 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 	virtual bool GetInput(int index, float *psamples, int numsamples, bool stereo, float *extrabuffer)
 	{ return _host->get_input(index, psamples, numsamples, stereo, extrabuffer); }
 
+	// MI_VERSION 16
+
+	virtual int GetHostVersion() {
+		// available if GetNearestWaveLevel(-2, -2) returns non-zero
+		cout << "GetHostVersion" << endl;
+		return 2;
+	}
+
+	// if host version >= 2
+	virtual int GetSongPosition() {
+		cout << "GetSongPosition" << endl;
+		return _host->get_play_position();
+	}
+	virtual void SetSongPosition(int pos) {
+		cout << "SetSongPosition" << endl;
+		_host->set_play_position(pos);
+	}
+	virtual int GetTempo() {
+		cout << "GetTempo" << endl;
+		return 126;
+	}
+	virtual void SetTempo(int bpm) {
+		cout << "SetTempo" << endl;
+	}
+	virtual int GetTPB() {
+		cout << "GetTPB" << endl;
+		return 4;
+	}
+	virtual void SetTPB(int tpb) {
+		cout << "SetTPB" << endl;
+	}
+	virtual int GetLoopStart() {
+		cout << "GetLoopStart" << endl;
+		return _host->get_song_begin_loop();
+	}
+	virtual int GetLoopEnd() {
+		cout << "GetLoopEnd" << endl;
+		return _host->get_song_end_loop();
+	}
+	virtual int GetSongEnd() {
+		cout << "GetSongEnd" << endl;
+		return _host->get_song_end();
+	}
+	virtual void Play() {
+		cout << "Play" << endl;
+	}
+	virtual void Stop() {
+		cout << "Stop" << endl;
+	}
+	virtual bool RenameMachine(CMachine *pmac, char const *name) {
+		// returns false if name is invalid
+		cout << "RenameMachine" << endl;
+		return false;
+	}
+	virtual void SetModifiedFlag() {
+		cout << "SetModifiedFlag" << endl;
+	}
+	virtual int GetAudioFrame() {
+		cout << "GetAudioFrame" << endl;
+		return 0;
+	}
+	virtual bool HostMIDIFiltering() { // if true, the machine should always accept midi messages on all channels
+		cout << "HostMIDIFiltering" << endl;
+		return false;
+	}
+	virtual dword GetThemeColor(char const *name) {
+		host_info* hi = _host->get_host_info();
+		if (hi->id == 42 && hi->version == 0x0503) {
+			return (dword)SendMessage((HWND)hi->host_ptr, WM_GET_THEME, 0, (LPARAM)name);
+		} else {
+			cout << "GetThemeColor: " << name << endl;
+			return 0xFFFFFF;
+		}
+	}
+	virtual void WriteProfileInt(char const *entry, int value) {
+		cout << "WriteProfileInt " << entry << ": " << value << endl;
+	}
+	virtual void WriteProfileString(char const *entry, char const *value) {
+		cout << "WriteProfileString " << entry << ": " << value << endl;
+	}
+	virtual void WriteProfileBinary(char const *entry, byte *data, int nbytes) {
+		cout << "WriteProfileBinary " << entry << endl;
+	}
+	virtual int GetProfileInt(char const *entry, int defvalue) {
+		cout << "GetProfileInt " << entry << endl;
+		return defvalue;
+	}
+	virtual void GetProfileString(char const *entry, char const *value, char const *defvalue) {
+		cout << "GetProfileString " << entry << endl;
+	}
+	virtual void GetProfileBinary(char const *entry, byte **data, int *nbytes) {
+		cout << "GetProfileBinary " << entry << endl;
+	}
+	virtual void FreeProfileBinary(byte *data) {
+		cout << "FreeProfileBinary" << endl;
+	}
+	virtual int GetNumTracks(CMachine *pmac) {
+		cout << "GetNumTracks" << endl;
+		return 0;
+	}
+	virtual void SetNumTracks(CMachine *pmac, int n) {
+		// bonus trivia question: why is calling this SetNumberOfTracks not a good idea?
+		cout << "SetNumTracks " << n << endl;
+	}
+	virtual void SetPatternEditorStatusText(int pane, char const *text) {
+		cout << "SetPatternEditorStatusText" << endl;
+	}
+	virtual char const *DescribeValue(CMachine *pmac, int const param, int const value) {
+		cout << "DescribeValue" << endl;
+		return "";
+	}
+	virtual int GetBaseOctave() {
+		cout << "GetBaseOctave" << endl;
+		return 4;
+	}
+	virtual int GetSelectedWave() {
+		cout << "GetSelectedWave" << endl;
+		return 0;
+	}
+	virtual void SelectWave(int i) {
+		cout << "SelectWave" << endl;
+	}
+	virtual void SetPatternLength(CPattern *p, int length) {
+		cout << "SetPatternLength" << endl;
+	}
+	virtual int GetParameterState(CMachine *pmac, int group, int track, int param) {
+		cout << "GetParameterState" << endl;
+		return 0;
+	}
+	virtual void ShowMachineWindow(CMachine *pmac, bool show) {
+		cout << "ShowMachineWindow" << endl;
+	}
+	virtual void SetPatternEditorMachine(CMachine *pmac, bool gotoeditor) {
+		cout << "SetPatternEditorMachine" << endl;
+	}
 
 	// plugin2
 	virtual const char* describe_param(int param) { 
@@ -1088,8 +1369,16 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 	}
 	virtual void get_sub_menu(int index, outstream *os) {
 		if (!machine2) return ;
-		CMachineDataOutputWrap mdow(os);
-		machine2->GetSubMenu(index, &mdow);
+		if (index == pattern_editor_command) {
+			for (int i = 0; i < _host->get_pattern_count(); i++) {
+				const char* n = _host->get_pattern_name(_host->get_pattern(i));
+				os->write(n);
+			}
+			os->write("\0");
+		} else {
+			CMachineDataOutputWrap mdow(os);
+			machine2->GetSubMenu(index, &mdow);
+		}
 	}
 	virtual void add_input(const char *name, zzub::connection_type type) {
 		if (!machine2) return;
@@ -1163,6 +1452,14 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 
 	void post_set_tracks_event() {
 		if (machineInfo->lockSetTracks) _host->set_swap_mode(true);
+	}
+
+	void on_new_pattern(int index) {
+		if (machineInfo->origFlags & MIF_PATTERN_EDITOR) {
+			pattern* p = _host->get_pattern(index);
+			int length = _host->get_pattern_length(p);
+			machine2->CreatePattern((CPattern*)p, length);
+		}
 	}
 };
 
@@ -1324,7 +1621,18 @@ bool buzzplugininfo::attach()
 		return false;
 	}
 	version = buzzinfo->Version;
-	flags = buzzinfo->Flags;
+	origFlags = buzzinfo->Flags;
+	flags = 0;
+	
+	if (origFlags & MIF_PLAYS_WAVES) flags |= plugin_flag_plays_waves;
+	if (origFlags & MIF_USES_LIB_INTERFACE) flags |= plugin_flag_uses_lib_interface;
+	if (origFlags & MIF_USES_INSTRUMENTS) flags |= plugin_flag_uses_instruments;
+	if (origFlags & MIF_DOES_INPUT_MIXING) flags |= plugin_flag_does_input_mixing;
+	if (origFlags & MIF_NO_OUTPUT) flags |= plugin_flag_no_output;
+
+	if (flags != origFlags) {
+		//cerr << "buzz2zzub: Buzz flags: " << buzzinfo->Flags << ", known flags: " << flags << endl;
+	}
 	
 	// NOTE: A Buzz generator marked MIF_NO_OUTPUT is flagged with
 	// neither input nor output flags. An effect with NO_OUTPUT is marked 
@@ -1374,6 +1682,11 @@ bool buzzplugininfo::attach()
 	short_name = buzzinfo->ShortName;
 	author = buzzinfo->Author != 0 ? buzzinfo->Author : "";
 	commands = buzzinfo->Commands != 0 ? buzzinfo->Commands : "";
+
+	if (origFlags & MIF_PATTERN_EDITOR) {
+		if (commands.size()) commands += "\n";
+		commands += "/Open Pattern Editor";
+	}
 
 	// on re-attachment, we re-use plugin_lib, and simply update the blib member
 	if (buzzinfo->pLI && !plugin_lib)

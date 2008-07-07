@@ -17,6 +17,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include "common.h"
+#include <deque>
 #include <functional>
 #include <algorithm>
 #include <cctype>
@@ -38,6 +39,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "sseoptimization.h"
 
+using std::deque;
 using std::cerr;
 using std::endl;
 
@@ -126,73 +128,30 @@ inline void scanPeakStereo(float* l, float* r, int numSamples, float& maxL, floa
 	}
 }
 
-struct dfs_work_order {
-	std::vector<std::vector<plugin_descriptor> >::iterator current;
-	std::vector<std::vector<plugin_descriptor> > work_order;
-	zzub::song& song;
-	std::vector<plugin_descriptor>& final_order;
-	int level;
-
-	dfs_work_order(zzub::song& _song, std::vector<plugin_descriptor>& _final_order):song(_song), final_order(_final_order) {
-		level = 0;
-	}
-
-	void discover(plugin_descriptor plugindesc) {
-		metaplugin& m = song.get_plugin(plugindesc);
-		if (level == 0 && work_order.size() == 0) {
-			work_order.push_back(vector<plugin_descriptor>());
-			current = work_order.end() - 1;
+// http://en.wikipedia.org/wiki/Topological_sorting
+template <typename VertexListGraph, typename VertexList, typename OutputIterator>
+void topological_sort_kahn(VertexListGraph& tg, VertexList input, OutputIterator result) {
+	while (input.size()) {
+		VertexList::value_type n = input.front();
+		input.pop_front();
+		*result = n;
+		result++;
+		graph_traits<VertexListGraph>::out_edge_iterator out, out_end;
+		boost::tie(out, out_end) = out_edges(n, tg);
+		VertexList adj;
+		for (graph_traits<VertexListGraph>::out_edge_iterator i = out; i != out_end; ++i) {
+			adj.push_back(target(*i, tg));
 		}
-		level++;
-	}
-
-	void finish(plugin_descriptor plugindesc) {
-		level--;
-		metaplugin& m = song.get_plugin(plugindesc);
-
-		current->push_back(plugindesc);
-		in_edge_iterator out, out_end;
-		boost::tie(out, out_end) = in_edges(plugindesc, song.graph);
-
-		if (level == 0 && (out_end - out) == 0) {
-			// ok, its a root
-
-			if ((m.info->flags & plugin_flag_no_output) && final_order.size() > 0) {
-				// if the plugin at level 0 is a no_output, put this entire group on the beginning
-				final_order.insert(final_order.begin(), current->begin(), current->end());
-				work_order.clear();
-			} else {
-				final_order.insert(final_order.end(), current->begin(), current->end());
-				work_order.clear();
+		for (VertexList::iterator i = adj.begin(); i != adj.end(); ++i) {
+			remove_edge(n, *i, tg);
+			graph_traits<VertexListGraph>::in_edge_iterator in, in_end;
+			boost::tie(in, in_end) = in_edges(*i, tg);
+			if ((in_end - in) == 0) {
+				input.push_back(*i);
 			}
-
 		}
 	}
-};
-
-struct discover_plugin : public base_visitor<discover_plugin> {
-	typedef on_discover_vertex event_filter;
-	dfs_work_order& work_order;
-	discover_plugin(dfs_work_order& wo):work_order(wo) {}
-
-	template <class Vertex, class Graph>
-	inline void operator()(Vertex u, Graph& g) {
-		work_order.discover(u);
-	}
-};
-
-struct finish_plugin : public base_visitor<finish_plugin> {
-	typedef on_finish_vertex event_filter;
-	dfs_work_order& work_order;
-	finish_plugin(dfs_work_order& wo):work_order(wo) {}
-
-	template <class Vertex, class Graph>
-	inline void operator()(Vertex u, Graph& g) {
-		work_order.finish(u);
-	}
-};
-
-
+}
 
 /***
 
@@ -456,8 +415,47 @@ connection_type song::plugin_get_output_connection_type(int plugin_id, int index
 
 void song::make_work_order() {
 	work_order.clear();
-	dfs_work_order wo(*this, work_order);
-	depth_first_search(graph, visitor(make_dfs_visitor(std::make_pair(finish_plugin(wo), discover_plugin(wo)))));
+
+	// find roots in the graph, e.g master, and machines w/o outputs
+	vector<plugin_descriptor> roots;
+	plugin_iterator v, v_end;
+	for (tie(v, v_end) = vertices(graph); v != v_end; ++v) {
+		zzub::in_edge_iterator e, e_end;
+		boost::tie(e, e_end) = in_edges(*v, graph);
+		if ((e_end - e) == 0) roots.push_back(*v);
+	}
+
+	// use a temp graph
+	plugin_map tg = graph;
+
+	for (vector<plugin_descriptor>::iterator i = roots.begin(); i != roots.end(); ++i) {
+		vector<plugin_descriptor> outputs;
+		deque<plugin_descriptor> inputs;
+		inputs.push_back(*i);
+
+		metaplugin& m = *plugins[tg[*i].id];
+
+		// find plugins that send sound into this root, in topological order.
+		// topological_sort_kahn will remove edges from the temp graph.
+		topological_sort_kahn(tg, inputs, 
+			std::back_insert_iterator<vector<plugin_descriptor> >(outputs));
+
+		// check for master in outputs instead of checking no_output-flag to
+		// prevent problems e.g when a recorder records the output of the master(?)
+		vector<plugin_descriptor>::iterator master_iterator = find(outputs.begin(), outputs.end(), 0);
+
+		if (master_iterator == outputs.end()) {
+			work_order.insert(work_order.begin(), outputs.rbegin(), outputs.rend());
+		} else {
+			work_order.insert(work_order.end(), outputs.rbegin(), outputs.rend());
+		}
+	}
+/*
+	cerr << "-------------------------------------------------------" << endl;
+	for (std::vector<plugin_descriptor>::iterator i = work_order.begin(); i != work_order.end(); ++i) {
+		cerr << *i << ", ";
+	}
+	cerr << endl;*/
 }
 
 
@@ -836,6 +834,7 @@ void mixer::process_sequencer_events(plugin_descriptor plugin) {
 						zzub::pattern& p = *m.patterns[e.second - 0x10];
 						int row = song_position - e.first;
 						if (row >= 0 && row < p.rows && !m.is_muted && !m.is_bypassed) {
+							if (row == 0) m.plugin->play_pattern(e.second - 0x10);
 							m.sequencer_state = sequencer_event_type_none;
 							transfer_plugin_parameter_row(get_plugin_id(plugin), 0, p, m.state_write, row, 0, false);
 							transfer_plugin_parameter_row(get_plugin_id(plugin), 1, p, m.state_write, row, 0, false);

@@ -18,109 +18,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #pragma once
 
-typedef	struct SNDFILE_tag	SNDFILE ;
-
 namespace zzub {
 
-struct mixer;
-
-enum tickstream_type {
-    tickstream_type_file,
-    tickstream_type_wavetable,
-    tickstream_type_buffer,
-    tickstream_type_input,
-};
-
-struct tickstream {
-//    virtual tickstream_type getType() = 0;
-    virtual void process_events() = 0;
-    virtual void process_stereo(float** buf, int numSamples) = 0;
-};
-
-struct recorder : tickstream {
-    zzub::mixer* player;
-    //int samplesPerSecond;   // samplerate when recording started
-	bool writeWave; // if true, mixed buffers will be written to outfile
-	int startWritePosition; // writeWave will be set to true if this tick is reached, if -1, no effect
-	int endWritePosition; // writeWave will be set to true if this tick is reached, if -1, no effect
-	bool autoWrite; // write wave when playing and stop writing when stopped
-	int ticksWritten; // number of ticks that have been written
-
-    recorder(zzub::mixer* p);
-
-    virtual void process_events();
-    virtual void process_stereo(float** buf, int numSamples);
-
-    virtual bool open()=0;
-    virtual void write(float** samples, int numSamples)=0;
-    virtual void close()=0;
-    virtual bool isOpen()=0;
-};
-
-struct recorder_buffer : recorder {
-    int size;
-    int offset;
-    float** buffer;
-    bool opened;
-
-    recorder_buffer(zzub::mixer* p, int bufferSize=256);
-    void setBufferSize(int buffersize);
-
-    virtual bool open();
-    virtual void write(float** samples, int numSamples);
-    virtual void close();
-    virtual bool isOpen();
-
-    virtual void writeBuffer(float** samples, int numSamples)=0;
-
-};
-
-struct recorder_wavetable : recorder_buffer {
-
-    std::string waveName;
-    int waveIndex;
-    int samplesRecorded;
-
-    recorder_wavetable(zzub::mixer* p);
-
-    virtual bool open();
-    virtual void close();
-
-    virtual void writeBuffer(float** samples, int numSamples);
-
-    void setWaveName(std::string name);
-    std::string& getWaveName();
-    int getWaveIndex();
-    void setWaveIndex(int i);
-
-    void flushBuffer();
-};
-
-struct recorder_file : recorder {
-    std::string waveFilePath;
-    SNDFILE *waveFile; // handle of wavefile to write to
-    recorder_file(zzub::mixer* p, std::string fileName="");
-    virtual bool open();
-    virtual void write(float** samples, int numSamples);
-    virtual void close();
-    virtual bool isOpen();
-
-	bool setWaveFilePath(const std::string& path);
-	std::string &getWaveFilePath();
-};
-
-struct recorder_input : recorder_wavetable {
-    bool monitor;
-    bool record;
-
-    recorder_input(zzub::mixer* p);
-    virtual void process_events();
-    virtual void process_stereo(float** buf, int numSamples);
-};
-
-
 struct recorder_wavetable_plugin_info : zzub::info {
-	mixer *_player;
 	
 	recorder_wavetable_plugin_info() {
 		this->flags = zzub::plugin_flag_has_audio_input;
@@ -143,6 +43,17 @@ struct recorder_wavetable_plugin_info : zzub::info {
 			.set_value_default(switch_value_off)
 			.set_state_flag();
 
+		add_attribute()
+			.set_name("Record Mode (0=wait for play/stop, 1=continous)")
+			.set_value_default(0)
+			.set_value_min(0)
+			.set_value_max(1);
+
+		add_attribute()
+			.set_name("Format (0=16bit, 1=32bit float, 2=32bit integer, 3=24bit)")
+			.set_value_default(0)
+			.set_value_min(0)
+			.set_value_max(3);
 	}
 	
 	virtual zzub::plugin* create_plugin() const;
@@ -150,8 +61,7 @@ struct recorder_wavetable_plugin_info : zzub::info {
 };
 
 struct recorder_file_plugin_info : zzub::info {
-	mixer *_player;
-	
+
 	recorder_file_plugin_info() {
 		this->flags = zzub::plugin_flag_has_audio_input;
 		this->name = "File Recorder";
@@ -175,26 +85,19 @@ struct recorder_file_plugin_info : zzub::info {
 			.set_description("Turn automatic recording on/off")
 			.set_value_default(switch_value_off)
 			.set_state_flag();
-/*
-		add_global_parameter()
-			.set_byte()
-			.set_name("Format")
-			.set_description("Record file format (0=WAV, 1=FLAC, 2=MP3, 3=OGG)")
+
+		add_attribute()
+			.set_name("Record Mode (0=wait for play/stop, 1=continous)")
 			.set_value_default(0)
 			.set_value_min(0)
-			.set_value_max(3)
-			.set_state_flag();
+			.set_value_max(1);
 
-		add_global_parameter()
-			.set_byte()
-			.set_name("Encoder bitrate (if available)")
-			.set_description("0=64kbps, 1=128kbps, 2=160kbps, 3=192kbps, 4=320kbps")
+		add_attribute()
+			.set_name("Format (0=16bit, 1=32bit float, 2=32bit integer, 3=24bit)")
 			.set_value_default(0)
 			.set_value_min(0)
-			.set_value_max(3)
-			.set_state_flag();
+			.set_value_max(3);
 
-*/
 	}
 	
 	virtual zzub::plugin* create_plugin() const;
@@ -207,8 +110,6 @@ struct recorder_file_plugin_info : zzub::info {
 struct recorder_plugincollection : plugincollection {
 	recorder_wavetable_plugin_info wavetable_info;
 	recorder_file_plugin_info file_info;
-	
-	void setPlayer(mixer *p);
 	
 	// Called by the host initially. The collection registers
 	// plugins through the pluginfactory::register_info method.
