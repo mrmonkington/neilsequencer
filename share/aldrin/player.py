@@ -189,7 +189,13 @@ class AldrinPlayer(Player):
 		if membername:
 			specdata = getattr(data,membername)
 			for argname in argnames:
-				args.append(getattr(specdata, argname))
+				value = getattr(specdata, argname)
+				if hasattr(value, 'contents'):
+					class_ = value.contents.__class__
+					value = class_._wrapper_._new_from_handle(value)
+				elif 'contents' in dir(value):
+					value = None
+				args.append(value)
 		if not data.type in self._exclude_event_debug_:
 			print "[%s](%s)" % (eventname,','.join([('%s=%r' % (a,b)) for a,b in zip(argnames,args)]))
 		result = getattr(eventbus, eventname)(*args) or False

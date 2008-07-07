@@ -853,8 +853,6 @@ class RouteView(gtk.DrawingArea):
 		mp.delete_input(plugin,conntype)
 		player = com.get('aldrin.core.player')
 		player.history_commit("disconnect")
-		eventbus = com.get('aldrin.core.eventbus')
-		eventbus.connection_changed()
 		self.redraw()
 		
 	def show_parameter_dialog(self, plugin):
@@ -1001,7 +999,6 @@ class RouteView(gtk.DrawingArea):
 		self.rootwindow.document_changed()
 		# add plugin information
 		common.get_plugin_infos().add_plugin(mp)
-		com.get('aldrin.core.eventbus').plugin_created(mp)
 		# open parameter view if its an effect
 		if is_effect(mp):
 			self.show_parameter_dialog(mp)

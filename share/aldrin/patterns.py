@@ -211,11 +211,11 @@ class PatternToolBar(gtk.HBox):
 		self.pack_start(self.playnotes, expand=False)
 		
 		eventbus = com.get('aldrin.core.eventbus')
-		eventbus.pattern_removed += self.update_patternselect
-		eventbus.pattern_created += self.update_patternselect
-		eventbus.pattern_name_changed += self.update_patternselect
+		eventbus.zzub_delete_pattern += self.update_patternselect
+		eventbus.zzub_new_pattern += self.update_patternselect
+		eventbus.zzub_pattern_changed += self.update_patternselect
 		eventbus.song_opened += self.update_all
-		eventbus.plugin_created += self.select_plugin_instance
+		eventbus.zzub_new_plugin += self.select_plugin_instance
 		eventbus.show_plugin += self.select_plugin_instance
 		
 	def reset(self):
@@ -710,8 +710,11 @@ class PatternView(gtk.DrawingArea):
 		self.hscroll.connect('change-value', self.on_hscroll_window)
 		self.vscroll.connect('change-value', self.on_vscroll_window)
 		eventbus = com.get('aldrin.core.eventbus')
-		eventbus.connection_changed += self.pattern_changed
-		eventbus.plugin_created += self.plugin_created
+		eventbus.zzub_connect += self.pattern_changed
+		eventbus.zzub_disconnect += self.pattern_changed
+		eventbus.zzub_pattern_changed += self.pattern_changed
+
+		eventbus.zzub_new_plugin += self.plugin_created
 
 	def update_font(self):
 		pctx = self.get_pango_context()
@@ -1021,7 +1024,7 @@ class PatternView(gtk.DrawingArea):
 			w,h = self.get_client_size()
 			self.window.invalidate_rect((0,0,w,h), False)
 		
-	def pattern_changed(self):
+	def pattern_changed(self, *args):
 		"""
 		Loads and redraws the pattern view after the pattern has been changed.
 		"""
