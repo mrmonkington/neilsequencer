@@ -848,7 +848,9 @@ class RouteView(gtk.DrawingArea):
 		@param event: Menu event.
 		@type event: wx.MenuEvent
 		"""
-		mp.delete_input_connection(index)
+		plugin = mp.get_input_connection_plugin(index)
+		conntype = mp.get_input_connection_type(index)
+		mp.delete_input(plugin,conntype)
 		player = com.get('aldrin.core.player')
 		player.history_commit("disconnect")
 		eventbus = com.get('aldrin.core.eventbus')
