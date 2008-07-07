@@ -122,14 +122,17 @@ class ComponentManager:
 			return None
 		if class_.__aldrin__.get('singleton',False):
 			self.singletons[id] = None # fill with an empty slot so we get no recursive loop
+		obj = None
 		try:
 			obj = class_(*args,**kwargs)
 		except:
 			import errordlg
 			errordlg.print_exc()
-			obj = None
 		if class_.__aldrin__.get('singleton',False):
-			self.singletons[id] = obj # register as singleton
+			if not obj:
+				del self.singletons[id]
+			else:
+				self.singletons[id] = obj # register as singleton
 		return obj
 		
 	def get_ids_from_category(self, category):
@@ -139,6 +142,9 @@ class ComponentManager:
 		return [self.get(classid, *args, **kwargs) for classid in self.categories.get(category,[])]
 
 com = ComponentManager()
+
+def init():
+	com.load_packages()
 
 __all__ = [
 	'com',

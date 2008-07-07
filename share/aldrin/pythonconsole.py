@@ -52,16 +52,33 @@ class PythonConsoleDialog(gtk.Dialog):
 		singleton = True,
 	)
 	
-	def __init__(self):
+	def __init__(self, hide_on_delete=True):
 		gtk.Dialog.__init__(self,
 			"Python Console")
+		if hide_on_delete:
+			self.connect('delete-event', self.hide_on_delete)
 		self.resize(600,500)
+		vpack = gtk.VBox()
+		hpack = gtk.HBox()
+		self.shell = gtk.MenuBar()
+		toolitem = gtk.MenuItem("Tools")
+		self.toolmenu = gtk.Menu()
+		toolitem.set_submenu(self.toolmenu)
+		self.shell.append(toolitem)
 		self.locals = dict(
 			__name__ = "__console__",
 			__doc__ = None,
 			com = com,
 			embed = self.embed,
+			factories = self.list_factories,
+			categories = self.list_categories,
+			facts = self.list_factories,
+			cats = self.list_categories,
+			new = com.get,
 			gtk = gtk,
+			vbox = vpack,
+			hbox = hpack,
+			tool = self.add_tool,
 		)
 		self.compiler = code.InteractiveConsole(self.locals)
 		
@@ -75,9 +92,12 @@ class PythonConsoleDialog(gtk.Dialog):
 		view.set_wrap_mode(gtk.WRAP_WORD)
 		self.consoleview = view
 		self.buffer = buffer
-		self.entry = gtk.Entry()
-		self.entry.modify_font(pango.FontDescription(cfg.get_pattern_font('Monospace')))
-		self.entry.connect('activate', self.on_entry_activate)
+		self.entry = gtk.combo_box_entry_new_text()
+		self.entry.child.modify_font(pango.FontDescription(cfg.get_pattern_font('Monospace')))
+		renderer = self.entry.get_cells()[0]
+		renderer.set_property('font-desc', pango.FontDescription(cfg.get_pattern_font('Monospace')))
+		
+		self.entry.child.connect('activate', self.on_entry_activate)
 		self.textmark = self.buffer.create_mark(None, self.buffer.get_end_iter(), False)
 
 		scrollwin = gtk.ScrolledWindow()
@@ -85,14 +105,34 @@ class PythonConsoleDialog(gtk.Dialog):
 		scrollwin.set_shadow_type(gtk.SHADOW_IN)
 		scrollwin.add(self.consoleview)
 		
-		vpack = gtk.VBox()
+		vpack.pack_start(self.shell, False)
 		vpack.pack_start(scrollwin)
 		vpack.pack_end(self.entry, False)
-		self.vbox.add(vpack)
+		hpack.pack_start(vpack)
+		self.vbox.add(hpack)
 		
 		gobject.timeout_add(50, self.update_output)
 		self.log_buffer_pos = 0
 		self.entry.grab_focus()
+		
+	def add_tool(self, cmd, name = None):
+		if not name:
+			name = cmd
+		item = gtk.MenuItem(name)
+		item.connect('activate', self.exec_tool, cmd)
+		item.show()
+		self.toolmenu.append(item)
+		
+	def exec_tool(self, menuitem, cmd):
+		self.command(cmd)
+		
+	def list_categories(self):
+		for category in com.categories:
+			print category
+		
+	def list_factories(self):
+		for factory,item in com.factories.iteritems():
+			print factory,'=',item['classobj']
 		
 	def embed(self, widget):
 		anchor = self.buffer.create_child_anchor(self.buffer.get_end_iter())
@@ -101,13 +141,21 @@ class PythonConsoleDialog(gtk.Dialog):
 		print
 		
 	def push_text(self, text):
-		self.compiler.push(text)
+		if self.compiler.push(text):
+			self.entry.child.set_text("  ")
+			self.entry.child.select_region(99,-1)
 		
-	def on_entry_activate(self, widget):
-		text = self.entry.get_text()
-		self.entry.set_text("")
+	def command(self, text):
 		print '>>> ' + text
 		gobject.timeout_add(50, self.push_text, text)
+		
+	def on_entry_activate(self, widget):
+		text = self.entry.child.get_text()
+		self.entry.child.set_text("")
+		if text.strip() == "":
+			text = ""
+		self.entry.append_text(text)
+		self.command(text)
 		
 	def update_output(self):
 		while self.log_buffer_pos != len(contextlog.LOG_BUFFER):
@@ -136,7 +184,6 @@ class PythonConsoleMenuItem:
 		
 	def on_menuitem_activate(self, widget):
 		browser = com.get('aldrin.pythonconsole.dialog')
-		browser.connect('delete-event', browser.hide_on_delete)
 		browser.show_all()
 
 __aldrin__ = dict(
@@ -151,7 +198,7 @@ if __name__ == '__main__': # extension mode
 	contextlog.init()
 	com.load_packages()
 	# running standalone
-	browser = com.get('aldrin.pythonconsole.dialog')
+	browser = com.get('aldrin.pythonconsole.dialog', False)
 	browser.connect('destroy', lambda widget: gtk.main_quit())
 	browser.show_all()
 	gtk.main()

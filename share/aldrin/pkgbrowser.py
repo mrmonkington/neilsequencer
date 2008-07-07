@@ -44,9 +44,11 @@ class PackageBrowserDialog(gtk.Dialog):
 		singleton = True,
 	)
 	
-	def __init__(self):
+	def __init__(self, hide_on_delete=True):
 		gtk.Dialog.__init__(self,
 			"Component Browser")
+		if hide_on_delete:
+			self.connect('delete-event', self.hide_on_delete)
 		self.resize(600,500)
 		#self.ifacestore = gtk.TreeStore(gtk.gdk.Pixbuf, str, gobject.TYPE_PYOBJECT)
 		self.ifacestore = gtk.TreeStore(str, gobject.TYPE_PYOBJECT)
@@ -296,7 +298,6 @@ class PackageBrowserMenuItem:
 		
 	def on_menuitem_activate(self, widget):
 		browser = com.get('aldrin.componentbrowser.dialog')
-		browser.connect('delete-event', browser.hide_on_delete)
 		browser.show_all()
 
 __aldrin__ = dict(
@@ -311,7 +312,7 @@ if __name__ == '__main__': # extension mode
 	contextlog.init()
 	com.load_packages()
 	# running standalone
-	browser = com.get('aldrin.componentbrowser.dialog')
+	browser = com.get('aldrin.componentbrowser.dialog', False)
 	browser.connect('destroy', lambda widget: gtk.main_quit())
 	browser.show_all()
 	gtk.main()
