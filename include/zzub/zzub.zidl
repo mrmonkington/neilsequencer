@@ -884,7 +884,7 @@ namespace zzub:
 		"Loads a BMX from memory or file."
 		" "
 		"Load warnings and error messages are placed in the messages string."
-		def load_bmx(Input datastream, out string[maxLen] messages, int maxLen=1024, int flags, float x, float y): no_python int
+		def load_bmx(Input datastream, out string[maxLen] messages, int maxLen, int flags, float x, float y): int
 
 		"Saves a BMX to memory or file."
 		" "
