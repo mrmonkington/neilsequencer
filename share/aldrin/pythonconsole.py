@@ -78,6 +78,7 @@ class PythonConsoleDialog(gtk.Dialog):
 		self.entry = gtk.Entry()
 		self.entry.modify_font(pango.FontDescription(cfg.get_pattern_font('Monospace')))
 		self.entry.connect('activate', self.on_entry_activate)
+		self.textmark = self.buffer.create_mark(None, self.buffer.get_end_iter(), False)
 
 		scrollwin = gtk.ScrolledWindow()
 		scrollwin.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
@@ -97,18 +98,23 @@ class PythonConsoleDialog(gtk.Dialog):
 		anchor = self.buffer.create_child_anchor(self.buffer.get_end_iter())
 		self.consoleview.add_child_at_anchor(widget, anchor)
 		widget.show_all()
+		print
+		
+	def push_text(self, text):
+		self.compiler.push(text)
 		
 	def on_entry_activate(self, widget):
 		text = self.entry.get_text()
 		self.entry.set_text("")
 		print '>>> ' + text
-		self.compiler.push(text)
+		gobject.timeout_add(50, self.push_text, text)
 		
 	def update_output(self):
 		while self.log_buffer_pos != len(contextlog.LOG_BUFFER):
 			target, filename, lineno, text = contextlog.LOG_BUFFER[self.log_buffer_pos]
 			self.buffer.insert(self.buffer.get_end_iter(), text) 
 			self.log_buffer_pos += 1
+			self.consoleview.scroll_mark_onscreen(self.textmark)
 		return True
 
 class PythonConsoleMenuItem:
