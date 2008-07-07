@@ -637,7 +637,7 @@ env['BUILDERS'].update(builders)
 
 env.ZIDLCHeader('${ROOTPATH}/include/zzub/zzub.h', '${ROOTPATH}/include/zzub/zzub.zidl')
 env.ZIDLCDef('${LIBZZUB_SRC_PATH}/libzzub.def', '${ROOTPATH}/include/zzub/zzub.zidl')
-env.ZIDLPyCtypes('${PYZZUB_SRC_PATH}/zzub/zzub.py', '${ROOTPATH}/include/zzub/zzub.zidl')
+env.ZIDLPyCtypes('${PYZZUB_SRC_PATH}/zzub/__init__.py', '${ROOTPATH}/include/zzub/zzub.zidl')
 
 #######################################
 #

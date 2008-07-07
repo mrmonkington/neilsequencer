@@ -31,7 +31,7 @@ localenv = env.Copy()
 
 files = [
 	'__init__.py',
-	'zzub.py',
+	#'zzub.py',
 	#'library.py',
 	#'procwrap.py',
 	#'zzub_classes.py',
