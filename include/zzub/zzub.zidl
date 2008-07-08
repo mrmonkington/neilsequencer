@@ -1043,6 +1043,9 @@ namespace zzub:
 
 		"Commits the last operations to the undo buffer and marks a new undo step."
 		def history_commit(string description)
+		
+		"Returns the count of uncomitted operations."
+		def history_get_uncomitted_operations(): int
 
 		"Causes the last operations to not appear in the undo buffer."
 		def history_flush_last()

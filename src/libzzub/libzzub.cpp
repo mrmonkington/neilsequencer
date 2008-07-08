@@ -219,6 +219,10 @@ void zzub_player_history_commit(zzub_player_t *player, const char* description) 
 	player->commit_to_history(description);
 }
 
+int zzub_player_history_get_uncomitted_operations(zzub_player_t *player) {
+	return player->backbuffer_operations.size();
+}
+
 void zzub_player_history_flush(zzub_player_t *player) {
 	player->flush_operations(0, 0, 0);
 	player->clear_history();

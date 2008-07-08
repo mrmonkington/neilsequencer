@@ -160,6 +160,7 @@ class Test(TestCase):
 		"""
 		create plugin, connect to master, disconnect, then undo/redo/undo until the beginning.
 		"""
+		self.assertTrue(self.player.history_get_uncomitted_operations() == 0)
 		self.assertTrue(self.player.get_plugin_count() == 1)
 		master = self.player.get_plugin_by_id(0)
 		self.assertTrue(master == self.player.get_plugin(0))
@@ -172,7 +173,9 @@ class Test(TestCase):
 		self.assertTrue(self.player.get_plugin_count() == 2)
 		self.assertTrue(self.player.history_get_size() == 0)
 		master.add_input(plugin, zzub_connection_type_audio)
+		self.assertTrue(self.player.history_get_uncomitted_operations() == 2)
 		self.player.history_commit("create plugin and connect")
+		self.assertTrue(self.player.history_get_uncomitted_operations() == 0)
 		self._handle_events()
 		self._check_protocol([
 			('zzub_pre_connect', dict()),
@@ -187,7 +190,9 @@ class Test(TestCase):
 		self.assertTrue(master.get_input_connection_type(0) == zzub_connection_type_audio)
 		master.delete_input(plugin, zzub_connection_type_audio)
 		self.assertTrue(master.get_input_connection_count() == 0)
+		self.assertTrue(self.player.history_get_uncomitted_operations() == 1)
 		self.player.history_commit("disconnect")
+		self.assertTrue(self.player.history_get_uncomitted_operations() == 0)
 		self._handle_events()
 		self._check_protocol([
 			('zzub_pre_disconnect', dict()),
@@ -240,6 +245,7 @@ class Test(TestCase):
 		self.assertTrue(self.player.history_get_position() == 0)
 		self.assertTrue(self.player.history_get_size() == 2)
 		self.assertTrue(self.player.get_plugin_count() == 1)
+		self.assertTrue(self.player.history_get_uncomitted_operations() == 0)
 		self.player.history_flush()
 		self.assertTrue(self.player.get_plugin_count() == 1)
 		self.assertTrue(self.player.history_get_position() == 0)
