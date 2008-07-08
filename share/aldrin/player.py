@@ -34,7 +34,7 @@ class AldrinPlayer(Player):
 	)
 	
 	_exclude_event_debug_ = [
-		zzub.zzub_event_type_parameter_changed,
+		#zzub.zzub_event_type_parameter_changed,
 	]
 		
 	_event_types_ = dict(
@@ -140,6 +140,12 @@ class AldrinPlayer(Player):
 		Handler triggered by the default timer. Asks the player to fill
 		the event queue and fetches events from the queue to pass them to handle_event.
 		"""
+		ucopcount = self.history_get_uncomitted_operations()
+		if ucopcount:
+			print "warning: %i operations left uncommitted." % ucopcount
+			print "they should be committed manually. aldrin commits these",
+			print "automatically to make them visible."
+			self.history_commit("commit leak")
 		player = com.get('aldrin.core.player')
 		t1 = time.time()
 		player.handle_events()
@@ -160,9 +166,6 @@ class AldrinPlayer(Player):
 			self._cbcalls = 0
 			self._hevcalls = 0
 			self._cbtime = t
-		#called only if loop pattern is off when song ends:
-		#~ if player.get_state() != zzub.zzub_player_state_playing and self.btnplay.get_active():
-			#~ self.btnplay.set_active(False)
 		return True
 		
 	def play(self):

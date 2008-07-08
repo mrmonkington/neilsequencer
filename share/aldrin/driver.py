@@ -152,7 +152,7 @@ class AudioDriver:
 				input = i
 			if drivername == outputname:
 				output = i
-		
+				
 		# second round: if we didnt find them from the config,
 		# pick good alternatives.
 		
@@ -160,8 +160,11 @@ class AudioDriver:
 			for i in range(self.driver.get_count()):
 				if self.driver.is_output(i):
 					output = i
-					if self.driver.is_input(i):
-						input = i
+		
+		# regardless of what was chosen as input, if output
+		# has an input as well, prefer that one first.
+		if self.driver.is_input(output):
+			input = output
 		
 		# take output channel if it supports input		
 		if input == -1:
