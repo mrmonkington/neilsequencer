@@ -799,7 +799,7 @@ void player::reset_keyjazz() {
 	flush_operations(0, 0, 0);
 	assert(front.keyjazz.size() == 0);
 
-	for (vector<op_plugin_play_note*>::iterator i = ops.begin(); i != ops.end(); ++) {
+	for (vector<op_plugin_play_note*>::iterator i = ops.begin(); i != ops.end(); ++i) {
 		delete *i;
 	}
 }

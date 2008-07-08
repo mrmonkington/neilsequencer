@@ -250,6 +250,8 @@ struct song {
 		return false;
 	}
 
+	void set_state(player_state newstate);
+
 	int sequencer_get_event_at(int track, unsigned long timestamp);
 };
 

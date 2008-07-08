@@ -157,6 +157,19 @@ void topological_sort_kahn(plugin_map& tg, std::deque<plugin_descriptor>& input,
 
 ***/
 
+song::song() {
+	state = player_state_muted;
+
+	song_begin = 0;
+	song_end = 16;
+	song_loop_begin = 0;
+	song_loop_end = 16;
+	song_loop_enabled = true;
+
+	user_event_queue.resize(4096);
+	user_event_queue_read = user_event_queue_write = 0;
+}
+
 zzub::metaplugin& song::get_plugin(zzub::plugin_descriptor index) {
 	assert(index >= 0 && index < num_vertices(graph));
 	int id = graph[index].id;
@@ -768,19 +781,18 @@ int song::sequencer_get_event_at(int track, unsigned long timestamp) {
 	return -1;
 }
 
-song::song() {
-	state = player_state_muted;
-
-	song_begin = 0;
-	song_end = 16;
-	song_loop_begin = 0;
-	song_loop_end = 16;
-	song_loop_enabled = true;
-
-	user_event_queue.resize(4096);
-	user_event_queue_read = user_event_queue_write = 0;
+void song::set_state(player_state newstate) {
+	state = newstate;
+	master_info.tick_position = 0;
+	switch (state) {
+		case player_state_playing:
+			break;
+		case player_state_stopped:
+			for (int i = 0; i < get_plugin_count(); i++)
+				get_plugin(i).plugin->stop();
+			break;
+	}
 }
-
 
 /***
 
@@ -890,7 +902,7 @@ void mixer::process_sequencer_events() {
 	bool is_playing = state == player_state_playing;
 
 	if (is_playing && !song_loop_enabled && song_position >= song_loop_end) {
-		state = player_state_stopped;
+		set_state(player_state_stopped);
 		is_playing = false;
 	}
 

@@ -33,16 +33,7 @@ bool op_state_change::prepare(zzub::song& song) {
 }
 
 bool op_state_change::operate(zzub::song& song) {
-	song.state = state;
-	song.master_info.tick_position = 0;
-	switch (state) {
-		case player_state_playing:
-			break;
-		case player_state_stopped:
-			for (int i = 0; i < song.get_plugin_count(); i++)
-				song.get_plugin(i).plugin->stop();
-			break;
-	}
+	song.set_state(state);
 	return true;
 }
 
