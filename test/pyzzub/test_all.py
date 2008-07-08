@@ -253,6 +253,30 @@ class Test(TestCase):
 		self._handle_events()
 		self.assertFalse(self.events)
 
+		
+	def test_parameter_change_undo(self):
+		"""
+		change master parameters, commit and assert history increase. then undo and check
+		that everything is back to normal.
+		"""
+		self.assertTrue(self.player.history_get_uncomitted_operations() == 0)
+		self.assertTrue(self.player.get_plugin_count() == 1)
+		master = self.player.get_plugin_by_id(0)
+		self.player.set_tpb(8)
+		self.player.set_bpm(162)
+		self.assertTrue(self.player.history_get_uncomitted_operations() == 2)
+		self.assertTrue(self.player.history_get_size() == 0)
+		self.player.history_commit("player speed change")
+		self._handle_events()
+		self._check_protocol([
+			('zzub_parameter_changed', dict(plugin=master, group=1, track=0, param=1, value=162)),
+			('zzub_parameter_changed', dict(plugin=master, group=1, track=0, param=2, value=8)),
+			('zzub_parameter_changed', dict(plugin=master, group=1, track=0, param=1, value=162)),
+		])
+		self.assertTrue(self.player.history_get_size() == 1)
+
 if __name__ == '__main__':
+	#main(defaultTest='Test.test_parameter_change_undo')
 	main()
+
 
