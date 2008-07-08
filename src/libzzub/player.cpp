@@ -784,8 +784,24 @@ void player::play_plugin_note(int plugin_id, int note, int prevNote, int _veloci
 }
 
 void player::reset_keyjazz() {
-	// todo: set note off for all current playing keys
-	front.keyjazz.clear();
+	// send note off for all currently playing notes
+	operation_copy_flags flags;
+	flags.copy_plugins = true;
+	merge_backbuffer_flags(flags);
+
+	vector<op_plugin_play_note*> ops;
+	for (vector<keyjazz_note>::iterator i = front.keyjazz.begin(); i != front.keyjazz.end(); ++i) {
+		op_plugin_play_note* o = new op_plugin_play_note(i->plugin_id, note_value_off, i->note, 0);
+		backbuffer_operations.push_back(o);
+		o->prepare(back);
+		ops.push_back(o);
+	}
+	flush_operations(0, 0, 0);
+	assert(front.keyjazz.size() == 0);
+
+	for (vector<op_plugin_play_note*>::iterator i = ops.begin(); i != ops.end(); ++) {
+		delete *i;
+	}
 }
 
 
