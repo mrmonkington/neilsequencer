@@ -142,9 +142,10 @@ class AldrinPlayer(Player):
 		"""
 		ucopcount = self.history_get_uncomitted_operations()
 		if ucopcount:
-			print "warning: %i operations left uncommitted." % ucopcount
-			print "they should be committed manually. aldrin commits these",
-			print "automatically to make them visible."
+			# you should commit your actions
+			import errordlg
+			msg = "%i operation(s) left uncommitted." % ucopcount
+			errordlg.error(None, "<b>Internal Program Error</b>", msg)
 			self.history_commit("commit leak")
 		player = com.get('aldrin.core.player')
 		t1 = time.time()

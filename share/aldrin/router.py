@@ -1292,6 +1292,7 @@ class RouteView(gtk.DrawingArea):
 		res = self.get_plugin_at((mx,my))
 		if res:
 			self.current_plugin,(x,y),area = res
+			self.current_plugin.dragpos = self.current_plugin.get_position()
 			self.dragoffset = mx-x, my-y
 			if area == AREA_LED:
 				self.toggle_mute(self.current_plugin)		
@@ -1349,7 +1350,7 @@ class RouteView(gtk.DrawingArea):
 				# quantize position
 				x = int(float(x)/QUANTIZEX + 0.5) * QUANTIZEX
 				y = int(float(y)/QUANTIZEY + 0.5) * QUANTIZEY
-			self.current_plugin.set_position(*self.pixel_to_float((x,y)))
+			self.current_plugin.dragpos = self.pixel_to_float((x,y))
 			self.redraw()
 		elif self.connecting:
 			self.connectpos = int(x), int(y)
@@ -1464,6 +1465,8 @@ class RouteView(gtk.DrawingArea):
 		cputreshold = 0.75
 	
 		for mp,(rx,ry) in ((mp,get_pixelpos(*mp.get_position())) for mp in pluginlist):
+			if self.dragging and mp == self.current_plugin:
+				rx,ry = get_pixelpos(*self.current_plugin.dragpos)
 			rx,ry = rx - PW, ry - PH
 			pi = common.get_plugin_infos().get(mp)
 			if not pi:
