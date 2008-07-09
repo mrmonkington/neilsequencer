@@ -67,6 +67,7 @@ DOCUMENT_UI = dict(
 	active_patterns = dict(vtype=(zzub.Plugin,int),list=True,doc="the list of active patterns (zzub.Plugin, index)."),
 	active_waves = dict(vtype=zzub.Wave,list=True,doc="the list of active waves."),
 	octave = dict(vtype=int,default=4,doc="the current octave to be used for keyjazz."),
+	autoconnect_target = dict(vtype=zzub.Plugin,doc="the plugin to connect to automatically when creating a new plugin."),
 )
 
 class AldrinPlayer(Player):
@@ -246,13 +247,13 @@ class AldrinPlayer(Player):
 		
 	def play(self):
 		self.playstarttime = time.time()
-		Player.play(self)
+		self.set_state(zzub.zzub_player_state_playing)
 		
 	def stop(self):
 		if self.get_state() != zzub.zzub_player_state_playing:
 			self.set_position(0)
 		else:
-			Player.stop(self)
+			self.set_state(zzub.zzub_player_state_stopped)
 		
 	def handle_event(self, data):
 		"""

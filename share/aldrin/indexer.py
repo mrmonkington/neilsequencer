@@ -26,15 +26,24 @@ import fnmatch, os, sys
 from utils import prepstr
 import zzub
 from xml.dom.minidom import parse
+from aldrincom import com
 
-class Separator:
+class BaseItem:
+	def is_directory(self):
+		return isinstance(self, Directory)
+	def is_separator(self):
+		return isinstance(self, Separator)
+	def is_reference(self):
+		return isinstance(self, Reference)
+
+class Separator(BaseItem):
 	"""
 	Separates plugins.
 	"""
 	def get_xml(self):
 		return "<Separator/>\n"
 
-class Reference:
+class Reference(BaseItem):
 	"""
 	Resembles a plugin reference.
 	"""
@@ -45,7 +54,7 @@ class Reference:
 	def get_xml(self):
 		return '<Reference name="%s" uri="%s"/>\n' % (self.name, self.uri)
 
-class Directory:
+class Directory(BaseItem):
 	"""
 	Resembles a folder or a submenu containing plugin references.
 	"""
@@ -69,7 +78,7 @@ class Directory:
 		xml += '</Directory>\n'
 		return xml
 
-def parse_index(player, filepath):
+def parse_index(player, filepath, root = None):
 	"""
 	Parses an index.xml file and returns a plugin directory structure.
 	
@@ -139,7 +148,8 @@ def parse_index(player, filepath):
 			return -1
 		return 1
 	special_nodes = {}
-	root = Directory()
+	if not root:
+		root = Directory()
 	xmldoc = parse(filepath)
 	assert xmldoc.documentElement.tagName == "pluginindex"
 	try:
@@ -156,7 +166,25 @@ def parse_index(player, filepath):
 				ref.uri = pl.get_uri()
 				unsorted_node.children.append(ref)
 	return root
-		
+
+class PluginTreeIndex(Directory):
+	__aldrin__ = dict(
+		id = 'aldrin.core.plugintree',
+		singleton = True,
+		categories = [
+		],
+	)
+	
+	def __init__(self):
+		Directory.__init__(self)
+		parse_index(com.get('aldrin.core.player'), com.get('aldrin.core.config').get_index_path(), self)
+
+__aldrin__ = dict(
+	classes = [
+		PluginTreeIndex,
+	],
+)
+
 if __name__ == '__main__':
 	from config import get_plugin_aliases, get_plugin_blacklist
 	import utils, zzub, os

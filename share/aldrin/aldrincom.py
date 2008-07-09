@@ -39,6 +39,8 @@ DEFAULT_PACKAGES = [
 	'+iconfactory',
 	'+preferences',
 	'+pythonconsole',
+	'+contextmenu',
+	'+indexer',
 ]
 
 # aldrin component object model
