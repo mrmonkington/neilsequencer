@@ -100,6 +100,7 @@ class MasterPanel(gtk.VBox):
 		gtk.VBox.__init__(self)
 		self.latency = 0
 		self.rootwindow = rootwindow
+		self.ohg = utils.ObjectHandlerGroup()
 		eventbus = com.get('aldrin.core.eventbus')
 		eventbus.zzub_parameter_changed += self.on_zzub_parameter_changed
 		self.masterslider = gtk.VScale()
@@ -108,9 +109,9 @@ class MasterPanel(gtk.VBox):
 		self.masterslider.set_size_request(-1,200)
 		self.masterslider.set_increments(500, 500)
 		self.masterslider.set_inverted(True)
-		self.masterslider.connect('scroll-event', self.on_mousewheel)
-		self.masterslider.connect('change-value', self.on_scroll_changed)
-		self.masterslider.connect('button-release-event', self.button_up)
+		self.ohg.connect(self.masterslider, 'scroll-event', self.on_mousewheel)
+		self.ohg.connect(self.masterslider, 'change-value', self.on_scroll_changed)
+		self.ohg.connect(self.masterslider, 'button-release-event', self.button_up)
 		self.ampl = AmpView(self, 0)
 		self.ampr = AmpView(self, 1)
 		hbox = gtk.HBox()
@@ -160,6 +161,7 @@ class MasterPanel(gtk.VBox):
 		"""
 		Updates all controls.
 		"""
+		block = self.ohg.autoblock()
 		player = com.get('aldrin.core.player')
 		master = player.get_plugin(0)
 		vol = master.get_parameter_value(1, 0, 0)
