@@ -218,6 +218,7 @@ class PatternToolBar(gtk.HBox):
 		eventbus.song_opened += self.update_all
 		eventbus.zzub_new_plugin += self.select_plugin_instance
 		eventbus.show_plugin += self.select_plugin_instance
+		eventbus.octave_changed += self.update_octaves
 		
 	def reset(self):
 		self.plugin_index = 0
@@ -294,9 +295,10 @@ class PatternToolBar(gtk.HBox):
 		"""
 		if widget.get_active() == -1:
 			return
-		if self.view.octave == widget.get_active():
+		player = com.get('aldrin.core.player')
+		if player.octave == widget.get_active():
 			return
-		self.view.octave = widget.get_active()
+		player.octave = widget.get_active()
 		self.view.grab_focus()
 		
 	def update_pluginselect(self):
@@ -433,14 +435,15 @@ class PatternToolBar(gtk.HBox):
 			self.wave = 0
 		self.waveselect.set_active(wi)
 		
-	def update_octaves(self):
+	def update_octaves(self, *args):
 		"""
 		Rebuilds and updates the octaveselect list.
 		"""
 		self.octaveselect.get_model().clear()
 		for i in range(10):
 			self.octaveselect.append_text("%i" % i)
-		self.octaveselect.set_active(self.view.octave)
+		player = com.get('aldrin.core.player')
+		self.octaveselect.set_active(player.octave)
 		
 	def update_all(self):
 		"""
@@ -690,7 +693,6 @@ class PatternView(gtk.DrawingArea):
 		self.group = 0
 		self.subindex = 0
 		self.row_step = 1
-		self.octave = 4
 		self.start_row = 0
 		self.selection = None
 		self.playpos = 0
@@ -940,7 +942,8 @@ class PatternView(gtk.DrawingArea):
 		@param o: Octave
 		@type o: int
 		"""
-		self.octave = min(max(o,0), 9)
+		player = com.get('aldrin.core.player')
+		player.octave = min(max(o,0), 9)
 		
 	def set_index(self, i):
 		"""
@@ -2038,10 +2041,12 @@ class PatternView(gtk.DrawingArea):
 		elif k in ('KP_Subtract','minus'):
 			self.toolbar.prev_pattern()
 		elif k in ('KP_Multiply', 'dead_acute'):
-			self.set_octave(self.octave+1)
+			player = com.get('aldrin.core.player')
+			self.set_octave(player.octave+1)
 			self.toolbar.update_octaves()
 		elif k in ('KP_Divide', 'ssharp'):
-			self.set_octave(self.octave-1)
+			player = com.get('aldrin.core.player')
+			self.set_octave(player.octave-1)
 			self.toolbar.update_octaves()
 		elif k == 'Escape':
 			self.selection = None
@@ -2067,7 +2072,8 @@ class PatternView(gtk.DrawingArea):
 					on = key_to_note(kv)
 					if on:
 						o,n = on
-						data = (min(self.octave+o,9)<<4) | (n+1)
+						player = com.get('aldrin.core.player')
+						data = (min(player.octave+o,9)<<4) | (n+1)
 						if wp != None:
 							wdata = self.toolbar.wave+1
 						playtrack = True

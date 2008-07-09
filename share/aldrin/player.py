@@ -47,7 +47,8 @@ DOCUMENT_UI = dict(
 	#      it can be appended to "Returns ..." and "Sets ...". if omitted,
 	#      a default will be used.
 	# 
-	# event: name of the global event to be triggered.
+	# event: name of the global event to be triggered. usually generated
+	#        by default if not given.
 	#
 	# onset: an optional function to be called before the value is assigned. 
 	# 	     the function should have the signature
@@ -61,6 +62,7 @@ DOCUMENT_UI = dict(
 	#
 	# for the setting below, active_plugins, you can access player.get_active_plugins(),
 	# player.set_active_plugins(plugins), and player.active_plugins as a property.
+	# when changed, the event active_plugins_changed will be triggered.
 	active_plugins = dict(vtype=zzub.Plugin,list=True,doc="the list of active plugins."),
 	active_patterns = dict(vtype=(zzub.Plugin,int),list=True,doc="the list of active patterns (zzub.Plugin, index)."),
 	active_waves = dict(vtype=zzub.Wave,list=True,doc="the list of active waves."),
