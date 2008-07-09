@@ -211,6 +211,7 @@ class PatternToolBar(gtk.HBox):
 		self.pack_start(self.playnotes, expand=False)
 		
 		eventbus = com.get('aldrin.core.eventbus')
+		eventbus.zzub_pre_delete_plugin += self.plugin_deleted
 		eventbus.zzub_delete_pattern += self.update_patternselect
 		eventbus.zzub_new_pattern += self.update_patternselect
 		eventbus.zzub_pattern_changed += self.update_patternselect
@@ -222,6 +223,12 @@ class PatternToolBar(gtk.HBox):
 		self.plugin_index = 0
 		self.pattern = 0
 		self.wave = 0
+		
+	def plugin_deleted(self, plugin):
+		if self.plugin_index == -1:
+			return
+		if self.get_combo_plugin(self.plugin_index) == plugin:
+			self.select_plugin_instance(None)
 		
 	def on_pluginselect(self, widget):		
 		"""
@@ -297,7 +304,7 @@ class PatternToolBar(gtk.HBox):
 		Updates the plugin selection box.
 		"""
 		player = com.get('aldrin.core.player')
-		self.plugin_index = min(max(self.plugin_index, 0), player.get_plugin_count()-1)
+		self.plugin_index = min(max(self.plugin_index, -1), player.get_plugin_count()-1)
 		self.pluginselect.get_model().clear()
 		store = self.pluginselect.get_model()
 		for i, plugin in enumerate(sorted(player.get_plugin_list(), lambda a,b:cmp(a.get_name().lower(),b.get_name().lower()))):
@@ -329,7 +336,7 @@ class PatternToolBar(gtk.HBox):
 		@type i: int
 		"""
 		player = com.get('aldrin.core.player')
-		self.plugin_index = min(max(i, 0), player.get_plugin_count()-1)
+		self.plugin_index = min(max(i, -1), player.get_plugin_count()-1)
 		self.view.selection = None
 		self.view.start_col = 0
 		self.update_pluginselect()
@@ -344,6 +351,9 @@ class PatternToolBar(gtk.HBox):
 		"""
 		Selects a plugin by instance handle.
 		"""
+		if mp == None:
+			self.select_plugin(-1)
+			return
 		store = self.pluginselect.get_model()
 		iteritem = store.get_iter_first()
 		while iteritem:
@@ -713,7 +723,6 @@ class PatternView(gtk.DrawingArea):
 		eventbus.zzub_connect += self.pattern_changed
 		eventbus.zzub_disconnect += self.pattern_changed
 		eventbus.zzub_pattern_changed += self.pattern_changed
-
 		eventbus.zzub_new_plugin += self.plugin_created
 
 	def update_font(self):
@@ -741,7 +750,7 @@ class PatternView(gtk.DrawingArea):
 			self.set_subindex(0)
 			self.show_cursor_right()
 			self.refresh_view()
-		
+			
 	def plugin_created(self, *args):
 		self.jump_to_note = True # mark that we want tab_to_second_track on next update
 	
