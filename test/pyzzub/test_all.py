@@ -92,6 +92,7 @@ class Test(TestCase):
 		self.driver.destroy()
 		self.player.destroy()
 		del self.player
+		print "=============================================="
 		
 	def _handle_events(self):
 		self.player.handle_events()
@@ -274,6 +275,9 @@ class Test(TestCase):
 			('zzub_parameter_changed', dict(plugin=master, group=1, track=0, param=1, value=162)),
 		])
 		self.assertTrue(self.player.history_get_size() == 1)
+		self.undo()
+		self._handle_events()
+		self.assertTrue(self.player.history_get_size() == 0)
 
 if __name__ == '__main__':
 	#main(defaultTest='Test.test_parameter_change_undo')
