@@ -1616,9 +1616,15 @@ class RouteView(gtk.DrawingArea):
 			mplist = [(mp,get_pixelpos(*mp.get_position())) for mp in player.get_plugin_list()]
 			
 			for mp,(rx,ry) in mplist:
+				if self.dragging and mp == self.current_plugin:
+					rx,ry = get_pixelpos(*self.current_plugin.dragpos)
 				for index in xrange(mp.get_input_connection_count()):
 					#~ if not (conn.get_input().get_pluginloader().get_flags() & zzub.plugin_flag_no_output):
-					crx, cry = get_pixelpos(*mp.get_input_connection_plugin(index).get_position())
+					targetmp = mp.get_input_connection_plugin(index)
+					tmppos = targetmp.get_position()
+					if self.dragging and targetmp == self.current_plugin:
+						tmppos = self.current_plugin.dragpos
+					crx, cry = get_pixelpos(*tmppos)
 					draw_line_arrow(bmpctx,arrowcolors[mp.get_input_connection_type(index)],int(crx),int(cry),int(rx),int(ry))
 		gc = self.window.new_gc()
 		self.window.draw_drawable(gc, self.routebitmap, 0, 0, 0, 0, -1, -1)
