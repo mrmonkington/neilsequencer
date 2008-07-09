@@ -27,6 +27,46 @@ import os,sys
 import time
 from config import get_plugin_aliases, get_plugin_blacklist
 
+DOCUMENT_UI = dict(
+	# insert persistent members at this level, in the format
+	#
+	# <member name> = <descriptor dict>
+	#
+	# <member name> is the base name of the getter/setter/property values
+	# and the private member variable.
+	#
+	# keys you can enter into the dict:
+	#
+	# default: initialization value. if omitted, a default will be deduced
+	# from the value type.
+	#
+	# vtype: value type as type object. if omitted, the type will be deduced from
+	#        the default value. allowed types are int, bool, str, float.
+	#
+	# doc: a doc string describing the meaning of the setting. name it so that
+	#      it can be appended to "Returns ..." and "Sets ...". if omitted,
+	#      a default will be used.
+	# 
+	# event: name of the global event to be triggered.
+	#
+	# onset: an optional function to be called before the value is assigned. 
+	# 	     the function should have the signature
+	#
+	#        def func(value): -> value
+	#
+	# onget: an optional function to be called before the value is returned
+	#        to the calling function.
+	#
+	#        def func(value): -> value
+	#
+	# for the setting below, active_plugins, you can access player.get_active_plugins(),
+	# player.set_active_plugins(plugins), and player.active_plugins as a property.
+	active_plugins = dict(vtype=zzub.Plugin,list=True,doc="the list of active plugins."),
+	active_patterns = dict(vtype=(zzub.Plugin,int),list=True,doc="the list of active patterns (zzub.Plugin, index)."),
+	active_waves = dict(vtype=zzub.Wave,list=True,doc="the list of active waves."),
+	octave = dict(vtype=int,default=4,doc="the current octave to be used for keyjazz."),
+)
+
 class AldrinPlayer(Player):
 	__aldrin__ = dict(
 		id = 'aldrin.core.player',
@@ -80,10 +120,11 @@ class AldrinPlayer(Player):
 	
 	def __init__(self):
 		Player.__init__(self, Player.create())
+		
 		self._cbtime = time.time()
 		self._cbcalls = 0
 		self._hevcalls = 0
-		self._hevtimes = 0		
+		self._hevtimes = 0
 		# enumerate zzub_event_types and prepare unwrappers for the different types
 		self.event_id_to_name = {}		
 		for enumname,cfg in self._event_types_.iteritems():
@@ -135,6 +176,38 @@ class AldrinPlayer(Player):
 		eventbus = com.get('aldrin.core.eventbus')
 		gobject.timeout_add(int(1000/25), self.on_handle_events)
 		
+	def getter(self, membername, kwargs):
+		value = getattr(self, '__' + membername)
+		onget = kwargs.get('onget',None)
+		if onget:
+			value = onget(value)
+		return value
+		
+	def setter(self, membername, kwargs, value):		
+		onset = kwargs.get('onset',None)
+		if onset:
+			value = onset(value)
+		setattr(self, '__' + membername, value)
+		eventname = kwargs.get('event', membername + '_changed')
+		eventbus = com.get('aldrin.core.eventbus')
+		getattr(eventbus, eventname)(value)
+		
+	def listgetter(self, membername, kwargs):
+		value = getattr(self, '__' + membername)
+		onget = kwargs.get('onget',None)
+		if onget:
+			value = onget(value)
+		return value[:]
+		
+	def listsetter(self, membername, kwargs, values):
+		onset = kwargs.get('onset',None)
+		if onset:
+			values = onset(values)
+		setattr(self, '__' + membername, values)
+		eventname = kwargs.get('event', membername + '_changed')
+		eventbus = com.get('aldrin.core.eventbus')
+		getattr(eventbus, eventname)(values[:])
+				
 	def on_handle_events(self):
 		"""
 		Handler triggered by the default timer. Asks the player to fill
@@ -250,6 +323,48 @@ class AldrinPlayer(Player):
 		pc.configure("local_storage_dir", userlunarpath)
 		
 
+def generate_ui_method(membername, kwargs):
+	doc = kwargs.get('doc', '')
+		
+	onset = kwargs.get('onset', None)
+	onget = kwargs.get('onget', None)
+	
+	if kwargs.get('list', False):
+		vtype = kwargs['vtype']
+		getter = lambda self: self.listgetter(membername,kwargs)
+		setter = lambda self,value: self.listsetter(membername,kwargs,value)
+		default = []
+	else:
+		if 'default' in kwargs:
+			default = kwargs['default']
+			vtype = kwargs.get('vtype', type(default))
+		else:
+			vtype = kwargs['vtype']
+			default = {float: 0.0, int:0, long:0, str:'', unicode:u'', bool:False}.get(vtype, None)
+		getter = lambda self,defvalue=kwargs.get(default,False): self.getter(membername,kwargs)
+		setter = lambda self,value: self.setter(membername,kwargs,value)
+	
+	setattr(AldrinPlayer, '__' + membername, default)
+	
+	getter.__name__ = 'get_' + membername
+	getter.__doc__ = 'Returns ' + doc
+	setattr(AldrinPlayer, 'get_' + membername, getter)
+	
+	setter.__name__ = 'set_' + membername
+	setter.__doc__ = 'Sets ' + doc
+	setattr(AldrinPlayer, 'set_' + membername, setter)
+	
+	# add a property
+	prop = property(getter, setter, doc=doc)
+	setattr(AldrinPlayer, membername, prop)
+
+def generate_ui_methods():
+	# build getters and setters based on the options map
+	for membername,kwargs in DOCUMENT_UI.iteritems():
+		generate_ui_method(membername, kwargs)
+
+generate_ui_methods()
+
 __aldrin__ = dict(
 	classes = [
 		AldrinPlayer,
@@ -259,3 +374,4 @@ __aldrin__ = dict(
 if __name__ == '__main__':
 	com.load_packages()
 	player = com.get('aldrin.core.player')
+	player.octave = 3

@@ -27,6 +27,7 @@ please note:
 import sys, weakref
 
 EVENTS = [
+	# these might become obsolete
 	'ping', # (int, ... ). all connected objects should print out a random message.
 	'finalize', # (hub, ... ). all module are loaded and available, finalize any cross-dependencies.
 	'shutdown-request', # ( ... ). asks for quit. it is possible that quitting might not happen.
@@ -34,6 +35,13 @@ EVENTS = [
 	'song-opened', # ( ... ). called when the entire song changes in such a way that all connected objects should update.
 	'show-plugin', # (plugin, ...) called when a plugin should be visualized overall.
 	
+	# document ui events, translation is done in player.py
+	'octave_changed', # (octave, ...) called when player.octave changes.
+	'active_plugins_changed', # ([plugin, ...], ...) called when player.active_plugins changes.
+	'active_patterns_changed', # ([(plugin, index), ...], ...) called when player.active_patterns changes.
+	'active_waves_changed', # ([wave, ...], ...) called when player.active_waves changes.
+	
+	# libzzub events, translation is done in player.py
 	'zzub_all', # ( data,... )
 	'zzub_connect', # ( from_plugin,to_plugin,type,... )
 	'zzub_custom', # ( id,data,... )

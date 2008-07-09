@@ -25,7 +25,7 @@ Provides an object which eases access to the applications configuration.
 from gtkimport import gtk
 import os, glob, re
 
-from utils import filepath
+from utils import filepath, camelcase_to_unixstyle
 import ConfigParser
 import new
 
@@ -776,14 +776,6 @@ class AldrinConfig(object, ConfigParser.ConfigParser):
 			self.write_value("File%i" % i, recent_files[i])
 		self.flush()
 		
-
-def camelcase_to_unixstyle(s):
-	o = ''
-	for c in s:
-		if c.isupper() and o and not o.endswith('_'):
-			o += '_'
-		o += c.lower()
-	return o
 
 def generate_config_method(section, option, kwargs):
 	funcname = kwargs.get('func', camelcase_to_unixstyle(option))

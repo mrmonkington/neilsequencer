@@ -867,6 +867,14 @@ def make_radio_item(label, desc, func, *args):
 		item.connect('toggled', func, *args)
 	return item
 
+def camelcase_to_unixstyle(s):
+	o = ''
+	for c in s:
+		if c.isupper() and o and not o.endswith('_'):
+			o += '_'
+		o += c.lower()
+	return o
+
 class ObjectHandlerGroup:
 	"""
 	allows to block/unblock a bank of handlers
@@ -951,6 +959,7 @@ __all__ = [
 'get_new_pattern_name',
 'new_theme_image',
 'add_accelerator',
+'camelcase_to_unixstyle',
 ]
 
 if __name__ == '__main__':
