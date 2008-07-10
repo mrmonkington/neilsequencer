@@ -28,8 +28,9 @@ from gtkimport import gtk
 import common
 import aldrincom
 from aldrincom import com
+import zzub
 
-from utils import is_generator, is_root, is_effect, prepstr
+from utils import is_generator, is_root, is_controller, is_effect, prepstr
 from utils import PLUGIN_FLAGS_MASK, ROOT_PLUGIN_FLAGS, GENERATOR_PLUGIN_FLAGS, EFFECT_PLUGIN_FLAGS, CONTROLLER_PLUGIN_FLAGS
 
 class ContextMenu(gtk.Menu):
@@ -119,15 +120,15 @@ class PluginContextMenu(gtk.Menu):
 			
 	def populate_connectionmenu(self, menu):
 		mp, index = menu.context
-		menu.append(make_menu_item("_Disconnect plugins", "Disconnect plugins", self.on_popup_disconnect, mp, index))
+		menu.add_item("Disconnect plugins", self.on_popup_disconnect, mp, index)
 		conntype = mp.get_input_connection_type(index)
 		if conntype == zzub.zzub_connection_type_audio:
-			menu.append(gtk.SeparatorMenuItem())
-			menu.append(make_submenu_item(self.get_plugin_menu(include_generators=False,include_controllers=False, conn=(mp, index)), "_Insert Effect"))
-			menu.append(gtk.SeparatorMenuItem())
-			menu.append(make_menu_item("_Signal Analysis", "Signal Analysis", self.on_popup_show_signalanalysis, mp, index))
+			menu.add_separator()
+			menu.add_submenu("_Insert Effect",self.get_plugin_menu(include_generators=False,include_controllers=False, conn=(mp, index)))
+			menu.add_separator()
+			menu.add_item("_Signal Analysis", self.on_popup_show_signalanalysis, mp, index)
 		elif conntype == zzub.zzub_connection_type_event:
-			menu.append(gtk.SeparatorMenuItem())
+			menu.add_separator()
 			mi = conn.get_input()
 			for param in mi.get_pluginloader().get_parameter_list(3):
 				print param
