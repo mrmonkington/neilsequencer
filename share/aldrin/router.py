@@ -265,26 +265,64 @@ class ParameterDialog(gtk.Dialog):
 	"""
 	Displays parameter sliders for a plugin in a new Dialog.
 	"""
-	def __init__(self, rootwindow, plugin, parent):
+	__aldrin__ = dict(
+		id = 'aldrin.core.parameterdialog',
+		singleton = False,
+		categories = [
+		]
+	)
+	
+	def __init__(self, manager, plugin, parent):
 		gtk.Dialog.__init__(self, parent=parent.get_toplevel())
-		self.view = parent
 		self.plugin = plugin
-		self.view.plugin_dialogs[plugin] = self
-		self.paramview = ParameterView(rootwindow, plugin)
+		self.manager = manager
+		self.manager.plugin_dialogs[plugin] = self
+		self.paramview = ParameterView(parent, plugin)
 		self.set_title(self.paramview.get_title())
 		self.vbox.add(self.paramview)
 		self.connect('destroy', self.on_destroy)
 		self.connect('realize', self.on_realize)
+		eventbus = com.get('aldrin.core.eventbus')
+		eventbus.zzub_delete_plugin += self.on_zzub_delete_plugin
 		
 	def on_realize(self, widget):
 		self.set_default_size(*self.paramview.get_best_size())
+		
+	def on_zzub_delete_plugin(self, plugin):
+		if plugin == self.plugin:
+			self.destroy()
 		
 	def on_destroy(self, event):
 		"""
 		Handles destroy events.
 		"""
-		del self.view.plugin_dialogs[self.plugin]
+		del self.manager.plugin_dialogs[self.plugin]
+
+class ParameterDialogManager:
+	"""
+	Manages the different parameter dialogs.
+	"""
+	__aldrin__ = dict(
+		id = 'aldrin.core.parameterdialog.manager',
+		singleton = True,
+		categories = [
+		]
+	)
 		
+	def __init__(self):
+		self.plugin_dialogs = {}
+	
+	def show(self, plugin, parent):
+		"""
+		Shows a parameter dialog for a plugin.
+		
+		@param plugin: Plugin instance.
+		@type plugin: Plugin
+		"""
+		dlg = self.plugin_dialogs.get(plugin,None)
+		if not dlg:
+			dlg = ParameterDialog(self, plugin, parent)
+		dlg.show_all()
 		
 class PresetDialog(gtk.Dialog):
 	"""
@@ -640,12 +678,10 @@ class RouteView(gtk.DrawingArea):
 		@param rootwindow: Main window.
 		@type rootwindow: AldrinFrame
 		"""
-		self.plugin_dialogs = {}		
 		self.panel = parent
 		self.routebitmap = None
 		self.rootwindow = rootwindow
 		eventbus = com.get('aldrin.core.eventbus')
-		eventbus.zzub_delete_plugin += self.on_zzub_delete_plugin
 		eventbus.zzub_connect += self.on_zzub_redraw_event
 		eventbus.zzub_disconnect += self.on_zzub_redraw_event
 		eventbus.zzub_plugin_changed += self.on_zzub_redraw_event
@@ -709,64 +745,9 @@ class RouteView(gtk.DrawingArea):
 		
 	def on_zzub_redraw_event(self, *args):
 		self.redraw()
-		
-	def on_zzub_delete_plugin(self, plugin):
-		dlg = self.plugin_dialogs.get(zzub.Plugin(plugin),None)
-		if dlg:
-			dlg.destroy()
-		
-	def reset(self):
-		"""
-		Destroys all parameter dialogs. Used when
-		a new song is being loaded.
-		"""
-		for dlg in self.plugin_dialogs.values():
-			dlg.destroy()
-		self.solo_plugin = None
-		self.selected_plugin = None
-		self.plugin_dialogs = {}
 			
 	def on_focus(self, event):
 		self.redraw()
-	
-	def solo(self, plugin):		
-		if not plugin or plugin == self.solo_plugin:
-			# soloing deactived so apply muted states
-			self.solo_plugin = None			
-			for plugin, info in common.get_plugin_infos().iteritems():
-				plugin.set_mute(info.muted)
-				info.reset_plugingfx()
-		elif is_generator(plugin):
-			# mute all plugins except solo plugin
-			self.solo_plugin = plugin			
-			for plugin, info in common.get_plugin_infos().iteritems():				
-				if plugin != self.solo_plugin and is_generator(plugin):					
-					plugin.set_mute(True)
-					info.reset_plugingfx()
-				elif plugin == self.solo_plugin:
-					plugin.set_mute(info.muted)
-					info.reset_plugingfx()
-	
-	def toggle_mute(self, plugin):
-		pi = common.get_plugin_infos().get(plugin)
-		pi.muted = not pi.muted
-		# make sure a machine muted by solo is not unmuted manually
-		if not self.solo_plugin or plugin == self.solo_plugin or is_effect(plugin):
-			plugin.set_mute(pi.muted)
-		pi.reset_plugingfx()
-		
-	def show_parameter_dialog(self, plugin):
-		"""
-		Shows a parameter dialog for a plugin.
-		
-		@param plugin: Plugin instance.
-		@type plugin: Plugin
-		"""
-		dlg = self.plugin_dialogs.get(plugin,None)
-		if not dlg:
-			dlg = ParameterDialog(self.rootwindow, plugin, self)
-		dlg.show_all()
-
 
 	def show_plugin_browser_dialog(self):
 		"""
@@ -902,7 +883,7 @@ class RouteView(gtk.DrawingArea):
 			data = zzub.zzub_event_data_t()
 			data.type = zzub.zzub_event_type_double_click;
 			if mp.invoke_event(data, 1) != 0:
-				self.show_parameter_dialog(mp)
+				com.get('aldrin.core.parameterdialog.manager').show(mp, self)
 		
 	def on_left_down(self, widget, event):
 		"""
@@ -1321,6 +1302,7 @@ class RouteView(gtk.DrawingArea):
 				
 __all__ = [
 'ParameterDialog',
+'ParameterDialogManager',
 'AttributesDialog',
 'PluginBrowserDialog',
 'RoutePanel',
@@ -1331,6 +1313,7 @@ __all__ = [
 __aldrin__ = dict(
 	classes = [
 		ParameterDialog,
+		ParameterDialogManager,
 		AttributesDialog,
 		PluginBrowserDialog,
 		RoutePanel,

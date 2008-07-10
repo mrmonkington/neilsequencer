@@ -26,7 +26,7 @@ import common
 import gobject
 import os,sys 
 import time
-from utils import is_generator, is_effect, is_root
+from utils import is_generator, is_effect, is_root, is_controller
 from config import get_plugin_aliases, get_plugin_blacklist
 
 from gtkimport import gtk
@@ -75,6 +75,7 @@ DOCUMENT_UI = dict(
 	autoconnect_target = dict(vtype=zzub.Plugin,doc="the plugin to connect to automatically when creating a new plugin."),
 	sequence_step = dict(vtype=int,default=64,doc="the current step size for sequencers."),
 	plugin_origin = dict(vtype=int,list=True,default=[0.0,0.0],doc="the origin position for new plugins."),
+	solo_plugin = dict(vtype=zzub.Plugin,doc="if set, the plugin that is currently set to solo."),
 )
 
 class AldrinPlayer(Player):
@@ -332,6 +333,32 @@ class AldrinPlayer(Player):
 			os.makedirs(userlunarpath)
 		pc.configure("local_storage_dir", userlunarpath)
 		
+	def solo(self, plugin):	
+		if not plugin or plugin == self.solo_plugin:
+			# soloing deactived so apply muted states
+			self.solo_plugin = None
+			for plugin, info in common.get_plugin_infos().iteritems():
+				plugin.set_mute(info.muted)
+				info.reset_plugingfx()
+		elif is_generator(plugin):
+			# mute all plugins except solo plugin
+			self.solo_plugin = plugin			
+			for plugin, info in common.get_plugin_infos().iteritems():
+				if plugin != self.solo_plugin and is_generator(plugin):
+					plugin.set_mute(True)
+					info.reset_plugingfx()
+				elif plugin == self.solo_plugin:
+					plugin.set_mute(info.muted)
+					info.reset_plugingfx()
+		
+	def toggle_mute(self, plugin):
+		pi = common.get_plugin_infos().get(plugin)
+		pi.muted = not pi.muted
+		# make sure a machine muted by solo is not unmuted manually
+		if not self.solo_plugin or plugin == self.solo_plugin or is_effect(plugin):
+			plugin.set_mute(pi.muted)
+		pi.reset_plugingfx()
+		
 	def create_plugin(self, pluginloader):
 		
 		# find an unique name for the new plugin
@@ -371,7 +398,7 @@ class AldrinPlayer(Player):
 		# position the plugin at the default location
 		mp.set_position(*self.plugin_origin)
 		
-		if 0:
+		if 0: # TODO: disabled for now, rewrite for 0.3 interface
 			# if we have a context plugin, prepend connections
 			if 'plugin' in kargs:
 				plugin = kargs['plugin']
@@ -400,7 +427,7 @@ class AldrinPlayer(Player):
 					mp.add_audio_input(inplug, amp, pan)
 				plugin.add_audio_input(mp, 16384, 16384)
 		
-		if 0:
+		if 0: # TODO: disabled for now, rewrite for 0.3 interface
 			# if we have a context connection, replace that one
 			if 'conn' in kargs:
 				conn = kargs['conn']
@@ -422,8 +449,60 @@ class AldrinPlayer(Player):
 					
 		self.history_commit("new plugin")
 		
+	def delete_plugin(self, mp):
 		# add plugin information
 		common.get_plugin_infos().add_plugin(mp)
+		
+		inplugs = []
+		outplugs = []
+		if 0: # todo: rewrite for 0.3
+			# record all connections
+			while True:
+				conns = mp.get_input_connection_list()
+				if not conns:
+					break
+				conn = conns.pop()
+				input = conn.get_input()
+				for i in range(conn.get_output().get_input_connection_count()):
+						if conn.get_output().get_input_connection(i)==conn:
+							break
+				try:
+					aconn = conn.get_audio_connection()
+					amp = aconn.get_amplitude()
+					pan = aconn.get_panning()
+					inplugs.append((input,amp,pan))
+				except:
+					import traceback
+					print traceback.format_exc()
+				mp.delete_input(input)
+			while True:
+				conns = mp.get_output_connection_list()
+				if not conns:
+					break
+				conn = conns.pop()
+				output = conn.get_output()
+				for i in range(conn.get_output().get_input_connection_count()):
+						if conn.get_output().get_input_connection(i)==conn:
+							break
+				try:
+					aconn = conn.get_audio_connection()
+					amp = aconn.get_amplitude()
+					pan = aconn.get_panning()
+					outplugs.append((output,amp,pan))
+				except:
+					import traceback
+					print traceback.format_exc()
+				output.delete_input(mp)
+			# and now restore them
+			for inplug,iamp,ipan in inplugs:
+				for outplug,oamp,opan in outplugs:
+					newamp = (iamp*oamp)/16384
+					newpan = ipan
+					outplug.add_audio_input(inplug, newamp, newpan)
+		del common.get_plugin_infos()[mp]
+		mp.destroy()
+		self.history_commit("delete plugin")
+
 
 def generate_ui_method(membername, kwargs):
 	doc = kwargs.get('doc', '')

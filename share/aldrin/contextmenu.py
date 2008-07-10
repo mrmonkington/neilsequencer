@@ -136,9 +136,10 @@ class PluginContextMenu(gtk.Menu):
 		
 	def populate_pluginmenu(self, menu):
 		mp = menu.context
+		player = com.get('aldrin.core.player')
 		menu.add_check_item("_Mute", common.get_plugin_infos().get(mp).muted, self.on_popup_mute, mp)
 		if is_generator(mp):
-			menu.add_check_item("_Solo", self.solo_plugin == mp, self.on_popup_solo, mp)
+			menu.add_check_item("_Solo", player.solo_plugin == mp, self.on_popup_solo, mp)
 		menu.add_separator()
 		menu.add_item("_Parameters...", self.on_popup_show_params, mp)
 		menu.add_item("_Attributes...", self.on_popup_show_attribs, mp)
@@ -182,11 +183,11 @@ class PluginContextMenu(gtk.Menu):
 		@param event: Menu event.
 		@type event: wx.MenuEvent
 		"""		
-		if self.solo_plugin != mp:
-			self.solo(mp)
+		player = com.get('aldrin.core.player')
+		if player.solo_plugin != mp:
+			player.solo(mp)
 		else:
-			self.solo(None)		
-		self.redraw()
+			player.solo(None)
 	
 	def on_popup_mute(self, widget, mp):
 		"""
@@ -195,63 +196,15 @@ class PluginContextMenu(gtk.Menu):
 		@param event: Menu event.
 		@type event: wx.MenuEvent
 		"""
-		self.toggle_mute(mp)		
-		self.redraw()
+		player = com.get('aldrin.core.player')
+		player.toggle_mute(mp)		
 		
 	def on_popup_delete(self, widget, mp):
 		"""
 		Event handler for the "Delete" context menu option.
 		"""
-		res = question(self, "<b><big>Remove plugin?</big></b>\n\nThis action can not be reversed.", allowcancel = False)
-		if res == gtk.RESPONSE_YES:
-			inplugs = []
-			outplugs = []
-			# record all connections
-			while True:
-				conns = mp.get_input_connection_list()
-				if not conns:
-					break
-				conn = conns.pop()
-				input = conn.get_input()
-				for i in range(conn.get_output().get_input_connection_count()):
-						if conn.get_output().get_input_connection(i)==conn:
-							break
-				try:
-					aconn = conn.get_audio_connection()
-					amp = aconn.get_amplitude()
-					pan = aconn.get_panning()
-					inplugs.append((input,amp,pan))
-				except:
-					import traceback
-					print traceback.format_exc()
-				mp.delete_input(input)
-			while True:
-				conns = mp.get_output_connection_list()
-				if not conns:
-					break
-				conn = conns.pop()
-				output = conn.get_output()
-				for i in range(conn.get_output().get_input_connection_count()):
-						if conn.get_output().get_input_connection(i)==conn:
-							break
-				try:
-					aconn = conn.get_audio_connection()
-					amp = aconn.get_amplitude()
-					pan = aconn.get_panning()
-					outplugs.append((output,amp,pan))
-				except:
-					import traceback
-					print traceback.format_exc()
-				output.delete_input(mp)
-			# and now restore them
-			for inplug,iamp,ipan in inplugs:
-				for outplug,oamp,opan in outplugs:
-					newamp = (iamp*oamp)/16384
-					newpan = ipan
-					outplug.add_audio_input(inplug, newamp, newpan)
-			del common.get_plugin_infos()[mp]
-			mp.destroy()
-			self.redraw()
+		player = com.get('aldrin.core.player')
+		player.delete_plugin(mp)
 		
 	def on_popup_disconnect(self, widget, mp, index):
 		"""
@@ -303,7 +256,8 @@ class PluginContextMenu(gtk.Menu):
 		@param event: Menu event.
 		@type event: wx.MenuEvent
 		"""
-		self.show_parameter_dialog(mp)
+		manager = com.get('aldrin.core.parameterdialog.manager')
+		manager.show(mp, widget)
 		
 	def on_popup_new_plugin(self, widget, pluginloader, kargs={}):
 		"""

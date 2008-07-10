@@ -42,7 +42,8 @@ EVENTS = [
 	'active_waves_changed', # ([wave, ...], ...) called when player.active_waves changes.
 	'autoconnect_target_changed', # (plugin, ...) called when player.autoconnect_target changes.
 	'sequence_step_changed', # (stepsize, ...) called when player.sequence_step changes.
-	'plugin_origin_changed', # ((x,y), ...) called when player.plugin_origin_changed changes.
+	'plugin_origin_changed', # ((x,y), ...) called when player.plugin_origin changes.
+	'solo_plugin_changed', # (plugin, ...) called when player.solo_plugin changes.
 	
 	# libzzub events, translation is done in player.py
 	'zzub_all', # ( data,... )

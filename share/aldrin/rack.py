@@ -157,16 +157,14 @@ class ParameterView(gtk.VBox):
 		@param data: event data.
 		@type data: zzub_event_data_t
 		"""
-		dlg = com.get('aldrin.core.routerpanel').view.plugin_dialogs.get(self.plugin,None)
-		if dlg:
-			if zzub.Plugin(plugin) == self.plugin:
-				g,t,i,v = group, track, param, value
-				p = self.pluginloader.get_parameter(g,i)
-				if p.get_flags() & zzub.zzub_parameter_flag_state:
-					nl,s,vl = self.pid2ctrls[(g,t,i)]
-					v = self.plugin.get_parameter_value(g,t,i)
-					s.set_value(v)
-					self.update_valuelabel(g,t,i)
+		if plugin == self.plugin:
+			g,t,i,v = group, track, param, value
+			p = self.pluginloader.get_parameter(g,i)
+			if p and (p.get_flags() & zzub.zzub_parameter_flag_state):
+				nl,s,vl = self.pid2ctrls[(g,t,i)]
+				v = self.plugin.get_parameter_value(g,t,i)
+				s.set_value(v)
+				self.update_valuelabel(g,t,i)
 		
 	def create_sliders(self, rowgroup):
 		plugin = self.plugin
