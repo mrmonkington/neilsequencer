@@ -74,6 +74,7 @@ class ContextMenu(gtk.Menu):
 	
 	def add_check_item(self, label, toggled, func, *args):
 		item = gtk.CheckMenuItem(label=label)
+		item.set_active(toggled)
 		item.connect('toggled', func, *args)
 		self.append(item)
 		return item
@@ -116,7 +117,6 @@ class PluginContextMenu(gtk.Menu):
 			
 	def populate_routermenu(self, menu):
 		self.get_plugin_menu(menu=menu)
-		com.get_from_category('menuitem.route', menu)
 			
 	def populate_connectionmenu(self, menu):
 		mp, index = menu.context
@@ -132,7 +132,6 @@ class PluginContextMenu(gtk.Menu):
 			mi = conn.get_input()
 			for param in mi.get_pluginloader().get_parameter_list(3):
 				print param
-		com.get_from_category('menuitem.connection', menu, connection=(mp,index))
 		
 	def populate_pluginmenu(self, menu):
 		mp = menu.context
@@ -167,14 +166,12 @@ class PluginContextMenu(gtk.Menu):
 						submenu.add_item(prepstr(subcmd), self.on_popup_command, mp, submenuindex, subindex)
 				else:
 					menu.add_item(prepstr(cmd), self.on_popup_command, mp, 0, index)
-		com.get_from_category('menuitem.plugin', menu, plugin=mp)
 
 	def on_popup_rename(self, widget, mp):
 		text = gettext(self, "Enter new plugin name:", prepstr(mp.get_name()))
 		if text:
 			mp.set_name(text)
 			common.get_plugin_infos().get(mp).reset_plugingfx()
-			self.redraw()
 	
 	def on_popup_solo(self, widget, mp):
 		"""
@@ -218,7 +215,6 @@ class PluginContextMenu(gtk.Menu):
 		mp.delete_input(plugin,conntype)
 		player = com.get('aldrin.core.player')
 		player.history_commit("disconnect")
-		self.redraw()
 
 	def on_popup_show_signalanalysis(self, widget, conn):
 		"""
