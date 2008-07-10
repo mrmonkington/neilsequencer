@@ -267,24 +267,30 @@ class Test(TestCase):
 		plugin = self.player.create_plugin(None, 0, "test", pluginloader)
 		self.assertTrue(self.player.get_plugin_count() == 2)		
 		self.assertTrue(self.player.history_get_size() == 0)
+		self.assertTrue(plugin.get_pattern_count() == 0)
 		pattern = plugin.create_pattern(64)
 		pattern.set_name('00')
+		plugin.add_pattern(pattern)
 		t=self.player.create_sequence(plugin)
+		print t
 		t.set_event(0,16)
 		master.add_input(plugin, zzub_connection_type_audio)
-		self.assertTrue(self.player.history_get_uncomitted_operations() == 4)
+		self.assertTrue(self.player.history_get_uncomitted_operations() == 5)
 		self.player.history_commit("create plugin and connect")
 		self.assertTrue(self.player.history_get_uncomitted_operations() == 0)
 		self._handle_events()
 		self._check_protocol([
 			('zzub_pre_connect', dict()),
 			('zzub_new_plugin', dict(plugin=plugin)),
+			('zzub_new_pattern', dict(plugin=plugin, index=0)),
 			('zzub_set_sequence_tracks', dict()),
 			('zzub_set_sequence_event', dict(plugin=None,track=0,time=0)),
 			('zzub_connect', dict(from_plugin=plugin, to_plugin=master, type=0)),
 			('zzub_post_connect', dict()),
 		])
+		self.assertTrue(plugin.get_pattern_count() == 1)
 		pat = plugin.get_pattern(16-0x10)
+		self.assertTrue(pat.get_row_count() == 64)
 		
 	def test_parameter_change_undo(self):
 		"""
