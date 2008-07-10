@@ -22,7 +22,4 @@ Import('pluginenv', 'build_plugin')
 
 build_plugin(pluginenv, 'btdsys_ringmod', files=[
 		'ringmod.cpp',
-	],
-	helpfiles=[
-		'index.html',
 	])
