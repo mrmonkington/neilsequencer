@@ -254,6 +254,37 @@ class Test(TestCase):
 		self._handle_events()
 		self.assertFalse(self.events)
 
+	def test_access_pattern(self):
+		self.assertTrue(self.player.history_get_uncomitted_operations() == 0)
+		self.assertTrue(self.player.get_plugin_count() == 1)
+		master = self.player.get_plugin_by_id(0)
+		self.assertTrue(master == self.player.get_plugin(0))
+		self.assertTrue(master.get_input_connection_count() == 0)
+		self.assertTrue(self.player.history_get_size() == 0)
+		self.assertTrue(self.player.history_get_position() == 0)
+		pluginloader = self.player.get_pluginloader_by_name('@krzysztof_foltman/generator/infector;1')
+		self.assertTrue(pluginloader)
+		plugin = self.player.create_plugin(None, 0, "test", pluginloader)
+		self.assertTrue(self.player.get_plugin_count() == 2)		
+		self.assertTrue(self.player.history_get_size() == 0)
+		pattern = plugin.create_pattern(64)
+		pattern.set_name('00')
+		t=self.player.create_sequence(plugin)
+		t.set_event(0,16)
+		master.add_input(plugin, zzub_connection_type_audio)
+		self.assertTrue(self.player.history_get_uncomitted_operations() == 4)
+		self.player.history_commit("create plugin and connect")
+		self.assertTrue(self.player.history_get_uncomitted_operations() == 0)
+		self._handle_events()
+		self._check_protocol([
+			('zzub_pre_connect', dict()),
+			('zzub_new_plugin', dict(plugin=plugin)),
+			('zzub_set_sequence_tracks', dict()),
+			('zzub_set_sequence_event', dict(plugin=None,track=0,time=0)),
+			('zzub_connect', dict(from_plugin=plugin, to_plugin=master, type=0)),
+			('zzub_post_connect', dict()),
+		])
+		pat = plugin.get_pattern(16-0x10)
 		
 	def test_parameter_change_undo(self):
 		"""
@@ -274,13 +305,13 @@ class Test(TestCase):
 			('zzub_parameter_changed', dict(plugin=master, group=1, track=0, param=2, value=8)),
 			('zzub_parameter_changed', dict(plugin=master, group=1, track=0, param=1, value=162)),
 		])
-		self.assertTrue(self.player.history_get_size() == 1)
-		self.undo()
+		self.assertTrue(self.player.history_get_size() == 0)
+		self.player.undo()
 		self._handle_events()
 		self.assertTrue(self.player.history_get_size() == 0)
 
 if __name__ == '__main__':
-	#main(defaultTest='Test.test_parameter_change_undo')
-	main()
+	main(defaultTest='Test.test_access_pattern')
+	#main()
 
 
