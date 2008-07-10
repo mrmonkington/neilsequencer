@@ -41,6 +41,7 @@ DEFAULT_PACKAGES = [
 	'+pythonconsole',
 	'+contextmenu',
 	'+indexer',
+	'+testframe',
 ]
 
 # aldrin component object model

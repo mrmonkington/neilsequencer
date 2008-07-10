@@ -510,16 +510,15 @@ class RoutePanel(gtk.VBox):
 			order = 3,
 	)
 	
-	def __init__(self, rootwindow):
+	def __init__(self):
 		"""
 		Initializer.
 		
 		@param rootwindow: Main window.
 		@type rootwindow: wx.Frame
 		"""
-		self.rootwindow = rootwindow
 		gtk.VBox.__init__(self)
-		self.view = com.get('aldrin.core.router.view', rootwindow, self)
+		self.view = com.get('aldrin.core.router.view', self)
 		sizer_2 = gtk.HBox()
 		sizer_2.add(self.view)
 		self.add(sizer_2)
@@ -678,7 +677,7 @@ class RouteView(gtk.DrawingArea):
 	COLOR_BORDER_SELECT = 12
 	COLOR_TEXT = 13
 	
-	def __init__(self, rootwindow, parent):
+	def __init__(self, parent):
 		"""
 		Initializer.
 		
@@ -687,7 +686,6 @@ class RouteView(gtk.DrawingArea):
 		"""
 		self.panel = parent
 		self.routebitmap = None
-		self.rootwindow = rootwindow
 		eventbus = com.get('aldrin.core.eventbus')
 		eventbus.zzub_connect += self.on_zzub_redraw_event
 		eventbus.zzub_disconnect += self.on_zzub_redraw_event
@@ -924,8 +922,6 @@ class RouteView(gtk.DrawingArea):
 				common.get_plugin_infos().get(self.selected_plugin).reset_plugingfx()									
 			if last:
 				common.get_plugin_infos().get(last).reset_plugingfx()
-			if hasattr(self.rootwindow, 'select_panel'):
-				self.rootwindow.select_panel(com.get('aldrin.core.routerpanel'))
 		else:
 			res = self.get_connection_at((mx,my))
 			if res:
@@ -1011,8 +1007,9 @@ class RouteView(gtk.DrawingArea):
 		"""
 		Timer event that only updates the plugin leds.
 		"""
-		if self.rootwindow.get_current_panel() != self.panel:
-			return True
+		# TODO: find some other way to find out whether we are really visible
+		#if self.rootwindow.get_current_panel() != self.panel:
+		#	return True
 		if self.window:
 			player = com.get('aldrin.core.player')
 			rect = self.get_allocation()
