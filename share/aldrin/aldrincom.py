@@ -129,8 +129,11 @@ class ComponentManager:
 		try:
 			obj = class_(*args,**kwargs)
 		except:
-			import errordlg
-			errordlg.print_exc()
+			import traceback, errordlg
+			traceback.print_exc()
+			msg = "<b><big>Could not create component</big></b>"
+			msg2 = "while trying to create '" + id + "'"
+			errordlg.error(None, msg, msg2, traceback.format_exc(), offer_quit=True)
 		if class_.__aldrin__.get('singleton',False):
 			if not obj:
 				del self.singletons[id]

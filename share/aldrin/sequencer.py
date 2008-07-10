@@ -162,11 +162,10 @@ class SequencerPanel(gtk.VBox):
 			order = 4,
 	)
 	
-	def __init__(self, rootwindow):
+	def __init__(self):
 		"""
 		Initialization.
 		"""
-		self.rootwindow = rootwindow
 		gtk.VBox.__init__(self)
 		self.splitter = gtk.HPaned()
 		
@@ -192,7 +191,7 @@ class SequencerPanel(gtk.VBox):
 		vscroll = gtk.VScrollbar()
 		hscroll = gtk.HScrollbar()
 		
-		self.seqview = SequencerView(rootwindow, self, hscroll, vscroll)
+		self.seqview = SequencerView(self, hscroll, vscroll)
 		scrollwin = gtk.Table(2,2)
 		scrollwin.attach(self.seqview, 0, 1, 0, 1, gtk.FILL|gtk.EXPAND, gtk.FILL|gtk.EXPAND)
 		scrollwin.attach(vscroll, 1, 2, 0, 1, 0, gtk.FILL)
@@ -299,7 +298,7 @@ class SequencerView(gtk.DrawingArea):
 	"""	
 	CLIPBOARD_SEQUENCER = "SEQUENCERDATA"
 	
-	def __init__(self, rootwindow, panel, hscroll, vscroll):
+	def __init__(self, panel, hscroll, vscroll):
 		"""
 		Initialization.
 		"""
@@ -307,7 +306,6 @@ class SequencerView(gtk.DrawingArea):
 		self.hscroll = hscroll
 		self.vscroll = vscroll
 
-		self.rootwindow = rootwindow
 		self.plugin_info = common.get_plugin_infos()
 		player = com.get('aldrin.core.player')
 		self.playpos = player.get_position()
@@ -930,7 +928,6 @@ class SequencerView(gtk.DrawingArea):
 		@param index: Pattern index.
 		@type index: int
 		"""
-		mainwindow = self.panel.rootwindow
 		pf = com.get('aldrin.core.patternpanel')
 		tb = pf.toolbar
 		tb.plugin_index = 0
@@ -942,7 +939,9 @@ class SequencerView(gtk.DrawingArea):
 				break
 		tb.pattern = index
 		pf.update_all()
-		mainwindow.select_panel(com.get('aldrin.core.patternpanel'))
+		#TODO: find a more direct way
+		#mainwindow = self.panel.rootwindow
+		#mainwindow.select_panel(com.get('aldrin.core.patternpanel'))
 		
 	def get_pattern_at(self, track, row, includespecial=False):
 		"""
@@ -1084,8 +1083,9 @@ class SequencerView(gtk.DrawingArea):
 		"""
 		Updates the position.
 		"""
-		if self.rootwindow.get_current_panel() != self.panel:
-			return True
+		#TODO: find a better way to find out whether we are visible
+		#if self.rootwindow.get_current_panel() != self.panel:
+		#	return True
 		player = com.get('aldrin.core.player')
 		playpos = player.get_position()
 		if self.playpos != playpos:

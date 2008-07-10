@@ -473,15 +473,11 @@ class PatternPanel(gtk.VBox):
 			order = 2,
 	)
 	
-	def __init__(self, rootwindow):
+	def __init__(self):
 		"""
 		Initialization.
-		
-		@param rootwindow: Window that contains the component.
-		@type rootwindow: main.AldrinFrame
 		"""
 		gtk.VBox.__init__(self)
-		self.rootwindow = rootwindow
 		eventbus = com.get('aldrin.core.eventbus')
 		eventbus.zzub_delete_plugin += self.update_all
 		eventbus.zzub_new_plugin += self.update_all
@@ -506,7 +502,7 @@ class PatternPanel(gtk.VBox):
 		self.statusbar.pack_start(label, expand=False)
 		self.statusbar.pack_start(gtk.VSeparator(), expand=False)
 		
-		self.view = PatternView(rootwindow, self, hscroll, vscroll)
+		self.view = PatternView(self, hscroll, vscroll)
 		self.toolbar = PatternToolBar(self.view)
 		self.view.toolbar = self.toolbar
 		self.view.statusbar = self.statusbar
@@ -668,15 +664,11 @@ class PatternView(gtk.DrawingArea):
 		index = 0
 		mode = SEL_COLUMN
 	
-	def __init__(self, rootwindow, panel, hscroll, vscroll):
+	def __init__(self, panel, hscroll, vscroll):
 		"""
 		Initialization.
-		
-		@param rootwindow: Window that contains the component.
-		@type rootwindow: main.AldrinFrame
 		"""
 		self.statuslabels = panel.statuslabels
-		self.rootwindow = rootwindow
 		self.panel = panel
 		self.hscroll = hscroll
 		self.vscroll = vscroll
@@ -813,8 +805,9 @@ class PatternView(gtk.DrawingArea):
 		"""
 		Updates the position.
 		"""
-		if self.rootwindow.get_current_panel() != self.panel:
-			return True
+		# TODO: find some other means to find out visibility
+#		if self.rootwindow.get_current_panel() != self.panel:
+#			return True
 		player = com.get('aldrin.core.player')
 		playpos = player.get_position()
 		if self.playpos != playpos:
@@ -2034,8 +2027,10 @@ class PatternView(gtk.DrawingArea):
 			if plugin:
 				self.plugin_info.get(plugin).reset_patterngfx()
 		elif k == 'Return':
-			mainwindow = self.rootwindow
-			mainwindow.select_panel(com.get('aldrin.core.sequencerpanel'))
+			# TODO: do this in a more direct way
+			#mainwindow = self.rootwindow
+			#mainwindow.select_panel(com.get('aldrin.core.sequencerpanel'))
+			pass
 		elif k in ('KP_Add','plus'):			
 			self.toolbar.next_pattern()
 		elif k in ('KP_Subtract','minus'):

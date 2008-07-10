@@ -80,14 +80,10 @@ class InfoPanel(gtk.VBox):
 			order = 10,
 	)
 
-	def __init__(self, rootwindow, *args, **kwds):
+	def __init__(self, *args, **kwds):
 		"""
 		Initializer.
-		
-		@param rootwindow: Main window.
-		@type rootwindow: wx.Frame
 		"""
-		self.rootwindow = rootwindow
 		gtk.VBox.__init__(self, False, MARGIN)
 		self.set_border_width(MARGIN)
 		hbox = gtk.HBox(False, MARGIN)
@@ -100,7 +96,7 @@ class InfoPanel(gtk.VBox):
 				text = "%s" % (license['title'])
 			self.cblicense.append_text(text)
 		hbox.pack_start(self.cblicense, expand=False)
-		self.view = InfoView(rootwindow)
+		self.view = InfoView()
 		self.pack_start(hbox, expand=False)
 		self.pack_start(add_scrollbars(self.view))
 		
@@ -122,12 +118,9 @@ class InfoView(gtk.TextView):
 	Allows to enter and view text saved with the module.
 	"""	
 	
-	def __init__(self, rootwindow):
+	def __init__(self):
 		"""
 		Initializer.
-		
-		@param rootwindow: Main window.
-		@type rootwindow: wx.Frame
 		"""
 		gtk.TextView.__init__(self)
 		self.set_wrap_mode(gtk.WRAP_WORD)

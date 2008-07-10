@@ -277,7 +277,7 @@ class ParameterDialog(gtk.Dialog):
 		self.plugin = plugin
 		self.manager = manager
 		self.manager.plugin_dialogs[plugin] = self
-		self.paramview = ParameterView(parent, plugin)
+		self.paramview = ParameterView(plugin)
 		self.set_title(self.paramview.get_title())
 		self.vbox.add(self.paramview)
 		self.connect('destroy', self.on_destroy)
@@ -513,9 +513,6 @@ class RoutePanel(gtk.VBox):
 	def __init__(self):
 		"""
 		Initializer.
-		
-		@param rootwindow: Main window.
-		@type rootwindow: wx.Frame
 		"""
 		gtk.VBox.__init__(self)
 		self.view = com.get('aldrin.core.router.view', self)

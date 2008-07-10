@@ -59,7 +59,7 @@ class ParameterView(gtk.VBox):
 		('application/x-controller-slider-drop', gtk.TARGET_SAME_APP, DROP_TARGET_CTRL_SLIDER),
 	]
 
-	def __init__(self, rootwindow, plugin):
+	def __init__(self, plugin):
 		"""
 		Initializer.
 		
@@ -73,7 +73,6 @@ class ParameterView(gtk.VBox):
 		name = prepstr(self.plugin.get_name())
 		pl = self.plugin.get_pluginloader()
 		classname = prepstr(pl.get_name())
-		self.rootwindow = rootwindow
 		title = "%s - %s" % (name,classname)
 		# 0.3: DEAD
 		# output channels are always 2
@@ -393,7 +392,7 @@ class ParameterView(gtk.VBox):
 		a controller with a plugin parameter.
 		"""
 		import controller
-		res = controller.learn_controller(self, self.rootwindow)
+		res = controller.learn_controller(self)
 		if res:
 			name, channel, ctrlid = res
 			player.add_midimapping(self.plugin, g, t, i, channel, ctrlid)
@@ -701,7 +700,7 @@ class ParameterView(gtk.VBox):
 				import webbrowser
 				webbrowser.open_new(path)
 				return
-		info=gtk.MessageDialog(self.rootwindow,flags=0, type=gtk.MESSAGE_INFO, buttons=gtk.BUTTONS_OK, message_format="Sorry, there's no help for this plugin yet")
+		info=gtk.MessageDialog(self.get_toplevel(),flags=0, type=gtk.MESSAGE_INFO, buttons=gtk.BUTTONS_OK, message_format="Sorry, there's no help for this plugin yet")
 		info.run()
 		info.destroy()
 		
@@ -850,12 +849,11 @@ class RackPanel(gtk.VBox):
 			order = 11,
 	)
 	
-	def __init__(self, rootwindow):
+	def __init__(self):
 		"""
 		Initialization.
 		"""
 		gtk.VBox.__init__(self)
-		self.rootwindow = rootwindow
 		self.panels = {}
 		scrollwindow = gtk.ScrolledWindow()
 		scrollwindow.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
@@ -884,7 +882,7 @@ class RackPanel(gtk.VBox):
 			self.panels[plugin].destroy()
 			del self.panels[plugin]
 		for plugin in addlist:
-			view = ParameterView(self.rootwindow, plugin)
+			view = ParameterView(plugin)
 			view.show_all()
 			self.panels[plugin] = view
 			self.rowgroup.pack_start(view, expand=False)

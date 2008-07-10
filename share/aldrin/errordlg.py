@@ -6,7 +6,7 @@ import sys
 
 Parent = None
 
-def error(parent, msg, msg2=None, details=None):
+def error(parent, msg, msg2=None, details=None, offer_quit=False):
 	"""
 	Shows an error message dialog.
 	"""
@@ -32,7 +32,13 @@ def error(parent, msg, msg2=None, details=None):
 		sw.add(label)		
 		expander.add(sw)
 		dialog.show_all()
-	dialog.add_buttons(gtk.STOCK_OK, gtk.RESPONSE_OK)
+	dialog.add_button(gtk.STOCK_OK, gtk.RESPONSE_OK)
+	if offer_quit:
+		dialog.add_button(gtk.STOCK_QUIT, gtk.RESPONSE_REJECT)
+		def quit_on_cancel(dlg, response_id):
+			if response_id == gtk.RESPONSE_REJECT:
+				raise SystemExit, 1
+		dialog.connect('response', quit_on_cancel)
 	response = dialog.run()
 	dialog.destroy()
 	return response
@@ -44,7 +50,7 @@ def show_exc_dialog(exc_type, value, traceback):
 	if exc == last_exc:
 		return
 	last_exc = exc
-	error(Parent, "<b>An exception (<i>%s</i>) occurred.</b>" % exc_type.__name__, str(value), exc)
+	error(Parent, "<b>An exception (<i>%s</i>) occurred.</b>" % exc_type.__name__, str(value), exc, offer_quit=True)
 
 def print_exc():
 	traceback_print_exc()

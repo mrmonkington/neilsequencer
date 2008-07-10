@@ -45,7 +45,6 @@ class TestDialog(gtk.Dialog):
 	def on_destroy(self, event):
 		gtk.main_quit()
 
-
 __aldrin__ = dict(
 	classes = [
 		TestDialog,

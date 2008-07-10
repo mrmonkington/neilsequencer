@@ -62,12 +62,11 @@ class WavetablePanel(gtk.Notebook):
 			order = 9,
 	)
 	
-	def __init__(self, rootwindow):
+	def __init__(self):
 		"""
 		Initialization.
 		"""
 		self.working_directory = ''
-		self.rootwindow = rootwindow
 		self.files = []
 		gtk.Notebook.__init__(self)
 		self.tooltips=gtk.Tooltips()

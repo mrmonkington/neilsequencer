@@ -181,7 +181,7 @@ class AldrinFrame(gtk.Window):
 			a_order = (hasattr(a, '__view__') and a.__view__.get('order',0)) or 0
 			b_order = (hasattr(b, '__view__') and b.__view__.get('order',0)) or 0
 			return cmp(a_order, b_order)
-		self.pages = sorted(com.get_from_category('aldrin.viewpanel', self), cmp=cmp_panel)
+		self.pages = sorted(com.get_from_category('aldrin.viewpanel'), cmp=cmp_panel)
 		self.aldrinframe_toolbar.insert(make_stock_tool_item(gtk.STOCK_NEW, self.new),-1)
 		self.aldrinframe_toolbar.insert(make_stock_tool_item(gtk.STOCK_OPEN, self.on_open),-1)
 		self.aldrinframe_toolbar.insert(make_stock_tool_item(gtk.STOCK_SAVE, self.on_save),-1)
@@ -208,7 +208,7 @@ class AldrinFrame(gtk.Window):
 			options = panel.__view__
 			stockid = options['stockid']
 			label = options['label']
-			key = options.get('shortcut', '')			
+			key = options.get('shortcut', '')
 			if options.get('default'):
 				defaultpanelindex = index
 			panel.show_all()
@@ -253,7 +253,6 @@ class AldrinFrame(gtk.Window):
 		
 		gobject.timeout_add(500, self.update_title)
 		self.framepanel.connect('switch-page', self.on_activate_page)
-		self.framepanel.connect('button-release-event', self.button_up)
 		self.activated=0
 		
 		self.document_changed()
@@ -628,18 +627,13 @@ class AldrinFrame(gtk.Window):
 			self.activated=1
 			self.index=index
 			panel = self.pages[self.index]
+			if not panel:
+				return
 			if self.framepanel.get_current_page() != self.index:
 				self.framepanel.set_current_page(self.index)
 			panel.handle_focus()
 		self.activated=0
 		
-	def button_up(self, *args):
-		"""
-		selects panel after button up
-		"""
-		panel = self.get_current_panel()		
-		panel.handle_focus()
-			
 	def on_preferences(self, *args):
 		"""
 		Event handler triggered by the "Preferences" menu option.
