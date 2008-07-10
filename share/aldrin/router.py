@@ -345,6 +345,13 @@ class PluginBrowserDialog(gtk.Dialog):
 	"""
 	Displays all available plugins and some meta information.
 	"""
+	
+	__aldrin__ = dict(
+		id = 'aldrin.core.pluginbrowser',
+		categories = [
+		]
+	)
+	
 	PBD_PTYPE = 0
 	PBD_PARAMS = 1
 	PBD_ATTRS = 2
@@ -749,15 +756,6 @@ class RouteView(gtk.DrawingArea):
 	def on_focus(self, event):
 		self.redraw()
 
-	def show_plugin_browser_dialog(self):
-		"""
-		Shows the plugin browser dialog.
-		
-		@param parent: Parent window.
-		@type parent: gtk.Window
-		"""
-		dlg = PluginBrowserDialog(self)
-
 	def on_context_menu(self, widget, event):
 		"""
 		Event handler for requests to show the context menu.
@@ -876,7 +874,7 @@ class RouteView(gtk.DrawingArea):
 		res = self.get_plugin_at((mx,my))
 		if not res:
 			# User adds plugins while browser stays open. Nothing to do when it's closed.
-			self.show_plugin_browser_dialog()
+			com.get('aldrin.core.pluginbrowser', self)
 			return
 		mp,(x,y),area = res
 		if area == AREA_ANY:
@@ -1254,7 +1252,7 @@ class RouteView(gtk.DrawingArea):
 		k = gtk.gdk.keyval_name(kv)
 		if (mask & gtk.gdk.CONTROL_MASK):
 			if k == 'Return':
-				self.show_plugin_browser_dialog()
+				com.get('aldrin.core.pluginbrowser', self)
 				return
 		if not plugin:			
 			if self.selected_plugin:

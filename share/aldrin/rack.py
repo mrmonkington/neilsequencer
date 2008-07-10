@@ -725,6 +725,8 @@ class ParameterView(gtk.VBox):
 					s.set_value(value)
 					self.plugin.set_parameter_value(g,t,i,int(s.get_value()),0)
 					self.update_valuelabel(g,t,i)
+					player = com.get('aldrin.core.player')
+					player.history_commit("change plugin parameter")
 				except:
 					import traceback
 					traceback.print_exc()
@@ -754,6 +756,8 @@ class ParameterView(gtk.VBox):
 		v = self.plugin.get_parameter_value(g,t,i)
 		s.set_value(v)
 		self.update_valuelabel(g,t,i)
+		player = com.get('aldrin.core.player')
+		player.history_commit("change plugin parameter")
 		
 	def update_valuelabel(self, g, t, i):
 		"""
@@ -788,6 +792,8 @@ class ParameterView(gtk.VBox):
 		s.set_value(value) # quantize slider position
 		self.plugin.set_parameter_value(g,t,i,value,1)
 		self.update_valuelabel(g,t,i)
+		player = com.get('aldrin.core.player')
+		player.history_commit("change plugin parameter")
 		return True
 
 class DataEntry(gtk.Dialog):

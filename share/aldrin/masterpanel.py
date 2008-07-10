@@ -124,7 +124,7 @@ class MasterPanel(gtk.VBox):
 
 	def on_zzub_parameter_changed(self, plugin,group,track,param,value):
 		player = com.get('aldrin.core.player')
-		if zzub.Plugin(plugin) == player.get_plugin(0):
+		if plugin == player.get_plugin(0):
 			self.update_all()
 
 	def on_scroll_changed(self, widget, scroll, value):
@@ -139,6 +139,7 @@ class MasterPanel(gtk.VBox):
 		master = player.get_plugin(0)
 		master.set_parameter_value(1, 0, 0, 16384 - vol, 1)
 		self.masterslider.set_value(vol)
+		player.history_commit("change master volume")
 		return True
 
 	def on_mousewheel(self, widget, event):
