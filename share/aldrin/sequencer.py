@@ -331,6 +331,8 @@ class SequencerView(gtk.DrawingArea):
 		self.hscroll.connect('change-value', self.on_hscroll_window)
 		self.vscroll.connect('change-value', self.on_vscroll_window)
 		gobject.timeout_add(100, self.update_position)
+		eventbus = com.get('aldrin.core.eventbus')
+		eventbus.zzub_sequencer_changed += self.redraw
 		
 	def track_row_to_pos(self, (track,row)):
 		"""
@@ -854,6 +856,7 @@ class SequencerView(gtk.DrawingArea):
 					else:
 						newrow = self.row + self.step
 					self.insert_at_cursor(idx)
+					player.history_commit("add pattern reference")
 					self.set_cursor_pos(self.track, newrow)
 					self.adjust_scrollbars()
 		elif k == 'space': # space
@@ -883,10 +886,10 @@ class SequencerView(gtk.DrawingArea):
 				length = 0
 			if (self.row < (bp + length)):
 				newrow = bp + length
-				t = seq.get_track(self.track)
-				t.remove_event_at(bp)
+				t = seq.get_sequence(self.track)
+				t.remove_events(bp, 1)
+				player.history_commit("remove pattern reference")
 				self.set_cursor_pos(self.track, newrow - (newrow % self.step))
-				self.redraw()
 		elif k == 'Home' or k == 'KP_Home':
 			self.set_cursor_pos(self.track, 0)
 		elif k == 'End' or k == 'KP_End':
@@ -1062,7 +1065,7 @@ class SequencerView(gtk.DrawingArea):
 		self.panel.update_list()
 		return False
 		
-	def redraw(self):
+	def redraw(self, *args):
 		if self.window:
 			rect = self.get_allocation()
 			self.window.invalidate_rect((0,0,rect.width,rect.height), False)
@@ -1380,7 +1383,6 @@ class SequencerView(gtk.DrawingArea):
 		if (x >= SEQLEFTMARGIN):
 			drawable.draw_line(gc, x-1, 0, x-1, h)
 		self.draw_xor()
-		#print "%.2fms" % ((time.time() - st)*1000)
 
 __all__ = [
 'PatternNotFoundException',

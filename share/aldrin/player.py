@@ -387,6 +387,7 @@ class AldrinPlayer(Player):
 			(pluginloader.get_parameter_count(1) or pluginloader.get_parameter_count(2)):
 			pattern = mp.create_pattern(self.sequence_step)
 			pattern.set_name('00')
+			mp.add_pattern(pattern)
 			t=self.create_sequence(mp)
 			t.set_event(0,16)
 			mask=gtk.get_current_event_state()

@@ -52,9 +52,14 @@ __aldrin__ = dict(
 )
 
 if __name__ == '__main__':
+	import contextlog
+	contextlog.init()
 	aldrincom.init()
 	view = com.get('aldrin.core.routerpanel')
 	dlg = com.get('aldrin.test.dialog', view)
+	# running standalone
+	browser = com.get('aldrin.pythonconsole.dialog', False)
+	browser.show_all()
 	gtk.main()
 
 

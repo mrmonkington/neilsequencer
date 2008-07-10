@@ -20,14 +20,15 @@
 
 import config
 
+# removed packages currently cause crashes
 DEFAULT_PACKAGES = [
 	'+eventbus',
 	'+driver',
 	'+router',
-	'+patterns',
+	'-patterns',
 	'+sequencer',
 	'+wavetable',
-	'+rack',
+	'-rack',
 	'+info',
 	'+mainwindow',
 	'+about',
