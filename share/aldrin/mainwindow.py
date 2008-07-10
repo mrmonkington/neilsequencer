@@ -889,15 +889,13 @@ class AldrinFrame(gtk.Window):
 		"""
 		self.filename = ""
 		common.get_plugin_infos().reset()
-		for panel in self.pages:
-			if hasattr(panel, 'reset'):
-				panel.reset()
 		player = com.get('aldrin.core.player')
 		player.clear()
 		player.set_loop_start(0)
 		player.set_loop_end(com.get('aldrin.core.sequencerpanel').view.step)
 		player.get_plugin(0).set_parameter_value(1, 0, 1, config.get_config().get_default_int('BPM', 126), 1)
 		player.get_plugin(0).set_parameter_value(1, 0, 2, config.get_config().get_default_int('TPB', 4), 1)
+		player.history_flush()
 		self.document_changed()
 		self.update_title()
 		

@@ -85,7 +85,7 @@ class AldrinPlayer(Player):
 	)
 	
 	_exclude_event_debug_ = [
-		#zzub.zzub_event_type_parameter_changed,
+		zzub.zzub_event_type_parameter_changed,
 	]
 		
 	_event_types_ = dict(

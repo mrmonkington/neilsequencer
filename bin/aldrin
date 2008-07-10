@@ -4,7 +4,7 @@ import os, sys, imp
 
 if '--debug' in sys.argv:
 	sys.argv.remove('--debug')
-	os.system('gdb --eval-command=run --args python "%s"$*' % sys.argv[0])
+	os.system('gdb --eval-command=run -q --args python "%s"$*' % sys.argv[0])
 	raise SystemExit, 0
 if '--pydebug' in sys.argv:
 	sys.argv.remove('--pydebug')

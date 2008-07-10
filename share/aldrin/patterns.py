@@ -211,14 +211,14 @@ class PatternToolBar(gtk.HBox):
 		self.pack_start(self.playnotes, expand=False)
 		
 		eventbus = com.get('aldrin.core.eventbus')
-		eventbus.zzub_pre_delete_plugin += self.plugin_deleted
-		eventbus.zzub_delete_pattern += self.update_patternselect
-		eventbus.zzub_new_pattern += self.update_patternselect
-		eventbus.zzub_pattern_changed += self.update_patternselect
-		eventbus.song_opened += self.update_all
-		eventbus.zzub_new_plugin += self.select_plugin_instance
-		eventbus.show_plugin += self.select_plugin_instance
-		eventbus.octave_changed += self.update_octaves
+		#eventbus.zzub_pre_delete_plugin += self.plugin_deleted
+		#eventbus.zzub_delete_pattern += self.update_patternselect
+		#eventbus.zzub_new_pattern += self.update_patternselect
+		#eventbus.zzub_pattern_changed += self.update_patternselect
+		#eventbus.song_opened += self.update_all
+		#eventbus.zzub_new_plugin += self.select_plugin_instance
+		#eventbus.show_plugin += self.select_plugin_instance
+		#eventbus.octave_changed += self.update_octaves
 		
 	def reset(self):
 		self.plugin_index = 0
@@ -245,13 +245,11 @@ class PatternToolBar(gtk.HBox):
 		"""
 		Callback to handle selection of the patternselect list.
 		"""
-		print "on_patternselect"
 		if widget.get_active() == -1:
 			return
 		if self.pattern == widget.get_active():
 			return
 		self.pattern = widget.get_active()
-		self.view.pattern_changed()
 		
 	def on_waveselect_popup(self, widget, *args):
 		player = com.get('aldrin.core.player')
@@ -714,10 +712,10 @@ class PatternView(gtk.DrawingArea):
 		self.hscroll.connect('change-value', self.on_hscroll_window)
 		self.vscroll.connect('change-value', self.on_vscroll_window)
 		eventbus = com.get('aldrin.core.eventbus')
-		eventbus.zzub_connect += self.pattern_changed
-		eventbus.zzub_disconnect += self.pattern_changed
-		eventbus.zzub_pattern_changed += self.pattern_changed
-		eventbus.zzub_new_plugin += self.plugin_created
+		#eventbus.zzub_connect += self.pattern_changed
+		#eventbus.zzub_disconnect += self.pattern_changed
+		#eventbus.zzub_pattern_changed += self.pattern_changed
+		#eventbus.zzub_new_plugin += self.plugin_created
 
 	def update_font(self):
 		pctx = self.get_pango_context()
@@ -841,6 +839,7 @@ class PatternView(gtk.DrawingArea):
 		self.group_position = [0,0,0]
 		self.group_track_count = [0,0,0]
 		datasource = self.get_datasource()
+		print "init values"
 		if datasource:
 			# plugin loader, pattern data
 			self.plugin, self.pattern = datasource
@@ -858,8 +857,11 @@ class PatternView(gtk.DrawingArea):
 			self.parameter_type = []
 			self.track_width = []
 			for group in xrange(3):
-				# parameter counts
-				group_parameter_count = self.plugin.get_parameter_count(group,0)
+				if (group == 0) and not self.plugin.get_input_connection_count():
+					group_parameter_count = 0
+				else:
+					# parameter counts
+					group_parameter_count = self.plugin.get_parameter_count(group,0)
 				self.parameter_count.append(group_parameter_count)
 				# parameter widths in columns
 				widths = []
@@ -1272,7 +1274,8 @@ class PatternView(gtk.DrawingArea):
 					v = max(min(v+offset,p.get_value_max()),p.get_value_min())
 				self.pattern.set_value(r,g,t,i,v)
 		tmp_sel = self.selection
-		self.pattern_changed()
+		player = com.get('aldrin.core.player')
+		player.history_commit("transpose")
 		self.selection = tmp_sel
 
 	def randomize_selection(self, widget=None, mode=None):
@@ -1399,7 +1402,8 @@ class PatternView(gtk.DrawingArea):
 						
 			self.pattern.set_value(r, g, t, i, v)
 		tmp_sel = self.selection
-		self.pattern_changed()
+		player = com.get('aldrin.core.player')
+		player.history_commit("randomize")
 		self.selection = tmp_sel
 
 	def interpolate_selection(self, widget=None):
@@ -1447,7 +1451,8 @@ class PatternView(gtk.DrawingArea):
 						v = roundint((v2 - v1) * f + v1)
 				self.pattern.set_value(r,g,t,i,v)
 		tmp_sel = self.selection
-		self.pattern_changed()
+		player = com.get('aldrin.core.player')
+		player.history_commit("interpolate")
 		self.selection = tmp_sel
 
 	def cut(self):
@@ -1462,9 +1467,10 @@ class PatternView(gtk.DrawingArea):
 				break
 			if r<0:
 				continue
-			p = self.plugin.get_parameter(g,i)
+			p = self.plugin.get_parameter(g,t,i)
 			self.pattern.set_value(r,g,t,i,p.get_value_none())
-		self.pattern_changed()
+		player = com.get('aldrin.core.player')
+		player.history_commit("remove event")
 
 	def copy(self):
 		"""
@@ -1493,7 +1499,8 @@ class PatternView(gtk.DrawingArea):
 				continue
 			p = self.plugin.get_parameter(g,i)
 			self.pattern.set_value(r,g,t,i,p.get_value_none())
-		self.pattern_changed()
+		player = com.get('aldrin.core.player')
+		player.history_commit("delete events")
 			
 	def unpack_clipboard_data(self, d):
 		"""
@@ -1564,7 +1571,8 @@ class PatternView(gtk.DrawingArea):
 			#Non Buzz-like behaviour (naughty naughty!) ;)  :
 			#self.set_row(r+1)
 			self.update_statusbar()	
-			self.pattern_changed()
+			player = com.get('aldrin.core.player')
+			player.history_commit("paste events")
 		except:
 			import traceback
 			traceback.print_exc()
@@ -1695,7 +1703,8 @@ class PatternView(gtk.DrawingArea):
 		for r,g,t,i in pattern_index:
 			self.pattern.set_value(r*2,g,t,i,pattern_contents[item])
 			item+=1
-		self.pattern_changed()
+		player = com.get('aldrin.core.player')
+		player.history_commit("double length")
 		
 	def on_popup_halve(self, *args):
 		"""
@@ -1709,7 +1718,8 @@ class PatternView(gtk.DrawingArea):
 				continue
 			self.pattern.set_value(r/2,g,t,i,self.pattern.get_value(r,g,t,i))
 		self.pattern.set_row_count(self.pattern.get_row_count()/2)
-		self.pattern_changed()
+		player = com.get('aldrin.core.player')
+		player.history_commit("halve length")
 		
 	def on_popup_create_copy(self, *args):
 		"""
@@ -1730,6 +1740,8 @@ class PatternView(gtk.DrawingArea):
 				if m.get_pattern(i) == p:
 					self.toolbar.select_pattern(i)
 					break
+		player = com.get('aldrin.core.player')
+		player.history_commit("copy pattern")
 	
 	def on_popup_solo(self, *args):
 		"""
@@ -1834,6 +1846,7 @@ class PatternView(gtk.DrawingArea):
 			kv = kv - gtk.gdk.keyval_from_name('KP_0')  + gtk.gdk.keyval_from_name('0') 
 		k = gtk.gdk.keyval_name(kv)
 		print mask,k,kv
+		player = com.get('aldrin.core.player')
 		if k == 'less':
 			self.toolbar.prev_wave()
 		elif k == 'greater':
@@ -2049,7 +2062,7 @@ class PatternView(gtk.DrawingArea):
 			self.update_plugin_info()
 			self.redraw()
 		elif self.plugin and (kv < 256):
-			p = self.plugin.get_parameter(self.group,self.index)
+			p = self.plugin.get_parameter(self.group,self.track,self.index)
 			param_type = p.get_type()
 			playtrack = False
 			if (param_type == 0): # note
@@ -2058,7 +2071,7 @@ class PatternView(gtk.DrawingArea):
 				wp = None
 				wdata = None
 				for i in range(self.parameter_count[self.group]):
-					pwp = self.plugin.get_parameter(self.group,i)
+					pwp = self.plugin.get_parameter(self.group,self.track,i)
 					if pwp.get_flags() & zzub.zzub_parameter_flag_wavetable_index:
 						wp = pwp
 						wi = i
@@ -2085,6 +2098,7 @@ class PatternView(gtk.DrawingArea):
 						return False
 					if wdata != None:
 						self.pattern.set_value(self.row, self.group, self.track, wi, wdata)
+						player.history_commit("enter event")
 				elif (self.subindex == 1) and (k >= '1') and (k <= '9'):
 						o = ord(k)-ord('1')+1
 						data = (self.pattern.get_value(self.row, self.group, self.track, self.index) & 0xf) | (o << 4)
@@ -2121,6 +2135,7 @@ class PatternView(gtk.DrawingArea):
 			else:
 				return False
 			self.pattern.set_value(self.row, self.group, self.track, self.index, data)
+			player.history_commit("enter event")
 			self.play_note(playtrack)
 		else:
 			return False
@@ -2313,7 +2328,6 @@ class PatternView(gtk.DrawingArea):
 			#w,h=self.get_client_size()
 			#for row in range(h/self.row_height):
 			#	self.update_line(self.start_row+row)
-			self.redraw()
 		return True
 
 	def on_hscroll_window(self, widget, scroll, value):
@@ -2356,9 +2370,8 @@ class PatternView(gtk.DrawingArea):
 					self.statuslabels[0].set_label('Row %s, Globals' % (self.row,))
 				else:
 					self.statuslabels[0].set_label('Row %s, Track %s' % (self.row,self.track))
-				parameter_list = self.plugin.get_parameter_list(self.group,0)
-				self.statuslabels[2].set_label(prepstr(parameter_list[self.index].get_description() or ""))
 				p = self.plugin.get_parameter(self.group,self.track,self.index)
+				self.statuslabels[2].set_label(prepstr(p.get_description() or ""))
 				v = self.pattern.get_value(self.row, self.group, self.track, self.index)
 				if v != p.get_value_none():
 					text = prepstr(self.get_plugin().describe_value(self.group,self.index,v))
@@ -2425,7 +2438,7 @@ class PatternView(gtk.DrawingArea):
 			plugin = self.get_plugin()			
 			if plugin == track_plugin and self.pattern:			
 				row_count = self.pattern.get_row_count()		
-				events = track.get_event_list()
+				events = list(track.get_event_list())
 				for i, pair in enumerate(events):
 					pos, value = pair
 					# make sure event is a pattern
@@ -2485,9 +2498,9 @@ class PatternView(gtk.DrawingArea):
 			if self.lines[g]:
 				tc = self.group_track_count[g]
 				for t in range(tc):
-					s = ' '.join([get_str_from_param(self.plugin.get_parameter(g, i),
+					s = ' '.join([get_str_from_param(self.plugin.get_parameter(g, t, i),
 									 self.pattern.get_value(row, g, t, i))
-									for i in range(self.parameter_count[g])])
+									for i in xrange(self.parameter_count[g])])
 					try: 
 						self.lines[g][t][row] = s
 					except IndexError:
@@ -2516,11 +2529,11 @@ class PatternView(gtk.DrawingArea):
 		Initializes a buffer to handle the current pattern data.
 		"""
 		#st = time.time()
-		self.lines = [None]*3	
+		self.lines = [None]*3
 		for group in range(3):
 			if self.parameter_count[group] > 0:
 				tc = self.group_track_count[group]
-				self.lines[group] = [None]*tc			
+				self.lines[group] = [None]*tc
 				for track in range(tc):
 					self.lines[group][track] = [None]*self.row_count
 					self.update_col(group, track)
