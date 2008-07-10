@@ -785,36 +785,20 @@ class RouteView(gtk.DrawingArea):
 		@type event: wx.Event
 		"""
 		mx,my = int(event.x), int(event.y)
-		self.contextmenupos = mx,my
-		def make_submenu_item(submenu, name):
-			item = gtk.MenuItem(label=name)
-			item.set_submenu(submenu)
-			return item
-		def make_menu_item(label, desc, func, *args):
-			item = gtk.MenuItem(label=label)
-			if func:
-				item.connect('activate', func, *args)
-			return item
-		def make_check_item(toggled, label, desc, func, *args):
-			item = gtk.CheckMenuItem(label=label)
-			item.set_active(toggled)
-			if func:
-				item.connect('toggled', func, *args)
-			return item
+		player = com.get('aldrin.core.player')
+		player.plugin_origin = self.pixel_to_float((mx,my))
 		res = self.get_plugin_at((mx,my))
 		if res:
 			mp,(x,y),area = res
 			menu = com.get('aldrin.core.contextmenu', 'plugin', mp)
-			menu.popup(self, event)
 		else:
 			res = self.get_connection_at((mx,my))
 			if res:
 				mp, index = res
 				menu = com.get('aldrin.core.contextmenu', 'connection', (mp, index))
-				menu.popup(self, event)
 			else:
 				menu = com.get('aldrin.core.contextmenu', 'router', None)
-				menu.popup(self, event)
+		menu.popup(self, event)
 		
 	def float_to_pixel(self, (x, y)):
 		"""

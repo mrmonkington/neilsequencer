@@ -22,10 +22,15 @@ import zzub
 from zzub import Player
 from aldrincom import com
 
+import common
 import gobject
 import os,sys 
 import time
+from utils import is_generator, is_effect, is_root
 from config import get_plugin_aliases, get_plugin_blacklist
+
+from gtkimport import gtk
+
 
 DOCUMENT_UI = dict(
 	# insert persistent members at this level, in the format
@@ -68,6 +73,8 @@ DOCUMENT_UI = dict(
 	active_waves = dict(vtype=zzub.Wave,list=True,doc="the list of active waves."),
 	octave = dict(vtype=int,default=4,doc="the current octave to be used for keyjazz."),
 	autoconnect_target = dict(vtype=zzub.Plugin,doc="the plugin to connect to automatically when creating a new plugin."),
+	sequence_step = dict(vtype=int,default=64,doc="the current step size for sequencers."),
+	plugin_origin = dict(vtype=int,list=True,default=[0.0,0.0],doc="the origin position for new plugins."),
 )
 
 class AldrinPlayer(Player):
@@ -325,6 +332,98 @@ class AldrinPlayer(Player):
 			os.makedirs(userlunarpath)
 		pc.configure("local_storage_dir", userlunarpath)
 		
+	def create_plugin(self, pluginloader):
+		
+		# find an unique name for the new plugin
+		basename = pluginloader.get_short_name()
+		name = pluginloader.get_short_name()
+		basenumber = 2
+		while True:
+			found = False
+			for mp in self.get_plugin_list():
+				if mp.get_name() == name:
+					found = True
+					name = "%s%i" % (basename, basenumber)
+					basenumber += 1
+					break
+			if not found:
+				break
+				
+		# create the new plugin
+		mp = zzub.Player.create_plugin(self, None, 0, name, pluginloader)
+		assert mp
+		
+		# if it is a generator and has global or track parameters,
+		# create a new default pattern, and autoconnect the plugin.
+		if is_generator(mp) and \
+			(pluginloader.get_parameter_count(1) or pluginloader.get_parameter_count(2)):
+			pattern = mp.create_pattern(self.sequence_step)
+			pattern.set_name('00')
+			t=self.create_sequence(mp)
+			t.set_event(0,16)
+			mask=gtk.get_current_event_state()
+			if not(mask & gtk.gdk.SHIFT_MASK):
+				if self.autoconnect_target:
+					self.autoconnect_target.add_input(mp, zzub.zzub_connection_type_audio)
+				else:
+					self.get_plugin(0).add_input(mp, zzub.zzub_connection_type_audio)
+					
+		# position the plugin at the default location
+		mp.set_position(*self.plugin_origin)
+		
+		if 0:
+			# if we have a context plugin, prepend connections
+			if 'plugin' in kargs:
+				plugin = kargs['plugin']
+				inplugs = []
+				# record all connections
+				while True:
+					conns = plugin.get_input_connection_list()
+					if not conns:
+						break
+					conn = conns.pop()
+					input = conn.get_input()
+					for i in range(conn.get_output().get_input_connection_count()):
+							if conn.get_output().get_input_connection(i)==conn:
+								break
+					try:
+						aconn = conn.get_audio_connection()
+						amp = aconn.get_amplitude()
+						pan = aconn.get_panning()
+						inplugs.append((input,amp,pan))
+					except:
+						import traceback
+						print traceback.format_exc()
+					plugin.delete_input(input)
+				# restore
+				for inplug,amp,pan in inplugs:
+					mp.add_audio_input(inplug, amp, pan)
+				plugin.add_audio_input(mp, 16384, 16384)
+		
+		if 0:
+			# if we have a context connection, replace that one
+			if 'conn' in kargs:
+				conn = kargs['conn']
+				for i in range(conn.get_output().get_input_connection_count()):
+						if conn.get_output().get_input_connection(i)==conn:
+							break
+				try:
+					aconn = conn.get_audio_connection()
+					amp = aconn.get_amplitude()
+					pan = aconn.get_panning()
+					minput = conn.get_input()
+					moutput = conn.get_output()
+					moutput.delete_input(minput)
+					mp.add_audio_input(minput, amp, pan)
+					moutput.add_audio_input(mp, 16384, 16384)
+				except:
+					import traceback
+					print traceback.format_exc()
+					
+		self.history_commit("new plugin")
+		
+		# add plugin information
+		common.get_plugin_infos().add_plugin(mp)
 
 def generate_ui_method(membername, kwargs):
 	doc = kwargs.get('doc', '')
@@ -336,7 +435,7 @@ def generate_ui_method(membername, kwargs):
 		vtype = kwargs['vtype']
 		getter = lambda self: self.listgetter(membername,kwargs)
 		setter = lambda self,value: self.listsetter(membername,kwargs,value)
-		default = []
+		default = kwargs.get('default', [])
 	else:
 		if 'default' in kwargs:
 			default = kwargs['default']

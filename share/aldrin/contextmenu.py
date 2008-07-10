@@ -132,7 +132,7 @@ class PluginContextMenu(gtk.Menu):
 			for param in mi.get_pluginloader().get_parameter_list(3):
 				print param
 		com.get_from_category('menuitem.connection', menu, connection=(mp,index))
-			
+		
 	def populate_pluginmenu(self, menu):
 		mp = menu.context
 		menu.add_check_item("_Mute", common.get_plugin_infos().get(mp).muted, self.on_popup_mute, mp)
@@ -309,88 +309,7 @@ class PluginContextMenu(gtk.Menu):
 		Event handler for "new plugin" context menu options.
 		"""
 		player = com.get('aldrin.core.player')
-		basename = pluginloader.get_short_name()
-		name = pluginloader.get_short_name()
-		basenumber = 2
-		mask=gtk.get_current_event_state()
-		while True:
-			found = False
-			for mp in player.get_plugin_list():
-				if mp.get_name() == name:
-					found = True
-					name = "%s%i" % (basename, basenumber)
-					basenumber += 1
-					break
-			if not found:
-				break
-		print "create_plugin: ",name
-		mp = player.create_plugin(None, 0, name, pluginloader)
-		assert mp
-		if ((mp.get_flags() & PLUGIN_FLAGS_MASK) == GENERATOR_PLUGIN_FLAGS) and \
-			(pluginloader.get_parameter_count(1) or pluginloader.get_parameter_count(2)):
-			pattern = mp.create_pattern(com.get('aldrin.core.sequencerpanel').view.step)
-			pattern.set_name('00')
-			seq = player.get_current_sequencer()
-			t=seq.create_sequence(mp)
-			t.set_event(0,16)
-			if not(mask & gtk.gdk.SHIFT_MASK):
-				if player.autoconnect_target:
-					player.autoconnect_target.add_input(mp, zzub.zzub_connection_type_audio)
-				else:
-					player.get_plugin(0).add_input(mp, zzub.zzub_connection_type_audio)
-		mp.set_position(*self.pixel_to_float(self.contextmenupos))
-		# if we have a context plugin, prepend connections
-		if 'plugin' in kargs:
-			plugin = kargs['plugin']
-			inplugs = []
-			# record all connections
-			while True:
-				conns = plugin.get_input_connection_list()
-				if not conns:
-					break
-				conn = conns.pop()
-				input = conn.get_input()
-				for i in range(conn.get_output().get_input_connection_count()):
-						if conn.get_output().get_input_connection(i)==conn:
-							break
-				try:
-					aconn = conn.get_audio_connection()
-					amp = aconn.get_amplitude()
-					pan = aconn.get_panning()
-					inplugs.append((input,amp,pan))
-				except:
-					import traceback
-					print traceback.format_exc()
-				plugin.delete_input(input)
-			# restore
-			for inplug,amp,pan in inplugs:
-				mp.add_audio_input(inplug, amp, pan)
-			plugin.add_audio_input(mp, 16384, 16384)
-		# if we have a context connection, replace that one
-		elif 'conn' in kargs:
-			conn = kargs['conn']
-			for i in range(conn.get_output().get_input_connection_count()):
-					if conn.get_output().get_input_connection(i)==conn:
-						break
-			try:
-				aconn = conn.get_audio_connection()
-				amp = aconn.get_amplitude()
-				pan = aconn.get_panning()
-				minput = conn.get_input()
-				moutput = conn.get_output()
-				moutput.delete_input(minput)
-				mp.add_audio_input(minput, amp, pan)
-				moutput.add_audio_input(mp, 16384, 16384)
-			except:
-				import traceback
-				print traceback.format_exc()
-		player.history_commit("new plugin")
-		self.rootwindow.document_changed()
-		# add plugin information
-		common.get_plugin_infos().add_plugin(mp)
-		# open parameter view if its an effect
-		if is_effect(mp):
-			self.show_parameter_dialog(mp)
+		player.create_plugin(pluginloader)
 		
 	def get_plugin_menu(self, include_generators = True, include_effects = True, include_controllers = True, **kargs):
 		"""
