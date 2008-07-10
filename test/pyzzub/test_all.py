@@ -291,6 +291,8 @@ class Test(TestCase):
 		self.assertTrue(plugin.get_pattern_count() == 1)
 		pat = plugin.get_pattern(16-0x10)
 		self.assertTrue(pat.get_row_count() == 64)
+		self.player.undo()
+		self._handle_events()
 		
 	def test_parameter_change_undo(self):
 		"""
