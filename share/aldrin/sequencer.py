@@ -1010,26 +1010,29 @@ class SequencerView(gtk.DrawingArea):
 		@param event: Mouse event
 		@type event: wx.MouseEvent
 		"""
-		player = com.get('aldrin.core.player')
 		self.grab_focus()
+		player = com.get('aldrin.core.player')
+		track_count = player.get_sequence_track_count()
+		x, y = int(event.x), int(event.y)
+		track, row = self.pos_to_track_row((x,y))		
 		if event.button == 1:
-			seq = player.get_current_sequencer()
-			track_count = seq.get_sequence_track_count()
-			x, y = int(event.x), int(event.y)
-			track, row = self.pos_to_track_row((x,y))		
 			if track < track_count:
 				if track == -1:
 					player.set_position(max(row,0))
 				elif row == -1:
-					mp = seq.get_track(track).get_plugin()				
-					com.get('aldrin.core.routerpanel').view.toggle_mute(mp)
-					self.redraw()
+					mp = player.get_sequence(track).get_plugin()
+					player.toggle_mute(mp)
 				else:
 					self.set_cursor_pos(track,row)
 					self.deselect()
 					self.dragging = True
 					self.grab_add()
 		elif event.button == 3:
+			if (x < SEQLEFTMARGIN) and (track < track_count):
+				mp = player.get_sequence(track).get_plugin()
+				menu = com.get('aldrin.core.contextmenu', 'plugin', mp)
+				menu.popup(self, event)
+				return
 			self.on_context_menu(event)
 	
 	def on_motion(self, widget, *args):
@@ -1398,15 +1401,16 @@ __aldrin__ = dict(
 )
 
 if __name__ == '__main__':
-	import testplayer
-	player = testplayer.get_player()
-	player.load_ccm(filepath('demosongs/paniq-knark.ccm'))
-	#~ player.set_state(zzub.zzub_player_state_playing)
-	window = testplayer.TestWindow()
-	window.add(SequencerPanel(window))
-	# update_position() needs the index to be set:
-	# (main.AldrinFrame.PAGE_SEQUENCER = 2)
-	window.PAGE_SEQUENCER = 2
-	window.index = 2
-	window.show_all()
+	import contextlog, aldrincom
+	contextlog.init()
+	aldrincom.init()
+	com.get_from_category('driver')
+	# running standalone
+	browser = com.get('aldrin.pythonconsole.dialog', False)
+	browser.show_all()
+	view = com.get('aldrin.core.sequencerpanel')
+	dlg = com.get('aldrin.test.dialog', view)
+	player = com.get('aldrin.core.player')
+	player.load_ccm('demosongs/beatz.ccm')
 	gtk.main()
+

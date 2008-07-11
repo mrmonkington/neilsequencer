@@ -149,7 +149,7 @@ class PluginContextMenu(gtk.Menu):
 			menu.add_item("_Delete", self.on_popup_delete, mp)
 		if is_effect(mp) or is_root(mp):
 			menu.add_separator()
-			menu.add_check_item("Default Target",self.autoconnect_target == mp,self.on_popup_set_target, mp)
+			menu.add_check_item("Default Target",player.autoconnect_target == mp,self.on_popup_set_target, mp)
 			menu.add_submenu("_Prepend Effect",self.get_plugin_menu(include_generators=False, include_controllers=False, plugin=mp))
 		commands = mp.get_commands()
 		if commands:
