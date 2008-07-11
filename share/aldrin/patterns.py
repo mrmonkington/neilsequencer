@@ -375,32 +375,6 @@ class PatternToolBar(gtk.HBox):
 			#player.play_wave(w, 0, (4 << 4) + 1)
 		else:
 			player.stop_wave()
-		
-	def next_wave(self):
-		"""
-		Selects the next wave.
-		"""
-		self.waveselect.set_active(min(self.waveselect.get_active()+1,get_item_count(self.waveselect.get_model())-1))
-		self.wave = self.cb2w[self.waveselect.get_active()]
-
-	def prev_wave(self):
-		"""
-		Selects the previous wave.
-		"""
-		self.waveselect.set_active(max(self.waveselect.get_active()-1,0))
-		self.wave = self.cb2w[self.waveselect.get_active()]
-		
-	def prev_pattern(self):
-		"""
-		Selects the previous pattern.
-		"""
-		self.select_pattern(self.pattern-1)
-		
-	def next_pattern(self):
-		"""
-		Selects the next pattern.
-		"""
-		self.select_pattern(self.pattern+1)
 			
 class PatternPanel(gtk.VBox):
 	"""
@@ -615,7 +589,7 @@ class PatternView(gtk.DrawingArea):
 		self.jump_to_note = False
 		self.patternsize = 16
 		self.index = None
-		self.pattern = None
+		self.pattern = -1
 		self.plugin = None
 		self.row = 0
 		self.index = 0
@@ -653,10 +627,6 @@ class PatternView(gtk.DrawingArea):
 		self.vscroll.connect('change-value', self.on_vscroll_window)
 		eventbus = com.get('aldrin.core.eventbus')
 		eventbus.active_patterns_changed += self.on_active_patterns_changed
-		#eventbus.zzub_connect += self.pattern_changed
-		#eventbus.zzub_disconnect += self.pattern_changed
-		#eventbus.zzub_pattern_changed += self.pattern_changed
-		#eventbus.zzub_new_plugin += self.plugin_created
 
 	def update_font(self):
 		pctx = self.get_pango_context()
@@ -769,7 +739,7 @@ class PatternView(gtk.DrawingArea):
 		"""
 		# plugin
 		self.plugin = None
-		self.pattern = None
+		self.pattern = -1
 		# parameter count
 		self.parameter_count = [0,0,0]
 		self.parameter_width = [[],[],[]]
@@ -1114,7 +1084,7 @@ class PatternView(gtk.DrawingArea):
 		"""
 		Moves the cursor left.
 		"""	
-		if not self.pattern:
+		if self.pattern == -1:
 			return
 		self.draw_xor()
 		self.move_subindex_left()
@@ -1127,7 +1097,7 @@ class PatternView(gtk.DrawingArea):
 		"""
 		Moves the cursor right.
 		"""	
-		if not self.pattern:
+		if self.pattern == -1:
 			return
 		self.draw_xor()
 		self.move_subindex_right()
@@ -1204,7 +1174,7 @@ class PatternView(gtk.DrawingArea):
 		@type offset: int
 		"""
 		for r,g,t,i in self.selection_range():
-			if r>self.pattern.get_row_count()-1:
+			if r>self.plugin.get_pattern_length(self.pattern)-1:
 				break
 			if r<0:
 				continue
@@ -1542,7 +1512,7 @@ class PatternView(gtk.DrawingArea):
 		self.grab_focus()
 		if event.button == 3:
 			self.on_context_menu(event)
-		if not self.pattern:
+		if self.pattern == -1:
 			return
 		if event.button == 1:
 			self.draw_xor()
@@ -1607,7 +1577,7 @@ class PatternView(gtk.DrawingArea):
 		response = question(self, "<b><big>Do you really want to remove this pattern?</big></b>\n\nYou cannot reverse this action.", False)
 		if response == gtk.RESPONSE_YES:
 			m = self.get_plugin()			
-			if self.pattern:
+			if self.pattern >= 0:
 				m.remove_pattern(self.pattern)
 			
 	def on_popup_create_pattern(self, widget=None, m=None):
@@ -2081,7 +2051,7 @@ class PatternView(gtk.DrawingArea):
 						player.active_waves = [player.get_wave(data - 1)]
 			else:
 				return False
-			self.pattern.set_value(self.row, self.group, self.track, self.index, data)
+			self.plugin.set_pattern_value(self.pattern, self.group, self.track, self.index, self.row, data)
 			player.history_commit("enter event")
 			self.play_note(playtrack)
 		else:
@@ -2340,7 +2310,7 @@ class PatternView(gtk.DrawingArea):
 		self.update_font()
 
 	def create_xor_gc(self):
-		if not self.pattern:
+		if self.pattern == -1:
 			return
 		if not self.window:
 			return
@@ -2358,7 +2328,7 @@ class PatternView(gtk.DrawingArea):
 		self.draw_playpos_xor()
 
 	def draw_cursor_xor(self):
-		if not self.pattern:
+		if self.pattern == -1:
 			return
 		if not self.window:
 			return
@@ -2371,7 +2341,7 @@ class PatternView(gtk.DrawingArea):
 			drawable.draw_rectangle(gc, True,cx,cy,self.column_width,self.row_height)
 
 	def draw_playpos_xor(self):
-		if not self.pattern:
+		if self.pattern == -1:
 			return
 		if not self.window:
 			return	
@@ -2448,7 +2418,7 @@ class PatternView(gtk.DrawingArea):
 				tc = self.group_track_count[g]
 				for t in range(tc):
 					s = ' '.join([get_str_from_param(self.plugin.get_parameter(g, t, i),
-									 self.pattern.get_value(row, g, t, i))
+									 self.plugin.get_pattern_value(self.pattern, g, t, i, row))
 									for i in xrange(self.parameter_count[g])])
 					try: 
 						self.lines[g][t][row] = s

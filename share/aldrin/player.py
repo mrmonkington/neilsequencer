@@ -189,7 +189,7 @@ class AldrinPlayer(Player):
 		eventbus.zzub_pre_delete_pattern += self.on_pre_delete_pattern
 		self._callback = zzub.zzub_callback_t(self.handle_event)
 		self.set_callback(self._callback, None)
-		gobject.timeout_add(int(1000/25), self.on_handle_events)
+		gobject.timeout_add(int(1000/50), self.on_handle_events)
 		
 	def on_pre_delete_pattern(self, plugin, index):
 		sel = self.active_patterns
