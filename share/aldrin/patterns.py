@@ -319,8 +319,6 @@ class PatternToolBar(gtk.HBox):
 		player = com.get('aldrin.core.player')
 		sel = player.active_plugins
 		sel = sel and sel[0] or None
-		if sel not in player.get_plugin_list():
-			return None
 		return sel
 	
 	def set_plugin_sel(self, sel):

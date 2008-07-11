@@ -187,6 +187,8 @@ class AldrinPlayer(Player):
 		eventbus = com.get('aldrin.core.eventbus')
 		eventbus.zzub_pre_delete_plugin += self.on_pre_delete_plugin
 		eventbus.zzub_pre_delete_pattern += self.on_pre_delete_pattern
+		self._callback = zzub.zzub_callback_t(self.handle_event)
+		self.set_callback(self._callback, None)
 		gobject.timeout_add(int(1000/25), self.on_handle_events)
 		
 	def on_pre_delete_pattern(self, plugin, index):
@@ -261,14 +263,6 @@ class AldrinPlayer(Player):
 		player = com.get('aldrin.core.player')
 		t1 = time.time()
 		player.handle_events()
-		event = player.get_next_event()
-		while event:
-			try:
-				self.handle_event(event)
-			except:
-				import errordlg
-				errordlg.print_exc()
-			event = player.get_next_event()
 		t2 = time.time() - t1
 		self._hevtimes = (self._hevtimes * 0.9) + (t2 * 0.1)
 		self._hevcalls += 1
@@ -290,7 +284,7 @@ class AldrinPlayer(Player):
 		else:
 			self.set_state(zzub.zzub_player_state_stopped)
 		
-	def handle_event(self, data):
+	def handle_event(self, player, plugin, data, tag):
 		"""
 		Default handler for ui events sent by zzub.
 		
@@ -298,6 +292,7 @@ class AldrinPlayer(Player):
 		@type data: zzub_event_data_t
 		"""
 		eventbus = com.get('aldrin.core.eventbus')
+		data = data.contents
 		# prepare arguments for the specific callback
 		eventname,membername,argnames = self.event_id_to_name[data.type]
 		args = []
