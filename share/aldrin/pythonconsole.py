@@ -65,7 +65,10 @@ class PythonConsoleDialog(gtk.Dialog):
 		self.toolmenu = gtk.Menu()
 		toolitem.set_submenu(self.toolmenu)
 		self.shell.append(toolitem)
-		self.locals = dict(
+		self.locals = {}
+		for handler in com.get_from_category('pythonconsole.locals'):
+			handler.register_locals(self.locals)
+		self.locals.update(dict(
 			__name__ = "__console__",
 			__doc__ = None,
 			com = com,
@@ -79,7 +82,7 @@ class PythonConsoleDialog(gtk.Dialog):
 			vbox = vpack,
 			hbox = hpack,
 			tool = self.add_tool,
-		)
+		))
 		self.compiler = code.InteractiveConsole(self.locals)
 		
 		buffer = BUFFER_CLASS()

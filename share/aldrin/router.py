@@ -1253,29 +1253,23 @@ class RouteView(gtk.DrawingArea):
 				plugin = self.selected_plugin
 			else:
 				return
-		if self.rootwindow.on_key_down(widget, event):
-			return
+		#if self.rootwindow.on_key_down(widget, event):
+		#	return
 		note = None
-		octave = com.get('aldrin.core.patternpanel').view.octave
+		player = com.get('aldrin.core.player')
+		octave = player.octave
 		if  k == 'KP_Multiply':			
 			octave = min(max(octave+1,0), 9)
 		elif k ==  'KP_Divide':
 			octave = min(max(octave-1,0), 9)
 		elif kv < 256:
 			note = key_to_note(kv)
-		com.get('aldrin.core.patternpanel').view.octave=octave
-		com.get('aldrin.core.patternpanel').view.toolbar.update_octaves()
+		player.octave = octave
 		if note:
 			if note not in self.chordnotes:
 				self.chordnotes.append(note)
-				try:
-					n=((note[0]+octave)<<4|note[1]+1)
-					plugin.play_midi_note(n, 0, 127)
-				except TypeError:
-					pass
-				except:
-					import traceback
-					traceback.print_exc()
+				n=((note[0]+octave)<<4|note[1]+1)
+				plugin.play_midi_note(n, 0, 127)
 
 	def on_key_jazz_release(self, widget, event, plugin):
 		if not plugin:			

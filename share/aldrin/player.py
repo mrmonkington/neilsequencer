@@ -82,6 +82,9 @@ class AldrinPlayer(Player):
 	__aldrin__ = dict(
 		id = 'aldrin.core.player',
 		singleton = True,
+		categories = [
+			'pythonconsole.locals',
+		],
 	)
 	
 	_exclude_event_debug_ = [
@@ -135,7 +138,9 @@ class AldrinPlayer(Player):
 		self._cbtime = time.time()
 		self._cbcalls = 0
 		self._hevcalls = 0
-		self._hevtimes = 0
+		self._hevtime = 0
+		self.__lazy_commits = False
+		self.__event_stats = False
 		# enumerate zzub_event_types and prepare unwrappers for the different types
 		self.event_id_to_name = {}		
 		for enumname,cfg in self._event_types_.iteritems():
@@ -190,6 +195,19 @@ class AldrinPlayer(Player):
 		self._callback = zzub.zzub_callback_t(self.handle_event)
 		self.set_callback(self._callback, None)
 		gobject.timeout_add(int(1000/50), self.on_handle_events)
+		
+	def register_locals(self, locs):
+		locs.update(dict(
+			lazy_commits = self._enable_lazy_commits,
+			event_stats = self._enable_event_stats,
+		))
+		
+	def _enable_event_stats(self, enable=True):
+		self.__event_stats = enable
+		
+	def _enable_lazy_commits(self, enable=True): 
+		"""not to be used outside of tests."""
+		self.__lazy_commits = enable
 		
 	def on_pre_delete_pattern(self, plugin, index):
 		sel = self.active_patterns
@@ -253,24 +271,26 @@ class AldrinPlayer(Player):
 		Handler triggered by the default timer. Asks the player to fill
 		the event queue and fetches events from the queue to pass them to handle_event.
 		"""
-		ucopcount = self.history_get_uncomitted_operations()
-		if ucopcount:
-			# you should commit your actions
-			import errordlg
-			msg = "%i operation(s) left uncommitted." % ucopcount
-			errordlg.error(None, "<b>Internal Program Error</b>", msg)
-			self.history_commit("commit leak")
+		if not self.__lazy_commits:
+			ucopcount = self.history_get_uncomitted_operations()
+			if ucopcount:
+				# you should commit your actions
+				import errordlg
+				msg = "%i operation(s) left uncommitted." % ucopcount
+				errordlg.error(None, "<b>Internal Program Error</b>", msg)
+				self.history_commit("commit leak")
 		player = com.get('aldrin.core.player')
 		t1 = time.time()
 		player.handle_events()
 		t2 = time.time() - t1
-		self._hevtimes = (self._hevtimes * 0.9) + (t2 * 0.1)
+		self._hevtime += t2
 		self._hevcalls += 1
 		t = time.time()
-		if (t - self._cbtime) > 1:
-			#print self._hevcalls, self._cbcalls, "%.2fms" % (self._hevtimes*1000)
+		if self.__event_stats and ((t - self._cbtime) > 1):
+			print self._hevcalls, self._cbcalls, "%.2fms" % (self._hevtime*1000)
 			self._cbcalls = 0
 			self._hevcalls = 0
+			self._hevtime = 0
 			self._cbtime = t
 		return True
 		

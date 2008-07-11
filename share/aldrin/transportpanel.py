@@ -40,12 +40,11 @@ class TransportPanel(gtk.HBox):
 		id = 'aldrin.core.panel.transport',
 	)
 	
-	def __init__(self, rootwindow):
+	def __init__(self):
 		"""
 		Initializer.
 		"""		
 		gtk.HBox.__init__(self)
-		self.rootwindow = rootwindow
 		eventbus = com.get('aldrin.core.eventbus')
 		eventbus.zzub_parameter_changed += self.on_zzub_parameter_changed
 		eventbus.zzub_player_state_changed += self.on_zzub_player_state_changed
@@ -164,10 +163,12 @@ class TransportPanel(gtk.HBox):
 		self.hgroup.connect(self.btnloop, 'clicked', self.on_toggle_loop)
 		self.hgroup.connect(self.btnpanic, 'clicked', self.on_toggle_panic)
 		
-		add_accelerator(self.btnplay, self.rootwindow, 'F5', 'clicked')
-		add_accelerator(self.btnrecord, self.rootwindow, 'F7', 'clicked')
-		add_accelerator(self.btnstop, self.rootwindow, 'F8', 'clicked')
-		add_accelerator(self.btnpanic, self.rootwindow, 'F12', 'clicked')
+		# TODO: register for a category that indicates we have accelerators
+		# and register those when asked
+#		add_accelerator(self.btnplay, self.rootwindow, 'F5', 'clicked')
+#		add_accelerator(self.btnrecord, self.rootwindow, 'F7', 'clicked')
+#		add_accelerator(self.btnstop, self.rootwindow, 'F8', 'clicked')
+#		add_accelerator(self.btnpanic, self.rootwindow, 'F12', 'clicked')
 		
 		self.update_all()
 		
@@ -337,4 +338,14 @@ __aldrin__ = dict(
 )
 
 if __name__ == '__main__':
-	pass
+	import contextlog, aldrincom
+	contextlog.init()
+	aldrincom.init()
+	view = com.get('aldrin.core.panel.transport')
+	dlg = com.get('aldrin.test.dialog', view)
+	# running standalone
+	browser = com.get('aldrin.pythonconsole.dialog', False)
+	browser.show_all()
+	player = com.get('aldrin.core.player')
+	gtk.main()
+

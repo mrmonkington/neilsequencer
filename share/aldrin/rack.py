@@ -59,6 +59,13 @@ class ParameterView(gtk.VBox):
 		('application/x-controller-slider-drop', gtk.TARGET_SAME_APP, DROP_TARGET_CTRL_SLIDER),
 	]
 
+	__aldrin__ = dict(
+		id = 'aldrin.core.parameterview',
+		singleton = False,
+		categories = [
+		]
+	)
+	
 	def __init__(self, plugin):
 		"""
 		Initializer.
@@ -784,15 +791,13 @@ class ParameterView(gtk.VBox):
 		@type event: wx.ScrollEvent
 		"""
 		nl,s,vl = self.pid2ctrls[(g,t,i)]
-		p = self.pluginloader.get_parameter(g,i)
+		p = self.plugin.get_parameter(g,t,i)
 		minv = p.get_value_min()
 		maxv = p.get_value_max()
 		value = int(max(min(value, maxv), minv) + 0.5)
 		s.set_value(value) # quantize slider position
-		self.plugin.set_parameter_value(g,t,i,value,1)
+		self.plugin.set_parameter_value_direct(g,t,i,value,1)
 		self.update_valuelabel(g,t,i)
-		player = com.get('aldrin.core.player')
-		player.history_commit("change plugin parameter")
 		return True
 
 class DataEntry(gtk.Dialog):
@@ -838,7 +843,7 @@ class RackPanel(gtk.VBox):
 		id = 'aldrin.core.rackpanel',
 		singleton = True,
 		categories = [
-			'aldrin.viewpanel',
+			#'aldrin.viewpanel',
 		]
 	)
 	
@@ -890,17 +895,22 @@ class RackPanel(gtk.VBox):
 
 __aldrin__ = dict(
 	classes = [
+		ParameterView,
 		RackPanel,
 	],
 )
 
 if __name__ == '__main__':
-	import testplayer, utils
-	player = testplayer.get_player()
-	player.load_ccm(utils.filepath('demosongs/tests/lfotest.ccm'))
-	window = testplayer.TestWindow()
-	rack = RackPanel(window)
-	window.add(rack)
-	window.show_all()
-	
+	import contextlog, aldrincom
+	contextlog.init()
+	aldrincom.init()
+	com.get_from_category('driver')
+	# running standalone
+	browser = com.get('aldrin.pythonconsole.dialog', False)
+	browser.show_all()
+	player = com.get('aldrin.core.player')
+	player.load_ccm("demosongs/beatz.ccm")
+	view = com.get('aldrin.core.parameterview', player.get_plugin_by_name("Master"))
+	dlg = com.get('aldrin.test.dialog', view)
 	gtk.main()
+

@@ -36,7 +36,6 @@ class TestDialog(gtk.Dialog):
 	def __init__(self, embed=None):
 		gtk.Dialog.__init__(self)
 		self.set_title("Test Dialog")
-		self.set_default_size(500, 400)
 		self.connect('destroy', self.on_destroy)
 		if embed:
 			self.vbox.add(embed)

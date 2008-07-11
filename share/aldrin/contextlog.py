@@ -17,6 +17,7 @@ ESCAPE_END = "\033[0;0m"
 
 ERROR_ESCAPE_BEGIN = "\033[0;31m"
 
+ENABLE_LOG = True
 LOG_BUFFER = []
 
 class StdErrAnnotator:
@@ -46,7 +47,8 @@ class StdErrAnnotator:
 					self.annotate_next = True
 					self.stderr.write(ESCAPE_END)
 			self.stderr.write(c)
-		LOG_BUFFER.append(('stderr',None,None,text))
+		if ENABLE_LOG:
+			LOG_BUFFER.append(('stderr',None,None,text))
 		
 	def flush(self):
 		self.stderr.flush()
@@ -86,7 +88,8 @@ class StdOutAnnotator:
 			if c == '\n':
 				self.annotate_next = True
 			self.stdout.write(c)		
-		LOG_BUFFER.append(('stdout',self.last_filename,self.last_line,text))
+		if ENABLE_LOG:
+			LOG_BUFFER.append(('stdout',self.last_filename,self.last_line,text))
 		
 	def flush(self):
 		self.stdout.flush()

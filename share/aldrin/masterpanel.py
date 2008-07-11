@@ -96,10 +96,9 @@ class MasterPanel(gtk.VBox):
 		id = 'aldrin.core.panel.master',
 	)
 	
-	def __init__(self, rootwindow):
+	def __init__(self):
 		gtk.VBox.__init__(self)
 		self.latency = 0
-		self.rootwindow = rootwindow
 		self.ohg = utils.ObjectHandlerGroup()
 		eventbus = com.get('aldrin.core.eventbus')
 		eventbus.zzub_parameter_changed += self.on_zzub_parameter_changed
@@ -109,9 +108,8 @@ class MasterPanel(gtk.VBox):
 		self.masterslider.set_size_request(-1,200)
 		self.masterslider.set_increments(500, 500)
 		self.masterslider.set_inverted(True)
-		self.ohg.connect(self.masterslider, 'scroll-event', self.on_mousewheel)
+		#self.ohg.connect(self.masterslider, 'scroll-event', self.on_mousewheel)
 		self.ohg.connect(self.masterslider, 'change-value', self.on_scroll_changed)
-		self.ohg.connect(self.masterslider, 'button-release-event', self.button_up)
 		self.ampl = AmpView(self, 0)
 		self.ampr = AmpView(self, 1)
 		hbox = gtk.HBox()
@@ -126,7 +124,7 @@ class MasterPanel(gtk.VBox):
 		player = com.get('aldrin.core.player')
 		if plugin == player.get_plugin(0):
 			self.update_all()
-
+			
 	def on_scroll_changed(self, widget, scroll, value):
 		"""
 		Event handler triggered when the master slider has been dragged.
@@ -134,12 +132,13 @@ class MasterPanel(gtk.VBox):
 		@param event: event.
 		@type event: wx.Event
 		"""
-		player = com.get('aldrin.core.player')
+		import time
+		block = self.ohg.autoblock()
 		vol = int(min(max(value,0), 16384) + 0.5)
+		player = com.get('aldrin.core.player')
 		master = player.get_plugin(0)
-		master.set_parameter_value(1, 0, 0, 16384 - vol, 1)
+		master.set_parameter_value_direct(1, 0, 0, 16384 - vol, 1)
 		self.masterslider.set_value(vol)
-		player.history_commit("change master volume")
 		return True
 
 	def on_mousewheel(self, widget, event):
@@ -169,15 +168,6 @@ class MasterPanel(gtk.VBox):
 		self.masterslider.set_value(16384 - vol)
 		self.latency = com.get('aldrin.core.driver.audio').get_latency()
 
-	def button_up(self, widget, event):
-		"""
-		refocus panel
-		"""
-		page=self.rootwindow.framepanel.get_current_page()
-		panel = self.rootwindow.pages[page]
-		try: panel.view.grab_focus()
-		except: panel.grab_focus()
-
 __aldrin__ = dict(
 	classes = [
 		MasterPanel,
@@ -185,4 +175,14 @@ __aldrin__ = dict(
 )
 
 if __name__ == '__main__':
-	pass
+	import contextlog, aldrincom
+	contextlog.init()
+	aldrincom.init()
+	view = com.get('aldrin.core.panel.master')
+	dlg = com.get('aldrin.test.dialog', view)
+	# running standalone
+	browser = com.get('aldrin.pythonconsole.dialog', False)
+	browser.show_all()
+	player = com.get('aldrin.core.player')
+	gtk.main()
+

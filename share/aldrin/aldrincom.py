@@ -28,7 +28,7 @@ DEFAULT_PACKAGES = [
 	'+patterns',
 	'+sequencer',
 	'+wavetable',
-	'-rack',
+	'+rack',
 	'+info',
 	'+mainwindow',
 	'+about',

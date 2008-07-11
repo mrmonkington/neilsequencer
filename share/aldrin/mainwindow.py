@@ -190,8 +190,8 @@ class AldrinFrame(gtk.Window):
 		if not com.get_from_category('menuitem.toolbar', self.aldrinframe_toolbar):
 			extrasep.destroy()
 
-		self.mastertoolbar = com.get('aldrin.core.panel.master', self)
-		self.transport = com.get('aldrin.core.panel.transport', self)
+		self.mastertoolbar = com.get('aldrin.core.panel.master')
+		self.transport = com.get('aldrin.core.panel.transport')
 
 		self.framepanel = gtk.Notebook()
 		self.framepanel.set_tab_pos(gtk.POS_LEFT)
