@@ -44,6 +44,7 @@ EVENTS = [
 	'sequence_step_changed', # (stepsize, ...) called when player.sequence_step changes.
 	'plugin_origin_changed', # ((x,y), ...) called when player.plugin_origin changes.
 	'solo_plugin_changed', # (plugin, ...) called when player.solo_plugin changes.
+	'document_loaded', # (...) called when load_* is called.
 	
 	# libzzub events, translation is done in player.py
 	'zzub_all', # ( data,... )

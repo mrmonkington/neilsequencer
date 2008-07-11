@@ -145,7 +145,7 @@ def show_pattern_dialog(parent, name, length, dlgmode):
 	return result
 
 class SelectComboBox(gtk.ComboBox):
-	def __init__(self, source_func=None, get_selection_func=None, set_selection_func=None):
+	def __init__(self, source_func=None, get_selection_func=None, set_selection_func=None, activate_func=None):
 		gtk.ComboBox.__init__(self)
 		columns = [
 			('Name', str),
@@ -156,7 +156,10 @@ class SelectComboBox(gtk.ComboBox):
 		self.source_func = source_func
 		self.get_selection_func = get_selection_func
 		self.set_selection_func = set_selection_func
+		self.activate_func = activate_func
+		self.tokens = []
 		self.ohg.connect(self, 'changed', self.on_selection_changed)
+		self.ohg.connect(self, 'notify::popup-shown', self.on_popup)
 		self.update()
 		
 	def get_active(self):
@@ -167,6 +170,28 @@ class SelectComboBox(gtk.ComboBox):
 	def on_selection_changed(self, widget):
 		if self.set_selection_func:
 			self.set_selection_func(self.get_active())
+
+	def on_popup(self, widget, *args):
+		player = com.get('aldrin.core.player')
+		if self.get_property('popup-shown'):
+			for win in gtk.window_list_toplevels():
+				if (len(win.get_children()) == 1) and (isinstance(win.get_children()[0],gtk.Menu)):
+					menu = win.get_children()[0]
+					if menu.get_attach_widget() == self:
+						for index,item in enumerate(menu.get_children()):
+							self.tokens.append((item,item.connect('select', self.on_item_activate,index)))
+		else:
+			for item,token in self.tokens:
+				item.disconnect(token)
+			self.tokens = []
+			if self.activate_func:
+				self.activate_func(None)
+		
+	def on_item_activate(self, item, index):
+		if not self.activate_func:
+			return
+		obj = self.get_model().get_value(self.get_model().get_iter((index,)), 1)
+		self.activate_func(obj)
 			
 	def update(self, *args):
 		block = self.ohg.autoblock()
@@ -189,37 +214,6 @@ class PatternToolBar(gtk.HBox):
 	
 	Contains lists of the plugins, patterns, waves and octaves available.
 	"""
-	def get_plugin_source(self):
-		player = com.get('aldrin.core.player')
-		def cmp_func(a,b):
-			return cmp(a.get_name().lower(), b.get_name().lower())
-		plugins = sorted(player.get_plugin_list(), cmp_func)
-		return [(plugin.get_name(),plugin) for plugin in plugins]
-	def get_plugin_sel(self):
-		player = com.get('aldrin.core.player')
-		sel = player.active_plugins
-		return sel and sel[0] or None
-	def set_plugin_sel(self, sel):
-		if sel:
-			player = com.get('aldrin.core.player')
-			player.active_plugins = [sel]
-	
-	def get_pattern_source(self):
-		player = com.get('aldrin.core.player')
-		def cmp_func(a,b):
-			return cmp(a.get_name().lower(), b.get_name().lower())
-		plugin = self.get_plugin_sel()
-		if not plugin:
-			return []
-		return [(plugin.get_pattern_name(i),(plugin,i)) for i in xrange(plugin.get_pattern_count())]
-	def get_pattern_sel(self):
-		player = com.get('aldrin.core.player')
-		sel = player.active_patterns
-		return sel and sel[0] or None
-	def set_pattern_sel(self, sel):
-		if sel:
-			player = com.get('aldrin.core.player')
-			player.active_patterns = [sel]
 			
 	def __init__(self, view):
 		"""
@@ -259,28 +253,33 @@ class PatternToolBar(gtk.HBox):
 		eventbus.zzub_pattern_changed += self.patternselect.update
 		
 		self.patternlabel.set_mnemonic_widget(self.patternselect)
+		
 		self.wavelabel = gtk.Label()
 		self.wavelabel.set_text_with_mnemonic("_Instrument")
-		self.waveselect = SelectComboBox()
-		#self.waveselect.connect('changed', self.on_waveselect)
-		self.waveselect.connect('notify::popup-shown', self.on_waveselect_popup)
+		self.waveselect = SelectComboBox(
+			source_func=self.get_wave_source,
+			get_selection_func=self.get_wave_sel, 
+			set_selection_func=self.set_wave_sel,
+		)
+		eventbus.active_waves_changed += self.waveselect.update
+		eventbus.zzub_wave_allocated += self.waveselect.update
+		eventbus.zzub_wave_changed += self.waveselect.update
+		eventbus.zzub_delete_wave += self.waveselect.update
+		eventbus.document_loaded += self.waveselect.update
+		
 		self.wavelabel.set_mnemonic_widget(self.waveselect)
 		self.octavelabel = gtk.Label()
 		self.octavelabel.set_text_with_mnemonic("_Base octave")
-		self.octaveselect = gtk.combo_box_new_text()
-		#self.octaveselect.connect('changed', self.on_octaveselect)
+		self.octaveselect = SelectComboBox(
+			source_func=self.get_octave_source,
+			get_selection_func=self.get_octave_sel, 
+			set_selection_func=self.set_octave_sel,
+		)
 		self.octavelabel.set_mnemonic_widget(self.octaveselect)
-		self.playnotes = gtk.CheckButton(label="Play _notes")
-
-		self.playnotes.set_active(True)
+		eventbus.octave_changed += self.octaveselect.update
 		
-		self.plugin_index = 0
-		self.pattern = 0
-		self.index_to_plugin = {}
-		self.plugin_to_index = {}
-		self.wave = 0
-		self.cb2w = {} # combobox index to wave index
-		self.waveselect_tokens = []
+		self.playnotes = gtk.CheckButton(label="Play _notes")
+		self.playnotes.set_active(True)
 		
 		self.pack_start(self.pluginlabel, expand=False)
 		self.pack_start(self.pluginselect, expand=False)
@@ -292,70 +291,83 @@ class PatternToolBar(gtk.HBox):
 		self.pack_start(self.octaveselect, expand=False)
 		self.pack_start(self.playnotes, expand=False)
 		
-		#eventbus.zzub_delete_pattern += self.update_patternselect
-		#eventbus.zzub_new_pattern += self.update_patternselect
-		#eventbus.zzub_pattern_changed += self.update_patternselect
-		#eventbus.song_opened += self.update_all
-		#eventbus.show_plugin += self.select_plugin_instance
-		#eventbus.octave_changed += self.update_octaves
+	def get_octave_source(self):
+		return [(str(i), i) for i in xrange(10)]
 		
-	def reset(self):
-		self.plugin_index = 0
-		self.wave = 0
-		
-	def plugin_deleted(self, plugin):
-		if self.plugin_index == -1:
-			return
-		if self.get_combo_plugin(self.plugin_index) == plugin:
-			self.select_plugin_instance(None)
-		
-	def on_waveselect_popup(self, widget, *args):
+	def get_octave_sel(self):
 		player = com.get('aldrin.core.player')
-		if widget.get_property('popup-shown'):
-			for win in gtk.window_list_toplevels():
-				if (len(win.get_children()) == 1) and (isinstance(win.get_children()[0],gtk.Menu)):
-					menu = win.get_children()[0]
-					if menu.get_attach_widget() == widget:
-						for index,item in enumerate(menu.get_children()):
-							self.waveselect_tokens.append((item,item.connect('select', self.on_waveselect_menu_activate,widget,index)))
-		else:
-			for item,token in self.waveselect_tokens:
-				item.disconnect(token)
-			self.waveselect_tokens = []
-			player.stop_wave()
+		return player.octave
 		
-	def on_waveselect_menu_activate(self, item, widget, index):
-		wave = self.cb2w[index]
+	def set_octave_sel(self, sel):
+		if sel:
+			player = com.get('aldrin.core.player')
+			player.octave = sel
+		
+	def get_plugin_source(self):
 		player = com.get('aldrin.core.player')
-		w = player.get_wave(wave)
-		if w.get_level_count() >= 1:
-			vol = min(max(config.get_config().get_sample_preview_volume(),-76.0),0.0)
+		def cmp_func(a,b):
+			return cmp(a.get_name().lower(), b.get_name().lower())
+		plugins = sorted(player.get_plugin_list(), cmp_func)
+		return [(plugin.get_name(),plugin) for plugin in plugins]
+	
+	def get_plugin_sel(self):
+		player = com.get('aldrin.core.player')
+		sel = player.active_plugins
+		return sel and sel[0] or None
+	
+	def set_plugin_sel(self, sel):
+		if sel:
+			player = com.get('aldrin.core.player')
+			player.active_plugins = [sel]
+	
+	def get_pattern_source(self):
+		player = com.get('aldrin.core.player')
+		def cmp_func(a,b):
+			return cmp(a.get_name().lower(), b.get_name().lower())
+		plugin = self.get_plugin_sel()
+		if not plugin:
+			return []
+		return [(plugin.get_pattern_name(i),(plugin,i)) for i in xrange(plugin.get_pattern_count())]
+	
+	def get_pattern_sel(self):
+		player = com.get('aldrin.core.player')
+		sel = player.active_patterns
+		return sel and sel[0] or None
+	
+	def set_pattern_sel(self, sel):
+		if sel:
+			player = com.get('aldrin.core.player')
+			player.active_patterns = [sel]
+			
+	def get_wave_source(self):
+		player = com.get('aldrin.core.player')
+		waves = []
+		for i in range(player.get_wave_count()):
+			w = player.get_wave(i)
+			if w.get_level_count() >= 1:
+				waves.append(("%02X. %s" % (i+1, w.get_name()), w))
+		return waves
+	
+	def get_wave_sel(self):
+		player = com.get('aldrin.core.player')
+		sel = player.active_waves
+		return sel and sel[0] or None
+	
+	def set_wave_sel(self, sel):
+		if sel:
+			player = com.get('aldrin.core.player')
+			player.active_waves = [sel]
+	
+	def activate_wave(self, w):
+		return
+		if w and w.get_level_count() >= 1:
+			config = com.get('aldrin.core.config')
+			vol = min(max(config.get_sample_preview_volume(),-76.0),0.0)
 			amp = db2linear(vol,limit=-76.0)
-			player.set_wave_amp(amp)
-			player.play_wave(w, 0, (4 << 4) + 1)
-		
-	def on_waveselect(self, widget):
-		"""
-		Callback to handle selection of the waveselect list.
-		"""
-		if widget.get_active() == -1:
-			return
-		if self.wave == self.cb2w[widget.get_active()]:
-			return
-		self.wave = self.cb2w[widget.get_active()]
-		self.view.grab_focus()
-		
-	def on_octaveselect(self, widget):
-		"""
-		Callback to handle selection of different octaves.
-		"""
-		if widget.get_active() == -1:
-			return
-		player = com.get('aldrin.core.player')
-		if player.octave == widget.get_active():
-			return
-		player.octave = widget.get_active()
-		self.view.grab_focus()
+			#player.set_wave_amp(amp)
+			#player.play_wave(w, 0, (4 << 4) + 1)
+		else:
+			player.stop_wave()
 		
 	def next_wave(self):
 		"""
@@ -371,21 +383,6 @@ class PatternToolBar(gtk.HBox):
 		self.waveselect.set_active(max(self.waveselect.get_active()-1,0))
 		self.wave = self.cb2w[self.waveselect.get_active()]
 		
-	def select_pattern(self, plugin, i):
-		"""
-		Selects a pattern.
-		
-		@param i: Pattern index.
-		@type i: int
-		"""
-		self.select_plugin_instance(plugin)
-		if self.plugin_index != -1:
-			plugin = self.get_combo_plugin(self.plugin_index)
-			self.pattern = min(max(i, 0),plugin.get_pattern_count()-1)
-		else:
-			self.pattern = -1
-		self.view.pattern_changed()
-		
 	def prev_pattern(self):
 		"""
 		Selects the previous pattern.
@@ -398,45 +395,6 @@ class PatternToolBar(gtk.HBox):
 		"""
 		self.select_pattern(self.pattern+1)
 			
-	def update_waveselect(self):
-		"""
-		Rebuilds and updates the waveselect list.
-		"""
-		self.cb2w = {}
-		store = self.waveselect.get_model()
-		store.clear()
-		count = 0
-		wi = 0
-		player = com.get('aldrin.core.player')
-		for i in range(player.get_wave_count()):
-			w = player.get_wave(i)
-			if w.get_level_count() >= 1:
-				store.append(["%02X. %s" % (i+1, prepstr(w.get_name())), w])
-				if i == self.wave:
-					wi = count
-				self.cb2w[count] = i
-				count += 1
-		if not wi:
-			self.wave = 0
-		self.waveselect.set_active(wi)
-		
-	def update_octaves(self, *args):
-		"""
-		Rebuilds and updates the octaveselect list.
-		"""
-		self.octaveselect.get_model().clear()
-		for i in range(10):
-			self.octaveselect.append_text("%i" % i)
-		player = com.get('aldrin.core.player')
-		self.octaveselect.set_active(player.octave)
-		
-	def update_all(self):
-		"""
-		Updates the toolbar to reflect a pattern change.
-		"""
-		self.update_waveselect()
-		self.update_octaves()
-
 class PatternPanel(gtk.VBox):
 	"""
 	Panel containing the pattern toolbar and pattern view.
@@ -497,7 +455,6 @@ class PatternPanel(gtk.VBox):
 		scrollwin.attach(hscroll, 0, 1, 1, 2, gtk.FILL, 0)
 		self.pack_start(scrollwin)
 		self.pack_end(self.statusbar, expand=False)
-		self.toolbar.update_all()
 		
 	def handle_focus(self):
 		try:
@@ -516,7 +473,6 @@ class PatternPanel(gtk.VBox):
 		"""
 		Updates the toolbar and the pattern view to reflect a pattern change.
 		"""
-		self.toolbar.update_all()
 		self.view.pattern_changed()
 
 from utils import fixbn, bn2mn, mn2bn, note2str, switch2str, byte2str, word2str
@@ -2036,11 +1992,9 @@ class PatternView(gtk.DrawingArea):
 		elif k in ('KP_Multiply', 'dead_acute'):
 			player = com.get('aldrin.core.player')
 			self.set_octave(player.octave+1)
-			self.toolbar.update_octaves()
 		elif k in ('KP_Divide', 'ssharp'):
 			player = com.get('aldrin.core.player')
 			self.set_octave(player.octave-1)
-			self.toolbar.update_octaves()
 		elif k == 'Escape':
 			self.selection = None
 			self.shiftselect = None

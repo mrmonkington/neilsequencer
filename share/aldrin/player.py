@@ -102,7 +102,7 @@ class AldrinPlayer(Player):
 		zzub_event_type_set_sequence_event = dict(args='set_sequence_event'),
 		zzub_event_type_new_pattern = dict(args='new_pattern'),
 		zzub_event_type_delete_pattern = dict(args='delete_pattern'),
-		zzub_event_type_pre_delete_pattern = dict(args=None),
+		zzub_event_type_pre_delete_pattern = dict(args='delete_pattern'),
 		zzub_event_type_edit_pattern = dict(args='edit_pattern'),
 		zzub_event_type_pattern_changed = dict(args='pattern_changed'),
 		zzub_event_type_pattern_insert_rows = dict(args='pattern_insert_rows'),
@@ -185,7 +185,34 @@ class AldrinPlayer(Player):
 		self.playstarttime = time.time()		
 		self.document_unchanged()
 		eventbus = com.get('aldrin.core.eventbus')
+		eventbus.zzub_pre_delete_plugin += self.on_pre_delete_plugin
+		eventbus.zzub_pre_delete_pattern += self.on_pre_delete_pattern
 		gobject.timeout_add(int(1000/25), self.on_handle_events)
+		
+	def on_pre_delete_pattern(self, plugin, index):
+		sel = self.active_patterns
+		pair = (plugin,index)
+		if pair in sel:
+			sel.remove(pair)
+			self.active_patterns = sel
+		
+	def on_pre_delete_plugin(self, plugin):
+		sel = self.active_plugins
+		if plugin in sel:
+			sel.remove(plugin)
+			self.active_plugins = sel
+		sel = self.active_patterns
+		for selplugin,index in sel:
+			if selplugin == plugin:
+				sel.remove((selplugin,index))
+		self.active_patterns = sel
+		
+	def load_ccm(self, filename):
+		res = zzub.Player.load_ccm(self, filename)
+		if not res:
+			eventbus = com.get('aldrin.core.eventbus')
+			eventbus.document_loaded()
+		return res
 		
 	def getter(self, membername, kwargs):
 		value = getattr(self, '__' + membername)
