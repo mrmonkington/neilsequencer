@@ -470,11 +470,13 @@ class WaveEditView(gtk.DrawingArea):
 		
 		#ctx.move_to(
 		
+		if len(self.ampbuffer) != w:
+			print "updating peaks"
+			self.update_digest()
 		minbuffer, maxbuffer, ampbuffer = self.minbuffer, self.maxbuffer, self.ampbuffer
 
 		ctx.set_source_rgba(*(brush2 + (0.5,)))
 		ctx.move_to(0, h-1)
-		assert len(ampbuffer) == w
 		for x in xrange(w):
 			a = 1.0 + linear2db(ampbuffer[x],-80.0) / 80.0
 			ctx.line_to(x, h-1-(h*a))
