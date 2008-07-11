@@ -635,9 +635,13 @@ env['BUILDERS'].update(builders)
 #
 #######################################
 
-env.ZIDLCHeader('${ROOTPATH}/include/zzub/zzub.h', '${ROOTPATH}/include/zzub/zzub.zidl')
-env.ZIDLCDef('${LIBZZUB_SRC_PATH}/libzzub.def', '${ROOTPATH}/include/zzub/zzub.zidl')
-env.ZIDLPyCtypes('${PYZZUB_SRC_PATH}/zzub/__init__.py', '${ROOTPATH}/include/zzub/zzub.zidl')
+output = []
+output.append(env.ZIDLCHeader('${ROOTPATH}/include/zzub/zzub.h', '${ROOTPATH}/include/zzub/zzub.zidl'))
+output.append(env.ZIDLCDef('${LIBZZUB_SRC_PATH}/libzzub.def', '${ROOTPATH}/include/zzub/zzub.zidl'))
+output.append(env.ZIDLPyCtypes('${PYZZUB_SRC_PATH}/zzub/__init__.py', '${ROOTPATH}/include/zzub/zzub.zidl'))
+
+# make targets dependent from script
+env.Depends(output, '${ROOTPATH}/tools/zidl')
 
 #######################################
 #

@@ -1080,6 +1080,8 @@ class Function(zzubIDLObject):
 			if arg.extract_value:
 				if 'class_' in arg.typemap_cfg:
 					argname = '(lambda p: p and p.contents)(' + argname + ')'
+				elif (len(arg.arrayinfo) == 1) and (arg.typename != 'string'):
+					argname = '[v for v in ' + argname + ']'
 				else:
 					argname = argname + '.value'
 			if arg.opaque_class:
