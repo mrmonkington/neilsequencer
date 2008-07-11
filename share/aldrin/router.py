@@ -852,6 +852,9 @@ class RouteView(gtk.DrawingArea):
 		area = AREA_ANY
 		player = com.get('aldrin.core.player')
 		for mp in reversed(list(player.get_plugin_list())):
+			pi = common.get_plugin_infos().get(mp)
+			if not pi.songplugin:
+				continue
 			x,y = mp.get_position()
 			x,y = int(cx * (1+x)), int(cy * (1+y))
 			if (mx >= (x - PW)) and (mx <= (x + PW)) and (my >= (y - PH)) and (my <= (y + PH)):
@@ -1069,6 +1072,9 @@ class RouteView(gtk.DrawingArea):
 		cputreshold = 0.75
 	
 		for mp,(rx,ry) in ((mp,get_pixelpos(*mp.get_position())) for mp in pluginlist):
+			pi = common.get_plugin_infos().get(mp)
+			if not pi.songplugin:
+				continue
 			if self.dragging and mp == self.current_plugin:
 				rx,ry = get_pixelpos(*self.current_plugin.dragpos)
 			rx,ry = rx - PW, ry - PH
@@ -1225,6 +1231,9 @@ class RouteView(gtk.DrawingArea):
 				for index in xrange(mp.get_input_connection_count()):
 					#~ if not (conn.get_input().get_pluginloader().get_flags() & zzub.plugin_flag_no_output):
 					targetmp = mp.get_input_connection_plugin(index)
+					pi = common.get_plugin_infos().get(targetmp)
+					if not pi.songplugin:
+						continue
 					tmppos = targetmp.get_position()
 					if self.dragging and targetmp == self.current_plugin:
 						tmppos = self.current_plugin.dragpos

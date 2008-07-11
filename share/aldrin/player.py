@@ -251,6 +251,14 @@ class AldrinPlayer(Player):
 	def stop_preview(self):
 		if self.__streamplayer:
 			self.__streamplayer.play_midi_note(zzub.zzub_note_value_off, (4 << 4)+1, 0)
+			
+	def load_wave(self, wave, filepath):
+		stream = zzub.Input.open_file(filepath)
+		if not stream:
+			return False
+		res = wave.load_sample(0, 0, 0, filepath, stream)
+		stream.destroy()
+		return res != 0
 		
 	def play_stream(self, note, plugin_uri, data_url):
 		if self.__streamplayer:

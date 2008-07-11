@@ -554,7 +554,7 @@ class WavetablePanel(gtk.Notebook):
 		player = com.get('aldrin.core.player')
 		vol = min(max(config.get_config().get_sample_preview_volume(),-76.0),0.0)
 		amp = db2linear(vol,limit=-76.0)
-		player.set_wave_amp(amp)
+		#player.set_wave_amp(amp)
 	
 	def on_play_filelist_wave(self, widget):
 		"""
@@ -572,7 +572,7 @@ class WavetablePanel(gtk.Notebook):
 			w = player.get_wave(selects[0])
 			if w.get_level_count() >= 1:
 				self.update_wave_amp()
-				player.play_wave(w, 0, (4 << 4) + 1)
+				player.preview_wave(w)
 		
 	def on_stop_wave(self, event):
 		"""
@@ -632,22 +632,15 @@ class WavetablePanel(gtk.Notebook):
 		player = com.get('aldrin.core.player')
 		for source,target in zip(samplepaths, selects):
 			print "loading %s => %s" % (source,target)
-			try:
-				player.lock()
-				w = player.get_wave(target)
-				w.clear()
-				res = w.load_sample(0, source)
-			except:
-				import traceback
-				traceback.print_exc()
-			player.unlock()
-			if res != 0:
+			w = player.get_wave(target)
+			w.clear()
+			if not player.load_wave(w, source):
 				error(self, "<b><big>Unable to load <i>%s</i>.</big></b>\n\nThe file may be corrupt or the file type is not supported." % source)
 			else:
 				w.set_name(os.path.splitext(os.path.basename(source))[0])
+				player.history_commit("load instrument")
 		self.update_samplelist()
 		self.update_sampleprops()
-		com.get('aldrin.core.patternpanel').update_all()
 		self.set_current_page(0)
 		self.samplelist.grab_focus()
 		self.samplelist.set_cursor(selects[0])

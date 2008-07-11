@@ -895,7 +895,7 @@ class AldrinFrame(gtk.Window):
 		player.set_loop_end(com.get('aldrin.core.sequencerpanel').view.step)
 		player.get_plugin(0).set_parameter_value(1, 0, 1, config.get_config().get_default_int('BPM', 126), 1)
 		player.get_plugin(0).set_parameter_value(1, 0, 2, config.get_config().get_default_int('TPB', 4), 1)
-		#player.history_flush()
+		player.history_flush_last()
 		self.document_changed()
 		self.update_title()
 		
