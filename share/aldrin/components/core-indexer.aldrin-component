@@ -1,0 +1,9 @@
+[Aldrin COM]
+Module=indexer
+Name=Plugin Indexer
+Description=Provides an interface to the plugin index.
+Icon=aldrin
+Authors=The Aldrin Development Team
+Copyright=Copyright (C) 2006,2007,2008 The Aldrin Development Team
+Website=http://www.aldrin.eu
+

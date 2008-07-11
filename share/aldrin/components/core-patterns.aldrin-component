@@ -1,0 +1,9 @@
+[Aldrin COM]
+Module=patterns
+Name=Pattern Editor Panel
+Description=Provides a pattern editor to the application.
+Icon=aldrin
+Authors=The Aldrin Development Team
+Copyright=Copyright (C) 2006,2007,2008 The Aldrin Development Team
+Website=http://www.aldrin.eu
+

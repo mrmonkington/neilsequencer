@@ -1,0 +1,9 @@
+[Aldrin COM]
+Module=config
+Name=Configuration
+Description=Provides access to the applications configuration.
+Icon=aldrin
+Authors=The Aldrin Development Team
+Copyright=Copyright (C) 2006,2007,2008 The Aldrin Development Team
+Website=http://www.aldrin.eu
+
