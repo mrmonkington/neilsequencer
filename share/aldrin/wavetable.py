@@ -579,7 +579,7 @@ class WavetablePanel(gtk.Notebook):
 		Callback of a button that stops playback of a wave file that is currently playing.
 		"""
 		player = com.get('aldrin.core.player')
-		player.stop_wave()
+		player.stop_preview()
 		
 	def on_save_sample(self, widget):
 		"""
@@ -699,20 +699,10 @@ class WavetablePanel(gtk.Notebook):
 		"""
 		base,ext = os.path.splitext(path)
 		player = com.get('aldrin.core.player')
-		player.lock()
-		try:
-			w = player.get_wave(-1) # get preview wave
-			w.clear()
-			res = w.load_sample(0, path)
-		except:
-			import traceback
-			traceback.print_exc()
-		player.unlock()
-		if res != 0:
+		# (4 << 4) + 1 ?
+		if not player.preview_file(path):
 			error(self, "<b><big>Unable to preview <i>%s</i>.</big></b>\n\nThe file may be corrupt or the file type is not supported." % path)
-		else:
-			self.update_wave_amp()
-			player.play_wave(w, 0, (4 << 4) + 1)
+			return
 				
 	def goto_subfolder(self):
 		"""

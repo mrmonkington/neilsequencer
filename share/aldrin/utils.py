@@ -784,6 +784,9 @@ def is_controller(plugin):
 def is_root(plugin):
 	return ((plugin.get_flags() & PLUGIN_FLAGS_MASK) == ROOT_PLUGIN_FLAGS)
 
+def is_streamer(plugin):
+	return (plugin.get_flags() & zzub.zzub_plugin_flag_stream)
+
 def get_new_pattern_name(plugin):
 	"""
 	Finds an unused pattern name.
@@ -956,6 +959,7 @@ __all__ = [
 'is_generator',
 'is_controller',
 'is_root',
+'is_streamer',
 'get_new_pattern_name',
 'new_theme_image',
 'add_accelerator',

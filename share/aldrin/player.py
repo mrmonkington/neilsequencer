@@ -26,7 +26,7 @@ import common
 import gobject
 import os,sys 
 import time
-from utils import is_generator, is_effect, is_root, is_controller
+from utils import is_generator, is_effect, is_root, is_controller, is_streamer
 from config import get_plugin_aliases, get_plugin_blacklist
 
 from gtkimport import gtk
@@ -186,7 +186,10 @@ class AldrinPlayer(Player):
 			self.add_plugin_path(pluginpath + os.sep)
 		inputname, outputname, samplerate, buffersize = config.get_audiodriver_config()
 		self.initialize(samplerate)
-		self.init_lunar()		
+		self.init_lunar()
+		self.__stream_ext_uri_mappings = {}
+		self.__streamplayer = None
+		self.enumerate_stream_plugins()
 		self.playstarttime = time.time()		
 		self.document_unchanged()
 		eventbus = com.get('aldrin.core.eventbus')
@@ -195,6 +198,73 @@ class AldrinPlayer(Player):
 		self._callback = zzub.zzub_callback_t(self.handle_event)
 		self.set_callback(self._callback, None)
 		gobject.timeout_add(int(1000/50), self.on_handle_events)
+		
+	def enumerate_stream_plugins(self):
+		self.__stream_ext_uri_mappings = {}
+		for pluginloader in self.get_pluginloader_list():
+			if is_streamer(pluginloader):
+				uri = pluginloader.get_uri()
+				for j in xrange(pluginloader.get_stream_format_count()):
+					ext = '.' + pluginloader.get_stream_format_ext(j)
+					if ext in self.__stream_ext_uri_mappings:
+						print >> sys.stderr, "Found another mapping for " + ext + "! Skipping " + uri
+						continue
+					self.__stream_ext_uri_mappings[ext] = uri
+					
+	def delete_stream_player(self):
+		if not self.__streamplayer:
+			return
+		self.__streamplayer.destroy()
+		self.__streamplayer = None
+		
+	def set_machine_non_song(self, plugin, enable):
+		pi = common.get_plugin_infos().get(plugin)
+		pi.songplugin = not enable
+		
+	def create_stream_player(self, uri):
+		# create a stream player plugin and keep it out of the undo buffer
+		assert not self.__streamplayer
+		
+		loader = self.get_pluginloader_by_name(uri)
+		if not loader:
+			print >> sys.stderr, "Can't find streamplayer plugin loader."
+			return
+		
+		self.__streamplayer = zzub.Player.create_plugin(self, None, 0, "_PreviewPlugin", loader)
+		if not self.__streamplayer:
+			print >> sys.stderr, "Can't create streamplayer plugin instance."
+			return
+		self.get_plugin(0).add_input(self.__streamplayer, zzub.zzub_connection_type_audio)
+		self.set_machine_non_song(self.__streamplayer, True)
+		
+	def preview_file(self, filepath):
+		base,ext = os.path.splitext(filepath)
+		if not ext in self.__stream_ext_uri_mappings:
+			return False
+		uri = self.__stream_ext_uri_mappings[ext]
+		self.play_stream((4 << 4)+1, uri, filepath)
+		return True
+	
+	def preview_wave(self, w):
+		self.play_stream((4 << 4)+1, "@zzub.org/stream/wavetable;1", str(w.get_index()+1))
+		
+	def stop_preview(self):
+		if self.__streamplayer:
+			self.__streamplayer.play_midi_note(zzub.zzub_note_value_off, (4 << 4)+1, 0)
+		
+	def play_stream(self, note, plugin_uri, data_url):
+		if self.__streamplayer:
+			pluginloader = self.__streamplayer.get_pluginloader()
+			if pluginloader.get_uri() != plugin_uri:
+				self.delete_stream_player()
+		if not self.__streamplayer:
+			self.create_stream_player(plugin_uri)
+		if self.__streamplayer:
+			self.__streamplayer.set_stream_source(data_url)
+		self.flush(None,None)
+		if self.__streamplayer:
+			self.__streamplayer.play_midi_note(note, 0, 0)
+		self.history_flush_last()
 		
 	def register_locals(self, locs):
 		locs.update(dict(

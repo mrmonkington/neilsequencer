@@ -2063,7 +2063,7 @@ class PatternView(gtk.DrawingArea):
 				if v != p.get_value_none():
 					m.set_parameter_value(self.group, self.track, index, v, 0)
 			m.tick()
-			player.history_flush()
+			player.history_flush_last()
 		self.move_down(self.row_step)
 	
 	def on_key_up(self, widget, event):

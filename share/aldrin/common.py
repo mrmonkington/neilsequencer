@@ -40,6 +40,7 @@ class PluginInfo(object):
 		self.cpu = -9999.0
 		self.pattern_position = (0, 0, 0, 0, 0)
 		self.selection = None
+		self.songplugin = True
 		self.plugingfx = None
 		self.patterngfx = {}
 		self.amp = -9999.0
