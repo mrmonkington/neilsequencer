@@ -294,6 +294,20 @@ class Test(TestCase):
 		self.player.undo()
 		self._handle_events()
 		
+	def test_enumerate_plugin(self):
+		self.assertTrue(self.player.history_get_uncomitted_operations() == 0)
+		self.assertTrue(self.player.get_plugin_count() == 1)
+		master = self.player.get_plugin_by_id(0)
+		self.assertTrue(master == self.player.get_plugin(0))
+		self.assertTrue(master.get_input_connection_count() == 0)
+		self.assertTrue(self.player.history_get_size() == 0)
+		self.assertTrue(self.player.history_get_position() == 0)
+		pluginloader = self.player.get_pluginloader_by_name('@krzysztof_foltman/generator/infector;1')
+		self.assertTrue(pluginloader)
+		plugin = self.player.create_plugin(None, 0, "test", pluginloader)
+		
+		self.assertTrue(plugin.get_parameter_count(0,0))
+		
 	def test_parameter_change_undo(self):
 		"""
 		change master parameters, commit and assert history increase. then undo and check
@@ -319,7 +333,6 @@ class Test(TestCase):
 		self.assertTrue(self.player.history_get_size() == 0)
 
 if __name__ == '__main__':
-	main(defaultTest='Test.test_access_pattern')
-	#main()
+    main()
 
 
