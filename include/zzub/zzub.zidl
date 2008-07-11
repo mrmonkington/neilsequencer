@@ -800,16 +800,16 @@ namespace zzub:
 		def set_decay(ushort decay)
 		def set_sustain(ushort sustain)
 		def set_release(ushort release)
-		def get_subdivision(): char
-		def set_subdivision(char subdiv)
-		def get_flags(): char
-		def set_flags(char flags)
+		def get_subdivision(): byte
+		def set_subdivision(byte subdiv)
+		def get_flags(): byte
+		def set_flags(byte flags)
 		def is_enabled(): int
 		def enable(int enable)
 		def get_point_count(): int
-		def get_point(int index, out ushort x, out ushort y, out char flags)
+		def get_point(int index, out ushort x, out ushort y, out byte flags)
 		iterator get_point_list: for get_point in get_point_count
-		def set_point(int index, ushort x, ushort y, char flags)
+		def set_point(int index, ushort x, ushort y, byte flags)
 		def insert_point(int index)
 		def delete_point(int index)
 	
