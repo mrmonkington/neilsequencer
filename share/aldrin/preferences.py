@@ -519,7 +519,7 @@ class PreferencesDialog(gtk.Dialog):
 	This Dialog aggregates the different panels and allows
 	the user to switch between them using a tab control.
 	"""
-	def __init__(self, parent):
+	def __init__(self, parent, starting_tab_index=0):
 		gtk.Dialog.__init__(self,
 			"Preferences",
 			parent,
@@ -549,7 +549,6 @@ class PreferencesDialog(gtk.Dialog):
 		self.splitter.pack2(self.nb)
 		self.vbox.add(self.splitter)
 		
-		
 		btnok = self.add_button(gtk.STOCK_OK, gtk.RESPONSE_OK)
 		self.add_button(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL)
 		self.add_button(gtk.STOCK_APPLY, gtk.RESPONSE_APPLY)
@@ -557,6 +556,11 @@ class PreferencesDialog(gtk.Dialog):
 
 		self.connect('response', self.on_response)
 		self.show_all()
+		print starting_tab_index
+		# select starting tab and adjust the list index
+		self.nb.set_current_page(starting_tab_index)
+		#self.tab_list.set_cursor(self.tab_list_store.get_path(self.tab_list_store[1]))
+		#self.tab_list.grab_focus()
 		
 	def on_response(self, widget, response):
 		if response == gtk.RESPONSE_OK:
@@ -596,7 +600,7 @@ class PreferencesDialog(gtk.Dialog):
 		except CancelException:
 			pass
 
-def show_preferences(parent):
+def show_preferences(parent, *args):
 	"""
 	Shows the {PreferencesDialog}.
 	
@@ -605,7 +609,7 @@ def show_preferences(parent):
 	@param parent: Parent window.
 	@type parent: wx.Window
 	"""
-	PreferencesDialog(parent)
+	PreferencesDialog(parent, *args)
 
 __aldrin__ = dict(
 	classes = [
