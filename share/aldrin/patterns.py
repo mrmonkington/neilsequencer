@@ -145,6 +145,12 @@ def show_pattern_dialog(parent, name, length, dlgmode):
 	return result
 
 class SelectComboBox(gtk.ComboBox):
+	"""
+	a combobox which mirrors a numeration stored somewhere else using four
+	methods to retrieve the options, get/set the active selection, and
+	hover the selection (e.g. for updating previews).
+	"""
+
 	def __init__(self, source_func=None, get_selection_func=None, set_selection_func=None, activate_func=None):
 		gtk.ComboBox.__init__(self)
 		columns = [
@@ -215,12 +221,11 @@ class PatternToolBar(gtk.HBox):
 	Contains lists of the plugins, patterns, waves and octaves available.
 	"""
 			
-	def __init__(self, view):
+	def __init__(self):
 		"""
 		Initialization.
 		"""
 		# begin wxGlade: SequencerFrame.__init__
-		self.view = view
 		gtk.HBox.__init__(self, False, MARGIN)
 		self.set_border_width(MARGIN)
 		
@@ -313,7 +318,10 @@ class PatternToolBar(gtk.HBox):
 	def get_plugin_sel(self):
 		player = com.get('aldrin.core.player')
 		sel = player.active_plugins
-		return sel and sel[0] or None
+		sel = sel and sel[0] or None
+		if sel not in player.get_plugin_list():
+			return None
+		return sel
 	
 	def set_plugin_sel(self, sel):
 		if sel:
@@ -322,12 +330,13 @@ class PatternToolBar(gtk.HBox):
 	
 	def get_pattern_source(self):
 		player = com.get('aldrin.core.player')
-		def cmp_func(a,b):
-			return cmp(a.get_name().lower(), b.get_name().lower())
 		plugin = self.get_plugin_sel()
 		if not plugin:
 			return []
-		return [(plugin.get_pattern_name(i),(plugin,i)) for i in xrange(plugin.get_pattern_count())]
+		patterns = []
+		for i in xrange(plugin.get_pattern_count()):
+			patterns.append((plugin.get_pattern_name(i),(plugin,i)))
+		return patterns
 	
 	def get_pattern_sel(self):
 		player = com.get('aldrin.core.player')
@@ -444,8 +453,7 @@ class PatternPanel(gtk.VBox):
 		self.statusbar.pack_start(gtk.VSeparator(), expand=False)
 		
 		self.view = PatternView(self, hscroll, vscroll)
-		self.toolbar = PatternToolBar(self.view)
-		self.view.toolbar = self.toolbar
+		self.toolbar = PatternToolBar()
 		self.view.statusbar = self.statusbar
 		self.view.pattern_changed()
 		self.pack_start(self.toolbar, expand=False)
@@ -462,12 +470,6 @@ class PatternPanel(gtk.VBox):
 		except AttributeError: #no pattern in current machine
 			pass
 		self.view.grab_focus()
-
-	def reset(self):
-		"""
-		Resets the toolbar
-		"""
-		self.toolbar.reset()
 		
 	def update_all(self, *args):
 		"""
@@ -611,7 +613,6 @@ class PatternView(gtk.DrawingArea):
 		self.panel = panel
 		self.hscroll = hscroll
 		self.vscroll = vscroll
-		self.toolbar = None
 		self.statusbar = None
 		self.jump_to_note = False
 		self.patternsize = 16
@@ -653,6 +654,7 @@ class PatternView(gtk.DrawingArea):
 		self.hscroll.connect('change-value', self.on_hscroll_window)
 		self.vscroll.connect('change-value', self.on_vscroll_window)
 		eventbus = com.get('aldrin.core.eventbus')
+		eventbus.active_patterns_changed += self.on_active_patterns_changed
 		#eventbus.zzub_connect += self.pattern_changed
 		#eventbus.zzub_disconnect += self.pattern_changed
 		#eventbus.zzub_pattern_changed += self.pattern_changed
@@ -837,7 +839,7 @@ class PatternView(gtk.DrawingArea):
 			# sub index offsets
 			self.subindex_offset = [[get_subindexoffsets_from_param(self.plugin.get_parameter(g,0,i)) \
 				for i in range(self.parameter_count[g])] for g in range(3)] 
-			self.row_count = self.pattern.get_row_count() # row count
+			self.row_count = self.plugin.get_pattern_length(self.pattern) # row count
 			self.prepare_textbuffer()
 			self.adjust_scrollbars()
 		# set the pattern position
@@ -971,6 +973,9 @@ class PatternView(gtk.DrawingArea):
 		if self.window:
 			w,h = self.get_client_size()
 			self.window.invalidate_rect((0,0,w,h), False)
+			
+	def on_active_patterns_changed(self, selpatterns):
+		self.pattern_changed()
 		
 	def pattern_changed(self, *args):
 		"""
@@ -1606,7 +1611,6 @@ class PatternView(gtk.DrawingArea):
 			m = self.get_plugin()			
 			if self.pattern:
 				m.remove_pattern(self.pattern)
-			self.toolbar.select_pattern(0)		
 			
 	def on_popup_create_pattern(self, widget=None, m=None):
 		"""
@@ -1624,7 +1628,8 @@ class PatternView(gtk.DrawingArea):
 		if switch:
 			for i in range(m.get_pattern_count()):
 				if m.get_pattern(i) == p:
-					self.toolbar.select_pattern(i)
+					player = com.get('aldrin.core.player')
+					player.active_patterns = [(m, i)]
 					break
 	
 	def on_popup_double(self, *args):
@@ -1679,7 +1684,8 @@ class PatternView(gtk.DrawingArea):
 		if switch:
 			for i in range(m.get_pattern_count()):
 				if m.get_pattern(i) == p:
-					self.toolbar.select_pattern(i)
+					player = com.get('aldrin.core.player')
+					player.active_patterns = [(m, i)]
 					break
 		player = com.get('aldrin.core.player')
 		player.history_commit("copy pattern")
@@ -1704,7 +1710,6 @@ class PatternView(gtk.DrawingArea):
 			self.pattern.set_name(name)
 		if self.pattern.get_row_count() != rc:
 			self.pattern.set_row_count(rc)
-		self.toolbar.update_all()
 		self.pattern_changed()
 		
 	def on_popup_add_track(self, *args):
@@ -1789,9 +1794,11 @@ class PatternView(gtk.DrawingArea):
 		print mask,k,kv
 		player = com.get('aldrin.core.player')
 		if k == 'less':
-			self.toolbar.prev_wave()
+			# TODO: select previous wave
+			pass
 		elif k == 'greater':
-			self.toolbar.next_wave()
+			# TODO: select next wave
+			pass
 		elif (mask & gtk.gdk.CONTROL_MASK) and (mask & gtk.gdk.SHIFT_MASK):
 			if k == 'Return':
 				self.on_popup_create_copy()
@@ -1916,9 +1923,11 @@ class PatternView(gtk.DrawingArea):
 			elif k in ('KP_Subtract','minus'):
 				self.on_popup_delete_track()
 			elif k == 'Up':
-				self.toolbar.select_plugin(self.toolbar.plugin_index-1)
+				# TODO: select previous plugin
+				pass
 			elif k == 'Down':
-				self.toolbar.select_plugin(self.toolbar.plugin_index+1)
+				# TODO: select next plugin
+				pass
 			else:
 				return False
 		elif k == 'Left' or k == 'KP_Left':
@@ -1986,9 +1995,11 @@ class PatternView(gtk.DrawingArea):
 			#mainwindow.select_panel(com.get('aldrin.core.sequencerpanel'))
 			pass
 		elif k in ('KP_Add','plus'):			
-			self.toolbar.next_pattern()
+			# TODO: select next pattern
+			pass
 		elif k in ('KP_Subtract','minus'):
-			self.toolbar.prev_pattern()
+			# TODO: select previous pattern
+			pass
 		elif k in ('KP_Multiply', 'dead_acute'):
 			player = com.get('aldrin.core.player')
 			self.set_octave(player.octave+1)
@@ -2022,7 +2033,7 @@ class PatternView(gtk.DrawingArea):
 						player = com.get('aldrin.core.player')
 						data = (min(player.octave+o,9)<<4) | (n+1)
 						if wp != None:
-							wdata = self.toolbar.wave+1
+							wdata = player.active_waves[0].get_index()+1
 						playtrack = True
 					elif k == 'period':
 						data = p.get_value_none()
@@ -2069,8 +2080,7 @@ class PatternView(gtk.DrawingArea):
 					data = (data ^ (data & (0xf << bofs))) | (o << bofs) # mask out old nibble, put in new nibble
 					data = min(p.get_value_max(),max(p.get_value_min(), data))
 					if p.get_flags() & zzub.zzub_parameter_flag_wavetable_index:
-						self.toolbar.wave = data - 1
-						self.toolbar.update_waveselect()
+						player.active_waves = [player.get_wave(data - 1)]
 			else:
 				return False
 			self.pattern.set_value(self.row, self.group, self.track, self.index, data)
@@ -2085,7 +2095,8 @@ class PatternView(gtk.DrawingArea):
 		Plays entered note
 		"""
 		player = com.get('aldrin.core.player')
-		if playtrack and self.toolbar.playnotes.get_active():
+		# TODO: check for play notes option
+		if playtrack and True:
 			m = self.get_plugin()
 			player.lock_tick()
 			try:
@@ -2130,9 +2141,11 @@ class PatternView(gtk.DrawingArea):
 		event.Skip()
 		k = event.GetKeyCode()		
 		if k == ord('<'):
-			self.toolbar.prev_wave()
+			# TODO: switch to previous wave
+			pass
 		elif k == ord('>'):
-			self.toolbar.next_wave()
+			# TODO: switch to next wave
+			pass
 
 	def pattern_to_charpos(self, row, group, track=0, index=0, subindex=0):
 		"""
@@ -2293,31 +2306,32 @@ class PatternView(gtk.DrawingArea):
 	def update_statusbar(self):
 		# update plugin info
 		self.update_plugin_info();		
-		if self.plugin:
-			if self.parameter_count[self.group] and self.group_track_count[self.group]:
-				# change status bar
-				if self.group == 0:
-					try:
-						pl = self.get_plugin()
-						conn = pl.get_input_connection_list()[self.track]
-						in_machine_name = conn.get_input().get_name()
-					except:
-						in_machine_name = ""
-					self.statuslabels[0].set_label('Row %s, Incoming %s (%s)' % 
-								       (self.row,self.track,in_machine_name))
-				elif self.group == 1:
-					self.statuslabels[0].set_label('Row %s, Globals' % (self.row,))
-				else:
-					self.statuslabels[0].set_label('Row %s, Track %s' % (self.row,self.track))
-				p = self.plugin.get_parameter(self.group,self.track,self.index)
-				self.statuslabels[2].set_label(prepstr(p.get_description() or ""))
-				v = self.pattern.get_value(self.row, self.group, self.track, self.index)
-				if v != p.get_value_none():
-					text = prepstr(self.get_plugin().describe_value(self.group,self.index,v))
-					s = get_str_from_param(p,self.pattern.get_value(self.row, self.group, self.track, self.index))
-					self.statuslabels[1].set_label("%s (%i) %s" % (s,v,text))
-				else:
-					self.statuslabels[1].set_label("")		
+		if not self.plugin:
+			return
+		if self.parameter_count[self.group] and self.group_track_count[self.group]:
+			# change status bar
+			if self.group == 0:
+				try:
+					pl = self.get_plugin()
+					conn = pl.get_input_connection_list()[self.track]
+					in_machine_name = conn.get_input().get_name()
+				except:
+					in_machine_name = ""
+				self.statuslabels[0].set_label('Row %s, Incoming %s (%s)' % 
+							       (self.row,self.track,in_machine_name))
+			elif self.group == 1:
+				self.statuslabels[0].set_label('Row %s, Globals' % (self.row,))
+			else:
+				self.statuslabels[0].set_label('Row %s, Track %s' % (self.row,self.track))
+			p = self.plugin.get_parameter(self.group,self.track,self.index)
+			self.statuslabels[2].set_label(prepstr(p.get_description() or ""))
+			v = self.plugin.get_pattern_value(self.pattern, self.group, self.track, self.index, self.row)
+			if v != p.get_value_none():
+				text = prepstr(self.get_plugin().describe_value(self.group,self.index,v))
+				s = get_str_from_param(p,self.plugin.get_pattern_value(self.pattern, self.group, self.track, self.index, self.row))
+				self.statuslabels[1].set_label("%s (%i) %s" % (s,v,text))
+			else:
+				self.statuslabels[1].set_label("")		
 					
 	def refresh_view(self):
 		if not self.plugin:
@@ -2415,15 +2429,14 @@ class PatternView(gtk.DrawingArea):
 		@return: A tuple holding the plugin and the current pattern
 		@rtype: (zzub.Plugin, zzub.Pattern)
 		"""	
-		tb = self.toolbar
 		plugin = self.get_plugin()
 		if not plugin:
 			return
-		pi = min(tb.pattern, plugin.get_pattern_count()-1)
-		if pi == -1:
-			return
-		pattern = plugin.get_pattern(pi)		
-		return plugin, pattern
+		player = com.get('aldrin.core.player')		
+		for selplugin, i in player.active_patterns:
+			if selplugin == plugin:
+				return plugin, i
+		return None
 		
 	def update_line(self, row):
 		"""
@@ -2451,8 +2464,7 @@ class PatternView(gtk.DrawingArea):
 		cols = [None] * count
 		for i in range(count):
 			param = self.plugin.get_parameter(group, 0, i)
-			get_value = self.pattern.get_value
-			cols[i] = [get_str_from_param(param, get_value(row, group, track, i))
+			cols[i] = [get_str_from_param(param, self.plugin.get_pattern_value(self.pattern, group, track, i, row))
 				   for row in range(self.row_count)]
 		for row in range(self.row_count):
 			try:
@@ -2529,7 +2541,7 @@ class PatternView(gtk.DrawingArea):
 		layout.set_width(-1)
 	
 		# clear the view if no current pattern
-		if not self.pattern:
+		if self.pattern == -1:
 			drawable.draw_rectangle(gc, True, 0, 0, w, h)
 			return
 
