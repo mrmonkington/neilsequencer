@@ -66,6 +66,72 @@ def get_root_folder_path():
 
 basedir = get_root_folder_path()
 
+def etcpath(path):
+	"""
+	Translates a path relative to the config directory into an absolute
+	path.
+	
+	@param path: Relative path to file.
+	@type path: str
+	@return: Absolute path to file.
+	@rtype: str
+	"""
+	basepath = os.path.join(get_root_folder_path(), '../../etc')
+	return os.path.abspath(os.path.normpath(os.path.join(basepath, path)))
+
+def iconpath(path):
+	"""
+	Translates a path relative to the aldrin icon directory into an absolute
+	path.
+	
+	@param path: Relative path to file.
+	@type path: str
+	@return: Absolute path to file.
+	@rtype: str
+	"""
+	basepath = os.path.join(get_root_folder_path(), '../../icons/aldrin')
+	return os.path.abspath(os.path.normpath(os.path.join(basepath, path)))
+	
+def hicoloriconpath(path):
+	"""
+	Translates a path relative to the hicolor icon directory into an absolute
+	path.
+	
+	@param path: Relative path to file.
+	@type path: str
+	@return: Absolute path to file.
+	@rtype: str
+	"""
+	basepath = os.path.join(get_root_folder_path(), '../../icons/hicolor')
+	return os.path.abspath(os.path.normpath(os.path.join(basepath, path)))
+
+
+def imagepath(path):
+	"""
+	Translates a path relative to the image directory into an absolute
+	path.
+	
+	@param path: Relative path to file.
+	@type path: str
+	@return: Absolute path to file.
+	@rtype: str
+	"""
+	basepath = os.path.join(get_root_folder_path(), '../../pixmaps')
+	return os.path.abspath(os.path.normpath(os.path.join(basepath, path)))
+
+def sharedpath(path):
+	"""
+	Translates a path relative to the shared directory into an absolute
+	path.
+	
+	@param path: Relative path to file.
+	@type path: str
+	@return: Absolute path to file.
+	@rtype: str
+	"""
+	basepath = os.path.join(get_root_folder_path(), '../..')
+	return os.path.abspath(os.path.normpath(os.path.join(basepath, path)))
+
 def filepath(path):
 	"""
 	Translates a path relative to a base dir into an absolute

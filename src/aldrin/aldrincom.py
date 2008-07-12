@@ -23,7 +23,7 @@ import os,sys,glob
 from ConfigParser import ConfigParser
 
 COMPONENT_PATH = [
-	filepath('components'),
+	filepath('../components'),
 	os.path.expanduser('~/.aldrin/components'),
 ]
 

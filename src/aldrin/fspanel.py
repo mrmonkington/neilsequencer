@@ -27,7 +27,7 @@ import gobject
 import os, sys, stat
 from utils import prepstr, db2linear, linear2db, note2str, format_filesize, \
 	filepath, new_listview, new_image_button, add_scrollbars, error, question, \
-	run_function_with_progress
+	run_function_with_progress, imagepath
 import utils
 import zzub
 import config
@@ -151,7 +151,7 @@ class FreesoundPanel(gtk.HBox):
 		self.combomaxdl.connect('changed', self.on_change_maxdl)
 		self.btnsearch.connect('clicked', self.on_search)
 		self.btnsearchtags.set_active(True)
-		self.btnopen = new_image_button(filepath("res/loadsample.png"), "Add/Insert Instrument", self.tooltips)
+		self.btnopen = new_image_button(imagepath("loadsample.png"), "Add/Insert Instrument", self.tooltips)
 		self.btnopen.connect('clicked', self.on_load_sample)
 		self.resultlist, self.resultstore, columns = new_listview([
 			('Name', str),
@@ -162,8 +162,8 @@ class FreesoundPanel(gtk.HBox):
 		])
 		# XXX: TODO
 		#~ imglist = wx.ImageList(16,16)
-		#~ self.IMG_FOLDER = imglist.Add(wx.Bitmap(filepath("res/folder.png"), wx.BITMAP_TYPE_ANY))
-		#~ self.IMG_WAVE = imglist.Add(wx.Bitmap(filepath("res/wave.png"), wx.BITMAP_TYPE_ANY))
+		#~ self.IMG_FOLDER = imglist.Add(wx.Bitmap(filepath("folder.png"), wx.BITMAP_TYPE_ANY))
+		#~ self.IMG_WAVE = imglist.Add(wx.Bitmap(filepath("wave.png"), wx.BITMAP_TYPE_ANY))
 		#~ self.resultlist.AssignImageList(imglist, wx.IMAGE_LIST_SMALL)
 		downloadgroup.pack_start(gtk.Label("Max. Results to Return"), expand=False)
 		downloadgroup.pack_start(self.combomaxdl, expand=False)
@@ -182,7 +182,7 @@ class FreesoundPanel(gtk.HBox):
 		vsearch.pack_start(downloadgroup, expand=False)
 		vsearch.pack_start(progressgroup, expand=False)
 		logo = gtk.Image()
-		logo.set_from_pixbuf(gtk.gdk.pixbuf_new_from_file(filepath("res/fsbanner.png")))
+		logo.set_from_pixbuf(gtk.gdk.pixbuf_new_from_file(imagepath("fsbanner.png")))
 		lbox = gtk.HBox()
 		lbox.pack_start(logo, expand=False)
 		vsizer.pack_start(lbox, expand=False)

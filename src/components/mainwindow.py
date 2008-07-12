@@ -37,7 +37,8 @@ MARGIN0 = common.MARGIN0
 import hdrecorder, cpumonitor
 
 from utils import make_submenu_item, make_stock_menu_item, make_stock_tool_item, make_stock_toggle_item, \
-	make_stock_radio_item, make_menu_item, make_check_item, make_radio_item, new_theme_image, add_accelerator
+	make_stock_radio_item, make_menu_item, make_check_item, make_radio_item, new_theme_image, add_accelerator, \
+	hicoloriconpath
 
 import preferences
 show_preferences = preferences.show_preferences
@@ -236,11 +237,11 @@ class AldrinFrame(gtk.Window):
 
 		self.update_title()
 		gtk.window_set_default_icon_list(
-			gtk.gdk.pixbuf_new_from_file(filepath("../icons/hicolor/48x48/apps/aldrin.png")),
-			gtk.gdk.pixbuf_new_from_file(filepath("../icons/hicolor/32x32/apps/aldrin.png")),
-			gtk.gdk.pixbuf_new_from_file(filepath("../icons/hicolor/24x24/apps/aldrin.png")),
-			gtk.gdk.pixbuf_new_from_file(filepath("../icons/hicolor/22x22/apps/aldrin.png")),
-			gtk.gdk.pixbuf_new_from_file(filepath("../icons/hicolor/16x16/apps/aldrin.png")))
+			gtk.gdk.pixbuf_new_from_file(hicoloriconpath("48x48/apps/aldrin.png")),
+			gtk.gdk.pixbuf_new_from_file(hicoloriconpath("32x32/apps/aldrin.png")),
+			gtk.gdk.pixbuf_new_from_file(hicoloriconpath("24x24/apps/aldrin.png")),
+			gtk.gdk.pixbuf_new_from_file(hicoloriconpath("22x22/apps/aldrin.png")),
+			gtk.gdk.pixbuf_new_from_file(hicoloriconpath("16x16/apps/aldrin.png")))
 		self.resize(750, 550)
 		self.aldrinframe_statusbar.push(0, "Ready to rok again")
 

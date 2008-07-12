@@ -63,7 +63,7 @@ DOCUMENTERS = [
 
 AUTHORS = [prepstr(x) for x in AUTHORS]
 
-from utils import filepath
+from utils import filepath, imagepath
 
 def about_visit_website(dialog, link, user_data):
 	import webbrowser
@@ -101,7 +101,7 @@ class AboutDialog(gtk.AboutDialog):
 		self.set_authors(AUTHORS)
 		self.set_artists(ARTISTS)
 		self.set_documenters(DOCUMENTERS)
-		self.set_logo(gtk.gdk.pixbuf_new_from_file(filepath("res/splash.png")))
+		self.set_logo(gtk.gdk.pixbuf_new_from_file(imagepath("splash.png")))
 		
 	def show(self):
 		self.run()

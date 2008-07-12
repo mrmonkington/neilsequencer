@@ -26,7 +26,7 @@ from gtkimport import gtk
 import os, sys, stat
 from utils import prepstr, db2linear, linear2db, note2str, filepath, new_listview, \
 	new_image_button, add_scrollbars, file_filter, question, new_image_toggle_button, format_filesize, error, \
-	new_stock_image_button, ObjectHandlerGroup
+	new_stock_image_button, ObjectHandlerGroup, imagepath
 import utils
 import zzub
 import config
@@ -138,9 +138,9 @@ class WavetablePanel(gtk.Notebook):
 		self.btnplay = new_stock_image_button(gtk.STOCK_MEDIA_PLAY, "Preview Sample", self.tooltips)
 		self.btnrename = new_stock_image_button(gtk.STOCK_BOLD, "Rename Instrument", self.tooltips)
 		self.btnclear = new_stock_image_button(gtk.STOCK_REMOVE, "Remove Instrument", self.tooltips)
-		self.btnadsr = new_image_toggle_button(filepath("res/adsr.png"), "Create ADSR Envelope", self.tooltips)
-		self.btnfitloop = new_image_button(filepath("res/fitloop.png"), "Fit Loop", self.tooltips)
-		self.btnstrloop = new_image_button(filepath("res/fitloop.png"), "Stretch Loop", self.tooltips)
+		self.btnadsr = new_image_toggle_button(imagepath("adsr.png"), "Create ADSR Envelope", self.tooltips)
+		self.btnfitloop = new_image_button(imagepath("fitloop.png"), "Fit Loop", self.tooltips)
+		self.btnstrloop = new_image_button(imagepath("fitloop.png"), "Stretch Loop", self.tooltips)
 		self.samplename = gtk.Label("")
 		self.samplename.set_alignment(0, 0.5)
 		self.volumeslider = gtk.HScale()

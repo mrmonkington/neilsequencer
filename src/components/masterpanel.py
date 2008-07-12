@@ -22,7 +22,7 @@ from gtkimport import gtk
 import cairo
 from common import MARGIN, MARGIN2, MARGIN3, MARGIN0
 import gobject
-from utils import filepath
+from utils import filepath, imagepath
 import utils
 from aldrincom import com
 import driver
@@ -41,7 +41,7 @@ class AmpView(gtk.DrawingArea):
 		self.range = 76
 		self.amp = 0.0
 		self.channel = channel
-		self.pixbuf = gtk.gdk.pixbuf_new_from_file(filepath('res/vubar.svg'))
+		self.pixbuf = gtk.gdk.pixbuf_new_from_file(imagepath('vubar.svg'))
 		self.stops = (0.0, 6.0 / self.range, 12.0 / self.range) # red, yellow, green
 		self.index = 0
 		gtk.DrawingArea.__init__(self)

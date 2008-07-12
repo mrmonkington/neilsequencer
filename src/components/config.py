@@ -25,7 +25,7 @@ Provides an object which eases access to the applications configuration.
 from gtkimport import gtk
 import os, glob, re
 
-from utils import filepath, camelcase_to_unixstyle
+from utils import filepath, camelcase_to_unixstyle, etcpath, imagepath, iconpath, sharedpath
 import ConfigParser
 import new
 
@@ -334,7 +334,7 @@ class AldrinConfig(object, ConfigParser.ConfigParser):
 		"""
 		Returns the plugin icon path for a specific icon name.
 		"""
-		path = os.path.join(filepath('icons'), name + '.svg')
+		path = os.path.join(iconpath(name + '.svg'))
 		if not os.path.isfile(path):
 			return ""
 		return path
@@ -372,7 +372,7 @@ class AldrinConfig(object, ConfigParser.ConfigParser):
 			self.active_theme = ''
 			return
 		re_theme_attrib = re.compile('^([\w\s]+\w)\s+(\w+)$')
-		for line in file(filepath('themes/'+name+'.col'),'r'):
+		for line in file(sharedpath('themes/'+name+'.col'),'r'):
 			line = line.strip()
 			if line and not line.startswith('#'):
 				m = re_theme_attrib.match(line)
@@ -423,7 +423,7 @@ class AldrinConfig(object, ConfigParser.ConfigParser):
 		@return: A list of color theme names.
 		@rtype: [str,...]
 		"""
-		return [os.path.splitext(os.path.basename(filename))[0] for filename in glob.glob(filepath('themes') + '/*.col')]
+		return [os.path.splitext(os.path.basename(filename))[0] for filename in glob.glob(sharedpath('themes') + '/*.col')]
 		
 	def get_default_int(self, key, defval=0):
 		"""
@@ -501,7 +501,7 @@ class AldrinConfig(object, ConfigParser.ConfigParser):
 		@return: Path to the index file.
 		@rtype: str
 		"""
-		indexpath = filepath('index.xml')
+		indexpath = etcpath('index.xml')
 		userindexpath = os.path.join(self.get_settings_folder(),'index.xml')
 		if userindexpath and os.path.isfile(userindexpath):
 			return userindexpath
@@ -619,7 +619,7 @@ class AldrinConfig(object, ConfigParser.ConfigParser):
 		from utils import filenameify
 		uri = filenameify(pluginloader.get_uri())
 		name = filenameify(pluginloader.get_name())
-		presetpath = os.path.join(self.get_settings_folder(),'presets')
+		presetpath = os.path.join(sharedpath('presets'))
 		presetfilepaths = [
 			os.path.join(presetpath, uri + '.prs'),
 			os.path.join(presetpath, name + '.prs'),

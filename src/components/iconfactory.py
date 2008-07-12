@@ -22,17 +22,17 @@ from aldrincom import com
 from gtkimport import gtk
 
 import glob, os
-from utils import filepath, get_root_folder_path
+from utils import filepath, get_root_folder_path, iconpath
 
 ICON_SEARCHPATH = [
-	'icons/16x16',
-	'icons/22x22',
-	'icons/24x24',
-	'icons/32x32',
-	'icons/48x48',
-	'icons/scalable',
-	'icons',
-	'res',
+	'16x16',
+	'22x22',
+	'24x24',
+	'32x32',
+	'48x48',
+	'scalable',
+	'',
+	'../../pixmaps',
 ]
 
 ICON_EXTENSIONS = [
@@ -63,7 +63,7 @@ class IconLibrary:
 		icons = {}
 		for searchpath in ICON_SEARCHPATH:
 			for ext in ICON_EXTENSIONS:
-				mask = filepath(searchpath) + '/*' + ext
+				mask = iconpath(searchpath) + '/*' + ext
 				for filename in glob.glob(mask):
 					key = os.path.splitext(os.path.basename(filename))[0]
 					pixbuf = gtk.gdk.pixbuf_new_from_file(filename)
