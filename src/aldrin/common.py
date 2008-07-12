@@ -23,7 +23,7 @@ Provides information used by all ui sections.
 """
 
 import zzub
-from aldrincom import com
+import aldrin.com as com
 
 MARGIN0 = 3
 MARGIN = 6

@@ -29,6 +29,8 @@ import struct
 from gtkimport import gtk
 import gobject
 
+import aldrin.com as com
+
 def is_debug():
 	if os.environ.get('ALDRIN_DEBUG'):
 		return True
@@ -884,7 +886,6 @@ def make_submenu_item(submenu, name):
 def make_stock_menu_item(stockid, func, frame=None, shortcut=None, *args):
 	item = gtk.ImageMenuItem(stockid)
 	if frame and shortcut:
-		from aldrincom import com
 		acc = com.get('aldrin.core.accelerators')
 		acc.add_accelerator(shortcut, item)
 	if func:

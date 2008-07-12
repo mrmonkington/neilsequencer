@@ -26,7 +26,7 @@ import urllib, urlparse, urllib2, cookielib, config
 import xml.dom.minidom
 import os,sys
 
-from aldrincom import com
+import aldrin.com as com
 
 class Freesound:
 	BASE_URL = "http://www.freesound.org/"

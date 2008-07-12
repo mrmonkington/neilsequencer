@@ -31,7 +31,7 @@ import config
 import common
 from common import MARGIN, MARGIN2, MARGIN3
 
-from aldrincom import com
+import aldrin.com as com
 
 # size of border
 BORDER = 5

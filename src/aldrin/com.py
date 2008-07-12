@@ -18,7 +18,6 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from utils import filepath
 import os,sys,glob
 from ConfigParser import ConfigParser
 
@@ -151,6 +150,15 @@ class ComponentManager:
 com = ComponentManager()
 get = com.get
 get_from_category = com.get_from_category
+
+def get_packages():
+	return com.packages
+
+def get_categories():
+	return com.categories
+	
+def get_factories():
+	return com.factories
 
 def init(paths):
 	com.load_packages(paths)

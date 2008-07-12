@@ -81,12 +81,12 @@ class PackageBrowserDialog(gtk.Dialog):
 		packagenode = self.ifacestore.append(rootnode, ["<b>By Modules</b>",None])
 		pkgnodes = {}
 		pkgnodes['(unknown)'] = self.ifacestore.append(packagenode, ["<i>(unknown)</i>", None])
-		for name in sorted(com.packages):
+		for name in sorted(com.get_packages()):
 			pkgnodes[name] = self.ifacestore.append(packagenode, ["<b>module</b> <i>%s</i>" % name, None])
 		categorynode = self.ifacestore.append(rootnode, ["<b>By Categories</b>",None])
 		catnodes = {}
 		catnodes['(unknown)'] = self.ifacestore.append(categorynode, ["<i>(unknown)</i>", None])
-		for name in sorted(com.categories):
+		for name in sorted(com.get_categories()):
 			catnodes[name] = self.ifacestore.append(categorynode, ["<b>category</b> <i>%s</i>" % name, None])
 		allnode = self.ifacestore.append(rootnode, ["<b>By Alphabet</b>",None])
 		def create_classnode(parent, metainfo):
@@ -99,8 +99,8 @@ class PackageBrowserDialog(gtk.Dialog):
 				eelement = getattr(element,ename)
 				if not ename.startswith('_') and inspect.ismethod(eelement):
 					methodnode = self.ifacestore.append(ifacenode, ["<b>method</b> %s" % ename, eelement])
-		for name in sorted(com.factories):
-			metainfo = com.factories[name]
+		for name in sorted(com.get_factories()):
+			metainfo = com.get_factories()[name]
 			create_classnode(allnode, metainfo)
 			modulename = metainfo.get('modulename', None) or '(unknown)'
 			if modulename in pkgnodes:
