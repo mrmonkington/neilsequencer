@@ -69,6 +69,8 @@ class ComponentManager:
 		packages = []
 		names = []
 		for path in COMPONENT_PATH:
+			if not path in sys.path:
+				sys.path = [path] + sys.path
 			if os.path.isdir(path):
 				for filename in glob.glob(os.path.join(path, '*.aldrin-component')):
 					print filename
