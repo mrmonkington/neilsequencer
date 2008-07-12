@@ -19,11 +19,15 @@ command = [
 './style.css',
 ]
 
-basepath = '../aldrin'
-for filename in os.listdir(basepath):
-	if filename.endswith('.py'):
-		filename = os.path.join(basepath,filename)
-		command.append(filename)
+paths = [
+	'../src/aldrin',
+	'../src/components'
+]
+for basepath in paths:
+	for filename in os.listdir(basepath):
+		if filename.endswith('.py'):
+			filename = os.path.join(basepath,filename)
+			command.append(filename)
 
 cmd = ' '.join(command)
 print cmd
