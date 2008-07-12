@@ -36,13 +36,28 @@ class HDRecorderDialog(gtk.Dialog):
 	the audio output to a wave file.
 	"""
 
-	def __init__(self, parent):
+	__aldrin__ = dict(
+		id = 'aldrin.core.hdrecorder',
+		singleton = True,
+		categories = [
+			'viewdialog',
+			'view',
+		]
+	)
+	
+	__view__ = dict(
+			label = "Hard Disk Recorder",
+			order = 0,
+			toggle = True,
+	)
+	
+	def __init__(self):
 		"""
 		Initializer.
 		"""
 		gtk.Dialog.__init__(self, 
-			"Hard Disk Recorder",
-			parent.get_toplevel())
+			"Hard Disk Recorder")
+		self.connect('delete-event', self.hide_on_delete)
 		#self.add_button(gtk.STOCK_CLOSE, gtk.RESPONSE_CLOSE)
 		#self.set_size_request(250,-1)
 		self.set_resizable(False)
@@ -147,6 +162,12 @@ class HDRecorderDialog(gtk.Dialog):
 __all__ = [
 'HDRecorderDialog',
 ]
+
+__aldrin__ = dict(
+	classes = [
+		HDRecorderDialog,
+	],
+)
 
 if __name__ == '__main__':
 	import testplayer, utils

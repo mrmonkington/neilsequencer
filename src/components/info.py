@@ -70,6 +70,7 @@ class InfoPanel(gtk.VBox):
 		singleton = True,
 		categories = [
 			'aldrin.viewpanel',
+			'view',
 		]
 	)		
 

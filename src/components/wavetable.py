@@ -52,6 +52,7 @@ class WavetablePanel(gtk.Notebook):
 		singleton = True,
 		categories = [
 			'aldrin.viewpanel',
+			'view',
 		]
 	)	
 	

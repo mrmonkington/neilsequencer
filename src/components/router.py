@@ -499,6 +499,7 @@ class RoutePanel(gtk.VBox):
 		singleton = True,
 		categories = [
 			'aldrin.viewpanel',
+			'view',
 		]
 	)
 	

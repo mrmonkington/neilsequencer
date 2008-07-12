@@ -35,6 +35,8 @@ EVENTS = [
 	'song-opened', # ( ... ). called when the entire song changes in such a way that all connected objects should update.
 	'show-plugin', # (plugin, ...) called when a plugin should be visualized overall.
 	
+	'edit_pattern_request', # (plugin, index, ...) called from e.g. the sequencer when editing a pattern is requested.
+	
 	# document ui events, translation is done in player.py
 	'octave_changed', # (octave, ...) called when player.octave changes.
 	'active_plugins_changed', # ([plugin, ...], ...) called when player.active_plugins changes.

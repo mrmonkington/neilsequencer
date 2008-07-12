@@ -844,6 +844,7 @@ class RackPanel(gtk.VBox):
 		singleton = True,
 		categories = [
 			#'aldrin.viewpanel',
+			#'view',
 		]
 	)
 	

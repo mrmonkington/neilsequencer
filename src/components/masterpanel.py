@@ -94,6 +94,16 @@ class MasterPanel(gtk.VBox):
 	
 	__aldrin__ = dict(
 		id = 'aldrin.core.panel.master',
+		singleton = True,
+		categories = [
+			'view',
+		],
+	)
+	
+	__view__ = dict(
+			label = "Master",
+			order = 0,
+			toggle = True,
 	)
 	
 	def __init__(self):

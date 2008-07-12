@@ -30,10 +30,10 @@ import aldrincom
 from aldrincom import com
 import zzub
 
-from utils import is_generator, is_root, is_controller, is_effect, prepstr
+from utils import is_generator, is_root, is_controller, is_effect, prepstr, Menu
 from utils import PLUGIN_FLAGS_MASK, ROOT_PLUGIN_FLAGS, GENERATOR_PLUGIN_FLAGS, EFFECT_PLUGIN_FLAGS, CONTROLLER_PLUGIN_FLAGS
 
-class ContextMenu(gtk.Menu):
+class ContextMenu(Menu):
 	__aldrin__ = dict(
 		id = 'aldrin.core.contextmenu',
 		singleton = False,
@@ -42,7 +42,7 @@ class ContextMenu(gtk.Menu):
 	)
 	
 	def __init__(self, contextid, context):
-		gtk.Menu.__init__(self)
+		Menu.__init__(self)
 		self.__context_id = contextid
 		self.__context = context
 		
@@ -55,55 +55,17 @@ class ContextMenu(gtk.Menu):
 	context = property(get_context)
 	context_id = property(get_context_id)
 	
-	def add_separator(self):
-		self.append(gtk.SeparatorMenuItem())
-		
 	def add_submenu(self, label, submenu = None):
 		if not submenu:
 			submenu = ContextMenu(self.__context_id, self.__context)
-		item = gtk.MenuItem(label=label)
-		item.set_submenu(submenu)
-		self.append(item)
-		return item, submenu
-		
-	def add_item(self, label, func, *args):
-		item = gtk.MenuItem(label=label)
-		item.connect('activate', func, *args)
-		self.append(item)
-		return item
-	
-	def add_check_item(self, label, toggled, func, *args):
-		item = gtk.CheckMenuItem(label=label)
-		item.set_active(toggled)
-		item.connect('toggled', func, *args)
-		self.append(item)
-		return item
-		
-	def add_image_item(self, label, iconpath, func, *args):
-		item = gtk.ImageMenuItem(stock_id=label)
-		if iconpath:
-			image = gtk.Image()
-			image.set_from_pixbuf(gtk.gdk.pixbuf_new_from_file(iconpath))
-			item.set_image(image)
-		item.connect('activate', func, *args)
-		self.append(item)
-		return item
+		return Menu.add_submenu(self, label, submenu)
 		
 	def popup(self, parent, event=None):
 		for item in self.get_children():
 			item.destroy()
 		for item in com.get_from_category('contextmenu.handler'):
 			item.populate_contextmenu(self)
-		self.show_all()
-		if not self.get_attach_widget():
-			self.attach_to_widget(parent and parent.get_toplevel(), None)
-		if event:
-			event_button = event.button
-			event_time = event.time
-		else:
-			event_button = 0
-			event_time = 0
-		gtk.Menu.popup(self, None, None, None, event_button, event_time)
+		return Menu.popup(self, parent, event)
 
 class PluginContextMenu(gtk.Menu):
 	__aldrin__=dict(id='aldrin.core.popupmenu',singleton=True,categories=['contextmenu.handler'])

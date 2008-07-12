@@ -22,7 +22,7 @@ from gtkimport import gtk
 from common import MARGIN, MARGIN2, MARGIN3, MARGIN0
 import gobject
 from utils import new_stock_image_toggle_button, new_stock_image_button, format_time, \
-	ticks_to_time, new_theme_image_toggle_button, add_accelerator
+	ticks_to_time, new_theme_image_toggle_button
 import audiogui
 import time
 import config
@@ -38,6 +38,16 @@ class TransportPanel(gtk.HBox):
 	
 	__aldrin__ = dict(
 		id = 'aldrin.core.panel.transport',
+		singleton = True,
+		categories = [
+			'view',
+		],
+	)
+	
+	__view__ = dict(
+			label = "Transport",
+			order = 0,
+			toggle = True,
 	)
 	
 	def __init__(self):

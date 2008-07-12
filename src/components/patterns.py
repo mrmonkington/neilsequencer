@@ -382,6 +382,7 @@ class PatternPanel(gtk.VBox):
 		singleton = True,
 		categories = [
 			'aldrin.viewpanel',
+			'view',
 		]
 	)
 	
@@ -429,12 +430,22 @@ class PatternPanel(gtk.VBox):
 		self.pack_start(scrollwin)
 		self.pack_end(self.statusbar, expand=False)
 		
-	def handle_focus(self):
-		try:
-			self.view.show_cursor_right()
-		except AttributeError: #no pattern in current machine
-			pass
-		self.view.grab_focus()
+		eventbus = com.get('aldrin.core.eventbus')
+		eventbus.edit_pattern_request += self.on_edit_pattern_request
+		
+	def on_edit_pattern_request(self, plugin, index):
+		player = com.get('aldrin.core.player')
+		player.active_plugins = [plugin]
+		player.active_patterns = [(plugin, index)]
+		framepanel = com.get('aldrin.core.framepanel')
+		framepanel.select_viewpanel(self)
+		
+#	def handle_focus(self):
+#		try:
+#			self.view.show_cursor_right()
+#		except AttributeError: #no pattern in current machine
+#			pass
+#		self.view.grab_focus()
 
 from utils import fixbn, bn2mn, mn2bn, note2str, switch2str, byte2str, word2str
 

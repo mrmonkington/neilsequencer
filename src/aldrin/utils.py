@@ -881,15 +881,12 @@ def make_submenu_item(submenu, name):
 	item.set_submenu(submenu)
 	return item
 
-def add_accelerator(widget, frame, shortcut, signal="activate"):
-	key, modifier = gtk.accelerator_parse(shortcut)
-	widget.add_accelerator(signal, frame.accelerators,  key,  modifier, gtk.ACCEL_VISIBLE)
-	return widget
-
 def make_stock_menu_item(stockid, func, frame=None, shortcut=None, *args):
 	item = gtk.ImageMenuItem(stockid)
 	if frame and shortcut:
-		add_accelerator(item, frame, shortcut)
+		from aldrincom import com
+		acc = com.get('aldrin.core.accelerators')
+		acc.add_accelerator(shortcut, item)
 	if func:
 		item.connect('activate', func, *args)
 	return item
@@ -978,6 +975,55 @@ class ObjectHandlerGroup:
 	def unblock(self):
 		for widget,handler in self.handlers:
 			widget.handler_unblock(handler)
+
+class Menu(gtk.Menu):
+	def add_separator(self):
+		self.append(gtk.SeparatorMenuItem())
+		
+	def add_submenu(self, label, submenu = None):
+		if not submenu:
+			submenu = Menu()
+		item = gtk.MenuItem(label=label)
+		item.set_submenu(submenu)
+		self.append(item)
+		return item, submenu
+		
+	def add_item(self, label, func, *args):
+		item = gtk.MenuItem(label=label)
+		item.connect('activate', func, *args)
+		self.append(item)
+		return item
+	
+	def add_check_item(self, label, toggled, func, *args):
+		item = gtk.CheckMenuItem(label=label)
+		item.set_active(toggled)
+		item.connect('toggled', func, *args)
+		self.append(item)
+		return item
+		
+	def add_image_item(self, label, icon_or_path, func, *args):
+		item = gtk.ImageMenuItem(stock_id=label)
+		if isinstance(icon_or_path, str):
+			image = gtk.Image()
+			image.set_from_pixbuf(gtk.gdk.pixbuf_new_from_file(icon_or_path))
+		elif isinstance(icon_or_path, gtk.Image):
+			image = icon_or_path
+		item.set_image(image)
+		item.connect('activate', func, *args)
+		self.append(item)
+		return item
+		
+	def popup(self, parent, event=None):
+		self.show_all()
+		if not self.get_attach_widget():
+			self.attach_to_widget(parent and parent.get_toplevel(), None)
+		if event:
+			event_button = event.button
+			event_time = event.time
+		else:
+			event_button = 0
+			event_time = 0
+		gtk.Menu.popup(self, None, None, None, event_button, event_time)
 
 __all__ = [
 'is_frozen',

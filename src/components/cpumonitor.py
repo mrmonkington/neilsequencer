@@ -34,11 +34,28 @@ class CPUMonitorDialog(gtk.Dialog):
 	This Dialog shows the CPU monitor, which allows monitoring
 	CPU usage and individual plugin CPU consumption.
 	"""
-	def __init__(self, parent):
+	
+	__aldrin__ = dict(
+		id = 'aldrin.core.cpumonitor',
+		singleton = True,
+		categories = [
+			'viewdialog',
+			'view',
+		]
+	)
+	
+	__view__ = dict(
+			label = "CPU Monitor",
+			order = 0,
+			toggle = True,
+	)
+		
+	def __init__(self):
 		"""
 		Initializer.
 		"""
-		gtk.Dialog.__init__(self, parent=parent.get_toplevel())
+		gtk.Dialog.__init__(self)
+		self.connect('delete-event', self.hide_on_delete)
 		self.set_size_request(200,300)
 		self.set_title("CPU Monitor")
 		self.pluginlist = gtk.ListStore(str, str)
@@ -127,6 +144,12 @@ class CPUMonitorDialog(gtk.Dialog):
 __all__ = [
 'CPUMonitorDialog',
 ]
+
+__aldrin__ = dict(
+	classes = [
+		CPUMonitorDialog,
+	],
+)
 
 if __name__ == '__main__':
 	import testplayer, utils

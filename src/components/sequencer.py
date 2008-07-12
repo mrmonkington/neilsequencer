@@ -152,6 +152,7 @@ class SequencerPanel(gtk.VBox):
 		singleton = True,
 		categories = [
 			'aldrin.viewpanel',
+			'view',
 		]
 	)	
 	
@@ -931,20 +932,8 @@ class SequencerView(gtk.DrawingArea):
 		@param index: Pattern index.
 		@type index: int
 		"""
-		pf = com.get('aldrin.core.patternpanel')
-		tb = pf.toolbar
-		tb.plugin_index = 0
-		tb.pattern = 0
-		player = com.get('aldrin.core.player')
-		for i in range(player.get_plugin_count()):
-			if player.get_plugin(i) == plugin:
-				tb.plugin_index = tb.plugin_to_index[plugin]
-				break
-		tb.pattern = index
-		pf.update_all()
-		#TODO: find a more direct way
-		#mainwindow = self.panel.rootwindow
-		#mainwindow.select_panel(com.get('aldrin.core.patternpanel'))
+		eventbus = com.get('aldrin.core.eventbus')
+		eventbus.edit_pattern_request(plugin, index)
 		
 	def get_pattern_at(self, track, row, includespecial=False):
 		"""
