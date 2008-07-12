@@ -26,7 +26,7 @@ from gtkimport import gtk
 import os, sys, stat
 from utils import prepstr, db2linear, linear2db, note2str, filepath, new_listview, \
 	new_image_button, add_scrollbars, file_filter, question, new_image_toggle_button, format_filesize, error, \
-	new_stock_image_button
+	new_stock_image_button, ObjectHandlerGroup
 import utils
 import zzub
 import config
@@ -66,6 +66,7 @@ class WavetablePanel(gtk.Notebook):
 		"""
 		Initialization.
 		"""
+		self.ohg = ObjectHandlerGroup()
 		self.working_directory = ''
 		self.files = []
 		gtk.Notebook.__init__(self)
@@ -76,14 +77,14 @@ class WavetablePanel(gtk.Notebook):
 		preview = gtk.VBox(False, MARGIN)
 		preview.set_size_request(200,-1)
 		btnopen = new_stock_image_button(gtk.STOCK_ADD, "Add/Insert Instrument", self.tooltips)
-		btnopen.connect('clicked', self.on_load_sample)
+		self.ohg.connect(btnopen,'clicked', self.on_load_sample)
 		btndeletefile = new_stock_image_button(gtk.STOCK_DELETE, "Delete File", self.tooltips)
-		btndeletefile.connect('clicked', self.on_delete_file)
+		self.ohg.connect(btndeletefile, 'clicked', self.on_delete_file)
 		btnrenamefile = new_stock_image_button(gtk.STOCK_BOLD, "Rename File", self.tooltips)
-		btnrenamefile.connect('clicked', self.on_rename_file)
+		self.ohg.connect(btnrenamefile,'clicked', self.on_rename_file)
 		btneditfile= gtk.Button("Edit")
 		self.tooltips.set_tip(btneditfile, "Open Sample in External Editor")
-		btneditfile.connect('clicked', self.on_edit_file)
+		self.ohg.connect(btneditfile,'clicked', self.on_edit_file)
 		chkautoplay = gtk.CheckButton("_Automatic Preview")
 		chkautoplay.set_active(True)
 		self.chkautoplay = chkautoplay
@@ -97,9 +98,9 @@ class WavetablePanel(gtk.Notebook):
 		self.previewdesc = gtk.Label()
 		self.previewdesc.set_alignment(0, 0)
 		btnpreviewplay = new_stock_image_button(gtk.STOCK_MEDIA_PLAY, "Preview Sample", self.tooltips)
-		btnpreviewplay.connect('clicked', self.on_play_filelist_wave)
+		self.ohg.connect(btnpreviewplay,'clicked', self.on_play_filelist_wave)
 		btnpreviewstop = new_stock_image_button(gtk.STOCK_MEDIA_STOP, "Stop Preview", self.tooltips)
-		btnpreviewstop.connect('clicked', self.on_stop_wave)
+		self.ohg.connect(btnpreviewstop,'clicked', self.on_stop_wave)
 		hbox = gtk.HBox(False, MARGIN)
 		hbox.pack_start(btnpreviewplay, expand=False)
 		hbox.pack_start(btnpreviewstop, expand=False)
@@ -208,36 +209,36 @@ class WavetablePanel(gtk.Notebook):
 		except:
 			print "unable to get filetreeview."
 		
-		self.samplelist.get_selection().connect('changed', self.on_samplelist_select)
-		self.samplelist.connect('button-press-event', self.on_samplelist_dclick)
-		self.samplelist.connect('key-press-event', self.on_samplelist_key_down)
+		self.ohg.connect(self.samplelist.get_selection(),'changed', self.on_samplelist_select)
+		self.ohg.connect(self.samplelist,'button-press-event', self.on_samplelist_dclick)
+		self.ohg.connect(self.samplelist,'key-press-event', self.on_samplelist_key_down)
 		
-		self.btnstoresample.connect('clicked', self.on_save_sample)
-		self.btnplay.connect('clicked', self.on_play_wave)
-		self.btnstop.connect('clicked', self.on_stop_wave)
-		self.btnclear.connect('clicked', self.on_clear)
-		self.btnrename.connect('clicked', self.on_rename_instrument)
-		self.btnadsr.connect('clicked', self.on_show_adsr)
-		self.btnfitloop.connect('clicked', self.on_fit_loop)
-		self.btnstrloop.connect('clicked', self.on_stretch_loop)
-		self.volumeslider.connect('scroll-event', self.on_mousewheel)
-		self.volumeslider.connect('change-value', self.on_scroll_changed)
-		self.chkloop.connect('clicked', self.on_check_loop)
-		self.chkpingpong.connect('clicked', self.on_check_pingpong)
-		self.chkenable.connect('clicked', self.on_check_envdisabled)
+		self.ohg.connect(self.btnstoresample,'clicked', self.on_save_sample)
+		self.ohg.connect(self.btnplay,'clicked', self.on_play_wave)
+		self.ohg.connect(self.btnstop,'clicked', self.on_stop_wave)
+		self.ohg.connect(self.btnclear,'clicked', self.on_clear)
+		self.ohg.connect(self.btnrename,'clicked', self.on_rename_instrument)
+		self.ohg.connect(self.btnadsr,'clicked', self.on_show_adsr)
+		self.ohg.connect(self.btnfitloop,'clicked', self.on_fit_loop)
+		self.ohg.connect(self.btnstrloop,'clicked', self.on_stretch_loop)
+		self.ohg.connect(self.volumeslider,'scroll-event', self.on_mousewheel)
+		self.ohg.connect(self.volumeslider,'change-value', self.on_scroll_changed)
+		self.ohg.connect(self.chkloop,'clicked', self.on_check_loop)
+		self.ohg.connect(self.chkpingpong,'clicked', self.on_check_pingpong)
+		self.ohg.connect(self.chkenable,'clicked', self.on_check_envdisabled)
 		
 	
-		self.edloopstart.connect('focus-out-event', self.on_loop_start_apply)
-		self.edloopstart.connect('activate', self.on_loop_start_apply)
-		self.edloopend.connect('focus-out-event', self.on_loop_end_apply)
-		self.edloopend.connect('activate', self.on_loop_end_apply)
-		self.edsamplerate.connect('focus-out-event', self.on_samplerate_apply)
-		self.edsamplerate.connect('activate', self.on_samplerate_apply)
+		self.ohg.connect(self.edloopstart,'focus-out-event', self.on_loop_start_apply)
+		self.ohg.connect(self.edloopstart,'activate', self.on_loop_start_apply)
+		self.ohg.connect(self.edloopend,'focus-out-event', self.on_loop_end_apply)
+		self.ohg.connect(self.edloopend,'activate', self.on_loop_end_apply)
+		self.ohg.connect(self.edsamplerate,'focus-out-event', self.on_samplerate_apply)
+		self.ohg.connect(self.edsamplerate,'activate', self.on_samplerate_apply)
 		
 
-		self.libpanel.connect('key-press-event', self.on_filelist_key_down)
-		self.libpanel.connect('file-activated', self.on_load_sample)
-		self.libpanel.connect('selection-changed', self.on_libpanel_selection_changed)
+		self.ohg.connect(self.libpanel,'key-press-event', self.on_filelist_key_down)
+		self.ohg.connect(self.libpanel,'file-activated', self.on_load_sample)
+		self.ohg.connect(self.libpanel,'selection-changed', self.on_libpanel_selection_changed)
 		
 		
 		currentpath = config.get_config().get_default('SampleBrowserPath')
@@ -819,6 +820,7 @@ class WavetablePanel(gtk.Notebook):
 		Updates the sample property checkboxes and sample editing fields.
 		Includes volume slider and looping properties.
 		"""
+		block = self.ohg.autoblock()
 		player = com.get('aldrin.core.player')
 		sel = self.get_sample_selection()
 		if not sel:
@@ -1016,8 +1018,17 @@ __aldrin__ = dict(
 	],
 )
 
-
 if __name__ == '__main__':
-	import sys, utils
-	from main import run
-	run(sys.argv + [utils.filepath('demosongs/paniq-knark.ccm')])
+	import contextlog, aldrincom
+	contextlog.init()
+	aldrincom.init()
+	com.get_from_category('driver')
+	# running standalone
+	browser = com.get('aldrin.pythonconsole.dialog', False)
+	browser.show_all()
+	view = com.get('aldrin.core.wavetablepanel')
+	dlg = com.get('aldrin.test.dialog', view)
+	player = com.get('aldrin.core.player')
+	player.load_ccm('demosongs/beatz.ccm')
+	gtk.main()
+

@@ -265,6 +265,7 @@ class PatternToolBar(gtk.HBox):
 			source_func=self.get_wave_source,
 			get_selection_func=self.get_wave_sel, 
 			set_selection_func=self.set_wave_sel,
+			activate_func=self.activate_wave,
 		)
 		eventbus.active_waves_changed += self.waveselect.update
 		eventbus.zzub_wave_allocated += self.waveselect.update
@@ -366,15 +367,11 @@ class PatternToolBar(gtk.HBox):
 			player.active_waves = [sel]
 	
 	def activate_wave(self, w):
-		return
+		player = com.get('aldrin.core.player')
 		if w and w.get_level_count() >= 1:
-			config = com.get('aldrin.core.config')
-			vol = min(max(config.get_sample_preview_volume(),-76.0),0.0)
-			amp = db2linear(vol,limit=-76.0)
-			#player.set_wave_amp(amp)
-			#player.play_wave(w, 0, (4 << 4) + 1)
+			player.preview_wave(w)
 		else:
-			player.stop_wave()
+			player.stop_preview()
 			
 class PatternPanel(gtk.VBox):
 	"""
@@ -2659,6 +2656,7 @@ if __name__ == '__main__':
 	import contextlog, aldrincom
 	contextlog.init()
 	aldrincom.init()
+	com.get_from_category('driver')
 	view = com.get('aldrin.core.patternpanel')
 	dlg = com.get('aldrin.test.dialog', view)
 	# running standalone

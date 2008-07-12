@@ -18,32 +18,43 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-import config
+from utils import filepath
+import os,sys,glob
+from ConfigParser import ConfigParser
 
-# removed packages currently cause crashes
-DEFAULT_PACKAGES = [
-	'+eventbus',
-	'+driver',
-	'+router',
-	'+patterns',
-	'+sequencer',
-	'+wavetable',
-	'+rack',
-	'+info',
-	'+mainwindow',
-	'+about',
-	'+masterpanel',
-	'+transportpanel',
-	'+player',
-	'+options',
-	'+pkgbrowser',
-	'+iconfactory',
-	'+preferences',
-	'+pythonconsole',
-	'+contextmenu',
-	'+indexer',
-	'+testframe',
+COMPONENT_PATH = [
+	filepath('components'),
+	os.path.expanduser('~/.aldrin/components'),
 ]
+
+SECTION_NAME = 'Aldrin COM'
+OPTIONS = [
+	'Module',
+	'Name',
+	'Description',
+	'Icon',
+	'Authors',
+	'Copyright',
+	'Website',
+]
+
+class Package(ConfigParser):
+	def __init__(self, path):
+		ConfigParser.__init__(self)
+		self.filename = path
+		
+	def parse(self):
+		self.read([self.filename])
+		if not self.has_section(SECTION_NAME):
+			print "missing section " + SECTION_NAME + " in " + self.filename
+			return False
+		for option in OPTIONS:
+			if not self.has_option(SECTION_NAME, option):
+				print "missing option " + option + " in " + self.filename
+				return False
+			setattr(self, option.lower(), self.get(SECTION_NAME, option))
+		#basepath = os.path.dirname(self.filename)
+		return True
 
 # aldrin component object model
 class ComponentManager:
@@ -52,37 +63,28 @@ class ComponentManager:
 		self.factories = {}
 		self.categories = {}
 		self.packages = []
-		self.factory_excludes = []
-		self.register(config.__aldrin__)
 		
 	def load_packages(self):		
 		self.packages = []
-		includes = []
-		excludes = []
-		for modulename in DEFAULT_PACKAGES + self.get('aldrin.core.config').packages:
-			if modulename.startswith('+'):
-				modulename = modulename[1:]
-				includes.append(modulename)
-			elif modulename.startswith('-'):
-				modulename = modulename[1:]
-				if modulename.startswith(':'):
-					moduleid = modulename[1:]
-					self.factory_excludes.append(moduleid)
-				else:
-					excludes.append(modulename)
-			else:
-				includes.append(modulename)
-		for modulename in includes:
-			if modulename in excludes:
-				print "excluding module %s" % modulename
-				continue
-			print "importing module %s" % modulename
+		packages = []
+		names = []
+		for path in COMPONENT_PATH:
+			if os.path.isdir(path):
+				for filename in glob.glob(os.path.join(path, '*.aldrin-component')):
+					print filename
+					pkg = Package(filename)
+					if pkg.parse():
+						packages.append(pkg)
+		for pkg in packages:
 			try:
+				modulename = pkg.module
+				print "importing module",modulename
 				module_ = __import__(modulename)
 				names = modulename.split('.')
 				for name in names[1:]:
 					module_ = getattr(module_, name)
 				if not hasattr(module_, '__aldrin__'):
+					print "module",modulename,"has no __aldrin__ metadict"
 					continue
 				self.packages.append(modulename)
 				self.register(module_.__aldrin__, modulename)
@@ -94,12 +96,10 @@ class ComponentManager:
 		# enumerate class factories
 		for class_ in pkginfo.get('classes', []):
 			if not hasattr(class_, '__aldrin__'):
+				print "class",class_,"has no __aldrin__ metadict"
 				continue
 			classinfo = class_.__aldrin__
 			classid = classinfo['id']
-			if classid in self.factory_excludes:
-				print "excluding factory '%s'" % id
-				continue
 			self.factories[classid] = dict(classobj=class_, modulename=modulename)
 			self.factories[classid].update(classinfo)
 			# register categories
@@ -198,4 +198,5 @@ if __name__ == '__main__':
 	print com.get('aldrin.hub.myclass.singleton').x
 	print com.get('aldrin.hub.myclass.singleton').x
 	print com.get_from_category('uselessclass')
-	
+	init()
+	assert com.get('aldrin.core.options')

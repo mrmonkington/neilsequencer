@@ -470,6 +470,9 @@ class WaveEditView(gtk.DrawingArea):
 		
 		#ctx.move_to(
 		
+		if len(self.ampbuffer) != w:
+			print "updating peaks"
+			self.update_digest()
 		minbuffer, maxbuffer, ampbuffer = self.minbuffer, self.maxbuffer, self.ampbuffer
 
 		ctx.set_source_rgba(*(brush2 + (0.5,)))
@@ -488,15 +491,15 @@ class WaveEditView(gtk.DrawingArea):
 				ctx.line_to(x1, h)
 				ctx.stroke()
 
-		print self.level.get_slice_count()
-		print self.level.get_slices()
-		for x in self.level.get_slices():
-			x1 = self.sample_to_client(x, 0.0)[0]
-			ctx.set_source_rgb(*slicebar)
-			if (x1 >= 0) and (x1 <= w):
-				ctx.move_to(x1, 0)
-				ctx.line_to(x1, h)
-				ctx.stroke()
+#		print self.level.get_slice_count()
+#		print self.level.get_slices()
+#		for x in self.level.get_slices():
+#			x1 = self.sample_to_client(x, 0.0)[0]
+#			ctx.set_source_rgb(*slicebar)
+#			if (x1 >= 0) and (x1 <= w):
+#				ctx.move_to(x1, 0)
+#				ctx.line_to(x1, h)
+#				ctx.stroke()
 
 		minp, maxp = self.offpeak, self.onpeak
 		ctx.set_source_rgb(*offpeak)
@@ -543,7 +546,4 @@ class WaveEditView(gtk.DrawingArea):
 				ctx.rectangle(x2-4, (h/2)-4, 8, 8)
 				ctx.stroke()
 
-if __name__ == '__main__':
-	import sys, utils
-	from main import run
-	run(sys.argv)# + [utils.filepath('demosongs/paniq-knark.ccm')])
+
