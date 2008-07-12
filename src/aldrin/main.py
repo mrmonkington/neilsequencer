@@ -94,13 +94,16 @@ class PathConfig(ConfigParser):
 			print site_packages + "  missing in sys.path, prepending"
 			sys.path = [site_packages] + sys.path
 		
-	def get_path(self, pathid):
+	def get_path(self, pathid, append=''):
 		if not self.has_option('Paths', pathid):
 			return None
 		value = os.path.expanduser(self.get('Paths', pathid))
-		if os.path.isabs(value):
-			return value
-		return os.path.normpath(os.path.join(self.basedir, value))
+		if not os.path.isabs(value):
+			value = os.path.normpath(os.path.join(self.basedir, value))
+		if append:
+			value = os.path.join(value, append)
+		print pathid, append, "=",value
+		return value
 
 def run(argv):
 	"""

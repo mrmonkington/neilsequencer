@@ -78,8 +78,8 @@ def etcpath(path):
 	@return: Absolute path to file.
 	@rtype: str
 	"""
-	basepath = os.path.join(get_root_folder_path(), '../../etc')
-	return os.path.abspath(os.path.normpath(os.path.join(basepath, path)))
+	from main import path_cfg
+	return path_cfg.get_path('etc', path)
 
 def iconpath(path):
 	"""
@@ -91,8 +91,8 @@ def iconpath(path):
 	@return: Absolute path to file.
 	@rtype: str
 	"""
-	basepath = os.path.join(get_root_folder_path(), '../../icons/aldrin')
-	return os.path.abspath(os.path.normpath(os.path.join(basepath, path)))
+	from main import path_cfg
+	return path_cfg.get_path('icons_aldrin', path)
 	
 def hicoloriconpath(path):
 	"""
@@ -104,8 +104,8 @@ def hicoloriconpath(path):
 	@return: Absolute path to file.
 	@rtype: str
 	"""
-	basepath = os.path.join(get_root_folder_path(), '../../icons/hicolor')
-	return os.path.abspath(os.path.normpath(os.path.join(basepath, path)))
+	from main import path_cfg
+	return path_cfg.get_path('icons_hicolor', path)
 
 
 def imagepath(path):
@@ -118,8 +118,9 @@ def imagepath(path):
 	@return: Absolute path to file.
 	@rtype: str
 	"""
-	basepath = os.path.join(get_root_folder_path(), '../../pixmaps')
-	return os.path.abspath(os.path.normpath(os.path.join(basepath, path)))
+	from main import path_cfg
+	print "imagepath", path, "=",path_cfg.get_path('pixmaps', path)
+	return path_cfg.get_path('pixmaps', path)
 
 def sharedpath(path):
 	"""
@@ -131,8 +132,8 @@ def sharedpath(path):
 	@return: Absolute path to file.
 	@rtype: str
 	"""
-	basepath = os.path.join(get_root_folder_path(), '../..')
-	return os.path.abspath(os.path.normpath(os.path.join(basepath, path)))
+	from main import path_cfg
+	return path_cfg.get_path('share', path)
 
 def filepath(path):
 	"""

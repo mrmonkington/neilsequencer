@@ -536,7 +536,8 @@ class ParameterView(gtk.VBox):
 		"""
 		Updates the preset box.
 		"""
-		self.presets = config.get_config().get_plugin_presets(self.pluginloader)
+		config = com.get('aldrin.core.config')
+		self.presets = config.get_plugin_presets(self.pluginloader)
 		s = self.presetbox.child.get_text()
 		self.presetbox.get_model().clear()
 		self.presetbox.append_text('<default>')
