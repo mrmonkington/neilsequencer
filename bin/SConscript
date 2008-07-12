@@ -21,7 +21,7 @@
 Import('env', 'install', 'install_recursive', 'win32')
 
 if win32:
-	install('${DESTDIR}${PREFIX}/bin', 'aldrin.bat')
+	install('${BIN_PATH}', 'aldrin.bat')
 else:
-	install('${DESTDIR}${PREFIX}/bin', 'aldrin', 0755)
+	install('${BIN_PATH}', 'aldrin', 0755)
 

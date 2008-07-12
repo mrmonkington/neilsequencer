@@ -22,28 +22,24 @@
 Contains all classes and functions needed to render the rack view.
 """
 
-from gtkimport import gtk
+import gtk
 import gobject
 import cairo
 import pangocairo
-from utils import prepstr, filepath, db2linear, linear2db, is_debug, filenameify, \
+from aldrin.utils import prepstr, filepath, db2linear, linear2db, is_debug, filenameify, \
 	get_item_count, question, error, new_listview, add_scrollbars, get_clipboard_text, set_clipboard_text, \
 	gettext, new_stock_image_button, diff
-import config
 import zzub
 import sys,os
-import indexer
 import fnmatch
 import ctypes
 import time
 import Queue
-from preset import PresetCollection, Preset
-from patterns import key_to_note
-import common
-from common import MARGIN, MARGIN2, MARGIN3, MARGIN0
+import aldrin.common as common
+from aldrin.common import MARGIN, MARGIN2, MARGIN3, MARGIN0
 import cPickle
 
-from aldrincom import com
+import aldrin.com as com
 
 class ParameterView(gtk.VBox):
 	"""

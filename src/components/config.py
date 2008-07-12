@@ -22,10 +22,10 @@
 Provides an object which eases access to the applications configuration.
 """
 
-from gtkimport import gtk
+import gtk
 import os, glob, re
 
-from utils import filepath, camelcase_to_unixstyle, etcpath, imagepath, iconpath, sharedpath
+from aldrin.utils import filepath, camelcase_to_unixstyle, etcpath, imagepath, iconpath, sharedpath
 import ConfigParser
 import new
 
@@ -832,8 +832,8 @@ def get_config(*args):
 	
 	@rtype: {AldrinConfig}.
 	"""
-	import aldrincom
-	return aldrincom.com.get(AldrinConfigSingleton.__aldrin__['id'])
+	import aldrin.com
+	return aldrin.com.get(AldrinConfigSingleton.__aldrin__['id'])
 
 def get_plugin_blacklist():
 	"""

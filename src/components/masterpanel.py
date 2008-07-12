@@ -18,13 +18,13 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from gtkimport import gtk
+import gtk
 import cairo
-from common import MARGIN, MARGIN2, MARGIN3, MARGIN0
+from aldrin.common import MARGIN, MARGIN2, MARGIN3, MARGIN0
 import gobject
-from utils import filepath, imagepath
-import utils
-from aldrincom import com
+from aldrin.utils import filepath, imagepath
+import aldrin.utils as utils
+import aldrin.com as com
 import driver
 import zzub
 import sys

@@ -23,8 +23,8 @@ Contains the information displayed in the about box.
 """
 
 import sys
-from utils import prepstr
-from gtkimport import gtk
+from aldrin.utils import prepstr
+import gtk
 
 NAME = "Aldrin"
 VERSION = "0.13 (Mars)"
@@ -63,7 +63,7 @@ DOCUMENTERS = [
 
 AUTHORS = [prepstr(x) for x in AUTHORS]
 
-from utils import filepath, imagepath
+from aldrin.utils import filepath, imagepath
 
 def about_visit_website(dialog, link, user_data):
 	import webbrowser

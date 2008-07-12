@@ -23,15 +23,15 @@ Contains panels and dialogs related to application preferences.
 """
 
 import os
-from gtkimport import gtk
+import gtk
 import webbrowser
 
-from utils import prepstr, buffersize_to_latency, filepath, error, add_scrollbars, new_listview
+from aldrin.utils import prepstr, buffersize_to_latency, filepath, error, add_scrollbars, new_listview
 import config
-from common import MARGIN, MARGIN2, MARGIN3
+from aldrin.common import MARGIN, MARGIN2, MARGIN3
 
-from controller import learn_controller
-from aldrincom import com
+from aldrin.controller import learn_controller
+import aldrin.com as com
 
 import zzub
 

@@ -18,11 +18,11 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from aldrincom import com
-from gtkimport import gtk
+import aldrin.com as com
+import gtk
 
 import glob, os
-from utils import filepath, get_root_folder_path, iconpath
+from aldrin.utils import filepath, get_root_folder_path, iconpath
 
 ICON_SEARCHPATH = [
 	'16x16',

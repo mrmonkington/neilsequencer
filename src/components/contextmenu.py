@@ -24,14 +24,13 @@ such as plugins, patterns, and so on. based on the context object currently
 selected, items can choose to append themselves or not.
 """
 
-from gtkimport import gtk
-import common
-import aldrincom
-from aldrincom import com
+import gtk
+import aldrin.common as common
+from aldrin.com import com
 import zzub
 
-from utils import is_generator, is_root, is_controller, is_effect, prepstr, Menu
-from utils import PLUGIN_FLAGS_MASK, ROOT_PLUGIN_FLAGS, GENERATOR_PLUGIN_FLAGS, EFFECT_PLUGIN_FLAGS, CONTROLLER_PLUGIN_FLAGS
+from aldrin.utils import is_generator, is_root, is_controller, is_effect, prepstr, Menu
+from aldrin.utils import PLUGIN_FLAGS_MASK, ROOT_PLUGIN_FLAGS, GENERATOR_PLUGIN_FLAGS, EFFECT_PLUGIN_FLAGS, CONTROLLER_PLUGIN_FLAGS
 
 class ContextMenu(Menu):
 	__aldrin__ = dict(

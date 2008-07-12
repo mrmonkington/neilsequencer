@@ -23,20 +23,20 @@ Contains all classes and functions needed to render the sequence
 editor and its associated components.
 """
 
-from gtkimport import gtk
+import gtk
 import pango
 import gobject
-from utils import PLUGIN_FLAGS_MASK, ROOT_PLUGIN_FLAGS, GENERATOR_PLUGIN_FLAGS, EFFECT_PLUGIN_FLAGS, CONTROLLER_PLUGIN_FLAGS
-from utils import prepstr, from_hsb, to_hsb, get_item_count, get_clipboard_text, set_clipboard_text, add_scrollbars
-from utils import is_effect,is_generator,is_controller,is_root,get_new_pattern_name, filepath
+from aldrin.utils import PLUGIN_FLAGS_MASK, ROOT_PLUGIN_FLAGS, GENERATOR_PLUGIN_FLAGS, EFFECT_PLUGIN_FLAGS, CONTROLLER_PLUGIN_FLAGS
+from aldrin.utils import prepstr, from_hsb, to_hsb, get_item_count, get_clipboard_text, set_clipboard_text, add_scrollbars
+from aldrin.utils import is_effect,is_generator,is_controller,is_root,get_new_pattern_name, filepath
 import random
 import config
-import common
+import aldrin.common as common
 MARGIN = common.MARGIN
 MARGIN2 = common.MARGIN2
 MARGIN3 = common.MARGIN3
 MARGIN0 = common.MARGIN0
-from aldrincom import com
+import aldrin.com as com
 
 SEQKEYS = '0123456789abcdefghijklmnopqrstuvwxyz'
 SEQKEYMAP = dict(zip(SEQKEYS,range(0x10,len(SEQKEYS)+0x10)))

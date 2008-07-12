@@ -28,9 +28,9 @@ gobject.threads_init()
 import sys, os
 # add the directory that the main module resides in to the python path,
 # if its not already contained
-modulepath = os.path.dirname(__file__)
-if not modulepath in sys.path:
-	sys.path = [modulepath] + sys.path
+#modulepath = os.path.dirname(__file__)
+#if not modulepath in sys.path:
+#	sys.path = [modulepath] + sys.path
 
 import contextlog
 
@@ -38,9 +38,12 @@ import errordlg
 
 from gtkimport import gtk
 
-from aldrincom import com
+import aldrin.com as com
+
+from ConfigParser import ConfigParser
 
 app = None
+path_cfg = None
 
 class AldrinApplication:
 	"""
@@ -64,6 +67,41 @@ class AldrinApplication:
 	def shutdown(self):
 		gtk.main_quit()
 
+class PathConfig(ConfigParser):
+	CFG_PATHS = [
+		'etc/debugpath.cfg', # assume we are in the repository
+		'~/.aldrin/path.cfg', # is it in home dir config folder?
+		'/etc/aldrin/path.cfg', # take the absolute path
+	]
+	
+	def __init__(self):
+		ConfigParser.__init__(self)
+		self.basedir = os.path.normpath(os.path.join(os.path.dirname(__file__), '../..'))
+		CFG_PATH = None
+		for path in self.CFG_PATHS:
+			path = os.path.expanduser(path)
+			if not os.path.isabs(path):
+				path = os.path.normpath(os.path.join(self.basedir,path))
+			print "searching " + path
+			if os.path.isfile(path):
+				print "using " + path
+				CFG_PATH = path
+				break
+		assert CFG_PATH, "Unable to find path.cfg"
+		self.read([CFG_PATH])
+		site_packages = self.get_path('site_packages')
+		if not site_packages in sys.path:
+			print site_packages + "  missing in sys.path, prepending"
+			sys.path = [site_packages] + sys.path
+		
+	def get_path(self, pathid):
+		if not self.has_option('Paths', pathid):
+			return None
+		value = os.path.expanduser(self.get('Paths', pathid))
+		if os.path.isabs(value):
+			return value
+		return os.path.normpath(os.path.join(self.basedir, value))
+
 def run(argv):
 	"""
 	Starts the application and runs the mainloop.
@@ -72,9 +110,17 @@ def run(argv):
 	@type argv: str list
 	"""
 	global app
+	global path_cfg
 	contextlog.init()
 	errordlg.install()
-	com.load_packages()
+	path_cfg = PathConfig()
+	component_path = [
+		path_cfg.get_path('components') or os.path.join(path_cfg.get_path('share'), 'components'),
+		os.path.expanduser('~/.aldrin/components'),
+	]
+	com.init(component_path)
+	for key in com.com.factories.keys():
+		print key
 	options = com.get('aldrin.core.options')
 	options.parse_args(argv)
 	app_options, app_args = options.get_options_args()

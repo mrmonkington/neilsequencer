@@ -19,31 +19,31 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import os
-from gtkimport import gtk
-from utils import format_time, ticks_to_time, prepstr, linear2db, db2linear, filepath, \
+import gtk
+from aldrin.utils import format_time, ticks_to_time, prepstr, linear2db, db2linear, filepath, \
 	is_debug, question, error, add_scrollbars, file_filter, new_stock_image_toggle_button, \
 	new_stock_image_button, message
 import zzub
 import gobject
 import config
-import errordlg
+import aldrin.errordlg as errordlg
 
-import common
+import aldrin.common as common
 MARGIN = common.MARGIN
 MARGIN2 = common.MARGIN2
 MARGIN3 = common.MARGIN3
 MARGIN0 = common.MARGIN0
 
-from utils import make_submenu_item, make_stock_menu_item, make_stock_tool_item, make_stock_toggle_item, \
+from aldrin.utils import make_submenu_item, make_stock_menu_item, make_stock_tool_item, make_stock_toggle_item, \
 	make_stock_radio_item, make_menu_item, make_check_item, make_radio_item, new_theme_image,  \
 	hicoloriconpath, Menu
 
 import preferences
 show_preferences = preferences.show_preferences
 
-from utils import CancelException
+from aldrin.utils import CancelException
 
-from aldrincom import com
+import aldrin.com as com
 
 def cmp_view(a,b):
 	a_order = (hasattr(a, '__view__') and a.__view__.get('order',0)) or 0

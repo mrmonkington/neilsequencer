@@ -2,7 +2,7 @@
 
 # Aldrin
 # Modular Sequencer
-# Copyright (C) 2006 The Aldrin Development Team
+# Copyright (C) 2006,2007,2008 The Aldrin Development Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -18,16 +18,6 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-Import('env', 'install', 'install_recursive', 'win32')
-import glob
+import main
 
-for filename in glob.glob('*.png'):
-	install('${PIXMAPS_PATH}', filename, 0644)
-
-for filename in glob.glob('*.svg'):
-	install('${PIXMAPS_PATH}', filename, 0644)
-
-if win32:
-	for filename in glob.glob('*.ico'):
-		install('${PIXMAPS_PATH}', filename, 0644)
 

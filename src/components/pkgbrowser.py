@@ -24,15 +24,15 @@ A view that allows browsing available extension interfaces and documentation.
 This module can also be executed standalone.
 """
 
-from gtkimport import gtk
+import gtk
 import gobject
 import os
 import inspect
 
-from aldrincom import com
-import utils
+import aldrin.com as com
+import aldrin.utils as utils
 
-import contextlog
+import aldrin.contextlog as contextlog
 
 import pango
 

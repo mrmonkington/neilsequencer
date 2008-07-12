@@ -22,8 +22,8 @@ Import('env', 'install', 'install_recursive')
 import glob
 
 for filename in glob.glob('*.aldrin-component'):
-	install('${DESTDIR}${PREFIX}/share/aldrin/components', filename)
+	install('${SHARE_PATH}/components', filename)
 
 for filename in glob.glob('*.py'):
-	install('${DESTDIR}${PREFIX}/share/aldrin/components', filename)
+	install('${SHARE_PATH}/components', filename)
 

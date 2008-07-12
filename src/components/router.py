@@ -22,32 +22,32 @@
 Provides dialogs and controls to render the plugin view/router and its associated components.
 """
 
-from gtkimport import gtk
+import gtk
 import gobject
 import cairo
 import pangocairo
-from utils import PLUGIN_FLAGS_MASK, ROOT_PLUGIN_FLAGS, GENERATOR_PLUGIN_FLAGS, EFFECT_PLUGIN_FLAGS, CONTROLLER_PLUGIN_FLAGS
-from utils import is_effect,is_generator,is_controller,is_root
-from utils import prepstr, filepath, db2linear, linear2db, is_debug, filenameify, \
+from aldrin.utils import PLUGIN_FLAGS_MASK, ROOT_PLUGIN_FLAGS, GENERATOR_PLUGIN_FLAGS, EFFECT_PLUGIN_FLAGS, CONTROLLER_PLUGIN_FLAGS
+from aldrin.utils import is_effect,is_generator,is_controller,is_root
+from aldrin.utils import prepstr, filepath, db2linear, linear2db, is_debug, filenameify, \
 	get_item_count, question, error, new_listview, add_scrollbars, get_clipboard_text, set_clipboard_text, \
 	gettext, new_stock_image_button
-import config as config
+import config
 import zzub
 import sys,os
-import indexer as indexer
+import indexer
 import fnmatch
 import ctypes
 import time
 import random
 import Queue
-from preset import PresetCollection, Preset
-import common as common
-from common import MARGIN, MARGIN2, MARGIN3
+from aldrin.preset import PresetCollection, Preset
+import aldrin.common as common
+from aldrin.common import MARGIN, MARGIN2, MARGIN3
 from rack import ParameterView
-from presetbrowser import PresetView
+from aldrin.presetbrowser import PresetView
 from patterns import key_to_note
 
-from aldrincom import com
+import aldrin.com as com
 
 PLUGINWIDTH = 100
 PLUGINHEIGHT = 25

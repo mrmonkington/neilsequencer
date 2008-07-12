@@ -21,10 +21,10 @@
 Import('env', 'install', 'install_recursive', 'win32')
 import glob
 
-install('${DESTDIR}${PREFIX}/share/icons/hicolor/16x16/apps', '16x16/apps/aldrin.png')
-install('${DESTDIR}${PREFIX}/share/icons/hicolor/22x22/apps', '22x22/apps/aldrin.png')
-install('${DESTDIR}${PREFIX}/share/icons/hicolor/24x24/apps', '24x24/apps/aldrin.png')
-install('${DESTDIR}${PREFIX}/share/icons/hicolor/32x32/apps', '32x32/apps/aldrin.png')
-install('${DESTDIR}${PREFIX}/share/icons/hicolor/48x48/apps', '48x48/apps/aldrin.png')
-install('${DESTDIR}${PREFIX}/share/icons/hicolor/scalable/apps', 'scalable/apps/aldrin.svg')
+install('${ICONS_HICOLOR_PATH}/16x16/apps', '16x16/apps/aldrin.png')
+install('${ICONS_HICOLOR_PATH}/22x22/apps', '22x22/apps/aldrin.png')
+install('${ICONS_HICOLOR_PATH}/24x24/apps', '24x24/apps/aldrin.png')
+install('${ICONS_HICOLOR_PATH}/32x32/apps', '32x32/apps/aldrin.png')
+install('${ICONS_HICOLOR_PATH}/48x48/apps', '48x48/apps/aldrin.png')
+install('${ICONS_HICOLOR_PATH}/scalable/apps', 'scalable/apps/aldrin.svg')
 

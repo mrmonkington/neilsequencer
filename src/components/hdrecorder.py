@@ -23,12 +23,12 @@ Provides dialog class for hd recorder control.
 """
 
 
-from gtkimport import gtk
+import gtk
 import gobject
-import utils, os, stat
-import common
-from aldrincom import com
-from common import MARGIN, MARGIN2, MARGIN3
+import aldrin.utils as utils, os, stat
+import aldrin.common as common
+import aldrin.com as com
+from aldrin.common import MARGIN, MARGIN2, MARGIN3
 
 class HDRecorderDialog(gtk.Dialog):
 	"""

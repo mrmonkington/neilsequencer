@@ -25,8 +25,8 @@ Contains tool functions to deal with audio and midi drivers.
 import config
 import zzub
 
-from aldrincom import com
-from utils import error
+import aldrin.com as com
+from aldrin.utils import error
 
 class MidiDriver:
 	__aldrin__ = dict(

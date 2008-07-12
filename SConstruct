@@ -57,7 +57,27 @@ env.SConsignFile()
 ######################################
 
 env['ROOTPATH'] = os.getcwd()
-env['PYTHON_SITE_PACKAGES'] = distutils.sysconfig.get_python_lib(prefix="${DESTDIR}${PREFIX}")
+env['SITE_PACKAGE_PATH'] = distutils.sysconfig.get_python_lib(prefix="${DESTDIR}${PREFIX}")
+env['APPLICATIONS_PATH'] = '${DESTDIR}${PREFIX}/share/applications'
+env['BIN_PATH'] = '${DESTDIR}${PREFIX}/bin'
+env['SHARE_PATH'] = '${DESTDIR}${PREFIX}/share/aldrin'
+env['DOC_PATH'] = '${DESTDIR}${PREFIX}/share/doc/aldrin'
+env['ETC_PATH'] = '${DESTDIR}${ETCDIR}/aldrin'
+env['ICONS_ALDRIN_PATH'] = '${DESTDIR}${PREFIX}/share/icons/aldrin'
+env['ICONS_HICOLOR_PATH'] = '${DESTDIR}${PREFIX}/share/icons/hicolor'
+env['PIXMAPS_PATH'] = '${DESTDIR}${PREFIX}/share/pixmaps/aldrin'
+
+CONFIG_PATHS = dict(
+	site_packages = 'SITE_PACKAGE_PATH',
+	applications = 'APPLICATIONS_PATH',
+	bin = 'BIN_PATH',
+	share = 'SHARE_PATH',
+	doc = 'DOC_PATH',
+	icons_aldrin = 'ICONS_ALDRIN_PATH',
+	icons_hicolor = 'ICONS_HICOLOR_PATH',
+	pixmaps = 'PIXMAPS_PATH',
+	etc = 'ETC_PATH',
+)
 
 ######################################
 # save config
@@ -96,6 +116,7 @@ def install(target, source, perm=None):
 		env.InstallPerm(dir=env.Dir(target), source=source, perm=perm)
 
 env.Alias(target='install', source="${DESTDIR}${PREFIX}")
+env.Alias(target='install', source="${DESTDIR}${ETCDIR}")
 
 def install_recursive(target, path, mask):
 	for f in glob.glob(os.path.join(path, mask)):
@@ -104,6 +125,28 @@ def install_recursive(target, path, mask):
 		fullpath = os.path.join(path, filename)
 		if os.path.isdir(fullpath):
 			install_recursive(os.path.join(target,filename), fullpath, mask)
+
+def build_path_config(target, source, env):
+	outpath = str(target[0])
+	from StringIO import StringIO
+	from ConfigParser import ConfigParser
+	s = StringIO()
+	cfg = ConfigParser()
+	cfg.add_section('Paths')
+	remove_prefix = '${DESTDIR}'
+	for key, value in CONFIG_PATHS.iteritems():
+		value = env[value]
+		if value.startswith(remove_prefix):
+			value = value[len(remove_prefix):]
+		cfg.set('Paths', key, os.path.abspath(str(env.Dir(value))))
+	cfg.write(s)
+	file(outpath, 'w').write(s.getvalue())
+	
+builders = dict(
+	BuildPathConfig = Builder(action = build_path_config),
+)
+
+env['BUILDERS'].update(builders)
 
 Export(
 	'env', 

@@ -21,6 +21,6 @@
 Import('env', 'install', 'install_recursive')
 import glob
 
-install('${DESTDIR}${PREFIX}/share/applications', 'aldrin.desktop', 0644)
+install('${APPLICATIONS_PATH}', 'aldrin.desktop', 0644)
 
 

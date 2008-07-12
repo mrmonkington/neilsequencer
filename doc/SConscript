@@ -21,13 +21,13 @@
 Import('env', 'install', 'install_recursive')
 import glob
 
-install('${DESTDIR}${PREFIX}/share/doc/aldrin', glob.glob('*.ccm'), 0644)
+install('${DOC_PATH}', glob.glob('*.ccm'), 0644)
 
 # docs
-install('${DESTDIR}${PREFIX}/share/doc/aldrin/html', 
+install('${DOC_PATH}/html', 
 	glob.glob('aldrin/html/*.html')
 	+ glob.glob('aldrin/html/*.css'))
-install('${DESTDIR}${PREFIX}/share/doc/aldrin/images', 
+install('${DOC_PATH}/images', 
 	glob.glob('aldrin/images/*.gif')
 	+ glob.glob('aldrin/images/*.png'))
 

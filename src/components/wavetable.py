@@ -22,22 +22,22 @@
 Contains all classes and functions needed to render the wavetable editor and the envelope viewer.
 """
 
-from gtkimport import gtk
+import gtk
 import os, sys, stat
-from utils import prepstr, db2linear, linear2db, note2str, filepath, new_listview, \
+from aldrin.utils import prepstr, db2linear, linear2db, note2str, filepath, new_listview, \
 	new_image_button, add_scrollbars, file_filter, question, new_image_toggle_button, format_filesize, error, \
 	new_stock_image_button, ObjectHandlerGroup, imagepath
-import utils
+import aldrin.utils as utils
 import zzub
 import config
-from envelope import EnvelopeView, ADSRPanel
-from waveedit import WaveEditPanel
-import freesound
+from aldrin.envelope import EnvelopeView, ADSRPanel
+from aldrin.waveedit import WaveEditPanel
+import aldrin.freesound as freesond
 import popen2
-import common
-from common import MARGIN, MARGIN2, MARGIN3
-from fspanel import FreesoundPanel
-from aldrincom import com
+import aldrin.common as common
+from aldrin.common import MARGIN, MARGIN2, MARGIN3
+from aldrin.fspanel import FreesoundPanel
+import aldrin.com as com
 
 class WavetablePanel(gtk.Notebook):
 	"""

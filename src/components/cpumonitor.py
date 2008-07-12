@@ -22,12 +22,12 @@
 Provides dialog class for cpu monitor.
 """
 
-from gtkimport import gtk
+import gtk
 import gobject
-from utils import prepstr, add_scrollbars
-import utils, os, stat
-import common
-from common import MARGIN, MARGIN2, MARGIN3
+from aldrin.utils import prepstr, add_scrollbars
+import aldrin.utils as utils, os, stat
+import aldrin.common as common
+from aldrin.common import MARGIN, MARGIN2, MARGIN3
 
 class CPUMonitorDialog(gtk.Dialog):
 	"""

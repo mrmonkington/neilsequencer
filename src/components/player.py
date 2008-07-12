@@ -20,17 +20,16 @@
 
 import zzub
 from zzub import Player
-from aldrincom import com
+import aldrin.com as com
 
-import common
+import aldrin.common as common
 import gobject
 import os,sys 
 import time
-from utils import is_generator, is_effect, is_root, is_controller, is_streamer
+from aldrin.utils import is_generator, is_effect, is_root, is_controller, is_streamer
 from config import get_plugin_aliases, get_plugin_blacklist
 
-from gtkimport import gtk
-
+import gtk
 
 DOCUMENT_UI = dict(
 	# insert persistent members at this level, in the format
@@ -161,9 +160,6 @@ class AldrinPlayer(Player):
 					args.append(argname)
 			self.event_id_to_name[val] = (eventname, membername, args)
 			#print "'%s', # ( %s )" % (eventname, ','.join(args + ["..."]))
-		# load blacklist file and add blacklist entries
-		for name in get_plugin_blacklist():
-			self.blacklist_plugin(name)
 		config = com.get('aldrin.core.config')
 		pluginpath = os.environ.get('ALDRIN_PLUGIN_PATH',None)
 		if pluginpath:

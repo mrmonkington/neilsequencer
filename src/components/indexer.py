@@ -23,10 +23,10 @@ Reads and writes index files and directory structures.
 """
 
 import fnmatch, os, sys
-from utils import prepstr
+from aldrin.utils import prepstr
 import zzub
 from xml.dom.minidom import parse
-from aldrincom import com
+import aldrin.com as com
 
 class BaseItem:
 	def is_directory(self):

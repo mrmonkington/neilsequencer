@@ -22,11 +22,6 @@ from utils import filepath
 import os,sys,glob
 from ConfigParser import ConfigParser
 
-COMPONENT_PATH = [
-	filepath('../components'),
-	os.path.expanduser('~/.aldrin/components'),
-]
-
 SECTION_NAME = 'Aldrin COM'
 OPTIONS = [
 	'Module',
@@ -64,19 +59,22 @@ class ComponentManager:
 		self.categories = {}
 		self.packages = []
 		
-	def load_packages(self):		
+	def load_packages(self, paths):		
 		self.packages = []
 		packages = []
 		names = []
-		for path in COMPONENT_PATH:
-			if not path in sys.path:
-				sys.path = [path] + sys.path
+		for path in paths:
+			print "scanning " + path + " for components"
 			if os.path.isdir(path):
+				if not path in sys.path:
+					sys.path = [path] + sys.path
 				for filename in glob.glob(os.path.join(path, '*.aldrin-component')):
 					print filename
 					pkg = Package(filename)
 					if pkg.parse():
 						packages.append(pkg)
+			else:
+				print "no such path: " + path
 		for pkg in packages:
 			try:
 				modulename = pkg.module
@@ -151,9 +149,11 @@ class ComponentManager:
 		return [self.get(classid, *args, **kwargs) for classid in self.categories.get(category,[])]
 
 com = ComponentManager()
+get = com.get
+get_from_category = com.get_from_category
 
-def init():
-	com.load_packages()
+def init(paths):
+	com.load_packages(paths)
 
 __all__ = [
 	'com',

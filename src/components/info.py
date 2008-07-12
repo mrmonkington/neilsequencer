@@ -22,11 +22,11 @@
 Provides an info view which allows to enter text.
 """
 
-from gtkimport import gtk
-import common
-from utils import add_scrollbars
-from common import MARGIN, MARGIN0, MARGIN2, MARGIN3
-from aldrincom import com
+import gtk
+import aldrin.common as common
+from aldrin.utils import add_scrollbars
+from aldrin.common import MARGIN, MARGIN0, MARGIN2, MARGIN3
+import aldrin.com as com
 
 LICENSES = [
 	dict(

@@ -18,18 +18,18 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from gtkimport import gtk
-from common import MARGIN, MARGIN2, MARGIN3, MARGIN0
+import gtk
+from aldrin.common import MARGIN, MARGIN2, MARGIN3, MARGIN0
 import gobject
-from utils import new_stock_image_toggle_button, new_stock_image_button, format_time, \
+from aldrin.utils import new_stock_image_toggle_button, new_stock_image_button, format_time, \
 	ticks_to_time, new_theme_image_toggle_button
-import audiogui
+import aldrin.audiogui as audiogui
 import time
 import config
-from aldrincom import com
+import aldrin.com as com
 import zzub
-import common
-from utils import ObjectHandlerGroup
+import aldrin.common as common
+from aldrin.utils import ObjectHandlerGroup
 
 class TransportPanel(gtk.HBox):
 	"""

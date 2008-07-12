@@ -24,23 +24,23 @@ editor and its associated dialogs.
 """
 
 import os
-from gtkimport import gtk
+import gtk
 import gobject
 import pango
-from utils import prepstr, filepath, get_item_count, get_clipboard_text, set_clipboard_text, question, error, get_new_pattern_name, \
+from aldrin.utils import prepstr, filepath, get_item_count, get_clipboard_text, set_clipboard_text, question, error, get_new_pattern_name, \
 	new_liststore, new_combobox, db2linear, make_menu_item, make_check_item, ObjectHandlerGroup
 
 import zzub
 import time
 import random
-import common
+import aldrin.common as common
 MARGIN = common.MARGIN
 MARGIN2 = common.MARGIN2
 MARGIN3 = common.MARGIN3
 MARGIN0 = common.MARGIN0
-from aldrincom import com
+import aldrin.com as com
 
-from utils import NOTES, roundint
+from aldrin.utils import NOTES, roundint
 PATLEFTMARGIN = 48
 CONN = 0
 GLOBAL = 1
@@ -447,7 +447,7 @@ class PatternPanel(gtk.VBox):
 #			pass
 #		self.view.grab_focus()
 
-from utils import fixbn, bn2mn, mn2bn, note2str, switch2str, byte2str, word2str
+from aldrin.utils import fixbn, bn2mn, mn2bn, note2str, switch2str, byte2str, word2str
 
 t2c = [
 	note2str,

@@ -22,5 +22,5 @@ Import('env', 'install', 'install_recursive')
 import glob
 
 for filename in glob.glob('*.py'):
-	install('${PYTHON_SITE_PACKAGES}/aldrin', filename, 0644)
+	install('${SITE_PACKAGE_PATH}/aldrin', filename, 0644)
 
