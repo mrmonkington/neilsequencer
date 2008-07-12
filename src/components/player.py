@@ -258,6 +258,8 @@ class AldrinPlayer(Player):
 			return False
 		res = wave.load_sample(0, 0, 0, filepath, stream)
 		stream.destroy()
+		if res != 0:
+			self.active_waves = [wave]
 		return res != 0
 		
 	def play_stream(self, note, plugin_uri, data_url):
@@ -501,6 +503,9 @@ class AldrinPlayer(Player):
 		mp = zzub.Player.create_plugin(self, None, 0, name, pluginloader)
 		assert mp
 		
+		active_plugins = []
+		active_patterns = []
+		
 		# if it is a generator and has global or track parameters,
 		# create a new default pattern, and autoconnect the plugin.
 		if is_generator(mp) and \
@@ -508,6 +513,8 @@ class AldrinPlayer(Player):
 			pattern = mp.create_pattern(self.sequence_step)
 			pattern.set_name('00')
 			mp.add_pattern(pattern)
+			active_plugins = [mp]
+			active_patterns = [(mp, 0)]
 			t=self.create_sequence(mp)
 			t.set_event(0,16)
 			mask=gtk.get_current_event_state()
@@ -570,6 +577,10 @@ class AldrinPlayer(Player):
 					print traceback.format_exc()
 					
 		self.history_commit("new plugin")
+		if active_plugins:
+			self.active_plugins = active_plugins
+		if active_patterns:
+			self.active_patterns = active_patterns
 		
 	def delete_plugin(self, mp):
 		# add plugin information

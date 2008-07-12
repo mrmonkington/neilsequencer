@@ -18,9 +18,10 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-VERSION = "0.11"
+VERSION = "0.13"
 
 import os, glob, sys, time
+import distutils.sysconfig
 
 posix = os.name == 'posix'
 win32 = os.name == 'nt'
@@ -45,6 +46,7 @@ def bool_converter(value):
 opts = Options( 'options.conf', ARGUMENTS )
 opts.Add("PREFIX", 'Set the install "prefix" ( /path/to/PREFIX )', "/usr/local")
 opts.Add("DESTDIR", 'Set the root directory to install into ( /path/to/DESTDIR )', "")
+opts.Add("ETCDIR", 'Set the configuration dir "prefix" ( /path/to/ETC )', "/etc")
 
 env = Environment(ENV = os.environ, options=opts)
 
@@ -55,6 +57,7 @@ env.SConsignFile()
 ######################################
 
 env['ROOTPATH'] = os.getcwd()
+env['PYTHON_SITE_PACKAGES'] = distutils.sysconfig.get_python_lib(prefix="${DESTDIR}${PREFIX}")
 
 ######################################
 # save config
@@ -86,37 +89,13 @@ def InstallPerm(env, dir, source, perm):
 
 SConsEnvironment.InstallPerm = InstallPerm
 
-rootpath = "${DESTDIR}${PREFIX}"
-binpath = "${DESTDIR}${PREFIX}/bin"
-libpath = "${DESTDIR}${PREFIX}${LIBDIR}"
-includepath = "${DESTDIR}${PREFIX}/include"
-pluginpath = "${DESTDIR}${PREFIX}${LIBDIR}/zzub"
-pyextpath = distutils.sysconfig.get_python_lib(prefix="${DESTDIR}${PREFIX}")
-
 def install(target, source, perm=None):
 	if not perm:
 		env.Install(dir=env.Dir(target), source=source)
 	else:
 		env.InstallPerm(dir=env.Dir(target), source=source, perm=perm)
 
-env.Alias(target='install', source=rootpath)
-
-################################################
-#
-# aldrin tracker
-#
-################################################
-
-aldrinpath = "${DESTDIR}${PREFIX}/share/aldrin"
-aldrinrespath = "${DESTDIR}${PREFIX}/share/aldrin/res"
-iconpath = "${DESTDIR}${PREFIX}/share/icons/hicolor"
-apppath = "${DESTDIR}${PREFIX}/share/applications"
-pixmappath = "${DESTDIR}${PREFIX}/share/pixmaps"
-
-env['ALDRIN_SRC_PATH'] = '${ROOTPATH}/share/aldrin'
-env['ALDRIN_INSTALL_PATH'] = '${DESTDIR}${PREFIX}/share/aldrin'
-env['DOC_INSTALL_PATH'] = '${DESTDIR}${PREFIX}/share/doc'
-env['DOC_SRC_PATH'] = '${ROOTPATH}/share/doc'
+env.Alias(target='install', source="${DESTDIR}${PREFIX}")
 
 def install_recursive(target, path, mask):
 	for f in glob.glob(os.path.join(path, mask)):
@@ -125,75 +104,22 @@ def install_recursive(target, path, mask):
 		fullpath = os.path.join(path, filename)
 		if os.path.isdir(fullpath):
 			install_recursive(os.path.join(target,filename), fullpath, mask)
-install_recursive(aldrinpath, 'share/aldrin', '*.py')
-install(aldrinpath, 'share/aldrin/index.xml')
-install(aldrinpath, 'share/aldrin/blacklist.txt')
-install(aldrinpath, 'share/aldrin/aliases.txt')
-install('${DESTDIR}${PREFIX}/bin', 'bin/aldrin')
-if win32:
-	install('${DESTDIR}${PREFIX}/bin', 'bin/aldrin.bat')
-	
-# docs
-install('${DOC_INSTALL_PATH}/aldrin/html', 
-	glob.glob('share/doc/aldrin/html/*.html')
-	+ glob.glob('share/doc/aldrin/html/*.css'))
-install('${DOC_INSTALL_PATH}/aldrin/images', 
-	glob.glob('share/doc/aldrin/images/*.gif')
-	+ glob.glob('share/doc/aldrin/images/*.png'))
 
-# icon theme
-install(iconpath + '/16x16/apps', 'share/icons/hicolor/16x16/apps/aldrin.png')
-install(iconpath + '/22x22/apps', 'share/icons/hicolor/22x22/apps/aldrin.png')
-install(iconpath + '/24x24/apps', 'share/icons/hicolor/24x24/apps/aldrin.png')
-install(iconpath + '/32x32/apps', 'share/icons/hicolor/32x32/apps/aldrin.png')
-install(iconpath + '/48x48/apps', 'share/icons/hicolor/48x48/apps/aldrin.png')
-install(iconpath + '/scalable/apps', 'share/icons/hicolor/scalable/apps/aldrin.svg')
-#install(pixmappath, 'share/icons/hicolor/scalable/apps/aldrin.svg')
+Export(
+	'env', 
+	'install',
+	'install_recursive',
+	'win32', 'mac', 'posix',
+)
 
-# applications info
-install(apppath, 'share/applications/aldrin.desktop')
-
-# demo songs
-install(aldrinpath + "/demosongs", glob.glob("share/aldrin/demosongs/*.ccm"))
-
-# icons
-install(aldrinpath + "/icons", glob.glob("share/aldrin/icons/*.svg"), 0644)
-
-# themes
-install(aldrinpath + "/themes", glob.glob("share/aldrin/themes/*.col"), 0644)
-
-# presets
-install(aldrinpath + "/presets", glob.glob("share/aldrin/presets/*.prs"), 0644)
-
-################################################
-#
-# aldrin resources
-#
-################################################
-
-for f in glob.glob('share/aldrin/res/*.png'):
-	install(aldrinrespath, f)
-for f in glob.glob('share/aldrin/res/*.ico'):
-	install(aldrinrespath, f)
-for f in glob.glob('share/aldrin/res/*.svg'):
-	install(aldrinrespath, f)
-
-################################################
-#
-# aldrin extensions
-#
-################################################
-
-Export('env', 'install')
-env.SConscript('${ROOTPATH}/share/aldrin/extensions/SConscript')
-
-################################################
-#
-# aldrin pluginviews
-#
-################################################
-
-Export('env', 'install')
-env.SConscript('${ROOTPATH}/share/aldrin/pluginviews/SConscript')
-
+env.SConscript('applications/SConscript')
+env.SConscript('bin/SConscript')
+env.SConscript('doc/SConscript')
+env.SConscript('demosongs/SConscript')
+env.SConscript('etc/SConscript')
+env.SConscript('icons/SConscript')
+env.SConscript('pixmaps/SConscript')
+env.SConscript('presets/SConscript')
+env.SConscript('src/SConscript')
+env.SConscript('themes/SConscript')
 

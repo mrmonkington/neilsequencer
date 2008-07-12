@@ -1999,8 +1999,11 @@ class PatternView(gtk.DrawingArea):
 						o,n = on
 						player = com.get('aldrin.core.player')
 						data = (min(player.octave+o,9)<<4) | (n+1)
-						if (wp != None) and player.active_waves:
-							wdata = player.active_waves[0].get_index()+1
+						if (wp != None):
+							if player.active_waves:
+								wdata = player.active_waves[0].get_index()+1
+							else:
+								wdata = 1
 						playtrack = True
 					elif k == 'period':
 						data = p.get_value_none()
@@ -2069,9 +2072,7 @@ class PatternView(gtk.DrawingArea):
 				v = self.plugin.get_pattern_value(self.pattern, self.group, self.track, index, self.row)
 				p = self.plugin.get_parameter(self.group, self.track, index)
 				if v != p.get_value_none():
-					m.set_parameter_value(self.group, self.track, index, v, 0)
-			m.tick()
-			player.history_flush_last()
+					m.set_parameter_value_direct(self.group, self.track, index, v, 0)
 		self.move_down(self.row_step)
 	
 	def on_key_up(self, widget, event):
