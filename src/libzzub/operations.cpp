@@ -97,6 +97,7 @@ bool op_plugin_create::prepare(zzub::song& song) {
 	plugin.last_work_max_left = 0;
 	plugin.last_work_max_right = 0;
 	plugin.last_work_time = 0.0f;
+	plugin.last_work_frame = 0;
 	plugin.cpu_load = 0.0f;
 	plugin.cpu_load_buffersize = 0;
 	plugin.cpu_load_time = 0.0f;
@@ -268,6 +269,9 @@ bool op_plugin_delete::operate(zzub::song& song) {
 			i++;
 	}
 
+	// clear midi plugin if necessary
+	if (song.midi_plugin == id) song.midi_plugin = -1; 
+
 	return true;
 }
 
@@ -395,9 +399,10 @@ bool op_plugin_connect::prepare(zzub::song& song) {
 		return false;
 	}
 
+/*
 	// check for cyclic connection = run depth_first_search and break if there is a back_edge. we must insert the edge first
 	std::pair<connection_descriptor, bool> edge_instance_p = add_edge(to_plugin, from_plugin, song.graph);
-    
+	
 	try {
 		depth_first_search(song.graph, visitor(make_dfs_visitor(cyclic_connection())));
 	} catch (cyclic_connection::has_cycle) {
@@ -408,7 +413,7 @@ bool op_plugin_connect::prepare(zzub::song& song) {
 
 	// validating done, remove the edge again before invoking the pre-event so the graph isnt bogus
 	remove_edge(edge_instance_p.first, song.graph);
-
+*/
 	metaplugin& to_mpl = *song.plugins[to_id];
 	metaplugin& from_mpl = *song.plugins[from_id];
 
@@ -420,7 +425,7 @@ bool op_plugin_connect::prepare(zzub::song& song) {
 	song.plugin_invoke_event(0, event_data, true);
 
 	// re-add the edge
-	edge_instance_p = add_edge(to_plugin, from_plugin, song.graph);
+	std::pair<connection_descriptor, bool> edge_instance_p = add_edge(to_plugin, from_plugin, song.graph);
 	edge_props& c = song.graph[edge_instance_p.first];
 
 	switch (type) {

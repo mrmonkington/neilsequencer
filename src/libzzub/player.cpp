@@ -575,7 +575,7 @@ void player::clear() {
 	front.midi_mappings.clear();
 	front.keyjazz.clear();
 	front.sequencer_tracks.clear();
-	front.midi_plugin = graph_traits<plugin_map>::null_vertex();
+	front.midi_plugin = -1;
 	//front.user_event_queue_read = 0;
 	//front.user_event_queue_write = 0;
 

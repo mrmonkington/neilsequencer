@@ -33,16 +33,18 @@ host::host(zzub::player* play, zzub_plugin_t* plug) {
 	_player = play;
 	_plugin = plug;
 
-	for (int c = 0; c < 2; ++c) {
-		auxBuffer[c] = new float[zzub::buffer_size * sizeof(float) * 4];
-		memset(auxBuffer[c], 0, zzub::buffer_size * sizeof(float) * 4);
+	aux_buffer.resize(2);
+	for (int c = 0; c < aux_buffer.size(); ++c) {
+		aux_buffer[c].resize(zzub::buffer_size * sizeof(float) * 4);
+	}
+
+	feedback_buffer.resize(2);
+	for (int c = 0; c < feedback_buffer.size(); ++c) {
+		feedback_buffer[c].resize(zzub::buffer_size * sizeof(float) * 2);
 	}
 }
 
 host::~host() {
-	for (int c = 0; c < 2; ++c) {
-		delete[] auxBuffer[c];
-	}
 }
  
 const wave_info* host::get_wave(int i) {
@@ -83,13 +85,16 @@ int host::get_write_position() {
 }
 
 float **host::get_auxiliary_buffer() { 
-	return auxBuffer;
+	static float* auxbuf[2] = { 0, 0 };
+	auxbuf[0] = &aux_buffer[0].front();
+	auxbuf[1] = &aux_buffer[1].front();
+	return auxbuf;
 }
 
 void host::clear_auxiliary_buffer() { 
-	float **buffer = get_auxiliary_buffer();
-	memset(buffer[0], 0, zzub::buffer_size * sizeof(float) * 4);
-	memset(buffer[1], 0, zzub::buffer_size * sizeof(float) * 4);
+	for (int c = 0; c < aux_buffer.size(); ++c) {
+		std::fill(aux_buffer[c].begin(), aux_buffer[c].end(), 0.0f);
+	}
 }
 
 int host::get_next_free_wave_index() {

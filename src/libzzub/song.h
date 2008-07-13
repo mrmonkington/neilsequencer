@@ -99,7 +99,7 @@ struct metaplugin {
 
 	std::string stream_source;
 
-	int last_work_buffersize;
+	int last_work_buffersize, last_work_frame;
 	float last_work_max_left, last_work_max_right;
 	bool last_work_audio_result;
 	bool last_work_midi_result;
@@ -190,6 +190,7 @@ struct song {
 	int song_begin, song_end, song_loop_begin, song_loop_end, song_loop_enabled;
 	string song_comment;
 	vector<keyjazz_note> keyjazz;
+	int midi_plugin;
 
 	song();
 	virtual ~song() { }
@@ -268,7 +269,6 @@ struct mixer : song {
 	std::vector<int> sequencer_indices;				// currently playing index in each track
 	master_plugin_info master_plugininfo;
 	plugin_descriptor solo_plugin;
-	plugin_descriptor midi_plugin;
 	vector<vector<float> > mix_buffer;
 	float* inputBuffer[audiodriver::MAX_CHANNELS];
 	float* outputBuffer[audiodriver::MAX_CHANNELS];

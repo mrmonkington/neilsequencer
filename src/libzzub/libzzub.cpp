@@ -617,18 +617,16 @@ void zzub_player_set_tpb(zzub_player_t *player, int tpb) {
 
 void zzub_player_set_midi_plugin(zzub_player_t *player, zzub_plugin_t* plugin) {
 	if (plugin == 0) {
-		player->front.midi_plugin = graph_traits<plugin_map>::null_vertex();
+		player->front.midi_plugin = -1;
 	} else {
 		if (plugin->id >= player->front.plugins.size() || player->front.plugins[plugin->id] == 0) return ;
-		plugin_descriptor plugindesc = player->front.plugins[plugin->id]->descriptor;
-		player->front.midi_plugin = plugindesc;
+		player->front.midi_plugin = plugin->id;
 	}
 }
 
 zzub_plugin_t* zzub_player_get_midi_plugin(zzub_player_t *player) {
-	if (player->front.midi_plugin == graph_traits<plugin_map>::null_vertex()) return 0;
-	int id = player->front.graph[player->front.midi_plugin].id;
-	return zzub_player_get_plugin_by_id(player, id);
+	if (player->front.midi_plugin == -1) return 0;
+	return zzub_player_get_plugin_by_id(player, player->front.midi_plugin);
 }
 
 void zzub_player_set_host_info(zzub_player_t *player, int id, int version, void *host_ptr) {

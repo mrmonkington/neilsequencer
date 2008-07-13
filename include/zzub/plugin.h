@@ -510,7 +510,8 @@ struct host {
 
 	host(zzub::player*, zzub_plugin_t*);
 	~host();
-	float *auxBuffer[2];
+	std::vector<std::vector<float> > aux_buffer;
+	std::vector<std::vector<float> > feedback_buffer;
 };
 
 

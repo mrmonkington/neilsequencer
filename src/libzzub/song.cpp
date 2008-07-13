@@ -166,6 +166,8 @@ song::song() {
 	song_loop_end = 16;
 	song_loop_enabled = true;
 
+	midi_plugin = -1;
+
 	user_event_queue.resize(4096);
 	user_event_queue_read = user_event_queue_write = 0;
 }
@@ -424,21 +426,47 @@ connection_type song::plugin_get_output_connection_type(int plugin_id, int index
 	return conn->type;
 }
 
+struct feedback_detector : public base_visitor<feedback_detector> {
+	struct has_cycle { };
+	typedef on_back_edge event_filter;
+	vector<connection_descriptor>& back_edges;
+
+	feedback_detector(vector<connection_descriptor>& result)
+		:back_edges(result) { }
+	template <class Vertex, class Graph>
+	inline void operator()(Vertex u, Graph& g) {
+		//cerr << u << " is a back edge!" << endl;
+		back_edges.push_back(u);
+	}
+};
+
+
 void song::make_work_order() {
 	work_order.clear();
 
+	// use a temp graph
+	plugin_map tg = graph;
+	plugin_iterator v, v_end;
+
+	// find back edges
+	vector<connection_descriptor> back_edges;
+	depth_first_search(tg, visitor(make_dfs_visitor(feedback_detector(back_edges))));
+
+	// remove back edges from temp graph so we can perform a topological sort
+	// (TODO: test with multiple loops - are connection_descriptors stable after removing some other edge??)
+	for (vector<connection_descriptor>::iterator i = back_edges.begin(); i != back_edges.end(); ++i)
+		remove_edge(*i, tg);
+
 	// find roots in the graph, e.g master, and machines w/o outputs
 	vector<plugin_descriptor> roots;
-	plugin_iterator v, v_end;
-	for (tie(v, v_end) = vertices(graph); v != v_end; ++v) {
+	//plugin_iterator v, v_end;
+	for (tie(v, v_end) = vertices(tg); v != v_end; ++v) {
 		zzub::in_edge_iterator e, e_end;
-		boost::tie(e, e_end) = in_edges(*v, graph);
+		boost::tie(e, e_end) = in_edges(*v, tg);
 		if ((e_end - e) == 0) roots.push_back(*v);
 	}
 
-	// use a temp graph
-	plugin_map tg = graph;
-
+	// do a topological sort from each root and ensure plugins related to the master are put last in the final work order
 	for (vector<plugin_descriptor>::iterator i = roots.begin(); i != roots.end(); ++i) {
 		vector<plugin_descriptor> outputs;
 		deque<plugin_descriptor> inputs;
@@ -462,12 +490,28 @@ void song::make_work_order() {
 	}
 /*
 	cerr << "-------------------------------------------------------" << endl;
+	cerr << "Remaining out-edges:" << endl;
+	out_edge_iterator out, out_end;
+	for (tie(v, v_end) = vertices(tg); v != v_end; ++v) {
+		for (tie(out, out_end) = out_edges(*v, tg); out != out_end; ++out) {
+			cerr << source(*out, tg) << " -> " << target(*out, tg) << endl;
+		}
+	}
+
+	cerr << "Remaining in-edges:" << endl;
+	in_edge_iterator in, in_end;
+	for (tie(v, v_end) = vertices(tg); v != v_end; ++v) {
+		for (tie(in, in_end) = in_edges(*v, tg); in != in_end; ++in) {
+			cerr << source(*in, tg) << " -> " << target(*in, tg) << endl;
+		}
+	}
+
+	cerr << "-------------------------------------------------------" << endl;
 	for (std::vector<plugin_descriptor>::iterator i = work_order.begin(); i != work_order.end(); ++i) {
 		cerr << *i << ", ";
 	}
 	cerr << endl;*/
 }
-
 
 // ---------------------------------------------------------------------------
 //
@@ -801,7 +845,6 @@ void song::set_state(player_state newstate) {
 ***/
 
 mixer::mixer() {
-	midi_plugin = graph_traits<plugin_map>::null_vertex();
 	solo_plugin = graph_traits<plugin_map>::null_vertex();
 	work_position = 0;
 	work_tick_fracs = 0.0f;
@@ -1158,6 +1201,11 @@ void mixer::work_plugin(plugin_descriptor plugin, int sample_count, bool connect
 		m.last_work_audio_result = m.plugin->process_stereo(plin, plout, sample_count, flags);
 	}
 
+	std::copy(m.callbacks->feedback_buffer[0].begin() + sample_count, m.callbacks->feedback_buffer[0].begin() + buffer_size, m.callbacks->feedback_buffer[0].begin());
+	std::copy(m.callbacks->feedback_buffer[1].begin() + sample_count, m.callbacks->feedback_buffer[1].begin() + buffer_size, m.callbacks->feedback_buffer[1].begin());
+	std::copy(m.work_buffer[0].begin(), m.work_buffer[0].begin() + sample_count, m.callbacks->feedback_buffer[0].begin() + buffer_size - sample_count);
+	std::copy(m.work_buffer[1].begin(), m.work_buffer[1].begin() + sample_count, m.callbacks->feedback_buffer[1].begin() + buffer_size - sample_count);
+
 	float samplerate = float(master_info.samples_per_second);
 	float falloff = std::pow(10.0f, (-48.0f / (samplerate * 20.0f))); // vu meter falloff (-48dB/s)
 	if (m.last_work_audio_result) {
@@ -1170,6 +1218,7 @@ void mixer::work_plugin(plugin_descriptor plugin, int sample_count, bool connect
 
 	m.last_work_time = timer.frame() - start_time;
 	m.last_work_buffersize = sample_count;
+	m.last_work_frame = work_position;
 
 	// these are used to calculating cpu_load-per-plugin-per-buffer in op_player_get_plugins_load_snapshot::operate()
 	m.cpu_load_time += m.last_work_time;
@@ -1444,9 +1493,10 @@ void mixer::midi_event(unsigned short status, unsigned char data1, unsigned char
 			velocity = 0;
 		for (int i = 0; i < get_plugin_count(); i++) {
 			metaplugin& m = get_plugin(i);
+			int plugin_id = get_plugin_id(i);
 			m.plugin->midi_note(channel, (int)data1, velocity);
 
-			if (m.midi_input_channel == channel || m.midi_input_channel == 16 || (m.midi_input_channel == 17 && i == midi_plugin)) {
+			if (m.midi_input_channel == channel || m.midi_input_channel == 16 || (m.midi_input_channel == 17 && plugin_id == midi_plugin)) {
 				// play a recordable note/off, w/optional velocity, delay and cut
 				int note, prevNote;
 				if (command == 9 && velocity != 0) {
@@ -1457,7 +1507,6 @@ void mixer::midi_event(unsigned short status, unsigned char data1, unsigned char
 					prevNote = midi_to_buzz_note(data1);
 				}
 
-				int plugin_id = get_plugin_id(i);
 				// find note_group, track, column and velocity_group, track and column based on keyjazz-struct
 				int note_group = -1, note_track = -1, note_column = -1;
 				int velocity_column = -1;

@@ -77,7 +77,15 @@ bool audio_connection::work(zzub::song& player, const zzub::connection_descripto
 	metaplugin& plugin_to = player.get_plugin(source(conn, player.graph));
 
 	float *plout[] = { &plugin_to.work_buffer[0].front(), &plugin_to.work_buffer[1].front() };
-	float *plin[] = { &plugin_from.work_buffer[0].front(), &plugin_from.work_buffer[1].front() };
+	float *plin[] = { 0, 0 };
+	if (plugin_from.last_work_frame != plugin_to.last_work_frame + plugin_to.last_work_buffersize) {
+		cerr << "connection mixes with feedback buffers" << endl;
+		plin[0] = &plugin_from.callbacks->feedback_buffer[0].front();
+		plin[1] = &plugin_from.callbacks->feedback_buffer[1].front();
+	} else {
+		plin[0] = &plugin_from.work_buffer[0].front();
+		plin[1] = &plugin_from.work_buffer[1].front();
+	}
 
 	bool plugin_to_does_input_mixing = (plugin_to.info->flags & zzub::plugin_flag_does_input_mixing) != 0;
 	bool plugin_to_is_bypassed = plugin_to.is_bypassed || (plugin_to.sequencer_state == sequencer_event_type_thru);
