@@ -25,6 +25,11 @@ Organizes finding Aldrins resources across the system.
 from ConfigParser import ConfigParser
 import sys, os
 
+if 'ALDRIN_BASE_PATH' in os.environ:
+	BASE_PATH = os.environ['ALDRIN_BASE_PATH']
+else:
+	BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+
 class PathConfig(ConfigParser):
 	CFG_PATHS = [
 		'etc/debugpath.cfg', # assume we are in the repository
@@ -34,12 +39,11 @@ class PathConfig(ConfigParser):
 	
 	def __init__(self):
 		ConfigParser.__init__(self)
-		self.basedir = os.path.normpath(os.path.join(os.path.dirname(__file__), '../..'))
 		CFG_PATH = None
 		for path in self.CFG_PATHS:
 			path = os.path.expanduser(path)
 			if not os.path.isabs(path):
-				path = os.path.normpath(os.path.join(self.basedir,path))
+				path = os.path.normpath(os.path.join(BASE_PATH,path))
 			print "searching " + path
 			if os.path.isfile(path):
 				print "using " + path
@@ -57,7 +61,7 @@ class PathConfig(ConfigParser):
 			return None
 		value = os.path.expanduser(self.get('Paths', pathid))
 		if not os.path.isabs(value):
-			value = os.path.normpath(os.path.join(self.basedir, value))
+			value = os.path.normpath(os.path.join(BASE_PATH, value))
 		if append:
 			value = os.path.join(value, append)
 		return value

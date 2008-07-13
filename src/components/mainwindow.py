@@ -341,6 +341,10 @@ class AldrinStatusbar(gtk.Statusbar):
 			order = 0,
 			toggle = True,
 	)
+	
+	def __init__(self):
+		gtk.Statusbar.__init__(self)
+		self.push(0, "Ready to rok again")
 
 class AldrinFrame(gtk.Window):
 	"""
@@ -466,7 +470,6 @@ class AldrinFrame(gtk.Window):
 			gtk.gdk.pixbuf_new_from_file(hicoloriconpath("22x22/apps/aldrin.png")),
 			gtk.gdk.pixbuf_new_from_file(hicoloriconpath("16x16/apps/aldrin.png")))
 		self.resize(750, 550)
-		self.aldrinframe_statusbar.push(0, "Ready to rok again")
 
 		self.connect('key-press-event', self.on_key_down)
 		self.connect('destroy', self.on_destroy)

@@ -173,12 +173,11 @@ class TransportPanel(gtk.HBox):
 		self.hgroup.connect(self.btnloop, 'clicked', self.on_toggle_loop)
 		self.hgroup.connect(self.btnpanic, 'clicked', self.on_toggle_panic)
 		
-		# TODO: register for a category that indicates we have accelerators
-		# and register those when asked
-#		add_accelerator(self.btnplay, self.rootwindow, 'F5', 'clicked')
-#		add_accelerator(self.btnrecord, self.rootwindow, 'F7', 'clicked')
-#		add_accelerator(self.btnstop, self.rootwindow, 'F8', 'clicked')
-#		add_accelerator(self.btnpanic, self.rootwindow, 'F12', 'clicked')
+	   	accel = com.get('aldrin.core.accelerators')
+		accel.add_accelerator('F5', self.btnplay, 'clicked')
+		accel.add_accelerator('F7', self.btnrecord, 'clicked')
+		accel.add_accelerator('F8', self.btnstop, 'clicked')
+		accel.add_accelerator('F12', self.btnpanic, 'clicked')
 		
 		self.update_all()
 		

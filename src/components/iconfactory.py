@@ -18,21 +18,23 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+if __name__ == '__main__':
+	import os
+	os.environ['ALDRIN_BASE_PATH'] = '/home/paniq/devel/aldrin'
 import aldrin.com as com
 import gtk
 
 import glob, os
-from aldrin.utils import filepath, get_root_folder_path, iconpath
+from aldrin.utils import filepath, get_root_folder_path, iconpath, imagepath
 
 ICON_SEARCHPATH = [
-	'16x16',
-	'22x22',
-	'24x24',
-	'32x32',
-	'48x48',
-	'scalable',
-	'',
-	'../../pixmaps',
+	iconpath('16x16'),
+	iconpath('22x22'),
+	iconpath('24x24'),
+	iconpath('32x32'),
+	iconpath('48x48'),
+	iconpath('scalable'),
+	imagepath(''),
 ]
 
 ICON_EXTENSIONS = [
@@ -63,7 +65,7 @@ class IconLibrary:
 		icons = {}
 		for searchpath in ICON_SEARCHPATH:
 			for ext in ICON_EXTENSIONS:
-				mask = iconpath(searchpath) + '/*' + ext
+				mask = searchpath + '/*' + ext
 				for filename in glob.glob(mask):
 					key = os.path.splitext(os.path.basename(filename))[0]
 					pixbuf = gtk.gdk.pixbuf_new_from_file(filename)
@@ -86,7 +88,6 @@ class IconLibrary:
 						if d < bestw:
 							bestw = d
 							pixbuf = icon
-					#pixbuf = pixbuf.scale_simple(w,h,gtk.gdk.INTERP_HYPER)
 				#print "new icon: %s (%r = %i,%i ~ %i,%i)" % (key,size,w,h,pixbuf.get_width(),pixbuf.get_height())
 				gtk.icon_theme_add_builtin_icon(key, size, pixbuf)
 					
@@ -106,4 +107,6 @@ __aldrin__ = dict(
 )
 
 if __name__ == '__main__':
-	pass
+	com.init()
+	icons = com.get('aldrin.core.icons')
+	

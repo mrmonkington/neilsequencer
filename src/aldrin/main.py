@@ -26,13 +26,12 @@ import pathconfig
 import gobject
 gobject.threads_init()
 
+from gtkimport import gtk
+
 import sys, os
 
-import contextlog
-
-import errordlg
-
-from gtkimport import gtk
+import aldrin.contextlog as contextlog
+import aldrin.errordlg as errordlg
 
 import aldrin.com as com
 
@@ -54,6 +53,8 @@ class AldrinApplication:
 		
 		com.get_from_category('rootwindow')
 		
+		for key in sorted(sys.modules.keys()):
+			print key,"=",sys.modules[key]
 		gtk.main()
 		return 1
 	
