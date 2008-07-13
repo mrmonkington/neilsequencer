@@ -22,6 +22,7 @@
 Provides dialogs and controls to render the plugin view/router and its associated components.
 """
 
+import aldrin.com as com
 import gtk
 import gobject
 import cairo
@@ -46,8 +47,6 @@ from aldrin.common import MARGIN, MARGIN2, MARGIN3
 from rack import ParameterView
 from aldrin.presetbrowser import PresetView
 from patterns import key_to_note
-
-import aldrin.com as com
 
 PLUGINWIDTH = 100
 PLUGINHEIGHT = 25

@@ -75,6 +75,7 @@ DOCUMENT_UI = dict(
 	sequence_step = dict(vtype=int,default=64,doc="the current step size for sequencers."),
 	plugin_origin = dict(vtype=int,list=True,default=[0.0,0.0],doc="the origin position for new plugins."),
 	solo_plugin = dict(vtype=zzub.Plugin,doc="if set, the plugin that is currently set to solo."),
+	document_path = dict(vtype=str,doc="path to the current document."),
 )
 
 class AldrinPlayer(Player):
@@ -303,12 +304,31 @@ class AldrinPlayer(Player):
 				sel.remove((selplugin,index))
 		self.active_patterns = sel
 		
-	def load_ccm(self, filename):
-		res = zzub.Player.load_ccm(self, filename)
+	def load_bmx(self, filename):
+		res = zzub.Player.load_bmx(self, filename)
 		if not res:
+			self.document_path = filename
 			eventbus = com.get('aldrin.core.eventbus')
 			eventbus.document_loaded()
 		return res
+		
+	def load_ccm(self, filename):
+		res = zzub.Player.load_ccm(self, filename)
+		if not res:
+			self.document_path = filename
+			eventbus = com.get('aldrin.core.eventbus')
+			eventbus.document_loaded()
+		return res
+		
+	def save_ccm(self, filename):
+		res = zzub.Player.save_ccm(self, filename)
+		if not res:
+			self.document_path = filename
+		return res
+			
+	def clear(self):
+		zzub.Player.clear(self)
+		self.document_path = ''
 		
 	def getter(self, membername, kwargs):
 		value = getattr(self, '__' + membername)

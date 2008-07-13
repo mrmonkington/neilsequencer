@@ -479,6 +479,7 @@ class AldrinFrame(gtk.Window):
 		self.load_view()
 		
 		eventbus = com.get('aldrin.core.eventbus')
+		eventbus.document_path_changed += self.on_document_path_changed
 		eventbus.print_mapping()
 
 		options, args = com.get('aldrin.core.options').get_options_args()
@@ -721,7 +722,7 @@ class AldrinFrame(gtk.Window):
 		loaded document.
 		"""
 		player = com.get('aldrin.core.player')
-		filename = os.path.basename(self.filename)
+		filename = os.path.basename(player.document_path)
 		if not filename:
 			filename = 'Unsaved'
 		if player.document_changed():
@@ -744,14 +745,13 @@ class AldrinFrame(gtk.Window):
 		if not os.path.isfile(filename):
 			return
 		self.clear()
-		self.filename = filename
-		base,ext = os.path.splitext(self.filename)
 		player = com.get('aldrin.core.player')
+		base,ext = os.path.splitext(filename)
 		if ext.lower() in ('.bmx','.bmw'):
 			#~ progress = ProgressDialog("Aldrin", "Loading BMX Song...")
 			#~ Yield()
 			player.clear()
-			player.load_bmx(self.filename)
+			player.load_bmx(filename)
 			player.document_unchanged()
 			#~ Yield()
 			#~ progress.Update(100)
@@ -778,16 +778,17 @@ class AldrinFrame(gtk.Window):
 			gobject.timeout_add(int(1000/25), progress_callback)
 			progBar.pulse()
 			player.clear()
-			player.load_ccm(self.filename)
+			player.load_ccm(filename)
 			player.document_unchanged()
 			progBar.set_fraction(1.0)
 			dlg.destroy()
 		else:
 			message(self, "'%s' is not a supported file format." % ext)
 			return
+		
+	def on_document_path_changed(self, path):
 		self.update_title()
-		config.get_config().add_recent_file_config(self.filename)		
-		self.document_changed()
+		com.get('aldrin.core.config').add_recent_file_config(path)
 		
 	def save_file(self, filename):
 		"""
@@ -801,7 +802,6 @@ class AldrinFrame(gtk.Window):
 		try:
 			if not os.path.splitext(filename)[1]:
 				filename += self.DEFAULT_EXTENSION
-			self.filename = filename
 			if os.path.isfile(filename):
 				if config.get_config().get_incremental_saving():
 					# rename incremental
@@ -824,10 +824,8 @@ class AldrinFrame(gtk.Window):
 						os.remove(newpath)
 					print '%s => %s' % (filename, newpath)
 					os.rename(filename, newpath)
-			base,ext = os.path.splitext(self.filename)
-			#~ progress = ProgressDialog("Aldrin", "Saving '%s'..." % prepstr(self.filename))
-			#~ Yield()
-			result = player.save_ccm(self.filename)
+			base,ext = os.path.splitext(filename)
+			result = player.save_ccm(filename)
 			assert result == 0
 			player.document_unchanged()
 		except:
@@ -836,8 +834,8 @@ class AldrinFrame(gtk.Window):
 			traceback.print_exc()
 			error(self, "<b><big>Error saving file:</big></b>\n\n%s" % text)
 		#~ progress.Update(100)
-		self.update_title()
-		config.get_config().add_recent_file_config(self.filename)
+		#self.update_title()
+		#com.get('aldrin.core.config').add_recent_file_config(filename)
 		
 	def on_open(self, *args):
 		"""
@@ -875,16 +873,18 @@ class AldrinFrame(gtk.Window):
 		"""
 		Shows a save file dialog if filename is unknown and saves the file.
 		"""
-		if not self.filename:
+		player = com.get('aldrin.core.player')
+		if not player.document_path:
 			self.save_as()
 		else:
-			self.save_file(self.filename)
+			self.save_file(player.document_path)
 		
 	def save_as(self):
 		"""
 		Shows a save file dialog and saves the file.
 		"""
-		self.save_dlg.set_filename(self.filename)
+		player = com.get('aldrin.core.player')
+		self.save_dlg.set_filename(player.document_path)
 		response = self.save_dlg.run()
 		self.save_dlg.hide()
 		if response == gtk.RESPONSE_OK:
@@ -909,7 +909,6 @@ class AldrinFrame(gtk.Window):
 		"""
 		Clears the current document.
 		"""
-		self.filename = ""
 		common.get_plugin_infos().reset()
 		player = com.get('aldrin.core.player')
 		player.clear()
@@ -918,8 +917,6 @@ class AldrinFrame(gtk.Window):
 		player.get_plugin(0).set_parameter_value(1, 0, 1, config.get_config().get_default_int('BPM', 126), 1)
 		player.get_plugin(0).set_parameter_value(1, 0, 2, config.get_config().get_default_int('TPB', 4), 1)
 		player.history_flush_last()
-		self.document_changed()
-		self.update_title()
 		
 	def play(self, *args):
 		"""
@@ -930,7 +927,7 @@ class AldrinFrame(gtk.Window):
 		"""
 		player = com.get('aldrin.core.player')
 		player.play()
-
+		
 	def play_from_cursor(self, *args):
 		"""
 		Event handler triggered by the F6 key.
@@ -974,8 +971,8 @@ class AldrinFrame(gtk.Window):
 		player = com.get('aldrin.core.player')
 		if not player.document_changed():
 			return
-		if self.filename:
-			text = "<big><b>Save changes to <i>%s</i>?</b></big>" % os.path.basename(self.filename)
+		if player.document_path:
+			text = "<big><b>Save changes to <i>%s</i>?</b></big>" % os.path.basename(player.document_path)
 		else:
 			text = "<big><b>Save changes?</b></big>"
 		response = question(self, text)

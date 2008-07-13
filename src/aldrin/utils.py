@@ -78,7 +78,7 @@ def etcpath(path):
 	@return: Absolute path to file.
 	@rtype: str
 	"""
-	from main import path_cfg
+	from pathconfig import path_cfg
 	return path_cfg.get_path('etc', path)
 
 def iconpath(path):
@@ -91,7 +91,7 @@ def iconpath(path):
 	@return: Absolute path to file.
 	@rtype: str
 	"""
-	from main import path_cfg
+	from pathconfig import path_cfg
 	return path_cfg.get_path('icons_aldrin', path)
 	
 def hicoloriconpath(path):
@@ -104,7 +104,7 @@ def hicoloriconpath(path):
 	@return: Absolute path to file.
 	@rtype: str
 	"""
-	from main import path_cfg
+	from pathconfig import path_cfg
 	return path_cfg.get_path('icons_hicolor', path)
 
 
@@ -118,8 +118,7 @@ def imagepath(path):
 	@return: Absolute path to file.
 	@rtype: str
 	"""
-	from main import path_cfg
-	print "imagepath", path, "=",path_cfg.get_path('pixmaps', path)
+	from pathconfig import path_cfg
 	return path_cfg.get_path('pixmaps', path)
 
 def sharedpath(path):
@@ -132,7 +131,7 @@ def sharedpath(path):
 	@return: Absolute path to file.
 	@rtype: str
 	"""
-	from main import path_cfg
+	from pathconfig import path_cfg
 	return path_cfg.get_path('share', path)
 
 def filepath(path):

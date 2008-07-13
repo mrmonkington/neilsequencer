@@ -18,6 +18,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+from pathconfig import path_cfg
 import os,sys,glob
 from ConfigParser import ConfigParser
 
@@ -58,11 +59,15 @@ class ComponentManager:
 		self.categories = {}
 		self.packages = []
 		
-	def load_packages(self, paths):		
+	def load_packages(self):		
 		self.packages = []
 		packages = []
 		names = []
-		for path in paths:
+		component_path = [
+			path_cfg.get_path('components') or os.path.join(path_cfg.get_path('share'), 'components'),
+			os.path.expanduser('~/.aldrin/components'),
+		]
+		for path in component_path:
 			print "scanning " + path + " for components"
 			if os.path.isdir(path):
 				if not path in sys.path:
@@ -160,8 +165,8 @@ def get_categories():
 def get_factories():
 	return com.factories
 
-def init(paths):
-	com.load_packages(paths)
+def init():
+	com.load_packages()
 
 __all__ = [
 	'com',

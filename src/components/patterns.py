@@ -23,6 +23,7 @@ Contains all classes and functions needed to render the pattern
 editor and its associated dialogs.
 """
 
+import aldrin.com as com
 import os
 import gtk
 import gobject
@@ -38,7 +39,6 @@ MARGIN = common.MARGIN
 MARGIN2 = common.MARGIN2
 MARGIN3 = common.MARGIN3
 MARGIN0 = common.MARGIN0
-import aldrin.com as com
 
 from aldrin.utils import NOTES, roundint
 PATLEFTMARGIN = 48
@@ -2662,19 +2662,4 @@ __aldrin__ = dict(
 		PatternView,
 	],
 )
-
-
-if __name__ == '__main__':
-	import contextlog, aldrincom
-	contextlog.init()
-	aldrincom.init()
-	com.get_from_category('driver')
-	view = com.get('aldrin.core.patternpanel')
-	dlg = com.get('aldrin.test.dialog', view)
-	# running standalone
-	browser = com.get('aldrin.pythonconsole.dialog', False)
-	browser.show_all()
-	player = com.get('aldrin.core.player')
-	player.load_ccm('demosongs/beatz.ccm')
-	gtk.main()
 
