@@ -26,7 +26,9 @@ import pathconfig
 import gobject
 gobject.threads_init()
 
-from gtkimport import gtk
+import pygtk
+pygtk.require('2.0')
+import gtk
 
 import sys, os
 

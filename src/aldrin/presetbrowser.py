@@ -22,7 +22,7 @@
 Contains all classes and functions needed to render the preset browser.
 """
 
-from gtkimport import gtk
+import gtk
 import gobject
 import cairo
 import pangocairo

@@ -1,5 +1,5 @@
 
-from gtkimport import gtk
+import gtk
 import gobject
 from traceback import format_exception, print_exc as traceback_print_exc
 import sys

@@ -23,7 +23,7 @@ Contains dialogs related to controller enumeration and pick up.
 """
 
 import sys, os
-from gtkimport import gtk
+import gtk
 import zzub
 import webbrowser
 

@@ -22,7 +22,7 @@
 Contains all classes and functions needed to render the freesound panel.
 """
 
-from gtkimport import gtk
+import gtk
 import gobject
 import os, sys, stat
 from utils import prepstr, db2linear, linear2db, note2str, format_filesize, \
