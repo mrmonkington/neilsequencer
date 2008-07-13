@@ -33,6 +33,7 @@ import aldrin.com as com
 import aldrin.utils as utils
 
 import aldrin.contextlog as contextlog
+from aldrin.utils import Menu
 
 import pango
 
@@ -124,7 +125,28 @@ class PackageBrowserDialog(gtk.Dialog):
 		self.vbox.add(hsizer)
 		self.ifacelist.get_selection().connect('changed', self.on_ifacelist_sel_changed)
 		self.ifacelist.connect('row-activated', self.on_ifacelist_row_activated)
+		self.ifacelist.connect('button-press-event', self.on_ifacelist_button_press_event)
 		self.on_ifacelist_sel_changed(self.ifacelist.get_selection())
+		
+	def on_ifacelist_button_press_event(self, widget, event):
+		res = widget.get_path_at_pos(event.x, event.y)
+		if not res:
+			return
+		path,col,x,y = res
+		model = widget.get_model()
+		it = model.get_iter(path)
+		obj = model.get_value(it, 1)
+		if not obj:
+			return
+		if issubclass(obj, gtk.Widget) and event.button == 3:
+			menu = Menu()
+			classname = obj.__aldrin__['id']
+			menu.add_item("Test '" + classname + "'", self.test_view, classname)
+			menu.popup(self, event)
+			
+	def test_view(self, menuitem, classname):
+		view = com.get(classname)
+		dlg = com.get('aldrin.test.dialog', embed=view, destroy_on_close=False)
 		
 	def cleanup_docstr(self, docstr):
 		"""
@@ -308,11 +330,7 @@ __aldrin__ = dict(
 )
 
 if __name__ == '__main__': # extension mode
-	import contextlog
-	contextlog.init()
-	com.load_packages()
-	# running standalone
-	browser = com.get('aldrin.componentbrowser.dialog', False)
+	browser = PackageBrowserDialog(False)
 	browser.connect('destroy', lambda widget: gtk.main_quit())
 	browser.show_all()
 	gtk.main()

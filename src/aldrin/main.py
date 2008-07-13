@@ -37,53 +37,40 @@ import aldrin.errordlg as errordlg
 
 import aldrin.com as com
 
-app = None
+def shutdown():
+	gtk.main_quit()
 
-class AldrinApplication:
+def init_aldrin():
 	"""
-	Application class. This one will be instantiated as a singleton.
+	Loads the categories neccessary to visualize aldrin.
 	"""
-	def main(self):
-		"""
-		Called when the main loop initializes.
-		"""
-		eventbus = com.get('aldrin.core.eventbus')
-		eventbus.shutdown += self.shutdown
-		
-		# instantiate the drivers
-		com.get_from_category('driver')
-		
-		com.get_from_category('rootwindow')
-		
-		for key in sorted(sys.modules.keys()):
-			print key,"=",sys.modules[key]
-		gtk.main()
-		return 1
-	
-	def shutdown(self):
-		gtk.main_quit()
+	com.get_from_category('driver')	
+	com.get_from_category('rootwindow')
 
-def run(argv):
+def run(argv, initfunc = init_aldrin):
 	"""
 	Starts the application and runs the mainloop.
 	
 	@param argv: command line arguments as passed by sys.argv.
 	@type argv: str list
+	@param initfunc: a function to call before gtk.main() is called.
+	@type initfunc: callable()
 	"""
-	global app
 	contextlog.init()
 	errordlg.install()
 	com.init()
 	options = com.get('aldrin.core.options')
 	options.parse_args(argv)
+	eventbus = com.get('aldrin.core.eventbus')
+	eventbus.shutdown += shutdown
+	options = com.get('aldrin.core.options')
 	app_options, app_args = options.get_options_args()
-	global app
-	app = AldrinApplication()
+	initfunc()
 	if app_options.profile:
 		import cProfile
-		cProfile.runctx('app.main()', globals(), locals(), app_options.profile)
+		cProfile.runctx('gtk.main()', globals(), locals(), app_options.profile)
 	else:
-		app.main()
+		gtk.main()
 
 __all__ = [
 'CancelException',

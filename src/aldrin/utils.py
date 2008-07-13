@@ -1004,7 +1004,7 @@ class Menu(gtk.Menu):
 		
 	def add_image_item(self, label, icon_or_path, func, *args):
 		item = gtk.ImageMenuItem(stock_id=label)
-		if isinstance(icon_or_path, str):
+		if isinstance(icon_or_path, basestring):
 			image = gtk.Image()
 			image.set_from_pixbuf(gtk.gdk.pixbuf_new_from_file(icon_or_path))
 		elif isinstance(icon_or_path, gtk.Image):

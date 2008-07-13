@@ -24,4 +24,5 @@ if win32:
 	install('${BIN_PATH}', 'aldrin.bat')
 else:
 	install('${BIN_PATH}', 'aldrin', 0755)
+	install('${BIN_PATH}', 'aldrin-combrowser', 0755)
 

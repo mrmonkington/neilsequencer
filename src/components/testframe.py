@@ -33,10 +33,11 @@ class TestDialog(gtk.Dialog):
 		]
 	)
 	
-	def __init__(self, embed=None):
+	def __init__(self, embed=None, destroy_on_close=True):
 		gtk.Dialog.__init__(self)
 		self.set_title("Test Dialog")
-		self.connect('destroy', self.on_destroy)
+		if destroy_on_close:
+			self.connect('destroy', self.on_destroy)
 		if embed:
 			self.vbox.add(embed)
 		self.show_all()

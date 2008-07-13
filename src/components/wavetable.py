@@ -202,7 +202,6 @@ class WavetablePanel(gtk.Notebook):
 		self.instrpanel.add1(samplesel)
 		self.instrpanel.add2(sampleprops)
 		self.instrpanel.set_position(250)
-		self.update_all()
 		
 		self.filetreeview = None
 		try:
@@ -248,6 +247,7 @@ class WavetablePanel(gtk.Notebook):
 				self.libpanel.set_current_folder(currentpath)
 			except:
 				print "couldn't set current sample browser path: '%s'." % currentpath
+		self.update_all()
 				
 	def handle_focus(self):
 		self.view.grab_focus()

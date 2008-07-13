@@ -29,8 +29,10 @@ import aldrin.common as common
 from aldrin.com import com
 import zzub
 
-from aldrin.utils import is_generator, is_root, is_controller, is_effect, prepstr, Menu
-from aldrin.utils import PLUGIN_FLAGS_MASK, ROOT_PLUGIN_FLAGS, GENERATOR_PLUGIN_FLAGS, EFFECT_PLUGIN_FLAGS, CONTROLLER_PLUGIN_FLAGS
+from aldrin.utils import is_generator, is_root, is_controller, is_effect, \
+	prepstr, Menu, new_theme_image
+from aldrin.utils import PLUGIN_FLAGS_MASK, ROOT_PLUGIN_FLAGS, \
+	GENERATOR_PLUGIN_FLAGS, EFFECT_PLUGIN_FLAGS, CONTROLLER_PLUGIN_FLAGS
 
 class ContextMenu(Menu):
 	__aldrin__ = dict(
@@ -231,15 +233,6 @@ class PluginContextMenu(gtk.Menu):
 		@rtype: wx.Menu
 		"""
 		cfg = com.get('aldrin.core.config')
-		def make_submenu_item(submenu, name):
-			item = gtk.MenuItem(label=name)
-			item.set_submenu(submenu)
-			return item
-		def make_menu_item(label, desc, func, *args):
-			item = gtk.ImageMenuItem(stock_id=label)
-			if func:
-				item.connect('activate', func, *args)
-			return item
 		def fill_menu(menu,node):
 			add_separator = False
 			for child in node.children:
@@ -247,10 +240,10 @@ class PluginContextMenu(gtk.Menu):
 					if add_separator:
 						add_separator = False
 						if menu.get_children():
-							menu.append(gtk.SeparatorMenuItem())
-					submenu = gtk.Menu()
+							menu.add_separator()
+					submenu = Menu()
 					fill_menu(submenu, child)
-					menu.append(make_submenu_item(submenu, prepstr(child.name)))
+					menu.add_submenu(prepstr(child.name), submenu)
 				elif child.is_reference():
 					if child.pluginloader:
 						if not include_generators and is_generator(child.pluginloader):
@@ -262,27 +255,24 @@ class PluginContextMenu(gtk.Menu):
 					if add_separator:
 						add_separator = False
 						if menu.get_children():
-							menu.append(gtk.SeparatorMenuItem())
-					item = make_menu_item(prepstr(child.name), "", self.on_popup_new_plugin, child.pluginloader, kargs)
+							menu.add_separator()
 					if child.icon:
-						iconpath = cfg.get_plugin_icon_path(child.icon)
-						if iconpath:
-							image = gtk.Image()
-							image.set_from_pixbuf(gtk.gdk.pixbuf_new_from_file(iconpath))
-							item.set_image(image)
+						image = new_theme_image(child.icon, gtk.ICON_SIZE_MENU)
+						item = menu.add_image_item(prepstr(child.name), image, self.on_popup_new_plugin, child.pluginloader, kargs)
+					else:
+						item = menu.add_item(prepstr(child.name), self.on_popup_new_plugin, child.pluginloader, kargs)
 					if not child.pluginloader:
 						item.set_sensitive(False)
-					menu.append(item)
 				elif child.is_separator():
 					add_separator = True
 		if 'menu' in kargs:
 			plugin_menu = kargs['menu']
 		else:
-			plugin_menu = gtk.Menu()
+			plugin_menu = Menu()
 		plugin_tree = com.get('aldrin.core.plugintree')
 		fill_menu(plugin_menu, plugin_tree)
-		plugin_menu.append(gtk.SeparatorMenuItem())
-		plugin_menu.append(make_menu_item("Unmute All", "", self.on_popup_unmute_all))
+		plugin_menu.add_separator()
+		plugin_menu.add_item("Unmute All", self.on_popup_unmute_all)
 		return plugin_menu
 		
 	def on_popup_unmute_all(self, widget):
