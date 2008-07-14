@@ -64,21 +64,25 @@ class ComponentPanel(gtk.VBox):
 		"""
 		gtk.VBox.__init__(self)
 		self.set_border_width(MARGIN)
+		
 		frame1 = gtk.Frame("Components")
 		fssizer = gtk.VBox(False, MARGIN)
 		fssizer.set_border_width(MARGIN)
 		frame1.add(fssizer)
 		self.compolist, store, columns = new_listview([
 			('Use', bool),
-			('Name', str, dict(markup=True,wrap=True)),
+			('Icon', str, dict(icon=True)),
+			('Name', str, dict(markup=True)),
 			(None, gobject.TYPE_PYOBJECT),
 		])
+		self.compolist.set_headers_visible(False)
 		def cmp_package(a,b):
 			return cmp(a.name.lower(), b.name.lower())
 		packages = sorted(com.get_packages(), cmp_package)
 		for package in packages:
-			text = '<b><big>' + package.name + '</big></b>\n' + package.description
-			store.append([True, text, package])
+			text = '<b>' + package.name + '</b>' + '\n'
+			text += package.description
+			store.append([True, package.icon, text, package])
 		fssizer.pack_start(add_scrollbars(self.compolist))
 		self.add(frame1)
 		

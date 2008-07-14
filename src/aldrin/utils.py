@@ -655,14 +655,19 @@ def new_liststore(view, columns):
 		if coltype == str:
 			if isinstance(column, gtk.TreeViewColumn):
 				column.set_resizable(True)
-			cellrenderer = gtk.CellRendererText()
-			column.pack_start(cellrenderer)
-			if options.get('markup',False):
-				column.add_attribute(cellrenderer, 'markup', i)
+			if options.get('icon',False):
+				cellrenderer = gtk.CellRendererPixbuf()
+				column.pack_start(cellrenderer)
+				column.add_attribute(cellrenderer, 'icon-name', i)
 			else:
-				column.add_attribute(cellrenderer, 'text', i)
-			if options.get('wrap',False):
-				cellrenderer.set_property('wrap-width', 250)
+				cellrenderer = gtk.CellRendererText()
+				column.pack_start(cellrenderer)
+				if options.get('markup',False):
+					column.add_attribute(cellrenderer, 'markup', i)
+				else:
+					column.add_attribute(cellrenderer, 'text', i)
+				if options.get('wrap',False):
+					cellrenderer.set_property('wrap-width', 250)
 		elif coltype == bool:
 			th = ToggledHandler()
 			th.column = i
