@@ -20,13 +20,19 @@ if os.path.isfile(os.path.join(CWD, 'this_is_a_repository')):
 def init_combrowser():
 	import aldrin.com as com
 	import gtk
-	# startup python console, too
+	# startup python console
 	browser = com.get('aldrin.pythonconsole.dialog', False)
 	browser.connect('destroy', lambda widget: gtk.main_quit())
 	browser.show_all()
-	browser = com.get('aldrin.componentbrowser.dialog', False)
-	browser.connect('destroy', lambda widget: gtk.main_quit())
-	browser.show_all()
+	if len(sys.argv) >= 2:
+		for name in sys.argv[1:]:
+			import aldrin.utils
+			aldrin.utils.test_view(name)
+	else:
+		# startup component browser
+		browser = com.get('aldrin.componentbrowser.dialog', False)
+		browser.connect('destroy', lambda widget: gtk.main_quit())
+		browser.show_all()
 
 import aldrin.main
 aldrin.main.run(sys.argv, init_combrowser)

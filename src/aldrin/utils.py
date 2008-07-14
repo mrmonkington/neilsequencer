@@ -644,6 +644,8 @@ def new_liststore(view, columns):
 			name,coltype = args
 		else:
 			name,coltype,options = args
+		if name == None:
+			continue
 		if isinstance(view, gtk.ComboBox):
 			if i > 0:
 				break
@@ -941,6 +943,15 @@ def camelcase_to_unixstyle(s):
 			o += '_'
 		o += c.lower()
 	return o
+
+def test_view(classname):
+	obj = com.get(classname)
+	if isinstance(obj, gtk.Window):
+		pass
+	elif isinstance(obj, gtk.Dialog):
+		pass
+	elif isinstance(obj, gtk.Widget) and not obj.get_parent():
+		dlg = com.get('aldrin.test.dialog', embed=obj, destroy_on_close=False)
 
 class ObjectHandlerGroup:
 	"""

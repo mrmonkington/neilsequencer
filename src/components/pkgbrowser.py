@@ -33,7 +33,7 @@ import aldrin.com as com
 import aldrin.utils as utils
 
 import aldrin.contextlog as contextlog
-from aldrin.utils import Menu
+from aldrin.utils import Menu, test_view
 
 import pango
 
@@ -145,13 +145,7 @@ class PackageBrowserDialog(gtk.Dialog):
 			menu.popup(self, event)
 			
 	def test_view(self, menuitem, classname):
-		obj = com.get(classname)
-		if isinstance(obj, gtk.Window):
-			pass
-		elif isinstance(obj, gtk.Dialog):
-			pass
-		elif isinstance(obj, gtk.Widget) and not obj.get_parent():
-			dlg = com.get('aldrin.test.dialog', embed=obj, destroy_on_close=False)
+		test_view(classname)
 		
 	def cleanup_docstr(self, docstr):
 		"""

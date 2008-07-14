@@ -22,9 +22,25 @@
 Provides a preference tab to organize components.
 """
 
+if __name__ == '__main__':
+	import os
+	os.system('../../bin/aldrin-combrowser aldrin.core.pref.components')
+	raise SystemExit
+
 import gtk
+import gobject
 import aldrin.com as com
 from aldrin.common import MARGIN, MARGIN2, MARGIN3
+from aldrin.utils import new_listview, add_scrollbars
+
+#OPTIONS = [
+#	'Module',
+#	'Name',
+#	'Description',
+#	'Icon',
+#	'Authors',
+#	'Copyright',
+#	'Website',
 
 class ComponentPanel(gtk.VBox):
 	"""
@@ -48,43 +64,22 @@ class ComponentPanel(gtk.VBox):
 		"""
 		gtk.VBox.__init__(self)
 		self.set_border_width(MARGIN)
-		frame1 = gtk.Frame("General Settings")
+		frame1 = gtk.Frame("Components")
 		fssizer = gtk.VBox(False, MARGIN)
 		fssizer.set_border_width(MARGIN)
 		frame1.add(fssizer)
-#		audioeditor = config.get_config().get_audioeditor_command()
-#		incsave = config.get_config().get_incremental_saving()
-#		leddraw = config.get_config().get_led_draw()
-#		patnoteoff = config.get_config().get_pattern_noteoff()
-#		self.patternfont = gtk.FontButton(config.get_config().get_pattern_font())
-#		self.patternfont.set_use_font(True)
-#		self.patternfont.set_use_size(True)
-#		self.patternfont.set_show_style(True)
-#		self.patternfont.set_show_size(True)
-#		self.audioeditor = gtk.Entry()
-#		self.incsave = gtk.CheckButton()
-#		self.leddraw = gtk.CheckButton()
-#		self.patnoteoff = gtk.CheckButton()
-#		self.rackpanel = gtk.CheckButton()
-#		self.audioeditor.set_text(audioeditor)
-#		self.incsave.set_active(int(incsave))
-#		self.leddraw.set_active(int(leddraw))
-#		self.patnoteoff.set_active(int(patnoteoff))
-#		sg1 = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
-#		sg2 = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
-#		def add_row(c1, c2):
-#			row = gtk.HBox(False, MARGIN)
-#			c1.set_alignment(1, 0.5)
-#			sg1.add_widget(c1)
-#			sg2.add_widget(c2)
-#			row.pack_start(c1, expand=False)
-#			row.pack_end(c2)
-#			fssizer.pack_start(row, expand=False)
-#		add_row(gtk.Label("External Sample Editor"), self.audioeditor)
-#		add_row(gtk.Label("Incremental Saves"), self.incsave)
-#		add_row(gtk.Label("Draw Amp LEDs in Router"), self.leddraw)
-#		add_row(gtk.Label("Auto Note-Off in Pattern Editor"), self.patnoteoff)
-#		add_row(gtk.Label("Pattern Font"), self.patternfont)
+		self.compolist, store, columns = new_listview([
+			('Use', bool),
+			('Name', str, dict(markup=True,wrap=True)),
+			(None, gobject.TYPE_PYOBJECT),
+		])
+		def cmp_package(a,b):
+			return cmp(a.name.lower(), b.name.lower())
+		packages = sorted(com.get_packages(), cmp_package)
+		for package in packages:
+			text = '<b><big>' + package.name + '</big></b>\n' + package.description
+			store.append([True, text, package])
+		fssizer.pack_start(add_scrollbars(self.compolist))
 		self.add(frame1)
 		
 	def apply(self):

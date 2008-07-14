@@ -90,8 +90,8 @@ class ComponentManager:
 				if not hasattr(module_, '__aldrin__'):
 					print "module",modulename,"has no __aldrin__ metadict"
 					continue
-				self.packages.append(modulename)
 				self.register(module_.__aldrin__, modulename)
+				self.packages.append(pkg)
 			except:
 				import errordlg
 				errordlg.print_exc()

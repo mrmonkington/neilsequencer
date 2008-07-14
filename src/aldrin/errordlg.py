@@ -37,7 +37,7 @@ def error(parent, msg, msg2=None, details=None, offer_quit=False):
 		dialog.add_button(gtk.STOCK_QUIT, gtk.RESPONSE_REJECT)
 		def quit_on_cancel(dlg, response_id):
 			if response_id == gtk.RESPONSE_REJECT:
-				raise SystemExit, 1
+				gobject.timeout_add(1, gtk.main_quit)
 		dialog.connect('response', quit_on_cancel)
 	response = dialog.run()
 	dialog.destroy()
