@@ -29,6 +29,8 @@ class OptionParser(optparse.OptionParser):
 	def __init__(self):
 		optparse.OptionParser.__init__(self)
 		self.add_option("--profile", metavar="profile", default='', help="Start Aldrin with profiling enabled, save results to <profile>.")
+		self._options = dict()
+		self._args = []
 		
 	def parse_args(self, *args, **kwargs):
 		self._options, self._args = optparse.OptionParser.parse_args(self, *args, **kwargs)

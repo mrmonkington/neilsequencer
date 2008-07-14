@@ -54,6 +54,9 @@ class Package(ConfigParser):
 # aldrin component object model
 class ComponentManager:
 	def __init__(self):
+		self.clear()
+		
+	def clear(self):
 		self.singletons = {}
 		self.factories = {}
 		self.categories = {}
@@ -182,6 +185,7 @@ exception = com.exception
 singleton = com.singleton
 category = com.category
 get_from_category = com.get_from_category
+clear = com.clear
 
 def get_packages():
 	return com.packages
