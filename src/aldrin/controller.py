@@ -37,8 +37,7 @@ class SelectControllerDialog(gtk.Dialog):
 	"""
 	Dialog that records a controller from keyboard input.
 	"""
-	def __init__(self, parent, rootwindow):
-		self.rootwindow = rootwindow
+	def __init__(self, parent=None):
 		gtk.Dialog.__init__(self,
 			"Add Controller",
 			parent and parent.get_toplevel(),
@@ -84,7 +83,6 @@ class SelectControllerDialog(gtk.Dialog):
 		self.connect('response', self.on_close)
 		self.editname.connect('activate', self.on_editname_activate)
 		self.editname.connect('changed', self.on_editname_text)
-		self.rootwindow.event_handlers.append(self.on_player_callback)
 		self.update()
 		self.show_all()
 		
@@ -152,10 +150,10 @@ class SelectControllerDialog(gtk.Dialog):
 		"""
 		Called when the dialog is closed.
 		"""
-		self.rootwindow.event_handlers.remove(self.on_player_callback)
+		pass
 		
-def learn_controller(parent, rootwindow):
-	dlg = SelectControllerDialog(parent, rootwindow)
+def learn_controller(parent):
+	dlg = SelectControllerDialog(parent)
 	response = dlg.run()
 	dlg.destroy()
 	if response == gtk.RESPONSE_OK:

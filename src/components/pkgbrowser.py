@@ -138,15 +138,20 @@ class PackageBrowserDialog(gtk.Dialog):
 		obj = model.get_value(it, 1)
 		if not obj:
 			return
-		if issubclass(obj, gtk.Widget) and event.button == 3:
+		if event.button == 3:
 			menu = Menu()
 			classname = obj.__aldrin__['id']
 			menu.add_item("Test '" + classname + "'", self.test_view, classname)
 			menu.popup(self, event)
 			
 	def test_view(self, menuitem, classname):
-		view = com.get(classname)
-		dlg = com.get('aldrin.test.dialog', embed=view, destroy_on_close=False)
+		obj = com.get(classname)
+		if isinstance(obj, gtk.Window):
+			pass
+		elif isinstance(obj, gtk.Dialog):
+			pass
+		elif isinstance(obj, gtk.Widget) and not obj.get_parent():
+			dlg = com.get('aldrin.test.dialog', embed=obj, destroy_on_close=False)
 		
 	def cleanup_docstr(self, docstr):
 		"""

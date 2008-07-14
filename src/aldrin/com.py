@@ -111,25 +111,45 @@ class ComponentManager:
 				catlist = self.categories.get(category, [])
 				catlist.append(classid)
 				self.categories[category] = catlist
-					
-	def get(self, id, *args, **kwargs):
-		# try to get a singleton first
-		instance = self.singletons.get(id, False)
-		if instance != False:
-			assert instance, "got empty instance for classid '%s'. recursive loop?" % id
-			return instance
+				
+	def throw(self, id, arg):
+		class_ = self.factory(id)
+		raise class_(arg)
+	
+	def factory(self, id):
 		# get metainfo for object
 		metainfo = self.factories.get(id, None)
 		if not metainfo:
 			print "no factory metainfo found for classid '%s'" % id
 			return None
-		# create a new object
 		class_ = metainfo.get('classobj', None)
 		if not class_:
 			print "no factory found for classid '%s'" % id
 			return None
+		return class_
+		
+	def exception(self, id):
+		return self.factory(id)
+			
+	def singleton(self, id):
+		# try to get a singleton first
+		instance = self.singletons.get(id, False)
+		if instance != False:
+			assert instance, "got empty instance for classid '%s'. recursive loop?" % id
+			return instance
+		return None
+		
+	def get(self, id, *args, **kwargs):
+		instance = self.singleton(id)
+		if instance:
+			return instance
+		# retrieve factory
+		class_ = self.factory(id)
+		if not class_:
+			return None
 		if class_.__aldrin__.get('singleton',False):
 			self.singletons[id] = None # fill with an empty slot so we get no recursive loop
+		# create a new object
 		obj = None
 		try:
 			obj = class_(*args,**kwargs)
@@ -149,11 +169,18 @@ class ComponentManager:
 	def get_ids_from_category(self, category):
 		return self.categories.get(category,[])
 		
+	def category(self, cat, *args, **kwargs):
+		return self.get_from_category(cat, *args, **kwargs)
+		
 	def get_from_category(self, category, *args, **kwargs):
 		return [self.get(classid, *args, **kwargs) for classid in self.categories.get(category,[])]
 
 com = ComponentManager()
 get = com.get
+factory = com.factory
+exception = com.exception
+singleton = com.singleton
+category = com.category
 get_from_category = com.get_from_category
 
 def get_packages():
@@ -199,10 +226,19 @@ if __name__ == '__main__':
 			]
 		)
 	
+	class CancelException(Exception):
+		__aldrin__ = dict(
+			id = 'aldrin.exception.cancel',
+			exception = True,
+			categories = [
+			]
+		)
+	
 	pkginfo = dict(
 		classes = [
 			MyClass,
 			MyClass2,
+			CancelException,
 		],
 	)
 	com.register(pkginfo)
@@ -212,6 +248,11 @@ if __name__ == '__main__':
 	print com.get('aldrin.hub.myclass.singleton').x
 	print com.get('aldrin.hub.myclass.singleton').x
 	print com.get('aldrin.hub.myclass.singleton').x
-	print com.get_from_category('uselessclass')
-	init()
-	assert com.get('aldrin.core.options')
+	print com.category('uselessclass')
+	try:
+		com.throw('aldrin.exception.cancel', "argh.")
+	except com.exception('aldrin.exception.cancel'), test:
+		print "passed.", test
+	print "bleh."
+
+

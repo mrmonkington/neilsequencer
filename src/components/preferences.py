@@ -43,6 +43,12 @@ class CancelException(Exception):
 	Is being thrown when the user hits cancel in a sequence of
 	modal UI dialogs.
 	"""
+	__aldrin__ = dict(
+		id = 'aldrin.exception.cancel',
+		exception = True,
+		categories = [
+		]
+	)
 
 class GeneralPanel(gtk.VBox):
 	"""
@@ -119,7 +125,7 @@ class GeneralPanel(gtk.VBox):
 		config.get_config().set_led_draw(self.leddraw.get_active())
 		config.get_config().set_pattern_noteoff(self.patnoteoff.get_active())
 		#config.get_config().set_experimental('RackPanel', self.rackpanel.get_active())
-	
+
 class DriverPanel(gtk.VBox):
 	"""
 	Panel which allows to see and change audio driver settings.
@@ -187,17 +193,17 @@ class DriverPanel(gtk.VBox):
 		sr = self.cbsamplerate.get_active()
 		if sr == -1:
 			error(self, "You did not pick a valid sample rate.")
-			raise CancelException
+			raise com.exception('aldrin.exception.cancel')
 		sr = samplerates[sr]
 		bs = self.cblatency.get_active()
 		if bs == -1:
 			error(self, "You did not pick a valid latency.")
-			raise CancelException
+			raise com.exception('aldrin.exception.cancel')
 		bs = buffersizes[bs]
 		o = self.cboutput.get_active()
 		if o == -1:
 			error(self, "You did not select a valid output device.")
-			raise CancelException
+			raise com.exception('aldrin.exception.cancel')
 		iname = ""
 		audiodriver = com.get('aldrin.core.driver.audio')
 		oname = audiodriver.get_name(o)
@@ -210,7 +216,7 @@ class DriverPanel(gtk.VBox):
 				import traceback
 				traceback.print_exc()
 				error(self, "<b><big>There was an error initializing the audio driver.</big></b>\n\nChange settings and try again.")
-				raise CancelException
+				raise com.exception('aldrin.exception.cancel')
 
 class WavetablePanel(gtk.HBox):
 	"""
@@ -307,7 +313,7 @@ class WavetablePanel(gtk.HBox):
 				import traceback
 				traceback.print_exc()
 				error(self, "<b><big>There was an error logging into freesound.</big></b>\n\nPlease make sure username and password are correct.")
-				raise CancelException
+				raise com.exception('aldrin.exception.cancel')
 
 class ControllerPanel(gtk.VBox):
 	"""
@@ -326,7 +332,6 @@ class ControllerPanel(gtk.VBox):
 	)
 	
 	def __init__(self):
-		self.rootwindow = com.get('aldrin.core.window.root')
 		self.sort_column = 0
 		gtk.VBox.__init__(self)
 		self.set_border_width(MARGIN)
@@ -366,7 +371,7 @@ class ControllerPanel(gtk.VBox):
 		"""
 		Handles 'Add' button click. Opens a popup that records controller events.
 		"""
-		res = learn_controller(self, self.rootwindow)
+		res = learn_controller(self)
 		if res:
 			name, channel, ctrlid = res
 			self.store.append([name, str(channel), str(ctrlid)])
@@ -514,12 +519,25 @@ class KeyboardPanel(gtk.VBox):
 		"""
 		config.get_config().set_keymap_language(self.KEYMAPS[self.cblanguage.get_active()][0])
 
+def cmp_prefpanel(a,b):
+	a_order = (hasattr(a, '__prefpanel__') and a.__prefpanel__.get('label','')) or ''
+	b_order = (hasattr(b, '__prefpanel__') and b.__prefpanel__.get('label','')) or ''
+	return cmp(a_order, b_order)
+
+
 class PreferencesDialog(gtk.Dialog):
 	"""
 	This Dialog aggregates the different panels and allows
 	the user to switch between them using a tab control.
 	"""
-	def __init__(self, parent, starting_tab_index=0):
+	
+	__aldrin__ = dict(
+		id = 'aldrin.core.prefdialog',
+		categories = [
+		]
+	)
+	
+	def __init__(self, parent=None, visible_panel=None):
 		gtk.Dialog.__init__(self,
 			"Preferences",
 			parent,
@@ -527,14 +545,18 @@ class PreferencesDialog(gtk.Dialog):
 		self.nb = gtk.Notebook()
 		self.nb.set_show_tabs(False)
 		self.nb.set_border_width(MARGIN)
-		self.panels = com.get_from_category('aldrin.prefpanel')
-		for panel in self.panels:
+		self.nb.set_show_border(False)
+		self.panels = sorted(com.get_from_category('aldrin.prefpanel'), cmp_prefpanel)
+		starting_tab_index = 0
+		for i, panel in enumerate(self.panels):
 			if not hasattr(panel, '__prefpanel__'):
 				continue
 			cfg = panel.__prefpanel__
 			label = cfg.get('label',None)
 			if not label:
 				continue
+			if visible_panel == panel.__aldrin__['id']:
+				starting_tab_index = i
 			self.nb.append_page(panel, gtk.Label(label))
 		self.tab_list, self.tab_list_store, columns = new_listview([('Name', str),])
 		self.tab_list.set_headers_visible(False)
@@ -559,8 +581,6 @@ class PreferencesDialog(gtk.Dialog):
 		print starting_tab_index
 		# select starting tab and adjust the list index
 		self.nb.set_current_page(starting_tab_index)
-		#self.tab_list.set_cursor(self.tab_list_store.get_path(self.tab_list_store[1]))
-		#self.tab_list.grab_focus()
 		
 	def on_response(self, widget, response):
 		if response == gtk.RESPONSE_OK:
@@ -586,7 +606,7 @@ class PreferencesDialog(gtk.Dialog):
 		"""
 		try:
 			self.apply()
-		except CancelException:
+		except com.exception('aldrin.exception.cancel'):
 			pass
 
 	def on_ok(self):
@@ -597,7 +617,7 @@ class PreferencesDialog(gtk.Dialog):
 		try:
 			self.apply()		
 			self.destroy()
-		except CancelException:
+		except com.exception('aldrin.exception.cancel'):
 			pass
 
 def show_preferences(parent, *args):
@@ -613,12 +633,14 @@ def show_preferences(parent, *args):
 
 __aldrin__ = dict(
 	classes = [
+		CancelException,
 		GeneralPanel,
 		DriverPanel,
 		WavetablePanel,
 		ControllerPanel,
 		MidiPanel,
 		KeyboardPanel,
+		PreferencesDialog,
 	],
 )
 
