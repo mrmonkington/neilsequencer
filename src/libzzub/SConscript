@@ -53,6 +53,7 @@ files = [
 	'song.cpp',
 	'synchronization.cpp',
 	'undo.cpp',
+	'pugixml.cpp',
 ]
 
 # on linux, we use the system boost libraries

@@ -450,7 +450,7 @@ xml_node CcmWriter::saveClass(xml_node &parent, const zzub::info &info) {
 		
         for (size_t i=0; i < info.global_parameters.size(); i++) {
             const zzub::parameter* p = info.global_parameters[i];
-			saveParameter(global, *p).append_attribute("index") = (long)i;
+			saveParameter(global, *p).append_attribute("index") = (int)i;
         }
     }
 
@@ -460,7 +460,7 @@ xml_node CcmWriter::saveClass(xml_node &parent, const zzub::info &info) {
   
         for (size_t i=0; i<info.track_parameters.size(); i++) {
             const zzub::parameter* p = info.track_parameters[i];
-			saveParameter(track, *p).append_attribute("index") = (long)i;
+			saveParameter(track, *p).append_attribute("index") = (int)i;
         }
     }
 
@@ -487,10 +487,10 @@ xml_node CcmWriter::saveEventBinding(xml_node &parent, zzub::event_connection_bi
 	xml_node item = parent.append_child(node_element);
 	item.set_name("binding");
 	
-	item.append_attribute("source_param_index") = (long)binding.source_param_index;
-	item.append_attribute("target_group_index") = (long)binding.target_group_index;
-	item.append_attribute("target_track_index") = (long)binding.target_track_index;
-	item.append_attribute("target_param_index") = (long)binding.target_param_index;
+	item.append_attribute("source_param_index") = binding.source_param_index;
+	item.append_attribute("target_group_index") = binding.target_group_index;
+	item.append_attribute("target_track_index") = binding.target_track_index;
+	item.append_attribute("target_param_index") = binding.target_param_index;
 	
 	return item;
 }
@@ -557,7 +557,7 @@ xml_node CcmWriter::saveInit(xml_node &parent, zzub::song &player, int plugin) {
 		for (int t = 0; t != m.tracks; ++t) {
 			xml_node track = tracks.append_child(node_element);
 			track.set_name("track");
-			track.append_attribute("index") = (long)t;
+			track.append_attribute("index") = t;
 			
 			for (size_t i = 0; i != m.info->track_parameters.size(); ++i) {
 				xml_node n = track.append_child(node_element);
@@ -587,7 +587,7 @@ xml_node CcmWriter::saveAttributes(xml_node &parent, zzub::song &player, int plu
 		xml_node n = item.append_child(node_element);
 		n.set_name("n");
 		n.append_attribute("name") = attr.name;
-		n.append_attribute("v") = (long)m.plugin->attributes[i];
+		n.append_attribute("v") = m.plugin->attributes[i];
 	}
 
 	return item;
@@ -597,7 +597,7 @@ xml_node CcmWriter::savePatternTrack(xml_node &parent, const std::string &colnam
 	xml_node item = parent.append_child(node_element);
 	item.set_name(colname.c_str());
 	if (group == 2)
-		item.append_attribute("index") = (long)track;
+		item.append_attribute("index") = track;
 	
 	//zzub::patterntrack& t = *p.getPatternTrack(group, track);
     for (size_t i = 0; i < p.rows; ++i) {
@@ -622,7 +622,7 @@ xml_node CcmWriter::savePatternTrack(xml_node &parent, const std::string &colnam
 					}
 				} else {
 					e.append_attribute("ref") = id_from_ptr(param).c_str();
-					e.append_attribute("v") = (long)value;
+					e.append_attribute("v") = value;
 				}
 			}
         }
@@ -744,20 +744,20 @@ xml_node CcmWriter::saveMidiMappings(xml_node &parent, zzub::song &player, int p
 				} else {
 					assert(0);
 				}
-				bind.append_attribute("track") = long(mm.track);
+				bind.append_attribute("track") = mm.track;
 			} else if (mm.group == 1) {
 				bind.append_attribute("ref") = id_from_ptr(param).c_str();
 				bind.append_attribute("target") = "global";
 			} else if (mm.group == 2) {
-				bind.append_attribute("track") = long(mm.track);
+				bind.append_attribute("track") = mm.track;
 				bind.append_attribute("ref") = id_from_ptr(param).c_str();
 				bind.append_attribute("target") = "track";
 			} else {
 				assert(0);
 			}
 			
-			bind.append_attribute("channel") = long(mm.channel);
-			bind.append_attribute("controller") = long(mm.controller);
+			bind.append_attribute("channel") = mm.channel;
+			bind.append_attribute("controller") = mm.controller;
 		}
 	}
 	return item;
@@ -766,7 +766,7 @@ xml_node CcmWriter::saveMidiMappings(xml_node &parent, zzub::song &player, int p
 xml_node CcmWriter::savePlugin(xml_node &parent, zzub::song &player, int plugin) {
 	xml_node item = parent.append_child(node_element);
 	item.set_name("plugin");
-	item.append_attribute("id") = (long)plugin;//id_from_ptr(plugin);
+	item.append_attribute("id") = plugin;//id_from_ptr(plugin);
 	item.append_attribute("name") = player.plugins[plugin]->name.c_str();
 	item.append_attribute("ref") = player.plugins[plugin]->info->uri.c_str();
 	
@@ -785,7 +785,7 @@ xml_node CcmWriter::savePlugin(xml_node &parent, zzub::song &player, int plugin)
 			item.set_name("input");
 
 			item.append_attribute("id") = id_from_ptr(player.plugin_get_input_connection(plugin, i)).c_str();
-			item.append_attribute("ref") = (long)player.plugin_get_input_connection_plugin(plugin, i);
+			item.append_attribute("ref") = player.plugin_get_input_connection_plugin(plugin, i);
 			item.append_attribute("type") = connectiontype_to_string(player.plugin_get_input_connection_type(plugin, i)).c_str();
 			
 			switch (player.plugin_get_input_connection_type(plugin, i)) {
@@ -873,7 +873,7 @@ xml_node CcmWriter::saveEnvelopes(xml_node &parent, zzub::wave_info_ex &info) {
 	for (size_t i=0; i != info.envelopes.size(); ++i) {
 		if (!info.envelopes[i].disabled) {
 			xml_node envnode = saveEnvelope(item, info.envelopes[i]);
-			envnode.append_attribute("index") = (long)i;
+			envnode.append_attribute("index") = (int)i;
 		}
 	}
 	
@@ -907,14 +907,14 @@ xml_node CcmWriter::saveWave(xml_node &parent, zzub::wave_info_ex &info) {
 			xml_node levelnode = waves.append_child(node_element);
 			levelnode.set_name("wave");
 			levelnode.append_attribute("id") = id_from_ptr(&level).c_str();
-			levelnode.append_attribute("index") = (long)j;
+			levelnode.append_attribute("index") = j;
 			levelnode.append_attribute("filename") = info.fileName.c_str();
 			
 			// store root notes as midinote values
-			levelnode.append_attribute("rootnote") = (long)buzz_to_midi_note(level.root_note);
+			levelnode.append_attribute("rootnote") = buzz_to_midi_note(level.root_note);
 			
-			levelnode.append_attribute("loopstart") = (long)level.loop_start;
-			levelnode.append_attribute("loopend") = (long)level.loop_end;
+			levelnode.append_attribute("loopstart") = level.loop_start;
+			levelnode.append_attribute("loopend") = level.loop_end;
 			
 			// most flags are related to levels, not to the instrument
 			// this is clearly wrong and has to be fixed once we support
@@ -934,13 +934,13 @@ xml_node CcmWriter::saveWave(xml_node &parent, zzub::wave_info_ex &info) {
 			for (size_t k = 0; k < level.slices.size(); k++) {
 				xml_node slice = slices.append_child(node_element);
 				slice.set_name("slice");
-				slice.append_attribute("value") = (long)level.slices[k];
+				slice.append_attribute("value") = level.slices[k];
 			}
 			
 			// flac can't store anything else than default samplerates,
 			// and most possibly the same goes for ogg vorbis as well
 			// so save the samplerate here instead.
-			levelnode.append_attribute("samplerate") = (long)info.get_samples_per_sec(j);
+			levelnode.append_attribute("samplerate") = (int)info.get_samples_per_sec(j);
 			
 			// flac is going to be the standard format. maybe we're
 			// going to implement ogg vorbis once the need arises.
@@ -969,7 +969,7 @@ xml_node CcmWriter::saveWaves(xml_node &parent, zzub::song &player) {
 
         if (info.get_levels()) {
 			xml_node instr = saveWave(item, info);
-			instr.append_attribute("index") = (long)i;
+			instr.append_attribute("index") = (int)i;
 		}
     }
 	
@@ -1441,10 +1441,10 @@ bool CcmReader::loadPlugins(xml_node plugins, zzub::player &player) {
 				if (!tracks.empty()) {
 					vector<xml_node> tracknodes;
 					tracks.all_elements_by_name("track", std::back_inserter(tracknodes));
-					long trackcount = tracknodes.size();
+					int trackcount = (int)tracknodes.size();
 					for (unsigned int a = 0; a != tracknodes.size(); ++a) {
 						// if we find any track with a higher index, extend the size
-						trackcount = std::max(trackcount, (long)tracknodes[a].attribute("index").as_int());
+						trackcount = std::max(trackcount, tracknodes[a].attribute("index").as_int());
 					}
 
 					player.plugin_set_track_count(plugin_id, trackcount);
@@ -1510,7 +1510,7 @@ bool CcmReader::loadPlugins(xml_node plugins, zzub::player &player) {
 						} else if (conntype == "midi") {
 							assert(false);
 							player.plugin_add_input(c->target, iplug->second, connection_type_midi);
-							player.plugin_set_midi_connection_device(c->target, iplug->second, (const std::string&)i->attribute("device"));
+							player.plugin_set_midi_connection_device(c->target, iplug->second, i->attribute("device").value());
 						} else {
 							assert(0);
 						}
@@ -1611,7 +1611,7 @@ bool CcmReader::loadPlugins(xml_node plugins, zzub::player &player) {
 					p.name = i->attribute("name").value();
 					player.plugin_add_pattern(plugin, p);
 					int pattern_index = player.back.plugins[plugin]->patterns.size() - 1;
-					i->append_attribute("index") = (long)pattern_index;  // set an index attribute
+					i->append_attribute("index") = pattern_index;  // set an index attribute
 					for (xml_node::iterator j = i->begin(); j != i->end(); ++j) {
 						int group = 1;
 						int track = 0;
