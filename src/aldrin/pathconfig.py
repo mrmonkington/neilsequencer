@@ -25,6 +25,11 @@ Organizes finding Aldrins resources across the system.
 from ConfigParser import ConfigParser
 import sys, os
 
+if 'ALDRIN_PATHCONFIG' in os.environ:
+	PATHCONFIG = os.environ['ALDRIN_PATHCONFIG']
+else:
+	PATHCONFIG = 'etc/debugpath.cfg'
+
 if 'ALDRIN_BASE_PATH' in os.environ:
 	BASE_PATH = os.environ['ALDRIN_BASE_PATH']
 else:
@@ -32,7 +37,7 @@ else:
 
 class PathConfig(ConfigParser):
 	CFG_PATHS = [
-		'etc/debugpath.cfg', # assume we are in the repository
+		PATHCONFIG, # assume we are in the repository
 		'~/.aldrin/path.cfg', # is it in home dir config folder?
 		'/etc/aldrin/path.cfg', # take the absolute path
 	]
