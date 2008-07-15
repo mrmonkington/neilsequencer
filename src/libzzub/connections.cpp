@@ -79,7 +79,6 @@ bool audio_connection::work(zzub::song& player, const zzub::connection_descripto
 	float *plout[] = { &plugin_to.work_buffer[0].front(), &plugin_to.work_buffer[1].front() };
 	float *plin[] = { 0, 0 };
 	if (plugin_from.last_work_frame != plugin_to.last_work_frame + plugin_to.last_work_buffersize) {
-		cerr << "connection mixes with feedback buffers" << endl;
 		plin[0] = &plugin_from.callbacks->feedback_buffer[0].front();
 		plin[1] = &plugin_from.callbacks->feedback_buffer[1].front();
 	} else {

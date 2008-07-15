@@ -789,14 +789,17 @@ void player::reset_keyjazz() {
 	// send note off for all currently playing notes
 	vector<op_plugin_play_note*> ops;
 	for (vector<keyjazz_note>::iterator i = front.keyjazz.begin(); i != front.keyjazz.end(); ++i) {
+		if (i->delay_off) continue;
+
 		op_plugin_play_note* o = new op_plugin_play_note(i->plugin_id, note_value_off, i->note, 0);
 		backbuffer_operations.push_back(o);
 		o->prepare(back);
 		ops.push_back(o);
 	}
 
+	if (ops.size() == 0) return ;
+
 	flush_operations(0, 0, 0);
-	assert(front.keyjazz.size() == 0);
 
 	for (vector<op_plugin_play_note*>::iterator i = ops.begin(); i != ops.end(); ++i) {
 		delete *i;

@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "../minizip/unzip.h"
 #include "../minizip/zip.h"
 
-#include "pugxml.h"
+#include "pugixml.hpp"
 
 class ArchiveWriter : public zzub::outstream {
     zipFile f;
@@ -79,7 +79,7 @@ public:
 };
 
 namespace zzub {
-	using namespace pug;
+	using namespace pugi;
 	
 	struct mem_archive;
 
