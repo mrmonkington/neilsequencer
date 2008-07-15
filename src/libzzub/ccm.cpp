@@ -678,6 +678,7 @@ xml_node CcmWriter::savePatterns(xml_node &parent, zzub::song &player, int plugi
 xml_node CcmWriter::saveSequence(xml_node &parent, double fac, zzub::song &player, int track) {
 	xml_node item = parent.append_child(node_element);
 	item.set_name("sequence");
+	item.append_attribute("index") = track;
 	
 	int plugin_id = player.sequencer_tracks[track].plugin_id;
 	for (size_t i = 0; i < player.sequencer_tracks[track].events.size(); ++i) {
@@ -1598,6 +1599,7 @@ bool CcmReader::loadPlugins(xml_node plugins, zzub::player &player) {
 	// might not be neccessarily the first plugin to be initialized
 	double tpbfac = double(player.back.plugin_get_parameter(0, 1, 0, 2));
 
+	vector<int> seq_order;
 
 	for (std::vector<ccache>::iterator c = conns.begin(); c != conns.end(); ++c) {
 		
@@ -1651,6 +1653,8 @@ bool CcmReader::loadPlugins(xml_node plugins, zzub::player &player) {
 					player.sequencer_add_track(c->target);
 
 					int seq_track = player.back.sequencer_tracks.size() - 1;
+					if (!i->attribute("index").empty())
+						seq_order.push_back(i->attribute("index").as_int());
 					
 					for (xml_node::iterator j = i->begin(); j != i->end(); ++j) {
 						if (!strcmp(j->name(), "e")) {
@@ -1672,7 +1676,6 @@ bool CcmReader::loadPlugins(xml_node plugins, zzub::player &player) {
 					}
 				}
 			}
-
 		}
 
 
@@ -1716,6 +1719,19 @@ bool CcmReader::loadPlugins(xml_node plugins, zzub::player &player) {
 			}
 		}
 
+	}
+
+	int index = 0;
+	for (;;) {
+		if (index >= seq_order.size()) break;
+		vector<int>::iterator tt = seq_order.begin() + index;
+		if (*tt > index) {
+			int t = *tt;
+			seq_order.erase(tt);
+			seq_order.insert(seq_order.begin() + t, t);
+			player.sequencer_move_track(index, t);
+		} else
+			index++;
 	}
 
 	player.flush_operations(0, 0, 0);
@@ -1778,8 +1794,7 @@ bool CcmReader::loadInstruments(xml_node &instruments, zzub::player &player) {
 			}
 
 			// NOTE: must set volume after (first) allocate_level (which happens in decodeFLAC)
-			player.wave_set_volume(wave_index, (float)double(i->attribute("volume").as_double()));
-			//info.volume = (float)double(i->attribute("volume"));
+			player.wave_set_volume(wave_index, i->attribute("volume").as_float());
 		
 			vector<envelope_entry> envs;
 			xml_node envelopes = i->child("envelopes");
@@ -1793,7 +1808,7 @@ bool CcmReader::loadInstruments(xml_node &instruments, zzub::player &player) {
 						}
 						envelope_entry &env = envs[index];
 						env.disabled = false;
-						xml_node adsr = i->child("adsr");
+						xml_node adsr = e->child("adsr");
 						if (!adsr.empty()) {
 							env.attack = int(double(adsr.attribute("attack").as_double()) * 65535.0 + 0.5);
 							env.decay = int(double(adsr.attribute("decay").as_double()) * 65535.0 + 0.5);
@@ -1801,7 +1816,7 @@ bool CcmReader::loadInstruments(xml_node &instruments, zzub::player &player) {
 							env.release = int(double(adsr.attribute("release").as_double()) * 65535.0 + 0.5);
 							env.subDivide = int(double(adsr.attribute("precision").as_double()) * 127.0 + 0.5);
 						}
-						xml_node points = i->child("points");
+						xml_node points = e->child("points");
 						if (!points.empty()) {
 							env.points.clear();
 							for (xml_node::iterator pt = points.begin(); pt != points.end(); ++pt) {

@@ -1671,7 +1671,7 @@ int zzub_sequence_get_event_at(zzub_sequence_t* sequence, int pos) {
 	while (event_count > 0 && song_index < event_count) 
 	{
 		zzub_sequence_get_event(sequence, song_index, &timestamp, &value);
-		if (pos >= timestamp) break;
+		if (pos <= timestamp) break;
 		song_index++;
 	}
 
