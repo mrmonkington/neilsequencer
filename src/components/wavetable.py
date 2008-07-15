@@ -425,6 +425,7 @@ class WavetablePanel(gtk.Notebook):
 			w = player.get_wave(i)
 			if w.get_level_count() >= 1:
 				w.get_level(0).set_samples_per_second(v)
+		player.history_commit("change samplerate")
 		self.update_sampleprops()
 		#~ self.update_subsamplelist()
 		
@@ -446,6 +447,7 @@ class WavetablePanel(gtk.Notebook):
 			if w.get_level_count() >= 1:
 				level = w.get_level(0)
 				level.set_loop_start(min(max(v,0),level.get_loop_end()-1))
+		player.history_commit("change loop start")
 		self.update_sampleprops()
 		#~ self.update_subsamplelist()
 
@@ -467,6 +469,7 @@ class WavetablePanel(gtk.Notebook):
 			if w.get_level_count() >= 1:
 				level = w.get_level(0)
 				level.set_loop_end(min(max(v,level.get_loop_start()+1),level.get_sample_count()))
+		player.history_commit("change loop end")
 		self.update_sampleprops()
 		#~ self.update_subsamplelist()
 
@@ -483,6 +486,7 @@ class WavetablePanel(gtk.Notebook):
 			else:
 				flags = flags ^ (flags & zzub.zzub_wave_flag_pingpong)
 			w.set_flags(flags)
+		player.history_commit("pingpong option")
 		self.update_sampleprops()
 
 	def on_check_loop(self, widget):
@@ -498,6 +502,7 @@ class WavetablePanel(gtk.Notebook):
 			else:
 				flags = flags ^ (flags & zzub.zzub_wave_flag_loop)
 			w.set_flags(flags)
+		player.history_commit("loop option")
 		self.update_sampleprops()
 		
 	def on_check_envdisabled(self, widget):
@@ -513,6 +518,7 @@ class WavetablePanel(gtk.Notebook):
 				env.enable(enabled)
 				if enabled:
 					w.set_flags(w.get_flags() | zzub.zzub_wave_flag_envelope)
+		player.history_commit("envelope option")
 		self.update_sampleprops()
 		
 	def on_scroll_changed(self, range, scroll, value):		
@@ -527,6 +533,7 @@ class WavetablePanel(gtk.Notebook):
 		for i in self.get_sample_selection():
 			w = player.get_wave(i)
 			w.set_volume(vol)
+		player.history_commit("change wave volume")
 			
 	def on_mousewheel(self, widget, event):
 		"""
@@ -667,7 +674,7 @@ class WavetablePanel(gtk.Notebook):
 				error(self, "<b><big>Unable to load <i>%s</i>.</big></b>\n\nThe file may be corrupt or the file type is not supported." % source)
 			else:
 				w.set_name(os.path.splitext(os.path.basename(source))[0])
-				player.history_commit("load instrument")
+		player.history_commit("load instrument")
 		self.set_current_page(0)
 		self.samplelist.grab_focus()
 		self.samplelist.set_cursor(selects[0])
@@ -938,13 +945,6 @@ class WavetablePanel(gtk.Notebook):
 			it = self.samplestore.append(["%02X." % (i+1), prepstr(w.get_name()), w])
 			if w in player.active_waves:
 				selection.select_iter(it)
-			# XXX: todo
-			#~ if w.get_level_count() >= 1:
-				#~ self.samplelist.SetItemImage(index, self.IMG_SAMPLE_WAVE)
-		#~ # restore selections
-		#~ for x in selected:
-			#~ self.samplelist.Select(x, True)
-		#~ self.samplelist.Focus(focused)
 		
 	def __set_properties(self):
 		"""
@@ -976,7 +976,7 @@ class WavetablePanel(gtk.Notebook):
 				level.stretch_range(0,level.get_sample_count(),newsize)
 				self.waveedit.update()
 				#level.set_samples_per_second(int(sps+0.5))
-		self.update_sampleprops()
+		player.history_commit("stretch loop")
 		
 	def on_fit_loop(self, event):
 		"""
@@ -1000,9 +1000,7 @@ class WavetablePanel(gtk.Notebook):
 				# new samplerate
 				sps = sps * 2**(f-int(f+0.5))
 				level.set_samples_per_second(int(sps+0.5))
-		self.update_sampleprops()
-		self.waveedit.view.view_changed()
-		#~ self.update_subsamplelist()
+		player.history_commit("fit loop")
 
 class DataEntry(gtk.Dialog):
 	"""
