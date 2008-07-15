@@ -79,11 +79,11 @@ class PackageBrowserDialog(gtk.Dialog):
 		textbuffer.create_tag("b", weight=pango.WEIGHT_BOLD)
 
 		rootnode = self.ifacestore.append(None, ["<b>Aldrin Components</b>",None])
-		packagenode = self.ifacestore.append(rootnode, ["<b>By Modules</b>",None])
+		packagenode = self.ifacestore.append(rootnode, ["<b>By Packages</b>",None])
 		pkgnodes = {}
 		pkgnodes['(unknown)'] = self.ifacestore.append(packagenode, ["<i>(unknown)</i>", None])
-		for name in sorted(com.get_packages()):
-			pkgnodes[name] = self.ifacestore.append(packagenode, ["<b>module</b> <i>%s</i>" % name, None])
+		for pkg in sorted(com.get_packages(),lambda a,b: cmp(a.name.lower(),b.name.lower())):
+			pkgnodes[pkg.module] = self.ifacestore.append(packagenode, ["<b>%s</b> (<b>module</b> <i>%s</i>)" % (pkg.name, pkg.module), None])
 		categorynode = self.ifacestore.append(rootnode, ["<b>By Categories</b>",None])
 		catnodes = {}
 		catnodes['(unknown)'] = self.ifacestore.append(categorynode, ["<i>(unknown)</i>", None])
