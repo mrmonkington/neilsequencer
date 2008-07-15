@@ -296,7 +296,7 @@ class EnvelopeView(gtk.DrawingArea):
 		self.currentpoint = None
 		self.redraw()
 
-	def update(self):
+	def update(self, *args):
 		"""
 		Updates the envelope view based on the sample selected in the sample list.		
 		"""

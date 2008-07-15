@@ -28,6 +28,7 @@ if __name__ == '__main__':
 	raise SystemExit
 
 import gtk
+import gobject
 import os, sys, stat
 from aldrin.utils import prepstr, db2linear, linear2db, note2str, filepath, new_listview, \
 	new_image_button, add_scrollbars, file_filter, question, new_image_toggle_button, format_filesize, error, \
@@ -133,6 +134,7 @@ class WavetablePanel(gtk.Notebook):
 		self.samplelist, self.samplestore, columns = new_listview([
 			('#', str),
 			('Name', str),
+			(None, gobject.TYPE_PYOBJECT),
 		])
 		self.view = self.samplelist
 		# XXX: TODO
@@ -245,15 +247,35 @@ class WavetablePanel(gtk.Notebook):
 		self.ohg.connect(self.libpanel,'file-activated', self.on_load_sample)
 		self.ohg.connect(self.libpanel,'selection-changed', self.on_libpanel_selection_changed)
 		
-		
 		currentpath = config.get_config().get_default('SampleBrowserPath')
 		if currentpath:
 			try:
 				self.libpanel.set_current_folder(currentpath)
 			except:
 				print "couldn't set current sample browser path: '%s'." % currentpath
-		self.update_all()
-				
+		eventbus = com.get('aldrin.core.eventbus')
+		eventbus.zzub_wave_allocated += self.update_samplelist
+		eventbus.zzub_wave_allocated += self.update_sampleprops
+		eventbus.zzub_wave_allocated += self.envelope.update
+		eventbus.zzub_wave_allocated += self.waveedit.update
+		eventbus.zzub_delete_wave += self.update_samplelist
+		eventbus.zzub_delete_wave += self.update_sampleprops
+		eventbus.zzub_delete_wave += self.envelope.update
+		eventbus.zzub_delete_wave += self.waveedit.update
+		eventbus.zzub_wave_changed += self.update_samplelist
+		eventbus.zzub_wave_changed += self.update_sampleprops
+		eventbus.zzub_wave_changed += self.envelope.update
+		eventbus.zzub_wave_changed += self.waveedit.update
+		eventbus.active_waves_changed += self.update_samplelist
+		eventbus.active_waves_changed += self.update_sampleprops
+		eventbus.active_waves_changed += self.envelope.update
+		eventbus.active_waves_changed += self.waveedit.update
+		
+		self.update_samplelist()
+		self.update_sampleprops()
+		self.envelope.update()
+		self.waveedit.update()
+		
 	def handle_focus(self):
 		self.view.grab_focus()
 		
@@ -304,8 +326,19 @@ class WavetablePanel(gtk.Notebook):
 		"""
 		Returns a list with currently selected sample indices.
 		"""
+		player = com.get('aldrin.core.player')
+		return [w.get_index() for w in player.active_waves]
+		
+	def get_samplelist_selection(self):
+		"""
+		Returns a list with currently selected sample indices.
+		"""
 		model, rows = self.samplelist.get_selection().get_selected_rows()
-		return [row[0] for row in rows]
+		sel = []
+		for row in rows:
+			it = model.get_iter(row)
+			sel.append(model.get_value(it, 2))
+		return sel
 		
 	def on_delete_file(self, widget):
 		"""
@@ -363,8 +396,6 @@ class WavetablePanel(gtk.Notebook):
 				import traceback
 				traceback.print_exc()
 		data_entry.destroy()
-		self.update_samplelist()
-		self.update_sampleprops()
 	
 	def on_edit_file(self, widget):
 		files = [path for path in self.libpanel.get_filenames() if os.path.isfile(path)]
@@ -532,8 +563,6 @@ class WavetablePanel(gtk.Notebook):
 		else:
 			desc = "delete instrument"
 		player.history_commit(desc)
-		self.update_samplelist()
-		self.update_sampleprops()
 		
 	def on_refresh(self, event):
 		"""
@@ -544,16 +573,6 @@ class WavetablePanel(gtk.Notebook):
 		"""
 		self.working_directory = ''
 		self.stworkpath.SetLabel(self.working_directory)
-		
-	def update_all(self):
-		"""
-		Updates all the components in the wave table.
-		"""
-		self.update_samplelist()
-		self.update_sampleprops()
-		#~ self.update_subsamplelist()
-		self.envelope.update()
-		self.waveedit.update()
 		
 	def update_wave_amp(self):
 		"""
@@ -649,8 +668,6 @@ class WavetablePanel(gtk.Notebook):
 			else:
 				w.set_name(os.path.splitext(os.path.basename(source))[0])
 				player.history_commit("load instrument")
-		self.update_samplelist()
-		self.update_sampleprops()
 		self.set_current_page(0)
 		self.samplelist.grab_focus()
 		self.samplelist.set_cursor(selects[0])
@@ -824,7 +841,7 @@ class WavetablePanel(gtk.Notebook):
 			self.subsamplelist.SetStringItem(i, 3, prepstr("%i" % level.get_loop_start()), -1)
 			self.subsamplelist.SetStringItem(i, 4, prepstr("%i" % level.get_loop_end()), -1)
 				
-	def update_sampleprops(self):
+	def update_sampleprops(self, *args):
 		"""
 		Updates the sample property checkboxes and sample editing fields.
 		Includes volume slider and looping properties.
@@ -904,22 +921,23 @@ class WavetablePanel(gtk.Notebook):
 		@param event: Command event
 		@type event: wx.CommandEvent
 		"""
-		self.update_sampleprops()
-		#~ self.update_subsamplelist()
-		self.envelope.update()
-		self.waveedit.update()
+		player = com.get('aldrin.core.player')
+		player.active_waves = self.get_samplelist_selection()
 		
-	def update_samplelist(self):
+	def update_samplelist(self, *args):
 		"""
 		Updates the sample list that displays all the samples loaded in the file.
 		"""
-		# XXX: preserve selections across updates
 		# update sample list
+		block = self.ohg.autoblock()
 		self.samplestore.clear()
 		player = com.get('aldrin.core.player')
+		selection = self.samplelist.get_selection()
 		for i in range(player.get_wave_count()):
 			w = player.get_wave(i)
-			self.samplestore.append(["%02X." % (i+1), prepstr(w.get_name())])
+			it = self.samplestore.append(["%02X." % (i+1), prepstr(w.get_name()), w])
+			if w in player.active_waves:
+				selection.select_iter(it)
 			# XXX: todo
 			#~ if w.get_level_count() >= 1:
 				#~ self.samplelist.SetItemImage(index, self.IMG_SAMPLE_WAVE)
