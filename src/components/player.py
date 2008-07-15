@@ -259,6 +259,11 @@ class AldrinPlayer(Player):
 			self.active_waves = [wave]
 		return res != 0
 		
+	def save_wave(self, wave, filepath):
+		stream = zzub.Output.create_file(filepath)
+		res = wave.save_sample(0, stream)
+		stream.destroy()
+		
 	def play_stream(self, note, plugin_uri, data_url):
 		if self.__streamplayer:
 			pluginloader = self.__streamplayer.get_pluginloader()
@@ -371,9 +376,9 @@ class AldrinPlayer(Player):
 			ucopcount = self.history_get_uncomitted_operations()
 			if ucopcount:
 				# you should commit your actions
-				import errordlg
+				import aldrin.errordlg
 				msg = "%i operation(s) left uncommitted." % ucopcount
-				errordlg.error(None, "<b>Internal Program Error</b>", msg)
+				aldrin.errordlg.error(None, "<b>Internal Program Error</b>", msg)
 				self.history_commit("commit leak")
 		player = com.get('aldrin.core.player')
 		t1 = time.time()

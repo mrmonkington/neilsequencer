@@ -22,6 +22,11 @@
 Contains all classes and functions needed to render the wavetable editor and the envelope viewer.
 """
 
+if __name__ == '__main__':
+	import os
+	os.system('../../bin/aldrin-combrowser aldrin.core.wavetablepanel')
+	raise SystemExit
+
 import gtk
 import os, sys, stat
 from aldrin.utils import prepstr, db2linear, linear2db, note2str, filepath, new_listview, \
@@ -353,13 +358,13 @@ class WavetablePanel(gtk.Notebook):
 				target=self.get_sample_selection()[0]
 				w = player.get_wave(target)
 				w.set_name(value)
+				player.history_commit("rename instrument")
 			except:
 				import traceback
 				traceback.print_exc()
 		data_entry.destroy()
 		self.update_samplelist()
 		self.update_sampleprops()
-		com.get('aldrin.core.patternpanel').update_all()
 	
 	def on_edit_file(self, widget):
 		files = [path for path in self.libpanel.get_filenames() if os.path.isfile(path)]
@@ -522,10 +527,13 @@ class WavetablePanel(gtk.Notebook):
 		player = com.get('aldrin.core.player')
 		for i in sel:
 			player.get_wave(i).clear()
+		if len(sel) > 1:
+			desc = "delete instruments"
+		else:
+			desc = "delete instrument"
+		player.history_commit(desc)
 		self.update_samplelist()
 		self.update_sampleprops()
-		#~ self.update_subsamplelist()
-		com.get('aldrin.core.patternpanel').update_all()
 		
 	def on_refresh(self, event):
 		"""
@@ -609,7 +617,7 @@ class WavetablePanel(gtk.Notebook):
 			filepath = dlg.get_filename()
 			dlg.destroy()
 			if response == gtk.RESPONSE_OK:
-				print w.save_sample(0, filepath)
+				player.save_wave(w, filepath)
 			else:
 				return
 				
