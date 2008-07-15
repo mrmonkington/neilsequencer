@@ -2335,7 +2335,7 @@ class PatternView(gtk.DrawingArea):
 
 	def draw_playpos_xor(self):
 		if self.pattern == -1:
-			return
+			return			
 		if not self.window:
 			return	
 		drawable = self.window
@@ -2350,7 +2350,7 @@ class PatternView(gtk.DrawingArea):
 			track = seq.get_sequence(i)
 			track_plugin = track.get_plugin()
 			plugin = self.get_plugin()
-			if plugin == track_plugin and self.pattern:
+			if plugin == track_plugin and self.pattern != -1:
 				row_count = self.plugin.get_pattern_length(self.pattern)
 				events = list(track.get_event_list())
 				for i, pair in enumerate(events):
