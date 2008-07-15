@@ -898,17 +898,3 @@ __aldrin__ = dict(
 	],
 )
 
-if __name__ == '__main__':
-	import contextlog, aldrincom
-	contextlog.init()
-	aldrincom.init()
-	com.get_from_category('driver')
-	# running standalone
-	browser = com.get('aldrin.pythonconsole.dialog', False)
-	browser.show_all()
-	player = com.get('aldrin.core.player')
-	player.load_ccm("demosongs/beatz.ccm")
-	view = com.get('aldrin.core.parameterview', player.get_plugin_by_name("Master"))
-	dlg = com.get('aldrin.test.dialog', view)
-	gtk.main()
-

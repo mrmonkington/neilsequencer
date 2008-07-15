@@ -19,8 +19,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import gtk
-import aldrin.com as aldrincom
-com = aldrincom.com
+import aldrin.com as com
 
 class TestDialog(gtk.Dialog):
 	"""
@@ -50,16 +49,4 @@ __aldrin__ = dict(
 		TestDialog,
 	],
 )
-
-if __name__ == '__main__':
-	import contextlog
-	contextlog.init()
-	aldrincom.init()
-	view = com.get('aldrin.core.routerpanel')
-	dlg = com.get('aldrin.test.dialog', view)
-	# running standalone
-	browser = com.get('aldrin.pythonconsole.dialog', False)
-	browser.show_all()
-	gtk.main()
-
 

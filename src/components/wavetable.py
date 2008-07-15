@@ -1019,17 +1019,3 @@ __aldrin__ = dict(
 	],
 )
 
-if __name__ == '__main__':
-	import contextlog, aldrincom
-	contextlog.init()
-	aldrincom.init()
-	com.get_from_category('driver')
-	# running standalone
-	browser = com.get('aldrin.pythonconsole.dialog', False)
-	browser.show_all()
-	view = com.get('aldrin.core.wavetablepanel')
-	dlg = com.get('aldrin.test.dialog', view)
-	player = com.get('aldrin.core.player')
-	player.load_ccm('demosongs/beatz.ccm')
-	gtk.main()
-
