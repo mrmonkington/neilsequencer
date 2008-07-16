@@ -431,22 +431,9 @@ bool BuzzReader::loadMachines() {
 
 	return returnValue;
 }
-/*
 
-machine initialization order (during load, with a custom mdk noverb machine):
-init
-outputmodechanged | setnumtracks (i hver sin tråd)
-mdkinit
-attributeschanged
-setnumtracks | setnumtracks (i hver sin tråd)
-mdktick
-*/
-
-zzub::pattern::track BuzzReader::read_track(const std::vector<const zzub::parameter*>& parameters, int rows) {
-	int size = 0;
-	zzub::pattern::track result;
+bool BuzzReader::read_track(const std::vector<const zzub::parameter*>& parameters, int rows, zzub::pattern::track& result) {
 	result.resize(parameters.size());
-	
 	for (size_t i = 0; i < parameters.size(); i++) {
 		result[i].resize(rows);
 	}
@@ -455,12 +442,13 @@ zzub::pattern::track BuzzReader::read_track(const std::vector<const zzub::parame
 		for (size_t j = 0; j < parameters.size(); j++) {
 			int column_size = parameters[j]->get_bytesize();
 			int v = 0;
-			size += f->read(&v, column_size);
+			int size = f->read(&v, column_size);
+			if (size != column_size) return false;	// premature EOF!
 			result[j][i] = v;
 		}
 	}
 
-	return result;
+	return true;
 }
 
 
@@ -488,11 +476,14 @@ bool BuzzReader::loadPatterns() {
 			f->read(name);
 			f->read(rows);
 
-			pattern p;
+			pattern& p = player->back.create_pattern(*i, rows);
 			p.name = name;
 			p.rows = rows;
+			int prev_connections = player->back.plugin_get_input_connection_count(*i) - connections[*i].size();
 
-			pattern::group group0;
+			pattern::group& group0 = p.groups[0];
+			pattern::group& group1 = p.groups[1];
+			pattern::group& group2 = p.groups[2];
 
 			for (size_t k = 0; k < connections[*i].size(); k++) {
 				unsigned short machineIndex;
@@ -508,31 +499,23 @@ bool BuzzReader::loadPatterns() {
 
 				if (conntrack != -1) {
 					connection* conn = player->back.plugin_get_input_connection(*i, conntrack);
-					pattern::track group0track = read_track(conn->connection_parameters, rows);
-					group0.push_back(group0track);
+					read_track(conn->connection_parameters, rows, group0[prev_connections + k]);
 				} else {
 					// if we come here - there was a buggy BMX, the connection was saved, but not successfully reconnected
 					// at least one bmx has this problem, so here is a fix which shouldnt be needed in final code:
 					vector<const parameter*> params;
 					params.push_back(&audio_connection::para_volume);
 					params.push_back(&audio_connection::para_panning);
-					pattern::track group0track = read_track(params, rows);
+					pattern::track group0track;
+					read_track(params, rows, group0track);
 				}
 			}
 
-			pattern::group group1;
-			pattern::track group1track = read_track(machine.info->global_parameters, rows);
-			group1.push_back(group1track);
+			read_track(machine.info->global_parameters, rows, group1[0]);
 
-			pattern::group group2;
 			for (int l = 0; l < tracks; l++) {
-				pattern::track group2track = read_track(machine.info->track_parameters, rows);
-				group2.push_back(group2track);
+				read_track(machine.info->track_parameters, rows, group2[l]);
 			}
-
-			p.groups.push_back(group0);
-			p.groups.push_back(group1);
-			p.groups.push_back(group2);
 
 			player->plugin_add_pattern(*i, p);
 		}

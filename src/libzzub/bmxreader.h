@@ -127,7 +127,7 @@ public:
 	BuzzReader(zzub::instream* inf);
 	~BuzzReader();
 
-	zzub::pattern::track read_track(const std::vector<const zzub::parameter*>& params, int rows);
+	bool read_track(const std::vector<const zzub::parameter*>& parameters, int rows, zzub::pattern::track& result);
 
 	bool readPlayer(zzub::player* pl);
 };
