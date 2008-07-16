@@ -101,6 +101,7 @@ bool op_plugin_create::prepare(zzub::song& song) {
 	plugin.cpu_load = 0.0f;
 	plugin.cpu_load_buffersize = 0;
 	plugin.cpu_load_time = 0.0f;
+	plugin.writemode_errors = 0;
 
 	plugin.initialized = false;
 	plugin.work_buffer.resize(2);

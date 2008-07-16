@@ -107,6 +107,7 @@ struct metaplugin {
 	double cpu_load_time;
 	int cpu_load_buffersize;
 	double cpu_load;
+	int writemode_errors;
 
 	int midi_input_channel;
 	vector<midi_message> midi_messages;
@@ -282,7 +283,7 @@ struct mixer : song {
 
 	// processing methods
 	int generate_audio(int sample_count);
-	void work_plugin(plugin_descriptor plugindesc, int sample_count, bool connections_result);
+	void work_plugin(plugin_descriptor plugindesc, int sample_count);
 	void process_sequencer_events(plugin_descriptor plugindesc);
 	int determine_chunk_size(int sample_count, double& tick_fracs, int& next_tick_position);
 	void process_sequencer_events();

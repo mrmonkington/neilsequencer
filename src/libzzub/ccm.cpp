@@ -1721,6 +1721,19 @@ bool CcmReader::loadPlugins(xml_node plugins, zzub::player &player) {
 
 	}
 
+	// fix seq_order in case of missing plugins
+	for (vector<int>::iterator i = seq_order.begin(); i != seq_order.end(); ++i) {
+		int j = (int)(i - seq_order.begin());
+		vector<int>::iterator k;
+		while ((k = find(seq_order.begin(), seq_order.end(), j)) == seq_order.end()) {
+			for (k = seq_order.begin(); k != seq_order.end(); ++k) {
+				if (*k >= j)
+					(*k)--;
+			}
+		}
+	}
+
+	// re-order the sequence tracks according to ccm
 	int index = 0;
 	for (;;) {
 		if (index >= seq_order.size()) break;

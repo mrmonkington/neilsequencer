@@ -118,14 +118,19 @@ bool is_note_playing(int plugin_id, const std::vector<zzub::keyjazz_note>& keyja
 }
 
 
-inline void scanPeakStereo(float* l, float* r, int numSamples, float& maxL, float& maxR, float falloff) {
+inline bool scanPeakStereo(float* l, float* r, int numSamples, float& maxL, float& maxR, float falloff) {
+	bool zero = true;
 	while (numSamples--) {
 		maxL *= falloff;
 		maxR *= falloff;
 		maxL = std::max(std::abs(*l), maxL);
 		maxR = std::max(std::abs(*r), maxR);
+		if (zero && ((*l > SIGNAL_TRESHOLD)||(*l < -SIGNAL_TRESHOLD)||
+			(*r > SIGNAL_TRESHOLD)||(*r < -SIGNAL_TRESHOLD)))
+			zero = false;
 		l++;r++;
 	}
+	return zero;
 }
 
 // http://en.wikipedia.org/wiki/Topological_sorting
@@ -1032,41 +1037,10 @@ int mixer::generate_audio(int sample_count) {
 
 	// process plugins
 	for (size_t i = 0; i < work_order.size(); i++) {
-		// process connections
-		int plugin_id = get_plugin_id(work_order[i]);
-		metaplugin& workplugin = *plugins[plugin_id];
-		memset(&workplugin.work_buffer[0].front(), 0, work_chunk_size * sizeof(float));
-		memset(&workplugin.work_buffer[1].front(), 0, work_chunk_size * sizeof(float));
-
-		bool result = false;
-		zzub::out_edge_iterator out, out_end;
-		boost::tie(out, out_end) = out_edges(work_order[i], graph);
-		for(; out != out_end; ++out) {
-			assert(source(*out, graph) < num_vertices(graph));
-			assert(target(*out, graph) < num_vertices(graph));
-
-			edge_props& c = graph[*out];
-			result |= c.conn->work(*this, *out, work_chunk_size);
-		}
 
 		// process audio
-		work_plugin(work_order[i], work_chunk_size, result);
+		work_plugin(work_order[i], work_chunk_size);
 
-		// write recorded parameters to patterns
-		if (is_recording_parameters) {
-			int pattern_index, pattern_row;
-			if (get_currently_playing_pattern(plugin_id, pattern_index, pattern_row)) {
-				zzub::pattern& p = *workplugin.patterns[pattern_index];
-				transfer_plugin_parameter_row(plugin_id, 0, workplugin.state_automation, p, 0, pattern_row, false);
-				transfer_plugin_parameter_row(plugin_id, 1, workplugin.state_automation, p, 0, pattern_row, false);
-				transfer_plugin_parameter_row(plugin_id, 2, workplugin.state_automation, p, 0, pattern_row, false);
-			}
-		}
-
-		// clear recorded parameters - state_automation is currently written to all the time,
-		// ignoring is_recording_parameters, so we need to clear it all the time as well
-		reset_plugin_parameter_group(workplugin.state_automation.groups[1], workplugin.info->global_parameters);
-		reset_plugin_parameter_group(workplugin.state_automation.groups[2], workplugin.info->track_parameters);
 	}
 
 	// process midi
@@ -1162,13 +1136,27 @@ void mixer::sequencer_update_play_pattern_positions() {
 	}
 }
 
-void mixer::work_plugin(plugin_descriptor plugin, int sample_count, bool connections_result) {
+void mixer::work_plugin(plugin_descriptor plugin, int sample_count) {
 
 	double start_time = timer.frame();
 
-	metaplugin& m = get_plugin(plugin);
+	// process connections
+	int plugin_id = get_plugin_id(plugin);
+	metaplugin& m = *plugins[plugin_id];
+	memset(&m.work_buffer[0].front(), 0, sample_count * sizeof(float));
+	memset(&m.work_buffer[1].front(), 0, sample_count * sizeof(float));
 
-	bool result = connections_result;
+	bool result = false;
+	zzub::out_edge_iterator out, out_end;
+	boost::tie(out, out_end) = out_edges(plugin, graph);
+	for(; out != out_end; ++out) {
+		assert(source(*out, graph) < num_vertices(graph));
+		assert(target(*out, graph) < num_vertices(graph));
+
+		edge_props& c = graph[*out];
+		result |= c.conn->work(*this, *out, work_chunk_size);
+	}
+
 	// process audio:
 	int flags;
 	if (((m.info->flags & zzub_plugin_flag_has_audio_output) != 0) &&
@@ -1196,7 +1184,7 @@ void mixer::work_plugin(plugin_descriptor plugin, int sample_count, bool connect
 		m.last_work_audio_result = false;
 	} else
 	if (m.is_bypassed || m.sequencer_state == sequencer_event_type_thru) {
-		m.last_work_audio_result = connections_result;
+		m.last_work_audio_result = result;
 	} else {
 		m.last_work_audio_result = m.plugin->process_stereo(plin, plout, sample_count, flags);
 	}
@@ -1209,13 +1197,33 @@ void mixer::work_plugin(plugin_descriptor plugin, int sample_count, bool connect
 	float samplerate = float(master_info.samples_per_second);
 	float falloff = std::pow(10.0f, (-48.0f / (samplerate * 20.0f))); // vu meter falloff (-48dB/s)
 	if (m.last_work_audio_result) {
-		scanPeakStereo(&m.work_buffer[0].front(), &m.work_buffer[1].front(), sample_count, 
-			m.last_work_max_left, m.last_work_max_right, falloff);
+		if (scanPeakStereo(&m.work_buffer[0].front(), &m.work_buffer[1].front(), sample_count, 
+			m.last_work_max_left, m.last_work_max_right, falloff)) {
+			// the plugin claims it has generated non-silence, but our scan says otherwise
+			m.writemode_errors++;
+		}
 	} else {
 		m.last_work_max_left *= std::pow(falloff, sample_count);
 		m.last_work_max_right *= std::pow(falloff, sample_count);
 	}
 
+	// write recorded parameters to patterns
+	if (is_recording_parameters) {
+		int pattern_index, pattern_row;
+		if (get_currently_playing_pattern(plugin_id, pattern_index, pattern_row)) {
+			zzub::pattern& p = *m.patterns[pattern_index];
+			transfer_plugin_parameter_row(plugin_id, 0, m.state_automation, p, 0, pattern_row, false);
+			transfer_plugin_parameter_row(plugin_id, 1, m.state_automation, p, 0, pattern_row, false);
+			transfer_plugin_parameter_row(plugin_id, 2, m.state_automation, p, 0, pattern_row, false);
+		}
+	}
+
+	// clear recorded parameters - state_automation is currently written to all the time,
+	// ignoring is_recording_parameters, so we need to clear it all the time as well
+	reset_plugin_parameter_group(m.state_automation.groups[1], m.info->global_parameters);
+	reset_plugin_parameter_group(m.state_automation.groups[2], m.info->track_parameters);
+
+	// update statistics
 	m.last_work_time = timer.frame() - start_time;
 	m.last_work_buffersize = sample_count;
 	m.last_work_frame = work_position;
