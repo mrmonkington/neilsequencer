@@ -940,7 +940,10 @@ int zzub_plugin_get_sub_commands(zzub_plugin_t *plugin, int i, char* commands, i
 		firstp += strlen(firstp)+1;
 	}
 
-	strncpy(commands, ret.c_str(), maxlen);
+	if (commands != strncpy(commands, ret.c_str(), maxlen)) {
+		// too many bytes, clear string pls
+		strcat(commands, "");
+	}
 	return strlen(commands);
 }
 
