@@ -22,6 +22,11 @@
 Provides dialogs and controls to render the plugin view/router and its associated components.
 """
 
+if __name__ == '__main__':
+	import os
+	os.system('../../bin/aldrin-combrowser aldrin.core.routerpanel')
+	raise SystemExit
+
 import aldrin.com as com
 import gtk
 import gobject
@@ -878,8 +883,8 @@ class RouteView(gtk.DrawingArea):
 		if area == AREA_ANY:
 			data = zzub.zzub_event_data_t()
 			data.type = zzub.zzub_event_type_double_click;
-			if mp.invoke_event(data, 1) != 0:
-				com.get('aldrin.core.parameterdialog.manager').show(mp, self)
+			#if mp.invoke_event(data, 1) != 0:
+			com.get('aldrin.core.parameterdialog.manager').show(mp, self)
 		
 	def on_left_down(self, widget, event):
 		"""
