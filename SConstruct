@@ -65,7 +65,7 @@ opts.Add("SNDFILE", 'Support loading of waves via libsndfile', True, None, bool_
 opts.Add("DEBUG", "Compile everything in debug mode if true", True, None, bool_converter)
 opts.Add("BUZZ2ZZUB", "Compile buzz2zzub", win32 == True, None, bool_converter)
 opts.Add("ZZUB_MODULE", "Compile module loading plugin (experimental)", False, None, bool_converter)
-opts.Add("ZZUB_STREAM", "Compile stream plugins (experimental)", False, None, bool_converter)
+opts.Add("ZZUB_STREAM", "Compile stream plugins", True, None, bool_converter)
 opts.Add("BMPCCM", "Compile bmp-ccm plugin", False, None, bool_converter)
 opts.Add("REVISION", 'Revision number (will be set automatically)', '0')
 opts.Add("SIGNATURE", 'Host signature (will be set automatically)', '')

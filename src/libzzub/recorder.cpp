@@ -484,9 +484,7 @@ zzub::plugin* recorder_file_plugin_info::create_plugin() const {
 
 void recorder_plugincollection::initialize(zzub::pluginfactory *factory) {
 	factory->register_info(&wavetable_info);
-#if defined(_WIN32)
 	factory->register_info(&file_info);
-#endif
 }
 
 
