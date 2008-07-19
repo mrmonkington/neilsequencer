@@ -198,8 +198,6 @@ class SequencerPanel(gtk.VBox):
 		scrollwin.attach(vscroll, 1, 2, 0, 1, 0, gtk.FILL)
 		scrollwin.attach(hscroll, 0, 1, 1, 2, gtk.FILL, 0)
 		
-		
-		
 		self.splitter.pack1(add_scrollbars(self.seqpatternlist), False, False)
 		self.splitter.pack2(scrollwin, True, True)
 		self.view = self.seqview
@@ -218,7 +216,17 @@ class SequencerPanel(gtk.VBox):
 		self.update_list()
 		self.toolbar.update_all()
 		self.seqview.connect('size-allocate', self.on_sash_pos_changed)
+		eventbus = com.get('aldrin.core.eventbus')
+		eventbus.edit_sequence_request += self.edit_sequence_request
 		
+	def edit_sequence_request(self, track=None, row=None):
+		framepanel = com.get('aldrin.core.framepanel')
+		framepanel.select_viewpanel(self)				
+		#TODO: add active_tracks option to allow track, row position change
+		#player.active_tracks = [(track, row)]
+		framepanel = com.get('aldrin.core.framepanel')
+		framepanel.select_viewpanel(self)
+				
 	def handle_focus(self):
 		self.view.grab_focus()
 		
@@ -334,7 +342,7 @@ class SequencerView(gtk.DrawingArea):
 		gobject.timeout_add(100, self.update_position)
 		eventbus = com.get('aldrin.core.eventbus')
 		eventbus.zzub_sequencer_changed += self.redraw
-		
+						
 	def track_row_to_pos(self, (track,row)):
 		"""
 		Converts track and row to a pixel coordinate.

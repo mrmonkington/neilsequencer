@@ -34,8 +34,9 @@ EVENTS = [
 	'shutdown', # ( ... ). receiver should deinitialize and prepare for application exit.
 	'song-opened', # ( ... ). called when the entire song changes in such a way that all connected objects should update.
 	'show-plugin', # (plugin, ...) called when a plugin should be visualized overall.
-	
+
 	'edit_pattern_request', # (plugin, index, ...) called from e.g. the sequencer when editing a pattern is requested.
+	'edit_sequence_request', # (plugin, index, time)
 	
 	# document ui events, translation is done in player.py
 	'octave_changed', # (octave, ...) called when player.octave changes.

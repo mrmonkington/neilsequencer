@@ -766,7 +766,6 @@ class PatternView(gtk.DrawingArea):
 		self.group_position = [0,0,0]
 		self.group_track_count = [0,0,0]
 		datasource = self.get_datasource()
-		print "init values"
 		if datasource:
 			# plugin loader, pattern data
 			self.plugin, self.pattern = datasource
@@ -1957,10 +1956,8 @@ class PatternView(gtk.DrawingArea):
 			if plugin:
 				self.plugin_info.get(plugin).reset_patterngfx()
 		elif k == 'Return':
-			# TODO: do this in a more direct way
-			#mainwindow = self.rootwindow
-			#mainwindow.select_panel(com.get('aldrin.core.sequencerpanel'))
-			pass
+			eventbus = com.get('aldrin.core.eventbus')
+			eventbus.edit_sequence_request()
 		elif k in ('KP_Add','plus'):			
 			# TODO: select next pattern
 			pass
