@@ -91,7 +91,7 @@ class PackageBrowserDialog(gtk.Dialog):
 			catnodes[name] = self.ifacestore.append(categorynode, ["<b>category</b> <i>%s</i>" % name, None])
 		allnode = self.ifacestore.append(rootnode, ["<b>By Alphabet</b>",None])
 		def create_classnode(parent, metainfo):
-			element = metainfo.get('classobj',None)			
+			element = metainfo.get('classobj',None)
 			if not element:
 				return
 			classname = element.__aldrin__['id']

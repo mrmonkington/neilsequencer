@@ -22,6 +22,11 @@
 Provides dialogs and controls to render the plugin view/router and its associated components.
 """
 
+if __name__ == '__main__':
+	import os
+	os.system('../../bin/aldrin-combrowser aldrin.core.routerpanel')
+	raise SystemExit
+
 import aldrin.com as com
 import gtk
 import gobject
@@ -544,7 +549,8 @@ class VolumeSlider(gtk.Window):
 		"""
 		Initializer.
 		"""
-		self.conn = None
+		self.plugin = None
+		self.index = -1
 		gtk.Window.__init__(self, gtk.WINDOW_POPUP)
 		self.drawingarea = gtk.DrawingArea()
 		self.add(self.drawingarea)
@@ -577,7 +583,8 @@ class VolumeSlider(gtk.Window):
 		self.y = newpos
 		self.amp = max(min(self.amp + (float(delta) / VOLBARHEIGHT), 1.0), 0.0)
 		amp = min(max(int(db2linear(self.amp * -48.0, -48.0) * 16384.0), 0), 16384)
-		self.conn.set_amplitude(amp)
+		print amp
+		self.plugin.set_parameter_value_direct(0,self.index,0,amp,False)
 		self.redraw()
 		return True
 		
@@ -602,12 +609,12 @@ class VolumeSlider(gtk.Window):
 		gc.set_foreground(outlinepen)
 		drawable.draw_rectangle(gc, False, 0, 0, w-1, h-1)
 		
-		if self.conn:
+		if self.plugin:
 			gc.set_foreground(blackbrush)
 			pos = int(self.amp * (VOLBARHEIGHT - VOLKNOBHEIGHT))
 			drawable.draw_rectangle(gc, True, 1, pos+1, VOLBARWIDTH-2, VOLKNOBHEIGHT-2)
 		
-	def display(self, (mx,my), conn, index):
+	def display(self, (mx,my), mp, index):
 		"""
 		Called by the router view to show the control.
 		
@@ -619,8 +626,10 @@ class VolumeSlider(gtk.Window):
 		@type conn: zzub.Connection
 		"""
 		self.y = VOLBARHEIGHT / 2
-		self.conn = conn
-		self.amp = (linear2db((self.conn.get_amplitude()/ 16384.0), -48.0) / -48.0)
+		self.plugin = mp
+		self.index = index
+		self.amp = (linear2db((self.plugin.get_parameter_value(0,index,0)/ 16384.0), -48.0) / -48.0)
+		print self.amp
 		self.move(int(mx - VOLBARWIDTH*0.5), int(my - VOLBARHEIGHT*0.5))
 		self.show_all()
 		self.drawingarea.grab_add()
@@ -878,8 +887,8 @@ class RouteView(gtk.DrawingArea):
 		if area == AREA_ANY:
 			data = zzub.zzub_event_data_t()
 			data.type = zzub.zzub_event_type_double_click;
-			if mp.invoke_event(data, 1) != 0:
-				com.get('aldrin.core.parameterdialog.manager').show(mp, self)
+			#if mp.invoke_event(data, 1) != 0:
+			com.get('aldrin.core.parameterdialog.manager').show(mp, self)
 		
 	def on_left_down(self, widget, event):
 		"""
@@ -929,7 +938,7 @@ class RouteView(gtk.DrawingArea):
 				ox, oy = self.window.get_origin()
 				connectiontype = mp.get_input_connection_type(index)
 				if connectiontype == zzub.zzub_connection_type_audio:
-					self.volume_slider.display((ox+mx,oy+my), conn, index)
+					self.volume_slider.display((ox+mx,oy+my), mp, index)
 				elif connectiontype == zzub.zzub_connection_type_event:
 					# no idea what to do when clicking on an event connection yet
 					pass

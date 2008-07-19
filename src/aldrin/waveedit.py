@@ -61,7 +61,7 @@ class WaveEditPanel(gtk.VBox):
 		self.btnstoresel.connect('clicked', self.on_store_range)
 		self.btnapplyslices.connect('clicked', self.on_apply_slices)
 		
-	def update(self):
+	def update(self, *args):
 		self.view.update()
 		
 	def on_store_range(self, widget):
