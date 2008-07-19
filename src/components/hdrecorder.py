@@ -26,8 +26,10 @@ Provides dialog class for hd recorder control.
 import gtk
 import gobject
 import aldrin.utils as utils, os, stat
+from aldrin.utils import new_stock_image_toggle_button, ObjectHandlerGroup
 import aldrin.common as common
 import aldrin.com as com
+import zzub
 from aldrin.common import MARGIN, MARGIN2, MARGIN3
 
 class HDRecorderDialog(gtk.Dialog):
@@ -61,21 +63,16 @@ class HDRecorderDialog(gtk.Dialog):
 		#self.add_button(gtk.STOCK_CLOSE, gtk.RESPONSE_CLOSE)
 		#self.set_size_request(250,-1)
 		self.set_resizable(False)
-		player = com.get('aldrin.core.player')
-		self.master = player.get_plugin(0)
 		btnsaveas = gtk.Button(stock=gtk.STOCK_SAVE_AS)
 		btnsaveas.connect("clicked", self.on_saveas)
 		textposition = gtk.Label("")
-		btnrec = gtk.Button(stock=gtk.STOCK_MEDIA_RECORD)
-		btnrec.connect("clicked", self.on_rec)
-		btnstop = gtk.Button(stock=gtk.STOCK_MEDIA_STOP)
-		btnstop.connect("clicked", self.on_stop)
+		self.hgroup = ObjectHandlerGroup()
+		self.btnrecord = new_stock_image_toggle_button(gtk.STOCK_MEDIA_RECORD)
+		self.hgroup.connect(self.btnrecord, 'clicked', self.on_toggle_record)
 		chkauto = gtk.CheckButton("_Auto start/stop")
 		chkauto.connect("toggled", self.on_autostartstop)
 		self.btnsaveas = btnsaveas
 		self.textposition = textposition
-		self.btnrec = btnrec
-		self.btnstop = btnstop
 		self.chkauto = chkauto
 		# 0.3: DEAD
 		#self.chkauto.set_active(self.master.get_auto_write())
@@ -86,8 +83,7 @@ class HDRecorderDialog(gtk.Dialog):
 		sizer3 = gtk.HButtonBox()
 		sizer3.set_spacing(MARGIN)
 		sizer3.set_layout(gtk.BUTTONBOX_START)
-		sizer3.pack_start(btnrec, expand=False)
-		sizer3.pack_start(btnstop, expand=False)
+		sizer3.pack_start(self.btnrecord, expand=False)
 		sizer2.pack_start(sizer3, expand=False)
 		sizer2.pack_start(chkauto, expand=False)
 		sizer.pack_start(sizer2)
@@ -95,6 +91,34 @@ class HDRecorderDialog(gtk.Dialog):
 		self.vbox.add(sizer)
 		self.filename = ''
 		gobject.timeout_add(100, self.on_timer)
+		eventbus = com.get('aldrin.core.eventbus')
+		eventbus.zzub_parameter_changed += self.on_zzub_parameter_changed
+		self.update_label()
+		self.update_rec_button()
+		
+	def on_zzub_parameter_changed(self,plugin,group,track,param,value):
+		player = com.get('aldrin.core.player')
+		recorder = player.get_stream_recorder()
+		if plugin == recorder:
+			if (group,track,param) == (zzub.zzub_parameter_group_global,0,0):
+				self.update_label()
+			elif (group,track,param) == (zzub.zzub_parameter_group_global,0,1):
+				self.update_rec_button(value)
+				
+	def update_rec_button(self, value=None):
+		print "update_rec_button"
+		block = self.hgroup.autoblock()
+		player = com.get('aldrin.core.player')
+		recorder = player.get_stream_recorder()
+		if value == None:
+			value = recorder.get_parameter_value(zzub.zzub_parameter_group_global, 0, 1)
+		self.btnrecord.set_active(value)
+		self.chkauto.set_active(not recorder.get_attribute_value(0))
+			
+	def update_label(self):
+		player = com.get('aldrin.core.player')
+		recorder = player.get_stream_recorder()
+		self.btnsaveas.set_label(recorder.describe_value(zzub.zzub_parameter_group_global, 0, 0))
 		
 	def on_autostartstop(self, widget):
 		"""
@@ -104,7 +128,10 @@ class HDRecorderDialog(gtk.Dialog):
 		@param event: Command event.
 		@type event: wx.CommandEvent
 		"""
-		self.master.set_auto_write(widget.get_active())
+		player = com.get('aldrin.core.player')
+		recorder = player.get_stream_recorder()
+		recorder.set_attribute_value(0, not widget.get_active())
+		player.history_flush()
 		
 	def on_timer(self):
 		"""
@@ -112,14 +139,17 @@ class HDRecorderDialog(gtk.Dialog):
 		state of recording.
 		"""
 		if self.window and self.window.is_visible():
-			bpm = self.master.get_parameter_value(1, 0, 1)
-			tpb = self.master.get_parameter_value(1, 0, 2)
-			rectime = utils.ticks_to_time(self.master.get_ticks_written(), bpm, tpb)
+			player = com.get('aldrin.core.player')
+			master = player.get_plugin(0)		
+			bpm = master.get_parameter_value(1, 0, 1)
+			tpb = master.get_parameter_value(1, 0, 2)
+			#rectime = utils.ticks_to_time(master.get_ticks_written(), bpm, tpb)
 			if os.path.isfile(self.filename):
 				recsize = os.stat(self.filename)[stat.ST_SIZE]
 			else:
 				recsize = 0
-			self.textposition.set_markup("<b>Time</b> %s     <b>Size</b> %.2fM" % (utils.format_time(rectime), float(recsize)/(1<<20)))
+			#self.textposition.set_markup("<b>Time</b> %s     <b>Size</b> %.2fM" % (utils.format_time(rectime), float(recsize)/(1<<20)))
+			self.textposition.set_markup("<b>Size</b> %.2fM" % (float(recsize)/(1<<20)))
 		return True
 		
 	def on_saveas(self, widget):
@@ -141,23 +171,19 @@ class HDRecorderDialog(gtk.Dialog):
 			self.filename = dlg.get_filename()
 			if (dlg.get_filter() == ffwav) and not (self.filename.endswith('.wav')):
 				self.filename += '.wav'
-			self.btnsaveas.set_label(self.filename)
-			master = player.get_plugin(0)
-			master.set_wave_file_path(self.filename)
+			#self.btnsaveas.set_label(self.filename)
+			recorder = player.get_stream_recorder()
+			recorder.configure('wavefilepath', self.filename)
 		dlg.destroy()
 
-	def on_rec(self, widget):
+	def on_toggle_record(self, widget):
 		"""
-		Handler for the "Rec" button.
+		Handler for the "Record" button.
 		"""
-		self.master.reset_ticks_written()
-		self.master.set_write_wave(1)
-
-	def on_stop(self, widget):
-		"""
-		Handler for the "Stop" button.
-		"""
-		self.master.set_write_wave(0)
+		print "on_toggle_record"
+		player = com.get('aldrin.core.player')
+		recorder = player.get_stream_recorder()
+		recorder.set_parameter_value_direct(zzub.zzub_parameter_group_global, 0, 1, widget.get_active(), False)
 
 __all__ = [
 'HDRecorderDialog',
