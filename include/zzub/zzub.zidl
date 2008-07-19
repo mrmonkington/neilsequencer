@@ -567,6 +567,10 @@ namespace zzub:
 
 		"Returns 1 if plugin is bypassed, otherwise 0."
 		def get_bypass(): int
+		
+		"Configure a plugin option. this is e.g. used by the recorder plugin to"
+		"specify a file path to write to."
+		def configure(string key, string value)
 
 		"Set whether plugin is bypassed. 1 for bypass, 0 for normal."
 		"Bypass causes no processing to occur in the given machine."

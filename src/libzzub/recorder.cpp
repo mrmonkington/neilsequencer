@@ -412,8 +412,11 @@ struct recorder_file_plugin : plugin {
 	virtual const char* get_stream_source() { return 0; }
 	virtual void play_pattern(int index) {}
 	virtual void configure(const char *key, const char *value) {
-		if (!strcmp(key, "wavefilepath"))
+		if (!strcmp(key, "wavefilepath")) {
 			waveFilePath = value;
+			// send a parameter change event for the wave parameter, guis may want to update something
+			_host->control_change(_host->get_metaplugin(), 1, 0, 0, 0, false, true);
+		}
 	}
 
 	bool open() {
