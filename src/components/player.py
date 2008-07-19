@@ -26,7 +26,8 @@ import aldrin.common as common
 import gobject
 import os,sys 
 import time
-from aldrin.utils import is_generator, is_effect, is_root, is_controller, is_streamer
+from aldrin.utils import is_generator, is_effect, is_root, is_controller, is_streamer, \
+	PropertyEventHandler, generate_ui_methods
 from config import get_plugin_aliases, get_plugin_blacklist
 
 import gtk
@@ -78,7 +79,7 @@ DOCUMENT_UI = dict(
 	document_path = dict(vtype=str,doc="path to the current document."),
 )
 
-class AldrinPlayer(Player):
+class AldrinPlayer(Player, PropertyEventHandler):
 	__aldrin__ = dict(
 		id = 'aldrin.core.player',
 		singleton = True,
@@ -336,38 +337,6 @@ class AldrinPlayer(Player):
 		zzub.Player.clear(self)
 		self.document_path = ''
 		
-	def getter(self, membername, kwargs):
-		value = getattr(self, '__' + membername)
-		onget = kwargs.get('onget',None)
-		if onget:
-			value = onget(value)
-		return value
-		
-	def setter(self, membername, kwargs, value):		
-		onset = kwargs.get('onset',None)
-		if onset:
-			value = onset(value)
-		setattr(self, '__' + membername, value)
-		eventname = kwargs.get('event', membername + '_changed')
-		eventbus = com.get('aldrin.core.eventbus')
-		getattr(eventbus, eventname)(value)
-		
-	def listgetter(self, membername, kwargs):
-		value = getattr(self, '__' + membername)
-		onget = kwargs.get('onget',None)
-		if onget:
-			value = onget(value)
-		return value[:]
-		
-	def listsetter(self, membername, kwargs, values):
-		onset = kwargs.get('onset',None)
-		if onset:
-			values = onset(values)
-		setattr(self, '__' + membername, values)
-		eventname = kwargs.get('event', membername + '_changed')
-		eventbus = com.get('aldrin.core.eventbus')
-		getattr(eventbus, eventname)(values[:])
-				
 	def on_handle_events(self):
 		"""
 		Handler triggered by the default timer. Asks the player to fill
@@ -658,48 +627,7 @@ class AldrinPlayer(Player):
 		mp.destroy()
 		self.history_commit("delete plugin")
 
-
-def generate_ui_method(membername, kwargs):
-	doc = kwargs.get('doc', '')
-		
-	onset = kwargs.get('onset', None)
-	onget = kwargs.get('onget', None)
-	
-	if kwargs.get('list', False):
-		vtype = kwargs['vtype']
-		getter = lambda self: self.listgetter(membername,kwargs)
-		setter = lambda self,value: self.listsetter(membername,kwargs,value)
-		default = kwargs.get('default', [])
-	else:
-		if 'default' in kwargs:
-			default = kwargs['default']
-			vtype = kwargs.get('vtype', type(default))
-		else:
-			vtype = kwargs['vtype']
-			default = {float: 0.0, int:0, long:0, str:'', unicode:u'', bool:False}.get(vtype, None)
-		getter = lambda self,defvalue=kwargs.get(default,False): self.getter(membername,kwargs)
-		setter = lambda self,value: self.setter(membername,kwargs,value)
-	
-	setattr(AldrinPlayer, '__' + membername, default)
-	
-	getter.__name__ = 'get_' + membername
-	getter.__doc__ = 'Returns ' + doc
-	setattr(AldrinPlayer, 'get_' + membername, getter)
-	
-	setter.__name__ = 'set_' + membername
-	setter.__doc__ = 'Sets ' + doc
-	setattr(AldrinPlayer, 'set_' + membername, setter)
-	
-	# add a property
-	prop = property(getter, setter, doc=doc)
-	setattr(AldrinPlayer, membername, prop)
-
-def generate_ui_methods():
-	# build getters and setters based on the options map
-	for membername,kwargs in DOCUMENT_UI.iteritems():
-		generate_ui_method(membername, kwargs)
-
-generate_ui_methods()
+generate_ui_methods(AldrinPlayer, DOCUMENT_UI)
 
 __aldrin__ = dict(
 	classes = [

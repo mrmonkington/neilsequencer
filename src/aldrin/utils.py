@@ -1042,6 +1042,82 @@ class Menu(gtk.Menu):
 			event_time = 0
 		gtk.Menu.popup(self, None, None, None, event_button, event_time)
 
+class PropertyEventHandler:
+	def get_eventbus(self):
+		return com.get('aldrin.core.eventbus')
+
+	def getter(self, membername, kwargs):
+		value = getattr(self, '__' + membername)
+		onget = kwargs.get('onget',None)
+		if onget:
+			value = onget(value)
+		return value
+		
+	def setter(self, membername, kwargs, value):		
+		onset = kwargs.get('onset',None)
+		if onset:
+			value = onset(value)
+		setattr(self, '__' + membername, value)
+		eventname = kwargs.get('event', membername + '_changed')
+		eventbus = self.get_eventbus()
+		getattr(eventbus, eventname)(value)
+		
+	def listgetter(self, membername, kwargs):
+		value = getattr(self, '__' + membername)
+		onget = kwargs.get('onget',None)
+		if onget:
+			value = onget(value)
+		return value[:]
+		
+	def listsetter(self, membername, kwargs, values):
+		onset = kwargs.get('onset',None)
+		if onset:
+			values = onset(values)
+		setattr(self, '__' + membername, values)
+		eventname = kwargs.get('event', membername + '_changed')
+		eventbus = self.get_eventbus()
+		getattr(eventbus, eventname)(values[:])
+
+def generate_ui_method(class_, membername, kwargs):
+	doc = kwargs.get('doc', '')
+		
+	onset = kwargs.get('onset', None)
+	onget = kwargs.get('onget', None)
+	
+	if kwargs.get('list', False):
+		vtype = kwargs['vtype']
+		getter = lambda self: self.listgetter(membername,kwargs)
+		setter = lambda self,value: self.listsetter(membername,kwargs,value)
+		default = kwargs.get('default', [])
+	else:
+		if 'default' in kwargs:
+			default = kwargs['default']
+			vtype = kwargs.get('vtype', type(default))
+		else:
+			vtype = kwargs['vtype']
+			default = {float: 0.0, int:0, long:0, str:'', unicode:u'', bool:False}.get(vtype, None)
+		getter = lambda self,defvalue=kwargs.get(default,False): self.getter(membername,kwargs)
+		setter = lambda self,value: self.setter(membername,kwargs,value)
+	
+	setattr(class_, '__' + membername, default)
+	
+	getter.__name__ = 'get_' + membername
+	getter.__doc__ = 'Returns ' + doc
+	setattr(class_, 'get_' + membername, getter)
+	
+	setter.__name__ = 'set_' + membername
+	setter.__doc__ = 'Sets ' + doc
+	setattr(class_, 'set_' + membername, setter)
+	
+	# add a property
+	prop = property(getter, setter, doc=doc)
+	setattr(class_, membername, prop)
+
+def generate_ui_methods(class_, memberlist):
+	# build getters and setters based on the options map
+	for membername,kwargs in memberlist.iteritems():
+		generate_ui_method(class_, membername, kwargs)
+
 __all__ = [
 'is_frozen',
 'get_root_folder_path',
