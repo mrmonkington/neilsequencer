@@ -1609,7 +1609,8 @@ bool CcmReader::loadPlugins(xml_node plugins, zzub::player &player) {
 				if (!strcmp(i->name(), "events")) {
 					int rows = int(double(i->attribute("length").as_double()) * tpbfac + 0.5);
 					int plugin = c->target;
-					pattern p = player.back.create_pattern(plugin, rows);
+					pattern p;
+					player.back.create_pattern(p, plugin, rows);
 					p.name = i->attribute("name").value();
 					player.plugin_add_pattern(plugin, p);
 					int pattern_index = player.back.plugins[plugin]->patterns.size() - 1;
@@ -1956,4 +1957,5 @@ bool CcmReader::open(std::string fileName, zzub::player* player) {
 
 
 };
+
 

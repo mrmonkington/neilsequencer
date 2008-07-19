@@ -1759,7 +1759,9 @@ zzub_pattern_t *zzub_plugin_create_pattern(zzub_plugin_t *plugin, int rows) {
 	flags.plugin_flags.push_back(plugin_flags);
 	plugin->_player->merge_backbuffer_flags(flags);
 
-	return new zzub::pattern(plugin->_player->back.create_pattern(plugin->id, rows));
+	zzub::pattern* p = new zzub::pattern();
+	plugin->_player->back.create_pattern(*p, plugin->id, rows);
+	return p;
 }
 
 zzub_pattern_t *zzub_plugin_create_range_pattern(zzub_player_t *player, int columns, int rows) {

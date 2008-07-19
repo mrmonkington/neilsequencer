@@ -101,6 +101,7 @@ void pluginlib::init_dll() {
 				this->collection = _func(); // get our collection instance
 				if (this->collection) {
 					this->collection->initialize(this);
+					return ;
 				} else {
 					printf("%s: collection pointer is zero.\n", fileName.c_str());
 				}
@@ -113,7 +114,10 @@ void pluginlib::init_dll() {
 		// let the user know
 		printf("%s: signature function missing.\n", fileName.c_str());
 	}
-	
+
+	// there was an error, close the handle
+	xp_dlclose(hMachine);
+	hMachine = 0;
 }
 
 void pluginlib::register_info(const zzub::info *_info) {

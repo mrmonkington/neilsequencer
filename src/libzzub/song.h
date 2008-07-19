@@ -221,7 +221,7 @@ struct song {
 	connection_type plugin_get_output_connection_type(int plugin_id, int index);
 
 	// pattern methods
-	pattern create_pattern(int from_id, int rows);
+	void create_pattern(pattern& p, int from_id, int rows);
 
 	// pattern utility:
 

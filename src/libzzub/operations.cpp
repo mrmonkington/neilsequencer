@@ -122,9 +122,9 @@ bool op_plugin_create::prepare(zzub::song& song) {
 	// host::control_change in their init() (e.g Farbrasch V2)
 	plugin.tracks = loader->min_tracks;
 	// create state patterns with no-values
-	plugin.state_write = song.create_pattern(id, 1);
-	plugin.state_last = song.create_pattern(id, 1);
-	plugin.state_automation = song.create_pattern(id, 1);
+	song.create_pattern(plugin.state_write, id, 1);
+	song.create_pattern(plugin.state_last, id, 1);
+	song.create_pattern(plugin.state_automation, id, 1);
 
 	// NOTE: some plugins' init() may call methods on the host to retreive info about other plugins.
 	// we handle this by setting callbacks->plugin_player to the backbuffer song until the plugin

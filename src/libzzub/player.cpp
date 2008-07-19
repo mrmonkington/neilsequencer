@@ -472,7 +472,11 @@ void player::load_plugin_library(const std::string &fullpath) {
 #endif
 		// machine loaders will be registered by lib through registerMachineLoader,
 		// now and during loading of songs
-		plugin_libraries.push_back(new pluginlib(fullpath, *this));
+		pluginlib* l = new pluginlib(fullpath, *this);
+		if (l->collection != 0)
+			plugin_libraries.push_back(l); 
+		else 
+			delete l;
 	}
 }
 
@@ -878,7 +882,8 @@ void player::process_user_event_queue() {
 
 void player::plugin_set_parameter(int plugin_id, int group, int track, int column, int value, bool record, bool immediate, bool undoable) {
 	if (immediate) {
-		zzub::pattern state = front.create_pattern(plugin_id, 1);
+		zzub::pattern state;
+		front.create_pattern(state, plugin_id, 1);
 		state.groups[group][track][column][0] = value;
 		front.transfer_plugin_parameter_row(plugin_id, group, state, front.plugins[plugin_id]->state_write, 0, 0, false);
 		if (record)
@@ -890,13 +895,15 @@ void player::plugin_set_parameter(int plugin_id, int group, int track, int colum
 		flags.copy_graph = true;
 		merge_backbuffer_flags(flags);
 
-		zzub::pattern state = back.create_pattern(plugin_id, 1);
+		zzub::pattern state;
+		back.create_pattern(state, plugin_id, 1);
 		state.groups[group][track][column][0] = value;
 		op_plugin_set_parameters_and_tick* redo = new op_plugin_set_parameters_and_tick(plugin_id, state, 0);
 		redo->record = record;
 		if (undoable) {
 			int oldval = back.plugin_get_parameter(plugin_id, group, track, column);
-			zzub::pattern undo_state = back.create_pattern(plugin_id, 1);
+			zzub::pattern undo_state;
+			back.create_pattern(undo_state, plugin_id, 1);
 			undo_state.groups[group][track][column][0] = oldval;
 			op_plugin_set_parameters_and_tick* undo = new op_plugin_set_parameters_and_tick(plugin_id, undo_state, 0);
 			undo->record = record;

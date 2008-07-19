@@ -476,9 +476,9 @@ bool BuzzReader::loadPatterns() {
 			f->read(name);
 			f->read(rows);
 
-			pattern p = player->back.create_pattern(*i, rows);
+			pattern p;
+			player->back.create_pattern(p, *i, rows);
 			p.name = name;
-			p.rows = rows;
 			int prev_connections = player->back.plugin_get_input_connection_count(*i) - connections[*i].size();
 
 			pattern::group& group0 = p.groups[0];

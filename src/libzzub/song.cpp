@@ -638,18 +638,18 @@ void song::transfer_plugin_parameter_row(int plugin_id, int g, const zzub::patte
 	}
 }
 
-zzub::pattern song::create_pattern(int plugin_id, int rows) {
-	const metaplugin& m = *plugins[plugin_id];
-	
-	zzub::pattern result;
+void song::create_pattern(zzub::pattern& result, int plugin_id, int rows) {
+	metaplugin& m = *plugins[plugin_id];
+
 	result.rows = rows;
 	result.groups.resize(3);
-	
+
 	// add connection tracks
 	zzub::out_edge_iterator out, out_end;
 	boost::tie(out, out_end) = out_edges(m.descriptor, graph);
-	for(int i = 0; out != out_end; ++out, i++) {
-		const edge_props& c = graph[*out];
+
+	for(; out != out_end; ++out) {
+		edge_props& c = graph[*out];
 		add_pattern_connection_track(result, c.conn->connection_parameters);
 	}
 
@@ -668,8 +668,6 @@ zzub::pattern song::create_pattern(int plugin_id, int rows) {
 			result.groups[2][i][j].resize(rows);
 	}
 	reset_plugin_parameter_group(result.groups[2], m.info->track_parameters);
-
-	return result;
 }
 
 void song::set_pattern_tracks(zzub::pattern& p, const std::vector<const zzub::parameter*>& parameters, int tracks, bool set_defaults) {
