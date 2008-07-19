@@ -187,6 +187,7 @@ class AldrinPlayer(Player, PropertyEventHandler):
 		self.init_lunar()
 		self.__stream_ext_uri_mappings = {}
 		self.__streamplayer = None
+		self.__streamrecorder = None
 		self.enumerate_stream_plugins()
 		self.playstarttime = time.time()		
 		self.document_unchanged()
@@ -219,6 +220,33 @@ class AldrinPlayer(Player, PropertyEventHandler):
 	def set_machine_non_song(self, plugin, enable):
 		pi = common.get_plugin_infos().get(plugin)
 		pi.songplugin = not enable
+
+	def delete_stream_recorder(self):
+		if not self.__streamrecorder:
+			return
+		self.__streamrecorder.destroy()
+		self.__streamrecorder = None
+
+	def create_stream_recorder(self):
+		# create a recorder plugin
+		if self.__streamrecorder:
+			return
+		loader = self.get_pluginloader_by_name('@zzub.org/recorder/file')
+		if not loader:
+			print >> sys.stderr, "Can't find file recorder plugin loader."
+			return
+		
+		self.__streamrecorder = zzub.Player.create_plugin(self, None, 0, "_RecorderPlugin", loader)
+		if not self.__streamrecorder:
+			print >> sys.stderr, "Can't create file recorder plugin instance."
+			return
+		master = self.get_plugin(0)
+		self.__streamrecorder.add_input(master, zzub.zzub_connection_type_audio)
+		self.set_machine_non_song(self.__streamrecorder, True)
+		
+	def get_stream_recorder(self):
+		self.create_stream_recorder()
+		return self.__streamrecorder
 		
 	def create_stream_player(self, uri):
 		# create a stream player plugin and keep it out of the undo buffer
@@ -328,6 +356,10 @@ class AldrinPlayer(Player, PropertyEventHandler):
 		return res
 		
 	def save_ccm(self, filename):
+		self.delete_stream_player()
+		self.delete_stream_recorder()
+		self.flush(None,None)
+		self.history_flush_last()
 		res = zzub.Player.save_ccm(self, filename)
 		if not res:
 			self.document_path = filename
@@ -474,7 +506,6 @@ class AldrinPlayer(Player, PropertyEventHandler):
 		pi.reset_plugingfx()
 		
 	def create_plugin(self, pluginloader):
-		
 		# find an unique name for the new plugin
 		basename = pluginloader.get_short_name()
 		name = pluginloader.get_short_name()
