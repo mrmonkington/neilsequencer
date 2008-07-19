@@ -207,6 +207,7 @@ class AldrinPlayer(Player):
 						print >> sys.stderr, "Found another mapping for " + ext + "! Skipping " + uri
 						continue
 					self.__stream_ext_uri_mappings[ext] = uri
+		print "supported sample formats: " + ', '.join(sorted(self.__stream_ext_uri_mappings.keys()))
 					
 	def delete_stream_player(self):
 		if not self.__streamplayer:

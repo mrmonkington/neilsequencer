@@ -25,7 +25,7 @@ Provides an object which eases access to the applications configuration.
 import gtk
 import os, glob, re
 
-from aldrin.utils import filepath, camelcase_to_unixstyle, etcpath, imagepath, iconpath, sharedpath
+from aldrin.utils import filepath, camelcase_to_unixstyle, etcpath, imagepath, iconpath, sharedpath, filenameify
 import aldrin.preset as preset
 import ConfigParser
 import new
@@ -616,7 +616,6 @@ class AldrinConfig(object, ConfigParser.ConfigParser):
 		@return: A preset collection.
 		@rtype: preset.PresetCollection
 		"""
-		from utils import filenameify
 		uri = filenameify(pluginloader.get_uri())
 		name = filenameify(pluginloader.get_name())
 		presetpath = os.path.join(sharedpath('presets'))
