@@ -140,6 +140,9 @@ public:
 	virtual void get_midi_output_names(zzub::outstream *pout) {}
 	virtual void set_stream_source(const char* resource) {}
 	virtual const char* get_stream_source() { return 0; }
+	virtual void play_pattern(int index) {}
+	virtual void configure(const char *key, const char *value) {}
+	
   
 
 private:

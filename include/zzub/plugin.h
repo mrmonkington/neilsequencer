@@ -685,48 +685,52 @@ struct midi_message {
 
 struct plugin {
 	virtual ~plugin() { }
-	virtual void destroy() = 0;//{ delete this; }
-	virtual void init(zzub::archive *arc) = 0;//{}
-	virtual void process_events() = 0;//{}
-	virtual void process_midi_events(midi_message* pin, int nummessages) = 0;//{}
-	virtual void process_controller_events() = 0;//{}
-	virtual bool process_stereo(float **pin, float **pout, int numsamples, int mode) = 0;//{ return false; }
-	virtual bool process_offline(float **pin, float **pout, int *numsamples, int *channels, int *samplerate) = 0;//{ return false; }
-	virtual void stop() = 0;//{}
-	virtual void load(zzub::archive *arc) = 0;//{}
-	virtual void save(zzub::archive *arc) = 0;//{}
-	virtual void attributes_changed() = 0;//{}
-	virtual void command(int index) = 0;//{}
-	virtual void set_track_count(int count) = 0;//{}
-	virtual void mute_track(int index) = 0;//{}
-	virtual bool is_track_muted(int index) const = 0;//{ return false; }
-	virtual void midi_note(int channel, int value, int velocity)  = 0;//{}
-	virtual void event(unsigned int data)  = 0;//{}
-	virtual const char * describe_value(int param, int value) = 0;//{ return 0; }
-	virtual const zzub::envelope_info ** get_envelope_infos() = 0;//{ return 0; }
-	virtual bool play_wave(int wave, int note, float volume) = 0;//{ return false; }
-	virtual void stop_wave() = 0;//{}
-	virtual int get_wave_envelope_play_position(int env) = 0;//{ return -1; }
+	virtual void destroy() { delete this; }
+	virtual void init(zzub::archive *arc) {}
+	virtual void process_events() {}
+	virtual void process_midi_events(midi_message* pin, int nummessages) {}
+	virtual void process_controller_events() {}
+	virtual bool process_stereo(float **pin, float **pout, int numsamples, int mode) { return false; }
+	virtual bool process_offline(float **pin, float **pout, int *numsamples, int *channels, int *samplerate) { return false; }
+	virtual void stop() {}
+	virtual void load(zzub::archive *arc) {}
+	virtual void save(zzub::archive *arc) {}
+	virtual void attributes_changed() {}
+	virtual void command(int index) {}
+	virtual void set_track_count(int count) {}
+	virtual void mute_track(int index) {}
+	virtual bool is_track_muted(int index) const { return false; }
+	virtual void midi_note(int channel, int value, int velocity)  {}
+	virtual void event(unsigned int data)  {}
+	virtual const char * describe_value(int param, int value) { return 0; }
+	virtual const zzub::envelope_info ** get_envelope_infos() { return 0; }
+	virtual bool play_wave(int wave, int note, float volume) { return false; }
+	virtual void stop_wave() {}
+	virtual int get_wave_envelope_play_position(int env) { return -1; }
 
 	// these have been in zzub::plugin2 before
-	virtual const char* describe_param(int param) = 0;//{ return 0; }
-	virtual bool set_instrument(const char *name) = 0;//{ return false; }
-	virtual void get_sub_menu(int index, zzub::outstream *os) = 0;//{}
-	virtual void add_input(const char *name, zzub::connection_type type) = 0;//{}
-	virtual void delete_input(const char *name, zzub::connection_type type) = 0;//{}
-	virtual void rename_input(const char *oldname, const char *newname) = 0;//{}
-	virtual void input(float **samples, int size, float amp) = 0;//{}
-	virtual void midi_control_change(int ctrl, int channel, int value) = 0;//{}
-	virtual bool handle_input(int index, int amp, int pan) = 0;//{ return false; }
+	virtual const char* describe_param(int param) { return 0; }
+	virtual bool set_instrument(const char *name) { return false; }
+	virtual void get_sub_menu(int index, zzub::outstream *os) {}
+	virtual void add_input(const char *name, zzub::connection_type type) {}
+	virtual void delete_input(const char *name, zzub::connection_type type) {}
+	virtual void rename_input(const char *oldname, const char *newname) {}
+	virtual void input(float **samples, int size, float amp) {}
+	virtual void midi_control_change(int ctrl, int channel, int value) {}
+	virtual bool handle_input(int index, int amp, int pan) { return false; }
 
 	// plugin_flag_has_midi_output
-	virtual void get_midi_output_names(outstream *pout) = 0;//{}
+	virtual void get_midi_output_names(outstream *pout) {}
 
 	// plugin_flag_stream | plugin_flag_has_audio_output
-	virtual void set_stream_source(const char* resource) = 0;//{}
-	virtual const char* get_stream_source() = 0;//{ return 0; }
+	virtual void set_stream_source(const char* resource) {}
+	virtual const char* get_stream_source() { return 0; }
 
-	virtual void play_pattern(int index) { }	// TODO: abstract
+	virtual void play_pattern(int index) {}
+	
+	// Called by the host to set specific configuration options,
+	// usually related to paths.
+	virtual void configure(const char *key, const char *value) {}
 
 	plugin() {
 		global_values = 0;
@@ -766,27 +770,27 @@ struct plugincollection {
 	// plugins through the pluginfactory::register_info method.
 	// The factory pointer remains valid and can be stored
 	// for later reference.
-	virtual void initialize(zzub::pluginfactory *factory) = 0;//{}
+	virtual void initialize(zzub::pluginfactory *factory) {}
 	
 	// Called by the host upon song loading. If the collection
 	// can not provide a plugin info based on the uri or
 	// the metainfo passed, it should return a null pointer.
 	// This will usually only be called if the host does
 	// not know about the uri already.
-	virtual const zzub::info *get_info(const char *uri, zzub::archive *arc) = 0;//{ return 0; }
+	virtual const zzub::info *get_info(const char *uri, zzub::archive *arc) { return 0; }
 	
 	// Returns the uri of the collection to be identified,
 	// return zero for no uri. Collections without uri can not be 
 	// configured.
-	virtual const char *get_uri() = 0;//{ return 0; }
+	virtual const char *get_uri() { return 0; }
 	
 	// Called by the host to set specific configuration options,
 	// usually related to paths.
-	virtual void configure(const char *key, const char *value) = 0;//{}
+	virtual void configure(const char *key, const char *value) {}
 	
 	// Called by the host upon destruction. You should
 	// delete the instance in this function
-	virtual void destroy() = 0;//{ delete this; }
+	virtual void destroy() { delete this; }
 };
 
 struct scopelock {

@@ -242,6 +242,9 @@ struct recorder_wavetable_plugin : plugin {
 	virtual void set_stream_source(const char* resource) {}
 	virtual const char* get_stream_source() { return 0; }
 
+	virtual void play_pattern(int index) {}
+	virtual void configure(const char *key, const char *value) {}
+
 };
 
 
@@ -407,7 +410,11 @@ struct recorder_file_plugin : plugin {
 	virtual void get_midi_output_names(outstream *pout) {}
 	virtual void set_stream_source(const char* resource) {}
 	virtual const char* get_stream_source() { return 0; }
-
+	virtual void play_pattern(int index) {}
+	virtual void configure(const char *key, const char *value) {
+		if (!strcmp(key, "wavefilepath"))
+			waveFilePath = value;
+	}
 
 	bool open() {
 		if (waveFile) return false;

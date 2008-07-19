@@ -107,6 +107,9 @@ struct input_plugin : plugin {
 	virtual bool handle_input(int index, int amp, int pan) { return false; }
 	virtual void set_stream_source(const char* resource) {}
 	virtual const char* get_stream_source() { return 0; }
+	virtual void play_pattern(int index) {}
+	virtual void configure(const char *key, const char *value) {}
+	
 };
 
 zzub::plugin* input_plugin_info::create_plugin() const { 
