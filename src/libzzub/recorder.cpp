@@ -256,6 +256,7 @@ struct recorder_file_plugin : plugin {
 	bool writeWave; // if true, mixed buffers will be written to outfile
 	bool autoWrite; // write wave when playing and stop writing when stopped
 	int ticksWritten; // number of ticks that have been written
+	bool updateRecording; // update recording status 
 
     std::string waveFilePath;
 	wave_buffer_type format;
@@ -272,6 +273,7 @@ struct recorder_file_plugin : plugin {
 	int a[2];
 	
 	recorder_file_plugin() {
+		updateRecording = false;
 		writeWave = false;
 		autoWrite = false;
 		ticksWritten = 0;
@@ -288,38 +290,54 @@ struct recorder_file_plugin : plugin {
 	virtual void destroy() { stop(); delete this; }
 	virtual void init(zzub::archive *arc) {}
 	virtual void process_events() {
+		autoWrite = (attributes[0] == 0)?true:false;
+		format = (wave_buffer_type)attributes[1];
+		
 		if (g.enable != switch_value_none) {
 			if (g.enable != lg.enable) {
 				lg.enable = g.enable;
 				if (g.enable) {
-					format = (wave_buffer_type)attributes[1];
-					if (open())
-						if (attributes[0] == 0)
-							autoWrite = true; 
-						else if (attributes[0] == 1)
-							writeWave = true;
+					set_writewave(true);
 				} else {
-					stop();
+					set_writewave(false);
 				}
 			}
 		}
-
-		if (autoWrite) {
-			if (_host->get_state_flags() == state_flag_playing)
-				writeWave = true;
-			else
-				writeWave = false;
-		}
 		
+		if (autoWrite) {
+			if (_host->get_state_flags() == state_flag_playing) {
+				set_writewave(true);
+			} else {
+				set_writewave(false);
+			}
+		} 
+
 		if (writeWave) {
 			ticksWritten++;
 		}
 
 	}
+	
+	void set_writewave(bool enabled) {
+		if (writeWave == enabled)
+			return;
+		writeWave = enabled;
+		updateRecording = true;
+	}
+	
+	void set_recording(bool enabled) {
+		if (!autoWrite)
+			return;
+		lg.enable = enabled; // fake an external change
+		_host->control_change(_host->get_metaplugin(), 1, 0, 1, enabled?1:0, false, false);
+	}
 	virtual bool process_offline(float **pin, float **pout, int *numsamples, int *channels, int *samplerate) { return false; }
 	virtual void process_controller_events() {}
 	virtual bool process_stereo(float **pin, float **pout, int numsamples, int mode) {
-
+		if (updateRecording) {
+			set_recording(writeWave);
+			updateRecording = false;
+		}
 		if (writeWave) { // shall we write a wavefile?
 			if (!isOpen()) { // did we open the handle yet?
 				open();
@@ -327,21 +345,14 @@ struct recorder_file_plugin : plugin {
 			if (isOpen()) { // do we have a handle?
 				write(pin, numsamples);
 			}
-		} else { // no wave writing
-			if (isOpen())
-				stop();
+		} else if (isOpen()) { // no wave writing, but handle open?
+			close();
 		}
 		return true;
 	}
 	virtual void stop() {
-		if (isOpen()) {
-			close();
-			autoWrite = false;
-			writeWave = false;
-			
-			// set the "Record" parameter to off:
-			_host->control_change(_host->get_metaplugin(), 1, 0, 1, 0, false, false);
-		}
+//		if (autoWrite)
+//			set_writewave(false);
 	}
 	virtual void load(zzub::archive *arc) {}
 	virtual void save(zzub::archive *arc) {}

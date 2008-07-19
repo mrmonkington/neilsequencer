@@ -87,7 +87,7 @@ struct recorder_file_plugin_info : zzub::info {
 			.set_state_flag();
 
 		add_attribute()
-			.set_name("Record Mode (0=wait for play/stop, 1=continous)")
+			.set_name("Record Mode (0=automatic, 1=manual)")
 			.set_value_default(0)
 			.set_value_min(0)
 			.set_value_max(1);
