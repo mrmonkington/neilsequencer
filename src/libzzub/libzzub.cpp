@@ -1355,6 +1355,16 @@ void zzub_plugin_set_track_count(zzub_plugin_t *plugin, int tracks) {
 	plugin->_player->plugin_set_track_count(plugin->id, tracks);
 }
 
+int zzub_plugin_get_group_track_count(zzub_plugin_t *plugin, int group) {
+	switch (group) {
+		case zzub_parameter_group_connection: return zzub_plugin_get_input_connection_count(plugin);
+		case zzub_parameter_group_global: return 1;
+		case zzub_parameter_group_track: return zzub_plugin_get_track_count(plugin);
+		default: return 0;
+	}
+	return 0;
+}
+
 int zzub_plugin_pattern_to_linear_no_connections(zzub_plugin_t *plugin, int group, int track, int column, int* index) {
 
 

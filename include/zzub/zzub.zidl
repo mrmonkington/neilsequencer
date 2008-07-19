@@ -315,6 +315,11 @@ namespace zzub:
 		set audio = 0
 		set event = 1
 		set midi = 2
+		
+	enum ParameterGroup:
+		set connection = 0
+		set global = 1
+		set track = 2
 
 	"Audio Driver Methods"
 	"Configure and create an audio driver instance."
@@ -549,6 +554,9 @@ namespace zzub:
 
 		"Sets the number of tracks. Will call plugin::set_track_count() from the player thread."
 		def set_track_count(int count)
+		
+		"Returns the number of tracks for one of ParameterGroup"
+		def get_group_track_count(int group): int
 
 		"Returns 1 if plugin is muted, otherwise 0."
 		def get_mute(): int
