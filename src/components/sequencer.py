@@ -23,6 +23,11 @@ Contains all classes and functions needed to render the sequence
 editor and its associated components.
 """
 
+if __name__ == '__main__':
+	import os
+	os.system('../../bin/aldrin-combrowser aldrin.core.sequencerpanel')
+	raise SystemExit
+	
 import gtk
 import pango
 import gobject
@@ -459,13 +464,15 @@ class SequencerView(gtk.DrawingArea):
 		# get sequencer and add the track
 		player = com.get('aldrin.core.player')
 		seq = player.get_current_sequencer()
-		track = seq.create_track(plugin)
+		track = seq.create_sequence(plugin)
 		# if it has no existing patterns, make one (even if it has no parameters, it might have incoming connections)
 		if plugin.get_pattern_count() == 0:
-			pattern = plugin.create_pattern(com.get('aldrin.core.sequencerpanel').view.step)
+			pattern = plugin.create_pattern(player.sequence_step)
 			pattern.set_name('00')
+			plugin.add_pattern(pattern)
 			# add a pattern trigger-event
 			track.set_event(0, 16)
+		player.history_commit("add track")
 		self.adjust_scrollbars()
 		self.redraw()
 		
