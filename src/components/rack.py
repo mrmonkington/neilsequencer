@@ -555,7 +555,9 @@ class ParameterView(gtk.VBox):
 								self.plugin.set_parameter_value(g,t,i,p.get_value_default(),0)
 		else:			
 			preset.apply(self.plugin)
-		self.update_all_sliders()
+		player = com.get('aldrin.core.player')
+		player.history_commit("change preset")
+		#self.update_all_sliders()
 	
 	def on_button_add(self, widget):
 		"""
@@ -626,7 +628,11 @@ class ParameterView(gtk.VBox):
 		have been changed at once, e.g. after a preset change.
 		"""
 		for g in range(1,3):
-			for t in range(self.plugin.get_group_track_count(g)):
+			if g == 1:
+				trackcount = 1
+			else:
+				trackcount = self.plugin.get_track_count()
+			for t in range(trackcount):
 				for i in range(self.pluginloader.get_parameter_count(g)):
 					p = self.pluginloader.get_parameter(g,i)
 					if p.get_flags() & zzub.zzub_parameter_flag_state:

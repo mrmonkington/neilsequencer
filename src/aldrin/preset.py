@@ -45,6 +45,7 @@ Provides a class to read and write preset files.
 
 import zzub
 from utils import read_int, read_string, write_int, write_string
+from aldrin.com import com
 
 def sort_preset(a,b):
 	if a.name.lower() < b.name.lower():
@@ -102,9 +103,11 @@ class Preset:
 		for g in range(1,3):
 			if g == 1:
 				trackcount = 1
+				target_trackcount = 1
 			else:
 				trackcount = self.trackcount
-			for t in range(plugin.get_group_track_count(g)):
+				target_trackcount = plugin.get_track_count()
+			for t in range(target_trackcount):
 				state_param_count = 0
 				for i in range(pl.get_parameter_count(g)):
 					p = pl.get_parameter(g,i)
@@ -119,10 +122,6 @@ class Preset:
 					# tracks in the plugin, reset to the beginning of the preset tracks
 					# and keep writing.
 					idx -= state_param_count * trackcount
-
-					
-					
-						
 								
 	def pickup(self, plugin):
 		"""
