@@ -690,6 +690,8 @@ class ParameterView(gtk.VBox):
 						self.plugin.set_parameter_value(g,t,i,v,0)
 						s.set_value(v)
 						self.update_valuelabel(g,t,i)
+		player = com.get('aldrin.core.player')
+		player.history_commit("randomize parameters")
 			
 	def on_button_help(self, event):
 		"""
