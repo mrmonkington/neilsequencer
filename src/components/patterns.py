@@ -1900,11 +1900,9 @@ class PatternView(gtk.DrawingArea):
 			elif k in ('KP_Subtract','minus'):
 				self.on_popup_delete_track()
 			elif k == 'Up':
-				# TODO: select previous plugin
-				pass
+				player.activate_plugin(-1)
 			elif k == 'Down':
-				# TODO: select next plugin
-				pass
+				player.activate_plugin(1)
 			else:
 				return False
 		elif k == 'Left' or k == 'KP_Left':

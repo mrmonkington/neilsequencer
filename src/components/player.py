@@ -422,6 +422,38 @@ class AldrinPlayer(Player, PropertyEventHandler):
 			self.set_position(0)
 		else:
 			self.set_state(zzub.zzub_player_state_stopped)
+			
+	def get_plugin_list(self):
+		for plugin in zzub.Player.get_plugin_list(self):
+			if plugin == self.__streamplayer:
+				continue
+			if plugin == self.__streamrecorder:
+				continue
+			yield plugin
+			
+	def activate_plugin(self, direction):
+		"""
+		activates plugin with the name alphabetically relative to the currently
+		activated plugin name. if direction is -1, the preceeding plugin
+		will be chosen. if direction is 1, the following plugin will be chosen.
+		"""
+		def cmp_func(a,b):
+			return cmp(a.get_name().lower(), b.get_name().lower())
+		plugins = sorted(list(self.get_plugin_list()), cmp_func)
+		if not plugins:
+			return
+		if direction == -1:
+			if not self.active_plugins:
+				self.active_plugins = [plugins[-1]]
+			else:
+				pindex = plugins.index(self.active_plugins[0])
+				self.active_plugins = [plugins[(pindex-1)%len(plugins)]]
+		elif direction == 1:
+			if not self.active_plugins:
+				self.active_plugins = [plugins[0]]
+			else:
+				pindex = plugins.index(self.active_plugins[0])
+				self.active_plugins = [plugins[(pindex+1)%len(plugins)]]
 		
 	def handle_event(self, player, plugin, data, tag):
 		"""
