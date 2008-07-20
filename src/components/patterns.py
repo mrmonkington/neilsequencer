@@ -1768,6 +1768,8 @@ class PatternView(gtk.DrawingArea):
 		k = gtk.gdk.keyval_name(kv)
 		player = com.get('aldrin.core.player')
 		eventbus = com.get('aldrin.core.eventbus')
+		shiftdown = mask & gtk.gdk.SHIFT_MASK
+		ctrldown = mask & gtk.gdk.CONTROL_MASK
 		if k == 'less':
 			# TODO: select previous wave
 			pass
@@ -1941,11 +1943,23 @@ class PatternView(gtk.DrawingArea):
 			self.adjust_scrollbars()
 			self.refresh_view()
 		elif k == 'Insert' or k == 'KP_Insert':
-			self.plugin.insert_pattern_rows(self.pattern, (self.group, self.track, self.index), 1, self.row, 1) 
+			indices = []
+			if shiftdown:
+				for i in xrange(self.plugin.get_parameter_count(self.group, self.track)):
+					indices += [self.group, self.track, i]
+			else:
+				indices += [self.group, self.track, self.index]
+			self.plugin.insert_pattern_rows(self.pattern, indices, len(indices)/3, self.row, 1) 
 			player.history_commit("insert row")
 		elif k == 'Delete':
-			self.plugin.remove_pattern_rows(self.pattern, (self.group, self.track, self.index), 1, self.row, 1)
-			player.history_commit("delete row")
+			indices = []
+			if shiftdown:
+				for i in xrange(self.plugin.get_parameter_count(self.group, self.track)):
+					indices += [self.group, self.track, i]
+			else:
+				indices += [self.group, self.track, self.index]
+			self.plugin.remove_pattern_rows(self.pattern, indices, len(indices)/3, self.row, 1)
+			player.history_commit("remove row")
 		elif k == 'Return':
 			eventbus.edit_sequence_request()
 		elif k in ('KP_Add','plus'):
