@@ -30,7 +30,7 @@ from aldrin.com import com
 import zzub
 
 from aldrin.utils import is_generator, is_root, is_controller, is_effect, \
-	prepstr, Menu, new_theme_image
+	prepstr, Menu, new_theme_image, gettext
 from aldrin.utils import PLUGIN_FLAGS_MASK, ROOT_PLUGIN_FLAGS, \
 	GENERATOR_PLUGIN_FLAGS, EFFECT_PLUGIN_FLAGS, CONTROLLER_PLUGIN_FLAGS
 
@@ -133,8 +133,9 @@ class PluginContextMenu(gtk.Menu):
 	def on_popup_rename(self, widget, mp):
 		text = gettext(self, "Enter new plugin name:", prepstr(mp.get_name()))
 		if text:
+			player = com.get('aldrin.core.player')
 			mp.set_name(text)
-			common.get_plugin_infos().get(mp).reset_plugingfx()
+			player.history_commit("rename plugin")
 	
 	def on_popup_solo(self, widget, mp):
 		"""

@@ -695,7 +695,7 @@ class RouteView(gtk.DrawingArea):
 		eventbus = com.get('aldrin.core.eventbus')
 		eventbus.zzub_connect += self.on_zzub_redraw_event
 		eventbus.zzub_disconnect += self.on_zzub_redraw_event
-		eventbus.zzub_plugin_changed += self.on_zzub_redraw_event
+		eventbus.zzub_plugin_changed += self.on_zzub_plugin_changed
 		self.solo_plugin = None
 		self.selected_plugin = None
 		self.autoconnect_target=None
@@ -753,6 +753,10 @@ class RouteView(gtk.DrawingArea):
 				brushes.append(cfg.get_color(name))
 			self.flags2brushes[flags] = brushes
 		common.get_plugin_infos().reset_plugingfx()
+		
+	def on_zzub_plugin_changed(self, plugin):
+		common.get_plugin_infos().get(plugin).reset_plugingfx()
+		self.redraw()
 		
 	def on_zzub_redraw_event(self, *args):
 		self.redraw()
@@ -1065,24 +1069,10 @@ class RouteView(gtk.DrawingArea):
 		#font = wx.Font(8, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
 		PW, PH = PLUGINWIDTH / 2, PLUGINHEIGHT / 2
 
-		pluginlist = list(player.get_plugin_list())
-		
-		audiodriver = com.get('aldrin.core.driver.audio')
-		cpu = min(audiodriver.get_cpu_load(), 100.0)
-		cpu_loads = {}
-		biggestload = 0
-		try:
-			for mp in pluginlist:
-				cpuload = mp.get_last_worktime()
-				biggestload = max(biggestload, cpuload)
-				cpu_loads[mp] = cpuload
-		except:
-			import traceback
-			traceback.print_exc()
-		total_workload = max(sum(cpu_loads.values()),0.001)
-		cputreshold = 0.75
-	
-		for mp,(rx,ry) in ((mp,get_pixelpos(*mp.get_position())) for mp in pluginlist):
+		driver = com.get('aldrin.core.driver.audio')
+		cpu_scale = driver.get_cpu_load()
+		max_cpu_scale = 1.0 / player.get_plugin_count()
+		for mp,(rx,ry) in ((mp,get_pixelpos(*mp.get_position())) for mp in player.get_plugin_list()):
 			pi = common.get_plugin_infos().get(mp)
 			if not pi.songplugin:
 				continue
@@ -1138,17 +1128,14 @@ class RouteView(gtk.DrawingArea):
 					pi.plugingfx.draw_rectangle(gc, False, LEDOFSX, LEDOFSY, LEDWIDTH-1, LEDHEIGHT-1)
 					pi.amp = amp
 
-				try:
-					relperc = max(((cpu_loads[mp]*cpu) / (biggestload*100))*0.1 + pi.cpu*0.9, 0.0)
-				except ZeroDivisionError:
-					relperc = max(pi.cpu, 0.0)
+				relperc = min(1.0, mp.get_last_cpu_load() / max_cpu_scale) * cpu_scale
 				if relperc != pi.cpu:
 					pi.cpu = relperc
 					gc.set_foreground(cm.alloc_color(brushes[self.COLOR_CPU_OFF]))
 					pi.plugingfx.draw_rectangle(gc, True, CPUOFSX, CPUOFSY, CPUWIDTH-1, CPUHEIGHT-1)
 					height = int((CPUHEIGHT-4)*relperc + 0.5)
 					if (height > 0):
-						if relperc >= cputreshold:
+						if relperc >= 0.9:
 							gc.set_foreground(cm.alloc_color(brushes[self.COLOR_CPU_WARNING]))
 						else:
 							gc.set_foreground(cm.alloc_color(brushes[self.COLOR_CPU_ON]))
@@ -1301,7 +1288,8 @@ class RouteView(gtk.DrawingArea):
 				return
 		kv = event.keyval
 		if kv<256:
-			octave = com.get('aldrin.core.patternpanel').view.octave
+			player = com.get('aldrin.core.player')
+			octave = player.octave
 			note = key_to_note(kv)
 			if note in self.chordnotes:
 				self.chordnotes.remove(note)

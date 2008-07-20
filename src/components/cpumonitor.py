@@ -28,6 +28,7 @@ from aldrin.utils import prepstr, add_scrollbars
 import aldrin.utils as utils, os, stat
 import aldrin.common as common
 from aldrin.common import MARGIN, MARGIN2, MARGIN3
+import aldrin.com as com
 
 class CPUMonitorDialog(gtk.Dialog):
 	"""
@@ -93,21 +94,16 @@ class CPUMonitorDialog(gtk.Dialog):
 		"""
 		Called by timer event. Updates CPU usage statistics.
 		"""
+		player = com.get('aldrin.core.player')
+		driver = com.get('aldrin.core.driver.audio')
 		if self.window and self.window.is_visible():
-			player.lock_tick()
 			cpu = 0.0
 			cpu_loads = {}
-			try:
-				cpu = player.audiodriver_get_cpu_load()
-				for mp in player.get_plugin_list():
-					cpu_loads[mp.get_name()] = mp.get_last_worktime()
-			except:
-				import traceback
-				traceback.print_exc()
-			player.unlock_tick()
-			total_workload = max(sum(cpu_loads.values()),0.001)
-			self.gaugetotal.set_fraction(cpu / 100.0)
-			self.labeltotal.set_label("%i%%" % int(cpu + 0.5))
+			cpu = driver.get_cpu_load()
+			for mp in player.get_plugin_list():
+				cpu_loads[mp.get_name()] = mp.get_last_cpu_load()
+			self.gaugetotal.set_fraction(cpu)
+			self.labeltotal.set_label("%i%%" % int((cpu*100) + 0.5))
 			
 			class UpdateNode:
 				newvalues = {}
@@ -117,7 +113,7 @@ class CPUMonitorDialog(gtk.Dialog):
 				ref = gtk.TreeRowReference(store, store.get_path(item))
 				name = self.pluginlist.get_value(item, 0)
 				if name in cpu_loads:
-					relperc = (cpu_loads[name] / total_workload) * cpu
+					relperc = cpu_loads[name] * 100.0
 					un.newvalues[ref] = "%.1f%%" % relperc
 					del cpu_loads[name]
 				else:
@@ -136,7 +132,7 @@ class CPUMonitorDialog(gtk.Dialog):
 				
 			for k,v in cpu_loads.iteritems():
 				k = prepstr(k)
-				relperc = (v / total_workload) * cpu
+				relperc = v * 100.0
 				self.pluginlist.append([k, "%.1f%%" % relperc])
 			self.pluginlistview.columns_autosize()
 		return True
@@ -151,13 +147,3 @@ __aldrin__ = dict(
 	],
 )
 
-if __name__ == '__main__':
-	import testplayer, utils
-	player = testplayer.get_player()
-	player.load_ccm(utils.filepath('demosongs/paniq-knark.ccm'))
-	window = testplayer.TestWindow()
-	window.show_all()
-	dlg = CPUMonitorDialog(window)
-	dlg.connect('destroy', lambda widget: gtk.main_quit())
-	dlg.show_all()
-	gtk.main()
