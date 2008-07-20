@@ -27,7 +27,9 @@ namespace zzub {
 
 struct audiodriver_portaudio : audiodriver
 {
-
+	zzub::timer timer;								// hires timer, for cpu-meter
+	double last_work_time;							// length of last WorkStereo
+	double cpu_load;
 	PaStream *stream;
 
 	audiodriver_portaudio();

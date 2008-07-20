@@ -305,7 +305,8 @@ struct recorder_file_plugin : plugin {
 		}
 		
 		if (autoWrite) {
-			if (_host->get_state_flags() == state_flag_playing) {
+			bool hasWavefile = (waveFilePath.size() > 0);
+			if (hasWavefile && (_host->get_state_flags() == state_flag_playing)) {
 				set_writewave(true);
 			} else {
 				set_writewave(false);

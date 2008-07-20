@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <iostream>
 #include <cassert>
 #include <vector>
+#include "timer.h"
 #include "portaudio.h"
 #include "driver.h"
 #include "driver_portaudio.h"
@@ -37,6 +38,9 @@ void print_error(PaError err) {
 audiodriver_portaudio::audiodriver_portaudio() {
 	stream = 0;
 	defaultDevice = -1;
+	timer.start();
+	cpu_load = 0;
+	last_work_time = 0;
 	PaError err = Pa_Initialize();
 	if (err != paNoError)
 		print_error(err);
@@ -44,44 +48,46 @@ audiodriver_portaudio::audiodriver_portaudio() {
 
 int portaudio_process_callback( const void *input,
 										void *output,
-										unsigned long frameCount,
+										unsigned long nBufferFrames,
 										const PaStreamCallbackTimeInfo* timeInfo,
 										PaStreamCallbackFlags statusFlags,
 										void *userData )
 {
-	assert(frameCount <= audiodriver_portaudio::MAX_FRAMESIZE);
-	audiodriver *self = (audiodriver *)userData;
-	float* oBuffer = (float*)output;
-	float* ob = oBuffer;
-	float* iBuffer = (float*)input;
-	float* ib = iBuffer;
-	float* ip[audiodriver_portaudio::MAX_CHANNELS];
-	float* op[audiodriver_portaudio::MAX_CHANNELS];
+	assert(nBufferFrames <= audiodriver_portaudio::MAX_FRAMESIZE);
+	audiodriver_portaudio *self = (audiodriver_portaudio *)userData;
+	double start_time = self->timer.frame();
 
-	int out_ch = self->worker->work_out_device->out_channels;
-	int in_ch = self->worker->work_in_device?self->worker->work_in_device->in_channels:0;
+	float** fout = (float**)output;
+	float** fin = (float**)input;
+
+	int out_ch = self->worker->work_out_channel_count;
+	int in_ch = self->worker->work_in_channel_count;
 	for (int i = 0; i<in_ch; i++) {
-		ip[i] = self->worker->work_in_buffer[i];
+		self->worker->work_in_buffer[i] = fin[i];
 	}
 	for (int i = 0; i<out_ch; i++) {
-		op[i] = self->worker->work_out_buffer[i];
+		self->worker->work_out_buffer[i] = fout[i];
 	}
 
-	// de-interleave all input channels
-	i2s(ip, ib, in_ch, frameCount);
+	self->worker->work_stereo(nBufferFrames);
 
-	self->worker->work_stereo(frameCount);
-
-	// re-interleave output channels
+	// clip
 	float f;
-	for (int i=0; i<frameCount; i++) {
-		for (int j = 0; j<out_ch; j++) {
-			f=*op[j]++;
-			if (f>1) f=1.0f;
-			if (f<-1) f=-1.0f;
-			*ob++ = f;
+	for (unsigned int i = 0; i < nBufferFrames; i++) {
+		for (int j = 0; j < out_ch; j++) {
+			f = self->worker->work_out_buffer[j][i];
+			if (f > 1) f = 1.0f;
+			if (f < -1) f = -1.0f;
+			self->worker->work_out_buffer[j][i] = f;
 		}
 	}
+
+	// update stats
+	self->last_work_time = self->timer.frame() - start_time;
+	double load = (self->last_work_time * double(self->samplerate)) / double(nBufferFrames);
+	// slowly approach to new value
+	self->cpu_load += 0.1 * (load - self->cpu_load);
+	
 	return 0;
 }
 
@@ -120,8 +126,8 @@ int audiodriver_portaudio::getApiDevices(PaHostApiTypeId hostapiid) {
 		ad.name = deviceName;
 		ad.api_id = apiindex;
 		ad.device_id = i;
-		ad.out_channels = deviceInfo->maxOutputChannels;
-		ad.in_channels = deviceInfo->maxInputChannels;
+		ad.out_channels = std::min(2,deviceInfo->maxOutputChannels);
+		ad.in_channels = std::min(2,deviceInfo->maxInputChannels);
 		
 		PaStreamParameters outputParameters;
 		PaStreamParameters inputParameters;
@@ -131,14 +137,14 @@ int audiodriver_portaudio::getApiDevices(PaHostApiTypeId hostapiid) {
 		inputParameters.channelCount = ad.in_channels;
 		inputParameters.device = i;
 		inputParameters.hostApiSpecificStreamInfo = NULL;
-		inputParameters.sampleFormat = paFloat32;
+		inputParameters.sampleFormat = paFloat32|paNonInterleaved;
 		inputParameters.suggestedLatency = deviceInfo->defaultLowInputLatency;
 		
 		memset( &outputParameters, 0, sizeof( outputParameters ) );
 		outputParameters.channelCount = ad.out_channels;
 		outputParameters.device = i;
 		outputParameters.hostApiSpecificStreamInfo = NULL;
-		outputParameters.sampleFormat = paFloat32;
+		outputParameters.sampleFormat = paFloat32|paNonInterleaved;
 		outputParameters.suggestedLatency = deviceInfo->defaultLowOutputLatency;
 		
 		if (Pa_IsFormatSupported(&inputParameters, &outputParameters, 44100) == paFormatIsSupported)
@@ -250,14 +256,14 @@ bool audiodriver_portaudio::createDevice(int index, int inIndex)
 	inputParameters.channelCount = indevch;
 	inputParameters.device = indevid;
 	inputParameters.hostApiSpecificStreamInfo = NULL;
-	inputParameters.sampleFormat = paFloat32;
+	inputParameters.sampleFormat = paFloat32|paNonInterleaved;
 	inputParameters.suggestedLatency = Pa_GetDeviceInfo(indevid)->defaultLowInputLatency;
 	
 	memset( &outputParameters, 0, sizeof( outputParameters ) );
 	outputParameters.channelCount = outdevch;
 	outputParameters.device = outdevid;
 	outputParameters.hostApiSpecificStreamInfo = NULL;
-	outputParameters.sampleFormat = paFloat32;
+	outputParameters.sampleFormat = paFloat32|paNonInterleaved;
 	outputParameters.suggestedLatency = Pa_GetDeviceInfo(outdevid)->defaultLowOutputLatency;
 	
 	PaError err;
@@ -318,7 +324,7 @@ int audiodriver_portaudio::getBestDevice() {
 }
 
 double audiodriver_portaudio::getCpuLoad() {
-		return 1.0;
+		return cpu_load;
 }
 
 audiodevice* audiodriver_portaudio::getDeviceInfo(int index) {
