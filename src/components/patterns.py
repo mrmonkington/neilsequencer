@@ -627,7 +627,15 @@ class PatternView(gtk.DrawingArea):
 		eventbus.active_patterns_changed += self.on_active_patterns_changed
 		eventbus.zzub_pattern_changed += self.on_pattern_changed
 		eventbus.zzub_edit_pattern += self.on_edit_pattern
+		eventbus.zzub_pattern_insert_rows += self.on_pattern_insert_rows
+		eventbus.zzub_pattern_remove_rows += self.on_pattern_remove_rows
 		self.pattern_changed()
+		
+	def on_pattern_insert_rows(self, plugin, index, row, rows, column_indices, indices):
+		self.on_pattern_changed(plugin, index)
+			
+	def on_pattern_remove_rows(self, plugin, index, row, rows, column_indices, indices):
+		self.on_pattern_changed(plugin, index)
 		
 	def on_edit_pattern(self, plugin, index, group, track, column, row, value):
 		if plugin != self.plugin:
@@ -1933,33 +1941,14 @@ class PatternView(gtk.DrawingArea):
 			self.adjust_scrollbars()
 			self.refresh_view()
 		elif k == 'Insert' or k == 'KP_Insert':
-			eventbus.zzub_pattern_insert_rows(self.group, self.track, -1, self.row)
-			del self.lines[self.group][self.track][-1]
-			self.lines[self.group][self.track].insert(self.row, "")
-			self.update_line(self.row)
-			self.redraw()
-			plugin = self.get_plugin()
-			if plugin:
-				self.plugin_info.get(plugin).reset_patterngfx()
+			self.plugin.insert_pattern_rows(self.pattern, (self.group, self.track, self.index), 1, self.row, 1) 
+			player.history_commit("insert row")
 		elif k == 'Delete':
-			#if self.selection!=None:
-			#	if self.row>=self.selection.begin and self.row<self.selection.end:
-			#		self.delete()
-			#	else:
-			#		self.pattern.delete_row(self.group, self.track, -1, self.row)
-			#else:
-			eventbus.zzub_pattern_insert_rows(self.group, self.track, -1, self.row)
-			del self.lines[self.group][self.track][self.row]
-			self.lines[self.group][self.track].append('')
-			self.update_line(self.row_count-1)
-			self.redraw()
-			plugin = self.get_plugin()
-			if plugin:
-				self.plugin_info.get(plugin).reset_patterngfx()
+			self.plugin.remove_pattern_rows(self.pattern, (self.group, self.track, self.index), 1, self.row, 1)
+			player.history_commit("delete row")
 		elif k == 'Return':
-			eventbus = com.get('aldrin.core.eventbus')
 			eventbus.edit_sequence_request()
-		elif k in ('KP_Add','plus'):			
+		elif k in ('KP_Add','plus'):
 			# TODO: select next pattern
 			pass
 		elif k in ('KP_Subtract','minus'):

@@ -441,7 +441,8 @@ class AldrinPlayer(Player, PropertyEventHandler):
 				value = getattr(specdata, argname)
 				if hasattr(value, 'contents'):
 					class_ = value.contents.__class__
-					value = class_._wrapper_._new_from_handle(value)
+					if hasattr(class_, '_wrapper_'):
+						value = class_._wrapper_._new_from_handle(value)
 				elif 'contents' in dir(value):
 					value = None
 				args.append(value)

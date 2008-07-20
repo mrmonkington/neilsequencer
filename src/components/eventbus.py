@@ -35,10 +35,14 @@ EVENTS = [
 	'song-opened', # ( ... ). called when the entire song changes in such a way that all connected objects should update.
 	'show-plugin', # (plugin, ...) called when a plugin should be visualized overall.
 
+	# most events serve for notification purposes, these are requests,
+	# to be sent by a view to switch the workspace appearance.
 	'edit_pattern_request', # (plugin, index, ...) called from e.g. the sequencer when editing a pattern is requested.
-	'edit_sequence_request', # (plugin, index, time)
+	'edit_sequence_request', # (plugin, index, time) called from e.g. the pattern editor, when editing a sequence is requested.
 	
 	# document ui events, translation is done in player.py
+	# these events shall never be called directly from the application,
+	# they are sent as notifications by aldrin.core.player.
 	'octave_changed', # (octave, ...) called when player.octave changes.
 	'active_plugins_changed', # ([plugin, ...], ...) called when player.active_plugins changes.
 	'active_patterns_changed', # ([(plugin, index), ...], ...) called when player.active_patterns changes.
@@ -51,6 +55,8 @@ EVENTS = [
 	'document_loaded', # (...) called when load_* is called.
 	
 	# libzzub events, translation is done in player.py
+	# note that these events shall never be called from the application
+	# directly, instead they will only be triggered by aldrin.core.player.
 	'zzub_all', # ( data,... )
 	'zzub_connect', # ( from_plugin,to_plugin,type,... )
 	'zzub_custom', # ( id,data,... )
