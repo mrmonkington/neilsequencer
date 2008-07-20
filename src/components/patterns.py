@@ -35,7 +35,7 @@ import gobject
 import pango
 from aldrin.utils import prepstr, filepath, get_item_count, get_clipboard_text, set_clipboard_text, question, error, get_new_pattern_name, \
 	new_liststore, new_combobox, db2linear, make_menu_item, make_check_item, ObjectHandlerGroup, \
-	AcceleratorMap
+	AcceleratorMap, Menu
 
 import zzub
 import time
@@ -723,36 +723,38 @@ class PatternView(gtk.DrawingArea):
 		"""
 		Callback that constructs and displays the popup menu
 		"""
+		player = com.get('aldrin.core.player')
 			
-		menu = gtk.Menu()
-		menu.append(make_menu_item("Add track", "", self.on_popup_add_track))
-		menu.append(make_menu_item("Delete last track", "", self.on_popup_delete_track))
-		menu.append(gtk.SeparatorMenuItem())
-		menu.append(make_menu_item("New pattern...", "", self.on_popup_create_pattern))
-		menu.append(make_menu_item("Pattern properties...", "", self.on_popup_properties))
-		menu.append(make_menu_item("Remove pattern...","", self.on_popup_remove_pattern))
-		menu.append(make_menu_item("Create copy...", "", self.on_popup_create_copy))
-		menu.append(gtk.SeparatorMenuItem())
-		menu.append(make_menu_item("Double", "", self.on_popup_double))
-		menu.append(make_menu_item("Halve", "", self.on_popup_halve))
-		menu.append(gtk.SeparatorMenuItem())
-		menu.append(make_menu_item("Transpose selection up", "", self.transpose_selection,1))
-		menu.append(make_menu_item("Transpose selection down", "", self.transpose_selection,-1))
-		menu.append(make_menu_item("Randomize selection", "", self.randomize_selection, None))
-		menu.append(make_menu_item("Constrained randomize", "", self.randomize_selection, "constrain"))
-		menu.append(make_menu_item("Interpolate selection", "", self.interpolate_selection))
-		menu.append(gtk.SeparatorMenuItem())
-		issolo = com.get('aldrin.core.routerpanel').view.solo_plugin == self.get_plugin()
-		menu.append(make_check_item(issolo, "Solo Plugin", "Toggle solo", self.on_popup_solo))
-		menu.append(gtk.SeparatorMenuItem())
-		menu.append(make_menu_item("Cut", "", self.on_popup_cut))
-		menu.append(make_menu_item("Copy", "", self.on_popup_copy))
-		menu.append(make_menu_item("Paste", "", self.on_popup_paste))
-		menu.append(make_menu_item("Delete", "", self.on_popup_delete))
+		menu = Menu()
+		menu.add_item("Add track", self.on_popup_add_track)
+		menu.add_item("Remove last track", self.on_popup_delete_track)
+		menu.add_separator()
+		menu.add_item("New pattern...", self.on_popup_create_pattern)
+		menu.add_item("Pattern properties...", self.on_popup_properties)
+		menu.add_item("Clone pattern...", self.on_popup_create_copy)
+		menu.add_separator()
+		menu.add_item("Remove pattern", self.on_popup_remove_pattern)
+		menu.add_separator()
+		menu.add_item("Double", self.on_popup_double)
+		menu.add_item("Halve", self.on_popup_halve)
+		menu.add_separator()
+		menu.add_item("Transpose selection up", self.transpose_selection,1)
+		menu.add_item("Transpose selection down", self.transpose_selection,-1)
+		menu.add_item("Randomize selection", self.randomize_selection, None)
+		menu.add_item("Constrained randomize", self.randomize_selection, "constrain")
+		menu.add_item("Interpolate selection", self.interpolate_selection)
+		menu.add_separator()
+		issolo = player.solo_plugin == self.get_plugin()
+		menu.add_check_item("Solo Plugin", issolo, self.on_popup_solo)
+		menu.add_separator()
+		menu.add_item("Cut", self.on_popup_cut)
+		menu.add_item("Copy", self.on_popup_copy)
+		menu.add_item("Paste", self.on_popup_paste)
+		menu.add_item("Delete", self.on_popup_delete)
 
 		menu.show_all()
 		menu.attach_to_widget(self, None)
-		menu.popup(None, None, None, event.button, event.time)
+		menu.popup(self, event)
 		
 	def update_position(self):
 		"""
@@ -1221,7 +1223,7 @@ class PatternView(gtk.DrawingArea):
 				break
 			if r<0:
 				continue
-			p = self.plugin.get_parameter(g,i)
+			p = self.plugin.get_parameter(g,t,i)
 			v = self.plugin.get_pattern_value(self.pattern,g,t,i,r)
 			if v != p.get_value_none():
 				if (p.get_type() == 0):
@@ -1383,7 +1385,7 @@ class PatternView(gtk.DrawingArea):
 				break
 			if r<0:
 				continue
-			p = self.plugin.get_parameter(g,i)
+			p = self.plugin.get_parameter(g,t,i)
 			v1 = self.plugin.get_pattern_value(self.pattern,g,t,i,self.selection.begin)
 			v2 = self.plugin.get_pattern_value(self.pattern,g,t,i,self.selection.end-1)
 			if (v1 != p.get_value_none()) and (v2 != p.get_value_none()):
@@ -1454,7 +1456,7 @@ class PatternView(gtk.DrawingArea):
 				break
 			if r<0:
 				continue
-			p = self.plugin.get_parameter(g,i)
+			p = self.plugin.get_parameter(g,t,i)
 			self.plugin.set_pattern_value(self.pattern,g,t,i,r,p.get_value_none())
 		player = com.get('aldrin.core.player')
 		player.history_commit("delete events")
@@ -1653,7 +1655,7 @@ class PatternView(gtk.DrawingArea):
 		for r,g,t,i in self.pattern_range():
 			pattern_index.append((r,g,t,i))
 			pattern_contents.append(self.plugin.get_pattern_value(self.pattern,g,t,i,r))
-			param = self.plugin.get_parameter(g,i)
+			param = self.plugin.get_parameter(g,t,i)
 			self.plugin.set_pattern_value(self.pattern,g,t,i,r,param.get_value_none())
 		item=0
 		self.plugin.set_pattern_length(self.pattern,self.plugin.get_pattern_length(self.pattern)*2)
