@@ -36,6 +36,7 @@ import aldrin.utils as utils
 import aldrin.contextlog as contextlog
 
 import pango
+import fnmatch
 
 MARGIN = 6
 
@@ -68,6 +69,7 @@ class PythonConsoleDialog(gtk.Dialog):
 		self.locals = {}
 		for handler in com.get_from_category('pythonconsole.locals'):
 			handler.register_locals(self.locals)
+		player = com.get('aldrin.core.player')
 		self.locals.update(dict(
 			__name__ = "__console__",
 			__doc__ = None,
@@ -82,6 +84,11 @@ class PythonConsoleDialog(gtk.Dialog):
 			vbox = vpack,
 			hbox = hpack,
 			tool = self.add_tool,
+			plugins = self.list_plugins,
+			plugs = self.list_plugins,
+			player = player,
+			create_plugin = self.create_plugin,
+			newplug = self.create_plugin,
 		))
 		self.compiler = code.InteractiveConsole(self.locals)
 		
@@ -118,13 +125,19 @@ class PythonConsoleDialog(gtk.Dialog):
 		self.log_buffer_pos = 0
 		self.entry.grab_focus()
 		
-	def add_tool(self, cmd, name = None):
+		for command in cfg.debug_commands:
+			self.add_tool(command, add_to_config=False)
+		
+	def add_tool(self, cmd, name = None, add_to_config=True):
 		if not name:
 			name = cmd
 		item = gtk.MenuItem(name)
 		item.connect('activate', self.exec_tool, cmd)
 		item.show()
 		self.toolmenu.append(item)
+		if add_to_config:
+			config = com.get('aldrin.core.config')
+			config.debug_commands = config.debug_commands + [cmd]
 		
 	def exec_tool(self, menuitem, cmd):
 		self.command(cmd)
@@ -136,6 +149,21 @@ class PythonConsoleDialog(gtk.Dialog):
 	def list_factories(self):
 		for factory,item in com.factories.iteritems():
 			print factory,'=',item['classobj']
+			
+	def list_plugins(self, pattern='*'):
+		uris = []
+		player = com.get('aldrin.core.player')
+		for pl in player.get_pluginloader_list():
+			uri = pl.get_uri()
+			if fnmatch.fnmatch(uri, pattern):
+				uris.append(uri)
+		return uris
+		
+	def create_plugin(self, pattern='*'):
+		player = com.get('aldrin.core.player')
+		for uri in self.list_plugins(pattern):
+			pl = player.get_pluginloader_by_name(uri)
+			player.create_plugin(pl)
 		
 	def embed(self, widget):
 		anchor = self.buffer.create_child_anchor(self.buffer.get_end_iter())

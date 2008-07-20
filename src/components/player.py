@@ -591,7 +591,7 @@ class AldrinPlayer(Player, PropertyEventHandler):
 			t=self.create_sequence(mp)
 			t.set_event(0,16)
 			mask=gtk.get_current_event_state()
-			if not(mask & gtk.gdk.SHIFT_MASK):
+			if (mask != None) and not(mask & gtk.gdk.SHIFT_MASK):
 				if self.autoconnect_target:
 					self.autoconnect_target.add_input(mp, zzub.zzub_connection_type_audio)
 				else:

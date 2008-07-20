@@ -23,13 +23,19 @@ Contains all classes and functions needed to render the pattern
 editor and its associated dialogs.
 """
 
+if __name__ == '__main__':
+	import os
+	os.system('../../bin/aldrin-combrowser aldrin.core.patternpanel')
+	raise SystemExit
+
 import aldrin.com as com
 import os
 import gtk
 import gobject
 import pango
 from aldrin.utils import prepstr, filepath, get_item_count, get_clipboard_text, set_clipboard_text, question, error, get_new_pattern_name, \
-	new_liststore, new_combobox, db2linear, make_menu_item, make_check_item, ObjectHandlerGroup
+	new_liststore, new_combobox, db2linear, make_menu_item, make_check_item, ObjectHandlerGroup, \
+	AcceleratorMap
 
 import zzub
 import time
@@ -613,6 +619,15 @@ class PatternView(gtk.DrawingArea):
 		self.start_col = 0
 		self.add_events(gtk.gdk.ALL_EVENTS_MASK)
 		self.set_property('can-focus', True)
+
+		self.accel_map = AcceleratorMap()
+		self.accel_map.add_accelerator('<Control><Shift>Return', self.on_popup_create_copy)
+		self.accel_map.add_accelerator('<Control><Shift>R', self.randomize_selection, widget=None, mode="constrain")
+		self.accel_map.add_accelerator('<Shift>ISO_Left_Tab', self.tab_left)
+		self.accel_map.add_accelerator('Tab', self.tab_right)
+
+		self.connect('key-press-event', self.accel_map.handle_key_press_event)
+		
 		self.connect("expose_event", self.expose)
 		self.connect('key-press-event', self.on_key_down)
 		self.connect('key-release-event', self.on_key_up)
@@ -1752,6 +1767,22 @@ class PatternView(gtk.DrawingArea):
 		Callback that deletes selection
 		"""
 		self.delete()
+		
+	def tab_left(self):
+		# move to previous track
+		if self.move_track_left():
+			self.set_index(0)
+			self.set_subindex(0)
+			self.show_cursor_left()
+			self.refresh_view()
+			
+	def tab_right(self):
+		# move to next track
+		if self.move_track_right():
+			self.set_index(0)
+			self.set_subindex(0)
+			self.show_cursor_right()
+			self.refresh_view()
 	
 	def on_key_down(self, widget, event):
 		"""
@@ -1764,7 +1795,7 @@ class PatternView(gtk.DrawingArea):
 		kv = event.keyval
 		# convert keypad numbers	
 		if gtk.gdk.keyval_from_name('KP_0') <= kv <= gtk.gdk.keyval_from_name('KP_9'):
-			kv = kv - gtk.gdk.keyval_from_name('KP_0')  + gtk.gdk.keyval_from_name('0') 
+			kv = kv - gtk.gdk.keyval_from_name('KP_0')  + gtk.gdk.keyval_from_name('0')
 		k = gtk.gdk.keyval_name(kv)
 		player = com.get('aldrin.core.player')
 		eventbus = com.get('aldrin.core.eventbus')
@@ -1776,29 +1807,6 @@ class PatternView(gtk.DrawingArea):
 		elif k == 'greater':
 			# TODO: select next wave
 			pass
-		elif (mask & gtk.gdk.CONTROL_MASK) and (mask & gtk.gdk.SHIFT_MASK):
-			if k == 'Return':
-				self.on_popup_create_copy()
-			elif k == 'R':
-				# R, not r
-				self.randomize_selection(widget=None, mode="constrain")
-			else:
-				return False
-		elif k in ('Tab', 'ISO_Left_Tab'):
-			if (mask & gtk.gdk.SHIFT_MASK):
-				# move to previous track
-				if self.move_track_left():
-					self.set_index(0)
-					self.set_subindex(0)
-					self.show_cursor_left()
-					self.refresh_view()
-			else:
-				# move to next track
-				if self.move_track_right():
-					self.set_index(0)
-					self.set_subindex(0)
-					self.show_cursor_right()
-					self.refresh_view()
 		elif mask & gtk.gdk.SHIFT_MASK and (k in ('KP_Add','asterisk','plus')):
 			self.transpose_selection(None, 1)
 		elif mask & gtk.gdk.SHIFT_MASK and (k in ('KP_Subtract','minus','underscore')):

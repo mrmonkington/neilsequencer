@@ -28,7 +28,7 @@ from string import ascii_letters, digits
 import struct
 import gtk
 import gobject
-
+import weakref
 import aldrin.com as com
 
 def is_debug():
@@ -1122,6 +1122,43 @@ def refresh_gui():
   while gtk.events_pending():
       gtk.main_iteration_do(block=False)
 
+class AcceleratorMap:
+	def __init__(self):
+		self.__keymap = {}
+		
+	def add_accelerator(self, shortcut, func, *args, **kargs):
+		# cleanup string by converting to values and back
+		km_key, km_mod = gtk.accelerator_parse(shortcut)
+		shortcut = gtk.accelerator_name(km_key, km_mod)
+		ref = None
+		funcname = None
+		if hasattr(func, 'im_self'):
+			ref = weakref.ref(func.im_self)
+			funcname = func.__name__
+		else:
+			ref = weakref.ref(func)
+		self.__keymap[shortcut] = ref,funcname,args,kargs
+	
+	def handle_key_press_event(self, widget, event):
+		"""
+		handles a key-press-event forwarded by any widget and calls the
+		function stored for that accelerator, if existing. returns True
+		if successful.
+		"""
+		name = gtk.accelerator_name(event.keyval, event.state)
+		if name == None:
+			return False
+		for shortcut, (ref,funcname,args,kargs) in self.__keymap.iteritems():
+			if shortcut == name:
+				if funcname:
+					func = getattr(ref(), funcname)
+				else:
+					func = ref()
+				func(*args,**kargs)
+				return True
+		print "unknown shortcut:",name
+		return False
+
 __all__ = [
 'is_frozen',
 'get_root_folder_path',
@@ -1175,19 +1212,3 @@ __all__ = [
 'camelcase_to_unixstyle',
 ]
 
-if __name__ == '__main__':
-	def testfunc(dlg):
-		print "starting"
-		for i in range(100):
-			if dlg._response:
-				return
-			print "."
-			time.sleep(0.1)
-			dlg.fraction = i/100.0
-		print "done"
-		return True
-	win = gtk.Window()
-	win.show_all()	
-	win.connect('destroy', lambda widget: gtk.main_quit())
-	dlg = run_function_with_progress(win, "Vorsicht, wurst.", False, testfunc)
-	gtk.main()

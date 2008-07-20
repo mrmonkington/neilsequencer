@@ -89,6 +89,9 @@ CONFIG_OPTIONS = dict(
 	Freesound = dict(
 		MaxSearchResults = dict(func='freesound_max_search_results',default=100,doc="the number of max search results in freesound."),
 	),
+	Debug = dict(
+		Commands = dict(list=True,func='debug_commands',vtype=str,doc="the current list of debug commands for the python console."),
+	)
 )
 
 # the key of this dictionary is the language code associated with the keyboard. the 
