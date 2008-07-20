@@ -27,7 +27,7 @@ import gobject
 import os,sys 
 import time
 from aldrin.utils import is_generator, is_effect, is_root, is_controller, is_streamer, \
-	PropertyEventHandler, generate_ui_methods
+	PropertyEventHandler, generate_ui_methods, refresh_gui
 from config import get_plugin_aliases, get_plugin_blacklist
 
 import gtk
@@ -188,6 +188,7 @@ class AldrinPlayer(Player, PropertyEventHandler):
 		self.__stream_ext_uri_mappings = {}
 		self.__streamplayer = None
 		self.__streamrecorder = None
+		self.__loading = False
 		self.enumerate_stream_plugins()
 		self.playstarttime = time.time()		
 		self.document_unchanged()
@@ -197,6 +198,9 @@ class AldrinPlayer(Player, PropertyEventHandler):
 		self._callback = zzub.zzub_callback_t(self.handle_event)
 		self.set_callback(self._callback, None)
 		gobject.timeout_add(int(1000/50), self.on_handle_events)
+		
+	def is_loading(self):
+		return self.__loading
 		
 	def enumerate_stream_plugins(self):
 		self.__stream_ext_uri_mappings = {}
@@ -243,6 +247,8 @@ class AldrinPlayer(Player, PropertyEventHandler):
 		master = self.get_plugin(0)
 		self.__streamrecorder.add_input(master, zzub.zzub_connection_type_audio)
 		self.set_machine_non_song(self.__streamrecorder, True)
+		self.flush(None,None)
+		self.history_flush_last()
 		
 	def get_stream_recorder(self):
 		self.create_stream_recorder()
@@ -340,7 +346,10 @@ class AldrinPlayer(Player, PropertyEventHandler):
 		self.active_patterns = sel
 		
 	def load_bmx(self, filename):
+		self.clear()
+		self.__loading = True
 		res = zzub.Player.load_bmx(self, filename)
+		self.__loading = False
 		if not res:
 			self.document_path = filename
 			eventbus = com.get('aldrin.core.eventbus')
@@ -348,7 +357,10 @@ class AldrinPlayer(Player, PropertyEventHandler):
 		return res
 		
 	def load_ccm(self, filename):
+		self.clear()
+		self.__loading = True
 		res = zzub.Player.load_ccm(self, filename)
+		self.__loading = False
 		if not res:
 			self.document_path = filename
 			eventbus = com.get('aldrin.core.eventbus')
@@ -366,6 +378,10 @@ class AldrinPlayer(Player, PropertyEventHandler):
 		return res
 			
 	def clear(self):
+		self.delete_stream_player()
+		self.delete_stream_recorder()
+		self.flush(None,None)
+		self.history_flush_last()
 		zzub.Player.clear(self)
 		self.document_path = ''
 		
@@ -374,7 +390,7 @@ class AldrinPlayer(Player, PropertyEventHandler):
 		Handler triggered by the default timer. Asks the player to fill
 		the event queue and fetches events from the queue to pass them to handle_event.
 		"""
-		if not self.__lazy_commits:
+		if not self.__loading and not self.__lazy_commits:
 			ucopcount = self.history_get_uncomitted_operations()
 			if ucopcount:
 				# you should commit your actions
@@ -433,6 +449,8 @@ class AldrinPlayer(Player, PropertyEventHandler):
 			print "[%s](%s)" % (eventname,','.join([('%s=%r' % (a,b)) for a,b in zip(argnames,args)]))
 		result = getattr(eventbus, eventname)(*args) or False
 		self._cbcalls += 1
+		if self.__loading:
+			refresh_gui()
 		return result
 
 	def document_unchanged(self):

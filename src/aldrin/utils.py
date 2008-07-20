@@ -1118,6 +1118,10 @@ def generate_ui_methods(class_, memberlist):
 	for membername,kwargs in memberlist.iteritems():
 		generate_ui_method(class_, membername, kwargs)
 
+def refresh_gui():
+  while gtk.events_pending():
+      gtk.main_iteration_do(block=False)
+
 __all__ = [
 'is_frozen',
 'get_root_folder_path',

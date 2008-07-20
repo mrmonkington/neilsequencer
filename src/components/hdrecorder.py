@@ -106,7 +106,6 @@ class HDRecorderDialog(gtk.Dialog):
 				self.update_rec_button(value)
 				
 	def update_rec_button(self, value=None):
-		print "update_rec_button"
 		block = self.hgroup.autoblock()
 		player = com.get('aldrin.core.player')
 		recorder = player.get_stream_recorder()
@@ -180,7 +179,6 @@ class HDRecorderDialog(gtk.Dialog):
 		"""
 		Handler for the "Record" button.
 		"""
-		print "on_toggle_record"
 		player = com.get('aldrin.core.player')
 		recorder = player.get_stream_recorder()
 		recorder.set_parameter_value_direct(zzub.zzub_parameter_group_global, 0, 1, widget.get_active(), False)

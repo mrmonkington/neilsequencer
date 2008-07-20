@@ -1048,6 +1048,8 @@ class RouteView(gtk.DrawingArea):
 		Draws only the leds into the offscreen buffer.
 		"""
 		player = com.get('aldrin.core.player')
+		if player.is_loading():
+			return
 		gc = self.window.new_gc()
 		cm = gc.get_colormap()
 		cfg = config.get_config()
@@ -1161,6 +1163,8 @@ class RouteView(gtk.DrawingArea):
 		Draws plugins, connections and arrows to an offscreen buffer.
 		"""
 		player = com.get('aldrin.core.player')
+		if player.is_loading():
+			return
 		cfg = config.get_config()
 		rect = self.get_allocation()
 		w,h = rect.width,rect.height

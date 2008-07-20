@@ -22,7 +22,7 @@ import os
 import gtk
 from aldrin.utils import format_time, ticks_to_time, prepstr, linear2db, db2linear, filepath, \
 	is_debug, question, error, add_scrollbars, file_filter, new_stock_image_toggle_button, \
-	new_stock_image_button, message
+	new_stock_image_button, message, refresh_gui
 import zzub
 import gobject
 import config
@@ -626,7 +626,6 @@ class AldrinFrame(gtk.Window):
 			#~ Yield()
 			#~ progress.Update(100)
 		elif ext.lower() in ('.ccm'):
-			# XXX: TODO
 			dlg = gtk.Dialog('Aldrin', flags=gtk.DIALOG_MODAL)
 			progBar = gtk.ProgressBar()
 			progBar.set_text('Loading CCM Song...')
@@ -635,22 +634,17 @@ class AldrinFrame(gtk.Window):
 			progBar.show()
 			dlg.vbox.pack_start(progBar)			
 			dlg.show()
-			while gtk.events_pending():
-				gtk.main_iteration()
-			def progress_callback():	
+			done = False
+			def progress_callback():
 				progBar.pulse()
-				while gtk.events_pending():
-					gtk.main_iteration()
-				return  progBar.get_fraction() == 1.0
+				return not done
 			progBar.pulse()
-			while gtk.events_pending():
-				gtk.main_iteration()
-			gobject.timeout_add(int(1000/25), progress_callback)
-			progBar.pulse()
-			player.clear()
+			refresh_gui()
+			gobject.timeout_add(50, progress_callback)
 			player.load_ccm(filename)
 			player.document_unchanged()
-			progBar.set_fraction(1.0)
+			done = True
+			refresh_gui()
 			dlg.destroy()
 		else:
 			message(self, "'%s' is not a supported file format." % ext)
