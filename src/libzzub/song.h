@@ -252,10 +252,13 @@ struct song {
 		assert(false);	// only use the derived mixer::plugin_update_keyjazz
 		return false;
 	}
-
-	void set_state(player_state newstate);
-
 	int sequencer_get_event_at(int track, unsigned long timestamp);
+
+	// these are helpers called from operations:
+	void set_state(player_state newstate);
+	void plugin_add_input(int to_id, int from_id, connection_type type);
+	void plugin_delete_input(int to_id, int from_id, connection_type type);
+
 };
 
 

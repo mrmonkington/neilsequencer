@@ -841,6 +841,89 @@ void song::set_state(player_state newstate) {
 	}
 }
 
+void song::plugin_add_input(int to_id, int from_id, connection_type type) {
+
+	plugin_descriptor to_plugin = plugins[to_id]->descriptor;
+	plugin_descriptor from_plugin = plugins[from_id]->descriptor;
+	assert(to_plugin != graph_traits<plugin_map>::null_vertex());
+	assert(from_plugin != graph_traits<plugin_map>::null_vertex());
+
+	std::pair<connection_descriptor, bool> edge_instance_p = add_edge(to_plugin, from_plugin, graph);
+	edge_props& c = graph[edge_instance_p.first];
+
+	switch (type) {
+		case connection_type_audio:
+			c.conn = new audio_connection();
+			break;
+		case connection_type_midi:
+			c.conn = new midi_connection();
+			break;
+		case connection_type_event:
+			c.conn = new event_connection();
+			break;
+	}
+
+	metaplugin& to_mpl = *plugins[to_id];
+	metaplugin& from_mpl = *plugins[from_id];
+
+	for (size_t i = 0; i < to_mpl.patterns.size(); i++) {
+		add_pattern_connection_track(*to_mpl.patterns[i], c.conn->connection_parameters);
+	}
+
+	add_pattern_connection_track(to_mpl.state_write, c.conn->connection_parameters);
+	default_plugin_parameter_track(to_mpl.state_write.groups[0].back(), c.conn->connection_parameters);
+
+	add_pattern_connection_track(to_mpl.state_last, c.conn->connection_parameters);
+
+	add_pattern_connection_track(to_mpl.state_automation, c.conn->connection_parameters);
+
+	make_work_order();
+
+}
+
+void song::plugin_delete_input(int to_id, int from_id, connection_type type) {
+
+	metaplugin& to_mpl = *plugins[to_id];
+	metaplugin& from_mpl = *plugins[from_id];
+
+	plugin_descriptor to_plugin = to_mpl.descriptor;
+	plugin_descriptor from_plugin = from_mpl.descriptor;
+	assert(to_plugin != graph_traits<plugin_map>::null_vertex());
+	assert(from_plugin != graph_traits<plugin_map>::null_vertex());
+
+	// remove connection tracks in patterns
+	int track = plugin_get_input_connection_index(to_id, from_id, type);
+	assert(track >= 0);
+
+	for (size_t i = 0; i < to_mpl.patterns.size(); i++) {
+		zzub::pattern& p = *to_mpl.patterns[i];
+		zzub::pattern::group& g = p.groups[0];
+		g.erase(g.begin() + track);
+	}
+
+	// remove connection tracks in state
+	zzub::pattern::group& writeg = to_mpl.state_write.groups[0];
+	assert(track < writeg.size());
+	writeg.erase(writeg.begin() + track);
+
+	zzub::pattern::group& lastg = to_mpl.state_last.groups[0];
+	assert(track < lastg.size());
+	lastg.erase(lastg.begin() + track);
+
+	zzub::pattern::group& autog = to_mpl.state_automation.groups[0];
+	assert(track < autog.size());
+	autog.erase(autog.begin() + track);
+
+	out_edge_iterator out, out_end;
+	boost::tie(out, out_end) = out_edges(to_plugin, graph);
+	connection_descriptor conndesc = *(out + track);
+	remove_edge(conndesc, graph);
+
+	make_work_order();
+
+}
+
+
 /***
 
 	mixer

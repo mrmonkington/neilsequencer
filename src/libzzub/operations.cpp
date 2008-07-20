@@ -355,17 +355,12 @@ op_plugin_connect::op_plugin_connect(int _from_id, int _to_id, zzub::connection_
 	copy_flags.plugin_flags.push_back(pluginflags);
 }
 
-struct cyclic_connection : public base_visitor<cyclic_connection> {
-	struct has_cycle { };
-	typedef on_back_edge event_filter;
-
-	template <class Vertex, class Graph>
-	inline void operator()(Vertex u, Graph& g) {
-		throw has_cycle();
-	}
-};
-
 bool op_plugin_connect::prepare(zzub::song& song) {
+
+	if (to_id == from_id) {
+		cerr << "tried to connect " << to_id << " to itself" << endl;
+		return false;
+	}
 
 	plugin_descriptor to_plugin = song.plugins[to_id]->descriptor;
 	plugin_descriptor from_plugin = song.plugins[from_id]->descriptor;
@@ -377,7 +372,6 @@ bool op_plugin_connect::prepare(zzub::song& song) {
 		cerr << "duplicate connection" << endl;
 		return false;
 	}
-
 
 	// check if the plugins support requested flags
 	int to_flags = song.plugins[to_id]->info->flags;
@@ -402,21 +396,6 @@ bool op_plugin_connect::prepare(zzub::song& song) {
 		return false;
 	}
 
-/*
-	// check for cyclic connection = run depth_first_search and break if there is a back_edge. we must insert the edge first
-	std::pair<connection_descriptor, bool> edge_instance_p = add_edge(to_plugin, from_plugin, song.graph);
-	
-	try {
-		depth_first_search(song.graph, visitor(make_dfs_visitor(cyclic_connection())));
-	} catch (cyclic_connection::has_cycle) {
-		remove_edge(edge_instance_p.first, song.graph);
-		cerr << "detected cycle!" << endl;
-		return false;
-	}
-
-	// validating done, remove the edge again before invoking the pre-event so the graph isnt bogus
-	remove_edge(edge_instance_p.first, song.graph);
-*/
 	metaplugin& to_mpl = *song.plugins[to_id];
 	metaplugin& from_mpl = *song.plugins[from_id];
 
@@ -427,39 +406,50 @@ bool op_plugin_connect::prepare(zzub::song& song) {
 	event_data.connect_plugin.type = type;
 	song.plugin_invoke_event(0, event_data, true);
 
-	// re-add the edge
-	std::pair<connection_descriptor, bool> edge_instance_p = add_edge(to_plugin, from_plugin, song.graph);
-	edge_props& c = song.graph[edge_instance_p.first];
-
-	switch (type) {
-		case connection_type_audio:
-			c.conn = new audio_connection();
-			break;
-		case connection_type_midi:
-			c.conn = new midi_connection();
-			((midi_connection*)c.conn)->device_name = midi_device;
-			break;
-		case connection_type_event:
-			c.conn = new event_connection();
-			((event_connection*)c.conn)->bindings = bindings;
-			break;
+	// if there are existing plugins with no_undo connected to to_plugin,
+	// we need to disconnect them here, add the new input, and reconnect
+	// afterwards because: otherwise the connection indices become invalid 
+	// when the no_undo plugin disconnects later
+	
+	// TODO: we want to remember connection volumes, patterns, event bindings etc
+	typedef pair<int, connection_type> conninfo;
+	vector<conninfo> no_undo_connections;
+	for (int i = 0; i < song.plugin_get_input_connection_count(to_id); i++) {
+		int cid = song.plugin_get_input_connection_plugin(to_id, i);
+		int cflags = song.plugins[cid]->flags;
+		if (cflags & zzub_plugin_flag_no_undo) {
+			connection_type ctype = song.plugin_get_input_connection_type(to_id, i);
+			song.plugin_delete_input(to_id, cid, ctype);
+			no_undo_connections.push_back(conninfo(cid, ctype));
+		}
 	}
 
-	for (size_t i = 0; i < to_mpl.patterns.size(); i++) {
-		song.add_pattern_connection_track(*to_mpl.patterns[i], c.conn->connection_parameters);
-	}
+	// do the connecting we're actually supposed to do:
+	song.plugin_add_input(to_id, from_id, type);
 
-	song.add_pattern_connection_track(to_mpl.state_write, c.conn->connection_parameters);
-	song.default_plugin_parameter_track(to_mpl.state_write.groups[0].back(), c.conn->connection_parameters);
-	for (size_t i = 0; i < values.size() && i < c.conn->connection_parameters.size(); i++) {
+	// set initial connection states
+	int conn_index = song.plugin_get_input_connection_index(to_id, from_id, type);
+	connection* conn = song.plugin_get_input_connection(to_id, conn_index);
+
+	for (size_t i = 0; i < values.size() && i < conn->connection_parameters.size(); i++) {
 		to_mpl.state_write.groups[0].back()[i][0] = values[i];
 	}
 
-	song.add_pattern_connection_track(to_mpl.state_last, c.conn->connection_parameters);
+	switch (type) {
+		case connection_type_audio:
+			break;
+		case connection_type_midi:
+			((midi_connection*)conn)->device_name = midi_device;
+			break;
+		case connection_type_event:
+			((event_connection*)conn)->bindings = bindings;
+			break;
+	}
 
-	song.add_pattern_connection_track(to_mpl.state_automation, c.conn->connection_parameters);
-
-	song.make_work_order();
+	// reconnect no-undo plugins
+	for (vector<conninfo>::iterator i = no_undo_connections.begin(); i != no_undo_connections.end(); ++i) {
+		song.plugin_add_input(to_id, i->first, i->second);
+	}
 
 	from_name = from_mpl.name;
 
@@ -523,39 +513,11 @@ bool op_plugin_disconnect::prepare(zzub::song& song) {
 	event_data.disconnect_plugin.type = type;
 	song.plugin_invoke_event(0, event_data, true);
 
-	int track = song.plugin_get_input_connection_index(to_id, from_id, type);
-	assert(track >= 0);
+	from_name = from_mpl.name;
+	int conn_index = song.plugin_get_input_connection_index(to_id, from_id, type);
+	conn = song.plugin_get_input_connection(to_id, conn_index);
 
-	from_name = song.get_plugin(from_plugin).name;
-
-	// remove connection tracks in patterns
-
-	for (size_t i = 0; i < song.get_plugin(to_plugin).patterns.size(); i++) {
-		zzub::pattern& p = *song.get_plugin(to_plugin).patterns[i];
-		zzub::pattern::group& g = p.groups[0];
-		g.erase(g.begin() + track);
-	}
-
-	// remove connection tracks in state
-	zzub::pattern::group& writeg = song.get_plugin(to_plugin).state_write.groups[0];
-	assert(track < writeg.size());
-	writeg.erase(writeg.begin() + track);
-
-	zzub::pattern::group& lastg = song.get_plugin(to_plugin).state_last.groups[0];
-	assert(track < lastg.size());
-	lastg.erase(lastg.begin() + track);
-
-	zzub::pattern::group& autog = song.get_plugin(to_plugin).state_automation.groups[0];
-	assert(track < autog.size());
-	autog.erase(autog.begin() + track);
-
-	out_edge_iterator out, out_end;
-	boost::tie(out, out_end) = out_edges(to_plugin, song.graph);
-	connection_descriptor conndesc = *(out + track);
-	conn = song.graph[conndesc].conn;
-	remove_edge(conndesc, song.graph);
-
-	song.make_work_order();
+	song.plugin_delete_input(to_id, from_id, type);
 
 	event_data.type = event_type_disconnect;
 	event_data.disconnect_plugin.to_plugin = to_mpl.proxy;
