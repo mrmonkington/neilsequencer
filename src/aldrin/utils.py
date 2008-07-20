@@ -842,7 +842,7 @@ def padded_partition(iterable, part_len, pad_val=None):
 
 
 PLUGIN_FLAGS_MASK = zzub.zzub_plugin_flag_is_root|zzub.zzub_plugin_flag_has_audio_input|zzub.zzub_plugin_flag_has_audio_output|zzub.zzub_plugin_flag_has_event_output
-ROOT_PLUGIN_FLAGS = zzub.zzub_plugin_flag_is_root|zzub.zzub_plugin_flag_has_audio_input
+ROOT_PLUGIN_FLAGS = zzub.zzub_plugin_flag_is_root|zzub.zzub_plugin_flag_has_audio_input|zzub.zzub_plugin_flag_has_audio_output
 GENERATOR_PLUGIN_FLAGS = zzub.zzub_plugin_flag_has_audio_output
 EFFECT_PLUGIN_FLAGS = zzub.zzub_plugin_flag_has_audio_input|zzub.zzub_plugin_flag_has_audio_output
 CONTROLLER_PLUGIN_FLAGS = zzub.zzub_plugin_flag_has_event_output

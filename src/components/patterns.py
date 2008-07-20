@@ -621,7 +621,7 @@ class PatternView(gtk.DrawingArea):
 		self.start_col = 0
 		self.add_events(gtk.gdk.ALL_EVENTS_MASK)
 		self.set_property('can-focus', True)
-
+		
 		self.accel_map = AcceleratorMap()
 		self.accel_map.add_accelerator('<Control><Shift>Return', self.on_popup_create_copy)
 		self.accel_map.add_accelerator('<Control><Shift>R', self.randomize_selection, widget=None, mode="constrain")
@@ -646,7 +646,7 @@ class PatternView(gtk.DrawingArea):
 		self.accel_map.add_accelerator('<Control>plus', self.on_popup_add_track)
 		self.accel_map.add_accelerator('<Control>KP_Subtract', self.on_popup_delete_track)
 		self.accel_map.add_accelerator('<Control>minus', self.on_popup_delete_track)
-
+		
 		self.connect('key-press-event', self.accel_map.handle_key_press_event)
 		
 		self.connect("expose_event", self.expose)

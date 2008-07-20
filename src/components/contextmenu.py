@@ -223,7 +223,15 @@ class PluginContextMenu(gtk.Menu):
 		Event handler for "new plugin" context menu options.
 		"""
 		player = com.get('aldrin.core.player')
-		player.create_plugin(pluginloader)
+		if 'conn' in kargs:
+			conn = kargs['conn']
+		else:
+			conn = None
+		if 'plugin' in kargs:
+			plugin = kargs['plugin']
+		else:
+			plugin = None
+		player.create_plugin(pluginloader, connection=conn, plugin=plugin)
 		
 	def get_plugin_menu(self, include_generators = True, include_effects = True, include_controllers = True, **kargs):
 		"""
