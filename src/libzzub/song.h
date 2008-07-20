@@ -85,6 +85,7 @@ struct metaplugin {
 	zzub::plugin* plugin;
 	plugin_descriptor descriptor;
 	const zzub::info* info;
+	int flags;
 	host* callbacks;
 	bool initialized;
 	vector<vector<float> > work_buffer;

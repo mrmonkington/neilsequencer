@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 using std::pair;
 using std::string;
 using std::vector;
+using std::stack;
 
 namespace zzub {
 
@@ -54,6 +55,11 @@ struct player : undo_manager, audioworker, midiworker {
 	// midiworker
 	void midiEvent(unsigned short status, unsigned char data1, unsigned char data2);
 
+	// helpers for plugin_flag_no_undo
+	stack<bool> no_undo_stack;
+	void begin_plugin_operation(int plugin_id);
+	void end_plugin_operation(int plugin_id);
+
 	// user methods (should be, but arent supported by begin_/commit_operation)
 	void clear();
 	void process_user_event_queue();
@@ -70,7 +76,7 @@ struct player : undo_manager, audioworker, midiworker {
 	void clear_plugin(int id);
 	void add_midimapping(int plugin_id, int group, int track, int param, int channel, int controller);
 	void remove_midimapping(int plugin_id, int group, int track, int param);
-	int create_plugin(std::vector<char>& bytes, string name, const zzub::info* loader);
+	int create_plugin(std::vector<char>& bytes, string name, const zzub::info* loader, int flags);
 	string plugin_get_new_name(string uri);
 	const zzub::info* plugin_get_info(string uri);
 

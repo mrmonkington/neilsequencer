@@ -140,6 +140,7 @@ struct undo_manager {
 	volatile bool swap_operations_commit;
 
 	bool is_flushing;
+	bool ignore_undo;
 
 	undo_manager();
 	~undo_manager();

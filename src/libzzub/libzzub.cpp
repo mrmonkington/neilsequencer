@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #if defined(_WIN32)
+#define NOMINMAX
 #include <windows.h>
 #endif
 #include <string>
@@ -817,12 +818,10 @@ int zzub_attribute_get_value_default(zzub_attribute_t *attrib) {
 
 ***/
 
-zzub_plugin_t* zzub_player_create_plugin(zzub_player_t *player, zzub_input_t *input, int dataSize, const char* name, zzub_pluginloader_t* loader) {
-
-
+zzub_plugin_t* zzub_player_create_plugin(zzub_player_t *player, zzub_input_t *input, int dataSize, const char* name, zzub_pluginloader_t* loader, int flags) {
 	std::vector<char> bytes(dataSize);
 	if (dataSize > 0) input->read(&bytes.front(), dataSize);
-	int plugin_id = player->create_plugin(bytes, name, const_cast<zzub::info*>(loader));
+	int plugin_id = player->create_plugin(bytes, name, const_cast<zzub::info*>(loader), flags);
 	return player->back.plugins[plugin_id]->proxy;
 }
 
@@ -1027,7 +1026,7 @@ int zzub_plugin_get_flags(zzub_plugin_t *plugin) {
 	operation_copy_flags flags;
 	flags.copy_plugins = true;
 	plugin->_player->merge_backbuffer_flags(flags);
-	return plugin->_player->back.plugins[plugin->id]->info->flags;
+	return plugin->_player->back.plugins[plugin->id]->flags;
 }
 
 zzub_pluginloader_t *zzub_plugin_get_pluginloader(zzub_plugin_t *plugin) {

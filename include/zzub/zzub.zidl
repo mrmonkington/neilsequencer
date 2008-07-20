@@ -284,6 +284,9 @@ namespace zzub:
 
 		set has_midi_input = bit 23 # for midi effects
 		set has_midi_output = bit 24 # for midi generators and effects
+		
+		set no_undo = bit 25 # do not add changes to the history
+		set no_save = bit 26 # do not save this plugin in songs
 
 	enum StateFlag:
 		# player state flags
@@ -1036,7 +1039,7 @@ namespace zzub:
 		def reset_keyjazz()
 
 		"Create a new plugin"
-		def create_plugin(Input input, int dataSize, string instanceName, Pluginloader loader): Plugin
+		def create_plugin(Input input, int dataSize, string instanceName, Pluginloader loader, int flags): Plugin
 		
 		def create_sequence(Plugin plugin): Sequence
 

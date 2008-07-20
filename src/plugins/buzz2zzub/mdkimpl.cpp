@@ -4,7 +4,7 @@
 	Please refer to LICENSE.TXT for details regarding usage.
 */
 
-//#include "../libzzub/buzzlib.h"
+#define NOMINMAX
 #include <windows.h>
 #include <string>
 #include <list>
@@ -13,15 +13,6 @@
 #include "mdk.h"
 #include "mdkimpl.h"
 #include "dsplib.h"
-
-#ifdef min
-	#undef min
-#endif
-
-#ifdef max
-	#undef max
-#endif
-
 #include "../../libzzub/tools.h"
 
 using namespace std;

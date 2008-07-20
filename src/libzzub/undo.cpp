@@ -110,6 +110,7 @@ void operation_copy_flags::merge(const operation_copy_flags& flags) {
 undo_manager::undo_manager() {
 	swap_mode = false;
 	is_flushing = false;
+	ignore_undo = false;
 }
 
 undo_manager::~undo_manager() {
@@ -230,12 +231,13 @@ void undo_manager::wait_swap_song_pointers() {
 }
 
 void undo_manager::commit_to_history(std::string description) {
+	
+	if (current_undoableoperation.op.empty()) return ;
+
 	if (history_position != history.end()) {
 		history.erase(history_position, history.end());
 		history_position = history.end();
 	}
-	
-	if (current_undoableoperation.op.empty()) return ;
 
 	current_undoableoperation.description = description;
 	history.push_back(current_undoableoperation);
@@ -247,6 +249,9 @@ void undo_manager::commit_to_history(std::string description) {
 }
 
 void undo_manager::flush_from_history() {
+
+	if (current_undoableoperation.op.empty()) return ;
+
 	// same as commit_to_history, except the last operations arent undoable
 	if (history_position != history.end()) {
 		int start = (int)(history_position - history.begin());
@@ -313,7 +318,8 @@ bool undo_manager::prepare_operation_redo(operation* singleop) {
 		return false;
 
 	// make sure this operation is added to the redo-buffer
-	backbuffer_opgroup.first.push_back(singleop);
+	if (!ignore_undo)
+		backbuffer_opgroup.first.push_back(singleop);
 
 	// make sure the remaining parts of this operation is invoked on the player thread
 	backbuffer_operations.push_back(singleop);
@@ -324,7 +330,8 @@ void undo_manager::prepare_operation_undo(operation* singleop) {
 	// make sure this operation is added to the undo-buffer
 	// we assume undo operations are added in reverse order, so we put each element IN FRONT
 	// we _could_ have looped backwards, but right now we have two mechanisms for this, better not get in the way
-	backbuffer_opgroup.second.insert(backbuffer_opgroup.second.begin(), singleop);
+	if (!ignore_undo)
+		backbuffer_opgroup.second.insert(backbuffer_opgroup.second.begin(), singleop);
 }
 
 // this is now flush_operations

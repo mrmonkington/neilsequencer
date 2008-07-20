@@ -443,7 +443,7 @@ bool player::initialize() {
 	memset(&hostinfo, 0, sizeof(host_info));
 
 	std::vector<char> bytes;
-	create_plugin(bytes, "Master", &front.master_plugininfo);
+	create_plugin(bytes, "Master", &front.master_plugininfo, 0);
 	flush_operations(0, 0, 0);
 	flush_from_history();
 
@@ -848,6 +848,26 @@ const zzub::info* player::plugin_get_info(std::string uri) {
 	return *i;
 }
 
+void player::begin_plugin_operation(int plugin_id) {
+	operation_copy_flags flags;
+	flags.copy_plugins = true;
+	merge_backbuffer_flags(flags);
+
+	int pflags = back.plugins[plugin_id]->flags;
+	if (pflags & zzub_plugin_flag_no_undo) {
+		no_undo_stack.push(ignore_undo);
+		ignore_undo = true;
+	}
+}
+
+void player::end_plugin_operation(int plugin_id) {
+	int flags = back.plugins[plugin_id]->flags;
+	if (flags & zzub_plugin_flag_no_undo) {
+		ignore_undo = no_undo_stack.top();
+		no_undo_stack.pop();
+	}
+}
+
 
 // ---------------------------------------------------------------------------
 //
@@ -951,7 +971,7 @@ void player::remove_midimapping(int plugin_id, int group, int track, int param) 
 	}
 }
 
-int player::create_plugin(std::vector<char>& bytes, string name, const zzub::info* loader) {
+int player::create_plugin(std::vector<char>& bytes, string name, const zzub::info* loader, int pflags) {
 
 	operation_copy_flags flags;
 	flags.copy_plugins = true;
@@ -960,11 +980,23 @@ int player::create_plugin(std::vector<char>& bytes, string name, const zzub::inf
 
 	int next_id = (int)back.plugins.size();
 
-	op_plugin_create* redo = new op_plugin_create(this, next_id, name, bytes, loader);
+	// need to handle ignore_undo manually in create, begin_plugin_operation() is a helper for everywhere else
+	pflags |= loader->flags;
+	if (pflags & zzub_plugin_flag_no_undo) {
+		no_undo_stack.push(ignore_undo);
+		ignore_undo = true;
+	}
+
+	op_plugin_create* redo = new op_plugin_create(this, next_id, name, bytes, loader, pflags);
 	prepare_operation_redo(redo);
 
 	op_plugin_delete* undo = new op_plugin_delete(this, next_id);
 	prepare_operation_undo(undo);
+
+	if (pflags & zzub_plugin_flag_no_undo) {
+		ignore_undo = no_undo_stack.top();
+		no_undo_stack.pop();
+	}
 
 	return next_id;
 }
@@ -978,6 +1010,8 @@ void player::plugin_destroy(int id) {
 	assert(back.plugins[id] != 0);
 
 	metaplugin& m = *back.plugins[id];
+
+	begin_plugin_operation(id);
 
 	clear_plugin(id);
 
@@ -994,10 +1028,13 @@ void player::plugin_destroy(int id) {
 
 	std::vector<char> bytes;
 	// TODO: plugin->save() into the bytes vector so we can persist e.g pvst stuff
-	op_plugin_create* undo = new op_plugin_create(this, id, m.name, bytes, m.info);
+	op_plugin_create* undo = new op_plugin_create(this, id, m.name, bytes, m.info, m.flags);
 	prepare_operation_undo(undo);
 
 	prepare_operation_redo(redo);
+
+	end_plugin_operation(id);
+
 }
 
 void player::plugin_set_name(int id, std::string name) {
@@ -1010,10 +1047,15 @@ void player::plugin_set_name(int id, std::string name) {
 	redo->plugin = *back.plugins[id];
 	redo->plugin.name = name;
 
+	begin_plugin_operation(id);
+
 	prepare_operation_redo(redo);
 
 	op_plugin_replace* undo = new op_plugin_replace(id, *back.plugins[id]);
 	prepare_operation_undo(undo);
+
+	end_plugin_operation(id);
+
 }
 
 void player::plugin_set_position(int id, float x, float y) {
@@ -1025,10 +1067,14 @@ void player::plugin_set_position(int id, float x, float y) {
 	redo->plugin.x = x;
 	redo->plugin.y = y;
 
+	begin_plugin_operation(id);
+
 	prepare_operation_redo(redo);
 
 	op_plugin_replace* undo = new op_plugin_replace(id, *back.plugins[id]);
 	prepare_operation_undo(undo);
+
+	end_plugin_operation(id);
 }
 
 void player::plugin_set_track_count(int id, int tracks) {
@@ -1037,6 +1083,7 @@ void player::plugin_set_track_count(int id, int tracks) {
 	merge_backbuffer_flags(redo->copy_flags);
 
 	metaplugin& m = *back.plugins[id];
+	begin_plugin_operation(id);
 
 	// add undo actions for removed pattern data
 	for (int i = 0; i < (int)m.patterns.size(); i++) {
@@ -1049,11 +1096,17 @@ void player::plugin_set_track_count(int id, int tracks) {
 
 	// prepare the redo operation after the undo operations are set up
 	prepare_operation_redo(redo);
+
+	end_plugin_operation(id);
 }
 
 void player::plugin_add_pattern(int id, const zzub::pattern& pattern) {
+	begin_plugin_operation(id);
+
 	prepare_operation_redo(new op_pattern_insert(id, -1, pattern));
 	prepare_operation_undo(new op_pattern_remove(id, -1));
+
+	end_plugin_operation(id);
 }
 
 void player::plugin_remove_pattern(int id, int pattern) {
@@ -1061,6 +1114,8 @@ void player::plugin_remove_pattern(int id, int pattern) {
 	merge_backbuffer_flags(redo->copy_flags);
 
 	plugin_descriptor plugin = back.plugins[id]->descriptor;
+
+	begin_plugin_operation(id);
 
 	// remove all sequence events for this pattern in an undoable manner
 	std::vector<std::pair<int, int> > remove_events;
@@ -1087,6 +1142,8 @@ void player::plugin_remove_pattern(int id, int pattern) {
 	prepare_operation_undo(undo);
 
 	prepare_operation_redo(redo);
+
+	end_plugin_operation(id);
 }
 
 void player::plugin_move_pattern(int id, int pattern, int newindex) {
@@ -1100,11 +1157,14 @@ void player::plugin_update_pattern(int id, int index, const zzub::pattern& patte
 
 	redo->pattern = pattern;
 
+	begin_plugin_operation(id);
+
 	op_pattern_replace* undo = new op_pattern_replace(id, index, *back.plugins[id]->patterns[index]);
 	prepare_operation_undo(undo);
 
 	prepare_operation_redo(redo);
 
+	end_plugin_operation(id);
 }
 
 void player::plugin_set_pattern_name(int id, int index, std::string name) {
@@ -1115,10 +1175,14 @@ void player::plugin_set_pattern_name(int id, int index, std::string name) {
 	redo->pattern = *back.plugins[id]->patterns[index];
 	redo->pattern.name = name;
 
+	begin_plugin_operation(id);
+
 	op_pattern_replace* undo = new op_pattern_replace(id, index, *back.plugins[id]->patterns[index]);
 	prepare_operation_undo(undo);
 
 	prepare_operation_redo(redo);
+
+	end_plugin_operation(id);
 }
 
 void player::plugin_set_pattern_length(int id, int index, int rows) {
@@ -1127,6 +1191,8 @@ void player::plugin_set_pattern_length(int id, int index, int rows) {
 
 	merge_backbuffer_flags(redo->copy_flags);
 
+	begin_plugin_operation(id);
+
 	op_pattern_replace* undo = new op_pattern_replace(id, index, *back.plugins[id]->patterns[index]);
 	prepare_operation_undo(undo);
 
@@ -1134,6 +1200,8 @@ void player::plugin_set_pattern_length(int id, int index, int rows) {
 	back.set_pattern_length(id, redo->pattern, rows);
 
 	prepare_operation_redo(redo);
+
+	end_plugin_operation(id);
 }
 
 void player::plugin_set_pattern_value(int id, int pattern, int group, int track, int column, int row, int value) {
@@ -1141,11 +1209,15 @@ void player::plugin_set_pattern_value(int id, int pattern, int group, int track,
 
 	merge_backbuffer_flags(redo->copy_flags);
 
+	begin_plugin_operation(id);
+
 	int prevvalue = back.plugins[id]->patterns[pattern]->groups[group][track][column][row];
 	op_pattern_edit* undo = new op_pattern_edit(id, pattern, group, track, column, row, prevvalue);
 	prepare_operation_undo(undo);
 
 	prepare_operation_redo(redo);
+
+	end_plugin_operation(id);
 }
 
 void player::plugin_insert_pattern_rows(int plugin_id, int pattern, int* column_indices, int num_indices, int start, int rows) {
@@ -1160,6 +1232,8 @@ void player::plugin_insert_pattern_rows(int plugin_id, int pattern, int* column_
 
 	metaplugin& m = *back.plugins[plugin_id];
 	zzub::pattern& p = *m.patterns[pattern];
+
+	begin_plugin_operation(plugin_id);
 
 	for (int i = 0; i < num_indices; i++) {
 		int group = column_indices[i * 3 + 0];
@@ -1179,6 +1253,8 @@ void player::plugin_insert_pattern_rows(int plugin_id, int pattern, int* column_
 	op_pattern_remove_rows* undo = new op_pattern_remove_rows(plugin_id, pattern, start, columns, rows);
 	prepare_operation_redo(redo);
 	prepare_operation_undo(undo);
+
+	end_plugin_operation(plugin_id);
 }
 
 void player::plugin_remove_pattern_rows(int plugin_id, int pattern, int* column_indices, int num_indices, int start, int rows) {
@@ -1194,6 +1270,8 @@ void player::plugin_remove_pattern_rows(int plugin_id, int pattern, int* column_
 
 	metaplugin& m = *back.plugins[plugin_id];
 	zzub::pattern& p = *m.patterns[pattern];
+
+	begin_plugin_operation(plugin_id);
 
 	for (int i = 0; i < num_indices; i++) {
 		int group = column_indices[i * 3 + 0];
@@ -1213,9 +1291,13 @@ void player::plugin_remove_pattern_rows(int plugin_id, int pattern, int* column_
 	op_pattern_insert_rows* undo = new op_pattern_insert_rows(plugin_id, pattern, start, columns, rows);
 	prepare_operation_redo(redo);
 	prepare_operation_undo(undo);
+
+	end_plugin_operation(plugin_id);
 }
 
 bool player::plugin_add_input(int to_id, int from_id, connection_type type) {
+	begin_plugin_operation(to_id);
+	begin_plugin_operation(from_id);
 
 	op_plugin_connect* redo = new op_plugin_connect(from_id, to_id, type);
 	if (!prepare_operation_redo(redo)) {
@@ -1226,6 +1308,8 @@ bool player::plugin_add_input(int to_id, int from_id, connection_type type) {
 	op_plugin_disconnect* undo = new op_plugin_disconnect(from_id, to_id, type);
 	prepare_operation_undo(undo);
 
+	end_plugin_operation(from_id);
+	end_plugin_operation(to_id);
 	return true;
 }
 
@@ -1236,6 +1320,9 @@ void player::plugin_delete_input(int to_id, int from_id, connection_type type) {
 
 	plugin_descriptor from_plugin = back.plugins[from_id]->descriptor;
 	plugin_descriptor to_plugin = back.plugins[to_id]->descriptor;
+
+	begin_plugin_operation(to_id);
+	begin_plugin_operation(from_id);
 
 	op_plugin_connect* undo = new op_plugin_connect(from_id, to_id, type);
 
@@ -1258,6 +1345,9 @@ void player::plugin_delete_input(int to_id, int from_id, connection_type type) {
 	}
 	prepare_operation_redo(redo);
 	prepare_operation_undo(undo);
+
+	end_plugin_operation(from_id);
+	end_plugin_operation(to_id);
 }
 
 void player::plugin_set_midi_connection_device(int to_id, int from_id, std::string name) {
@@ -1265,6 +1355,9 @@ void player::plugin_set_midi_connection_device(int to_id, int from_id, std::stri
 	flags.copy_graph = true;
 	flags.copy_plugins = true;
 	merge_backbuffer_flags(flags);
+
+	begin_plugin_operation(to_id);
+	begin_plugin_operation(from_id);
 
 	op_plugin_set_midi_connection_device* redo = new op_plugin_set_midi_connection_device(to_id, from_id, name);
 	int midiconn = back.plugin_get_input_connection_index(to_id, from_id, connection_type_midi);
@@ -1276,6 +1369,9 @@ void player::plugin_set_midi_connection_device(int to_id, int from_id, std::stri
 
 	prepare_operation_redo(redo);
 	prepare_operation_undo(undo);
+
+	end_plugin_operation(from_id);
+	end_plugin_operation(to_id);
 }
 
 void player::plugin_add_event_connection_binding(int to_id, int from_id, int sourceparam, int targetgroup, int targettrack, int targetparam) {
@@ -1285,12 +1381,17 @@ void player::plugin_add_event_connection_binding(int to_id, int from_id, int sou
 	binding.target_track_index = targettrack;
 	binding.target_param_index = targetparam;
 
+	begin_plugin_operation(to_id);
+	begin_plugin_operation(from_id);
+
 	op_plugin_add_event_connection_binding* redo = new op_plugin_add_event_connection_binding(to_id, from_id, binding);
 
 	op_plugin_remove_event_connection_binding* undo = new op_plugin_remove_event_connection_binding(to_id, from_id, -1);
 	prepare_operation_redo(redo);
 	prepare_operation_undo(undo);
 
+	end_plugin_operation(from_id);
+	end_plugin_operation(to_id);
 }
 
 void player::plugin_remove_event_connection_binding(int to_id, int from_id, int index) {
@@ -1308,15 +1409,25 @@ void player::plugin_set_stream_source(int plugin_id, std::string data_url) {
 
 	std::string prev_data_url = back.plugins[plugin_id]->stream_source;
 
+	begin_plugin_operation(plugin_id);
+
 	op_plugin_set_stream_source* redo = new op_plugin_set_stream_source(plugin_id, data_url);
 	prepare_operation_redo(redo);
 
 	op_plugin_set_stream_source* undo = new op_plugin_set_stream_source(plugin_id, prev_data_url);
 	prepare_operation_undo(undo);
+
+	end_plugin_operation(plugin_id);
 }
 
 
 void player::sequencer_add_track(int id) {
+
+	// TODO: disallow sequencer tracks for no_undo-plugins?
+	// adding a track, and then adding more tracks with non-no_undo plugins will mess up the 
+	// undo buffer for sure when the no_undo-plugin is deleted.. correctional surgery on the history 
+	// would be messy and a first
+
 	op_sequencer_create_track* redo = new op_sequencer_create_track(this, id);
 	prepare_operation_redo(redo);
 

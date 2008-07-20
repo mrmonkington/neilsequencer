@@ -57,8 +57,9 @@ struct op_plugin_create : operation {
 	std::vector<char> bytes;
 	std::string name;
 	const zzub::info* loader;
+	int flags;
 
-	op_plugin_create(zzub::player* _player, int _id, std::string name, std::vector<char>& bytes, const zzub::info* loader);
+	op_plugin_create(zzub::player* _player, int _id, std::string name, std::vector<char>& bytes, const zzub::info* loader, int _flags);
 	virtual bool prepare(zzub::song& song);
 	virtual bool operate(zzub::song& song);
 	virtual void finish(zzub::song& song, bool send_events);

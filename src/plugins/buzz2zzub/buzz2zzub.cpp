@@ -23,6 +23,7 @@
 // however for debugging reasons, this file is also set up
 // so it can be included on linux to fix compiler errors
 
+#define NOMINMAX
 #include <windows.h>
 #include <cassert>
 #include <vector>
@@ -57,14 +58,6 @@ static const int WM_GET_THEME = WM_USER+8;
 //	wParam hCustomView
 //	lParam hPluginWnd
 // return the view with the specified label or NULL
-
-#ifdef min
-	#undef min
-#endif
-
-#ifdef max
-	#undef max
-#endif
 
 #define _USE_MATH_DEFINES
 #include <cmath>

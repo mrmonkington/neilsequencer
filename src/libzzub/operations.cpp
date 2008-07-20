@@ -47,7 +47,7 @@ void op_state_change::finish(zzub::song& song, bool send_events) {
 //
 // ---------------------------------------------------------------------------
 
-op_plugin_create::op_plugin_create(zzub::player* _player, int _id, std::string _name, std::vector<char>& _bytes, const zzub::info* _loader) {
+op_plugin_create::op_plugin_create(zzub::player* _player, int _id, std::string _name, std::vector<char>& _bytes, const zzub::info* _loader, int _flags) {
 	assert(_id != -1);
 	assert(_name != "");
 	assert(_loader);
@@ -57,6 +57,7 @@ op_plugin_create::op_plugin_create(zzub::player* _player, int _id, std::string _
 	bytes = _bytes;
 	name = _name;
 	loader = _loader;
+	flags = _flags;
 
 	copy_flags.copy_graph = true;
 	copy_flags.copy_work_order = true;
@@ -84,6 +85,7 @@ bool op_plugin_create::prepare(zzub::song& song) {
 	plugin.plugin = instance;
 	plugin.descriptor = descriptor;
 	plugin.info = loader;
+	plugin.flags = loader->flags | this->flags;
 	plugin.tracks = 0;
 	plugin.midi_input_channel = 17;	// 17 = play if selected
 	plugin.is_bypassed = false;

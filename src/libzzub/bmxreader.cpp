@@ -337,7 +337,7 @@ bool BuzzReader::loadMachines() {
 				flags.copy_plugins = true;
 				player->merge_backbuffer_flags(flags);
 			} else {
-				plugin_id = player->create_plugin(input_data, machineName, loader);
+				plugin_id = player->create_plugin(input_data, machineName, loader, 0);
 			}
 
 			// test if plugin is compatible with saved data
@@ -378,7 +378,7 @@ bool BuzzReader::loadMachines() {
 			lastWarning = machineName + " (" + fullName + ") Warning: Could not load machine, a replacement machine was created instead.\n" + lastWarning + lastError;
 			lastError = "";	// reset errors
 
-			plugin_id = player->create_plugin(input_data, machineName, loader);
+			plugin_id = player->create_plugin(input_data, machineName, loader, 0);
 		}
 
 		metaplugin& m = *player->back.plugins[plugin_id];

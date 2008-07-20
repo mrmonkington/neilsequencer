@@ -29,6 +29,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <crtdbg.h>
 #endif
 
+#define NOMINMAX
 #include <windows.h>
 
 #elif defined(POSIX) // 
@@ -46,20 +47,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #endif
 
-#ifdef min
-	#undef min
-#endif
-
-#ifdef max
-	#undef max
-#endif
-
 #define _USE_MATH_DEFINES
 #include <cmath>
 #include <cassert>
 #include <cstring>
 #include <map>
 #include <list>
+#include <stack>
 #include <vector>
 #include <string>
 #include <iostream>
