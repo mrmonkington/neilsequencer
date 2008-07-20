@@ -431,6 +431,41 @@ class AldrinPlayer(Player, PropertyEventHandler):
 				continue
 			yield plugin
 			
+	def activate_pattern(self, direction):
+		"""
+		activates pattern with the name alphabetically relative to the currently
+		activated pattern name. if direction is -1, the preceeding pattern
+		will be chosen. if direction is 1, the following pattern will be chosen.
+		"""
+		if not self.get_plugin_count():
+			return
+		if self.active_patterns:
+			plugin,index = self.active_patterns[0]
+		else:
+			if not self.active_plugins:
+				self.activate_plugin(direction)
+			plugin = self.active_plugins[0]
+			index = None
+		def cmp_func(a,b):
+			aname = a[0].get_pattern_name(a[1])
+			bname = b[0].get_pattern_name(b[1])
+			return cmp(aname.lower(), bname.lower())
+		patterns = sorted([(plugin,i) for i in xrange(plugin.get_pattern_count())],cmp_func)
+		if not patterns:
+			return
+		if direction == -1:
+			if index == None:
+				self.active_patterns = patterns[-1]
+			else:
+				pindex = patterns.index(self.active_patterns[0])
+				self.active_patterns = [patterns[(pindex-1)%len(patterns)]]
+		elif direction == 1:
+			if index == None:
+				self.active_patterns = patterns[0]
+			else:
+				pindex = patterns.index(self.active_patterns[0])
+				self.active_patterns = [patterns[(pindex+1)%len(patterns)]]
+		
 	def activate_plugin(self, direction):
 		"""
 		activates plugin with the name alphabetically relative to the currently

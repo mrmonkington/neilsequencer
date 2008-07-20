@@ -338,10 +338,12 @@ class PatternToolBar(gtk.HBox):
 		plugin = self.get_plugin_sel()
 		if not plugin:
 			return []
-		patterns = []
-		for i in xrange(plugin.get_pattern_count()):
-			patterns.append((plugin.get_pattern_name(i),(plugin,i)))
-		return patterns
+		def cmp_func(a,b):
+			aname = a[0].get_pattern_name(a[1])
+			bname = b[0].get_pattern_name(b[1])
+			return cmp(aname.lower(), bname.lower())
+		patterns = sorted([(plugin,i) for i in xrange(plugin.get_pattern_count())],cmp_func)
+		return [(plugin.get_pattern_name(i),(plugin,i)) for plugin,i in patterns]
 	
 	def get_pattern_sel(self):
 		player = com.get('aldrin.core.player')
@@ -625,6 +627,9 @@ class PatternView(gtk.DrawingArea):
 		self.accel_map.add_accelerator('<Control><Shift>R', self.randomize_selection, widget=None, mode="constrain")
 		self.accel_map.add_accelerator('<Shift>ISO_Left_Tab', self.tab_left)
 		self.accel_map.add_accelerator('Tab', self.tab_right)
+		self.accel_map.add_accelerator('<Control>Return', self.on_popup_create_pattern)
+		self.accel_map.add_accelerator('<Control>BackSpace', self.on_popup_properties)
+		self.accel_map.add_accelerator('<Control>Delete', self.on_popup_remove_pattern)
 
 		self.connect('key-press-event', self.accel_map.handle_key_press_event)
 		
@@ -1611,17 +1616,19 @@ class PatternView(gtk.DrawingArea):
 	def on_popup_remove_pattern(self, *args):
 		"""
 		Callback that removes the current pattern.
-		"""		
-		response = question(self, "<b><big>Do you really want to remove this pattern?</big></b>\n\nYou cannot reverse this action.", False)
-		if response == gtk.RESPONSE_YES:
-			m = self.get_plugin()			
-			if self.pattern >= 0:
-				m.remove_pattern(self.pattern)
-			
+		"""
+		player = com.get('aldrin.core.player')
+		m = self.get_plugin()
+		if self.pattern >= 0:
+			#player.activate_pattern(-1)
+			m.remove_pattern(self.pattern)
+			player.history_commit("remove pattern")
+		
 	def on_popup_create_pattern(self, widget=None, m=None):
 		"""
 		Callback that creates a pattern.
 		"""
+		player = com.get('aldrin.core.player')
 		name = self.get_new_pattern_name(m)
 		result = show_pattern_dialog(self,name,self.patternsize,DLGMODE_NEW)
 		if not result:
@@ -1631,12 +1638,10 @@ class PatternView(gtk.DrawingArea):
 			m = self.get_plugin()
 		p = m.create_pattern(self.patternsize)
 		p.set_name(name)
+		m.add_pattern(p)
+		player.history_commit("new pattern")
 		if switch:
-			for i in range(m.get_pattern_count()):
-				if m.get_pattern(i) == p:
-					player = com.get('aldrin.core.player')
-					player.active_patterns = [(m, i)]
-					break
+			player.active_patterns = [(m, m.get_pattern_count()-1)]
 	
 	def on_popup_double(self, *args):
 		"""
@@ -1677,24 +1682,19 @@ class PatternView(gtk.DrawingArea):
 		"""
 		Callback that creates a copy of the current pattern.
 		"""
+		player = com.get('aldrin.core.player')
 		name = self.get_new_pattern_name()
 		result = show_pattern_dialog(self,name,self.row_count,DLGMODE_COPY)
 		if not result:
 			return
 		name, self.patternsize, switch = result
 		m = self.get_plugin()
-		p = m.create_pattern(self.row_count)
+		p = m.get_pattern(self.pattern)
 		p.set_name(name)
-		for r,g,t,i in self.pattern_range():
-			p.set_value(r,g,t,i,self.plugin.get_pattern_value(self.pattern,g,t,i,r))
+		m.add_pattern(p)
+		player.history_commit("clone pattern")
 		if switch:
-			for i in range(m.get_pattern_count()):
-				if m.get_pattern(i) == p:
-					player = com.get('aldrin.core.player')
-					player.active_patterns = [(m, i)]
-					break
-		player = com.get('aldrin.core.player')
-		player.history_commit("copy pattern")
+			player.active_patterns = [(m, m.get_pattern_count()-1)]
 	
 	def on_popup_solo(self, *args):
 		"""
@@ -1850,13 +1850,7 @@ class PatternView(gtk.DrawingArea):
 			self.adjust_selection()
 			self.redraw()
 		elif (mask & gtk.gdk.CONTROL_MASK):
-			if k == 'Return':
-				self.on_popup_create_pattern()				
-			elif k == 'BackSpace':	
-				self.on_popup_properties()
-			elif k == 'Delete':
-				self.on_popup_remove_pattern()
-			elif kv >= ord('0') and kv <= ord('9'):
+			if kv >= ord('0') and kv <= ord('9'):
 				self.row_step = kv - ord('0')
 			elif k == 'b':
 				if not self.selection:
@@ -1969,11 +1963,9 @@ class PatternView(gtk.DrawingArea):
 		elif k == 'Return':
 			eventbus.edit_sequence_request()
 		elif k in ('KP_Add','plus'):
-			# TODO: select next pattern
-			pass
+			player.activate_pattern(1)
 		elif k in ('KP_Subtract','minus'):
-			# TODO: select previous pattern
-			pass
+			player.activate_pattern(-1)
 		elif k in ('KP_Multiply', 'dead_acute'):
 			player = com.get('aldrin.core.player')
 			self.set_octave(player.octave+1)
