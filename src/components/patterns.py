@@ -1506,7 +1506,7 @@ class PatternView(gtk.DrawingArea):
 					t = self.track # paste at cursor track
 				elif (t < 0) or (t >= self.group_track_count[g]): # if not, skip if out of bounds
 					continue
-				p = self.plugin.get_parameter(g,i)
+				p = self.plugin.get_parameter(g,t,i)
 				ty = p.get_type()
 				if v != p.get_value_none(): # if its not a none value
 					if ty == 0: # is our target a note?
