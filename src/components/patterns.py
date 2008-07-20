@@ -625,11 +625,27 @@ class PatternView(gtk.DrawingArea):
 		self.accel_map = AcceleratorMap()
 		self.accel_map.add_accelerator('<Control><Shift>Return', self.on_popup_create_copy)
 		self.accel_map.add_accelerator('<Control><Shift>R', self.randomize_selection, widget=None, mode="constrain")
+		self.accel_map.add_accelerator('<Control>r', self.randomize_selection, widget=None, mode=None)
 		self.accel_map.add_accelerator('<Shift>ISO_Left_Tab', self.tab_left)
 		self.accel_map.add_accelerator('Tab', self.tab_right)
 		self.accel_map.add_accelerator('<Control>Return', self.on_popup_create_pattern)
 		self.accel_map.add_accelerator('<Control>BackSpace', self.on_popup_properties)
 		self.accel_map.add_accelerator('<Control>Delete', self.on_popup_remove_pattern)
+		self.accel_map.add_accelerator('<Shift>KP_Add', self.transpose_selection, None, 1)
+		self.accel_map.add_accelerator('<Shift>asterisk', self.transpose_selection, None, 1)
+		self.accel_map.add_accelerator('<Shift>plus', self.transpose_selection, None, 1)
+		self.accel_map.add_accelerator('<Shift>KP_Subtract', self.transpose_selection, None, -1)
+		self.accel_map.add_accelerator('<Shift>minus', self.transpose_selection, None, -1)
+		self.accel_map.add_accelerator('<Shift>underscore', self.transpose_selection, None, -1)
+		self.accel_map.add_accelerator('<Control>c', self.copy)
+		self.accel_map.add_accelerator('<Control>v', self.paste)
+		self.accel_map.add_accelerator('<Control>x', self.cut)
+		self.accel_map.add_accelerator('<Control>i', self.interpolate_selection)
+		self.accel_map.add_accelerator('<Control>l', self.on_popup_solo)
+		self.accel_map.add_accelerator('<Control>KP_Add', self.on_popup_add_track)
+		self.accel_map.add_accelerator('<Control>plus', self.on_popup_add_track)
+		self.accel_map.add_accelerator('<Control>KP_Subtract', self.on_popup_delete_track)
+		self.accel_map.add_accelerator('<Control>minus', self.on_popup_delete_track)
 
 		self.connect('key-press-event', self.accel_map.handle_key_press_event)
 		
@@ -1808,10 +1824,6 @@ class PatternView(gtk.DrawingArea):
 			pass
 		elif k == 'greater':
 			player.activate_wave(1)
-		elif mask & gtk.gdk.SHIFT_MASK and (k in ('KP_Add','asterisk','plus')):
-			self.transpose_selection(None, 1)
-		elif mask & gtk.gdk.SHIFT_MASK and (k in ('KP_Subtract','minus','underscore')):
-			self.transpose_selection(None, -1)
 		elif mask & gtk.gdk.SHIFT_MASK and k == 'Down':
 			if not self.selection:
 				self.selection = self.Selection()
@@ -1882,26 +1894,10 @@ class PatternView(gtk.DrawingArea):
 				self.selection.begin = max(min(self.selection.end-1,self.selection.begin),0)
 				self.adjust_selection()
 				self.redraw()
-			elif k == 'c':
-				self.copy()
-			elif k == 'v':
-				self.paste()
-			elif k == 'x':
-				self.cut()
-			elif k == 'r':
-				self.randomize_selection(widget=None, mode=None)
-			elif k == 'i':
-				self.interpolate_selection()
 			elif k == 'u':
 				self.selection = None
 				self.update_plugin_info()
 				self.redraw()
-			elif k == 'l':
-				self.on_popup_solo()
-			elif k in ('KP_Add','plus'):
-				self.on_popup_add_track()
-			elif k in ('KP_Subtract','minus'):
-				self.on_popup_delete_track()
 			elif k == 'Up':
 				player.activate_plugin(-1)
 			elif k == 'Down':
