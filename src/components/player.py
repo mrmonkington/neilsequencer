@@ -431,6 +431,27 @@ class AldrinPlayer(Player, PropertyEventHandler):
 				continue
 			yield plugin
 			
+	def activate_wave(self, direction):
+		"""
+		activates wave relative to the currently activated wave. if direction 
+		is -1, the preceeding wave will be chosen. if direction is 1, 
+		the following wave will be chosen.
+		"""
+		waves = [w for w in self.get_wave_list() if w.get_level_count() >= 1]
+		if not waves:
+			return
+		if direction == -1:
+			failsafe = -1
+			offset = -1
+		elif direction == 1:
+			failsafe = 0
+			offset = 1
+		if not self.active_waves:
+			self.active_waves = [waves[failsafe]]
+		else:
+			pindex = waves.index(self.active_waves[0])
+			self.active_waves = [waves[(pindex+offset)%len(waves)]]
+			
 	def activate_pattern(self, direction):
 		"""
 		activates pattern with the name alphabetically relative to the currently
@@ -454,17 +475,16 @@ class AldrinPlayer(Player, PropertyEventHandler):
 		if not patterns:
 			return
 		if direction == -1:
-			if index == None:
-				self.active_patterns = patterns[-1]
-			else:
-				pindex = patterns.index(self.active_patterns[0])
-				self.active_patterns = [patterns[(pindex-1)%len(patterns)]]
+			failsafe = -1
+			offset = -1
 		elif direction == 1:
-			if index == None:
-				self.active_patterns = patterns[0]
-			else:
-				pindex = patterns.index(self.active_patterns[0])
-				self.active_patterns = [patterns[(pindex+1)%len(patterns)]]
+			failsafe = 0
+			offset = 1
+		if index == None:
+			self.active_patterns = [patterns[failsafe]]
+		else:
+			pindex = patterns.index(self.active_patterns[0])
+			self.active_patterns = [patterns[(pindex+offset)%len(patterns)]]
 		
 	def activate_plugin(self, direction):
 		"""
@@ -478,17 +498,16 @@ class AldrinPlayer(Player, PropertyEventHandler):
 		if not plugins:
 			return
 		if direction == -1:
-			if not self.active_plugins:
-				self.active_plugins = [plugins[-1]]
-			else:
-				pindex = plugins.index(self.active_plugins[0])
-				self.active_plugins = [plugins[(pindex-1)%len(plugins)]]
+			failsafe = -1
+			offset = -1
 		elif direction == 1:
-			if not self.active_plugins:
-				self.active_plugins = [plugins[0]]
-			else:
-				pindex = plugins.index(self.active_plugins[0])
-				self.active_plugins = [plugins[(pindex+1)%len(plugins)]]
+			failsafe = 0
+			offset = 1
+		if not self.active_plugins:
+			self.active_plugins = [plugins[failsafe]]
+		else:
+			pindex = plugins.index(self.active_plugins[0])
+			self.active_plugins = [plugins[(pindex+offset)%len(plugins)]]
 		
 	def handle_event(self, player, plugin, data, tag):
 		"""

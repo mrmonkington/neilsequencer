@@ -1622,7 +1622,7 @@ class PatternView(gtk.DrawingArea):
 		player = com.get('aldrin.core.player')
 		m = self.get_plugin()
 		if self.pattern >= 0:
-			#player.activate_pattern(-1)
+			player.activate_pattern(-1) # go one back
 			m.remove_pattern(self.pattern)
 			player.history_commit("remove pattern")
 		
@@ -1804,11 +1804,10 @@ class PatternView(gtk.DrawingArea):
 		shiftdown = mask & gtk.gdk.SHIFT_MASK
 		ctrldown = mask & gtk.gdk.CONTROL_MASK
 		if k == 'less':
-			# TODO: select previous wave
+			player.activate_wave(-1)
 			pass
 		elif k == 'greater':
-			# TODO: select next wave
-			pass
+			player.activate_wave(1)
 		elif mask & gtk.gdk.SHIFT_MASK and (k in ('KP_Add','asterisk','plus')):
 			self.transpose_selection(None, 1)
 		elif mask & gtk.gdk.SHIFT_MASK and (k in ('KP_Subtract','minus','underscore')):
