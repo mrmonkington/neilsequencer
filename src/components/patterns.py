@@ -1759,6 +1759,7 @@ class PatternView(gtk.DrawingArea):
 			kv = kv - gtk.gdk.keyval_from_name('KP_0')  + gtk.gdk.keyval_from_name('0') 
 		k = gtk.gdk.keyval_name(kv)
 		player = com.get('aldrin.core.player')
+		eventbus = com.get('aldrin.core.eventbus')
 		if k == 'less':
 			# TODO: select previous wave
 			pass
@@ -1932,7 +1933,7 @@ class PatternView(gtk.DrawingArea):
 			self.adjust_scrollbars()
 			self.refresh_view()
 		elif k == 'Insert' or k == 'KP_Insert':
-			self.pattern.insert_row(self.group, self.track, -1, self.row)
+			eventbus.zzub_pattern_insert_rows(self.group, self.track, -1, self.row)
 			del self.lines[self.group][self.track][-1]
 			self.lines[self.group][self.track].insert(self.row, "")
 			self.update_line(self.row)
@@ -1947,7 +1948,7 @@ class PatternView(gtk.DrawingArea):
 			#	else:
 			#		self.pattern.delete_row(self.group, self.track, -1, self.row)
 			#else:
-			self.pattern.delete_row(self.group, self.track, -1, self.row)
+			eventbus.zzub_pattern_insert_rows(self.group, self.track, -1, self.row)
 			del self.lines[self.group][self.track][self.row]
 			self.lines[self.group][self.track].append('')
 			self.update_line(self.row_count-1)
