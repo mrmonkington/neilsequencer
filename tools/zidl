@@ -903,7 +903,7 @@ class Argument(zzubIDLObject):
 			for ai in self.arrayinfo:
 				count = str(ai['count'])
 				if ai['mul'] > 1:
-					count = '(' + count + '*' + str(ai[mul]) + ')'
+					count = '(' + count + '*' + str(ai['mul']) + ')'
 				countargs.append(count)
 			if countargs:
 				self.py_c_decl_type = '(' + self.py_c_decl_type + '*' + '*'.join(countargs) + ')'
@@ -936,6 +936,8 @@ class Argument(zzubIDLObject):
 					self.py_c_itype = tm['py_c_itype']
 				else:
 					self.py_c_itype = self.py_c_type
+			countargs = []
+			self.py_c_decl_type = tm['py_c_type']
 			for i,ai in enumerate(self.arrayinfo):
 				if i == 0:
 					self.c_type = 'const ' + self.c_type + ' *'
@@ -943,6 +945,12 @@ class Argument(zzubIDLObject):
 					self.c_type = self.c_type + ' *'
 				self.py_c_type = 'POINTER(' + self.py_c_type + ')'
 				self.py_c_itype = 'POINTER(' + self.py_c_itype + ')'
+				count = str(ai['count'])
+				if ai['mul'] > 1:
+					count = '(' + count + '*' + str(ai['mul']) + ')'
+				countargs.append(count)
+			if countargs:
+				self.py_c_decl_type = '(' + self.py_c_decl_type + '*' + '*'.join(countargs) + ')'
 		
 	def write_c_header(self, parent, f):
 		pass
@@ -1047,6 +1055,7 @@ class Function(zzubIDLObject):
 		args = []
 		callargs = []
 		outargs = []
+		arrayargs = []
 		if isinstance(parent, Class) and not self.static:
 			args.append('self')
 			callargs.append('self')
@@ -1062,6 +1071,8 @@ class Function(zzubIDLObject):
 					args.append(arg.name + '=' + arg.default_value)
 				else:
 					args.append(arg.name)
+				if (len(arg.arrayinfo) == 1) and (arg.typename != 'string'):
+					arrayargs.append(arg)
 				
 		if self.static:
 			print >> f, '\t@staticmethod'
@@ -1070,6 +1081,8 @@ class Function(zzubIDLObject):
 		if not self.static:
 			print >> f, '\t\tassert self._as_parameter_'
 			
+		for arrayarg in arrayargs:
+			print >> f, '\t\t' + arrayarg.name + ' = ' + arrayarg.py_c_decl_type + '(*' + arrayarg.name + ')'
 		for outarg in outargs:
 			print >> f, '\t\t' + outarg.name + ' = ' + outarg.py_c_decl_type + '()'
 		
