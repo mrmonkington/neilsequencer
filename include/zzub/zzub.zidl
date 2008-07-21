@@ -1039,7 +1039,7 @@ namespace zzub:
 		def reset_keyjazz()
 
 		"Create a new plugin"
-		def create_plugin(Input input, int dataSize, string instanceName, Pluginloader loader, int flags): Plugin
+		def create_plugin(Input input, int dataSize, string instanceName, Pluginloader loader, int flags=0): Plugin
 		
 		def create_sequence(Plugin plugin): Sequence
 
