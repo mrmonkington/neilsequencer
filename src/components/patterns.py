@@ -1742,26 +1742,32 @@ class PatternView(gtk.DrawingArea):
 		"""
 		Callback that adds a track.
 		"""
-		m = self.get_plugin()		
-		m.set_track_count(m.get_track_count()+1)
+		player = com.get('aldrin.core.player')
+		pluginloader = self.plugin.get_pluginloader()
+		self.plugin.set_track_count(min(pluginloader.get_tracks_max(), self.plugin.get_track_count()+1))
+		player.history_commit("add pattern track")
+		self.pattern_changed()
 		# Copy the values of the second-last track to the last.
-		pl = self.plugin
-		t = m.get_track_count()
-		for i in range(pl.get_parameter_count(2)):
-			p = pl.get_parameter(2, i)
-			if p.get_flags() & zzub.zzub_parameter_flag_state:
-				v = m.get_parameter_value(2, t - 2, i)
-				m.set_parameter_value(2, t - 1, i, v, 0)
-
+#		pl = self.plugin
+#		print m
+#		t = m.get_track_count()
+#		for i in range(m.get_parameter_count(2)):
+#			p = m.get_parameter(2, i)
+#			if p.get_flags() & zzub.zzub_parameter_flag_state:
+#				v = m.get_parameter_value(2, t - 2, i)
+#				m.set_parameter_value(2, t - 1, i, v, 0)
 	
 	def on_popup_delete_track(self, *args):
 		"""
 		Callback that deletes last track.
 		"""		
-		if question(self, "<b><big>Really delete last track?</big></b>\n\nThis action can not be undone.", False) == gtk.RESPONSE_YES:
-			m = self.get_plugin()
-			m.set_track_count(m.get_track_count()-1)
-	
+#		if question(self, "<b><big>Really delete last track?</big></b>\n\nThis action can not be undone.", False) == gtk.RESPONSE_YES:
+		player = com.get('aldrin.core.player')
+		pluginloader = self.plugin.get_pluginloader()		
+		self.plugin.set_track_count(max(pluginloader.get_tracks_min() , self.plugin.get_track_count()-1))
+		player.history_commit("remove pattern track")	
+		self.pattern_changed()
+			
 	def on_popup_cut(self, *args):
 		"""
 		Callback that cuts selection

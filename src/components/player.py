@@ -232,6 +232,7 @@ class AldrinPlayer(Player, PropertyEventHandler):
 		self.__streamrecorder = None
 
 	def create_stream_recorder(self):
+		return
 		# create a recorder plugin
 		if self.__streamrecorder:
 			return
