@@ -232,7 +232,6 @@ class AldrinPlayer(Player, PropertyEventHandler):
 		self.__streamrecorder = None
 
 	def create_stream_recorder(self):
-		return
 		# create a recorder plugin
 		if self.__streamrecorder:
 			return
@@ -240,8 +239,8 @@ class AldrinPlayer(Player, PropertyEventHandler):
 		if not loader:
 			print >> sys.stderr, "Can't find file recorder plugin loader."
 			return
-		
-		self.__streamrecorder = zzub.Player.create_plugin(self, None, 0, "_RecorderPlugin", loader)
+		flags = zzub.zzub_plugin_flag_no_undo | zzub.zzub_plugin_flag_no_save
+		self.__streamrecorder = zzub.Player.create_plugin(self, None, 0, "_RecorderPlugin", loader, flags)
 		if not self.__streamrecorder:
 			print >> sys.stderr, "Can't create file recorder plugin instance."
 			return
@@ -264,7 +263,8 @@ class AldrinPlayer(Player, PropertyEventHandler):
 			print >> sys.stderr, "Can't find streamplayer plugin loader."
 			return
 		
-		self.__streamplayer = zzub.Player.create_plugin(self, None, 0, "_PreviewPlugin", loader)
+		flags = zzub.zzub_plugin_flag_no_undo | zzub.zzub_plugin_flag_no_save
+		self.__streamplayer = zzub.Player.create_plugin(self, None, 0, "_PreviewPlugin", loader, flags)
 		if not self.__streamplayer:
 			print >> sys.stderr, "Can't create streamplayer plugin instance."
 			return
