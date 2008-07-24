@@ -6,18 +6,18 @@
 // if your platform expects a different type
 // for the size argument, extend the 
 // lunar_size_t define in fx.h
-void *operator new (size_t size) {
+inline void *operator new (size_t size) {
 	return malloc(size);
 }
 
-void operator delete (void *ptr) {
+inline void operator delete (void *ptr) {
 	free(ptr);
 }
 
-void *operator new[] (size_t size) {
+inline void *operator new[] (size_t size) {
 	return malloc(size);
 }
-void operator delete[] (void *ptr) {
+inline void operator delete[] (void *ptr) {
 	free(ptr);
 }
 

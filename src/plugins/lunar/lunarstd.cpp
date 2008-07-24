@@ -134,6 +134,7 @@ void *lunar_realloc(void *ptr, lunar_size_t len) { return realloc(ptr,len); }
 // math
 float lunar_pow(float a, float b) { return std::pow(a,b); }
 float lunar_log(float x) { return std::log(x); }
+float lunar_log10(float x) { return std::log10(x); }
 float lunar_exp(float x) { return std::exp(x); }
 float lunar_abs(float x) { return std::abs(x); }
 float lunar_sin(float x) { return std::sin(x); }

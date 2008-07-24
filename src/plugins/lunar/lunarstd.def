@@ -10,8 +10,10 @@ EXPORTS
 	lunar_atan
 	lunar_sqrt
 	lunar_log
+	lunar_log10
 	lunar_exp
 	lunar_abs
+	lunar_fabs
 	lunar_sin
 	lunar_cos
 	lunar_tan

@@ -29,6 +29,7 @@ void *lunar_realloc(void *ptr, lunar_size_t len);
 // math
 float lunar_pow(float, float);
 float lunar_log(float);
+float lunar_log10(float);
 float lunar_exp(float);
 float lunar_abs(float);
 inline float lunar_min(float a, float b) { return (a < b)?a:b; }
@@ -64,6 +65,7 @@ long int lunar_lrint(float);
 // math
 #define pow lunar_pow
 #define log lunar_log
+#define log10 lunar_log10
 #define exp lunar_exp
 #define abs lunar_abs
 #define min lunar_min
