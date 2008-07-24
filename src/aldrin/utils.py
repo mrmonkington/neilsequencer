@@ -1119,8 +1119,8 @@ def generate_ui_methods(class_, memberlist):
 		generate_ui_method(class_, membername, kwargs)
 
 def refresh_gui():
-  while gtk.events_pending():
-      gtk.main_iteration_do(block=False)
+	while gtk.events_pending():
+		gtk.main_iteration_do(block=False)
 
 class AcceleratorMap:
 	def __init__(self):
@@ -1145,7 +1145,9 @@ class AcceleratorMap:
 		function stored for that accelerator, if existing. returns True
 		if successful.
 		"""
-		name = gtk.accelerator_name(event.keyval, event.state)
+		# remove numlock from the key modifiers
+		key_mod = event.state & (~gtk.gdk.MOD2_MASK)
+		name = gtk.accelerator_name(event.keyval, key_mod)
 		if name == None:
 			return False
 		for shortcut, (ref,funcname,args,kargs) in self.__keymap.iteritems():
