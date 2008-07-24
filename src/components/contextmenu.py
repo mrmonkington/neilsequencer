@@ -194,7 +194,7 @@ class PluginContextMenu(gtk.Menu):
 		@param event: Menu event.
 		@type event: wx.MenuEvent
 		"""
-		dlg = AttributesDialog(mp, self)
+		dlg = com.get('aldrin.core.attributesdialog',mp,self)
 		dlg.run()
 		dlg.destroy()
 		

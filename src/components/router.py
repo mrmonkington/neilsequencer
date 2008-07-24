@@ -162,6 +162,12 @@ class AttributesDialog(gtk.Dialog):
 	"""
 	Displays plugin atttributes and allows to edit them.
 	"""
+	__aldrin__ = dict(
+		id = 'aldrin.core.attributesdialog',
+		singleton = False,
+		categories = [
+		]
+	)	
 	
 	def __init__(self, plugin, parent):
 		"""
