@@ -585,16 +585,19 @@ class AldrinPlayer(Player, PropertyEventHandler):
 		pc.configure("local_storage_dir", userlunarpath)
 		
 	def solo(self, plugin):	
+
 		if not plugin or plugin == self.solo_plugin:
 			# soloing deactived so apply muted states
 			self.solo_plugin = None
-			for plugin, info in common.get_plugin_infos().iteritems():
+			for plugin in self.get_plugin_list():
+				info = common.get_plugin_infos().get(plugin)
 				plugin.set_mute(info.muted)
 				info.reset_plugingfx()
 		elif is_generator(plugin):
 			# mute all plugins except solo plugin
-			self.solo_plugin = plugin			
-			for plugin, info in common.get_plugin_infos().iteritems():
+			self.solo_plugin = plugin
+			for plugin in self.get_plugin_list():
+				info = common.get_plugin_infos().get(plugin)
 				if plugin != self.solo_plugin and is_generator(plugin):
 					plugin.set_mute(True)
 					info.reset_plugingfx()

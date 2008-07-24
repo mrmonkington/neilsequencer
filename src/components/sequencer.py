@@ -814,7 +814,7 @@ class SequencerView(gtk.DrawingArea):
 				t = self.get_track()
 				if t:
 					mp = t.get_plugin()
-					com.get('aldrin.core.routerpanel').view.solo(mp)
+					player.solo(mp)
 					self.redraw()
 			elif k == 'i':
 				for track in seq.get_track_list():
@@ -1026,6 +1026,7 @@ class SequencerView(gtk.DrawingArea):
 				elif row == -1:
 					mp = player.get_sequence(track).get_plugin()
 					player.toggle_mute(mp)
+					self.redraw()
 				else:
 					self.set_cursor_pos(track,row)
 					self.deselect()
@@ -1275,7 +1276,6 @@ class SequencerView(gtk.DrawingArea):
 		gc.set_foreground(pen)
 		drawable.draw_line(gc, 0, y, w, y)
 		tracklist = seq.get_track_list()
-		solo_plugin = com.get('aldrin.core.routerpanel').view.solo_plugin
 		sel = False
 		if self.selection_start != None and self.selection_end != None:
 			sel = True
@@ -1290,7 +1290,7 @@ class SequencerView(gtk.DrawingArea):
 			pgfx = pi.patterngfx
 			mname = m.get_name()
 			title = prepstr(mname)
-			if solo_plugin and solo_plugin != m and is_generator(m):
+			if player.solo_plugin and player.solo_plugin != m and is_generator(m):
 				title = "[%s]" % title
 			elif self.plugin_info[m].muted:
 				title = "(%s)" % title

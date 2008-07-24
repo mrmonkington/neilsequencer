@@ -583,6 +583,7 @@ class VolumeSlider(gtk.Window):
 		self.y = newpos
 		self.amp = max(min(self.amp + (float(delta) / VOLBARHEIGHT), 1.0), 0.0)
 		amp = min(max(int(db2linear(self.amp * -48.0, -48.0) * 16384.0), 0), 16384)
+		print amp
 		self.plugin.set_parameter_value_direct(0,self.index,0,amp,False)
 		self.redraw()
 		return True
@@ -628,6 +629,7 @@ class VolumeSlider(gtk.Window):
 		self.plugin = mp
 		self.index = index
 		self.amp = (linear2db((self.plugin.get_parameter_value(0,index,0)/ 16384.0), -48.0) / -48.0)
+		print self.amp
 		self.move(int(mx - VOLBARWIDTH*0.5), int(my - VOLBARHEIGHT*0.5))
 		self.show_all()
 		self.drawingarea.grab_add()
@@ -694,7 +696,6 @@ class RouteView(gtk.DrawingArea):
 		eventbus.zzub_connect += self.on_zzub_redraw_event
 		eventbus.zzub_disconnect += self.on_zzub_redraw_event
 		eventbus.zzub_plugin_changed += self.on_zzub_plugin_changed
-		self.solo_plugin = None
 		self.selected_plugin = None
 		self.autoconnect_target=None
 		self.chordnotes=[]
@@ -914,7 +915,7 @@ class RouteView(gtk.DrawingArea):
 			self.current_plugin.dragpos = self.current_plugin.get_position()
 			self.dragoffset = mx-x, my-y
 			if area == AREA_LED:
-				self.toggle_mute(self.current_plugin)		
+				player.toggle_mute(self.current_plugin)
 				self.redraw()
 			elif (event.state & gtk.gdk.SHIFT_MASK) or (event.button == 2):
 				if is_controller(self.current_plugin):
@@ -1093,7 +1094,7 @@ class RouteView(gtk.DrawingArea):
 				pi.plugingfx.draw_rectangle(gc, False, 0, 0, PLUGINWIDTH-1,PLUGINHEIGHT-1)
 				gc.set_foreground(cm.alloc_color(brushes[self.COLOR_BORDER_IN]))
 				pi.plugingfx.draw_rectangle(gc, False, 1, 1, PLUGINWIDTH-3,PLUGINHEIGHT-3)
-				if self.solo_plugin and self.solo_plugin != mp and is_generator(mp):
+				if player.solo_plugin and player.solo_plugin != mp and is_generator(mp):
 					title = prepstr('[' + mp.get_name() + ']')
 				elif pi.muted:
 					title = prepstr('(' + mp.get_name() + ')')
