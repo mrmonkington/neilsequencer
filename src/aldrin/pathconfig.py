@@ -25,6 +25,8 @@ Organizes finding Aldrins resources across the system.
 from ConfigParser import ConfigParser
 import sys, os
 
+HOME_CONFIG_DIR = '~/.aldrin'
+
 if 'ALDRIN_PATHCONFIG' in os.environ:
 	PATHCONFIG = os.environ['ALDRIN_PATHCONFIG']
 else:
@@ -38,7 +40,7 @@ else:
 class PathConfig(ConfigParser):
 	CFG_PATHS = [
 		PATHCONFIG, # assume we are in the repository
-		'~/.aldrin/path.cfg', # is it in home dir config folder?
+		HOME_CONFIG_DIR + '/path.cfg', # is it in home dir config folder?
 		'/etc/aldrin/path.cfg', # take the absolute path
 	]
 	
@@ -60,6 +62,14 @@ class PathConfig(ConfigParser):
 		if not site_packages in sys.path:
 			print site_packages + "  missing in sys.path, prepending"
 			sys.path = [site_packages] + sys.path
+			
+	def get_paths(self, pathid, append=''):
+		paths = []
+		default_path = self.get_path(pathid, append)
+		if default_path:
+			paths.append(default_path)
+		paths.append(os.path.expanduser(os.path.join(HOME_CONFIG_DIR, pathid)))
+		return paths
 		
 	def get_path(self, pathid, append=''):
 		if not self.has_option('Paths', pathid):

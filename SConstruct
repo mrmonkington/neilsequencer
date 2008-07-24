@@ -63,6 +63,7 @@ env['BIN_PATH'] = '${DESTDIR}${PREFIX}/bin'
 env['SHARE_PATH'] = '${DESTDIR}${PREFIX}/share/aldrin'
 env['DOC_PATH'] = '${DESTDIR}${PREFIX}/share/doc/aldrin'
 env['ETC_PATH'] = '${DESTDIR}${ETCDIR}/aldrin'
+env['INDEX_PATH'] = '${DESTDIR}${PREFIX}/share/aldrin/index'
 env['ICONS_ALDRIN_PATH'] = '${DESTDIR}${PREFIX}/share/icons/aldrin'
 env['ICONS_HICOLOR_PATH'] = '${DESTDIR}${PREFIX}/share/icons/hicolor'
 env['PIXMAPS_PATH'] = '${DESTDIR}${PREFIX}/share/pixmaps/aldrin'
@@ -72,6 +73,7 @@ CONFIG_PATHS = dict(
 	applications = 'APPLICATIONS_PATH',
 	bin = 'BIN_PATH',
 	share = 'SHARE_PATH',
+	index = 'INDEX_PATH',
 	doc = 'DOC_PATH',
 	icons_aldrin = 'ICONS_ALDRIN_PATH',
 	icons_hicolor = 'ICONS_HICOLOR_PATH',
@@ -165,4 +167,5 @@ env.SConscript('pixmaps/SConscript')
 env.SConscript('presets/SConscript')
 env.SConscript('src/SConscript')
 env.SConscript('themes/SConscript')
+env.SConscript('index/SConscript')
 
