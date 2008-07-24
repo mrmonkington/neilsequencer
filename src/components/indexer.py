@@ -22,11 +22,17 @@
 Reads and writes index files and directory structures.
 """
 
-import fnmatch, os, sys
+if __name__ == '__main__':
+	import os,sys
+	sys.path.insert(0, '/home/paniq/devel/aldrin/src')
+
+import fnmatch, glob, os, sys
 from aldrin.utils import prepstr
 import zzub
 from xml.dom.minidom import parse
 import aldrin.com as com
+import aldrin.pathconfig as pathconfig
+from ConfigParser import ConfigParser
 
 class BaseItem:
 	def is_directory(self):
@@ -58,9 +64,18 @@ class Directory(BaseItem):
 	"""
 	Resembles a folder or a submenu containing plugin references.
 	"""
-	def __init__(self):
-		self.name = ""
-		self.children = []
+	def __init__(self, name = '', children = []):
+		self.name = name
+		self.children = list(children)
+		
+	def sort_children(self):
+		def cmp_items(a,b):
+			if a.is_directory() and not b.is_directory():
+				return -1
+			elif not a.is_directory() and b.is_directory():
+				return 1
+			return cmp(a.name, b.name)
+		self.children = sorted(self.children, cmp_items)
 		
 	def is_empty(self):
 		for child in self.children:
@@ -78,7 +93,7 @@ class Directory(BaseItem):
 		xml += '</Directory>\n'
 		return xml
 
-def parse_index(player, filepath, root = None):
+def parse_index_old(player, filepath, root = None):
 	"""
 	Parses an index.xml file and returns a plugin directory structure.
 	
@@ -177,7 +192,111 @@ class PluginTreeIndex(Directory):
 	
 	def __init__(self):
 		Directory.__init__(self)
-		parse_index(com.get('aldrin.core.player'), com.get('aldrin.core.config').get_index_path(), self)
+		#parse_index(com.get('aldrin.core.player'), com.get('aldrin.core.config').get_index_path(), self)
+		player = com.get('aldrin.core.player')
+		self.name2uri = {}
+		self.uri2plugin = {}
+		self.categories = {}
+		for pl in player.get_pluginloader_list():
+			if not (pl.get_flags() & zzub.zzub_plugin_flag_is_root):
+				name = pl.get_name()
+				uri = pl.get_uri()
+				self.name2uri[name] = uri
+				self.uri2plugin[uri] = pl
+		self.parse_indices()
+		
+	def add_reference(self, cats, ref):
+		"""
+		add a reference to given categories
+		"""
+		cats = [cat for cat in cats if cat in self.categories]
+		if not cats:
+			cats = ['']
+		for cat in cats:
+			self.categories[cat].children.append(ref)
+		
+	def parse_indices(self):
+		"""
+		Searches for index files in a list of paths and builds a plugin directory structure.
+		"""
+		self.children = []
+		unknown = Directory()
+		generators = Directory()
+		effects = Directory()
+		controllers = Directory()
+		self.categories = {
+			'' : unknown, # unknown
+			'Generator' : generators,
+			'Effect' : effects,
+			'Controller' : controllers,
+		}
+		uriused = []
+		paths = pathconfig.path_cfg.get_paths('index')
+		special_nodes = {}
+		for path in paths:
+			for filename in glob.glob(path + '/*.aldrin-index'):
+				SECTION = "Aldrin Plugin"
+				cfg = ConfigParser()
+				cfg.read([filename])
+				cats = []
+				icon = ''
+				label = ''
+				uri = ''
+				pattern = ''
+				if cfg.has_option(SECTION, 'Categories'):
+					cats = cfg.get(SECTION, 'Categories').strip(';').split(';')
+				if cfg.has_option(SECTION, 'Icon'):
+					icon = cfg.get(SECTION, 'Icon')
+				if cfg.has_option(SECTION, 'Label'):
+					label = cfg.get(SECTION, 'Label')
+				if cfg.has_option(SECTION, 'URI'):
+					uri = cfg.get(SECTION, 'URI')
+				if cfg.has_option(SECTION, 'URIPattern'):
+					pattern = cfg.get(SECTION, 'URIPattern')
+				if pattern:
+					for pl in [self.uri2plugin[uri] for uri in fnmatch.filter(self.uri2plugin.keys(),pattern)]:
+						ref = Reference()
+						ref.pluginloader = pl
+						ref.name = pl.get_name()
+						ref.uri = pl.get_uri()
+						self.add_reference(cats, ref)
+						uriused.append(pl.get_uri())
+				elif uri in self.uri2plugin: # plugin exists
+					menuname = label or pl.get_name()
+					ref = Reference()
+					ref.pluginloader = self.uri2plugin[uri]
+					ref.name = menuname
+					ref.icon = icon
+					ref.uri = ref.pluginloader.get_uri()
+					self.add_reference(cats, ref)
+					uriused.append(ref.uri)
+				elif label: # if we have a label
+					ref = Reference()
+					ref.name = label
+					ref.icon = icon
+					ref.uri = uri
+					self.add_reference(cats, ref)
+		# add plugins not referenced
+		for pl in self.uri2plugin.values():
+			if pl.get_uri() not in uriused:
+				ref = Reference()
+				ref.pluginloader = pl
+				ref.name = pl.get_name()
+				ref.uri = pl.get_uri()
+				self.add_reference([], ref)
+		for catnames, cat in self.categories.iteritems():
+			cat.sort_children()
+		self.children += generators.children
+		if self.children and not controllers.is_empty():
+			self.children.append(Separator())
+		self.children += controllers.children
+		if self.children and not effects.is_empty():
+			self.children.append(Separator())
+		self.children += effects.children
+		if self.children and not unknown.is_empty():
+			self.children.append(Separator())
+		unknown.name = "Miscellaneous"
+		self.children.append(unknown)
 
 __aldrin__ = dict(
 	classes = [
@@ -186,20 +305,7 @@ __aldrin__ = dict(
 )
 
 if __name__ == '__main__':
-	from config import get_plugin_aliases, get_plugin_blacklist
-	import utils, zzub, os
-	aliases = {}
-	player = zzub.Player()
-	# load blacklist file and add blacklist entries
-	for name in get_plugin_blacklist():
-		player.blacklist_plugin(name)
-	# load aliases file and add aliases
-	for name,uri in get_plugin_aliases():
-		aliases[name]=uri
-		player.add_plugin_alias(name, uri)
-	pluginpath = utils.filepath('/usr/lib/zzub') + os.sep
-	print "pluginpath is '%s'" % pluginpath
-	player.add_plugin_path(pluginpath)
-	player.initialize(44100)
-	node = parse_index(player,'./index.xml')
-	print node.get_xml()
+	com.init()
+	d = com.get('aldrin.core.plugintree')
+	print d.get_xml()
+
