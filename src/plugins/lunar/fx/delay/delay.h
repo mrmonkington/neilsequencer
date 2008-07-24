@@ -4,6 +4,9 @@
 #if defined(__cplusplus)
 extern "C" {
 #endif // __cplusplus
+typedef struct _lunar_attributes {
+	int delaymode;
+} lunar_attributes_t;
 typedef struct _lunar_globals {
 	float *delay;
 	float *fb;

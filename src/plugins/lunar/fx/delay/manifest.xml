@@ -54,6 +54,14 @@
 			<track>
 			</track>
 		</parameters>
+		<attributes>
+			<attribute
+				id="delaymode"
+				name="Delay Mode"
+				minvalue="0"
+				maxvalue="1"
+				defvalue="0"/>
+		</attributes>		
 		<files>
 			<file ref="delay.cpp"/>
 			<file ref="delay.h"/>

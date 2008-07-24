@@ -39,6 +39,8 @@ def build_fxheader(target, source, env):
 	defpath = str(target[0])
 	ofile = file(defpath,'w')
 	p = env['PLUGIN']
+	attribs = p.getElementsByTagName('attributes')
+	attribs = (attribs and attribs[0].getElementsByTagName('attribute')) or []
 	params = p.getElementsByTagName('parameters')[0]
 	g = p.getElementsByTagName('global')
 	t = p.getElementsByTagName('track')
@@ -50,6 +52,11 @@ def build_fxheader(target, source, env):
 	print >> ofile, "#if defined(__cplusplus)"
 	print >> ofile, 'extern "C" {'
 	print >> ofile, "#endif // __cplusplus"
+	
+	print >> ofile, "typedef struct _lunar_attributes {"
+	for attrib in attribs:
+		print >> ofile, "\tint %s;" % attrib.getAttribute("id")
+	print >> ofile, "} lunar_attributes_t;"
 	
 	params = (g and g[0].getElementsByTagName('parameter')) or []
 	print >> ofile, "typedef struct _lunar_globals {"

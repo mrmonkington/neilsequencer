@@ -4,6 +4,8 @@
 #if defined(__cplusplus)
 extern "C" {
 #endif // __cplusplus
+typedef struct _lunar_attributes {
+} lunar_attributes_t;
 typedef struct _lunar_globals {
 	float *waveform;
 	float *attack;

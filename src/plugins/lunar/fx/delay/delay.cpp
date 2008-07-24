@@ -31,7 +31,20 @@ public:
 			rb->pos -= size;
 	}
 
-	void rb_mix(ringbuffer_t *rb, float *out, int n) {
+	void rb_mix0(ringbuffer_t *rb, float *out, int n) {
+		float s;
+		while (n--) {
+			s = *out;
+			*out = (*out * dry) + (*rb->pos * wet);
+			*rb->pos = min(max((*rb->pos * fb) + s, -1.0f),1.0f);
+			out++;
+			rb->pos++;
+			if (rb->pos == rb->eob) // wrap
+				rb->pos = rb->buffer;
+		}
+	}
+
+	void rb_mix1(ringbuffer_t *rb, float *out, int n) {
 		float s;
 		while (n--) {
 			s = *out;
@@ -85,8 +98,16 @@ public:
 	void process_stereo(float *inL, float *inR, float *outL, float *outR, int n) {
 		dsp_copy(inL, outL, n);
 		dsp_copy(inR, outR, n);
-		rb_mix(&rb[0], outL, n);
-		rb_mix(&rb[1], outR, n);
+		if (attributes->delaymode == 0)
+		{
+			rb_mix0(&rb[0], outL, n);
+			rb_mix0(&rb[1], outR, n);
+		}
+		else
+		{
+			rb_mix1(&rb[0], outL, n);
+			rb_mix1(&rb[1], outR, n);
+		}
 		dsp_clip(outL, n, 1); // signal may never exceed -1..1
 		dsp_clip(outR, n, 1);
 	}

@@ -1084,6 +1084,7 @@ struct dspplugin : zzub::plugin {
 		fx->globals = &grefs[0];
 		fx->tracks = &trefs[0];
 		fx->controllers = &crefs[0];
+		fx->attributes = attributes;
 		silencecount = 0;
 		memset(&last_master_info, 0, sizeof(zzub::master_info));
 	}
@@ -1218,6 +1219,12 @@ struct dspplugin : zzub::plugin {
 			fxcopy.process_controller_events(fx);
 		}
 	}
+
+	void call_attributes_changed() {
+		if (fxcopy.attributes_changed) {
+			fxcopy.attributes_changed(fx);
+		}
+	}
 	
 	virtual bool process_offline(float **pin, float **pout, int *numsamples, int *channels, int *samplerate) { return false; }
 
@@ -1286,7 +1293,9 @@ struct dspplugin : zzub::plugin {
 		}
 		call_process_events();
 	}
-	virtual void attributes_changed() {}
+	virtual void attributes_changed() {
+		call_attributes_changed();
+	}
 	virtual void mute_track(int) {}
 	virtual bool is_track_muted(int) const { return false; }
 	virtual void midi_note(int, int, int) {}

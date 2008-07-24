@@ -112,6 +112,7 @@ void lunar_voice_reset(lunar_voice_t *);
 typedef void lunar_globals_t;
 typedef void lunar_track_t;
 typedef void lunar_controllers_t;
+typedef void lunar_attributes_t;
 #endif // !LUNAR_USE_LOCALS
 
 struct lunar_fx {
@@ -121,7 +122,8 @@ struct lunar_fx {
 	lunar_globals_t *globals;
 	lunar_track_t *tracks;
 	int track_count;
-  lunar_controllers_t *controllers;
+	lunar_attributes_t *attributes;
+ 	lunar_controllers_t *controllers;
 	void (*init)(lunar_fx *);
 	void (*exit)(lunar_fx *);
 	void (*process_events)(lunar_fx *);
@@ -130,6 +132,7 @@ struct lunar_fx {
 	void (*instrument_changed)(lunar_fx *, int instr);
 	void (*transport_changed)(lunar_fx *);
 	void (*tracks_changed)(lunar_fx *);
+	void (*attributes_changed)(lunar_fx *);
 };
 
 inline void lunar_init_fx(lunar_fx *fx) {

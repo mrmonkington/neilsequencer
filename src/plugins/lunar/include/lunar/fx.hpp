@@ -53,6 +53,10 @@ private:
 		static_cast<inheritantT*>(h)->transport_changed();
 	}
 
+	static void _attributes_changed(::lunar_fx *h) {
+		static_cast<inheritantT*>(h)->attributes_changed();
+	}
+
 public:
 	
 
@@ -65,6 +69,7 @@ public:
 		_fx->process_controller_events = _process_controller_events;
 		_fx->process_stereo = _process_stereo;
 		_fx->transport_changed = _transport_changed;
+		_fx->attributes_changed = _attributes_changed;
 	}
 	
 	void init() {}
@@ -72,6 +77,7 @@ public:
 	void process_controller_events() {}
 	void process_stereo(float *inL, float *inR, float *outL, float *outR, int n) {}
 	void transport_changed() {}
+	void attributes_changed() {}
 };
 	
 } // namespace lunar
