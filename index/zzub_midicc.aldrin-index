@@ -1,0 +1,5 @@
+[Aldrin Plugin]
+Categories=
+Icon=zzub_midicc
+Label=zzub midicc
+URI=@zzub.org/midicc;1

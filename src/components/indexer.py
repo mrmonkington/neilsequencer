@@ -34,6 +34,17 @@ import aldrin.com as com
 import aldrin.pathconfig as pathconfig
 from ConfigParser import ConfigParser
 
+DIRECTORIES = [
+	('Samplers', '', ['Tracker','Sampler']),
+	('Synthesizers', '', ['Synth']),
+	('-', '', []),
+	('Generators', '', ['Generator']),
+	('Effects', '', ['Effect']),
+	('Controllers', '', ['Controller']),
+	('-', '', []),
+	('Unsorted', '', ['']),
+]
+
 class BaseItem:
 	def is_directory(self):
 		return isinstance(self, Directory)
@@ -74,7 +85,7 @@ class Directory(BaseItem):
 				return -1
 			elif not a.is_directory() and b.is_directory():
 				return 1
-			return cmp(a.name, b.name)
+			return cmp(a.name.lower(), b.name.lower())
 		self.children = sorted(self.children, cmp_items)
 		
 	def is_empty(self):
@@ -209,6 +220,9 @@ class PluginTreeIndex(Directory):
 		"""
 		add a reference to given categories
 		"""
+		for cat in cats:
+			if not cat in self.categories:
+				print "unknown index category:",cat
 		cats = [cat for cat in cats if cat in self.categories]
 		if not cats:
 			cats = ['']
@@ -220,16 +234,17 @@ class PluginTreeIndex(Directory):
 		Searches for index files in a list of paths and builds a plugin directory structure.
 		"""
 		self.children = []
-		unknown = Directory()
-		generators = Directory()
-		effects = Directory()
-		controllers = Directory()
-		self.categories = {
-			'' : unknown, # unknown
-			'Generator' : generators,
-			'Effect' : effects,
-			'Controller' : controllers,
-		}
+		self.categories = {}
+		for label,icon,cats in DIRECTORIES:
+			if label == '-':
+				self.children.append(Separator())
+				continue
+			else:
+				d = Directory(label)
+				d.icon = icon
+				for cat in cats:
+					self.categories[cat] = d
+				self.children.append(d)
 		uriused = []
 		paths = pathconfig.path_cfg.get_paths('index')
 		special_nodes = {}
@@ -284,19 +299,9 @@ class PluginTreeIndex(Directory):
 				ref.name = pl.get_name()
 				ref.uri = pl.get_uri()
 				self.add_reference([], ref)
-		for catnames, cat in self.categories.iteritems():
-			cat.sort_children()
-		self.children += generators.children
-		if self.children and not controllers.is_empty():
-			self.children.append(Separator())
-		self.children += controllers.children
-		if self.children and not effects.is_empty():
-			self.children.append(Separator())
-		self.children += effects.children
-		if self.children and not unknown.is_empty():
-			self.children.append(Separator())
-		unknown.name = "Miscellaneous"
-		self.children.append(unknown)
+		for child in self.children:
+			if child.is_directory():
+				child.sort_children()
 
 __aldrin__ = dict(
 	classes = [
@@ -307,5 +312,4 @@ __aldrin__ = dict(
 if __name__ == '__main__':
 	com.init()
 	d = com.get('aldrin.core.plugintree')
-	print d.get_xml()
 

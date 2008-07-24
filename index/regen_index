@@ -1,0 +1,64 @@
+#!/usr/bin/env python
+
+
+"""
+[Aldrin Plugin]
+Categories=Tracker;Generator;
+Icon=matilde
+Label=Matilde Tracker
+URI=@rift.dk/generator/Matilde+Tracker;1.5
+"""
+
+import os,sys
+import aldrin.com as com
+from fnmatch import fnmatch
+from StringIO import StringIO
+from aldrin.utils import is_generator,is_effect,is_controller,is_root
+com.init()
+
+player = com.get('aldrin.core.player')
+
+blacklist = [
+	'@zzub.org/dssidapter/*',
+	'@psycle.sourceforge.net/*',
+	'@zzub.org/ladspadapter/*',
+]
+
+for pl in player.get_pluginloader_list():
+	filename = pl.get_name()
+	filename = filename.strip().lower()
+	for c in '():[]/,.!"\'$%&\\=?*#~+-<>`@ ':
+		filename = filename.replace(c, '_')
+	while '__' in filename:
+		filename = filename.replace('__','_')
+	filename = filename.strip('_')
+	cats = []
+	if is_generator(pl):
+		cats.append('Generator')
+	if is_effect(pl):
+		cats.append('Effect')
+	if is_controller(pl):
+		cats.append('Controller')
+	if is_root(pl):
+		continue
+	cats = ';'.join(cats)
+	icon = filename
+	filename = filename + '.aldrin-index'
+	if os.path.isfile(filename):
+		continue
+	skip = False
+	for entry in blacklist:
+		if fnmatch(pl.get_uri(), entry):
+			skip = True
+	if skip:
+		print "skipping ",pl.get_uri()
+		continue
+	s = StringIO('')
+	print >> s, "[Aldrin Plugin]"
+	print >> s, "Categories=" + cats
+	print >> s, "Icon=" + icon
+	print >> s, "Label=" + pl.get_name()
+	print >> s, "URI=" + pl.get_uri()
+	print "writing",filename,"..."
+	file(filename, 'w').write(s.getvalue())
+

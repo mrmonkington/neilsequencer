@@ -1,0 +1,5 @@
+[Aldrin Plugin]
+Categories=Effect
+Icon=lunar_distortion
+Label=Lunar Distortion
+URI=@trac.zeitherrschaft.org/aldrin/lunar/effect/distortion;1

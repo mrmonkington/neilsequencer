@@ -1,0 +1,5 @@
+[Aldrin Plugin]
+Categories=Generator
+Icon=lunar_kick
+Label=Lunar Kick
+URI=@trac.zeitherrschaft.org/aldrin/lunar/generator/kick;1

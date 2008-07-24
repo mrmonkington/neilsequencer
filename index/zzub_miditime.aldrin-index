@@ -1,0 +1,5 @@
+[Aldrin Plugin]
+Categories=
+Icon=zzub_miditime
+Label=zzub miditime
+URI=@zzub.org/miditime;1

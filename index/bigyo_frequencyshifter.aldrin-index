@@ -1,0 +1,5 @@
+[Aldrin Plugin]
+Categories=Effect
+Icon=bigyo_frequencyshifter
+Label=Bigyo FrequencyShifter
+URI=@bigyo/frequency+shifter;1

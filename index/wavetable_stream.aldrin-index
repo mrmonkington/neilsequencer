@@ -1,0 +1,5 @@
+[Aldrin Plugin]
+Categories=Generator
+Icon=wavetable_stream
+Label=Wavetable Stream
+URI=@zzub.org/stream/wavetable;1

@@ -1,0 +1,5 @@
+[Aldrin Plugin]
+Categories=Effect
+Icon=lunar_ringmod
+Label=Lunar RingMod
+URI=@trac.zeitherrschaft.org/aldrin/lunar/effect/ringmod;1

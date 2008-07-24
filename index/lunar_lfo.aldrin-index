@@ -1,0 +1,5 @@
+[Aldrin Plugin]
+Categories=Controller
+Icon=lunar_lfo
+Label=Lunar LFO
+URI=@trac.zeitherrschaft.org/aldrin/lunar/controller/lfo;1

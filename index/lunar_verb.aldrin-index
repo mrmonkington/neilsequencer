@@ -1,0 +1,5 @@
+[Aldrin Plugin]
+Categories=Effect
+Icon=lunar_verb
+Label=Lunar Verb
+URI=@trac.zeitherrschaft.org/aldrin/lunar/effect/reverb;1

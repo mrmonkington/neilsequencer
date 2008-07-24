@@ -1,0 +1,5 @@
+[Aldrin Plugin]
+Categories=Generator
+Icon=libmad_stream_mp3
+Label=Libmad Stream (MP3)
+URI=@zzub.org/stream/mp3;1

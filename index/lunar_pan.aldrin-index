@@ -1,0 +1,5 @@
+[Aldrin Plugin]
+Categories=Effect
+Icon=lunar_pan
+Label=Lunar Pan
+URI=@trac.zeitherrschaft.org/aldrin/lunar/effect/panning;1

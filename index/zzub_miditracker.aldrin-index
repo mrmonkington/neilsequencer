@@ -1,0 +1,5 @@
+[Aldrin Plugin]
+Categories=
+Icon=zzub_miditracker
+Label=zzub miditracker
+URI=@zzub.org/miditracker;1

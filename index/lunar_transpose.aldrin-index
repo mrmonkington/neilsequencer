@@ -1,0 +1,5 @@
+[Aldrin Plugin]
+Categories=Controller
+Icon=lunar_transpose
+Label=Lunar Transpose
+URI=@trac.zeitherrschaft.org/aldrin/lunar/controller/transpose;1

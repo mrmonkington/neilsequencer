@@ -1,0 +1,5 @@
+[Aldrin Plugin]
+Categories=Generator
+Icon=fsm_infector
+Label=FSM Infector
+URI=@krzysztof_foltman/generator/infector;1

@@ -1,0 +1,5 @@
+[Aldrin Plugin]
+Categories=Effect
+Icon=lunar_crossfade
+Label=Lunar CrossFade
+URI=@trac.zeitherrschaft.org/aldrin/lunar/controller/crossfade;1

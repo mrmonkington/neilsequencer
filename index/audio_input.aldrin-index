@@ -1,0 +1,5 @@
+[Aldrin Plugin]
+Categories=Generator
+Icon=audio_input
+Label=Audio Input
+URI=@zzub.org/input
