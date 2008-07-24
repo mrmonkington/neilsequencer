@@ -1,0 +1,5 @@
+[Aldrin Plugin]
+Categories=LADSPAPlugin
+Icon=
+Label=
+URIPattern=@zzub.org/ladspadapter/*

@@ -42,6 +42,10 @@ DIRECTORIES = [
 	('Effects', '', ['Effect']),
 	('Controllers', '', ['Controller']),
 	('-', '', []),
+	('DSSI Plugins', '', ['DSSIPlugin']),
+	('LADSPA Plugins', '', ['LADSPAPlugin']),
+	('Psycle Plugins', '', ['PsyclePlugin']),
+	('-', '', []),
 	('Unsorted', '', ['']),
 ]
 
