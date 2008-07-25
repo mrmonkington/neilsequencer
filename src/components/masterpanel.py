@@ -18,6 +18,11 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+if __name__ == '__main__':
+	import os
+	os.system('../../bin/aldrin-combrowser aldrin.core.panel.master')
+	raise SystemExit
+
 import gtk
 import cairo
 from aldrin.common import MARGIN, MARGIN2, MARGIN3, MARGIN0
@@ -38,7 +43,7 @@ class AmpView(gtk.DrawingArea):
 		Initializer.
 		"""
 		import Queue
-		self.range = 76
+		self.range = 80
 		self.amp = 0.0
 		self.channel = channel
 		self.pixbuf = gtk.gdk.pixbuf_new_from_file(imagepath('vubar.svg'))
@@ -127,7 +132,11 @@ class MasterPanel(gtk.VBox):
 		hbox.pack_start(self.ampl)
 		hbox.pack_start(self.masterslider)
 		hbox.pack_start(self.ampr)
-		self.pack_start(hbox, expand=False, fill=False)
+		vbox = gtk.VBox()
+		self.volumelabel = gtk.Label("0 dB")
+		vbox.pack_start(hbox)
+		vbox.pack_start(self.volumelabel)
+		self.pack_start(vbox, expand=False, fill=False)
 		self.update_all()
 
 	def on_zzub_parameter_changed(self, plugin,group,track,param,value):
@@ -143,13 +152,11 @@ class MasterPanel(gtk.VBox):
 		@type event: wx.Event
 		"""
 		import time
-		block = self.ohg.autoblock()
 		vol = int(min(max(value,0), 16384) + 0.5)
 		player = com.get('aldrin.core.player')
 		master = player.get_plugin(0)
 		master.set_parameter_value_direct(1, 0, 0, 16384 - vol, 1)
-		self.masterslider.set_value(vol)
-		return True
+		#self.masterslider.set_value(vol)
 
 	def on_mousewheel(self, widget, event):
 		"""
@@ -176,6 +183,14 @@ class MasterPanel(gtk.VBox):
 		master = player.get_plugin(0)
 		vol = master.get_parameter_value(1, 0, 0)
 		self.masterslider.set_value(16384 - vol)
+		if vol == 16384:
+			text = "(muted)"
+		else:
+			db = (-vol*self.ampl.range/16384.0)
+			if db == 0.0:
+				db = 0.0
+			text = "%.1f dB" % db
+		self.volumelabel.set_text(text)
 		self.latency = com.get('aldrin.core.driver.audio').get_latency()
 
 __aldrin__ = dict(

@@ -608,7 +608,6 @@ class AldrinPlayer(Player, PropertyEventHandler):
 	def toggle_mute(self, plugin):
 		pi = common.get_plugin_infos().get(plugin)
 		pi.muted = not pi.muted
-		print pi.muted
 		# make sure a machine muted by solo is not unmuted manually
 		if not self.solo_plugin or plugin == self.solo_plugin or is_effect(plugin):
 			plugin.set_mute(pi.muted)
