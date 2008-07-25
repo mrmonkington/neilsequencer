@@ -670,6 +670,7 @@ class WavetablePanel(gtk.Notebook):
 			print "loading %s => %s" % (source,target)
 			w = player.get_wave(target)
 			w.clear()
+			w.set_volume(1.0)
 			if not player.load_wave(w, source):
 				error(self, "<b><big>Unable to load <i>%s</i>.</big></b>\n\nThe file may be corrupt or the file type is not supported." % source)
 			else:

@@ -347,6 +347,7 @@ class SequencerView(gtk.DrawingArea):
 		gobject.timeout_add(100, self.update_position)
 		eventbus = com.get('aldrin.core.eventbus')
 		eventbus.zzub_sequencer_changed += self.redraw
+		eventbus.zzub_set_sequence_event += self.redraw
 						
 	def track_row_to_pos(self, (track,row)):
 		"""
@@ -503,13 +504,12 @@ class SequencerView(gtk.DrawingArea):
 	
 	def selection_range(self):
 		player = com.get('aldrin.core.player')
-		seq = player.get_current_sequencer()		
 		start = (min(self.selection_start[0], self.selection_end[0]), 
 					min(self.selection_start[1], self.selection_end[1]))
 		end = (max(self.selection_start[0], self.selection_end[0]), 
 					max(self.selection_start[1], self.selection_end[1]))
 		for track in range(start[0], end[0]+1):
-			t = seq.get_track(track)
+			t = player.get_sequence(track)
 			events = dict(t.get_event_list())
 			for row in range(start[1], end[1]+1):
 				if row in events:
@@ -622,13 +622,12 @@ class SequencerView(gtk.DrawingArea):
 		seq = player.get_current_sequencer()
 		data = get_clipboard_text()
 		for track,row,value in self.unpack_clipboard_data(data.strip()):
-			t = seq.get_track(track)
+			t = seq.get_sequence(track)
 			if value == -1:
-				t.remove_event_at(self.row + row)
+				t.set_event(self.row + row, -1)
 			else:
 				t.set_event(self.row + row, value)
-		
-		self.redraw()
+		player.history_commit("paste selection")
 		
 	def on_popup_delete(self, *args):
 		player = com.get('aldrin.core.player')
@@ -639,10 +638,10 @@ class SequencerView(gtk.DrawingArea):
 		end = (max(self.selection_start[0], self.selection_end[0]), 
 					max(self.selection_start[1], self.selection_end[1]))
 		for track in range(start[0], end[0]+1):
-			t = seq.get_track(track)
+			t = seq.get_sequence(track)
 			for row in range(start[1], end[1]+1):
-				t.remove_event_at(row)
-		self.redraw()
+				t.set_event(row, -1)
+		player.history_commit("delete selection")
 		
 	def on_popup_delete_track(self, *args):
 		"""
@@ -818,14 +817,12 @@ class SequencerView(gtk.DrawingArea):
 					self.redraw()
 			elif k == 'i':
 				for track in seq.get_track_list():
-					track.move_events(self.row, self.step)
-				self.redraw()	
+					track.insert_events(self.row, self.step)
+				player.history_commit("insert event")
 			elif k == 'd':
 				for track in seq.get_track_list():
-					for row in range(self.row, self.row+self.step):
-						track.remove_event_at(row)
-					track.move_events(self.row, -self.step)
-				self.redraw()	
+					track.remove_events(self.row, self.step)
+				player.history_commit("remove event")
 			elif k == 'c':	
 				self.on_popup_copy()
 			elif k == 'x':	
