@@ -667,7 +667,7 @@ def new_liststore(view, columns):
 				else:
 					column.add_attribute(cellrenderer, 'text', i)
 				if options.get('wrap',False):
-					cellrenderer.set_property('wrap-width', 250)
+					cellrenderer.set_property('wrap-width', options.get('width', 250))
 		elif coltype == bool:
 			th = ToggledHandler()
 			th.column = i
@@ -675,6 +675,10 @@ def new_liststore(view, columns):
 			cellrenderer.connect('toggled', th.fixed_toggled, liststore)
 			column.pack_start(cellrenderer)
 			column.add_attribute(cellrenderer, 'active', i)
+		elif coltype == gtk.gdk.Pixbuf:
+			cellrenderer = gtk.CellRendererPixbuf()
+			column.pack_start(cellrenderer)
+			column.add_attribute(cellrenderer, 'pixbuf', i)
 		if isinstance(view, gtk.TreeView):
 			view.append_column(column)
 			column.set_sort_column_id(i)

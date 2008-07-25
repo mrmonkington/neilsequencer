@@ -36,7 +36,7 @@ from aldrin.utils import PLUGIN_FLAGS_MASK, ROOT_PLUGIN_FLAGS, GENERATOR_PLUGIN_
 from aldrin.utils import is_effect,is_generator,is_controller,is_root
 from aldrin.utils import prepstr, filepath, db2linear, linear2db, is_debug, filenameify, \
 	get_item_count, question, error, new_listview, add_scrollbars, get_clipboard_text, set_clipboard_text, \
-	gettext, new_stock_image_button
+	gettext, new_stock_image_button, new_liststore
 import config
 import zzub
 import sys,os
@@ -349,8 +349,125 @@ class PresetDialog(gtk.Dialog):
 		
 	def on_realize(self, widget):
 		self.set_default_size(300,500)
+
+DRAG_FORMAT_PLUGIN_URI = 0
+
+DRAG_FORMATS = [
+	('application/x-aldrin-plugin-uri', 0, DRAG_FORMAT_PLUGIN_URI)
+]
+
+class PluginListBrowser(gtk.VBox):
+	__aldrin__ = dict(
+		id = 'aldrin.core.pluginlistbrowser',
+		categories = [
+		]
+	)
+
+	def __init__(self):
+		gtk.VBox.__init__(self)
+		com.get("aldrin.core.icons") # make sure theme icons are loaded
+		self.searchterms = ['']
+		self.searchbox = gtk.Entry()
+		self.treeview = gtk.TreeView()
+		new_liststore(self.treeview, [
+			('Icon', gtk.gdk.Pixbuf),
+			('Name', str, dict(markup=True)),
+			(None, object),
+		])
+		self.store = self.treeview.get_model()
+		self.treeview.set_headers_visible(False)
+		self.treeview.set_rules_hint(True)
+		self.populate()
+		self.pack_start(add_scrollbars(self.treeview))
+		self.pack_end(self.searchbox, False, False)
+		self.searchbox.connect("changed", self.on_entry_changed)
+		self.filter = self.store.filter_new()
+		self.filter.set_visible_func(self.filter_item, data=None)
+		self.treeview.set_model(self.filter)
+		self.treeview.drag_source_set(gtk.gdk.BUTTON1_MASK | gtk.gdk.BUTTON3_MASK,
+			DRAG_FORMATS, gtk.gdk.ACTION_COPY | gtk.gdk.ACTION_MOVE)
+		self.treeview.connect('drag_data_get', self.on_treeview_drag_data_get)
+		cfg = com.get('aldrin.core.config')
+		self.searchbox.set_text(cfg.pluginlistbrowser_search_term)
 		
-	
+	def on_treeview_drag_data_get(self, widget, context, selection_data, info, time):
+		if selection_data.target == 'application/x-aldrin-plugin-uri':
+			store, it = self.treeview.get_selection().get_selected()
+			child = store.get(it, 2)[0]
+			selection_data.set(selection_data.target, 8, child.uri)
+		
+	def on_entry_changed(self, widget):
+		text = self.searchbox.get_text()
+		cfg = com.get('aldrin.core.config')
+		cfg.pluginlistbrowser_search_term = text
+		terms = [word.strip().split(' ') for word in text.lower().strip().split(',')]
+		self.searchterms = terms
+		self.filter.refilter()
+		
+	def filter_item(self, model, it, data):
+		if not self.searchterms:
+			return True
+		child = model.get(it, 2)[0]
+		name = child.name.lower()
+		for group in self.searchterms:
+			found = True
+			for word in group:
+				if not word in name:
+					found = False
+					break
+			if found:
+				return True
+		return False
+
+	def populate(self):
+		root = com.get('aldrin.core.plugintree')
+		plugins = {}
+		def traverse(node):
+			for child in node.children:
+				if isinstance(child, indexer.Directory) and not child.is_empty():
+					traverse(child)
+				elif isinstance(child, indexer.Reference):
+					if child.pluginloader:
+						if not child.uri in plugins:
+							plugins[child.uri] = child
+				elif isinstance(child, indexer.Separator):
+					pass
+		traverse(root)
+		theme = gtk.icon_theme_get_default()
+		def get_rating(n):
+			if is_generator(n):
+				return 0
+			elif is_controller(n):
+				return 1
+			elif is_effect(n):
+				return 2
+			else:
+				return 3
+		def cmp_child(a,b):
+			c = cmp(get_rating(a.pluginloader),get_rating(b.pluginloader))
+			if c != 0:
+				return c
+			return cmp(a.name.lower(),b.name.lower())
+		def get_type_text(pl):
+			if is_generator(pl):
+				return "Generator"
+			elif is_effect(pl):
+				return "Effect"
+			elif is_controller(pl):
+				return "Controller"
+			elif is_root(pl):
+				return "Root"
+			else:
+				return "Other"
+		for child in sorted(plugins.values(), cmp_child):
+			pl = child.pluginloader
+			name = prepstr(pl.get_name())
+			text = '<b>' + name + '</b>\n<small>' + get_type_text(pl) + '</small>'
+			pixbuf = None
+			if child.icon and theme.has_icon(child.icon):
+				pixbuf = theme.load_icon(child.icon, gtk.ICON_SIZE_MENU, 0)
+			self.store.append([pixbuf, text, child])
+
 class PluginBrowserDialog(gtk.Dialog):
 	"""
 	Displays all available plugins and some meta information.
@@ -527,9 +644,11 @@ class RoutePanel(gtk.VBox):
 		"""
 		gtk.VBox.__init__(self)
 		self.view = com.get('aldrin.core.router.view', self)
-		sizer_2 = gtk.HBox()
-		sizer_2.add(self.view)
-		self.add(sizer_2)
+		self.splitter = gtk.HPaned()
+		self.listbrowser = com.get('aldrin.core.pluginlistbrowser')
+		self.splitter.pack1(self.listbrowser, False, False)
+		self.splitter.pack2(self.view, True, True)
+		self.add(self.splitter)
 		
 	def handle_focus(self):
 		self.view.grab_focus()
@@ -696,6 +815,7 @@ class RouteView(gtk.DrawingArea):
 		@param rootwindow: Main window.
 		@type rootwindow: AldrinFrame
 		"""
+		gtk.DrawingArea.__init__(self)
 		self.panel = parent
 		self.routebitmap = None
 		eventbus = com.get('aldrin.core.eventbus')
@@ -706,7 +826,6 @@ class RouteView(gtk.DrawingArea):
 		self.autoconnect_target=None
 		self.chordnotes=[]
 		self.update_colors()
-		gtk.DrawingArea.__init__(self)
 		self.volume_slider = VolumeSlider()		
 		self.add_events(gtk.gdk.ALL_EVENTS_MASK)
 		self.set_property('can-focus', True)
@@ -719,7 +838,52 @@ class RouteView(gtk.DrawingArea):
 		self.connect('size-allocate', self.on_size_allocate)
 		if config.get_config().get_led_draw() == True:
 			gobject.timeout_add(100, self.on_draw_led_timer)
-		#~ wx.EVT_SET_FOCUS(self, self.on_focus)
+		self.drag_dest_set(0, DRAG_FORMATS, 0)
+		self.connect('drag_motion', self.on_drag_motion)
+		self.connect('drag_drop', self.on_drag_drop)
+		self.connect('drag_data_received', self.on_drag_data_received)
+		self.connect('drag_leave', self.on_drag_leave)
+		
+	def on_drag_leave(self, widget, context, time):
+		#print "on_drag_leave",widget,context,time
+		self.drag_unhighlight()
+				
+	def on_drag_motion(self, widget, context, x, y, time):
+		#print "on_drag_motion",widget,context,x,y,time
+		source = context.get_source_widget()
+		if not source:
+			return
+		self.drag_highlight()
+		context.drag_status(context.suggested_action, time)
+		return True
+		
+	def on_drag_drop(self, widget, context, x, y, time):
+		#print "on_drag_drop",widget,context,x,y,time
+		if context.targets:
+			widget.drag_get_data(context, 'application/x-aldrin-plugin-uri', time)
+			return True
+		return False
+		
+	def on_drag_data_received(self, widget, context, x, y, data, info, time):
+		#print "on_drag_data_received",widget,context,x,y,data,info,time
+		if data.format == 8:
+			context.finish(True, False, time)
+			player = com.get('aldrin.core.player')
+			player.plugin_origin = self.pixel_to_float((x,y))
+			uri = data.data
+			#def create_plugin(self, pluginloader, connection=None, plugin=None)
+			conn = None
+			plugin = None
+			pluginloader = player.get_pluginloader_by_name(uri)
+			if is_effect(pluginloader):
+				conn = self.get_connection_at((x,y))
+				if not conn:
+					res = self.get_plugin_at((x,y))
+					if res:
+						plugin,(px,py),area = res
+			player.create_plugin(pluginloader, connection=conn, plugin=plugin)
+		else:
+			context.finish(False, False, time)
 		
 	def on_size_allocate(self, widget, requisition):
 		self.routebitmap = None
@@ -1316,6 +1480,7 @@ __aldrin__ = dict(
 		ParameterDialog,
 		ParameterDialogManager,
 		AttributesDialog,
+		PluginListBrowser,
 		PluginBrowserDialog,
 		RoutePanel,
 		VolumeSlider,
