@@ -712,7 +712,7 @@ class RouteView(gtk.DrawingArea):
 		eventbus.zzub_connect += self.on_zzub_redraw_event
 		eventbus.zzub_disconnect += self.on_zzub_redraw_event
 		eventbus.zzub_plugin_changed += self.on_zzub_plugin_changed
-		self.selected_plugin = None
+		eventbus.active_plugins_changed += self.on_active_plugins_changed
 		self.autoconnect_target=None
 		self.chordnotes=[]
 		self.update_colors()
@@ -733,6 +733,11 @@ class RouteView(gtk.DrawingArea):
 		self.connect('drag_drop', self.on_drag_drop)
 		self.connect('drag_data_received', self.on_drag_data_received)
 		self.connect('drag_leave', self.on_drag_leave)
+		
+	def on_active_plugins_changed(self, *args):
+		player = com.get('aldrin.core.player')
+		for plugin in player.active_plugins:
+			common.get_plugin_infos().reset_plugingfx()
 		
 	def on_drag_leave(self, widget, context, time):
 		#print "on_drag_leave",widget,context,time
@@ -984,14 +989,8 @@ class RouteView(gtk.DrawingArea):
 			elif not self.connecting:
 				self.dragging = True
 				self.grab_add()
-			last = self.selected_plugin
-			self.selected_plugin = self.current_plugin
+			player.active_plugins = [self.current_plugin]
 			player.set_midi_plugin(self.current_plugin)
-			if self.selected_plugin:
-				com.get('aldrin.core.eventbus').show_plugin(self.selected_plugin)
-				common.get_plugin_infos().get(self.selected_plugin).reset_plugingfx()									
-			if last:
-				common.get_plugin_infos().get(last).reset_plugingfx()
 		else:
 			res = self.get_connection_at((mx,my))
 			if res:
@@ -1004,10 +1003,7 @@ class RouteView(gtk.DrawingArea):
 					# no idea what to do when clicking on an event connection yet
 					pass
 			else:
-				if self.selected_plugin:
-					last = self.selected_plugin
-					self.selected_plugin = None
-					common.get_plugin_infos().get(last).reset_plugingfx()
+				player.active_plugins = []
 		
 	def on_motion(self, widget, event):
 		"""
@@ -1160,7 +1156,7 @@ class RouteView(gtk.DrawingArea):
 					title = prepstr(mp.get_name())
 				layout.set_text(title)
 				lw,lh = layout.get_pixel_size()
-				if mp == self.selected_plugin:
+				if mp in player.active_plugins:
 					gc.set_foreground(cm.alloc_color(brushes[self.COLOR_BORDER_SELECT]))
 					pi.plugingfx.draw_rectangle(gc, False, PLUGINWIDTH/2 - lw/2 - 3, PLUGINHEIGHT/2 - lh/2, lw + 6, lh)
 				gc.set_foreground(cm.alloc_color(brushes[self.COLOR_TEXT]))
@@ -1314,15 +1310,15 @@ class RouteView(gtk.DrawingArea):
 			if k == 'Return':
 				com.get('aldrin.core.pluginbrowser', self)
 				return
+		player = com.get('aldrin.core.player')
 		if not plugin:			
-			if self.selected_plugin:
-				plugin = self.selected_plugin
+			if player.active_plugins:
+				plugin = player.active_plugins[0]
 			else:
 				return
 		#if self.rootwindow.on_key_down(widget, event):
 		#	return
 		note = None
-		player = com.get('aldrin.core.player')
 		octave = player.octave
 		if  k == 'KP_Multiply':			
 			octave = min(max(octave+1,0), 9)
@@ -1338,9 +1334,10 @@ class RouteView(gtk.DrawingArea):
 				plugin.play_midi_note(n, 0, 127)
 
 	def on_key_jazz_release(self, widget, event, plugin):
-		if not plugin:			
-			if self.selected_plugin:
-				plugin = self.selected_plugin
+		player = com.get('aldrin.core.player')
+		if not plugin:
+			if player.active_plugins:
+				plugin = player.active_plugins[0]
 			else:
 				return
 		kv = event.keyval
