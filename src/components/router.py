@@ -755,24 +755,22 @@ class RouteView(gtk.DrawingArea):
 		return False
 		
 	def on_drag_data_received(self, widget, context, x, y, data, info, time):
-		#print "on_drag_data_received",widget,context,x,y,data,info,time
 		if data.format == 8:
 			context.finish(True, False, time)
 			player = com.get('aldrin.core.player')
 			player.plugin_origin = self.pixel_to_float((x,y))
 			uri = data.data
-			#def create_plugin(self, pluginloader, connection=None, plugin=None)
 			conn = None
 			plugin = None
 			pluginloader = player.get_pluginloader_by_name(uri)
 			if is_effect(pluginloader):
 				conn = self.get_connection_at((x,y))
-				if not conn:
-					res = self.get_plugin_at((x,y))
-					if res:
-						mp,(px,py),area = res
-						if is_effect(mp) or is_root(mp):
-							plugin = mp
+			if not conn:
+				res = self.get_plugin_at((x,y))
+				if res:
+					mp,(px,py),area = res
+					if is_effect(mp) or is_root(mp):
+						plugin = mp
 			player.create_plugin(pluginloader, connection=conn, plugin=plugin)
 		else:
 			context.finish(False, False, time)

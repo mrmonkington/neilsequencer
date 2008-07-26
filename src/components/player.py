@@ -637,7 +637,7 @@ class AldrinPlayer(Player, PropertyEventHandler):
 		active_patterns = []
 		
 		# if it is a generator and has global or track parameters,
-		# create a new default pattern, and autoconnect the plugin.
+		# create a new default pattern.
 		if is_generator(mp) and \
 			(pluginloader.get_parameter_count(1) or pluginloader.get_parameter_count(2)):
 			pattern = mp.create_pattern(self.sequence_step)
@@ -647,34 +647,31 @@ class AldrinPlayer(Player, PropertyEventHandler):
 			active_patterns = [(mp, 0)]
 			t=self.create_sequence(mp)
 			t.set_event(0,16)
-			mask=gtk.get_current_event_state()
-			if (mask != None) and not(mask & gtk.gdk.SHIFT_MASK):
-				if self.autoconnect_target:
-					self.autoconnect_target.add_input(mp, zzub.zzub_connection_type_audio)
-				else:
-					self.get_plugin(0).add_input(mp, zzub.zzub_connection_type_audio)
+			# don't autoconnect, since this can be controlled quite simpler
+			# though dragging a plugin on the plugin you want to connect it with.
 					
 		# position the plugin at the default location
 		mp.set_position(*self.plugin_origin)
 		
 		if plugin:
-			# if we have a context plugin, prepend connections
-			inplugs = []
-			# first, record all connections
-			for index in xrange(plugin.get_input_connection_count()):
-				if plugin.get_input_connection_type(index) != zzub.zzub_connection_type_audio:
-					continue
-				input = plugin.get_input_connection_plugin(index)
-				amp = plugin.get_parameter_value(zzub.zzub_parameter_group_connection, index, 0)
-				pan = plugin.get_parameter_value(zzub.zzub_parameter_group_connection, index, 1)
-				inplugs.append((input,amp,pan))
-			# then, disconnect all inputs and restore to new plugin
-			for inplug,amp,pan in inplugs:
-				plugin.delete_input(inplug,zzub.zzub_connection_type_audio)
-				mp.add_input(inplug,zzub.zzub_connection_type_audio)
-				index = mp.get_input_connection_count()-1
-				mp.set_parameter_value(zzub.zzub_parameter_group_connection, index, 0, amp, False)
-				mp.set_parameter_value(zzub.zzub_parameter_group_connection, index, 1, pan, False)
+			if not is_generator(mp):
+				# if we have a context plugin, prepend connections
+				inplugs = []
+				# first, record all connections
+				for index in xrange(plugin.get_input_connection_count()):
+					if plugin.get_input_connection_type(index) != zzub.zzub_connection_type_audio:
+						continue
+					input = plugin.get_input_connection_plugin(index)
+					amp = plugin.get_parameter_value(zzub.zzub_parameter_group_connection, index, 0)
+					pan = plugin.get_parameter_value(zzub.zzub_parameter_group_connection, index, 1)
+					inplugs.append((input,amp,pan))
+				# then, disconnect all inputs and restore to new plugin
+				for inplug,amp,pan in inplugs:
+					plugin.delete_input(inplug,zzub.zzub_connection_type_audio)
+					mp.add_input(inplug,zzub.zzub_connection_type_audio)
+					index = mp.get_input_connection_count()-1
+					mp.set_parameter_value(zzub.zzub_parameter_group_connection, index, 0, amp, False)
+					mp.set_parameter_value(zzub.zzub_parameter_group_connection, index, 1, pan, False)
 			plugin.add_input(mp, zzub.zzub_connection_type_audio)
 		
 		if connection:
