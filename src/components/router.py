@@ -433,6 +433,7 @@ class PluginListBrowser(gtk.VBox):
 	def populate(self):
 		player = com.get('aldrin.core.player')
 		plugins = {}
+		cfg = com.get('aldrin.core.config')
 		for pluginloader in player.get_pluginloader_list():
 			plugins[pluginloader.get_uri()] = pluginloader
 		theme = gtk.icon_theme_get_default()
@@ -452,11 +453,11 @@ class PluginListBrowser(gtk.VBox):
 			return cmp(a.get_name().lower(),b.get_name().lower())
 		def get_type_text(pl):
 			if is_generator(pl):
-				return "Generator"
+				return '<span color="' + cfg.get_color('MV Generator') + '">Generator</span>'
 			elif is_effect(pl):
-				return "Effect"
+				return '<span color="' + cfg.get_color('MV Effect') + '">Effect</span>'
 			elif is_controller(pl):
-				return "Controller"
+				return '<span color="' + cfg.get_color('MV Controller') + '">Controller</span>'
 			elif is_root(pl):
 				return "Root"
 			else:
