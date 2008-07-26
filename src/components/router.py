@@ -390,11 +390,21 @@ class PluginListBrowser(gtk.VBox):
 		cfg = com.get('aldrin.core.config')
 		self.searchbox.set_text(cfg.pluginlistbrowser_search_term)
 		
+	def get_icon_name(self, pluginloader):
+		filename = pluginloader.get_name()
+		filename = filename.strip().lower()
+		for c in '():[]/,.!"\'$%&\\=?*#~+-<>`@ ':
+			filename = filename.replace(c, '_')
+		while '__' in filename:
+			filename = filename.replace('__','_')
+		filename = filename.strip('_')
+		return filename
+		
 	def on_treeview_drag_data_get(self, widget, context, selection_data, info, time):
 		if selection_data.target == 'application/x-aldrin-plugin-uri':
 			store, it = self.treeview.get_selection().get_selected()
 			child = store.get(it, 2)[0]
-			selection_data.set(selection_data.target, 8, child.uri)
+			selection_data.set(selection_data.target, 8, child.get_uri())
 		
 	def on_entry_changed(self, widget):
 		text = self.searchbox.get_text()
@@ -408,7 +418,7 @@ class PluginListBrowser(gtk.VBox):
 		if not self.searchterms:
 			return True
 		child = model.get(it, 2)[0]
-		name = child.name.lower()
+		name = child.get_name().lower()
 		for group in self.searchterms:
 			found = True
 			for word in group:
@@ -420,19 +430,10 @@ class PluginListBrowser(gtk.VBox):
 		return False
 
 	def populate(self):
-		root = com.get('aldrin.core.plugintree')
+		player = com.get('aldrin.core.player')
 		plugins = {}
-		def traverse(node):
-			for child in node.children:
-				if isinstance(child, indexer.Directory) and not child.is_empty():
-					traverse(child)
-				elif isinstance(child, indexer.Reference):
-					if child.pluginloader:
-						if not child.uri in plugins:
-							plugins[child.uri] = child
-				elif isinstance(child, indexer.Separator):
-					pass
-		traverse(root)
+		for pluginloader in player.get_pluginloader_list():
+			plugins[pluginloader.get_uri()] = pluginloader
 		theme = gtk.icon_theme_get_default()
 		def get_rating(n):
 			if is_generator(n):
@@ -444,10 +445,10 @@ class PluginListBrowser(gtk.VBox):
 			else:
 				return 3
 		def cmp_child(a,b):
-			c = cmp(get_rating(a.pluginloader),get_rating(b.pluginloader))
+			c = cmp(get_rating(a),get_rating(b))
 			if c != 0:
 				return c
-			return cmp(a.name.lower(),b.name.lower())
+			return cmp(a.get_name().lower(),b.get_name().lower())
 		def get_type_text(pl):
 			if is_generator(pl):
 				return "Generator"
@@ -459,14 +460,14 @@ class PluginListBrowser(gtk.VBox):
 				return "Root"
 			else:
 				return "Other"
-		for child in sorted(plugins.values(), cmp_child):
-			pl = child.pluginloader
+		for pl in sorted(plugins.values(), cmp_child):
 			name = prepstr(pl.get_name())
 			text = '<b>' + name + '</b>\n<small>' + get_type_text(pl) + '</small>'
 			pixbuf = None
-			if child.icon and theme.has_icon(child.icon):
-				pixbuf = theme.load_icon(child.icon, gtk.ICON_SIZE_MENU, 0)
-			self.store.append([pixbuf, text, child])
+			icon = self.get_icon_name(pl)
+			if icon and theme.has_icon(icon):
+				pixbuf = theme.load_icon(icon, gtk.ICON_SIZE_MENU, 0)
+			self.store.append([pixbuf, text, pl])
 
 class PluginBrowserDialog(gtk.Dialog):
 	"""
@@ -880,7 +881,9 @@ class RouteView(gtk.DrawingArea):
 				if not conn:
 					res = self.get_plugin_at((x,y))
 					if res:
-						plugin,(px,py),area = res
+						mp,(px,py),area = res
+						if is_effect(mp) or is_root(mp):
+							plugin = mp
 			player.create_plugin(pluginloader, connection=conn, plugin=plugin)
 		else:
 			context.finish(False, False, time)
