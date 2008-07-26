@@ -759,10 +759,14 @@ class ParameterView(gtk.VBox):
 		"""
 		nl,s,vl = self.pid2ctrls[(g,t,i)]
 		v = self.plugin.get_parameter_value(g,t,i)
+		p = self.plugin.get_parameter(g,t,i)
+		minv, maxv = p.get_value_min(), p.get_value_max()
 		if event.direction == gtk.gdk.SCROLL_UP:
 			v += 1
 		elif event.direction == gtk.gdk.SCROLL_DOWN:
 			v -= 1
+		# apply value range constraint
+		v = min(maxv, max(v, minv)) 		
 		self.plugin.set_parameter_value(g,t,i,v,1)
 		v = self.plugin.get_parameter_value(g,t,i)
 		s.set_value(v)
