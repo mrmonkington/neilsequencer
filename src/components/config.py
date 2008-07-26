@@ -77,6 +77,9 @@ CONFIG_OPTIONS = dict(
 		LedDraw = dict(default=True,doc="the led draw option."),
 		PatNoteOff = dict(func='pattern_noteoff',default=False,doc="pattern noteoff option."),
 	),
+	PluginListBrowser = dict(
+		SearchTerm = dict(func='pluginlistbrowser_search_term',default='',vtype=str,doc="the current plugin search mask."),
+	),
 	WavetablePaths = dict(
 		Path = dict(list=True,func='wavetable_paths',vtype=str,doc="the list of wavetable paths."),
 	),
