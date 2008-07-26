@@ -23,5 +23,4 @@ import glob
 
 #install('${ETC_PATH}', 'aldrin.cfg', 0644)
 env.BuildPathConfig('${ETC_PATH}/path.cfg', ['${ROOTPATH}/options.conf', '${ROOTPATH}/SConstruct'])
-install('${ETC_PATH}', 'index.xml', 0644)
 
