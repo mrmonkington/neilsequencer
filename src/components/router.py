@@ -372,6 +372,7 @@ class PluginListBrowser(gtk.VBox):
 			('Icon', gtk.gdk.Pixbuf),
 			('Name', str, dict(markup=True)),
 			(None, object),
+			(None, str, dict(markup=True)),
 		])
 		self.store = self.treeview.get_model()
 		self.treeview.set_headers_visible(False)
@@ -383,6 +384,7 @@ class PluginListBrowser(gtk.VBox):
 		self.filter = self.store.filter_new()
 		self.filter.set_visible_func(self.filter_item, data=None)
 		self.treeview.set_model(self.filter)
+		self.treeview.set_tooltip_column(3)
 		self.treeview.drag_source_set(gtk.gdk.BUTTON1_MASK | gtk.gdk.BUTTON3_MASK,
 			DRAG_FORMATS, gtk.gdk.ACTION_COPY | gtk.gdk.ACTION_MOVE)
 		self.treeview.connect('drag_data_get', self.on_treeview_drag_data_get)
@@ -464,9 +466,17 @@ class PluginListBrowser(gtk.VBox):
 			text = '<b>' + name + '</b>\n<small>' + get_type_text(pl) + '</small>'
 			pixbuf = None
 			icon = self.get_icon_name(pl)
+			tooltip = '<b>' + name + '</b> <i>(' + get_type_text(pl) + ')</i>\n'
+			tooltip += '<small>' + prepstr(pl.get_uri()) + '</small>\n\n'
+			gpcount = pl.get_parameter_count(zzub.zzub_parameter_group_global)
+			tpcount = pl.get_parameter_count(zzub.zzub_parameter_group_track)
+			acount = pl.get_attribute_count()
+			tooltip += '%i global parameters, %i track parameters, %i attributes\n\n' % (gpcount, tpcount, acount)
+			author = pl.get_author().replace('<', '&lt;').replace('>', '&gt;')
+			tooltip += 'Written by ' + prepstr(author)
 			if icon and theme.has_icon(icon):
 				pixbuf = theme.load_icon(icon, gtk.ICON_SIZE_MENU, 0)
-			self.store.append([pixbuf, text, pl])
+			self.store.append([pixbuf, text, pl, tooltip])
 
 class RoutePanel(gtk.VBox):
 	"""
