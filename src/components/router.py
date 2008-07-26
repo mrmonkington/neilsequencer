@@ -392,6 +392,13 @@ class PluginListBrowser(gtk.VBox):
 		self.searchbox.set_text(cfg.pluginlistbrowser_search_term)
 		
 	def get_icon_name(self, pluginloader):
+		uri = pluginloader.get_uri()
+		if uri.startswith('@zzub.org/dssidapter/'):
+			return 'dssi'
+		if uri.startswith('@zzub.org/ladspadapter/'):
+			return 'ladspa'
+		if uri.startswith('@psycle.sourceforge.net/'):
+			return 'psycle'
 		filename = pluginloader.get_name()
 		filename = filename.strip().lower()
 		for c in '():[]/,.!"\'$%&\\=?*#~+-<>`@ ':
@@ -437,6 +444,21 @@ class PluginListBrowser(gtk.VBox):
 		for pluginloader in player.get_pluginloader_list():
 			plugins[pluginloader.get_uri()] = pluginloader
 		theme = gtk.icon_theme_get_default()
+		def get_type_rating(n):
+			uri = n.get_uri()
+			if uri.startswith('@zzub.org/dssidapter/'):
+				return 1
+			if uri.startswith('@zzub.org/ladspadapter/'):
+				return 1
+			if uri.startswith('@psycle.sourceforge.net/'):
+				return 2
+			return 0
+		def get_icon_rating(n):
+			icon = self.get_icon_name(n)
+			if icon and theme.has_icon(icon):
+				return 0
+			return 1
+			
 		def get_rating(n):
 			if is_generator(n):
 				return 0
@@ -447,6 +469,12 @@ class PluginListBrowser(gtk.VBox):
 			else:
 				return 3
 		def cmp_child(a,b):
+			c = cmp(get_type_rating(a), get_type_rating(b))
+			if c != 0:
+				return c
+			c = cmp(get_icon_rating(a),get_icon_rating(b))
+			if c != 0:
+				return c
 			c = cmp(get_rating(a),get_rating(b))
 			if c != 0:
 				return c
