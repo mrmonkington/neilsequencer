@@ -736,8 +736,10 @@ class RouteView(gtk.DrawingArea):
 		
 	def on_active_plugins_changed(self, *args):
 		player = com.get('aldrin.core.player')
-		for plugin in player.active_plugins:
-			common.get_plugin_infos().reset_plugingfx()
+		common.get_plugin_infos().reset_plugingfx()
+			
+	def get_plugin_info(self, plugin):
+		return common.get_plugin_infos().get(plugin)
 		
 	def on_drag_leave(self, widget, context, time):
 		#print "on_drag_leave",widget,context,time
@@ -974,23 +976,31 @@ class RouteView(gtk.DrawingArea):
 		mx,my = int(event.x), int(event.y)
 		res = self.get_plugin_at((mx,my))
 		if res:
-			self.current_plugin,(x,y),area = res
-			self.current_plugin.dragpos = self.current_plugin.get_position()
-			self.dragoffset = mx-x, my-y
+			mp,(x,y),area = res
 			if area == AREA_LED:
-				player.toggle_mute(self.current_plugin)
+				player.toggle_mute(mp)
 				self.redraw()
-			elif (event.state & gtk.gdk.SHIFT_MASK) or (event.button == 2):
-				if is_controller(self.current_plugin):
-					pass
-				else:
-					self.connecting = True
-					self.connectpos = int(mx), int(my)
-			elif not self.connecting:
-				self.dragging = True
-				self.grab_add()
-			player.active_plugins = [self.current_plugin]
-			player.set_midi_plugin(self.current_plugin)
+			else:
+				if not mp in player.active_plugins:
+					if (event.state & gtk.gdk.SHIFT_MASK):
+						player.active_plugins = [mp] + player.active_plugins
+					else:
+						player.active_plugins = [mp]
+				player.set_midi_plugin(mp)
+				if (event.state & gtk.gdk.CONTROL_MASK) or (event.button == 2):
+					if is_controller(mp):
+						pass
+					else:
+						self.connecting = True
+						self.connectpos = int(mx), int(my)
+				if not self.connecting:
+					for plugin in player.active_plugins:
+						pinfo = self.get_plugin_info(plugin)
+						pinfo.dragpos = plugin.get_position()
+						x,y = self.float_to_pixel(pinfo.dragpos)
+						pinfo.dragoffset = x-mx, y-my
+					self.dragging = True
+					self.grab_add()
 		else:
 			res = self.get_connection_at((mx,my))
 			if res:
@@ -1014,6 +1024,7 @@ class RouteView(gtk.DrawingArea):
 		"""
 		x,y,state = self.window.get_pointer()
 		if self.dragging:
+			player = com.get('aldrin.core.player')
 			ox,oy = self.dragoffset
 			mx,my = int(x), int(y)
 			size = self.get_allocation()
@@ -1022,7 +1033,10 @@ class RouteView(gtk.DrawingArea):
 				# quantize position
 				x = int(float(x)/QUANTIZEX + 0.5) * QUANTIZEX
 				y = int(float(y)/QUANTIZEY + 0.5) * QUANTIZEY
-			self.current_plugin.dragpos = self.pixel_to_float((x,y))
+			for plugin in player.active_plugins:
+				pinfo = self.get_plugin_info(plugin)
+				dx,dy = pinfo.dragoffset
+				pinfo.dragpos = self.pixel_to_float((x+dx,y+dy))
 			self.redraw()
 		elif self.connecting:
 			self.connectpos = int(x), int(y)
@@ -1048,21 +1062,19 @@ class RouteView(gtk.DrawingArea):
 				# quantize position
 				x = int(float(x)/QUANTIZEX + 0.5) * QUANTIZEX
 				y = int(float(y)/QUANTIZEY + 0.5) * QUANTIZEY
-			self.current_plugin.set_position(*self.pixel_to_float((x,y)))
+			for plugin in player.active_plugins:
+				pinfo = self.get_plugin_info(plugin)
+				dx,dy = pinfo.dragoffset
+				plugin.set_position(*self.pixel_to_float((dx+x,dy+y)))
 			player.history_commit("move plugin")
 		if self.connecting:
 			res = self.get_plugin_at((mx,my))
 			if res:
 				mp,(x,y),area = res
-				if self.current_plugin == mp:
-					pass
-				elif is_controller(self.current_plugin):
-					#mp.add_event_input(self.current_plugin)
-					pass
-				else:
-					mp.add_input(self.current_plugin, zzub.zzub_connection_type_audio)
-					player.history_commit("new nonnection")
-		self.current_plugin = None
+				if player.active_plugins:
+					if not is_controller(player.active_plugins[0]):
+						mp.add_input(player.active_plugins[0], zzub.zzub_connection_type_audio)
+						player.history_commit("new nonnection")
 		self.connecting = False
 		self.redraw()
 		
@@ -1129,8 +1141,9 @@ class RouteView(gtk.DrawingArea):
 			pi = common.get_plugin_infos().get(mp)
 			if not pi.songplugin:
 				continue
-			if self.dragging and mp == self.current_plugin:
-				rx,ry = get_pixelpos(*self.current_plugin.dragpos)
+			if self.dragging and mp in player.active_plugins:
+				pinfo = self.get_plugin_info(mp)
+				rx,ry = get_pixelpos(*pinfo.dragpos)
 			rx,ry = rx - PW, ry - PH
 			pi = common.get_plugin_infos().get(mp)
 			if not pi:
@@ -1279,8 +1292,9 @@ class RouteView(gtk.DrawingArea):
 			mplist = [(mp,get_pixelpos(*mp.get_position())) for mp in player.get_plugin_list()]
 			
 			for mp,(rx,ry) in mplist:
-				if self.dragging and mp == self.current_plugin:
-					rx,ry = get_pixelpos(*self.current_plugin.dragpos)
+				if self.dragging and mp in player.active_plugins:
+					pinfo = self.get_plugin_info(mp)
+					rx,ry = get_pixelpos(*pinfo.dragpos)
 				for index in xrange(mp.get_input_connection_count()):
 					#~ if not (conn.get_input().get_pluginloader().get_flags() & zzub.plugin_flag_no_output):
 					targetmp = mp.get_input_connection_plugin(index)
@@ -1288,15 +1302,16 @@ class RouteView(gtk.DrawingArea):
 					if not pi.songplugin:
 						continue
 					tmppos = targetmp.get_position()
-					if self.dragging and targetmp == self.current_plugin:
-						tmppos = self.current_plugin.dragpos
+					if self.dragging and targetmp in player.active_plugins:
+						pinfo = self.get_plugin_info(targetmp)
+						tmppos = pinfo.dragpos
 					crx, cry = get_pixelpos(*tmppos)
 					draw_line_arrow(bmpctx,arrowcolors[mp.get_input_connection_type(index)],int(crx),int(cry),int(rx),int(ry))
 		gc = self.window.new_gc()
 		self.window.draw_drawable(gc, self.routebitmap, 0, 0, 0, 0, -1, -1)
 		if self.connecting:
 			ctx.set_line_width(1)
-			crx, cry = get_pixelpos(*self.current_plugin.get_position())
+			crx, cry = get_pixelpos(*player.active_plugins[0].get_position())
 			rx,ry= self.connectpos
 			draw_line(ctx,int(crx),int(cry),int(rx),int(ry))
 		self.draw_leds()
