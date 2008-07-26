@@ -1,5 +1,0 @@
-[Aldrin Plugin]
-Categories=Generator
-Icon=libsndfile_stream_wav_aiff
-Label=Libsndfile Stream (WAV/AIFF)
-URI=@zzub.org/stream/wav;1

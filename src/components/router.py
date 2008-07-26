@@ -40,7 +40,6 @@ from aldrin.utils import prepstr, filepath, db2linear, linear2db, is_debug, file
 import config
 import zzub
 import sys,os
-import indexer
 import fnmatch
 import ctypes
 import time
@@ -468,155 +467,6 @@ class PluginListBrowser(gtk.VBox):
 			if icon and theme.has_icon(icon):
 				pixbuf = theme.load_icon(icon, gtk.ICON_SIZE_MENU, 0)
 			self.store.append([pixbuf, text, pl])
-
-class PluginBrowserDialog(gtk.Dialog):
-	"""
-	Displays all available plugins and some meta information.
-	"""
-	
-	__aldrin__ = dict(
-		id = 'aldrin.core.pluginbrowser',
-		categories = [
-		]
-	)
-	
-	PBD_PTYPE = 0
-	PBD_PARAMS = 1
-	PBD_ATTRS = 2
-	PBD_NAME = 3
-	PBD_AUTHOR = 4
-	PBD_PLUGIN = 5
-	PBD_NATIVE = 6
-	def __init__(self, parent=None, *args, **kwds):
-		"""
-		Initializer.
-		"""
-		self.routeview = parent
-		gtk.Dialog.__init__(self,
-				title="Add Plugins",
-				parent=parent.get_toplevel(),
-				# If it's modal, the effect plugin racks that pop up can't be closed
-				flags=gtk.DIALOG_DESTROY_WITH_PARENT,
-		)
-		self.set_size_request(800, 500)
-		
-
-		self.search_entry = gtk.Entry()
-		self.search_entry.set_text("(Search)")
-		self.action_area.pack_start(self.search_entry, True, True, 0)
-		self.show_nonnative_button = gtk.CheckButton(label="Show Non-Native")
-		self.action_area.pack_start(self.show_nonnative_button, True, True, 0)
-		self.show_nonnative_button.set_active(False)
-		self.close_button = gtk.Button(stock=gtk.STOCK_CLOSE)
-		self.action_area.pack_start(self.close_button, True, True, 0)
-
-		col_names = ["Type", "Parameters", "Attributes", "Name", "Author"]
-		# The undisplayed columns are the pluginloader ref and a bool for whether it's native
-		self.store = gtk.ListStore(str, int, int, str, str, object, bool)
-		# create the TreeViewColumns to display the data
-		self.columns = [gtk.TreeViewColumn(name) for name in col_names]
-
-		# filter is derived from the ListStore: it holds a changeable subset of the rows.
-		self.filter = self.store.filter_new()
-		self.filter.set_visible_func(self.filter_fn, data=None)
-
-		# view is a widget displaying the rows in the filter.
-		self.view = gtk.TreeView(self.filter)
-		# We have custom search.
-		self.view.set_enable_search(False)
-		self.view.set_rules_hint(True)
-		# This is supposed to speed up display, but causes an error?
-		# self.view.set_fixed_height_mode(True)
-		self.view.set_hadjustment(gtk.Adjustment())
-		self.view.set_vadjustment(gtk.Adjustment())
-
-		for i, col in enumerate(self.columns):
-			# add column to view
-			self.view.append_column(col)
-			# create a CellRendererText to render the data
-			cell = gtk.CellRendererText()
-			# add the cell to the column. The bool indicates whether it's allowed to expand
-			col.pack_start(cell, [False, False, False, True, True][i])
-			# retrieve text from column i in self.store
-			col.add_attribute(cell, 'text', i)
-			col.set_sizing(gtk.TREE_VIEW_COLUMN_GROW_ONLY)
-
-		self.populate(com.get('aldrin.core.plugintree'))
-
-		self.scrollwindow = gtk.ScrolledWindow()
-		self.scrollwindow.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-		self.scrollwindow.add(self.view)
-		self.vbox.add(self.scrollwindow)
-
-		self.view.connect("row-activated", self.row_activated_cb)
-		self.search_entry.connect("changed", lambda x: self.filter.refilter())
-		self.show_nonnative_button.connect("toggled", lambda x: self.filter.refilter())
-		self.close_button.connect("clicked", lambda x: self.destroy())
-		
-		self.show_all()
-
-	def filter_fn(self, model, iter, data):
-		ptype = model.get(iter, PluginBrowserDialog.PBD_PTYPE)[0]
-		name = model.get(iter, PluginBrowserDialog.PBD_NAME)[0]
-		author = model.get(iter, PluginBrowserDialog.PBD_AUTHOR)[0]
-		native = model.get(iter, PluginBrowserDialog.PBD_NATIVE)[0]
-		if not (ptype and name and author):
-			return True
-		if not self.show_nonnative_button.get_active() and not native:
-			return False
-		search_txt = self.search_entry.get_text()
-		if "(Search)" in search_txt:
-			return True
-		name = name.lower()
-		author = author.lower()
-		ptype = ptype.lower()
-		for token in search_txt.lower().strip().split(" "):
-			if not (token in name or token in author or token in ptype):
-				return False
-		return True
-
-	def row_activated_cb(self, treeview, path, view_column):
-		iter = self.filter.get_iter(path)
-		pl = self.filter.get_value(iter, PluginBrowserDialog.PBD_PLUGIN)
-		if pl:
-			# User might add multiple plugins from this dialog, so can't use any fixed
-			# location. Generate a random location.
-			rect = self.routeview.get_allocation()
-			w,h = rect.width, rect.height
-			self.routeview.contextmenupos = (random.uniform(10, w-10), random.uniform(10, h-10))
-			self.routeview.on_popup_new_plugin(None, pl)
-
-	def populate(self, node):
-		def get_type_text(pl):
-			if is_generator(pl):
-				return "Generator"
-			elif is_effect(pl):
-				return "Effect"
-			elif is_controller(pl):
-				return "Controller"
-			elif is_root(pl):
-				return "Root"
-			else:
-				return "Other"
-		for child in node.children:
-			if isinstance(child, indexer.Directory) and not child.is_empty():
-				self.populate(child)
-			elif isinstance(child, indexer.Reference):
-				if child.pluginloader:
-					pl = child.pluginloader
-					if "ladspa" in pl.get_loader_name().lower() or "dssi" in pl.get_loader_name().lower():
-						native = False
-					else:
-						native = True
-					self.store.append([get_type_text(pl),
-							   sum([pl.get_parameter_count(g) for g in range(1, 3)]),
-							   pl.get_attribute_count(),
-							   prepstr(pl.get_name()),
-							   prepstr(pl.get_author()),
-							   pl,
-							   native])
-			elif isinstance(child, indexer.Separator):
-				pass
 
 class RoutePanel(gtk.VBox):
 	"""
@@ -1056,8 +906,6 @@ class RouteView(gtk.DrawingArea):
 		mx,my = int(event.x), int(event.y)
 		res = self.get_plugin_at((mx,my))
 		if not res:
-			# User adds plugins while browser stays open. Nothing to do when it's closed.
-			com.get('aldrin.core.pluginbrowser', self)
 			return
 		mp,(x,y),area = res
 		if area == AREA_ANY:
@@ -1472,7 +1320,6 @@ __all__ = [
 'ParameterDialog',
 'ParameterDialogManager',
 'AttributesDialog',
-'PluginBrowserDialog',
 'RoutePanel',
 'VolumeSlider',
 'RouteView',
@@ -1484,7 +1331,6 @@ __aldrin__ = dict(
 		ParameterDialogManager,
 		AttributesDialog,
 		PluginListBrowser,
-		PluginBrowserDialog,
 		RoutePanel,
 		VolumeSlider,
 		RouteView,

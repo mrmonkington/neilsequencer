@@ -79,15 +79,13 @@ class PluginContextMenu(gtk.Menu):
 			self.populate_routermenu(menu)
 			
 	def populate_routermenu(self, menu):
-		self.get_plugin_menu(menu=menu)
+		menu.add_item("Unmute All", self.on_popup_unmute_all)
 			
 	def populate_connectionmenu(self, menu):
 		mp, index = menu.context
 		menu.add_item("Disconnect plugins", self.on_popup_disconnect, mp, index)
 		conntype = mp.get_input_connection_type(index)
 		if conntype == zzub.zzub_connection_type_audio:
-			menu.add_separator()
-			menu.add_submenu("_Insert Effect",self.get_plugin_menu(include_generators=False,include_controllers=False, conn=(mp, index)))
 			menu.add_separator()
 			menu.add_item("_Signal Analysis", self.on_popup_show_signalanalysis, mp, index)
 		elif conntype == zzub.zzub_connection_type_event:
@@ -113,7 +111,6 @@ class PluginContextMenu(gtk.Menu):
 		if is_effect(mp) or is_root(mp):
 			menu.add_separator()
 			menu.add_check_item("Default Target",player.autoconnect_target == mp,self.on_popup_set_target, mp)
-			menu.add_submenu("_Prepend Effect",self.get_plugin_menu(include_generators=False, include_controllers=False, plugin=mp))
 		commands = mp.get_commands()
 		if commands:
 			menu.add_separator()
@@ -233,56 +230,6 @@ class PluginContextMenu(gtk.Menu):
 		else:
 			plugin = None
 		player.create_plugin(pluginloader, connection=conn, plugin=plugin)
-		
-	def get_plugin_menu(self, include_generators = True, include_effects = True, include_controllers = True, **kargs):
-		"""
-		Generates and returns a new plugin menu.
-		
-		@return: A menu containing commands to instantiate new plugins.
-		@rtype: wx.Menu
-		"""
-		cfg = com.get('aldrin.core.config')
-		def fill_menu(menu,node):
-			add_separator = False
-			for child in node.children:
-				if child.is_directory() and not child.is_empty():
-					if add_separator:
-						add_separator = False
-						if menu.get_children():
-							menu.add_separator()
-					submenu = Menu()
-					fill_menu(submenu, child)
-					menu.add_submenu(prepstr(child.name), submenu)
-				elif child.is_reference():
-					if child.pluginloader:
-						if not include_generators and is_generator(child.pluginloader):
-							continue
-						if not include_effects and is_effect(child.pluginloader):
-							continue
-						if not include_controllers and is_controller(child.pluginloader):
-							continue
-					if add_separator:
-						add_separator = False
-						if menu.get_children():
-							menu.add_separator()
-					if child.icon:
-						image = new_theme_image(child.icon, gtk.ICON_SIZE_MENU)
-						item = menu.add_image_item(prepstr(child.name), image, self.on_popup_new_plugin, child.pluginloader, kargs)
-					else:
-						item = menu.add_item(prepstr(child.name), self.on_popup_new_plugin, child.pluginloader, kargs)
-					if not child.pluginloader:
-						item.set_sensitive(False)
-				elif child.is_separator():
-					add_separator = True
-		if 'menu' in kargs:
-			plugin_menu = kargs['menu']
-		else:
-			plugin_menu = Menu()
-		plugin_tree = com.get('aldrin.core.plugintree')
-		fill_menu(plugin_menu, plugin_tree)
-		plugin_menu.add_separator()
-		plugin_menu.add_item("Unmute All", self.on_popup_unmute_all)
-		return plugin_menu
 		
 	def on_popup_unmute_all(self, widget):
 		"""
