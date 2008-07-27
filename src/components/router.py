@@ -1283,11 +1283,16 @@ class RouteView(gtk.DrawingArea):
 
 		if not self.routebitmap:
 			self.routebitmap = gtk.gdk.Pixmap(self.window, w, h, -1)
+			gc = self.routebitmap.new_gc()
+			cm = gc.get_colormap()
+			drawable = self.routebitmap
+			gc_bgbrush = cm.alloc_color(cfg.get_color('MV Background'))
+			gc.set_foreground(gc_bgbrush)
+			gc.set_background(gc_bgbrush)
+			drawable.draw_rectangle(gc, True, 0, 0, w, h)
+			
 			bmpctx = self.routebitmap.cairo_create()
 			bmpctx.translate(0.5,0.5)
-			bmpctx.set_source_rgb(*bgbrush)
-			bmpctx.rectangle(0,0,w,h)
-			bmpctx.fill()
 			bmpctx.set_line_width(1)
 			mplist = [(mp,get_pixelpos(*mp.get_position())) for mp in player.get_plugin_list()]
 			
