@@ -167,8 +167,6 @@ class TransportPanel(gtk.HBox):
 		self.hgroup = ObjectHandlerGroup()
 		self.hgroup.connect(self.bpm, 'value-changed', self.on_bpm)
 		self.hgroup.connect(self.tpb, 'value-changed', self.on_tpb)
-		self.bpm.connect('focus-in-event', self.spin_focus)
-		self.tpb.connect('focus-in-event', self.spin_focus)
 		gobject.timeout_add(100, self.update_label)
 		gobject.timeout_add(500, self.update_cpu)
 		
@@ -310,16 +308,6 @@ class TransportPanel(gtk.HBox):
 		player.get_plugin(0).set_parameter_value(1, 0, 2, int(self.tpb.get_value()), 1)
 		player.history_commit("change TPB")
 		config.get_config().set_default_int('TPB', int(self.tpb.get_value()))
-		
-	def spin_focus(self, widget, event):
-		"""
-		Event handler triggered when tbp and bpm get focus
-		"""
-		routeview=com.get('aldrin.core.routerpanel').view
-		if routeview.selected_plugin:
-			last = routeview.selected_plugin
-			routeview.selected_plugin = None			
-			common.get_plugin_infos().get(last).reset_plugingfx()
 		
 	def update_bpm(self):
 		block = self.hgroup.autoblock()
