@@ -217,7 +217,7 @@ def ticks_to_time(ticks,bpm,tpb):
 	"""
 	return (float(ticks)*60) / (bpm * tpb)
 
-def prepstr(s):
+def prepstr(s, fix_underscore=False):
 	"""
 	prepstr ensures that a string is always 
 	ready to be displayed in a GUI control by wxWidgets.
@@ -228,6 +228,8 @@ def prepstr(s):
 	@rtype: str
 	"""
 	s = s.decode('latin-1')
+	if fix_underscore:
+		s = s.replace('_','__')
 	return s
 
 def fixbn(v):

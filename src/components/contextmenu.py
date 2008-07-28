@@ -111,19 +111,19 @@ class PluginContextMenu(gtk.Menu):
 		if is_effect(mp) or is_root(mp):
 			menu.add_separator()
 			menu.add_check_item("Default Target",player.autoconnect_target == mp,self.on_popup_set_target, mp)
-		commands = mp.get_commands()
+		commands = mp.get_commands().split('\n')
 		if commands:
 			menu.add_separator()
 			submenuindex = 0
 			for index in range(len(commands)):
 				cmd = commands[index]
 				if cmd.startswith('/'):
-					item, submenu = menu.add_submenu(prepstr(cmd[1:]))
-					subcommands = mp.get_sub_commands(index)
+					item, submenu = menu.add_submenu(prepstr(cmd[1:], fix_underscore=True))
+					subcommands = mp.get_sub_commands(index).split('\n')
 					submenuindex += 1
 					for subindex in range(len(subcommands)):
 						subcmd = subcommands[subindex]
-						submenu.add_item(prepstr(subcmd), self.on_popup_command, mp, submenuindex, subindex)
+						submenu.add_item(prepstr(subcmd, fix_underscore=True), self.on_popup_command, mp, submenuindex, subindex)
 				else:
 					menu.add_item(prepstr(cmd), self.on_popup_command, mp, 0, index)
 
