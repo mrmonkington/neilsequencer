@@ -1529,7 +1529,7 @@ CMachine* CMachineManager::create(zzub::plugin* plugin) {
 	machine->_internal_track_state = (char*)new char[256*128*2];	// max 128 word parameters in 256 tracks;
 	machine->_internal_global_state = (char*)new char[128*2];		// max 128 word parameters
 	machine->_internal_machine = new CPluginWrap(machine);
-
+	machine->hardMuted = false;	// at least polac out II uses this
 
 	plugin_to_machine[machine->plugin] = machine;
 	return machine;
@@ -1544,6 +1544,7 @@ CMachine* CMachineManager::create(buzz2zzub::plugin* plugin) {
 	machine->_internal_name = "";	// Must set to "" or else PVST will crash in SetInstrument
 	machine->_internal_track_state = (char*)new char[256*128*2];	// max 128 word parameters in 256 tracks;
 	machine->_internal_global_state = (char*)new char[128*2];		// max 128 word parameters
+	machine->hardMuted = false;	// at least polac out II uses this
 
 	plugin_to_machine[machine->plugin] = machine;
 	return machine;
