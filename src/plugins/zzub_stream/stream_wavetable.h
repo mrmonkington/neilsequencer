@@ -10,6 +10,8 @@ struct stream_wavetable : stream_plugin, stream_provider {
 
 	stream_wavetable();
 	virtual ~stream_wavetable();
+	
+	void reinit_resampler();
 
 	virtual void init(zzub::archive* pi);
 	virtual void load(zzub::archive*);

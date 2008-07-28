@@ -60,13 +60,7 @@ void stream_wavetable::load(zzub::archive * const pi) {
 void stream_wavetable::save(zzub::archive* po) {
 }
 
-void stream_wavetable::set_stream_source(const char* resource) {
-	play_wave = atoi(resource);
-	play_level = 0;
-
-	currentPosition = 0;
-	lastCurrentPosition = 0;
-
+void stream_wavetable::reinit_resampler() {
 	if (resampler) delete resampler;
 	resampler = new stream_resampler(this);
 
@@ -76,6 +70,16 @@ void stream_wavetable::set_stream_source(const char* resource) {
 		//wave->get_level(level);
 		resampler->stream_sample_rate = level->samples_per_second;
 	}
+}
+
+void stream_wavetable::set_stream_source(const char* resource) {
+	play_wave = atoi(resource);
+	play_level = 0;
+
+	currentPosition = 0;
+	lastCurrentPosition = 0;
+
+	reinit_resampler();
 }
 
 const char* stream_wavetable::get_stream_source() {
@@ -222,11 +226,15 @@ void stream_wavetable::command(int index) {
 					std::cout << _host->get_wave_name(i + 1) << std::endl;
 					if (!level) return ;
 					
-					resampler->playing = false;
+					if (resampler)
+						resampler->playing = false;
 					this->play_wave = i+1;
 					this->play_level = 0;
 					this->currentPosition = 0;
+					this->lastCurrentPosition = 0;
 					char pc[256];
+					
+					reinit_resampler();
 				}
 			}
 		}
