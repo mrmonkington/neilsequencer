@@ -1937,7 +1937,7 @@ class PatternView(gtk.DrawingArea):
 			self.refresh_view()
 		elif k == 'Insert' or k == 'KP_Insert':
 			indices = []
-			if shiftdown:
+			if not shiftdown:
 				for i in xrange(self.plugin.get_parameter_count(self.group, self.track)):
 					indices += [self.group, self.track, i]
 			else:
@@ -1946,7 +1946,7 @@ class PatternView(gtk.DrawingArea):
 			player.history_commit("insert row")
 		elif k == 'Delete':
 			indices = []
-			if shiftdown:
+			if not shiftdown:
 				for i in xrange(self.plugin.get_parameter_count(self.group, self.track)):
 					indices += [self.group, self.track, i]
 			else:
