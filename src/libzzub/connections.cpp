@@ -89,7 +89,8 @@ bool audio_connection::work(zzub::song& player, const zzub::connection_descripto
 	bool plugin_to_does_input_mixing = (plugin_to.info->flags & zzub::plugin_flag_does_input_mixing) != 0;
 	bool plugin_to_is_bypassed = plugin_to.is_bypassed || (plugin_to.sequencer_state == sequencer_event_type_thru);
 	bool plugin_to_is_muted = plugin_to.is_muted || (plugin_to.sequencer_state == sequencer_event_type_mute);
-	bool result = plugin_from.last_work_audio_result && values.amp > 0 && plugin_from.last_work_max_left > SIGNAL_TRESHOLD && plugin_from.last_work_max_right > SIGNAL_TRESHOLD;
+	bool result = plugin_from.last_work_audio_result && values.amp > 0 && 
+		(plugin_from.last_work_max_left > SIGNAL_TRESHOLD || plugin_from.last_work_max_right > SIGNAL_TRESHOLD);
 
 	if (plugin_to_does_input_mixing && !plugin_to_is_bypassed && !plugin_to_is_muted) {
 		if (result)
