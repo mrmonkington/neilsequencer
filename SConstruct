@@ -91,12 +91,13 @@ opts.Add("PYZZUB", "Support pyzzub",True,None,bool_converter)
 env = Environment(ENV = os.environ, options = opts)
 
 def get_revision():
-	# if this is a repository, take the string from svnversion
-	svnversionpath = env.WhereIs('svnversion', os.environ['PATH'])
-	if os.path.isdir('.svn') and (svnversionpath != None):
-		rev = os.popen('svnversion .').readline().strip()
+	# if this is a repository, take the string from hg
+	hgpath = env.WhereIs('hg', os.environ['PATH'])
+	if os.path.isdir('.hg') and (hgpath != None):
+		rev = os.popen('hg id -ni').readline().strip()
 		if rev != "" and rev != "exported":
-			return rev
+			revid, revn = rev.split(' ')
+			return '%s:%s' % (revn, revid)
 	# its a release build, take the string from a special file
 	if os.path.isfile('REVISION'):
 		rev = file('REVISION').readline().strip()
