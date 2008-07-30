@@ -1,0 +1,9 @@
+[Aldrin COM]
+Module=trackview
+Name=Track View
+Description=Provides a track view panel to the application.
+Icon=aldrin
+Authors=The Aldrin Development Team
+Copyright=Copyright (C) 2006,2007,2008 The Aldrin Development Team
+Website=http://www.aldrin.eu
+
