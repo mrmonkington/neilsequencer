@@ -46,6 +46,8 @@ MARGIN3 = common.MARGIN3
 MARGIN0 = common.MARGIN0
 import aldrin.com as com
 
+SEQROWSIZE = 24
+
 class Track(gtk.HBox):
 	"""
 	Track header. Displays controls to mute or solo the track.
@@ -56,15 +58,59 @@ class Track(gtk.HBox):
 		]
 	)	
 	
-	def __init__(self, track):
+	def __init__(self, track, hadjustment=None):
 		gtk.HBox.__init__(self)
 		self.track = track
+		self.hadjustment = hadjustment
 		self.header = gtk.Label(self.track.get_plugin().get_name())
-		self.view = com.get('aldrin.core.trackview', track)
+		self.view = com.get('aldrin.core.trackview', track, hadjustment)
 		self.pack_start(self.header, False, False)
 		self.pack_end(self.view, True, True)
 
-class TimelineView(gtk.DrawingArea):
+class View(gtk.DrawingArea):
+	"""
+	base class for track-like views.
+	"""
+	def __init__(self, hadjustment=None):
+		gtk.DrawingArea.__init__(self)
+		self.step = 64
+		self.patterngfx = {}
+		self.hadjustment = hadjustment
+		self.add_events(gtk.gdk.ALL_EVENTS_MASK)
+		self.connect("expose_event", self.expose)
+		if hadjustment:
+			self.hadjustment.connect('value-changed', self.on_adjustment_value_changed)
+			self.hadjustment.connect('changed', self.on_adjustment_changed)
+		self.connect('size-allocate', self.on_size_allocate)
+		
+	def get_ticks_per_pixel(self):
+		w,h = self.get_client_size()
+		# size of view
+		pagesize = int(self.hadjustment.page_size+0.5)
+		# pixels per tick
+		return pagesize / float(w)
+
+	def on_size_allocate(self, *args):
+		self.patterngfx = {}
+		self.redraw()
+		
+	def on_adjustment_value_changed(self, adjustment):
+		self.redraw()
+		
+	def on_adjustment_changed(self, adjustment):
+		self.patterngfx = {}
+		self.redraw()
+
+	def redraw(self):
+		if self.window:
+			rect = self.get_allocation()
+			self.window.invalidate_rect((0,0,rect.width,rect.height), False)
+
+	def get_client_size(self):
+		rect = self.get_allocation()
+		return rect.width, rect.height
+
+class TimelineView(View):
 	"""
 	timeline view. shows a horizontal sequencer timeline.
 	"""
@@ -74,18 +120,10 @@ class TimelineView(gtk.DrawingArea):
 		]
 	)
 	
-	def __init__(self):
-		gtk.DrawingArea.__init__(self)
+	def __init__(self, hadjustment=None):
+		View.__init__(self, hadjustment)
 		self.set_size_request(-1, 16)
-		self.step = 64
-		self.startseqtime = 0
-		self.add_events(gtk.gdk.ALL_EVENTS_MASK)
-		self.connect("expose_event", self.expose)
-
-	def get_client_size(self):
-		rect = self.get_allocation()
-		return rect.width, rect.height
-
+		
 	def expose(self, widget, *args):
 		player = com.get('aldrin.core.player')
 		w,h = self.get_client_size()
@@ -93,23 +131,9 @@ class TimelineView(gtk.DrawingArea):
 		cm = gc.get_colormap()
 		drawable = self.window
 		cfg = config.get_config()
-		bghsb = to_hsb(*cfg.get_float_color('SE BG'))
-		bgb = max(bghsb[2],0.1)
-		type2brush = {
-			EFFECT_PLUGIN_FLAGS : cm.alloc_color(cfg.get_color('MV Effect')),
-			GENERATOR_PLUGIN_FLAGS : cm.alloc_color(cfg.get_color('MV Generator')),
-			ROOT_PLUGIN_FLAGS : cm.alloc_color(cfg.get_color('MV Master')),
-			CONTROLLER_PLUGIN_FLAGS : cm.alloc_color(cfg.get_color('MV Controller')),
-		}
 		bgbrush = cm.alloc_color(cfg.get_color('SE BG'))
-		sbrushes = [cm.alloc_color(cfg.get_color('SE Mute')), cm.alloc_color(cfg.get_color('SE Break'))]
-		select_brush = cm.alloc_color(cfg.get_color('SE Sel BG'))
-		vlinepen = cm.alloc_color(cfg.get_color('SE BG Dark'))
 		pen1 = cm.alloc_color(cfg.get_color('SE BG Very Dark'))
 		pen2 = cm.alloc_color(cfg.get_color('SE BG Dark'))
-		pen = cm.alloc_color(cfg.get_color('SE Line'))
-		loop_pen = cm.alloc_color(cfg.get_color('SE Loop Line'))
-		invbrush = cm.alloc_color('#ffffff')
 		textcolor = cm.alloc_color(cfg.get_color('SE Text'))
 
 		gc.set_foreground(bgbrush)
@@ -121,30 +145,37 @@ class TimelineView(gtk.DrawingArea):
 		layout.set_font_description(desc)
 		layout.set_width(-1)
 		
-		SEQROWSIZE = 24
+		# first visible tick
+		start = int(self.hadjustment.get_value()+0.5)
+		# size of view
+		pagesize = int(self.hadjustment.page_size+0.5)
+		# last visible tick 
+		end = int(self.hadjustment.get_value() + self.hadjustment.page_size + 0.5)
 		
-		# 14
-		x, y = 0, 0
-		i = self.startseqtime
-		while x < w:
-			if (i % (16*self.step)) == 0:
-				gc.set_foreground(pen1)
-				drawable.draw_line(gc, x-1, 0, x-1, h)
-				gc.set_foreground(textcolor)
-				layout.set_text(str(i))
-				px,py = layout.get_pixel_size()
-				drawable.draw_layout(gc, x, h/2 - py/2, layout)
-			elif (i % (4*self.step)) == 0:
-				gc.set_foreground(pen2)
-				drawable.draw_line(gc, x-1, 0, x-1, h)
-				gc.set_foreground(textcolor)
-				layout.set_text(str(i))
-				px,py = layout.get_pixel_size()
-				drawable.draw_layout(gc, x, h/2 - py/2, layout)
-			x += SEQROWSIZE
-			i += self.step
+		# pixels per tick
+		tpp = self.get_ticks_per_pixel()
 
-class TrackView(gtk.DrawingArea):
+		# distance of indices to print
+		stepsize = int(4*self.step + 0.5)
+		
+		# first index to print
+		startindex = (start / stepsize) * stepsize
+		
+		i = startindex
+		while i < end:
+			x = int((i - start)/tpp + 0.5)
+			if i == (i - i%(stepsize*4)):
+				gc.set_foreground(pen1)
+			else:
+				gc.set_foreground(pen2)
+			drawable.draw_line(gc, x-1, 0, x-1, h)
+			gc.set_foreground(textcolor)
+			layout.set_text("%i" % i)
+			px,py = layout.get_pixel_size()
+			drawable.draw_layout(gc, x, h/2 - py/2, layout)
+			i += stepsize
+
+class TrackView(View):
 	"""
 	Track view. Displays the content of one track.
 	"""
@@ -154,26 +185,17 @@ class TrackView(gtk.DrawingArea):
 		]
 	)
 		
-	def __init__(self, track):
-		gtk.DrawingArea.__init__(self)
-		self.set_size_request(-1, 22)
+	def __init__(self, track, hadjustment=None):
 		self.track = track
-		self.patterngfx = {}
-		self.step = 64
-		self.startseqtime = 0
-		self.add_events(gtk.gdk.ALL_EVENTS_MASK)
-		self.set_property('can-focus', True)
-		self.connect("expose_event", self.expose)
+		View.__init__(self, hadjustment)
+		self.set_size_request(-1, 22)
 		
-	def get_client_size(self):
-		rect = self.get_allocation()
-		return rect.width, rect.height
-		
-	def draw_pattern(self, gc, layout, pos, value):
-		SEQROWSIZE = 24
-		bb = self.patterngfx.get(value, None)
+	def get_pattern_pixmap(self, gc, layout, pos, value):
+		bb = None #self.patterngfx.get(value, None)
 		w,h = self.get_client_size()
 		if not bb:
+			tpp = self.get_ticks_per_pixel()
+		
 			cfg = config.get_config()
 			bghsb = to_hsb(*cfg.get_float_color('SE BG'))
 			bgb = max(bghsb[2],0.1)
@@ -192,7 +214,13 @@ class TrackView(gtk.DrawingArea):
 			else:
 				print "unknown value:",value
 				name,length = "???",0
-			psize = max(int(((SEQROWSIZE * length) / self.step) + 0.5),2)
+			# first visible tick
+			offset = int(self.hadjustment.get_value()+0.5)			
+			start = pos
+			end = pos + length
+			ps1 = int(((start-offset) / tpp) + 0.5)
+			ps2 = int(((end-offset) / tpp) + 0.5)
+			psize = max(ps2-ps1,2) # max(int(((SEQROWSIZE * length) / self.step) + 0.5),2)
 			bb = gtk.gdk.Pixmap(self.window, psize-1, h-1, -1)
 			self.patterngfx[value] = bb					
 			if value < 0x10:
@@ -224,11 +252,7 @@ class TrackView(gtk.DrawingArea):
 				px,py = layout.get_pixel_size()
 				gc.set_foreground(textcolor)
 				bb.draw_layout(gc, 2, 0 + h/2 - py/2, layout)
-		bbw,bbh = bb.get_size()
-		x = (((pos - self.startseqtime) * SEQROWSIZE) / self.step)
-		if ((x+bbw) >= 0) and (x < w):
-			ofs = max(-x,0)
-			self.window.draw_drawable(gc, bb, ofs, 0, x+ofs, 1, bbw-ofs, bbh)
+		return bb
 	
 	def expose(self, widget, *args):
 		player = com.get('aldrin.core.player')
@@ -258,23 +282,41 @@ class TrackView(gtk.DrawingArea):
 		#~ layout.set_font_description(self.fontdesc)
 		layout.set_width(-1)
 		
-		SEQROWSIZE = 24
+		# first visible tick
+		start = int(self.hadjustment.get_value()+0.5)
+		# size of view
+		pagesize = int(self.hadjustment.page_size+0.5)
+		# last visible tick 
+		end = int(self.hadjustment.get_value() + self.hadjustment.page_size + 0.5)
 		
-		# 14
-		x, y = 0, 0
-		i = self.startseqtime
-		while x < w:
-			if (i % (16*self.step)) == 0:
+		# pixels per tick
+		tpp = self.get_ticks_per_pixel()
+
+		# distance of indices to print
+		stepsize = int(4*self.step + 0.5)
+		
+		# first index to print
+		startindex = (start / stepsize) * stepsize
+		
+		# timeline
+		i = startindex
+		while i < end:
+			x = int((i - start)/tpp + 0.5)
+			if i == (i - i%(stepsize*4)):
 				gc.set_foreground(pen1)
-				drawable.draw_line(gc, x-1, 0, x-1, h)
-			elif (i % (4*self.step)) == 0:
+			else:
 				gc.set_foreground(pen2)
-				drawable.draw_line(gc, x-1, 0, x-1, h)
-			x += SEQROWSIZE
-			i += self.step
+			drawable.draw_line(gc, x-1, 0, x-1, h)
+			i += stepsize
+			
 		sel = False
 		for pos, value in self.track.get_event_list():
-			self.draw_pattern(gc, layout, pos, value)
+			bb = self.get_pattern_pixmap(gc, layout, pos, value)
+			bbw,bbh = bb.get_size()
+			x = int((pos - start)/tpp + 0.5)
+			if ((x+bbw) >= 0) and (x < w):
+				self.window.draw_drawable(gc, bb, 0, 0, x, 1, bbw, bbh)
+
 #				if intrack and (pos >= selstart[1]) and (pos <= selend[1]):
 #					gc.set_foreground(invbrush)
 #					gc.set_function(gtk.gdk.XOR)
@@ -333,7 +375,10 @@ class TrackViewPanel(gtk.VBox):
 		"""
 		gtk.VBox.__init__(self)
 		self.sizegroup = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
-		self.timeline = com.get('aldrin.core.timelineview')
+		self.hscroll = gtk.HScrollbar()
+		hadjustment = self.hscroll.get_adjustment()
+		hadjustment.set_all(0, 0, 16384, 1, 1024, 2300)
+		self.timeline = com.get('aldrin.core.timelineview', hadjustment)
 		self.trackviews = gtk.VBox()
 		
 		vbox = gtk.VBox()
@@ -350,7 +395,6 @@ class TrackViewPanel(gtk.VBox):
 		hbox = gtk.HBox()
 		scrollbar_padding = gtk.HBox()
 		self.sizegroup.add_widget(scrollbar_padding)
-		self.hscroll = gtk.HScrollbar()
 		hbox.pack_start(scrollbar_padding, False, False)
 		hbox.pack_start(self.hscroll)
 
@@ -363,6 +407,13 @@ class TrackViewPanel(gtk.VBox):
 		eventbus.zzub_sequencer_remove_track += self.update_tracks
 		self.update_tracks()
 		self.show_all()
+		self.trackviews.connect('size-allocate', self.on_size_allocate)
+		
+	def on_size_allocate(self, *args):
+		rect = self.get_allocation()
+		w,h = rect.width, rect.height
+		hadjustment = self.hscroll.get_adjustment()
+		hadjustment.page_size = int(((64.0 * w) / 24.0) + 0.5)
 	
 	def update_tracks(self, *args):
 		player = com.get('aldrin.core.player')
@@ -370,7 +421,7 @@ class TrackViewPanel(gtk.VBox):
 
 		def insert_track(i,track):
 			print "insert",i,track
-			trackview = com.get('aldrin.core.track', track)
+			trackview = com.get('aldrin.core.track', track, self.hscroll.get_adjustment())
 			self.trackviews.pack_start(trackview, False, False)
 			self.trackviews.reorder_child(trackview, i)
 			self.sizegroup.add_widget(trackview.header)
