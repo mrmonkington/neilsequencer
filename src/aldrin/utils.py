@@ -1128,6 +1128,62 @@ def refresh_gui():
 	while gtk.events_pending():
 		gtk.main_iteration_do(block=False)
 
+def synchronize_list(old_list, new_list, insert_entry_func=None, del_entry_func=None, swap_entry_func=None):
+	"""
+	synchronizes a list with another using the smallest number of operations required.
+	both lists need to contain only unique elements, that is: no list may contain the same element twice.
+	
+	if no functions are supplied for insert, del and swap operations, all operations will be directly
+	performed on old_list.
+	"""
+	def insert_entry(i,o):
+		old_list.insert(i,o)
+	def del_entry(i):
+		del old_list[i]
+	def swap_entry(i,j):
+		a = old_list[i]
+		b = old_list[j]
+		del_entry_func(j)
+		del_entry_func(i)
+		insert_entry_func(i,b)
+		insert_entry_func(j,a)
+	if not insert_entry_func:
+		insert_entry_func = insert_entry
+	if not del_entry_func:
+		del_entry_func = del_entry
+	if not swap_entry_func:
+		swap_entry_func = swap_entry
+	original_list = list(old_list) # make a copy we synchronize changes with
+	# remove all indices that are gone, in reverse order so
+	# we don't shift indices around
+	for index,item in reversed(list(enumerate(original_list))):
+		if not item in new_list:
+			del original_list[index]
+			del_entry_func(index)
+	# insert all new items from first to last, so indices
+	# shift properly to fit.
+	for index,item in enumerate(new_list):
+		if not item in original_list:
+			original_list.insert(index, item)
+			insert_entry_func(index, item)
+	# now both lists are in sync, but wrongly sorted
+	assert len(original_list) == len(new_list)
+	for i,item in enumerate(original_list):
+		if new_list[i] == item:
+			continue # already in the right place
+		# find the new location
+		j = new_list.index(item)
+		# move entry
+		if (i > j):
+			i,j = j,i
+		a = original_list[i]
+		b = original_list[j]
+		del original_list[j]
+		del original_list[i]
+		original_list.insert(i,b)
+		original_list.insert(j,a)
+		swap_entry_func(i,j)
+
 class AcceleratorMap:
 	def __init__(self):
 		self.__keymap = {}
@@ -1219,4 +1275,24 @@ __all__ = [
 'add_accelerator',
 'camelcase_to_unixstyle',
 ]
+
+if __name__ == '__main__':
+	oldlist = [1,2,6,3,4,5]
+	newlist = [1,3,4,5,2]
+	def insert_entry(i,o):
+		print "insert",i,o
+		oldlist.insert(i,o)
+	def del_entry(i):
+		print "del",i
+		del oldlist[i]
+	def swap_entry(i,j):
+		print "swap",i,j
+		a,b = oldlist[i],oldlist[j]
+		del oldlist[j]
+		del oldlist[i]
+		oldlist.insert(i,b)
+		oldlist.insert(j,a)
+	print oldlist, newlist
+	synchronize_list(oldlist,newlist,insert_entry,del_entry,swap_entry)
+	print oldlist, newlist
 
