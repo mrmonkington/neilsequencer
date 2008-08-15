@@ -62,7 +62,13 @@ class Track(gtk.HBox):
 		gtk.HBox.__init__(self)
 		self.track = track
 		self.hadjustment = hadjustment
-		self.header = gtk.Label(self.track.get_plugin().get_name())
+		self.header = gtk.VBox()
+		self.label = gtk.Label(prepstr(self.track.get_plugin().get_name()))
+		self.label.set_alignment(0.0, 0.5)
+		hbox = gtk.HBox()
+		hbox.pack_start(self.label, True, True, 5)
+		self.header.pack_start(hbox, True, True)
+		self.header.pack_end(gtk.HSeparator(), False, False)
 		self.view = com.get('aldrin.core.trackview', track, hadjustment)
 		self.pack_start(self.header, False, False)
 		self.pack_end(self.view, True, True)
@@ -221,22 +227,23 @@ class TrackView(View):
 			ps1 = int(((start-offset) / tpp) + 0.5)
 			ps2 = int(((end-offset) / tpp) + 0.5)
 			psize = max(ps2-ps1,2) # max(int(((SEQROWSIZE * length) / self.step) + 0.5),2)
-			bb = gtk.gdk.Pixmap(self.window, psize-1, h-1, -1)
+			bbh = h-2
+			bb = gtk.gdk.Pixmap(self.window, psize-1, bbh-1, -1)
 			self.patterngfx[value] = bb					
 			if value < 0x10:
 				gc.set_foreground(sbrushes[value])
-				bb.draw_rectangle(gc, True, 0, 0, psize-1, h-1)
+				bb.draw_rectangle(gc, True, 0, 0, psize-1, bbh-1)
 			else:
 				random.seed(mname+name)
 				hue = random.random()
 				cb = 1.0
 				r,g,b = from_hsb(hue, 0.2, cb*bgb)
 				gc.set_foreground(cm.alloc_color('#%02X%02X%02X' % (int(r*255),int(g*255),int(b*255))))
-				bb.draw_rectangle(gc, True, 0,0, psize-2, h-2)
+				bb.draw_rectangle(gc, True, 0,0, psize-2, bbh-2)
 				r,g,b = from_hsb(hue, 0.5, cb*bgb*0.5)
 				gc.set_foreground(cm.alloc_color('#%02X%02X%02X' % (int(r*255),int(g*255),int(b*255))))
 				pat = m.get_pattern(value-0x10)
-				bh = h-2-4
+				bh = bbh-2-4
 				bw = max(psize-2-2, 1)
 				# 0.3: DEAD - no get_bandwidth_digest
 				#~ digest = pat.get_bandwidth_digest(bw)
@@ -246,12 +253,12 @@ class TrackView(View):
 						#~ bb.draw_rectangle(gc, True, 1+evx, 2+bh-evh, 1, evh )
 				r,g,b = from_hsb(hue, 1.0, cb*bgb*0.7)
 				gc.set_foreground(cm.alloc_color('#%02X%02X%02X' % (int(r*255),int(g*255),int(b*255))))
-				bb.draw_rectangle(gc, False, 0, 0, psize-2, h-2)
+				bb.draw_rectangle(gc, False, 0, 0, psize-2, bbh-2)
 				ofs = 0
 				layout.set_text(name)
 				px,py = layout.get_pixel_size()
 				gc.set_foreground(textcolor)
-				bb.draw_layout(gc, 2, 0 + h/2 - py/2, layout)
+				bb.draw_layout(gc, 2, 0 + bbh/2 - py/2, layout)
 		return bb
 	
 	def expose(self, widget, *args):

@@ -481,6 +481,7 @@ class SequencerView(gtk.DrawingArea):
 		"""
 		Inserts a space at cursor.
 		"""
+		player = com.get('aldrin.core.player')
 		t = self.get_track()
 		if not t:
 			return
@@ -488,19 +489,17 @@ class SequencerView(gtk.DrawingArea):
 			pcount = t.get_plugin().get_pattern_count()
 			t.set_event(self.row, min(index, 0x10 + pcount-1))
 		else:
-			t.move_events(self.row, self.step)
-		self.redraw()
+			t.insert_events(self.row, self.step)
+		player.history_commit("insert sequence")
 		
 	def delete_at_cursor(self):
 		"""
 		Deletes pattern at cursor.		
 		"""		
 		player = com.get('aldrin.core.player')
-		seq = player.get_current_sequencer()
-		t = seq.get_track(self.track)
-		t.remove_event_at(self.row)
-		t.move_events(self.row, -self.step)
-		self.redraw()
+		t = player.get_sequence(self.track)
+		t.remove_events(self.row, self.step)
+		player.history_commit("delete sequences")
 	
 	def selection_range(self):
 		player = com.get('aldrin.core.player')
@@ -900,7 +899,7 @@ class SequencerView(gtk.DrawingArea):
 			if (self.row < (bp + length)):
 				newrow = bp + length
 				t = seq.get_sequence(self.track)
-				t.remove_events(bp, 1)
+				t.set_event(bp, -1)
 				player.history_commit("remove pattern reference")
 				self.set_cursor_pos(self.track, newrow - (newrow % self.step))
 		elif k == 'Home' or k == 'KP_Home':
