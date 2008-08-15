@@ -176,7 +176,7 @@ for name in os.listdir(basepath):
 										defenv = env.Copy()
 										defenv['PLUGIN'] = plugin
 										defenv.LunarFXHeader(target=defpath, source=manifestpath)
-										sources.append(spath)
+									sources.append(spath)
 							modenv.SharedLibrary(target=mpath, source=sources)
 							install('${LUNAR_TARGET_PATH}/'+name, mpath)
 				files = plugin.getElementsByTagName('files')[0]
