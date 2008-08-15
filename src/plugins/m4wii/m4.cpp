@@ -114,6 +114,7 @@ typedef struct {
 #define OWF_NOISE 4
 #define OWF_303_SAWTOOTH 5
 
+#define _USE_MATH_DEFINES
 
 #include <string.h>
 #include <stdlib.h>
@@ -122,6 +123,9 @@ typedef struct {
 #include <assert.h>
 #include <math.h>
 #include <float.h>
+#if defined(_WIN32)
+#include <time.h>
+#endif
 
 #include "filter.h"
 
