@@ -830,7 +830,7 @@ struct m4wii_plugin_info : zzub::info {
 			.set_name("Wavetable")
 			.set_description("Wavetable wave")
 			.set_value_min(0)
-			.set_value_max(0xfe)
+			.set_value_max(0xc7)
 			.set_value_none(0xff)
 			.set_flags(zzub::parameter_flag_wavetable_index | zzub::parameter_flag_state)
 			.set_value_default(0);
