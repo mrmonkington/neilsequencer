@@ -1299,7 +1299,7 @@ class PatternView(gtk.DrawingArea):
 			if r < 0:
 				continue
 			val = self.plugin.get_pattern_value(self.pattern, g, t, i, r)
-			p = self.plugin.get_parameter(g, i)
+			p = self.plugin.get_parameter(g, t, i)
 			if val == p.get_value_none():
 				continue
 			# We're not guaranteed that (g, t, i) index a
@@ -1334,7 +1334,7 @@ class PatternView(gtk.DrawingArea):
 				break
 			if r < 0:
 				continue
-			p = self.plugin.get_parameter(g, i)
+			p = self.plugin.get_parameter(g, t, i)
 			key = (g, t, i)
 			# If row_step > 1 clear some rows
 			if (r - self.selection.begin) % step != 0:
@@ -2464,6 +2464,7 @@ class PatternView(gtk.DrawingArea):
 		Overriding a L{Canvas} method that paints onto an offscreen buffer.
 		Draws the pattern view graphics.
 		"""	
+		#st = time.time()
 		row=None
 		rows=None
 		fulldraw=True
@@ -2632,7 +2633,7 @@ class PatternView(gtk.DrawingArea):
 							break
 						
 		self.draw_xor()
-		#print "%ims" % ((time.time() - st)*1000)
+#		print "%ims" % ((time.time() - st)*1000)
 
 __all__ = [
 'PatternDialog',
