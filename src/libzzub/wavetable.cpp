@@ -224,7 +224,7 @@ bool wave_info_ex::allocate_level(size_t level, size_t numSamples, zzub::wave_bu
 	l->loop_start = 0;
 	l->loop_end = numSamples;
 	l->legacy_sample_count = samplesIn16bit;
-	l->legacy_loop_start = 0;
+	l->legacy_loop_start = allocExtended ? (4/waveChannels) : 0;
 	l->legacy_loop_end = samplesIn16bit;
 	l->samples_per_second = 44100;
 	l->root_note = note_value_c4;

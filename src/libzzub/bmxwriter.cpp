@@ -609,9 +609,9 @@ bool BuzzWriter::saveWaveTable() {
 		f->write((unsigned char)entry.get_levels());
 		for (int j = 0; j < entry.get_levels(); j++) {
 			zzub::wave_level* level = entry.get_level(j);
-			f->write(level->sample_count);
-			f->write(level->loop_start);
-			f->write(level->loop_end);
+			f->write(level->legacy_sample_count);
+			f->write(level->legacy_loop_start);
+			f->write(level->legacy_loop_end);
 			f->write(level->samples_per_second);
 			f->write((unsigned char)level->root_note);
 		}
@@ -648,10 +648,10 @@ bool BuzzWriter::saveWaves() {
 
 			// save wave data
 			if (format == 1) {
-				CompressWave(&wup, (LPWORD)level.samples, level.sample_count, entry.get_stereo()?TRUE:FALSE);
+				CompressWave(&wup, (LPWORD)level.legacy_sample_ptr, level.legacy_sample_count, entry.get_stereo()?TRUE:FALSE);
 			} else 
 			if (format==0) {
-				f->write(level.samples, level.sample_count*numChannels*sizeof(short));
+				f->write(level.legacy_sample_ptr, level.legacy_sample_count*numChannels*sizeof(short));
 			}
 		}
 

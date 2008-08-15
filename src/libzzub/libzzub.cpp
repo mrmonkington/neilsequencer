@@ -2019,7 +2019,7 @@ void zzub_audiodriver_enable(zzub_audiodriver_t* driver, int state) {
 }
 
 int zzub_audiodriver_get_enabled(zzub_audiodriver_t* driver) {
-	return driver->worker->work_out_device?1:0;
+	return driver->worker->work_started?1:0;
 }
 
 void zzub_audiodriver_destroy(zzub_audiodriver_t* driver) {
