@@ -437,6 +437,9 @@ bool player::initialize() {
 #else
 	std::cout << "SSE optimization is not enabled. Expect your CPU to choke once in a while." << std::endl;
 #endif
+
+	user_thread_id = thread_id::get();
+
 	front.work_position = 0;
 	front.master_info.tick_position = 0;
 	front.master_info.samples_per_second = work_rate;
@@ -549,11 +552,19 @@ void player::initialize_plugin_libraries() {
 }
 
 void player::set_state(player_state newstate) {
-	op_state_change o(newstate);
-	backbuffer_operations.push_back(&o);
-	o.prepare(front);
-	flush_operations(0, 0, 0);
-	//execute_single_operation(&o);
+	op_state_change* o = new op_state_change(newstate);
+	backbuffer_operations.push_back(o);
+	o->prepare(front);
+	// TODO: fix leak!
+
+	// NOTE: the state is now queued until flushed:
+	// player::set_state() is called from zzub_player_set_state() (apps) and
+	// host::set_state() (plugins).
+	// zzub_player_set_state() handles flushing for clients, and 
+	// host::set_state() will always (usually?) be a part of a larger operation
+	// when it is called, so flushing presumably takes place later. when 
+	// host::set_state() is called from the audio thread, it will invoke 
+	// set_state_direct() instead, not requiring a flush. (phew!)
 }
 
 void player::set_state_direct(player_state newstate) {

@@ -331,6 +331,7 @@ int zzub_player_get_state(zzub_player_t *player) {
 
 void zzub_player_set_state(zzub_player_t *player, int state) {
 	player->set_state((zzub::player_state)state);
+	player->flush_operations(0, 0, 0);
 }
 
 int zzub_player_get_plugin_count(zzub_player_t *player) {

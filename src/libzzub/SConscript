@@ -54,6 +54,7 @@ files = [
 	'synchronization.cpp',
 	'undo.cpp',
 	'pugixml.cpp',
+	'thread_id.cpp',
 ]
 
 # on linux, we use the system boost libraries

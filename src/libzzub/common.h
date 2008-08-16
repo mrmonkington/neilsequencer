@@ -141,6 +141,7 @@ typedef zzub::outstream zzub_output_t;
 #include "song.h"
 #include "undo.h"
 #include "operations.h"
+#include "thread_id.h"
 #include "player.h"
 #include "connections.h"
 

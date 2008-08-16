@@ -409,9 +409,17 @@ int host::get_state_flags() {
 }
 
 void host::set_state_flags(int state) {
-	if (state==0)
-		_player->set_state(player_state_stopped); else
-		_player->set_state(player_state_playing);
+	if (_player->user_thread_id == thread_id::get()) {
+		// called from user/GUI thread
+		if (state==0)
+			_player->set_state(player_state_stopped); else
+			_player->set_state(player_state_playing);
+	} else {
+		// called from audio thread
+		if (state==0)
+			_player->set_state_direct(player_state_stopped); else
+			_player->set_state_direct(player_state_playing);
+	}
 }
 
 

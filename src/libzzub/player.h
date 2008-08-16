@@ -36,6 +36,7 @@ struct player : undo_manager, audioworker, midiworker {
 	vector<string> plugin_folders;
 	vector<const zzub::info*> plugin_infos;
 	host_info hostinfo;
+	thread_id_t user_thread_id;						// thread id as returned by GetCurrentThreadId or pthread_self
 
 	player();
 	virtual ~player(void);

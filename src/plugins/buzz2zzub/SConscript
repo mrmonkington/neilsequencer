@@ -24,6 +24,9 @@ if cl and pluginenv['BUZZ2ZZUB'] == True:
 	pluginenv.Append(LIBS=[
 		'dsplib',
 	])
+	pluginenv.Append(CCFLAGS= [
+		'-DUSE_PLUGIN_CACHE'
+	])
 	if posix:
 		pluginenv['CXX'] = 'wineg++'
 	build_plugin(pluginenv, 'buzz2zzub', [
