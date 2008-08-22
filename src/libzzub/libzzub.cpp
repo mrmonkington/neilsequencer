@@ -1502,8 +1502,14 @@ int zzub_plugin_get_last_midi_result(zzub_plugin_t *plugin) {
 }
 
 void zzub_plugin_tick(zzub_plugin_t *plugin) {
-	assert(plugin->id < plugin->_player->front.plugins.size() && plugin->_player->front.plugins[plugin->id] != 0);
-	plugin->_player->front.process_plugin_events(plugin->id);
+	operation_copy_flags flags;
+	flags.copy_plugins = true;
+	plugin->_player->merge_backbuffer_flags(flags);
+
+	op_plugin_process_events o(plugin->id);
+	plugin->_player->backbuffer_operations.push_back(&o);
+	o.prepare(plugin->_player->back);
+	plugin->_player->flush_operations(0, 0, 0);
 }
 
 int zzub_plugin_get_attribute_value(zzub_plugin_t *plugin, int index) {

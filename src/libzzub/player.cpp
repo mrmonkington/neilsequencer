@@ -926,18 +926,12 @@ void player::plugin_set_parameter(int plugin_id, int group, int track, int colum
 		flags.copy_graph = true;
 		merge_backbuffer_flags(flags);
 
-		zzub::pattern state;
-		back.create_pattern(state, plugin_id, 1);
-		state.groups[group][track][column][0] = value;
-		op_plugin_set_parameters_and_tick* redo = new op_plugin_set_parameters_and_tick(plugin_id, state, 0);
-		redo->record = record;
+		op_plugin_set_parameter* redo = new op_plugin_set_parameter(plugin_id, group, track, column, value, record);
+
 		if (undoable) {
 			int oldval = back.plugin_get_parameter(plugin_id, group, track, column);
-			zzub::pattern undo_state;
-			back.create_pattern(undo_state, plugin_id, 1);
-			undo_state.groups[group][track][column][0] = oldval;
-			op_plugin_set_parameters_and_tick* undo = new op_plugin_set_parameters_and_tick(plugin_id, undo_state, 0);
-			undo->record = record;
+			op_plugin_set_parameter* undo = new op_plugin_set_parameter(plugin_id, group, track, column, oldval, record);
+
 			prepare_operation_redo(redo);
 			prepare_operation_undo(undo);
 		} else {

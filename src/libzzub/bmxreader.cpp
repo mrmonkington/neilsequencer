@@ -479,8 +479,7 @@ bool BuzzReader::loadPatterns() {
 			pattern p;
 			player->back.create_pattern(p, *i, rows);
 			p.name = name;
-			int prev_connections = player->back.plugin_get_input_connection_count(*i) - connections[*i].size();
-
+			
 			pattern::group& group0 = p.groups[0];
 			pattern::group& group1 = p.groups[1];
 			pattern::group& group2 = p.groups[2];
@@ -499,10 +498,10 @@ bool BuzzReader::loadPatterns() {
 
 				if (conntrack != -1) {
 					connection* conn = player->back.plugin_get_input_connection(*i, conntrack);
-					read_track(conn->connection_parameters, rows, group0[prev_connections + k]);
+					read_track(conn->connection_parameters, rows, group0[conntrack]);
 				} else {
-					// if we come here - there was a buggy BMX, the connection was saved, but not successfully reconnected
-					// at least one bmx has this problem, so here is a fix which shouldnt be needed in final code:
+					// if we come here the connection was saved, but not successfully reconnected.
+					// just skip it.
 					vector<const parameter*> params;
 					params.push_back(&audio_connection::para_volume);
 					params.push_back(&audio_connection::para_panning);
@@ -557,7 +556,6 @@ bool BuzzReader::loadConnections2() {
 
 				bool result = player->plugin_add_input(to_id, from_id, connection_type_audio);
 				if (result) {
-					assert(result);
 					int track = player->back.plugin_get_input_connection_count(to_id) - 1;
 					player->plugin_set_parameter(to_id, 0, track, 0, amp, false, false, true);
 					player->plugin_set_parameter(to_id, 0, track, 1, pan, false, false, true);
@@ -623,11 +621,8 @@ bool BuzzReader::loadConnections() {
 		int from_id = machines[index1];
 		int to_id = machines[index2];
 
-		//int to_id = player->front.get_plugin_id(to_plugin);
-
 		bool result = player->plugin_add_input(to_id, from_id, connection_type_audio);
 		if (result) {
-			assert(result);
 			int track = player->back.plugin_get_input_connection_count(to_id) - 1;
 			player->plugin_set_parameter(to_id, 0, track, 0, amp, false, false, true);
 			player->plugin_set_parameter(to_id, 0, track, 1, pan, false, false, true);

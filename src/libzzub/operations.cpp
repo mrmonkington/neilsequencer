@@ -764,6 +764,68 @@ bool op_plugin_set_parameters_and_tick::operate(zzub::song& song) {
 	return true;
 }
 
+// ---------------------------------------------------------------------------
+//
+// op_plugin_set_parameter
+//
+// ---------------------------------------------------------------------------
+
+op_plugin_set_parameter::op_plugin_set_parameter(int _id, int _group, int _track, int _column, int _value, bool _record) {
+	id = _id;
+	group = _group;
+	track = _track;
+	column = _column;
+	value = _value;
+	record = _record;
+}
+
+bool op_plugin_set_parameter::prepare(zzub::song& song) {
+	assert(song.plugins[id] != 0);
+	metaplugin& m = *song.plugins[id];
+	// write to backbuffer so we can read them later
+	m.state_write.groups[group][track][column][0] = value;
+	return true;
+}
+
+bool op_plugin_set_parameter::operate(zzub::song& song) {
+	assert(song.plugins[id] != 0);
+
+	metaplugin& m = *song.plugins[id];
+
+	// check if the plugin was deleted
+	if (m.descriptor == graph_traits<plugin_map>::null_vertex()) return true;
+
+	m.sequencer_state = sequencer_event_type_none;
+	m.state_write.groups[group][track][column][0] = value;
+	if (record) m.state_automation.groups[group][track][column][0] = value;
+	return true;
+}
+
+// ---------------------------------------------------------------------------
+//
+// op_plugin_process_events
+//
+// ---------------------------------------------------------------------------
+
+op_plugin_process_events::op_plugin_process_events(int _id) {
+	id = _id;
+}
+
+bool op_plugin_process_events::prepare(zzub::song& song) {
+	return true;
+}
+
+bool op_plugin_process_events::operate(zzub::song& song) {
+	song.process_plugin_events(id);
+	return true;
+}
+
+// ---------------------------------------------------------------------------
+//
+// op_plugin_play_note
+//
+// ---------------------------------------------------------------------------
+
 op_plugin_play_note::op_plugin_play_note(int _id, int _note, int _prev_note, int _velocity) {
 	id = _id;
 	note = _note;

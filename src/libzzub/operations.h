@@ -177,6 +177,22 @@ struct op_plugin_set_parameters_and_tick : operation {
 	virtual bool operate(zzub::song& song);
 };
 
+struct op_plugin_set_parameter : operation {
+	int id;
+	int group, track, column, value;
+	bool record;
+	op_plugin_set_parameter(int _id, int _group, int _track, int _column, int _value, bool _record);
+	virtual bool prepare(zzub::song& song);
+	virtual bool operate(zzub::song& song);
+};
+
+struct op_plugin_process_events : operation {
+	int id;
+	op_plugin_process_events(int _id);
+	virtual bool prepare(zzub::song& song);
+	virtual bool operate(zzub::song& song);
+};
+
 struct op_plugin_set_event_handlers : operation {
 	std::string name;
 	std::vector<event_handler*> handlers;
