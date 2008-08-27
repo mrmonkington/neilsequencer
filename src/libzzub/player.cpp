@@ -706,18 +706,17 @@ void player::samplerate_changed() {
 void player::work_stereo(int sample_count) {
 	using namespace std;
 
-	// handle serialized editing
-	poll_operations();
-
-	swap_lock.lock();
-
-	// handle MIDI input
-	if (midiDriver) midiDriver->poll();
-
 	work_buffer_position = 0;
 
 	int remaining_samples = sample_count;
 	while (remaining_samples > 0) {
+		// handle serialized editing
+		poll_operations();
+
+		swap_lock.lock();
+
+		// handle MIDI input
+		if (midiDriver) midiDriver->poll();
 
 		for (int i = 0; i < work_out_channel_count; i++) {
 			front.outputBuffer[i] = &work_out_buffer[i][work_buffer_position];
@@ -738,6 +737,10 @@ void player::work_stereo(int sample_count) {
 
 		work_buffer_position += chunk_size;
 		remaining_samples -= chunk_size;
+
+
+		swap_lock.unlock();
+
 	}
 
 	// update cpu_load per plugin
@@ -754,8 +757,6 @@ void player::work_stereo(int sample_count) {
 		m.cpu_load_time = 0;
 		m.cpu_load_buffersize = 0;
 	}
-
-	swap_lock.unlock();
 
 }
 

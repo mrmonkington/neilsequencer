@@ -777,6 +777,12 @@ op_plugin_set_parameter::op_plugin_set_parameter(int _id, int _group, int _track
 	column = _column;
 	value = _value;
 	record = _record;
+	copy_flags.copy_plugins = true;
+
+	operation_copy_plugin_flags pluginflags;
+	pluginflags.plugin_id = id;
+	pluginflags.copy_plugin = true;
+	copy_flags.plugin_flags.push_back(pluginflags);
 }
 
 bool op_plugin_set_parameter::prepare(zzub::song& song) {
@@ -784,6 +790,7 @@ bool op_plugin_set_parameter::prepare(zzub::song& song) {
 	metaplugin& m = *song.plugins[id];
 	// write to backbuffer so we can read them later
 	m.state_write.groups[group][track][column][0] = value;
+	if (record) m.state_automation.groups[group][track][column][0] = value;
 	return true;
 }
 
@@ -796,8 +803,8 @@ bool op_plugin_set_parameter::operate(zzub::song& song) {
 	if (m.descriptor == graph_traits<plugin_map>::null_vertex()) return true;
 
 	m.sequencer_state = sequencer_event_type_none;
-	m.state_write.groups[group][track][column][0] = value;
-	if (record) m.state_automation.groups[group][track][column][0] = value;
+	//m.state_write.groups[group][track][column][0] = value;
+	//if (record) m.state_automation.groups[group][track][column][0] = value;
 	return true;
 }
 

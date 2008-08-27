@@ -1618,7 +1618,7 @@ void mixer::midi_event(unsigned short status, unsigned char data1, unsigned char
 			}
 		}
 	}
-	else if (command == 0xb) {
+	else if (command == 0xb || command == 0xc) {
 		for (int i = 0; i < get_plugin_count(); i++) {
 			zzub::metaplugin& m = get_plugin(i);
 			m.plugin->midi_control_change((int)data1, channel, (int)data2);
