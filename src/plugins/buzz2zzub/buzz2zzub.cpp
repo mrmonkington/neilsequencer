@@ -889,7 +889,7 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 					(WPARAM)_host->get_metaplugin(), (LPARAM)name.c_str());
 			}
 
-			machine2->SetEditorPattern((CPattern*)_host->get_pattern(index));
+			machine2->SetEditorPattern((CPattern*)(int)(index + 1));
 		}
 	}
 
@@ -950,7 +950,7 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 
 	void play_pattern(int index) {
 		if (machineInfo->origFlags & MIF_PATTERN_EDITOR) {
-			machine2->PlayPattern((CPattern*)_host->get_pattern(index));
+			machine2->PlayPattern((CPattern*)(int)(index + 1));
 		}
 	}
 	
@@ -1032,20 +1032,20 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 	virtual void SetNumberOfTracks(int const n) { _host->set_track_count(n); }
 	virtual CPattern *CreatePattern(char const *name, int const length)
 	{ return reinterpret_cast<CPattern*>(_host->create_pattern(name, length)); }
-	virtual CPattern *GetPattern(int const index) { return reinterpret_cast<CPattern*>(_host->get_pattern(index)); }
-	virtual char const *GetPatternName(CPattern *ppat) { return _host->get_pattern_name(reinterpret_cast<zzub::pattern*>(ppat)); }
+	virtual CPattern *GetPattern(int const index) { return (CPattern*)(int)(index + 1); }
+	virtual char const *GetPatternName(CPattern *ppat) { return _host->get_pattern_name(reinterpret_cast<int>(ppat) - 1); }
 	virtual void RenamePattern(char const *oldname, char const *newname)
 	{ _host->rename_pattern(oldname, newname); }
 	virtual void DeletePattern(CPattern *ppat)
-	{ _host->delete_pattern(reinterpret_cast<zzub::pattern*>(ppat)); }
+	{ _host->delete_pattern(reinterpret_cast<int>(ppat) - 1); }
 	virtual int GetPatternData(CPattern *ppat, int const row, int const group, int const track, int const field)
-	{ return _host->get_pattern_data(reinterpret_cast<zzub::pattern*>(ppat), row, group, track, field); }
+	{ return _host->get_pattern_data(reinterpret_cast<int>(ppat) - 1, row, group, track, field); }
 	virtual void SetPatternData(CPattern *ppat, int const row, int const group, int const track, int const field, int const value)
-	{ _host->set_pattern_data(reinterpret_cast<zzub::pattern*>(ppat), row, group, track, field, value); }
+	{ _host->set_pattern_data(reinterpret_cast<int>(ppat) - 1, row, group, track, field, value); }
 	virtual CSequence *CreateSequence() { return reinterpret_cast<CSequence*>(_host->create_sequence()); }
 	virtual void DeleteSequence(CSequence *pseq) { _host->delete_sequence(reinterpret_cast<zzub::sequence*>(pseq)); }
 	virtual CPattern *GetSequenceData(int const row) { return reinterpret_cast<CPattern*>(_host->get_sequence_data(row)); }
-	virtual void SetSequenceData(int const row, CPattern *ppat) { _host->set_sequence_data(row, reinterpret_cast<zzub::pattern*>(ppat)); }
+	virtual void SetSequenceData(int const row, CPattern *ppat) { _host->set_sequence_data(row, reinterpret_cast<int>(ppat) - 1); }
 	virtual void SetMachineInterfaceEx(CMachineInterfaceEx *pex) { 
 		this->machine2 = pex;
 	}
@@ -1364,7 +1364,7 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 		if (!machine2) return ;
 		if (index == pattern_editor_command) {
 			for (int i = 0; i < _host->get_pattern_count(); i++) {
-				const char* n = _host->get_pattern_name(_host->get_pattern(i));
+				const char* n = _host->get_pattern_name(i);
 				os->write(n);
 			}
 			os->write("\0");
@@ -1449,9 +1449,9 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 
 	void on_new_pattern(int index) {
 		if (machineInfo->origFlags & MIF_PATTERN_EDITOR) {
-			pattern* p = _host->get_pattern(index);
-			int length = _host->get_pattern_length(p);
-			machine2->CreatePattern((CPattern*)p, length);
+			//pattern* p = _host->get_pattern(index);
+			int length = _host->get_pattern_length(index);
+			machine2->CreatePattern((CPattern*)(int)(index + 1), length);
 		}
 	}
 };

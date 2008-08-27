@@ -245,25 +245,25 @@ void host::set_track_count(int const n) {
 	assert(false);
 }
 
-pattern* host::create_pattern(char const* name, int const length) {
+int host::create_pattern(char const* name, int const length) {
 	assert(false);
 	return 0;
 }
 
-pattern* host::get_pattern(int const index) {
-	return (pattern*)(int)(index + 1);
-}
+/*int host::get_pattern(int const index) {
+	return (int)(int)(index + 1);
+}*/
 
-char const* host::get_pattern_name(pattern* ppat) {
-	int index = ((int)ppat) - 1;
+char const* host::get_pattern_name(int index) {
+	//int index = ((int)ppat) - 1;
 	assert(plugin_player->plugins[_plugin->id] != 0);
 	assert(index >= 0 && index < plugin_player->plugins[_plugin->id]->patterns.size());
 
 	return plugin_player->plugins[_plugin->id]->patterns[index]->name.c_str();
 }
 
-int host::get_pattern_length(pattern* ppat) {
-	int index = ((int)ppat) - 1;
+int host::get_pattern_length(int index) {
+	//int index = ((int)ppat) - 1;
 	assert(plugin_player->plugins[_plugin->id] != 0);
 	assert(index >= 0 && index < plugin_player->plugins[_plugin->id]->patterns.size());
 
@@ -279,16 +279,16 @@ void host::rename_pattern(char const* oldname, char const* newname) {
 	assert(false);
 }
 
-void host::delete_pattern(pattern* ppat) {
+void host::delete_pattern(int ppat) {
 	assert(false);
 }
 
-int host::get_pattern_data(pattern* ppat, int const row, int const group, int const track, int const field) {
+int host::get_pattern_data(int ppat, int const row, int const group, int const track, int const field) {
 	assert(false);
 	return 0;
 }
 
-void host::set_pattern_data(pattern* ppat, int const row, int const group, int const track, int const field, int const value) {
+void host::set_pattern_data(int ppat, int const row, int const group, int const track, int const field, int const value) {
 	assert(false);
 }
 	
@@ -308,12 +308,12 @@ void host::delete_sequence(sequence* pseq) {
 // <break> = (CPattern *)1
 // <mute> = (CPattern *)2
 // <thru> = (CPattern *)3
-pattern *host::get_sequence_data(int const row) {
+int host::get_sequence_data(int const row) {
 	message("GetSequenceData not implemented");
 	return 0;
 }
 
-void host::set_sequence_data(int const row, pattern* ppat) {
+void host::set_sequence_data(int const row, int ppat) {
 	message("SetSequenceData not implemented");
 }
 
