@@ -340,6 +340,10 @@ bool BuzzReader::loadMachines() {
 				plugin_id = player->create_plugin(input_data, machineName, loader, 0);
 			}
 
+			if (plugin_id == -1) {
+				// the plugin loader failed
+				loader = 0;
+			} else
 			// test if plugin is compatible with saved data
 			if (!test_compatibility(*player->back.plugins[plugin_id], loadedMachineName)) {
 				// it wasnt compatible, set loader to 0. this will create a dummy so we can load defaults and patterns correctly

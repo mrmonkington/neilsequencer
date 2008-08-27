@@ -994,7 +994,8 @@ int player::create_plugin(std::vector<char>& bytes, string name, const zzub::inf
 	}
 
 	op_plugin_create* redo = new op_plugin_create(this, next_id, name, bytes, loader, pflags);
-	prepare_operation_redo(redo);
+	if (!prepare_operation_redo(redo)) 
+		return -1;
 
 	op_plugin_delete* undo = new op_plugin_delete(this, next_id);
 	prepare_operation_undo(undo);
