@@ -114,7 +114,6 @@ public:
 	typedef std::map<int, std::vector<std::pair<int, zzub::connection_type> > > connectionmap;
 	typedef std::pair<int, std::vector<std::pair<int, zzub::connection_type> > > connectionpair;
 	connectionmap connections;
-	int plugins_in_player;
 	std::vector<int> machines;
 	std::string lastError;
 	std::string lastWarning;

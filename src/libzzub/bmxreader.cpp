@@ -255,6 +255,8 @@ bool BuzzReader::loadMachines() {
 	}
 	f->seek(section->offset, SEEK_SET);
 
+	bool is_importing = num_vertices(player->front.graph) > 1;
+
 	// put wavetable on the backbuffer in case any plugins query for info while loading
 	operation_copy_flags flags;
 	flags.copy_wavetable = true;
@@ -283,8 +285,11 @@ bool BuzzReader::loadMachines() {
 		f->read(x);
 		f->read(y);
 
-		x += offsetX;
-		y += offsetY;
+		// dont offset the master when importing
+		if (!(type == 0 && is_importing)) {
+			x += offsetX;
+			y += offsetY;
+		}
 
 		f->read(dataSize);
 
