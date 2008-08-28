@@ -1554,15 +1554,45 @@ bool mixer::plugin_update_keyjazz(int plugin_id, int note, int prev_note, int ve
 
 */
 void mixer::midi_event(unsigned short status, unsigned char data1, unsigned char data2) {
-	// look up mapping(s) and send value to plugin
 	int channel = status&0xF;
 	int command = (status & 0xf0) >> 4;
+	int midi_value;
+	float max_value;
 
-	if ((command == 0xb) || (command == 0xe)) {
-		if (command == 0xe) {
-			// convert pitchbend to CC
-			data1 = 128;
-		}
+	switch (command) {
+		case 8:
+		case 9:
+			// note or note off
+			break;
+		case 0xb:
+			// CC
+			midi_value = data2;
+			max_value = 127.0f;
+			break;
+		case 0xc:
+			// program change
+			midi_value = data1;
+			data1 = 254;
+			// convert to CC
+			command = 0xb;
+			status = channel | (command << 4);
+			break;
+		case 0xe:
+			// pitch bend
+			midi_value = (data2 << 7) | data1;
+			max_value = 16383.0f;
+			data1 = 255;
+			// convert to CC
+			command = 0xb;
+			status = channel | (command << 4);
+			break;
+		default:
+			// unsupported midi command 
+			return;
+	}
+
+	// look up mapping(s) and send value to plugin
+	if (command == 0xb) {
 
 		for (size_t i = 0; i < midi_mappings.size(); i++) {
 			midimapping& mm = midi_mappings[i];
@@ -1570,10 +1600,9 @@ void mixer::midi_event(unsigned short status, unsigned char data1, unsigned char
 				const parameter* param = plugin_get_parameter_info(mm.plugin_id, mm.group, mm.track, mm.column);
 				float minValue = (float)param->value_min;
 				float maxValue = (float)param->value_max;
-				float delta = (maxValue - minValue) / 127.0f;
+				float delta = (maxValue - minValue) / max_value;
 
-				// TODO: we need a set_parameter_direct
-				plugin_set_parameter_direct(mm.plugin_id, mm.group, mm.track, mm.column, (int)ceil(minValue + data2 * delta), true);
+				plugin_set_parameter_direct(mm.plugin_id, mm.group, mm.track, mm.column, (int)ceil(minValue + midi_value * delta), true);
 				process_plugin_events(mm.plugin_id);
 			}
 		}
@@ -1618,22 +1647,14 @@ void mixer::midi_event(unsigned short status, unsigned char data1, unsigned char
 			}
 		}
 	}
-	else if (command == 0xb || command == 0xc) {
+	else if (command == 0xb) {
 		for (int i = 0; i < get_plugin_count(); i++) {
 			zzub::metaplugin& m = get_plugin(i);
-			m.plugin->midi_control_change((int)data1, channel, (int)data2);
+			m.plugin->midi_control_change((int)data1, channel, midi_value);
 		}
 	}
 
 	// plus all midi messages should be sent as master-events, so ui's can pick these up
-
-	if (command == 0xe) {
-		// convert pitchbend to CC
-		command = 0xb;
-		status = channel | (command << 4);
-		data1 = 128;
-	}
-
 	zzub_event_data data = { event_type_midi_control };
 	data.midi_message.status = (unsigned char)status;
 	data.midi_message.data1 = data1;
