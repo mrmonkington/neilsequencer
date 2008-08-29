@@ -1040,8 +1040,6 @@ void mixer::process_sequencer_events() {
 	}
 
 	if (is_playing) {
-		if (song_position >= song_loop_end)
-			song_position = song_loop_begin;
 
 		for (size_t i = 0; i < sequencer_indices.size(); i++) {
 			sequencer_track& seqtrack = sequencer_tracks[i];
@@ -1065,7 +1063,13 @@ void mixer::process_sequencer_events() {
 		if (is_playing) process_sequencer_events(work_order[i]);
 	}
 
+	if (state == player_state_playing) {
+		song_position++;
+		if (song_position >= song_loop_end)
+			song_position = song_loop_begin;
+	}
 	last_tick_position = song_position;
+
 }
 
 
@@ -1083,15 +1087,6 @@ int mixer::generate_audio(int sample_count) {
 	}
 
 	double start_time = timer.frame();
-
-	// set tick_position to 0 so we trigger a new tick when song position
-	// is changed outside the player. eg in a plugin or from the host
-	// TODO: when a re-position occurs, we should make sure all plugins 
-	// are re-ticked on the correct song position
-	if ((state == player_state_playing) && song_position != last_tick_position) {
-		master_info.tick_position = 0;
-		sequencer_update_play_pattern_positions();
-	}
 
 	if (master_info.tick_position == 0) {
 
@@ -1137,11 +1132,7 @@ int mixer::generate_audio(int sample_count) {
 	if (master_info.tick_position == 0) {
 		last_tick_work_position = work_position;
 		work_tick_fracs += master_info.samples_per_tick_frac;
-		//if (state == player_state_playing) song_position++;
 	}
-
-	if (next_tick_position == 0 && state == player_state_playing)
-		song_position++;
 
 	// update internal stuff
 	work_position += work_chunk_size;
@@ -1432,127 +1423,6 @@ bool mixer::plugin_update_keyjazz(int plugin_id, int note, int prev_note, int ve
 	return false;
 }
 
-/*pattern mixer::create_play_note_pattern(int plugin_id, int note, int prevNote, int _velocity, std::vector<keyjazz_note>& keyjazz) {
-
-	assert(plugin_id >= 0 && plugin_id < plugins.size());
-	assert(plugins[plugin_id] != 0);
-
-	metaplugin& m = *plugins[plugin_id];
-
-	// ignore note-off when prevNote wasnt already playing, except if prevNote is -1, where we stop all playing notes
-	if (note == note_value_off && prevNote != -1 && !is_note_playing(plugin_id, keyjazz, prevNote)) return pattern();
-
-	int note_group, note_column, velocity_column;
-	if (!get_note_info(m.info, note_group, note_column)) return pattern();
-	if (!get_velocity_info(m.info, note_group, velocity_column))
-		velocity_column = -1;
-
-	// create a blank 1-row pattern we're going to play
-	zzub::pattern p = create_pattern(plugin_id, 1);// = new zzub::pattern();//plugin->loader->plugin_info, plugin->getConnections(), plugin->getTracks(), 1);
-
-	if (note_group == 2) {
-		// play note on track
-		if (note == note_value_off) {
-			// find which track this note was played in and play a note-stop
-			// if note-off is on the same tick as the note it stops, we wait 
-			// until next tick before "comitting" it, so that we dont overwrite
-			// notes when recording
-			// if timestamp is >= lastTickPos, set keyjazz->delay_off to true 
-			// and return. a poller checks the keyjazz-vector each tick and
-			// records/plays noteoffs then.
-			for (size_t i = 0; i < keyjazz.size(); i++) {
-				if (keyjazz[i].plugin_id != plugin_id) continue;
-				if (keyjazz[i].note == prevNote || prevNote == -1) {
-					
-					if (keyjazz[i].timestamp >= last_tick_work_position) {
-						cerr << "note off on the same tick as note was played!" << endl;
-						keyjazz[i].delay_off = true;
-						break;
-					}
-
-					p.groups[keyjazz[i].group][keyjazz[i].track][note_column][0] = note_value_off;
-					keyjazz.erase(keyjazz.begin() + i);
-					i--;
-					if (prevNote != -1) break;
-				}
-			}
-		} else {
-			int lowest_time = std::numeric_limits<int>::max();
-			int lowest_track = -1;
-			int found_track = -1;
-			size_t lowest_index;
-
-			vector<bool> found_tracks(m.tracks);
-			for (size_t i = 0; i < found_tracks.size(); i++)
-				found_tracks[i] = false;
-
-			for (size_t j = 0; j < keyjazz.size(); j++) {
-				if (keyjazz[j].plugin_id != plugin_id) continue;
-				size_t track = keyjazz[j].track;
-				if (track >= found_tracks.size()) continue;
-
-				found_tracks[track] = true;
-				if (keyjazz[j].timestamp < lowest_time) {
-					lowest_time = keyjazz[j].timestamp;
-					lowest_track = keyjazz[j].track;
-					lowest_index = j;
-				}
-			}
-
-			for (size_t i = 0; i < found_tracks.size(); i++) {
-				if (found_tracks[i] == false) {
-					found_track = (int)i;
-					break;
-				}
-			}
-			if (found_track == -1) {
-				found_track = lowest_track;
-				keyjazz.erase(keyjazz.begin() + lowest_index);
-			}
-
-			p.groups[note_group][found_track][note_column][0] = note;
-			if(velocity_column != -1 && _velocity)
-				p.groups[note_group][found_track][velocity_column][0] = _velocity;
-
-			// find an available track or the one with lowest timestamp
-			keyjazz_note ki = { plugin_id, work_position, note_group, found_track, note, false };
-			keyjazz.push_back(ki);
-		}
-	} else {
-		// play global note - no need for track counting
-		if (note == note_value_off) {
-			for (size_t i = 0; i < keyjazz.size(); i++) {
-				if (keyjazz[i].plugin_id != plugin_id) continue;
-				if (keyjazz[i].note == prevNote || prevNote == -1) {
-					if (keyjazz[i].timestamp >= last_tick_work_position) {
-						cerr << "detected a note off on the same tick as note was played!" << endl;
-						keyjazz[i].delay_off = true;
-						break;
-					}
-
-					keyjazz.clear();
-
-					p.groups[note_group][0][note_column][0] = note;
-					if(velocity_column != -1 && _velocity)
-						p.groups[note_group][0][velocity_column][0] = _velocity;
-					break;
-				}
-			}
-		} else {
-			keyjazz_note ki = { plugin_id, work_position, 1, 0, note, false };
-			keyjazz.clear();
-			keyjazz.push_back(ki);
-
-			p.groups[note_group][0][note_column][0] = note;
-			if(velocity_column != -1 && _velocity)
-				p.groups[note_group][0][velocity_column][0] = _velocity;
-		}
-	}
-
-	return p;
-}
-
-*/
 void mixer::midi_event(unsigned short status, unsigned char data1, unsigned char data2) {
 	int channel = status&0xF;
 	int command = (status & 0xf0) >> 4;

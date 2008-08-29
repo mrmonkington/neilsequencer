@@ -625,7 +625,7 @@ void player::clear() {
 	front.song_begin = 0;
 	front.song_end = 16;
 	front.song_loop_begin = 0;
-	front.song_loop_end = 0;
+	front.song_loop_end = 16;
 	front.song_loop_enabled = true;
 
 	// there is most likely a bunch of NULL-plugins at the end of plugins, so we trim them off here
