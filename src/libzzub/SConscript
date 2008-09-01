@@ -57,12 +57,6 @@ files = [
 	'thread_id.cpp',
 ]
 
-# on linux, we use the system boost libraries
-if win32:
-	localenv.Append(CPPPATH=[
-		"${ROOTPATH}/src/boost"
-	])
-
 # we build from our private flac,
 # since some are using 1.1.3, and that
 # one breaks a few things.

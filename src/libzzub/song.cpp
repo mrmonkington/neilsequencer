@@ -1028,18 +1028,9 @@ void mixer::process_keyjazz_noteoff_events() {
 void mixer::process_sequencer_events() {
 	process_keyjazz_noteoff_events();
 
-	bool is_playing = state == player_state_playing;
+	last_tick_position = song_position;
 
-	if (is_playing && !song_loop_enabled && song_position >= song_loop_end) {
-		set_state(player_state_stopped);
-		is_playing = false;
-		zzub_event_data event_data;
-		event_data.type = event_type_player_state_changed;
-		event_data.player_state_changed.player_state = player_state_stopped;
-		plugin_invoke_event(0, event_data, false);
-	}
-
-	if (is_playing) {
+	if (state == player_state_playing) {
 
 		for (size_t i = 0; i < sequencer_indices.size(); i++) {
 			sequencer_track& seqtrack = sequencer_tracks[i];
@@ -1056,20 +1047,23 @@ void mixer::process_sequencer_events() {
 				sequencer_indices[i] = song_index;
 			}
 		}
-	}
 
-	// write parameters from patterns in the sequencer and tick
-	for (size_t i = 0; i < work_order.size(); i++) {
-		if (is_playing) process_sequencer_events(work_order[i]);
-	}
+		// write parameters from patterns in the sequencer and tick
+		for (size_t i = 0; i < work_order.size(); i++) {
+			process_sequencer_events(work_order[i]);
+		}
 
-	if (state == player_state_playing) {
 		song_position++;
+		if (!song_loop_enabled && song_position >= song_loop_end) {
+			set_state(player_state_stopped);
+			zzub_event_data event_data;
+			event_data.type = event_type_player_state_changed;
+			event_data.player_state_changed.player_state = player_state_stopped;
+			plugin_invoke_event(0, event_data, false);
+		} else
 		if (song_position >= song_loop_end)
 			song_position = song_loop_begin;
 	}
-	last_tick_position = song_position;
-
 }
 
 
@@ -1085,8 +1079,6 @@ int mixer::generate_audio(int sample_count) {
 		memset(&masterplugin.work_buffer[1].front(), 0, mute_buffer_size * sizeof(float));
 		return mute_buffer_size;
 	}
-
-	double start_time = timer.frame();
 
 	if (master_info.tick_position == 0) {
 
@@ -1342,7 +1334,7 @@ bool mixer::plugin_update_keyjazz(int plugin_id, int note, int prev_note, int ve
 					note_track = keyjazz[i].track;
 
 					if (keyjazz[i].timestamp >= last_tick_work_position) {
-						cerr << "note off on the same tick as note was played!" << endl;
+						//cerr << "note off on the same tick as note was played!" << endl;
 						keyjazz[i].delay_off = true;
 						return true;
 					}
@@ -1402,7 +1394,7 @@ bool mixer::plugin_update_keyjazz(int plugin_id, int note, int prev_note, int ve
 					note_track = 0;
 
 					if (keyjazz[i].timestamp >= last_tick_work_position) {
-						cerr << "detected a note off on the same tick as note was played!" << endl;
+						//cerr << "detected a note off on the same tick as note was played!" << endl;
 						keyjazz[i].delay_off = true;
 						return true;
 					}
