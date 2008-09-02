@@ -35,6 +35,8 @@ void	CEnvelope::Release()
 
 void	CEnvelope::	ReadEnvelope( zzub::host *host, int iIns, int iEnvIndex )
 {
+	if (iIns == 0) return ;
+
 	m_iEnvelopeSize=host->get_envelope_size( iIns, iEnvIndex );
 	if( m_iEnvelopeSize>m_iAllocatedEnvelopeSize )
 	{
