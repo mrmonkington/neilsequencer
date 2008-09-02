@@ -38,7 +38,7 @@ import Queue
 import aldrin.common as common
 from aldrin.common import MARGIN, MARGIN2, MARGIN3, MARGIN0
 import cPickle
-
+import config
 import aldrin.com as com
 
 class ParameterView(gtk.VBox):
@@ -395,6 +395,7 @@ class ParameterView(gtk.VBox):
 		a controller with a plugin parameter.
 		"""
 		import controller
+		player = com.get('aldrin.core.player')
 		res = controller.learn_controller(self)
 		if res:
 			name, channel, ctrlid = res
@@ -409,6 +410,7 @@ class ParameterView(gtk.VBox):
 		@param event: Event.
 		@type event: wx.Event
 		"""
+		player = com.get('aldrin.core.player')
 		player.add_midimapping(self.plugin, g, t, i, channel, ctrlid)
 		self.update_namelabel(g,t,i)
 		
