@@ -548,9 +548,10 @@ bool BuzzWriter::saveSequenceTrack(int track) {
 		f->write(eventSize);
 	}
 	for (size_t i = 0; i < song.sequencer_tracks[track].events.size(); i++) {
-		sequencer_track::time_value& ev = song.sequencer_tracks[track].events[i];
-		f->write(&ev.first, eventPosSize);
-		f->write(&ev.second, eventSize);
+		//sequencer_track::time_value& ev = song.sequencer_tracks[track].events[i];
+		sequence_event& ev = song.sequencer_tracks[track].events[i];
+		f->write(&ev.time, eventPosSize);
+		f->write(&ev.pattern_event.value, eventSize);
 	}
 	return true;
 }

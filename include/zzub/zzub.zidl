@@ -324,6 +324,11 @@ namespace zzub:
 		set global = 1
 		set track = 2
 
+	enum SequenceType:
+		set pattern = 0
+		set wave = 1
+		set automation = 2
+
 	"Audio Driver Methods"
 	"Configure and create an audio driver instance."
 	class Audiodriver:
@@ -783,6 +788,7 @@ namespace zzub:
 		def get_event_count(): int
 		def get_event(int index, out int pos, out int value): no_python int
 		iterator get_event_list: for get_event in get_event_count
+		def get_type(): int
 		
 	"Wavelevel"
 	class Wavelevel:
@@ -1041,7 +1047,7 @@ namespace zzub:
 		"Create a new plugin"
 		def create_plugin(Input input, int dataSize, string instanceName, Pluginloader loader, int flags=0): Plugin
 		
-		def create_sequence(Plugin plugin): Sequence
+		def create_sequence(Plugin plugin, int type): Sequence
 
 		"Write changes made to the graph since zzub_player_begin()."
 		""

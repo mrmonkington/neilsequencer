@@ -1066,7 +1066,7 @@ void fsm_infector::midi_note(int channel, int value, int velocity)
   if (channel!=aval.channel-1)
     return;
 
-	zzub::sequence *pseq;
+	zzub_sequence_t *pseq;
 
 	int stateflags = _host->get_state_flags();	
 	if (stateflags & zzub::state_flag_playing && stateflags & zzub::state_flag_recording)

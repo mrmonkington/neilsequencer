@@ -293,12 +293,12 @@ void host::set_pattern_data(int ppat, int const row, int const group, int const 
 }
 	
 // sequence editing
-sequence* host::create_sequence() {
+sequence_proxy* host::create_sequence() {
 	message("CreateSequence not implemented");
 	return 0;
 }
 
-void host::delete_sequence(sequence* pseq) {
+void host::delete_sequence(sequence_proxy* pseq) {
 	message("DeleteSequence not implemented");
 }
 
@@ -317,7 +317,10 @@ void host::set_sequence_data(int const row, int ppat) {
 	message("SetSequenceData not implemented");
 }
 
-	
+sequence_type host::get_sequence_type(sequence_proxy* seq) {
+	return seq->_player->front.sequencer_tracks[seq->track].type;
+}
+
 
 // buzz v1.2 (MI_VERSION 15) additions start here
 
@@ -391,14 +394,14 @@ plugin *host::get_plugin(metaplugin_proxy* _metaplugin) {
 }
 
 // returns pointer to the sequence if there is a pattern playing
-sequence* host::get_playing_sequence(metaplugin_proxy* pmacid) {
+sequence_proxy* host::get_playing_sequence(metaplugin_proxy* pmacid) {
 	message("GetPlayingSequence not implemented");
 	return 0;
 }
 
 
 // gets ptr to raw pattern data for row of a track of a currently playing pattern (or something like that)
-void* host::get_playing_row(sequence* pseq, int group, int track) {
+void* host::get_playing_row(sequence_proxy* pseq, int group, int track) {
 	message("GetPlayingRow not implemented");
 	return 0;
 }

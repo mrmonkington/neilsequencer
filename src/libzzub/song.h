@@ -116,6 +116,10 @@ struct metaplugin {
 	vector<event_handler*> event_handlers;
 	vector<pattern*> patterns;
 
+	int note_group, note_column;
+	int velocity_column;
+	int wave_column;
+
 	metaplugin_proxy* proxy;
 };
 
@@ -173,8 +177,10 @@ struct sequence_proxy {
 
 struct sequencer_track {
 	int plugin_id;
-	typedef pair<int, int> time_value;
-	vector<time_value> events;
+	sequence_type type;
+	int automation_group, automation_track, automation_column;
+	int automation_mode;	// constant? linear? spline?
+	vector<sequence_event> events;
 	sequence_proxy* proxy;
 };
 

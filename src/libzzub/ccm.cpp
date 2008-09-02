@@ -682,19 +682,19 @@ xml_node CcmWriter::saveSequence(xml_node &parent, double fac, zzub::song &playe
 	
 	int plugin_id = player.sequencer_tracks[track].plugin_id;
 	for (size_t i = 0; i < player.sequencer_tracks[track].events.size(); ++i) {
-		sequencer_track::time_value &ev = player.sequencer_tracks[track].events[i];
+		sequence_event &ev = player.sequencer_tracks[track].events[i];
 
 		xml_node e = item.append_child(node_element);
 		e.set_name("e");
-		e.append_attribute("t") = fac * double(ev.first);
-		if (ev.second == sequencer_event_type_mute) {
+		e.append_attribute("t") = fac * double(ev.time);
+		if (ev.pattern_event.value == sequencer_event_type_mute) {
 			e.append_attribute("mute") = true;
-		} else if (ev.second == sequencer_event_type_break) {
+		} else if (ev.pattern_event.value == sequencer_event_type_break) {
 			e.append_attribute("break") = true;
-		} else if (ev.second == sequencer_event_type_thru) {
+		} else if (ev.pattern_event.value == sequencer_event_type_thru) {
 			e.append_attribute("thru") = true;
-		} else if (ev.second >= 0x10) {
-			zzub::pattern& p = *player.plugins[plugin_id]->patterns[ev.second - 0x10];
+		} else if (ev.pattern_event.value >= 0x10) {
+			zzub::pattern& p = *player.plugins[plugin_id]->patterns[ev.pattern_event.value - 0x10];
 			e.append_attribute("ref") = id_from_ptr(&p).c_str();
 		} else {
 			assert(0);
@@ -1651,7 +1651,7 @@ bool CcmReader::loadPlugins(xml_node plugins, zzub::player &player) {
 			for (xml_node::iterator i = c->sequences.begin(); i != c->sequences.end(); ++i) {
 				if (!strcmp(i->name(), "sequence")) {
 
-					player.sequencer_add_track(c->target);
+					player.sequencer_add_track(c->target, sequence_type_pattern);
 
 					int seq_track = player.back.sequencer_tracks.size() - 1;
 					if (!i->attribute("index").empty())

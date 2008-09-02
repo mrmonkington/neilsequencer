@@ -520,8 +520,10 @@ zzub_wave_t* zzub_player_get_wave(zzub_player_t* player, int index) {
 
 	if (index == -1) // monitor wave
 		return player->back.wavetable.monitorwave.proxy;
-	else
+	else {
+		assert(index >= 0 && index < player->back.wavetable.waves.size());
 		return player->back.wavetable.waves[index]->proxy;
+	}
 }
 
 zzub_event_data_t *zzub_player_get_next_event(zzub_player_t *player) {
@@ -1726,9 +1728,9 @@ int zzub_sequence_get_event(zzub_sequence_t* sequence, int index, int* pos, int*
 	flags.copy_sequencer_tracks = true;
 	sequence->_player->merge_backbuffer_flags(flags);
 	
-	sequencer_track::time_value& ev = sequence->_player->back.sequencer_tracks[sequence->track].events[index];
-	*pos = ev.first;
-	*value = ev.second;
+	sequence_event& ev = sequence->_player->back.sequencer_tracks[sequence->track].events[index];
+	*pos = ev.time;
+	*value = ev.pattern_event.value;
 	return 0;
 }
 
@@ -1742,9 +1744,17 @@ zzub_plugin_t* zzub_sequence_get_plugin(zzub_sequence_t* sequence) {
 	return sequence->_player->back.plugins[id]->proxy;
 }
 
-zzub_sequence_t* zzub_player_create_sequence(zzub_player_t *player, zzub_plugin_t* plugin) {
-	player->sequencer_add_track(plugin->id);
+zzub_sequence_t* zzub_player_create_sequence(zzub_player_t *player, zzub_plugin_t* plugin, int type) {
+	player->sequencer_add_track(plugin->id, (sequence_type)type);
 	return player->back.sequencer_tracks.back().proxy;
+}
+
+int zzub_sequence_get_type(zzub_sequence_t* sequence) {
+	operation_copy_flags flags;
+	flags.copy_sequencer_tracks = true;
+	sequence->_player->merge_backbuffer_flags(flags);
+
+	return (int)sequence->_player->back.sequencer_tracks[sequence->track].type;
 }
 
 void zzub_sequence_destroy(zzub_sequence_t* sequence) {

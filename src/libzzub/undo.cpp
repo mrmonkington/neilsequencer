@@ -125,8 +125,6 @@ void undo_manager::free_operations(undoableoperation& op) {
 		for (size_t j = 0; j < op[i].second.size(); j++) {
 			delete op[i].second[j];
 		}
-		delete op[i].redo_event;
-		delete op[i].undo_event;
 	}
 	op.clear();
 }
@@ -171,9 +169,9 @@ bool undo_manager::execute_operation_redo(undoableoperation& undoableop) {
 	for (size_t i = 0; i < undoableop.size(); i++) {
 		operationgroup& io = undoableop[i];
 		for (size_t j = 0; j < io.first.size(); j++) {
-			io.first[j]->finish(front, io.redo_event == 0);
+			io.first[j]->finish(front, io.has_redo_event == false);
 		}
-		if (io.redo_event) front.plugin_invoke_event(0, *io.redo_event, true);
+		if (io.has_redo_event) front.plugin_invoke_event(0, io.redo_event, true);
 	}
 
 	return result;
@@ -206,9 +204,9 @@ bool undo_manager::execute_operation_undo(undoableoperation& undoableop) {
 	for (size_t i = 0; i < undoableop.size(); i++) {
 		operationgroup& io = undoableop[undoableop.size() - 1 - i];
 		for (size_t j = 0; j < io.second.size(); j++) {
-			io.second[j]->finish(front, io.undo_event == 0);
+			io.second[j]->finish(front, io.has_undo_event == false);
 		}
-		if (io.undo_event) front.plugin_invoke_event(0, *io.undo_event, true);
+		if (io.has_undo_event) front.plugin_invoke_event(0, io.undo_event, true);
 	}
 
 	return result;
@@ -302,8 +300,8 @@ void undo_manager::reset() {
 	backbuffer_flags = operation_copy_flags();
 	backbuffer_opgroup.first.clear();
 	backbuffer_opgroup.second.clear();
-	backbuffer_opgroup.redo_event = 0;
-	backbuffer_opgroup.undo_event = 0;
+	backbuffer_opgroup.has_redo_event = false;
+	backbuffer_opgroup.has_undo_event = false;
 
 	backbuffer_operations.clear();
 }
@@ -353,8 +351,14 @@ void undo_manager::flush_operations(zzub_event_data_t* do_event, zzub_event_data
 	if (backbuffer_opgroup.first.size() > 0 || backbuffer_opgroup.second.size() > 0) {
 
 		// add to undo-buffer
-		backbuffer_opgroup.redo_event = redo_event;
-		backbuffer_opgroup.undo_event = undo_event;
+		if (redo_event) {
+			backbuffer_opgroup.has_redo_event = true;
+			backbuffer_opgroup.redo_event = *redo_event;
+		}
+		if (undo_event) {
+			backbuffer_opgroup.has_undo_event = true;
+			backbuffer_opgroup.undo_event = *undo_event;
+		}
 		current_undoableoperation.op.push_back(backbuffer_opgroup);
 	}
 

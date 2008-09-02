@@ -16,6 +16,88 @@ using std::endl;
 
 namespace zzub {
 
+struct find_note_column : public std::unary_function<const zzub::parameter*, bool> {
+	bool operator()(const zzub::parameter* param) {
+		return param->type == zzub::parameter_type_note;
+	}
+};
+
+struct find_wave_column : public std::unary_function<const zzub::parameter*, bool> {
+	bool operator()(const zzub::parameter* param) {
+		return param->flags & zzub::parameter_flag_wavetable_index;
+	}
+};
+
+struct find_velocity_column : public std::unary_function<const zzub::parameter*, bool> {
+	bool operator()(const zzub::parameter* param) {
+		return param->description != 0 && ( (strstr(param->description, "Velocity")) || (strstr(param->description, "Volume")) );
+	}
+};
+
+bool get_note_info(const zzub::info* info, int& note_group, int& note_column) {
+	std::vector<const zzub::parameter*>::const_iterator param;
+
+	param = find_if(info->global_parameters.begin(), info->global_parameters.end(), find_note_column());
+	if (param != info->global_parameters.end()) {
+		note_group = 1;
+		note_column = int(param - info->global_parameters.begin());
+		return true;
+	}
+
+	param = find_if(info->track_parameters.begin(), info->track_parameters.end(), find_note_column());
+	if (param != info->track_parameters.end()) {
+		note_group = 2;
+		note_column = int(param - info->track_parameters.begin());
+		return true;
+	}
+
+	return false;
+}
+
+bool get_wave_info(const zzub::info* info, int note_group, int& wave_column) {
+	std::vector<const zzub::parameter*>::const_iterator param;
+
+	if(note_group == 1)
+	{
+		param = find_if(info->global_parameters.begin(), info->global_parameters.end(), find_wave_column());
+		if (param != info->global_parameters.end()) {
+			wave_column = int(param - info->global_parameters.begin());
+			return true;
+		}
+	}
+
+	param = find_if(info->track_parameters.begin(), info->track_parameters.end(), find_wave_column());
+	if (param != info->track_parameters.end()) {
+		wave_column = int(param - info->track_parameters.begin());
+		return true;
+	}
+
+	return false;
+}
+
+bool get_velocity_info(const zzub::info* info, int note_group, int& velocity_column) {
+	std::vector<const zzub::parameter*>::const_iterator param;
+
+	if(note_group == 1)
+	{
+		param = find_if(info->global_parameters.begin(), info->global_parameters.end(), find_velocity_column());
+		if (param != info->global_parameters.end()) {
+			velocity_column = int(param - info->global_parameters.begin());
+			return true;
+		}
+	}
+
+	param = find_if(info->track_parameters.begin(), info->track_parameters.end(), find_velocity_column());
+	if (param != info->track_parameters.end()) {
+		velocity_column = int(param - info->track_parameters.begin());
+		return true;
+	}
+
+	return false;
+}
+
+
+
 // ---------------------------------------------------------------------------
 //
 // op_state_change
@@ -104,6 +186,21 @@ bool op_plugin_create::prepare(zzub::song& song) {
 	plugin.cpu_load_buffersize = 0;
 	plugin.cpu_load_time = 0.0f;
 	plugin.writemode_errors = 0;
+
+	if (get_note_info(loader, plugin.note_group, plugin.note_column)) {
+		if (!get_velocity_info(loader, plugin.note_group, plugin.velocity_column)) {
+			plugin.velocity_column = -1;
+		}
+		if (!get_wave_info(loader, plugin.note_group, plugin.wave_column)) {
+			plugin.wave_column = -1;
+		}
+	} else {
+		plugin.note_group = -1;
+		plugin.note_column = -1;
+		plugin.velocity_column = -1;
+		plugin.wave_column = -1;
+	}
+
 
 	plugin.initialized = false;
 	plugin.work_buffer.resize(2);
@@ -1079,12 +1176,12 @@ bool op_pattern_remove::prepare(zzub::song& song) {
 	for (size_t i = 0; i < song.sequencer_tracks.size(); i++) {
 		if (song.sequencer_tracks[i].plugin_id == id) {
 			for (size_t j = 0; j < song.sequencer_tracks[i].events.size(); j++) {
-				sequencer_track::time_value& ev = song.sequencer_tracks[i].events[j];
-				if (ev.second >= 0x10) {
-					int pattern = ev.second - 0x10;
+				sequence_event& ev = song.sequencer_tracks[i].events[j];
+				if (ev.pattern_event.value >= 0x10) {
+					int pattern = ev.pattern_event.value - 0x10;
 					assert(pattern != index);	// you should have deleted these already
 					if (index < pattern) {
-						ev.second--;
+						ev.pattern_event.value--;
 					}
 				}
 			}
@@ -1145,17 +1242,17 @@ bool op_pattern_move::prepare(zzub::song& song) {
 	for (size_t i = 0; i < song.sequencer_tracks.size(); i++) {
 		if (song.sequencer_tracks[i].plugin_id == id) {
 			for (size_t j = 0; j < song.sequencer_tracks[i].events.size(); j++) {
-				sequencer_track::time_value& ev = song.sequencer_tracks[i].events[j];
-				if (ev.second >= 0x10) {
-					int pattern = ev.second - 0x10;
+				sequence_event& ev = song.sequencer_tracks[i].events[j];
+				if (ev.pattern_event.value >= 0x10) {
+					int pattern = ev.pattern_event.value - 0x10;
 					if (pattern == index) {
-						ev.second = newindex;
+						ev.pattern_event.value = newindex;
 					} else
 					if (newindex < index && pattern >= newindex && pattern < index) {
-						ev.second++;
+						ev.pattern_event.value++;
 					} else
 					if (newindex > index && pattern > index && pattern <= newindex) {
-						ev.second--;
+						ev.pattern_event.value--;
 					}
 				}
 			}
@@ -1366,33 +1463,35 @@ bool op_sequencer_set_event::prepare(zzub::song& song) {
 
 	zzub::sequencer_track& seqtrack = song.sequencer_tracks[track];
 
-	std::vector<zzub::sequencer_track::time_value>::iterator pos = seqtrack.events.begin();
+	std::vector<sequence_event>::iterator pos = seqtrack.events.begin();
 	int index = 0;
 
-	while (seqtrack.events.size() && (size_t)index < seqtrack.events.size() && pos->first < timestamp) {
+	while (seqtrack.events.size() && (size_t)index < seqtrack.events.size() && pos->time < timestamp) {
 		pos++;
 		index++;
 	}
 
 	if (seqtrack.events.size() == 0 || pos == seqtrack.events.end()) {
 		if (action != -1) {
-			sequencer_track::time_value ev;
-			ev.first = timestamp;
-			ev.second = action;
+			sequence_event ev;
+			ev.time = timestamp;
+			ev.pattern_event.value = action;
+			ev.pattern_event.length = 0;
 			seqtrack.events.push_back(ev);
 		}
 	} else
-	if (pos->first == timestamp) {
+	if (pos->time == timestamp) {
 		if (action == -1) {
 			seqtrack.events.erase(pos);
 		} else {
-			pos->second = action;
+			pos->pattern_event.value = action;
 		}
 	} else {
 		if (action != -1 && pos != seqtrack.events.end()) {
-			sequencer_track::time_value ev;
-			ev.first = timestamp;
-			ev.second = action;
+			sequence_event ev;
+			ev.time = timestamp;
+			ev.pattern_event.value = action;
+			ev.pattern_event.length = 0;
 			seqtrack.events.insert(pos, ev);
 		}
 	}
@@ -1420,15 +1519,17 @@ void op_sequencer_set_event::finish(zzub::song& song, bool send_events) {
 //
 // ---------------------------------------------------------------------------
 
-op_sequencer_create_track::op_sequencer_create_track(zzub::player* _player, int _id) {
+op_sequencer_create_track::op_sequencer_create_track(zzub::player* _player, int _id, sequence_type _type) {
 	player = _player;
 	id = _id;
+	type = _type;
 	copy_flags.copy_sequencer_tracks = true;
 }
 
 bool op_sequencer_create_track::prepare(zzub::song& song) {
 	zzub::sequencer_track t;
 	t.plugin_id = id;
+	t.type = type;
 	t.proxy = new sequence_proxy(player, (int)song.sequencer_tracks.size());
 	song.sequencer_tracks.push_back(t);
 	return true;

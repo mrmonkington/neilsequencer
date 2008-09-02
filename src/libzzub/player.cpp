@@ -1129,10 +1129,10 @@ void player::plugin_remove_pattern(int id, int pattern) {
 	for (size_t i = 0; i < back.sequencer_tracks.size(); i++) {
 		if (back.sequencer_tracks[i].plugin_id == id) {
 			for (size_t j = 0; j < back.sequencer_tracks[i].events.size(); j++) {
-				sequencer_track::time_value& ta = back.sequencer_tracks[i].events[j];
-				if (ta.second >= 0x10) {
-					if (pattern == ta.second - 0x10) {
-						remove_events.push_back(std::pair<int, int>(i, ta.first));
+				sequence_event& ta = back.sequencer_tracks[i].events[j];
+				if (ta.pattern_event.value >= 0x10) {
+					if (pattern == ta.pattern_event.value - 0x10) {
+						remove_events.push_back(std::pair<int, int>(i, ta.time));
 					}
 				}
 			}
@@ -1428,14 +1428,16 @@ void player::plugin_set_stream_source(int plugin_id, std::string data_url) {
 }
 
 
-void player::sequencer_add_track(int id) {
+void player::sequencer_add_track(int id, sequence_type type) {
 
 	// TODO: disallow sequencer tracks for no_undo-plugins?
 	// adding a track, and then adding more tracks with non-no_undo plugins will mess up the 
 	// undo buffer for sure when the no_undo-plugin is deleted.. correctional surgery on the history 
 	// would be messy and a first
 
-	op_sequencer_create_track* redo = new op_sequencer_create_track(this, id);
+	// TODO: disallow wave_tracks on plugins that has no plugin_plays_wave flag
+
+	op_sequencer_create_track* redo = new op_sequencer_create_track(this, id, type);
 	prepare_operation_redo(redo);
 
 	op_sequencer_remove_track* undo = new op_sequencer_remove_track(-1);
@@ -1451,12 +1453,13 @@ void player::sequencer_remove_track(int index) {
 	merge_backbuffer_flags(flags);
 
 	int plugin_id = (int)back.sequencer_tracks[index].plugin_id;
+	sequence_type type = back.sequencer_tracks[index].type;
 
 	// remove the events in this track in an undoable fashion
 	std::vector<std::pair<int, int> > remove_events;
 	for (size_t j = 0; j < back.sequencer_tracks[index].events.size(); j++) {
-		sequencer_track::time_value& ev = back.sequencer_tracks[index].events[j];
-		remove_events.push_back(std::pair<int, int>(index, ev.first));
+		sequence_event& ev = back.sequencer_tracks[index].events[j];
+		remove_events.push_back(std::pair<int, int>(index, ev.time));
 	}
 
 	for (size_t i = 0; i < remove_events.size(); i++) {
@@ -1470,7 +1473,7 @@ void player::sequencer_remove_track(int index) {
 	op_sequencer_move_track* undo_pos = new op_sequencer_move_track(-1, index);
 	prepare_operation_undo(undo_pos);
 
-	op_sequencer_create_track* undo = new op_sequencer_create_track(this, plugin_id);
+	op_sequencer_create_track* undo = new op_sequencer_create_track(this, plugin_id, type);
 	prepare_operation_undo(undo);
 
 }
@@ -1505,10 +1508,10 @@ void player::sequencer_insert_events(int track, int start, int ticks) {
 	std::vector<op_sequencer_set_event> remove_ops;
 	std::vector<op_sequencer_set_event> insert_ops;
 	for (size_t i = 0; i < back.sequencer_tracks[track].events.size(); i++) {
-		sequencer_track::time_value& ev =  back.sequencer_tracks[track].events[i];
-		if (ev.first >= start) {
-			remove_ops.push_back(op_sequencer_set_event(ev.first, track, -1));
-			insert_ops.push_back(op_sequencer_set_event(ev.first+ ticks, track, ev.second));
+		sequence_event& ev =  back.sequencer_tracks[track].events[i];
+		if (ev.time >= start) {
+			remove_ops.push_back(op_sequencer_set_event(ev.time, track, -1));
+			insert_ops.push_back(op_sequencer_set_event(ev.time + ticks, track, ev.pattern_event.value));
 		}
 	}
 
@@ -1541,12 +1544,12 @@ void player::sequencer_remove_events(int track, int start, int ticks) {
 	std::vector<op_sequencer_set_event> remove_ops;
 	std::vector<op_sequencer_set_event> insert_ops;
 	for (size_t i = 0; i < back.sequencer_tracks[track].events.size(); i++) {
-		sequencer_track::time_value& ev = back.sequencer_tracks[track].events[i];
-		if (ev.first >= start) {
+		sequence_event& ev = back.sequencer_tracks[track].events[i];
+		if (ev.time >= start) {
 			// this event is subject to moving
-			remove_ops.push_back(op_sequencer_set_event(ev.first, track, -1));
-			if (ev.first - ticks >= start)
-				insert_ops.push_back(op_sequencer_set_event(ev.first - ticks, track, ev.second));
+			remove_ops.push_back(op_sequencer_set_event(ev.time, track, -1));
+			if (ev.time - ticks >= start)
+				insert_ops.push_back(op_sequencer_set_event(ev.time - ticks, track, ev.pattern_event.value));
 		}
 	}
 

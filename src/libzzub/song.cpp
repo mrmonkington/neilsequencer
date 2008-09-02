@@ -58,59 +58,6 @@ int buzz_to_midi_note(int value) {
 
 namespace zzub {
 
-struct find_note_column : public std::unary_function<const zzub::parameter*, bool> {
-	bool operator()(const zzub::parameter* param) {
-		return param->type == zzub::parameter_type_note;
-	}
-};
-
-struct find_velocity_column : public std::unary_function<const zzub::parameter*, bool> {
-	bool operator()(const zzub::parameter* param) {
-		return param->description != 0 && ( (strstr(param->description, "Velocity")) || (strstr(param->description, "Volume")) );
-	}
-};
-
-bool get_note_info(const zzub::info* info, int& note_group, int& note_column) {
-	std::vector<const zzub::parameter*>::const_iterator param;
-
-	param = find_if(info->global_parameters.begin(), info->global_parameters.end(), find_note_column());
-	if (param != info->global_parameters.end()) {
-		note_group = 1;
-		note_column = int(param - info->global_parameters.begin());
-		return true;
-	}
-
-	param = find_if(info->track_parameters.begin(), info->track_parameters.end(), find_note_column());
-	if (param != info->track_parameters.end()) {
-		note_group = 2;
-		note_column = int(param - info->track_parameters.begin());
-		return true;
-	}
-
-	return false;
-}
-
-bool get_velocity_info(const zzub::info* info, int note_group, int& velocity_column) {
-	std::vector<const zzub::parameter*>::const_iterator param;
-
-	if(note_group == 1)
-	{
-		param = find_if(info->global_parameters.begin(), info->global_parameters.end(), find_velocity_column());
-		if (param != info->global_parameters.end()) {
-			velocity_column = int(param - info->global_parameters.begin());
-			return true;
-		}
-	}
-
-	param = find_if(info->track_parameters.begin(), info->track_parameters.end(), find_velocity_column());
-	if (param != info->track_parameters.end()) {
-		velocity_column = int(param - info->track_parameters.begin());
-		return true;
-	}
-
-	return false;
-}
-
 bool is_note_playing(int plugin_id, const std::vector<zzub::keyjazz_note>& keyjazz, int note) {
 	for (size_t i = 0; i < keyjazz.size(); i++)
 		if (keyjazz[i].plugin_id == plugin_id && keyjazz[i].note == note) return true;
@@ -815,15 +762,15 @@ int song::sequencer_get_event_at(int track, unsigned long timestamp) {
 	int event_count = (int)sequencer_tracks[track].events.size();
 	int song_index = 0;
 	while (event_count > 0 && song_index < event_count
-		&& sequencer_tracks[track].events[song_index].first < (int)timestamp) 
+		&& sequencer_tracks[track].events[song_index].time < (int)timestamp) 
 	{
 		song_index++;
 	}
 
-	if (song_index >= event_count || sequencer_tracks[track].events[song_index].first != timestamp) return -1;
+	if (song_index >= event_count || sequencer_tracks[track].events[song_index].time != timestamp) return -1;
 
-	if (sequencer_tracks[track].events[song_index].first == timestamp)
-		return sequencer_tracks[track].events[song_index].second;
+	if (sequencer_tracks[track].events[song_index].time == timestamp)
+		return sequencer_tracks[track].events[song_index].pattern_event.value;
 
 	return -1;
 }
@@ -952,35 +899,57 @@ void mixer::process_sequencer_events(plugin_descriptor plugin) {
 	metaplugin& m = get_plugin(plugin);
 	int plugin_id = graph[plugin].id;
 
+	int wave_track = 0;
+
 	for (size_t i = 0; i < sequencer_tracks.size(); i++) {
 		if (plugin_id != sequencer_tracks[i].plugin_id) continue;
 		int index = sequencer_indices[i];
 		if (index == -1) continue;
 		if (sequencer_tracks[i].events.size() > 0 && (size_t)index < sequencer_tracks[i].events.size()) {
-			sequencer_track::time_value& e = sequencer_tracks[i].events[index];
+			
+			sequencer_track& t = sequencer_tracks[i];
+			sequence_type type = t.type;
+			sequence_event& e = t.events[index];
 
-			switch (e.second) {
-				//case -1:	// none
-				case 0:		// mute
-				case 1:		// break
-				case 2:		// thru
-					if (e.first == song_position)
-						m.sequencer_state = (sequencer_event_type)e.second;
-					break;
-				default:	// pattern
-					if (size_t(e.second - 0x10) < m.patterns.size()) {
-						zzub::pattern& p = *m.patterns[e.second - 0x10];
-						int row = song_position - e.first;
-						if (row >= 0 && row < p.rows && !m.is_muted && !m.is_bypassed) {
-							if (row == 0) m.plugin->play_pattern(e.second - 0x10);
-							m.sequencer_state = sequencer_event_type_none;
-							transfer_plugin_parameter_row(get_plugin_id(plugin), 0, p, m.state_write, row, 0, false);
-							transfer_plugin_parameter_row(get_plugin_id(plugin), 1, p, m.state_write, row, 0, false);
-							transfer_plugin_parameter_row(get_plugin_id(plugin), 2, p, m.state_write, row, 0, false);
-							//cout << "Pattern row " << row << endl;
+			if (type == sequence_type_pattern) {
+				switch (e.pattern_event.value) {
+					//case -1:	// none
+					case 0:		// mute
+					case 1:		// break
+					case 2:		// thru
+						if (e.time == song_position)
+							m.sequencer_state = (sequencer_event_type)e.pattern_event.value;
+						break;
+					default:	// pattern
+						if (size_t(e.pattern_event.value - 0x10) < m.patterns.size()) {
+							zzub::pattern& p = *m.patterns[e.pattern_event.value - 0x10];
+							int row = song_position - e.time;
+							if (row >= 0 && row < p.rows && !m.is_muted && !m.is_bypassed) {
+								if (row == 0) m.plugin->play_sequence_event(t.proxy, e, row);
+								m.sequencer_state = sequencer_event_type_none;
+								transfer_plugin_parameter_row(get_plugin_id(plugin), 0, p, m.state_write, row, 0, false);
+								transfer_plugin_parameter_row(get_plugin_id(plugin), 1, p, m.state_write, row, 0, false);
+								transfer_plugin_parameter_row(get_plugin_id(plugin), 2, p, m.state_write, row, 0, false);
+								//cout << "Pattern row " << row << endl;
+							}
 						}
-					}
-					break;
+						break;
+				}
+			} else
+			if (type == sequence_type_wave) {
+				// set note/trigger and wave column for this plugin
+				int row = song_position - e.time;
+				if (row == 0 && !m.is_muted && !m.is_bypassed && m.wave_column != -1) {
+					m.sequencer_state = sequencer_event_type_none;
+					m.plugin->play_sequence_event(t.proxy, e, row);
+					m.plugin->play_wave(e.wave_event.wave, note_value_c4, 1.0f);
+
+					// instead of play_wave(), its also possible to set note and wave parameters manually:
+					// plugin_set_parameter_direct(plugin_id, m.note_group, wave_track, m.note_column, note_value_c4, false);
+					// plugin_set_parameter_direct(plugin_id, m.note_group, wave_track, m.wave_column, e.wave_event.wave, false);
+				}
+
+				if (m.note_group == 2) wave_track = (wave_track + 1) % m.tracks;
 			}
 		}
 	}
@@ -1035,15 +1004,15 @@ void mixer::process_sequencer_events() {
 		for (size_t i = 0; i < sequencer_indices.size(); i++) {
 			sequencer_track& seqtrack = sequencer_tracks[i];
 			int song_index = sequencer_indices[i];
-			while (seqtrack.events.size() > 0 && (size_t)song_index > 0 && seqtrack.events[song_index - 1].first >= song_position) {
+			while (seqtrack.events.size() > 0 && (size_t)song_index > 0 && seqtrack.events[song_index - 1].time >= song_position) {
 				song_index--;
 			}
 
-			while (seqtrack.events.size() > 0 && (size_t)song_index < seqtrack.events.size() && seqtrack.events[song_index].first < song_position) {
+			while (seqtrack.events.size() > 0 && (size_t)song_index < seqtrack.events.size() && seqtrack.events[song_index].time < song_position) {
 				song_index++;
 			}
 
-			if (seqtrack.events.size() > 0 && (size_t)song_index < seqtrack.events.size() && seqtrack.events[song_index].first == song_position) {
+			if (seqtrack.events.size() > 0 && (size_t)song_index < seqtrack.events.size() && seqtrack.events[song_index].time == song_position) {
 				sequencer_indices[i] = song_index;
 			}
 		}
@@ -1055,6 +1024,7 @@ void mixer::process_sequencer_events() {
 
 		song_position++;
 		if (!song_loop_enabled && song_position >= song_loop_end) {
+			song_position--;
 			set_state(player_state_stopped);
 			zzub_event_data event_data;
 			event_data.type = event_type_player_state_changed;
@@ -1139,22 +1109,23 @@ bool mixer::get_currently_playing_pattern(int plugin_id, int& pattern_index, int
 	for (size_t i = 0; i < sequencer_tracks.size(); i++) {
 		const sequencer_track& seqtrack = sequencer_tracks[i];
 		if (plugin_id != seqtrack.plugin_id) continue;
+		if (sequence_type_pattern != seqtrack.type) continue;
 		int index = sequencer_indices[i];
 		if (index == -1) continue;
 		if (seqtrack.events.size() > 0 && (size_t)index < seqtrack.events.size()) {
-			const sequencer_track::time_value& e = seqtrack.events[index];
-			switch (e.second) {
+			const sequence_event& e = seqtrack.events[index];
+			switch (e.pattern_event.value) {
 				//case -1:	// none
 				case 0:		// mute
 				case 1:		// break
 				case 2:		// thru
 					break;
 				default:	// pattern
-					if (size_t(e.second - 0x10) < m.patterns.size()) {
-						zzub::pattern& p = *m.patterns[e.second - 0x10];
-						int row = song_position - e.first;
+					if (size_t(e.pattern_event.value - 0x10) < m.patterns.size()) {
+						zzub::pattern& p = *m.patterns[e.pattern_event.value - 0x10];
+						int row = song_position - e.time;
 						if (row >= 0 && row < p.rows) {
-							pattern_index = e.second - 0x10;
+							pattern_index = e.pattern_event.value - 0x10;
 							pattern_row = row;
 							return true;
 						}
@@ -1172,14 +1143,15 @@ bool mixer::get_currently_playing_pattern_row(int plugin_id, int pattern_index, 
 	for (size_t i = 0; i < sequencer_tracks.size(); i++) {
 		const sequencer_track& seqtrack = sequencer_tracks[i];
 		if (plugin_id != seqtrack.plugin_id) continue;
+		if (sequence_type_pattern != seqtrack.type) continue;
 		int index = sequencer_indices[i];
 		if (index == -1) continue;
 		if (seqtrack.events.size() > 0 && (size_t)index < seqtrack.events.size()) {
-			const sequencer_track::time_value& e = seqtrack.events[index];
+			const sequence_event& e = seqtrack.events[index];
 
-			if (size_t(e.second - 0x10) == pattern_index) {
-				zzub::pattern& p = *m.patterns[e.second - 0x10];
-				int row = song_position - e.first;
+			if (size_t(e.pattern_event.value - 0x10) == pattern_index) {
+				zzub::pattern& p = *m.patterns[e.pattern_event.value - 0x10];
+				int row = song_position - e.time;
 				if (row >= 0 && row < p.rows) {
 					pattern_row = row;
 					return true;
@@ -1196,10 +1168,10 @@ void mixer::sequencer_update_play_pattern_positions() {
 
 	for (size_t i = 0; i < sequencer_tracks.size(); i++) {
 		for (size_t j = 0; j < sequencer_tracks[i].events.size(); j++) {
-			sequencer_track::time_value& ta = sequencer_tracks[i].events[j];
-			if (sequencer_indices[i] == -1 || ta.first <= song_position) 
+			sequence_event& ta = sequencer_tracks[i].events[j];
+			if (sequencer_indices[i] == -1 || ta.time <= song_position) 
 				sequencer_indices[i] = (int)j;
-			if (ta.first >= song_position) break;
+			if (ta.time >= song_position) break;
 		}
 	}
 }
@@ -1312,9 +1284,10 @@ bool mixer::plugin_update_keyjazz(int plugin_id, int note, int prev_note, int ve
 	// ignore note-off when prevNote wasnt already playing, except if prevNote is -1, where we stop all playing notes
 	if (note == note_value_off && prev_note != -1 && !is_note_playing(plugin_id, keyjazz, prev_note)) return false;
 
-	if (!get_note_info(m.info, note_group, note_column)) return false;
-	if (!get_velocity_info(m.info, note_group, velocity_column))
-		velocity_column = -1;
+	if (m.note_group == -1) return false;
+	note_group = m.note_group;
+	note_column = m.note_column;
+	velocity_column = m.velocity_column;
 
 	if (note_group == 2) {
 		// play note on track

@@ -114,8 +114,10 @@ struct undo_manager {
 	struct operationgroup {
 		ops first;
 		ops second;
-		zzub_event_data_t* redo_event;
-		zzub_event_data_t* undo_event;
+		bool has_redo_event;
+		zzub_event_data redo_event;
+		bool has_undo_event;
+		zzub_event_data undo_event;
 	};
 
 	typedef vector<operationgroup> undoableoperation;

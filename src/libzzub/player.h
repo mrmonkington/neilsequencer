@@ -100,7 +100,7 @@ struct player : undo_manager, audioworker, midiworker {
 	void plugin_add_event_connection_binding(int to_id, int from_id, int sourceparam, int targetgroup, int targettrack, int targetparam);
 	void plugin_remove_event_connection_binding(int to_id, int from_id, int index);
 	void plugin_set_stream_source(int plugin_id, std::string data_url);
-	void sequencer_add_track(int plugin_id);
+	void sequencer_add_track(int plugin_id, sequence_type type);
 	void sequencer_remove_track(int index);
 	void sequencer_move_track(int index, int newindex);
 	void sequencer_set_event(int track, int pos, int value);

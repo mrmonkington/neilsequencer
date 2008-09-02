@@ -303,8 +303,9 @@ struct op_sequencer_replace : operation {
 struct op_sequencer_create_track : operation {
 	zzub::player* player;
 	int id;
+	sequence_type type;
 
-	op_sequencer_create_track(zzub::player* _player, int _id);
+	op_sequencer_create_track(zzub::player* _player, int _id, sequence_type _type);
 	virtual bool prepare(zzub::song& song);
 	virtual bool operate(zzub::song& song);
 	virtual void finish(zzub::song& song, bool send_events);

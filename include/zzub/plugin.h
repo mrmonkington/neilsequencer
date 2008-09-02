@@ -413,7 +413,6 @@ struct wave_level {
 };
 
 struct pattern;
-struct sequence;
 struct player;
 struct song;
 struct outstream;
@@ -431,6 +430,36 @@ struct host_info {
 	int id;
 	int version;
 	void* host_ptr;	// host-specific data
+};
+
+enum sequence_type {
+	sequence_type_pattern = zzub_sequence_type_pattern,
+	sequence_type_wave = zzub_sequence_type_wave,
+	sequence_type_automation = zzub_sequence_type_automation,
+};
+
+struct sequence_pattern_event {
+	int value;
+	int length;
+};
+
+struct sequence_wave_event {
+	int wave;
+	int offset;
+	int length;
+};
+
+struct sequence_automation_event {
+	int value;
+};
+
+struct sequence_event {
+	int time;
+	union {
+		sequence_pattern_event pattern_event;
+		sequence_wave_event wave_event;
+		sequence_automation_event automation_event;
+	};
 };
 
 struct host {
@@ -462,10 +491,11 @@ struct host {
 	virtual void delete_pattern(int _pattern);
 	virtual int get_pattern_data(int _pattern, int row, int group, int track, int field);
 	virtual void set_pattern_data(int _pattern, int row, int group, int track, int field, int value);
-	virtual sequence * create_sequence();
-	virtual void delete_sequence(sequence *_sequence);
+	virtual zzub_sequence_t* create_sequence();
+	virtual void delete_sequence(zzub_sequence_t* _sequence);
 	virtual int  get_sequence_data(int row);
 	virtual void set_sequence_data(int row, int pattern);
+	virtual sequence_type get_sequence_type(zzub_sequence_t* seq);
 	virtual void _legacy_control_change(int group, int track, int param, int value);
 	virtual int audio_driver_get_channel_count(bool input);
 	virtual void audio_driver_write(int channel, float *samples, int buffersize);
@@ -474,8 +504,8 @@ struct host {
 	//virtual int get_metaplugin_by_index(int plugin_desc);
 	virtual void control_change(zzub_plugin_t* _metaplugin, int group, int track, int param, int value, bool record, bool immediate);
 	
-	virtual sequence * get_playing_sequence(zzub_plugin_t* _metaplugin);
-	virtual void * get_playing_row(sequence *_sequence, int group, int track);
+	virtual zzub_sequence_t* get_playing_sequence(zzub_plugin_t* _metaplugin);
+	virtual void * get_playing_row(zzub_sequence_t* _sequence, int group, int track);
 	virtual int get_state_flags();
 	virtual void set_state_flags(int state);
 	virtual void set_event_handler(zzub_plugin_t* _metaplugin, event_handler* handler);
@@ -683,6 +713,7 @@ struct midi_message {
 	unsigned long timestamp;
 };
 
+
 struct plugin {
 	virtual ~plugin() { }
 	virtual void destroy() { delete this; }
@@ -718,7 +749,6 @@ struct plugin {
 	virtual void input(float **samples, int size, float amp) {}
 	virtual void midi_control_change(int ctrl, int channel, int value) {}
 	virtual bool handle_input(int index, int amp, int pan) { return false; }
-
 	// plugin_flag_has_midi_output
 	virtual void get_midi_output_names(outstream *pout) {}
 
@@ -726,7 +756,7 @@ struct plugin {
 	virtual void set_stream_source(const char* resource) {}
 	virtual const char* get_stream_source() { return 0; }
 
-	virtual void play_pattern(int index) {}
+	virtual void play_sequence_event(zzub_sequence_t* seq, const sequence_event& ev, int offset) {}
 	
 	// Called by the host to set specific configuration options,
 	// usually related to paths.

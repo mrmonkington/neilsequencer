@@ -948,9 +948,12 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 		return machine->GetWaveEnvPlayPos(env);
 	}
 
-	void play_pattern(int index) {
+	void play_sequence_event(zzub_sequence_t* seq, const sequence_event& ev, int offset) {
 		if (machineInfo->origFlags & MIF_PATTERN_EDITOR) {
-			machine2->PlayPattern((CPattern*)(int)(index + 1));
+			sequence_type type = _host->get_sequence_type(seq);
+			if (type == sequence_type_pattern) {
+				machine2->PlayPattern((CPattern*)(int)(ev.pattern_event.value + 1), 0, offset);
+			}
 		}
 	}
 	
@@ -1032,20 +1035,20 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 	virtual void SetNumberOfTracks(int const n) { _host->set_track_count(n); }
 	virtual CPattern *CreatePattern(char const *name, int const length)
 	{ return reinterpret_cast<CPattern*>(_host->create_pattern(name, length)); }
-	virtual CPattern *GetPattern(int const index) { return (CPattern*)(int)(index + 1); }
-	virtual char const *GetPatternName(CPattern *ppat) { return _host->get_pattern_name(reinterpret_cast<int>(ppat) - 1); }
+	virtual CPattern *GetPattern(int const index) { return (CPattern*)(int)(index + 16); }
+	virtual char const *GetPatternName(CPattern *ppat) { return _host->get_pattern_name(reinterpret_cast<int>(ppat) - 16); }
 	virtual void RenamePattern(char const *oldname, char const *newname)
 	{ _host->rename_pattern(oldname, newname); }
 	virtual void DeletePattern(CPattern *ppat)
-	{ _host->delete_pattern(reinterpret_cast<int>(ppat) - 1); }
+	{ _host->delete_pattern(reinterpret_cast<int>(ppat) - 16); }
 	virtual int GetPatternData(CPattern *ppat, int const row, int const group, int const track, int const field)
-	{ return _host->get_pattern_data(reinterpret_cast<int>(ppat) - 1, row, group, track, field); }
+	{ return _host->get_pattern_data(reinterpret_cast<int>(ppat) - 16, row, group, track, field); }
 	virtual void SetPatternData(CPattern *ppat, int const row, int const group, int const track, int const field, int const value)
-	{ _host->set_pattern_data(reinterpret_cast<int>(ppat) - 1, row, group, track, field, value); }
+	{ _host->set_pattern_data(reinterpret_cast<int>(ppat) - 16, row, group, track, field, value); }
 	virtual CSequence *CreateSequence() { return reinterpret_cast<CSequence*>(_host->create_sequence()); }
-	virtual void DeleteSequence(CSequence *pseq) { _host->delete_sequence(reinterpret_cast<zzub::sequence*>(pseq)); }
+	virtual void DeleteSequence(CSequence *pseq) { _host->delete_sequence(reinterpret_cast<zzub_sequence_t*>(pseq)); }
 	virtual CPattern *GetSequenceData(int const row) { return reinterpret_cast<CPattern*>(_host->get_sequence_data(row)); }
-	virtual void SetSequenceData(int const row, CPattern *ppat) { _host->set_sequence_data(row, reinterpret_cast<int>(ppat) - 1); }
+	virtual void SetSequenceData(int const row, CPattern *ppat) { _host->set_sequence_data(row, reinterpret_cast<int>(ppat)); }
 	virtual void SetMachineInterfaceEx(CMachineInterfaceEx *pex) { 
 		this->machine2 = pex;
 	}
@@ -1110,7 +1113,7 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 		return reinterpret_cast<CSequence*>(_host->get_playing_sequence(pmac->plugin)); 
 	}
 	virtual void *GetPlayingRow(CSequence *pseq, int group, int track) { 
-		return _host->get_playing_row(reinterpret_cast<zzub::sequence*>(pseq), group, track); 
+		return _host->get_playing_row(reinterpret_cast<zzub_sequence_t*>(pseq), group, track); 
 	}
 
 	virtual int GetStateFlags() { return _host->get_state_flags(); }
@@ -1348,6 +1351,20 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 	}
 	virtual void SetPatternEditorMachine(CMachine *pmac, bool gotoeditor) {
 		cout << "SetPatternEditorMachine" << endl;
+	}
+	// returns NULL if subtick timing is disabled in buzz options
+	virtual CSubTickInfo const *GetSubTickInfo() {
+		cout << "GetSubTickInfo" << endl;
+		return 0;
+	}
+	// returns zero-based index to the columns in the editor or -1 if s is not a valid sequence pointer
+	virtual int GetSequenceColumn(CSequence *s) {
+		cout << "GetSequenceColumn" << endl;
+		return -1;
+	}
+	// call only in CMachineInterface::Tick()
+	virtual void SetGroovePattern(float *data, int size) {
+		cout << "SetGroovePattern" << endl;
 	}
 
 	// plugin2

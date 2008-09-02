@@ -53,6 +53,7 @@ double const PI = 3.14159265358979323846;
 #define MIF_EXTENDED_MENUS		(1<<8)		// uses submenus in machine menus. syntax: "submenu/another submenu/item"
 #define MIF_PATTERN_EDITOR		(1<<9)		// implements it's own pattern editor, does not use buzz patterns
 #define MIF_PE_NO_CLIENT_EDGE	(1<<10)		// remove sunken border from the pattern editor window
+#define MIF_GROOVE_CONTROL		(1<<11)		
 
 // work modes
 #define WM_NOIO					0
@@ -112,8 +113,21 @@ public:
 	int PosInTick;			// [0..SamplesPerTick-1]
 	float TicksPerSec;		// (float)SPS / (float)SPT  
 
+	// do not write to these values directly, use pCB->SetGroovePattern()
+	int GrooveSize;			
+	int PosInGroove;		// [0..GrooveSize-1]
+	float *GrooveData;		// GrooveSize floats containing relative lengths of ticks
+
 };
 
+class CSubTickInfo
+{
+public:
+	int SubTicksPerTick;
+	int CurrentSubTick;		// [0..SubTicksPerTick-1]
+	int SamplesPerSubTick;
+	int PosInSubTick;		// [0..SamplesPerSubTick-1]
+};
 
 // CWaveInfo flags
 #define WF_LOOP			1
@@ -302,6 +316,10 @@ public:
 	virtual int GetParameterState(CMachine *pmac, int group, int track, int param) = 0;
 	virtual void ShowMachineWindow(CMachine *pmac, bool show) = 0;
 	virtual void SetPatternEditorMachine(CMachine *pmac, bool gotoeditor) = 0;
+	virtual CSubTickInfo const *GetSubTickInfo() = 0;		// returns NULL if subtick timing is disabled in buzz options
+	virtual int GetSequenceColumn(CSequence *s) = 0;		// returns zero-based index to the columns in the editor or -1 if s is not a valid sequence pointer
+	virtual void SetGroovePattern(float *data, int size) = 0;	// call only in CMachineInterface::Tick()
+
 
 };
 
@@ -507,7 +525,7 @@ public:
 	virtual void DeletePattern(CPattern *p) {}
 	virtual void RenamePattern(CPattern *p, char const *name) {}
 	virtual void SetPatternLength(CPattern *p, int length) {}
-	virtual void PlayPattern(CPattern *p) {}
+	virtual void PlayPattern(CPattern *p, CSequence *s, int offset) {}
 	virtual void *CreatePatternEditor(void *parenthwnd) { return NULL; }		// must return a HWND or NULL
 	virtual void SetEditorPattern(CPattern *p) {}
 	virtual void AddTrack() {}

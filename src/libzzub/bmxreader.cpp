@@ -673,7 +673,7 @@ bool BuzzReader::loadSequences() {
 		
 		int plugin_id = machines[machineIndex];
 		
-		player->sequencer_add_track(plugin_id);
+		player->sequencer_add_track(plugin_id, sequence_type_pattern);
 
 		int track = player->back.sequencer_tracks.size() - 1;
 

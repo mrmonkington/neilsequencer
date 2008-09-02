@@ -1083,7 +1083,7 @@ void green_milk::midi_note(int channel, int val, int velocity)
 	int track = -1;
 
 	// for recording
-	zzub::sequence * pseq = 0;
+	zzub_sequence_t * pseq = 0;
 	int stateflags = _host->get_state_flags();
 	if(stateflags & zzub::state_flag_playing && stateflags & zzub::state_flag_recording)
 	{
