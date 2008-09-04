@@ -431,7 +431,10 @@ bool BuzzReader::loadMachines() {
 			}
 		}
 
-		player->back.process_plugin_events(plugin_id);
+		// add a tick to the backbuffer-operations so we dont tick here, but later in the flush.
+		// this is specifically to not confuse plugins that reset parameters in set_track_count().
+		op_plugin_process_events* ticker = new op_plugin_process_events(plugin_id);
+		player->prepare_operation_redo(ticker);
 
 		machines.push_back(plugin_id);
 		connections.insert(connectionpair(plugin_id, vector<pair<int, zzub::connection_type> >()));

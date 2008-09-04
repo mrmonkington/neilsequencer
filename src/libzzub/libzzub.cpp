@@ -1738,6 +1738,7 @@ zzub_plugin_t* zzub_sequence_get_plugin(zzub_sequence_t* sequence) {
 
 	operation_copy_flags flags;
 	flags.copy_sequencer_tracks = true;
+	flags.copy_plugins = true;
 	sequence->_player->merge_backbuffer_flags(flags);
 
 	int id = sequence->_player->back.sequencer_tracks[sequence->track].plugin_id;
