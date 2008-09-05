@@ -53,7 +53,7 @@ struct stream_plugin : zzub::plugin {
 	virtual void midi_note(int channel, int note, int velocity) {}
 	virtual void event(unsigned int) {}
 	virtual const zzub::envelope_info** get_envelope_infos() { return 0; }
-	virtual bool play_wave(int, int, float) { return false; }
+	virtual bool play_wave(int wave, int note, float volume, int offset, int length) { return false; }
 	virtual void stop_wave() {}
 	virtual int get_wave_envelope_play_position(int) { return -1; }
 	virtual const char* describe_param(int) { return 0; }
@@ -67,6 +67,7 @@ struct stream_plugin : zzub::plugin {
 	virtual bool handle_input(int, int, int) { return false; }
 	virtual void process_midi_events(zzub::midi_message* pin, int nummessages) {}
 	virtual void get_midi_output_names(zzub::outstream *pout) {}
+	virtual void play_sequence_event(zzub_sequence_t* seq, const zzub::sequence_event& ev, int offset) { }
 
 	unsigned int get_offset() {
 		unsigned short low = gval.offset & 0xFFFF;

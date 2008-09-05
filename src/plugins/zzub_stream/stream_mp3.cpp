@@ -182,6 +182,10 @@ void stream_mp3::close() {
 	fileName = "";
 }
 
+bool stream_mp3::play_wave(int wave, int note, float volume, int offset, int length) {
+	return false;
+}
+
 frame_info* stream_mp3::get_frame_at_sample(unsigned int pos, int* index) {
 	for (int i = 0; i<frames.size(); i++) {
 		frame_info& f = frames.at(i);

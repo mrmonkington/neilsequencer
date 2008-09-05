@@ -56,7 +56,7 @@ public:
 	virtual void event(unsigned int data);
 	virtual const char * describe_value(int param, int value);
 	virtual const zzub::envelope_info ** get_envelope_infos();
-	virtual bool play_wave(int wave, int note, float volume);
+	virtual bool play_wave(int wave, int note, float volume, int offset, int length);
 	virtual void stop_wave();
 	virtual int get_wave_envelope_play_position(int env);
 	

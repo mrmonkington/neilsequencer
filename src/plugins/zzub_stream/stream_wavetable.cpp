@@ -10,6 +10,7 @@
 ***/
 
 using namespace std;
+using namespace zzub;
 
 std::string stringFromInt(int i, int len, char fillChar) {
 	char pc[16];
@@ -47,7 +48,7 @@ stream_wavetable::~stream_wavetable() {
 }
 
 void stream_wavetable::init(zzub::archive * const pi) {
-	this->play_wave = 0;
+	this->play_waveindex = 0;
 	this->play_level = 0;
 
 	this->currentPosition = 0;
@@ -64,7 +65,7 @@ void stream_wavetable::reinit_resampler() {
 	if (resampler) delete resampler;
 	resampler = new stream_resampler(this);
 
-	const zzub::wave_level* level = _host->get_wave_level(play_wave, play_level);
+	const zzub::wave_level* level = _host->get_wave_level(play_waveindex, play_level);
 	//zzub_wave_t* wave = _host->get_wave(index);
 	if (level) {
 		//wave->get_level(level);
@@ -73,7 +74,7 @@ void stream_wavetable::reinit_resampler() {
 }
 
 void stream_wavetable::set_stream_source(const char* resource) {
-	play_wave = atoi(resource);
+	play_waveindex = atoi(resource);
 	play_level = 0;
 
 	currentPosition = 0;
@@ -84,8 +85,48 @@ void stream_wavetable::set_stream_source(const char* resource) {
 
 const char* stream_wavetable::get_stream_source() {
 	static char src[32];
-	sprintf(src, "%i", play_wave);
+	sprintf(src, "%i", play_waveindex);
     return src;
+}
+
+bool stream_wavetable::play_wave(int wave, int note, float volume, int offset, int length) {
+	play_waveindex = wave;
+	//wave_level* wl = _host->get_nearest_wave_level(play_waveindex, note);
+	// TODO: convert from nearest wave_level* to index
+	play_level = 0;	
+	
+	reinit_resampler();
+	resampler->note = buzz_to_midi_note(note);
+
+	resampler->set_stream_pos(offset);
+
+	currentPosition = offset;
+	lastCurrentPosition = currentPosition;
+	return true;
+}
+
+void stream_wavetable::play_sequence_event(zzub_sequence_t* seq, const sequence_event& ev, int offset) {
+	sequence_type type = _host->get_sequence_type(seq);
+	if (type == sequence_type_wave) {
+		// the offset param is always 0 for now, but will indicate how many ticks we should skip in the future
+
+		if (offset > 0) {
+			//const wave_info* w = _host->get_wave(ev.wave_event.wave);
+			const wave_level* wl = _host->get_wave_level(ev.wave_event.wave, 0);
+			if (!wl) return ;
+			//zzub_wavelevel_get_sample_count(currentLevel);
+			int wavelen = wl->sample_count;
+			float bpm = _master_info->beats_per_minute;
+			int tpb = _master_info->ticks_per_beat;
+			float samplerate = _master_info->samples_per_second;
+			float samples_per_tick = ((float)60.0*samplerate) / ((float)bpm*tpb);
+			
+			offset = samples_per_tick * offset;
+			if (offset >= wavelen) return;
+		}
+
+		play_wave(ev.wave_event.wave, note_value_c4, 1.0f, ev.wave_event.offset + offset, ev.wave_event.length);
+	}
 }
 
 
@@ -112,9 +153,9 @@ void stream_wavetable::process_events() {
 	}
 
 	if (aval.offsetfromsong) {
-		const zzub::wave_info* wave = _host->get_wave(play_wave);
+		const zzub::wave_info* wave = _host->get_wave(play_waveindex);
 		if (wave) {
-			const zzub::wave_level* l = _host->get_wave_level(play_wave, play_level);
+			const zzub::wave_level* l = _host->get_wave_level(play_waveindex, play_level);
 			if (l) {
 				bool looping = wave->flags&zzub::wave_flag_loop?true:false;
 				unsigned int sample_count = l->sample_count;
@@ -150,10 +191,10 @@ inline float sample_scale(zzub::wave_buffer_type format, void* buffer) {
 }
 
 bool stream_wavetable::generate_samples(float** pout, int numsamples) {
-	const zzub::wave_info* wave = _host->get_wave(play_wave);
+	const zzub::wave_info* wave = _host->get_wave(play_waveindex);
 	if (!wave) return false;
 
-	const zzub::wave_level* level = _host->get_wave_level(play_wave, play_level);
+	const zzub::wave_level* level = _host->get_wave_level(play_waveindex, play_level);
 	if (!level ) return false;
     
 	bool looping = wave->flags&zzub::wave_flag_loop?true:false;
@@ -228,7 +269,7 @@ void stream_wavetable::command(int index) {
 					
 					if (resampler)
 						resampler->playing = false;
-					this->play_wave = i+1;
+					this->play_waveindex = i+1;
 					this->play_level = 0;
 					this->currentPosition = 0;
 					this->lastCurrentPosition = 0;

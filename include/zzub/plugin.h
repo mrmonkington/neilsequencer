@@ -735,7 +735,7 @@ struct plugin {
 	virtual void event(unsigned int data)  {}
 	virtual const char * describe_value(int param, int value) { return 0; }
 	virtual const zzub::envelope_info ** get_envelope_infos() { return 0; }
-	virtual bool play_wave(int wave, int note, float volume) { return false; }
+	virtual bool play_wave(int wave, int note, float volume, int offset, int length) { return false; }
 	virtual void stop_wave() {}
 	virtual int get_wave_envelope_play_position(int env) { return -1; }
 

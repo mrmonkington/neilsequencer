@@ -698,7 +698,7 @@ const zzub::envelope_info ** CMatildeTrackerMachine::get_envelope_infos()
 	return &m_Envelopes[0];
 }
 
-bool CMatildeTrackerMachine::play_wave(int wave, int note, float volume)
+bool CMatildeTrackerMachine::play_wave(int wave, int note, float volume, int offset, int length)
 {
 	if( m_iNextMIDITrack>=MAX_TRACKS )
 		m_iNextMIDITrack=m_Attributes.iMIDIUsesFreeTracks?numTracks:0;

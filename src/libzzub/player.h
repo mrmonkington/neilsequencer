@@ -69,6 +69,7 @@ struct player : undo_manager, audioworker, midiworker {
 	void plugin_set_parameter(int plugin_id, int group, int track, int column, int value, bool record, bool immediate, bool undoable);
 	void play_plugin_note(int plugin_id, int note, int prevNote, int velocity);
 	void reset_keyjazz();
+	void set_play_position(int pos);
 
 	// user methods for creating compound, undoable operations
 	// any of these must be enclosed by calls to begin_operation() and commit_operation().

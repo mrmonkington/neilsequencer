@@ -519,19 +519,10 @@ void undo_manager::write_swap_song(zzub::song& song, const operation_copy_flags&
 	if (flags.copy_plugins)
 		front.plugins.swap(song.plugins);
 
-	bool update_seq_pos = false;
 	if (flags.copy_sequencer_tracks) {
 		front.sequencer_tracks.swap(song.sequencer_tracks);
-		update_seq_pos = true;
-	}
-
-	if (update_seq_pos) {
 		// the sequencer was modified - update internal sequencer states
 		front.sequencer_update_play_pattern_positions();
-		for (size_t i = 0; i < front.sequencer_indices.size(); i++) {
-			if (front.sequencer_indices[i] >= front.sequencer_tracks[i].events.size())
-				front.sequencer_indices[i] = front.sequencer_tracks[i].events.size() - 1;
-		}
 	}
 
 	if (flags.copy_song_variables) {

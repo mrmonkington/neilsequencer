@@ -123,6 +123,7 @@ bool host::allocate_wave_direct(int i, int level, int samples, wave_buffer_type 
 
 	// need to tell someone we updated, so windows can be redrawn
 	zzub_event_data event_data = {event_type_wave_allocated};
+	event_data.allocate_wavelevel.wavelevel = w.levels[level].proxy;
 	plugin_player->plugin_invoke_event(0, event_data);
 
 	return true;
@@ -506,7 +507,13 @@ int host::get_play_position() {
 
 void host::set_play_position(int pos) {
 	printf("host::set_play_position %i\n", pos);
-	_player->front.song_position = pos;
+	if (_player->user_thread_id == thread_id::get()) {
+		// called from user/GUI thread
+		_player->set_play_position(pos);
+	} else {
+		// called from audio thread
+		_player->front.song_position = pos;
+	}
 }
 
 int host::get_song_begin() {

@@ -576,6 +576,15 @@ void player::set_state_direct(player_state newstate) {
 	//execute_single_operation(&o);
 }
 
+void player::set_play_position(int pos) {
+	op_player_song_position* o = new op_player_song_position(pos);
+	backbuffer_operations.push_back(o);
+	o->prepare(front);
+	// TODO: fix leak!
+
+	// NOTE: also see note for player::set_state(). the same stuff goes on here too.
+}
+
 /*	\brief Clears all data associated with current song from the player.
 */
 void player::clear() {

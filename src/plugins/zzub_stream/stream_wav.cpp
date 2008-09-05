@@ -82,6 +82,10 @@ const char* stream_wav::get_stream_source() {
 	return fileName.c_str();
 }
 
+bool stream_wav::play_wave(int wave, int note, float volume, int offset, int length) {
+	return false;
+}
+
 void stream_wav::process_events() {
 	if (!sf) return ;
 	if (!resampler) return ;

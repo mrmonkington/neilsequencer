@@ -4,7 +4,7 @@ struct stream_wavetable : stream_plugin, stream_provider {
 	stereo_resampler resample;
 	stream_resampler* resampler;
 
-	int play_wave, play_level;
+	int play_waveindex, play_level;
 	unsigned int currentPosition;
 	unsigned int lastCurrentPosition;
 
@@ -25,6 +25,8 @@ struct stream_wavetable : stream_plugin, stream_provider {
 	virtual void get_sub_menu(int, zzub::outstream*);
 	virtual void set_stream_source(const char* resource);
 	virtual const char* get_stream_source();
+	virtual bool play_wave(int wave, int note, float volume, int offset, int length);
+	virtual void play_sequence_event(zzub_sequence_t* seq, const zzub::sequence_event& ev, int offset);
 
 	virtual bool generate_samples(float** buffer, int numsamples);
 	virtual int get_target_samplerate();

@@ -935,7 +935,7 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 	{
 		return reinterpret_cast<const envelope_info**>(machine->GetEnvelopeInfos());
 	}
-	virtual bool play_wave(int wave, int note, float volume)
+	virtual bool play_wave(int wave, int note, float volume, int offset, int length)
 	{ 
 		return machine->PlayWave(wave, note, volume); 
 	}
@@ -949,11 +949,12 @@ struct plugin : zzub::plugin, CMICallbacks, zzub::event_handler {
 	}
 
 	void play_sequence_event(zzub_sequence_t* seq, const sequence_event& ev, int offset) {
-		if (machineInfo->origFlags & MIF_PATTERN_EDITOR) {
-			sequence_type type = _host->get_sequence_type(seq);
-			if (type == sequence_type_pattern) {
-				machine2->PlayPattern((CPattern*)(int)(ev.pattern_event.value + 1), 0, offset);
-			}
+		sequence_type type = _host->get_sequence_type(seq);
+		if (type == sequence_type_pattern && machineInfo->origFlags & MIF_PATTERN_EDITOR) {
+			machine2->PlayPattern((CPattern*)(int)(ev.pattern_event.value + 1), 0, offset);
+		} else
+		if (type == sequence_type_wave) {
+			machine->PlayWave(1 + 0x40, ev.wave_event.wave, 1.0f);
 		}
 	}
 	

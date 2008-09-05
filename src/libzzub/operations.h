@@ -43,6 +43,14 @@ struct op_state_change : operation {
 	virtual void finish(zzub::song& song, bool send_events);
 };
 
+struct op_player_song_position : operation {
+	int song_position;
+
+	op_player_song_position(int _song_position);
+	virtual bool prepare(zzub::song& song);
+	virtual bool operate(zzub::song& song);
+};
+
 struct op_player_song_loop : operation {
 	int song_begin, song_end, song_loop_begin, song_loop_end, song_loop_enabled;
 

@@ -408,13 +408,13 @@ void zzub_player_clear(zzub_player_t *player) {
 	player->clear();
 }
 
-
 int zzub_player_get_position(zzub_player_t *player) {
 	return player->front.song_position;
 }
 
 void zzub_player_set_position(zzub_player_t *player, int pos) {
-	player->front.song_position = pos;
+	player->set_play_position(pos);
+	player->flush_operations(0, 0, 0);
 }
 
 int zzub_player_get_loop_start(zzub_player_t *player) {

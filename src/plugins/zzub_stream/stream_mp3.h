@@ -50,6 +50,7 @@ struct stream_mp3 : stream_plugin, stream_provider {
 	virtual void stop();
 	virtual void set_stream_source(const char* resource);
 	virtual const char* get_stream_source();
+	virtual bool play_wave(int wave, int note, float volume, int offset, int length);
 
 	virtual bool generate_samples(float** buffer, int numsamples);
 	virtual int get_target_samplerate();

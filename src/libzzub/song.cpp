@@ -777,7 +777,6 @@ int song::sequencer_get_event_at(int track, unsigned long timestamp) {
 
 void song::set_state(player_state newstate) {
 	state = newstate;
-	master_info.tick_position = 0;
 	switch (state) {
 		case player_state_playing:
 			break;
@@ -884,7 +883,8 @@ mixer::mixer() {
 	is_recording_parameters = false;
 	is_syncing_midi_transport = false;
 	song_position = 0;
-	last_tick_position = -1;
+	last_tick_state = player_state_stopped;
+	last_tick_position = 0;
 
 	mix_buffer.resize(2);
 	mix_buffer[0].resize(zzub::buffer_size * 4);
@@ -895,16 +895,37 @@ mixer::mixer() {
 
 }
 
+void mixer::set_state(player_state newstate) {
+	if (newstate == player_state_playing && state == player_state_stopped) {
+		master_info.tick_position = 0;
+		work_tick_fracs = 0;
+	}
+	song::set_state(newstate);
+}
+
+void mixer::set_play_position(int position) {
+	song_position = position;
+	master_info.tick_position = 0;
+	work_tick_fracs = 0;
+}
+
 void mixer::process_sequencer_events(plugin_descriptor plugin) {
 	metaplugin& m = get_plugin(plugin);
 	int plugin_id = graph[plugin].id;
 
 	int wave_track = 0;
 
+	bool has_jumped = last_tick_position != song_position;
+	bool has_started = last_tick_state == player_state_stopped;
+	bool reset_sequencer = has_jumped || has_started;
+
 	for (size_t i = 0; i < sequencer_tracks.size(); i++) {
 		if (plugin_id != sequencer_tracks[i].plugin_id) continue;
 		int index = sequencer_indices[i];
-		if (index == -1) continue;
+		if (index == -1) {
+			assert(sequencer_tracks[i].events.size() == 0 || song_position < sequencer_tracks[i].events[0].time);
+			continue;
+		}
 		if (sequencer_tracks[i].events.size() > 0 && (size_t)index < sequencer_tracks[i].events.size()) {
 			
 			sequencer_track& t = sequencer_tracks[i];
@@ -925,7 +946,7 @@ void mixer::process_sequencer_events(plugin_descriptor plugin) {
 							zzub::pattern& p = *m.patterns[e.pattern_event.value - 0x10];
 							int row = song_position - e.time;
 							if (row >= 0 && row < p.rows && !m.is_muted && !m.is_bypassed) {
-								if (row == 0) m.plugin->play_sequence_event(t.proxy, e, row);
+								if (row == 0 || reset_sequencer) m.plugin->play_sequence_event(t.proxy, e, row);
 								m.sequencer_state = sequencer_event_type_none;
 								transfer_plugin_parameter_row(get_plugin_id(plugin), 0, p, m.state_write, row, 0, false);
 								transfer_plugin_parameter_row(get_plugin_id(plugin), 1, p, m.state_write, row, 0, false);
@@ -939,10 +960,12 @@ void mixer::process_sequencer_events(plugin_descriptor plugin) {
 			if (type == sequence_type_wave) {
 				// set note/trigger and wave column for this plugin
 				int row = song_position - e.time;
-				if (row == 0 && !m.is_muted && !m.is_bypassed && m.wave_column != -1) {
-					m.sequencer_state = sequencer_event_type_none;
-					m.plugin->play_sequence_event(t.proxy, e, row);
-					m.plugin->play_wave(e.wave_event.wave, note_value_c4, 1.0f);
+				if (row >= 0 && !m.is_muted && !m.is_bypassed && ((m.info->flags & plugin_flag_plays_waves) != 0)) {
+					if (row == 0 || reset_sequencer) {
+						m.sequencer_state = sequencer_event_type_none;
+						m.plugin->play_sequence_event(t.proxy, e, row);
+					}
+					//m.plugin->play_wave(e.wave_event.wave, note_value_c4, 1.0f);
 
 					// instead of play_wave(), its also possible to set note and wave parameters manually:
 					// plugin_set_parameter_direct(plugin_id, m.note_group, wave_track, m.note_column, note_value_c4, false);
@@ -997,23 +1020,28 @@ void mixer::process_keyjazz_noteoff_events() {
 void mixer::process_sequencer_events() {
 	process_keyjazz_noteoff_events();
 
-	last_tick_position = song_position;
+	if (!song_loop_enabled && song_position >= song_loop_end) {
+		song_position = song_loop_begin;
+		set_state(player_state_stopped);
+		zzub_event_data event_data;
+		event_data.type = event_type_player_state_changed;
+		event_data.player_state_changed.player_state = player_state_stopped;
+		plugin_invoke_event(0, event_data, false);
+	}
 
 	if (state == player_state_playing) {
 
 		for (size_t i = 0; i < sequencer_indices.size(); i++) {
 			sequencer_track& seqtrack = sequencer_tracks[i];
-			int song_index = sequencer_indices[i];
-			while (seqtrack.events.size() > 0 && (size_t)song_index > 0 && seqtrack.events[song_index - 1].time >= song_position) {
+			
+			int& song_index = sequencer_indices[i];
+
+			while (song_index >= 0 && (song_index >= seqtrack.events.size() || seqtrack.events[song_index].time > song_position)) {
 				song_index--;
 			}
 
-			while (seqtrack.events.size() > 0 && (size_t)song_index < seqtrack.events.size() && seqtrack.events[song_index].time < song_position) {
+			while (song_index < (int)seqtrack.events.size() - 1 && seqtrack.events[song_index + 1].time <= song_position) {
 				song_index++;
-			}
-
-			if (seqtrack.events.size() > 0 && (size_t)song_index < seqtrack.events.size() && seqtrack.events[song_index].time == song_position) {
-				sequencer_indices[i] = song_index;
 			}
 		}
 
@@ -1023,17 +1051,13 @@ void mixer::process_sequencer_events() {
 		}
 
 		song_position++;
-		if (!song_loop_enabled && song_position >= song_loop_end) {
-			song_position--;
-			set_state(player_state_stopped);
-			zzub_event_data event_data;
-			event_data.type = event_type_player_state_changed;
-			event_data.player_state_changed.player_state = player_state_stopped;
-			plugin_invoke_event(0, event_data, false);
-		} else
-		if (song_position >= song_loop_end)
+		if (song_loop_enabled && song_position >= song_loop_end)
 			song_position = song_loop_begin;
+
 	}
+
+	last_tick_state = state;
+	last_tick_position = song_position;
 }
 
 
@@ -1050,23 +1074,28 @@ int mixer::generate_audio(int sample_count) {
 		return mute_buffer_size;
 	}
 
+	// invoke process_events() in a loop, usually only iterated once, but when a plugin changes 
+	// the song_position, the loop makes sure plugins are re-ticked at the new position
 	if (master_info.tick_position == 0) {
+		int tick_now = song_position;
+		do {
+			// read params from sequencer and send to state_write
+			process_sequencer_events();
 
-		// read params from sequencer and send to state_write
-		process_sequencer_events();
+			tick_now = song_position;
 
-		// process event connections and tick each plugin
-		for (size_t i = 0; i < work_order.size(); i++) {
-			int plugin_id = get_plugin_id(work_order[i]);
-			
-			assert(plugin_id >=0 && plugin_id < plugins.size() && plugins[plugin_id] != 0);
-			metaplugin& workplugin = *plugins[plugin_id];
+			// process event connections and tick each plugin
+			for (size_t i = 0; i < work_order.size(); i++) {
+				int plugin_id = get_plugin_id(work_order[i]);
+				
+				assert(plugin_id >=0 && plugin_id < plugins.size() && plugins[plugin_id] != 0);
+				metaplugin& workplugin = *plugins[plugin_id];
 
-			// process events (connections may alter state_write)
-			if (!workplugin.is_muted && !workplugin.is_bypassed)
-				process_plugin_events(plugin_id);
-		}
-
+				// process events (connections may alter state_write, plugins may alter song_position)
+				if (!workplugin.is_muted && !workplugin.is_bypassed)
+					process_plugin_events(plugin_id);
+			}
+		} while (tick_now != song_position);
 	}
 
 	// at this point we have called process_events() on all plugins and know bpm/tpb/etc
@@ -1164,16 +1193,6 @@ bool mixer::get_currently_playing_pattern_row(int plugin_id, int pattern_index, 
 
 void mixer::sequencer_update_play_pattern_positions() {
 	sequencer_indices.resize(sequencer_tracks.size());
-	std::fill(sequencer_indices.begin(), sequencer_indices.end(), -1);
-
-	for (size_t i = 0; i < sequencer_tracks.size(); i++) {
-		for (size_t j = 0; j < sequencer_tracks[i].events.size(); j++) {
-			sequence_event& ta = sequencer_tracks[i].events[j];
-			if (sequencer_indices[i] == -1 || ta.time <= song_position) 
-				sequencer_indices[i] = (int)j;
-			if (ta.time >= song_position) break;
-		}
-	}
 }
 
 void mixer::work_plugin(plugin_descriptor plugin, int sample_count) {

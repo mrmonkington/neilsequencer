@@ -187,7 +187,6 @@ struct sequencer_track {
 struct song {
 	plugin_map graph;
 	player_state state;
-	zzub::master_info master_info;
 	vector<metaplugin*> plugins;
 	vector<plugin_descriptor> work_order;
 	vector<event_message> user_event_queue;
@@ -255,13 +254,16 @@ struct song {
 	string plugin_describe_value(plugin_descriptor plugindesc, int group, int column, int value);
 
 	virtual bool plugin_update_keyjazz(int plugin_id, int note, int prev_note, int velocity, int& note_group, int& note_track, int& note_column, int& velocity_column) {
-		assert(false);	// only use the derived mixer::plugin_update_keyjazz
+		assert(false);	// only use the derived mixer::plugin_update_keyjazz()
 		return false;
+	}
+	virtual void set_play_position(int position) {
+		assert(false);	// only use the derived mixer::set_play_position()
 	}
 	int sequencer_get_event_at(int track, unsigned long timestamp);
 
 	// these are helpers called from operations:
-	void set_state(player_state newstate);
+	virtual void set_state(player_state newstate);
 	void plugin_add_input(int to_id, int from_id, connection_type type);
 	void plugin_delete_input(int to_id, int from_id, connection_type type);
 
@@ -271,13 +273,15 @@ struct song {
 struct mixer : song {
 	bool is_recording_parameters;
 	bool is_syncing_midi_transport;
-	int song_position;
+	int song_position;								// current song position
 	int work_position;								// total accumulation of samples processed
 	int work_chunk_size;							// size of chunk in current buffer we're mixing
 	int last_tick_work_position;					// at which workPos we last ticked
 	int last_tick_position;							// at which song position we last ticked
+	player_state last_tick_state;					// whether mixer state was playing or stopped last tick
 	double work_tick_fracs;							// accumulated fractions of samples not processed
 	std::vector<int> sequencer_indices;				// currently playing index in each track
+	zzub::master_info master_info;
 	master_plugin_info master_plugininfo;
 	plugin_descriptor solo_plugin;
 	vector<vector<float> > mix_buffer;
@@ -309,6 +313,8 @@ struct mixer : song {
 	bool get_currently_playing_pattern_row(int plugin_id, int pattern, int& row);
 
 	void sequencer_update_play_pattern_positions();
+	virtual void set_state(player_state newstate);
+	virtual void set_play_position(int position);
 
 };
 

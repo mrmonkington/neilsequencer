@@ -123,6 +123,26 @@ void op_state_change::finish(zzub::song& song, bool send_events) {
 	if (send_events) song.plugin_invoke_event(0, event_data, true);
 }
 
+
+// ---------------------------------------------------------------------------
+//
+// op_player_song_position
+//
+// ---------------------------------------------------------------------------
+
+op_player_song_position::op_player_song_position(int _song_position) {
+	song_position = _song_position;
+}
+
+bool op_player_song_position::prepare(zzub::song& song) {
+	return true;
+}
+
+bool op_player_song_position::operate(zzub::song& song) {
+	song.set_play_position(song_position);
+	return true;
+}
+
 // ---------------------------------------------------------------------------
 //
 // op_plugin_create
