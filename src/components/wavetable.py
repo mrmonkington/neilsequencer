@@ -285,7 +285,6 @@ class WavetablePanel(gtk.Notebook):
 		"""
 		config.get_config().set_default('SampleBrowserPath', self.libpanel.get_current_folder())
 		filename = self.libpanel.get_preview_filename()
-		print "on_libpanel_selection_changed", filename
 		if filename and os.path.isfile(filename):
 			self.previewpath = filename
 			text = "Size: %s" % format_filesize(os.stat(filename)[stat.ST_SIZE])

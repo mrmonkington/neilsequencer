@@ -383,6 +383,9 @@ class AldrinFrame(gtk.Window):
 		player = com.get('aldrin.core.player')
 		pos = player.history_get_position()		
 		historysize = player.history_get_size()
+		if not historysize:
+			print "no history."
+			return
 		print "----"
 		for index in xrange(historysize):
 			desc = str(player.history_get_description(index))
@@ -451,7 +454,6 @@ class AldrinFrame(gtk.Window):
 		@param widget: the Menu item.
 		@type widget: gtk.MenuItem
 		"""
-		print "update_filemenu"
 		for item in self.filemenu:
 			item.destroy()
 		self.filemenu.append(make_stock_menu_item(gtk.STOCK_NEW, self.new, frame=self, shortcut="<Control>N"))

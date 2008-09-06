@@ -598,7 +598,6 @@ class VolumeSlider(gtk.Window):
 		self.y = newpos
 		self.amp = max(min(self.amp + (float(delta) / VOLBARHEIGHT), 1.0), 0.0)
 		amp = min(max(int(db2linear(self.amp * -48.0, -48.0) * 16384.0), 0), 16384)
-		print amp
 		self.plugin.set_parameter_value_direct(0,self.index,0,amp,False)
 		self.redraw()
 		return True
