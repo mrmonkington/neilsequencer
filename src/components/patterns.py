@@ -1616,7 +1616,7 @@ class PatternView(gtk.DrawingArea):
 			self.show_row(row)
 			if row<self.clickpos[0]:
 				self.selection.end=self.clickpos[0]+1
-				self.selection.begin=row
+				self.selection.begin= row
 			else:
 				self.selection.begin=self.clickpos[0]
 				self.selection.end = row+1
@@ -2182,7 +2182,7 @@ class PatternView(gtk.DrawingArea):
 				# subindex is that what remains
 				subindex = x
 		# find row
-		row = y
+		row = min(max(0, y), self.row_count-1)
 		return (row, group, track, index, subindex)
 		
 	def pos_to_pattern(self, position):		
@@ -2230,9 +2230,7 @@ class PatternView(gtk.DrawingArea):
 		widget.set_value(value)
 		if self.start_row != value:
 			self.start_row = value
-			#w,h=self.get_client_size()
-			#for row in range(h/self.row_height):
-			#	self.update_line(self.start_row+row)
+		self.redraw()			
 		return True
 
 	def on_hscroll_window(self, widget, scroll, value):
@@ -2464,7 +2462,7 @@ class PatternView(gtk.DrawingArea):
 		Overriding a L{Canvas} method that paints onto an offscreen buffer.
 		Draws the pattern view graphics.
 		"""	
-		#st = time.time()
+		st = time.time()
 		row=None
 		rows=None
 		fulldraw=True
@@ -2500,7 +2498,7 @@ class PatternView(gtk.DrawingArea):
 			return
 
 		if not rows:
-			rows = self.row_count		
+			rows = self.row_count
 		clipy1 = PATROWHEIGHT + ((row - self.start_row) * self.row_height)
 		clipy2 = PATROWHEIGHT + ((rows - self.start_row) * self.row_height)
 		
@@ -2633,7 +2631,7 @@ class PatternView(gtk.DrawingArea):
 							break
 						
 		self.draw_xor()
-#		print "%ims" % ((time.time() - st)*1000)
+		print "%ims" % ((time.time() - st)*1000)
 
 __all__ = [
 'PatternDialog',
