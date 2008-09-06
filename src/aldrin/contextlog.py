@@ -12,10 +12,14 @@ import traceback
 import os
 from path import path
 
-ESCAPE_BEGIN = "\033[0;34m"
-ESCAPE_END = "\033[0;0m"
-
-ERROR_ESCAPE_BEGIN = "\033[0;31m"
+if 'ALDRIN_NO_ESCAPING' in os.environ:
+	ESCAPE_BEGIN = ""
+	ESCAPE_END = ""
+	ERROR_ESCAPE_BEGIN = ""
+else:
+	ESCAPE_BEGIN = "\033[0;34m"
+	ESCAPE_END = "\033[0;0m"
+	ERROR_ESCAPE_BEGIN = "\033[0;31m"
 
 ENABLE_LOG = True
 LOG_BUFFER = []

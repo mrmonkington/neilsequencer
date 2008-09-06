@@ -494,8 +494,8 @@ class SequencerView(gtk.DrawingArea):
 		
 	def delete_at_cursor(self):
 		"""
-		Deletes pattern at cursor.		
-		"""		
+		Deletes pattern at cursor.
+		"""
 		player = com.get('aldrin.core.player')
 		t = player.get_sequence(self.track)
 		t.remove_events(self.row, self.step)
