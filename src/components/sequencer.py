@@ -42,6 +42,7 @@ MARGIN2 = common.MARGIN2
 MARGIN3 = common.MARGIN3
 MARGIN0 = common.MARGIN0
 import aldrin.com as com
+import zzub
 
 SEQKEYS = '0123456789abcdefghijklmnopqrstuvwxyz'
 SEQKEYMAP = dict(zip(SEQKEYS,range(0x10,len(SEQKEYS)+0x10)))
