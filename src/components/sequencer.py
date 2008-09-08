@@ -465,7 +465,7 @@ class SequencerView(gtk.DrawingArea):
 		# get sequencer and add the track
 		player = com.get('aldrin.core.player')
 		seq = player.get_current_sequencer()
-		track = seq.create_sequence(plugin)
+		track = seq.create_sequence(plugin, zzub.zzub_sequence_type_pattern)
 		# if it has no existing patterns, make one (even if it has no parameters, it might have incoming connections)
 		if plugin.get_pattern_count() == 0:
 			pattern = plugin.create_pattern(player.sequence_step)

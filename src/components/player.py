@@ -645,7 +645,7 @@ class AldrinPlayer(Player, PropertyEventHandler):
 			mp.add_pattern(pattern)
 			active_plugins = [mp]
 			active_patterns = [(mp, 0)]
-			t=self.create_sequence(mp)
+			t=self.create_sequence(mp, zzub.zzub_sequence_type_pattern)
 			t.set_event(0,16)
 			# don't autoconnect, since this can be controlled quite simpler
 			# though dragging a plugin on the plugin you want to connect it with.
