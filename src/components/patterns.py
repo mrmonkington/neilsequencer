@@ -438,6 +438,7 @@ class PatternPanel(gtk.VBox):
 		self.pack_start(scrollwin)
 		self.pack_end(self.statusbar, expand=False)
 		
+		self.view.grab_focus()
 		eventbus = com.get('aldrin.core.eventbus')
 		eventbus.edit_pattern_request += self.on_edit_pattern_request
 		
@@ -1012,7 +1013,7 @@ class PatternView(gtk.DrawingArea):
 		"""
 		self.init_values()
 		#self.redraw() ## do i want this?
-		self.grab_focus()
+		#self.grab_focus()
 		plugin = self.get_plugin()
 		if plugin:
 			self.plugin_info.get(plugin).reset_patterngfx()

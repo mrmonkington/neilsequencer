@@ -220,8 +220,9 @@ class SequencerPanel(gtk.VBox):
 		self.__do_layout()
 		# end wxGlade
 		self.update_list()
-		self.toolbar.update_all()
+		self.toolbar.update_all()		
 		self.seqview.connect('size-allocate', self.on_sash_pos_changed)
+		self.seqview.grab_focus()
 		eventbus = com.get('aldrin.core.eventbus')
 		eventbus.edit_sequence_request += self.edit_sequence_request
 		

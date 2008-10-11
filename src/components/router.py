@@ -965,6 +965,7 @@ class RouteView(gtk.DrawingArea):
 		@param event: Mouse event.
 		@type event: wx.MouseEvent
 		"""
+		self.grab_focus()
 		player = com.get('aldrin.core.player')
 		if (event.button == 3):
 			return self.on_context_menu(widget, event)
@@ -1242,6 +1243,8 @@ class RouteView(gtk.DrawingArea):
 		def draw_line(bmpctx,crx,cry,rx,ry):
 			vx, vy = (rx-crx), (ry-cry)
 			length = (vx*vx+vy*vy)**0.5
+			if not length:
+				return
 			vx, vy = vx/length, vy/length
 			bmpctx.move_to(crx,cry)
 			bmpctx.line_to(rx,ry)
