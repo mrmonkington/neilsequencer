@@ -31,13 +31,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <zzub/signature.h>
 #include <zzub/plugin.h>
 
-#include "../buzz2zzub/mdk.h"
- //#include "../buzz2zzub/dsplib.h"
 #include <float.h>
 #include <stdlib.h>
 #include <vector>	//<-- we use a vector to store info about connections
 
-
+#define MAX_BUFFER_LENGTH 256
+typedef unsigned char byte;
 
 // Copied from lunar/dspbb.h
 
@@ -262,7 +261,6 @@ void ringmod::input(float **psamples, int numsamples, float amp)
 	}
 	else
 	{
-	  //printf("in input(), some data: %f %f %f %f\n", psamples[0][0], psamples[0][1], psamples[1][0], psamples[1][1]);
 	  //Four separate loops -- but in zzub connections are always stereo, so we only need these two -- jmmcd.
 	  if (InitBuffer) //need to initialise it
 	    {
@@ -283,7 +281,7 @@ void ringmod::input(float **psamples, int numsamples, float amp)
 	}
 
 	CurrentInput++; //increment our counter
-	InitBuffer = false; //no need to init the buffer, we did it already
+	InitBuffer = false; //no need to init the buffer next time, we did it already
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -293,9 +291,9 @@ void ringmod::input(float **psamples, int numsamples, float amp)
 //next pass.
 bool ringmod::process_stereo(float **pin, float **pout, int numsamples, const int mode)
 {
-	if (mode & WM_READ)
+	if (mode & zzub::process_mode_read)
 	{
-		if (mode & WM_WRITE)
+		if (mode & zzub::process_mode_write)
 		{
 			dsp_copyamp(drybuffer[0], pout[0], numsamples, DryOut);
 			dsp_copyamp(drybuffer[1], pout[1], numsamples, DryOut);
@@ -311,7 +309,7 @@ bool ringmod::process_stereo(float **pin, float **pout, int numsamples, const in
 	dsp_zero(drybuffer[0], numsamples); //clear the buffer
 	dsp_zero(drybuffer[1], numsamples); //clear the buffer
 
-	return true; // (mode & WM_READ) && !(HadSilentInput && DryOut < 0.0078125f);
+	return true; // (mode & zzub::process_mode_read) && !(HadSilentInput && DryOut < 0.0078125f);
 	//A bit of boolean logic to determine if we are silent
 }
 
