@@ -326,34 +326,35 @@ class ParameterView(gtk.VBox):
 		self.update_namelabel(g,t,i)
 		
 	def find_event_connection(self, source):
-		for conn in self.plugin.get_input_connection_list():
-			if conn.get_type() == zzub.zzub_connection_type_event:
-				if conn.get_input() == source:
+		for index in xrange(self.plugin.get_input_connection_count()):
+			conn = self.plugin.get_input_connection_plugin(index)
+			connectiontype = self.plugin.get_input_connection_type(index)
+			if connectiontype == zzub.zzub_connection_type_event:
+				if conn == source:
 					return conn
 		return None
 		
 	def connect_controller(self, source,sg,st,si,tg,tt,ti):
 		conn = self.find_event_connection(source)
 		if not conn:
-			# no connection, so we make a new one			
-			self.plugin.add_event_input(source)
+			# no connection, so we make a new one
+			self.plugin.add_input(source, zzub.zzub_connection_type_event)
 			conn = self.find_event_connection(source)
 			if not conn: # we can't make one
 				error(self, "<big><b>Cannot connect parameters.</b></big>")
 				return
-		cv = conn.get_event_connection()
-		result = cv.add_binding(si,tg,tt,ti)
-		if result == -1:
-			error(self, "<big><b>Cannot connect parameters.</b></big>")
+		self.plugin.add_event_connection_binding(source, si,tg,tt,ti)
 		self.update_namelabel(tg,tt,ti)
 		
 	def on_drag_data_received(self, w, context, x, y, data, info, time, (g,t,i)):
+		player = com.get('aldrin.core.player')
 		try:
 			if data and data.format == 8:
 				pluginhash, sg,st,si = cPickle.loads(data.data)
 				for plugin in player.get_plugin_list():
 					if hash(plugin) == pluginhash:
 						self.connect_controller(plugin,sg,st,si,g,t,i)
+						player.history_commit("add event connection")
 						break
 				context.finish(True, False, time)
 				return
