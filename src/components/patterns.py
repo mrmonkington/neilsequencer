@@ -319,7 +319,7 @@ class PatternToolBar(gtk.HBox):
 		player = com.get('aldrin.core.player')
 		def cmp_func(a,b):
 			return cmp(a.get_name().lower(), b.get_name().lower())
-		plugins = sorted(player.get_plugin_list(), cmp_func)
+		plugins = sorted(list(player.get_plugin_list()), cmp_func)
 		return [(plugin.get_name(),plugin) for plugin in plugins]
 	
 	def get_plugin_sel(self):

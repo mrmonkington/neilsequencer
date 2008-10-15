@@ -236,7 +236,7 @@ class PluginContextMenu(gtk.Menu):
 		Event handler for unmute all menu option
 		"""
 		player = com.get('aldrin.core.player')
-		for mp in reversed(player.get_plugin_list()):
+		for mp in reversed(list(player.get_plugin_list())):
 			info = common.get_plugin_infos().get(mp)
 			info.muted=False
 			mp.set_mute(info.muted)
