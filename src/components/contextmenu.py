@@ -202,10 +202,10 @@ class PluginContextMenu(gtk.Menu):
 		
 		@param event: Menu event.
 		@type event: wx.MenuEvent
-		"""		
-		dlg = PresetDialog(self.rootwindow, plugin, self)
-		dlg.show_all()
-		
+		"""
+		manager = com.get('aldrin.core.presetdialog.manager')
+		manager.show(plugin, widget)
+
 	def on_popup_show_params(self, widget, mp):
 		"""
 		Event handler for the "Parameters..." context menu option.

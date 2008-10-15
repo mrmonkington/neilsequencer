@@ -34,6 +34,7 @@ import zzub
 import sys,os
 from preset import PresetCollection, Preset
 import common
+import aldrin.com as com
 
 class PresetView(gtk.VBox):
 	"""
@@ -136,6 +137,9 @@ class PresetView(gtk.VBox):
 	def on_row_activate(self, treeview, path, view_column):
 		preset = self.presets.presets[path[0]]
 		preset.apply(self.plugin)
+		player = com.get('aldrin.core.player')
+		player.history_commit("change preset")
+
 
 	def get_title(self):
 		name = prepstr(self.plugin.get_name())		

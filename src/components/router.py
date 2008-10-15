@@ -332,22 +332,65 @@ class ParameterDialogManager:
 		if not dlg:
 			dlg = ParameterDialog(self, plugin, parent)
 		dlg.show_all()
+
+class PresetDialogManager:
+	"""
+	Manages the different preset dialogs.
+	"""
+	__aldrin__ = dict(
+		id = 'aldrin.core.presetdialog.manager',
+		singleton = True,
+		categories = [
+		]
+	)
+	def __init__(self):
+		self.preset_dialogs = {}
+	
+	def show(self, plugin, parent):
+		"""
+		Shows a preset dialog for a plugin.
+		
+		@param plugin: Plugin instance.
+		@type plugin: Plugin
+		"""
+		dlg = self.preset_dialogs.get(plugin,None)
+		if not dlg:
+			dlg = PresetDialog(self, plugin, parent)
+		dlg.show_all()
 		
 class PresetDialog(gtk.Dialog):
 	"""
 	Displays parameter sliders for a plugin in a new Dialog.
 	"""
-	def __init__(self, rootwindow, plugin, parent):
+	def __init__(self, manager, plugin, parent):
 		gtk.Dialog.__init__(self, parent=parent.get_toplevel())
+		self.plugin = plugin
+		self.manager = manager
+		self.manager.preset_dialogs[plugin] = self
 		self.view = parent
 		self.plugin = plugin		
-		self.presetview = PresetView(rootwindow, plugin, rootwindow)
+		self.presetview = PresetView(self, plugin, self)
 		self.set_title(self.presetview.get_title())
 		self.vbox.add(self.presetview)		
 		self.connect('realize', self.on_realize)
+		eventbus = com.get('aldrin.core.eventbus')
+		eventbus.zzub_delete_plugin += self.on_zzub_delete_plugin
+		
+	def on_zzub_delete_plugin(self, plugin):
+		if plugin == self.plugin:
+			self.destroy()
+		
+	def on_destroy(self, event):
+		"""
+		Handles destroy events.
+		"""
+		del self.manager.preset_dialogs[self.plugin]
 		
 	def on_realize(self, widget):
-		self.set_default_size(300,500)
+		# This is the size specified in presetbrowser.py.
+		# Seems to have no effect though -- PresetView is full-screen?
+		self.set_default_size(150, 400)
+
 
 DRAG_FORMAT_PLUGIN_URI = 0
 
@@ -1372,6 +1415,8 @@ class RouteView(gtk.DrawingArea):
 __all__ = [
 'ParameterDialog',
 'ParameterDialogManager',
+'PresetDialog',
+'PresetDialogManager',
 'AttributesDialog',
 'RoutePanel',
 'VolumeSlider',
@@ -1382,6 +1427,8 @@ __aldrin__ = dict(
 	classes = [
 		ParameterDialog,
 		ParameterDialogManager,
+		PresetDialog,
+		PresetDialogManager,
 		AttributesDialog,
 		PluginListBrowser,
 		RoutePanel,
