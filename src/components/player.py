@@ -273,9 +273,9 @@ class AldrinPlayer(Player, PropertyEventHandler):
 		
 	def preview_file(self, filepath):
 		base,ext = os.path.splitext(filepath)
-		if not ext in self.__stream_ext_uri_mappings:
+		if not ext.lower() in self.__stream_ext_uri_mappings:
 			return False
-		uri = self.__stream_ext_uri_mappings[ext]
+		uri = self.__stream_ext_uri_mappings[ext.lower()]
 		self.play_stream((4 << 4)+1, uri, filepath)
 		return True
 	
