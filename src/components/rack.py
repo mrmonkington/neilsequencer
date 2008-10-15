@@ -395,7 +395,7 @@ class ParameterView(gtk.VBox):
 		Handles the learn entry from the context menu. Associates
 		a controller with a plugin parameter.
 		"""
-		import controller
+		import aldrin.controller as controller
 		player = com.get('aldrin.core.player')
 		res = controller.learn_controller(self)
 		if res:
