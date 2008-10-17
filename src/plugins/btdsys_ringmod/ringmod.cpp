@@ -33,6 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <float.h>
 #include <stdlib.h>
+#include <string.h>
 #include <vector>	//<-- we use a vector to store info about connections
 
 #define MAX_BUFFER_LENGTH 256
