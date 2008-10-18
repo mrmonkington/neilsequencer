@@ -47,6 +47,37 @@
 					novalue="255"
 					valuenames="dtypes"
 					state="true"/>
+				<parameter
+					id="lfospeed"
+					name="DC LFO Freq (Hz)"
+					description="Speed of LFO"
+					type="float"
+					logarithmic="true"
+					minvalue="0.1"
+					maxvalue="10000"
+					defvalue="3"
+					precision="0.1"
+					state="true"/>
+				<parameter
+					id="lfodepth"
+					name="DC LFO Depth (dB)"
+					description="Gain of LFO"
+					type="float"
+					minvalue="-48"
+					maxvalue="48"
+					defvalue="-48"
+					precision="0.01"
+					state="true"/>
+				<parameter
+					id="lfophase"
+					name="DC LFO phase"
+					description="Manual LFO phase"
+					type="float"
+					minvalue="0"
+					maxvalue="1"
+					precision="0.01"
+					defvalue="0"
+					state="true"/>
 			</global>
 			<track>
 			</track>

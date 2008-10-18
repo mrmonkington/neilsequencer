@@ -10,11 +10,17 @@ typedef struct _lunar_globals {
 	float *pregain;
 	float *postgain;
 	float *fxtype;
+	float *lfospeed;
+	float *lfodepth;
+	float *lfophase;
 } lunar_globals_t;
 typedef struct _lunar_global_values {
 	float pregain;
 	float postgain;
 	float fxtype;
+	float lfospeed;
+	float lfodepth;
+	float lfophase;
 } lunar_global_values_t;
 typedef struct _lunar_track {
 } lunar_track_t;
