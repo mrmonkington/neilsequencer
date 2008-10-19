@@ -169,6 +169,7 @@ private:
 
 void ringmod::init (zzub::archive *a)
 {
+	InitBuffer = true;
 	// SetOutputMode(true);
 	// pCB->SetnumOutputChannels(pCB->GetThisMachine(), 2);
 
@@ -310,8 +311,7 @@ bool ringmod::process_stereo(float **pin, float **pout, int numsamples, const in
 	dsp_zero(drybuffer[0], numsamples); //clear the buffer
 	dsp_zero(drybuffer[1], numsamples); //clear the buffer
 
-	return true; // (mode & zzub::process_mode_read) && !(HadSilentInput && DryOut < 0.0078125f);
-	//A bit of boolean logic to determine if we are silent
+	return (mode & zzub::process_mode_read);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -327,7 +327,7 @@ void ringmod::command(const int i)
 	sprintf(txt,"%s%i inputs", txt, Inputs.size());
 	for (int j=0; j<Inputs.size(); j++)
 		sprintf(txt, "%s\n%i: %s", txt, j, Inputs[j].MacName);
-
+	sprintf(txt, "%s\n", txt);
 	_host->message(txt);
 }
 
@@ -374,7 +374,8 @@ struct btdsys_ringmod_plugin_info : zzub::info {
     this->short_name = "RingMod";
     this->author = "BTDSys (ported by jmmcd <jamesmichaelmcdermott@gmail.com>)";
     this->uri = "jamesmichaelmcdermott@gmail.com/effect/btdsys_ringmod;1";
-    
+    this->commands = "About";
+
     paraDryOut = &add_global_parameter()
       .set_byte()
       .set_name("Dry Out")
