@@ -50,7 +50,7 @@ const zzub::parameter *paraCrossfade = 0;
 class gvals
 {
 public:
-	unsigned int crossfade;
+	unsigned char crossfade;
 };
 
 #pragma pack()
@@ -96,8 +96,8 @@ public:
 	virtual const char* describe_param(int) { return 0; }
 	virtual bool set_instrument(const char*) { return false; }
 	virtual void get_sub_menu(int, zzub::outstream*) {}
-	virtual void add_input(const char*);
-	virtual void delete_input(const char*);
+	virtual void add_input(const char*, zzub::connection_type);
+	virtual void delete_input(const char*, zzub::connection_type);
 	virtual void rename_input(const char*, const char*);
 	virtual void input(float**, int, float);
 	virtual void midi_control_change(int, int, int) {}
@@ -107,7 +107,7 @@ public:
 	virtual void set_stream_source(const char*) {};
 	virtual const char* get_stream_source() {};
 	//virtual void set_input_channels(char const *macname, bool stereo);
-  
+	virtual void configure(const char *key, const char *value) {}  
 
 private:
   
@@ -154,7 +154,7 @@ void crossfade::process_events()
 //For some reason it is called once with macname pointing to the name
 //of the machine, then again with macname == NULL. We'll just ignore
 //the NULL one.
-void crossfade::add_input(const char *macname)
+void crossfade::add_input(const char *macname, zzub::connection_type)
 {
 	if (macname != NULL)
 	{
@@ -183,7 +183,7 @@ int crossfade::find_input(const char *macname)
 ////////////////////////////////////////////////////////////////////////
 
 //This is called when a machine gets disconnected from our input.
-void crossfade::delete_input(const char *macname)
+void crossfade::delete_input(const char *macname, zzub::connection_type)
 {
 	int i = find_input(macname);
 	if (i != -1) Inputs.erase(Inputs.begin() + i);
@@ -202,19 +202,12 @@ void crossfade::rename_input(const char *macoldname, const char *macnewname)
 
 // input() is called once for each input connection, before process_stereo()
 
-//If numsamples == 0, then this particular machine is off.
 //amp is as set by the volume slider on the little triangle in machine view.
 void crossfade::input(float **psamples, int numsamples, float amp)
 {
-	if (numsamples == 0) //machine is off
+	if (numsamples == 0) 
 	{
-		//If machine is off, we would multiply the whole buffer by zero.
-		//ie we zero the whole buffer.
-		dsp_zero((float *) buffer[0][0], MAX_BUFFER_LENGTH);
-		dsp_zero((float *) buffer[1][0], MAX_BUFFER_LENGTH);
-		dsp_zero((float *) buffer[0][1], MAX_BUFFER_LENGTH);
-		dsp_zero((float *) buffer[1][1], MAX_BUFFER_LENGTH);
-		SilentInput = true;
+	    //machine is off, do nothing
 	}
 	else
 	{
@@ -253,15 +246,13 @@ bool crossfade::process_stereo(float **pin, float **pout, int numsamples, const 
 			dsp_copyamp((float *)buffer[0][1], (float *)pout[1], numsamples, crossfade_val);
 			// add the odd-numbered samples (scaled)
 			dsp_addamp((float *)buffer[1][0], (float *)pout[0], numsamples, 1.0f - crossfade_val);
-			dsp_addamp((float *)buffer[1][1], (float *)pout[1], numsamples , 1.0f - crossfade_val);
+			dsp_addamp((float *)buffer[1][1], (float *)pout[1], numsamples, 1.0f - crossfade_val);
 		}
 	}
 
 	// Next time, initialise. We init *twice*: once for buffer[0] (the even-numbered
 	// inputs) and once for buffer[1] (the odd-numbered ones).
 	InitBuffer = 2; 
-	bool HadSilentInput = SilentInput; //store result for this pass
-	SilentInput = false; //assumption for next pass
 	CurrentInput = 0; //set counter to first input
 	//clear the buffer
 	dsp_zero((float *) buffer[0][0], numsamples); 
@@ -269,8 +260,7 @@ bool crossfade::process_stereo(float **pin, float **pout, int numsamples, const 
 	dsp_zero((float *) buffer[1][0], numsamples); 
 	dsp_zero((float *) buffer[1][1], numsamples); 
 
-	//A bit of boolean logic to determine if we are silent
-	return (mode & zzub::process_mode_read) && !(HadSilentInput);
+	return (mode & zzub::process_mode_read);
 }
 
 ////////////////////////////////////////////////////////////////////////
