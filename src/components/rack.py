@@ -230,8 +230,8 @@ class ParameterView(gtk.VBox):
 				return add_nonstate_param(g,t,i)
 			if g == 0:
 				try:
-					conn = self.plugin.get_input_connection_list()[t]
-					in_machine_name = conn.get_input().get_name()
+					in_plugin = self.plugin.get_input_connection_plugin(t)
+					in_machine_name = in_plugin.get_name()
 				except:
 					in_machine_name = ""
 				volpanstr = ["Vol", "Pan"][i]

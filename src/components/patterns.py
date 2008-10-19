@@ -2267,8 +2267,8 @@ class PatternView(gtk.DrawingArea):
 			if self.group == 0:
 				try:
 					pl = self.get_plugin()
-					conn = pl.get_input_connection_list()[self.track]
-					in_machine_name = conn.get_input().get_name()
+					in_plugin = pl.get_input_connection_plugin(self.track)
+					in_machine_name = in_plugin.get_name()
 				except:
 					in_machine_name = ""
 				self.statuslabels[0].set_label('Row %s, Incoming %s (%s)' % 
