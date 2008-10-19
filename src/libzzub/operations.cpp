@@ -489,6 +489,11 @@ bool op_plugin_connect::prepare(zzub::song& song) {
 		cerr << "duplicate connection" << endl;
 		return false;
 	}
+	// check for existing connection in opposite direction
+	if (song.plugin_get_input_connection_index(from_id, to_id, type) != -1) {
+		cerr << "existing connection in opposite direction" << endl;
+		return false;
+	}
 
 	// check if the plugins support requested flags
 	int to_flags = song.plugins[to_id]->info->flags;
