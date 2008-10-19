@@ -11,6 +11,7 @@
 
 #include <float.h>
 #include <stdlib.h>
+#include <string.h>
 #include <vector>
 
 #define MAX_BUFFER_LENGTH 256
