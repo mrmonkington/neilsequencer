@@ -284,7 +284,7 @@ class WavetablePanel(gtk.HBox):
 			fssizer.pack_start(row, expand=False)
 		add_row(gtk.Label("Username"), self.edusername)
 		add_row(gtk.Label("Password"), self.edpassword)
-		fspwddesc = gtk.Label("You will need an username and a password in order to search and download freesound samples.")
+		fspwddesc = gtk.Label("You will need a username and a password in order to search and download freesound samples.")
 		fspwddesc.set_alignment(0, 0)
 		fspwddesc.set_line_wrap(True)
 		fssizer.pack_start(fspwddesc, expand=False)
@@ -303,7 +303,7 @@ class WavetablePanel(gtk.HBox):
 		uname = self.edusername.get_text()
 		passwd = self.edpassword.get_text()
 		if (uname != olduname) or (oldpasswd != passwd):
-			import freesound
+			import aldrin.freesound as freesound
 			fs = freesound.Freesound()
 			try:
 				if uname and passwd:

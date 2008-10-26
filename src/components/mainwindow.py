@@ -97,6 +97,8 @@ class FramePanel(gtk.Notebook):
 		for index in xrange(self.get_n_pages()):
 			if self.get_nth_page(index) == panel:
 				self.set_current_page(index)
+				if hasattr(panel, 'handle_focus'):
+					panel.handle_focus()
 				return
 
 class Accelerators(gtk.AccelGroup):

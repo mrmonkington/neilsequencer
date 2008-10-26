@@ -202,10 +202,10 @@ class PluginContextMenu(gtk.Menu):
 		
 		@param event: Menu event.
 		@type event: wx.MenuEvent
-		"""		
-		dlg = PresetDialog(self.rootwindow, plugin, self)
-		dlg.show_all()
-		
+		"""
+		manager = com.get('aldrin.core.presetdialog.manager')
+		manager.show(plugin, widget)
+
 	def on_popup_show_params(self, widget, mp):
 		"""
 		Event handler for the "Parameters..." context menu option.
@@ -236,7 +236,7 @@ class PluginContextMenu(gtk.Menu):
 		Event handler for unmute all menu option
 		"""
 		player = com.get('aldrin.core.player')
-		for mp in reversed(player.get_plugin_list()):
+		for mp in reversed(list(player.get_plugin_list())):
 			info = common.get_plugin_infos().get(mp)
 			info.muted=False
 			mp.set_mute(info.muted)

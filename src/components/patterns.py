@@ -319,7 +319,7 @@ class PatternToolBar(gtk.HBox):
 		player = com.get('aldrin.core.player')
 		def cmp_func(a,b):
 			return cmp(a.get_name().lower(), b.get_name().lower())
-		plugins = sorted(player.get_plugin_list(), cmp_func)
+		plugins = sorted(list(player.get_plugin_list()), cmp_func)
 		return [(plugin.get_name(),plugin) for plugin in plugins]
 	
 	def get_plugin_sel(self):
@@ -667,7 +667,7 @@ class PatternView(gtk.DrawingArea):
 		eventbus.zzub_pattern_insert_rows += self.on_pattern_insert_rows
 		eventbus.zzub_pattern_remove_rows += self.on_pattern_remove_rows
 		self.pattern_changed()
-		
+
 	def on_pattern_insert_rows(self, plugin, index, row, rows, column_indices, indices):
 		self.on_pattern_changed(plugin, index)
 			
@@ -2072,18 +2072,21 @@ class PatternView(gtk.DrawingArea):
 		"""
 		Callback that responds to key release
 		"""
+		player = com.get('aldrin.core.player')
 		if config.get_config().get_pattern_noteoff():
 			kv = event.keyval
 			k = gtk.gdk.keyval_name(kv)
 			if (k == 'Shift_L' or k=='Shift_R'):
 				self.shiftselect = None
 			if self.plugin:
-				parameter_list = self.plugin.get_parameter_list(self.group,0)
-				if parameter_list[self.index].get_description() == "Note" and kv<256:
+				parameter = self.plugin.get_parameter(self.group,0, self.index)
+				if parameter.get_description() == "Note" and kv<256:
 					on = key_to_note(kv)
 					if on:
 						m = self.get_plugin()
 						m.set_parameter_value(self.group, self.track, self.index, zzub.zzub_note_value_off, 0)
+						player.history_commit("add event")
+
 	
 	def on_char(self, event):
 		"""
@@ -2265,8 +2268,8 @@ class PatternView(gtk.DrawingArea):
 			if self.group == 0:
 				try:
 					pl = self.get_plugin()
-					conn = pl.get_input_connection_list()[self.track]
-					in_machine_name = conn.get_input().get_name()
+					in_plugin = pl.get_input_connection_plugin(self.track)
+					in_machine_name = in_plugin.get_name()
 				except:
 					in_machine_name = ""
 				self.statuslabels[0].set_label('Row %s, Incoming %s (%s)' % 

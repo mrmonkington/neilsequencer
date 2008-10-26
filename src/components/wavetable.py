@@ -38,7 +38,7 @@ import zzub
 import config
 from aldrin.envelope import EnvelopeView, ADSRPanel
 from aldrin.waveedit import WaveEditPanel
-import aldrin.freesound as freesond
+import aldrin.freesound as freesound
 import popen2
 import aldrin.common as common
 from aldrin.common import MARGIN, MARGIN2, MARGIN3
