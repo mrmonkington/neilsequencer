@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="utf-8"?>
+<zzub>
+  <plugin
+     uri="@trac.zeitherrschaft.org/aldrin/lunar/generator/superfm;1"
+     name="Zephod SuperFM"
+     shortname="SuperFM"
+     type="generator"
+     mintracks="1"
+     maxtracks="8"
+     description="A port of Zephod SuperFM synthesizer to Lunar."
+     author="Vytautas Jancauskas"
+     email="unaudio@gmail.com">
+    <parameters>
+      <valuenamegroup>
+	<valuenames id="waveforms">
+	  <alias value="0" name="Sine"/>
+	  <alias value="1" name="Square"/>
+	  <alias value="2" name="+Saw"/>
+	  <alias value="3" name="-Saw"/>
+	</valuenames>
+      </valuenamegroup>
+      <global>
+	<parameter
+	   id="paraWave"
+	   name="OSC Wave"
+	   description="Oscillator waveform"
+	   type="word"
+	   minvalue="0"
+	   maxvalue="3"
+	   defvalue="0"
+	   valuenames="waveforms"
+	   state="true"/>
+	<parameter
+	   id="paraModWave"
+	   name="MOD Wave"
+	   description="Modulator waveform"
+	   type="word"
+	   minvalue="0"
+	   maxvalue="3"
+	   defvalue="0"
+	   precision="1"
+	   valuenames="waveforms"
+	   state="true"/>
+	<parameter
+	   id="paraAttack"
+	   name="VCA Attack"
+	   description="VCA Attack in samples"
+	   type="word"
+	   minvalue="16"
+	   maxvalue="65534"
+	   defvalue="29"
+	   precision="1"
+	   state="true"/>
+	<parameter
+	   id="paraDecay"
+	   name="VCA Decay"
+	   description="VCA Decay in samples"
+	   type="word"
+	   minvalue="16"
+	   maxvalue="65534"
+	   defvalue="46974"
+	   precision="1"
+	   state="true"/>
+	<parameter
+	   id="paraSustain"
+	   name="VCA S Length"
+	   description="VCA Sustain length in samples"
+	   type="word"
+	   minvalue="16"
+	   maxvalue="65534"
+	   defvalue="944"
+	   precision="1"
+	   state="true"/>
+	<parameter
+	   id="paraSustainv"
+	   name="VCA S Level"
+	   description="VCA Sustain level"
+	   type="float"
+	   minvalue="0.001"
+	   maxvalue="0.999"
+	   defvalue="0.02"
+	   precision="0.001"
+	   state="true"/>
+	<parameter
+	   id="paraRelease"
+	   name="VCA Release"
+	   description="VCA Release in samples"
+	   type="word"
+	   minvalue="1"
+	   maxvalue="65534"
+	   defvalue="2414"
+	   precision="1"
+	   state="true"/>
+	<parameter
+	   id="paraMAttack"
+	   name="MOD Env A"
+	   description="MOD Envelope attack in samples"
+	   type="word"
+	   minvalue="16"
+	   maxvalue="65534"
+	   defvalue="16"
+	   precision="1"
+	   state="true"/>
+	<parameter
+	   id="paraMDecay"
+	   name="MOD Env D"
+	   description="MOD Envelope decay in samples"
+	   type="word"
+	   minvalue="16"
+	   maxvalue="65534"
+	   defvalue="15717"
+	   precision="1"
+	   state="true"/>
+	<parameter
+	   id="paraMSustain"
+	   name="MOD Env S Len"
+	   description="MOD Envelope sustain length in samples"
+	   type="word"
+	   minvalue="16"
+	   maxvalue="65534"
+	   defvalue="10967"
+	   precision="1"
+	   state="true"/>
+	<parameter
+	   id="paraMSustainv"
+	   name="MOD Env S"
+	   description="MOD Envelope sustain level"
+	   type="float"
+	   minvalue="0.001"
+	   maxvalue="0.999"
+	   defvalue="0.01"
+	   precision="0.001"
+	   state="true"/>
+	<parameter
+	   id="paraMRelease"
+	   name="MOD Env R"
+	   description="MOD Envelope release in samples"
+	   type="word"
+	   minvalue="1"
+	   maxvalue="65534"
+	   defvalue="3714"
+	   precision="1"
+	   state="true"/>
+	<parameter
+	   id="paraModNote1D"
+	   name="MOD1 Depth"
+	   description="Modulator 1 depth"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="2"
+	   defvalue="0.2"
+	   precision="0.001"
+	   state="true"/>
+	<parameter
+	   id="paraModNote2D"
+	   name="MOD2 Depth"
+	   description="Modulator 2 depth"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="2"
+	   defvalue="0"
+	   precision="0.001"
+	   state="true"/>
+	<parameter
+	   id="paraModNote3D"
+	   name="MOD3 Depth"
+	   description="Modulator 3 depth"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="2"
+	   defvalue="0"
+	   precision="0.001"
+	   state="true"/>
+	<parameter
+	   id="paraModEnv1"
+	   name="MOD1 Env"
+	   description="Modulator 1 envelope amount"
+	   type="float"
+	   minvalue="-0.5"
+	   maxvalue="0.5"
+	   defvalue="0.5"
+	   precision="0.001"
+	   state="true"/>
+	<parameter
+	   id="paraModEnv2"
+	   name="MOD2 Env"
+	   description="Modulator 2 envelope amount"
+	   type="float"
+	   minvalue="-0.5"
+	   maxvalue="0.5"
+	   defvalue="0.2"
+	   precision="0.001"
+	   state="true"/>
+	<parameter
+	   id="paraModEnv3"
+	   name="MOD3 Env"
+	   description="Modulator 3 envelope amount"
+	   type="float"
+	   minvalue="-0.5"
+	   maxvalue="0.5"
+	   defvalue="0.3"
+	   precision="0.001"
+	   state="true"/>
+	<parameter
+	   id="paraRoute"
+	   name="FM Rout Mode"
+	   description="Modulator Routing Mode"
+	   type="word"
+	   minvalue="0"
+	   maxvalue="3"
+	   defvalue="0"
+	   precision="1"
+	   state="true"/>
+	</global>
+      <track>
+	<parameter
+	   id="note"
+	   type="note"/>
+	<parameter
+	   id="volume"
+	   name="Volume"
+	   description="Volume of note."
+	   type="byte"
+	   minvalue="0"
+	   maxvalue="128"
+	   defvalue="128"
+	   novalue="255"/>
+      </track>
+    </parameters>
+      <files>
+      <file ref="envelope.cpp"/>
+      <file ref="envelope.hpp"/>
+      <file ref="zephod_superfm.cpp"/>
+      <file ref="zephod_superfm.h"/>
+    </files>
+    <modules>
+      <module id="superfm">
+	<source language="c++" ref="zephod_superfm.cpp" fxdef="zephod_superfm.h"/>
+      </module>
+    </modules>
+  </plugin>
+</zzub>
