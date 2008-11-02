@@ -450,12 +450,12 @@ class PatternPanel(gtk.VBox):
 		framepanel = com.get('aldrin.core.framepanel')
 		framepanel.select_viewpanel(self)
 		
-# 	def handle_focus(self):
-# 		try:
-# 			self.view.show_cursor_right()
-# 		except AttributeError: #no pattern in current machine
-# 			pass
-# 		self.view.grab_focus()
+	def handle_focus(self):
+		try:
+			self.view.show_cursor_right()
+		except AttributeError: #no pattern in current machine
+			pass
+		self.view.grab_focus()
 
 from aldrin.utils import fixbn, bn2mn, mn2bn, note2str, switch2str, byte2str, word2str
 
