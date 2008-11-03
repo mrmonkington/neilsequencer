@@ -995,10 +995,13 @@ class RouteView(gtk.DrawingArea):
 			return
 		mp,(x,y),area = res
 		if area == AREA_ANY:
-			data = zzub.zzub_event_data_t()
-			data.type = zzub.zzub_event_type_double_click;
-			#if mp.invoke_event(data, 1) != 0:
-			com.get('aldrin.core.parameterdialog.manager').show(mp, self)
+			if mp.get_pluginloader().get_loader_name().startswith("@zzub.org/dssidapter"):
+				data = zzub.zzub_event_data_t()
+				data.type = zzub.zzub_event_type_double_click;
+				if mp.invoke_event(data, 1) != 0:
+					print "Failed to show DSSI GUI?"
+			else:
+				com.get('aldrin.core.parameterdialog.manager').show(mp, self)
 		
 	def on_left_down(self, widget, event):
 		"""
