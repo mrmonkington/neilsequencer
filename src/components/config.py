@@ -604,7 +604,6 @@ class AldrinConfig(object, ConfigParser.ConfigParser):
 		@param presets: A preset collection
 		@type presets: preset.PresetCollection
 		"""
-		from utils import filenameify
 		uri = filenameify(pluginloader.get_uri())
 		name = filenameify(pluginloader.get_name())
 		presetpath = os.path.join(self.get_settings_folder(),'presets')

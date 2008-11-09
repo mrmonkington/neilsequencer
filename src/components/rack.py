@@ -36,6 +36,7 @@ import ctypes
 import time
 import Queue
 import aldrin.common as common
+import aldrin.preset as preset_module
 from aldrin.common import MARGIN, MARGIN2, MARGIN3, MARGIN0
 import cPickle
 import config
@@ -566,18 +567,19 @@ class ParameterView(gtk.VBox):
 		"""
 		Handler for the Add preset button
 		"""
+		config = com.get('aldrin.core.config')
 		name = self.presetbox.child.get_text()
 		presets = [preset for preset in self.presets.presets if prepstr(preset.name) == name]
 		if presets:
 			preset = presets[0]
 		else:
-			preset = Preset()
+			preset = preset_module.Preset()
 			self.presets.presets.append(preset)
 		preset.name = name
 		preset.comment = ''
 		preset.pickup(self.plugin)
 		self.presets.sort()
-		config.get_config().set_plugin_presets(self.pluginloader, self.presets)
+		config.set_plugin_presets(self.pluginloader, self.presets)
 		self.update_presets()
 		self.update_preset_buttons()
 
@@ -585,11 +587,12 @@ class ParameterView(gtk.VBox):
 		"""
 		Handler for the Remove preset button
 		"""
+		config = com.get('aldrin.core.config')
 		name = self.presetbox.child.get_text()
 		presets = [preset for preset in self.presets.presets if prepstr(preset.name) == name]
 		if presets:
 			self.presets.presets.remove(presets[0])
-		config.get_config().set_plugin_presets(self.pluginloader, self.presets)
+		config.set_plugin_presets(self.pluginloader, self.presets)
 		self.update_presets()
 		self.update_preset_buttons()
 		
