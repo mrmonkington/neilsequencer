@@ -623,7 +623,8 @@ class AldrinConfig(object, ConfigParser.ConfigParser):
 		"""
 		uri = filenameify(pluginloader.get_uri())
 		name = filenameify(pluginloader.get_name())
-		presetpath = os.path.join(sharedpath('presets'))
+		#presetpath = os.path.join(sharedpath('presets'))
+		presetpath = os.path.join(self.get_settings_folder(),'presets')
 		presetfilepaths = [
 			os.path.join(presetpath, uri + '.prs'),
 			os.path.join(presetpath, name + '.prs'),
