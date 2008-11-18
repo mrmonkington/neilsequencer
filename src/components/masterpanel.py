@@ -117,6 +117,7 @@ class MasterPanel(gtk.VBox):
 		self.ohg = utils.ObjectHandlerGroup()
 		eventbus = com.get('aldrin.core.eventbus')
 		eventbus.zzub_parameter_changed += self.on_zzub_parameter_changed
+		eventbus.document_loaded += self.update_all
 		self.masterslider = gtk.VScale()
 		self.masterslider.set_draw_value(False)
 		self.masterslider.set_range(0,16384)
