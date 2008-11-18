@@ -63,6 +63,7 @@ class TransportPanel(gtk.HBox):
 		eventbus = com.get('aldrin.core.eventbus')
 		eventbus.zzub_parameter_changed += self.on_zzub_parameter_changed
 		eventbus.zzub_player_state_changed += self.on_zzub_player_state_changed
+		eventbus.document_loaded += self.update_all
 		self.cpulabel = gtk.Label("CPU")
 		self.cpu = gtk.ProgressBar()
 		self.cpu.set_size_request(80,-1)
@@ -274,6 +275,9 @@ class TransportPanel(gtk.HBox):
 		called when a parameter changes in zzub. checks whether this parameter
 		is related to master bpm or tpb and updates the view.
 		"""
+		player = com.get('aldrin.core.player')
+		master = player.get_plugin(0)
+		bpm = master.get_parameter_value(1, 0, 1)	
 		if (group,track) == (1,0):
 			if param == 1:
 				self.update_bpm()
