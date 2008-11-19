@@ -212,7 +212,7 @@ bool fukodelay::process_stereo(float **pin, float **pout, int numsamples, int mo
 
 const char * fukodelay::describe_value(int param, int value)
 {
-	static char str[12];
+	static char str[20];
 	int temp1, temp2;
 
 	if (param == 0 || param == 2)
