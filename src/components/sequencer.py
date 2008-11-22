@@ -231,8 +231,8 @@ class SequencerPanel(gtk.VBox):
 		framepanel.select_viewpanel(self)				
 		#TODO: add active_tracks option to allow track, row position change
 		#player.active_tracks = [(track, row)]
-		framepanel = com.get('aldrin.core.framepanel')
-		framepanel.select_viewpanel(self)
+		#framepanel = com.get('aldrin.core.framepanel')
+		#framepanel.select_viewpanel(self)
 				
 	def handle_focus(self):
 		self.view.grab_focus()
@@ -557,19 +557,18 @@ class SequencerView(gtk.DrawingArea):
 		except TypeError:
 			# There is no selection.
 			return
-		eventbus = com.get('aldrin.core.eventbus')
-		for track in range(start[0], end[0]+1):
-			t = seq.get_track(track)
+		for t in seq.get_track_list()[start[0]:end[0]+1]:
 			m = t.get_plugin()
 			patternsize = end[1]+self.step - start[1]
 			name = get_new_pattern_name(m)
 			p = m.create_pattern(patternsize)
 			p.set_name(name)
-			eventbus.pattern_created(p)
+			m.add_pattern(p)
 			for i in xrange(m.get_pattern_count()):
-				if m.get_pattern(i) == p:
+				if m.get_pattern(i).get_name() == name:
 					t.set_event(start[1], 0x10+i)
 					break
+			player.history_commit("new pattern")
 		
 	def on_popup_merge(self, *args):
 		player = com.get('aldrin.core.player')
@@ -582,27 +581,25 @@ class SequencerView(gtk.DrawingArea):
 		except TypeError:
 			# There is no selection.
 			return
-		eventlist = []
-		patternsize = 0
-		eventbus = com.get('aldrin.core.eventbus')
-		for track in range(start[0], end[0]+1):
-			t = seq.get_track(track)
+		for t in seq.get_track_list()[start[0]:end[0]+1]:
+			patternsize = 0
+			eventlist = []					
 			m = t.get_plugin()
-			for time,value in t.get_event_list():
+			for time, value in t.get_event_list():
 				if (time >= start[1]) and (time < (end[1]+self.step)):
 					if value >= 0x10:
 						value -= 0x10
 						# copy contents between patterns
 						eventlist.append((time, m.get_pattern(value)))
-						patternsize = max(patternsize, time - start[1] + m.get_pattern(value).get_row_count())						
+						patternsize = max(patternsize, time - start[1] + m.get_pattern(value).get_row_count())
 			if patternsize:
 				name = get_new_pattern_name(m)
 				p = m.create_pattern(patternsize)
 				p.set_name(name)
-				eventbus.pattern_created(p)
+				m.add_pattern(p)
 				group_track_count = [m.get_input_connection_count(), 1, m.get_track_count()]
 				for time, pattern in eventlist:
-					t.remove_event_at(time)
+					t.set_event(time, -1)
 					for r in xrange(pattern.get_row_count()):
 						rowtime = time - start[1] + r
 						for g in range(3):
@@ -610,9 +607,10 @@ class SequencerView(gtk.DrawingArea):
 								for i in xrange(m.get_pluginloader().get_parameter_count(g)):
 									p.set_value(rowtime,g,ti,i,pattern.get_value(r,g,ti,i))
 				for i in xrange(m.get_pattern_count()):
-					if m.get_pattern(i) == p:
+					if m.get_pattern(i).get_name() == name:
 						t.set_event(start[1], 0x10+i)
 						break
+		player.history_commit("merge pattern")
 		
 	def on_popup_cut(self, *args):
 		self.on_popup_copy(*args)
