@@ -1019,8 +1019,7 @@ class PatternView(gtk.DrawingArea):
 		Loads and redraws the pattern view after the pattern has been changed.
 		"""
 		self.init_values()
-		#self.redraw() ## do i want this?
-		#self.grab_focus()
+		self.show_cursor_left()
 		plugin = self.get_plugin()
 		if plugin:
 			self.plugin_info.get(plugin).reset_patterngfx()
@@ -1132,8 +1131,8 @@ class PatternView(gtk.DrawingArea):
 		"""
 		Puts the cursor into visible frame after a jump to the left.
 		"""
-		w,h = self.get_charbounds()
-		x,y = self.pattern_to_charpos(self.row, self.group, self.track, self.index, self.subindex)
+		w, h = self.get_charbounds()
+		x, y = self.pattern_to_charpos(self.row, self.group, self.track, self.index, self.subindex)
 		if x < self.start_col:
 			self.start_col = max(x - (w / 3), 0)
 			self.redraw()
@@ -1142,9 +1141,9 @@ class PatternView(gtk.DrawingArea):
 		"""
 		Puts the cursor into visible frame after a jump to the right.
 		"""
-		w,h = self.get_charbounds()
-		vw,vh = self.get_virtual_size()
-		x,y = self.pattern_to_charpos(self.row, self.group, self.track, self.index, self.subindex)
+		w, h = self.get_charbounds()
+		vw, vh = self.get_virtual_size()
+		x, y = self.pattern_to_charpos(self.row, self.group, self.track, self.index, self.subindex)
 		if x > w:
 			self.start_col = min(self.start_col + x - w + (w / 3), vw - w + self.start_col)
 			self.redraw()
