@@ -1,5 +1,5 @@
 [Aldrin COM]
-Module=patternsx
+Module=patterns
 Name=Pattern Editor Panel
 Description=Provides a pattern editor to the application.
 Icon=aldrin
