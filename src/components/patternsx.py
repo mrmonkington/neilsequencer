@@ -617,6 +617,7 @@ class PatternView(gtk.DrawingArea):
 		self.track_width=[0,0,0]
 		self.plugin_info = common.get_plugin_infos()
 		self.resolution = 1
+		self.factors = None
 		gtk.DrawingArea.__init__(self)
 		#"Bitstream Vera Sans Mono"
 		self.update_font()
@@ -670,7 +671,24 @@ class PatternView(gtk.DrawingArea):
 		eventbus.zzub_edit_pattern += self.on_edit_pattern
 		eventbus.zzub_pattern_insert_rows += self.on_pattern_insert_rows
 		eventbus.zzub_pattern_remove_rows += self.on_pattern_remove_rows
+		eventbus.zzub_parameter_changed += self.on_zzub_parameter_changed
 		self.pattern_changed()
+	
+	def on_zzub_parameter_changed(self,plugin,group,track,param,value):
+		"""
+		called when a parameter changes in zzub. checks whether this parameter
+		is related to master bpm or tpb and updates the view.
+		"""
+		player = com.get('aldrin.core.player')
+		master = player.get_plugin(0)
+		tpb = master.get_parameter_value(1, 0, 2)
+		if (group, track) == (1, 0) and param == 2:
+			# find factors
+			self.factors = [n for n in range(1, tpb/2+1) if tpb % n == 0]
+			self.factors.append(tpb)
+			if len(self.factors) > 3:
+				self.resolution = self.factors[-3]			
+			print "here", self.factors, tpb
 		
 	def on_pattern_insert_rows(self, plugin, index, row, rows, column_indices, indices):
 		self.on_pattern_changed(plugin, index)
@@ -812,7 +830,6 @@ class PatternView(gtk.DrawingArea):
 		self.parameter_width = [[],[],[]]
 		self.lines = None
 		self.levels = {}
-		self.factors = []
 		self.factor_sources = {}
 		self.row_count = 0
 		self.parameter_type = None
@@ -2490,16 +2507,9 @@ class PatternView(gtk.DrawingArea):
 		self.lines = [None]*3	
 		# generate zoom levels	
 		self.levels = {}
-		# find factors
-		player = com.get('aldrin.core.player')
-		master = player.get_plugin(0) 
-		tpb = master.get_parameter_value(1, 0, 2)
-		self.factors = [n for n in range(1, tpb/2+1) if tpb % n == 0]
-		self.factors.append(tpb)
-		if len(self.factors) > 3:
-			self.resolution = self.factors[-3]			
 		# find largest factor divisor of factor
 		self.factor_sources = {}
+		print self.factors
 		for i, factor in enumerate(self.factors):
 			largest_divisor = None
 			for k in range(i):
