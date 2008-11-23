@@ -604,7 +604,6 @@ class PatternView(gtk.DrawingArea):
 		self.track = 0
 		self.group = 0
 		self.subindex = 0
-		self.row_step = 1
 		self.start_row = 0
 		self.selection = None
 		self.playpos = 0
@@ -1292,10 +1291,6 @@ class PatternView(gtk.DrawingArea):
 		values *between* min and max of those which already
 		appear. 
 
-		Generated values will be spaced in the pattern
-		according to row_step, so hit Ctrl-[1-9] to adjust it
-		first.
-
 		A nice use-case is to run this repeatedly, waiting for
 		a nice selection to appear. Repeat ctrl-X ctrl-R to
 		get unconstrained randomisation; repeat ctrl-R to keep
@@ -1306,10 +1301,7 @@ class PatternView(gtk.DrawingArea):
 		"""
 		if not self.selection:
 			return
-		if self.row_step == 0:
-			step = 1
-		else:
-			step = self.row_step
+		step = self.resolution
 		# Unlike the interpolate_selection method, we can't do
 		# this without looking at the whole selection first.
 		# So first, save the min and max and all vals present
@@ -1318,7 +1310,7 @@ class PatternView(gtk.DrawingArea):
 		maxv = dict()
 		allv = dict()
 		for r, g, t, i in self.selection_range():
-			if r > self.plugin.get_pattern_length(self.pattern) - 1:
+			if r > self.plugin.get_pattern_length(self.pattern) - self.resolution:
 				break
 			if r < 0:
 				continue
@@ -1354,13 +1346,12 @@ class PatternView(gtk.DrawingArea):
 		
 		# Go through the selection randomising each cell.
 		for r, g, t, i in self.selection_range():
-			if r > self.plugin.get_pattern_length(self.pattern) - 1:
+			if r > self.plugin.get_pattern_length(self.pattern) - self.resolution:
 				break
 			if r < 0:
 				continue
 			p = self.plugin.get_parameter(g, t, i)
 			key = (g, t, i)
-			# If row_step > 1 clear some rows
 			if (r - self.selection.begin) % step != 0:
 				v = p.get_value_none()
 
@@ -1408,30 +1399,24 @@ class PatternView(gtk.DrawingArea):
 	def interpolate_selection(self, widget=None):
 		"""
 		Fills the current selection with values interpolated
-		from selection start to selection end. Generated
-		values will be spaced in the pattern according to
-		row_step, so hit Ctrl-[1-9] to adjust it first.
+		from selection start to selection end. 
 		"""
 		if not self.selection:
 			return		
-		if self.selection.end == self.selection.begin + 1:
+		if self.selection.end == self.selection.begin + self.resolution:
 			return
-		if self.row_step == 0:
-			step = 1
-		else:
-			step = self.row_step
+		step = self.resolution
 		for r,g,t,i in self.selection_range():
-			if r>self.plugin.get_pattern_length(self.pattern)-1:
+			if r>self.plugin.get_pattern_length(self.pattern)-self.resolution:
 				break
 			if r<0:
 				continue
 			p = self.plugin.get_parameter(g,t,i)
 			v1 = self.plugin.get_pattern_value(self.pattern,g,t,i,self.selection.begin)
-			v2 = self.plugin.get_pattern_value(self.pattern,g,t,i,self.selection.end-1)
+			v2 = self.plugin.get_pattern_value(self.pattern,g,t,i,self.selection.end-self.resolution)
 			if (v1 != p.get_value_none()) and (v2 != p.get_value_none()):
 				if (p.get_type() == 0 and (v1 == zzub.zzub_note_value_off or v2 == zzub.zzub_note_value_off)):
 					continue
-				# If row_step > 1, clear some rows.
 				# Sometimes this might prevent the
 				# interpolation from ever achieving
 				# the final value (v2), but the fix
@@ -1441,7 +1426,7 @@ class PatternView(gtk.DrawingArea):
 				if (r - self.selection.begin) % step != 0:
 					v = p.get_value_none()
 				else:
-					f = float(r - self.selection.begin) / float(self.selection.end - self.selection.begin - 1)
+					f = float(r - self.selection.begin) / float(self.selection.end - self.selection.begin - self.resolution)
 					if (p.get_type() == 0):
 						v1 = bn2mn(v1)
 						v2 = bn2mn(v2)
@@ -1900,9 +1885,7 @@ class PatternView(gtk.DrawingArea):
 			self.adjust_selection()
 			self.redraw()
 		elif (mask & gtk.gdk.CONTROL_MASK):
-			if kv >= ord('0') and kv <= ord('9'):
-				self.row_step = kv - ord('0')
-			elif k == 'b':
+			if k == 'b':
 				if not self.selection:
 					self.selection = self.Selection()
 				if self.keystartselect:
@@ -1913,7 +1896,7 @@ class PatternView(gtk.DrawingArea):
 						self.selection.mode = (self.selection.mode + 1) % 4
 				self.selection.begin = self.row
 				self.keystartselect = self.row
-				self.selection.end = max(self.row+1,self.selection.end)				
+				self.selection.end = max(self.row+self.resolution,self.selection.end)	
 				self.adjust_selection()
 				self.update_plugin_info()				
 				self.redraw()
@@ -1924,11 +1907,11 @@ class PatternView(gtk.DrawingArea):
 					self.selection.begin=self.keystartselect
 				if self.keyendselect:
 					self.selection.end=self.keyendselect
-				if self.selection.end == self.row+1:
+				if self.selection.end == self.row+self.resolution:
 					self.selection.mode = (self.selection.mode + 1) % 4
-				self.selection.end = self.row+1
-				self.keyendselect=self.row+1
-				self.selection.begin = max(min(self.selection.end-1,self.selection.begin),0)
+				self.selection.end = self.row+self.resolution
+				self.keyendselect=self.row+self.resolution
+				self.selection.begin = max(min(self.selection.end-self.resolution,self.selection.begin),0)
 				self.adjust_selection()
 				self.redraw()
 			elif k == 'u':
