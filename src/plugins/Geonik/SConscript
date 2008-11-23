@@ -32,13 +32,13 @@ build_plugin(pluginenv, 'Geonik_PluckedString', [
 # 	'BuzzMachines/Gapper.cpp',
 # ])
 
-# build_plugin(pluginenv, 'Geonik_DF_Filter', [
-# 	'BuzzMachines/DfFilter.cpp',
-# ],
-# 	helpfiles=[
-# 		#'Geonik_DF_Filter.html',
-# 	]
-# )
+build_plugin(pluginenv, 'Geonik_DF_Filter', [
+	'BuzzMachines/DfFilter.cpp',
+],
+	helpfiles=[
+		#'Geonik_DF_Filter.html',
+	]
+)
 
 # sndfile_pluginenv = pluginenv.Copy()
 # sndfile_pluginenv.Append(LIBS=[
