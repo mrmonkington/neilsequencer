@@ -636,10 +636,12 @@ class PatternView(gtk.DrawingArea):
 		self.accel_map.add_accelerator('<Control>Delete', self.on_popup_remove_pattern)
 		self.accel_map.add_accelerator('<Shift>KP_Add', self.transpose_selection, None, 1)
 		self.accel_map.add_accelerator('<Shift>asterisk', self.transpose_selection, None, 1)
-		self.accel_map.add_accelerator('<Shift>plus', self.transpose_selection, None, 1)
+		self.accel_map.add_accelerator('<Shift>plus', self.transpose_selection, None, 1)		
 		self.accel_map.add_accelerator('<Shift>KP_Subtract', self.transpose_selection, None, -1)
 		self.accel_map.add_accelerator('<Shift>minus', self.transpose_selection, None, -1)
 		self.accel_map.add_accelerator('<Shift>underscore', self.transpose_selection, None, -1)
+		self.accel_map.add_accelerator('<Control>Page_Up', self.change_resolution, True)
+		self.accel_map.add_accelerator('<Control>Page_Down', self.change_resolution, False)
 		self.accel_map.add_accelerator('<Control>c', self.copy)
 		self.accel_map.add_accelerator('<Control>v', self.paste)
 		self.accel_map.add_accelerator('<Control>x', self.cut)
@@ -1560,7 +1562,7 @@ class PatternView(gtk.DrawingArea):
 			error(self, "Couldn't paste.")
 			
 	# upward is True to increase, False to decrease
-	def change_resolution(self, upward):
+	def change_resolution(self, upward=True):
 		if upward:
 			self.resolution = self.factors[max(0, self.factors.index(self.resolution) - 1)]
 		else:
@@ -1661,8 +1663,8 @@ class PatternView(gtk.DrawingArea):
 		player = com.get('aldrin.core.player')
 		m = self.get_plugin()
 		if self.pattern >= 0:
-			player.activate_pattern(-1) # go one back
 			m.remove_pattern(self.pattern)
+			player.activate_pattern(-1) # go one back
 			player.history_commit("remove pattern")
 		
 	def on_popup_create_pattern(self, widget=None, m=None):
@@ -1843,10 +1845,6 @@ class PatternView(gtk.DrawingArea):
 			pass
 		elif k == 'greater':
 			player.activate_wave(1)
-		elif mask & gtk.gdk.SHIFT_MASK and (k in ('KP_Add', 'plus', 'equal')):
-			self.change_resolution(True)
-		elif mask & gtk.gdk.SHIFT_MASK and (k in ('KP_Subtract','minus','underscore')):
-			self.change_resolution(False)
 		elif mask & gtk.gdk.SHIFT_MASK and k == 'Down':
 			if not self.selection:
 				self.selection = self.Selection()
