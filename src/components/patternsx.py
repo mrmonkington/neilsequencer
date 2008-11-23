@@ -1558,6 +1558,7 @@ class PatternView(gtk.DrawingArea):
 			import traceback
 			traceback.print_exc()
 			error(self, "Couldn't paste.")
+			
 	# upward is True to increase, False to decrease
 	def change_resolution(self, upward):
 		if upward:
@@ -1842,6 +1843,10 @@ class PatternView(gtk.DrawingArea):
 			pass
 		elif k == 'greater':
 			player.activate_wave(1)
+		elif mask & gtk.gdk.SHIFT_MASK and (k in ('KP_Add', 'plus', 'equal')):
+			self.change_resolution(True)
+		elif mask & gtk.gdk.SHIFT_MASK and (k in ('KP_Subtract','minus','underscore')):
+			self.change_resolution(False)
 		elif mask & gtk.gdk.SHIFT_MASK and k == 'Down':
 			if not self.selection:
 				self.selection = self.Selection()
