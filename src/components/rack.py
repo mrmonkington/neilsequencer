@@ -283,8 +283,10 @@ class ParameterView(gtk.VBox):
 
 		# input connections
 		for t in range(plugin.get_input_connection_count()):
-			for i in range(2): # volume and pan
-				add_slider(0, t, i)
+			connectiontype = plugin.get_input_connection_type(t)
+			if connectiontype == zzub.zzub_connection_type_audio:
+				for i in range(2): # volume and pan
+					add_slider(0, t, i)
 		# globals
 		for i in range(pl.get_parameter_count(1)):
 			add_slider(1,0,i)
@@ -440,7 +442,9 @@ class ParameterView(gtk.VBox):
 						if (binding.get_group() == g) and (binding.get_track() == t) and (binding.get_column() == i):
 							result.append((conn,c))
 		return result
-		
+
+	# this fails to add italics to event-connected parameters
+	# because get_event_connection_bindings() is broken, for now.
 	def update_namelabel(self, g,t,i):
 		player = com.get('aldrin.core.player')
 		nl,s,vl = self.pid2ctrls[(g,t,i)]
