@@ -754,6 +754,7 @@ class RouteView(gtk.DrawingArea):
 		eventbus.zzub_connect += self.on_zzub_redraw_event
 		eventbus.zzub_disconnect += self.on_zzub_redraw_event
 		eventbus.zzub_plugin_changed += self.on_zzub_plugin_changed
+		eventbus.document_loaded += self.redraw
 		eventbus.active_plugins_changed += self.on_active_plugins_changed
 		self.autoconnect_target=None
 		self.chordnotes=[]
@@ -1149,7 +1150,7 @@ class RouteView(gtk.DrawingArea):
 			
 	def expose(self, widget, event):
 		self.context = widget.window.cairo_create()
-		self.draw(self.context)
+		self.draw(self.context)		
 		return False
 		
 	def redraw(self):
