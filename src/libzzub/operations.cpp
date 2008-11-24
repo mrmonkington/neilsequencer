@@ -265,16 +265,20 @@ bool op_plugin_create::prepare(zzub::song& song) {
 		plugin.state_last.groups.push_back(pattern::group());
 		plugin.state_automation.groups.push_back(pattern::group());
 
+		// the controller group has one track
+		plugin.state_write.groups.back().push_back(pattern::track());
+		plugin.state_last.groups.back().push_back(pattern::track());
+		plugin.state_automation.groups.back().push_back(pattern::track());
+
 		for (size_t i = 0; i < plugin.info->controller_parameters.size(); i++) {
-			plugin.state_write.groups.back().push_back(pattern::track());
+
+		        // the controller group (track 0) has multiple columns
 			plugin.state_write.groups.back().back().push_back(pattern::column());
 			plugin.state_write.groups.back().back().back().push_back(plugin.info->controller_parameters[i]->value_none);
 
-			plugin.state_last.groups.back().push_back(pattern::track());
 			plugin.state_last.groups.back().back().push_back(pattern::column());
 			plugin.state_last.groups.back().back().back().push_back(plugin.info->controller_parameters[i]->value_none);
 
-			plugin.state_automation.groups.back().push_back(pattern::track());
 			plugin.state_automation.groups.back().back().push_back(pattern::column());
 			plugin.state_automation.groups.back().back().back().push_back(plugin.info->controller_parameters[i]->value_none);
 		}
