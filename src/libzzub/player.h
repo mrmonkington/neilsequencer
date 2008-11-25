@@ -64,6 +64,7 @@ struct player : undo_manager, audioworker, midiworker {
 	// user methods (should be, but arent supported by begin_/commit_operation)
 	void clear();
 	void process_user_event_queue();
+	void set_event_queue_state(int enable);
 	void set_state(player_state state);
 	void set_state_direct(player_state state);
 	void plugin_set_parameter(int plugin_id, int group, int track, int column, int value, bool record, bool immediate, bool undoable);

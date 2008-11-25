@@ -119,7 +119,7 @@ song::song() {
 	song_loop_enabled = true;
 
 	midi_plugin = -1;
-
+	enable_event_queue = true;
 	user_event_queue.resize(4096);
 	user_event_queue_read = user_event_queue_write = 0;
 }
@@ -679,6 +679,7 @@ void song::add_pattern_connection_track(zzub::pattern& pattern, const std::vecto
 bool song::plugin_invoke_event(int plugin_id, zzub_event_data data, bool immediate) {
 	assert(plugin_id >= 0 && plugin_id < (int)plugins.size());
 	assert(plugins[plugin_id] != 0);
+	if (!enable_event_queue) return false;
 	if (plugins[plugin_id] == 0) return false;
 	std::vector<event_handler*> handlers = plugins[plugin_id]->event_handlers;
 	bool handled = false;

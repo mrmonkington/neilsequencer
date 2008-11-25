@@ -191,6 +191,7 @@ struct song {
 	vector<plugin_descriptor> work_order;
 	vector<event_message> user_event_queue;
 	int user_event_queue_read, user_event_queue_write;
+	int enable_event_queue;
 	vector<midimapping> midi_mappings;
 	vector<sequencer_track> sequencer_tracks;
 	wave_table wavetable;

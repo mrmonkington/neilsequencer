@@ -543,6 +543,10 @@ void zzub_player_handle_events(zzub_player_t* player) {
 //	player->update_plugins_load_snapshot();
 }
 
+void zzub_player_set_event_queue_state(zzub_player_t* player, int enable) {
+	player->set_event_queue_state(enable);
+}
+
 zzub_midimapping_t *zzub_player_add_midimapping(zzub_plugin_t *plugin, int group, int track, int param, int channel, int controller) {
 
 

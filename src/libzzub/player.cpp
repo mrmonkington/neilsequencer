@@ -912,6 +912,10 @@ void player::process_user_event_queue() {
 	}
 }
 
+void player::set_event_queue_state(int enable) {
+	front.enable_event_queue = enable;
+}
+
 /***
 
 	User methods for writing to the graph
