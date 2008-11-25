@@ -1887,38 +1887,39 @@ class PatternView(gtk.DrawingArea):
 		elif mask & gtk.gdk.SHIFT_MASK and k == 'Down':
 			if not self.selection:
 				self.selection = self.Selection()
-			if self.shiftselect==None:
-				self.shiftselect=self.row
+			if self.shiftselect == None:
+				self.shiftselect = self.row
 			self.move_down(self.resolution)
-			if self.row<self.shiftselect:
-				self.selection.end=self.shiftselect+1
-				self.selection.begin=self.row
+			if self.row < self.shiftselect:
+				self.selection.end = self.shiftselect+self.resolution
+				self.selection.begin = self.row
 			else:
-				self.selection.begin=self.shiftselect
-				self.selection.end = self.row+1
+				self.selection.begin = self.shiftselect
+				self.selection.end = self.row+self.resolution
 			self.adjust_selection()
 			self.redraw()
 		elif mask & gtk.gdk.SHIFT_MASK and k == 'Up':
 			if not self.selection:
 				self.selection = self.Selection()
-			if self.shiftselect==None:
-				self.shiftselect=self.row
+			if self.shiftselect == None:
+				self.shiftselect = self.row
 			self.move_up(self.resolution)
-			if self.row<self.shiftselect:
-				self.selection.end=self.shiftselect+1
-				self.selection.begin=self.row
+			if self.row < self.shiftselect:
+				self.selection.end = self.shiftselect+self.resolution
+				self.selection.begin = self.row
 			else:
-				self.selection.begin=self.shiftselect
-				self.selection.end = self.row+1
+				self.selection.begin = self.shiftselect
+				self.selection.end = self.row+self.resolution
+			print self.shiftselect, self.row, self.selection.begin, self.selection.end
 			self.adjust_selection()
 			self.redraw()
 		elif mask & gtk.gdk.SHIFT_MASK and (k == 'Right' or k == 'Left'):
 			if not self.selection:
 				self.selection = self.Selection()
-			if self.shiftselect==None:
-				self.shiftselect=self.row
-				self.selection.begin=self.shiftselect
-				self.selection.end = self.row+1
+			if self.shiftselect == None:
+				self.shiftselect = self.row
+				self.selection.begin = self.shiftselect
+				self.selection.end = self.row+self.resolution
 			self.selection.mode = (self.selection.mode + 1) % 4
 			self.adjust_selection()
 			self.redraw()
@@ -1927,14 +1928,14 @@ class PatternView(gtk.DrawingArea):
 				if not self.selection:
 					self.selection = self.Selection()
 				if self.keystartselect:
-					self.selection.begin=self.keystartselect
+					self.selection.begin = self.keystartselect
 				if self.keyendselect:
-					self.selection.end=self.keyendselect
+					self.selection.end = self.keyendselect
 				if self.selection.begin == self.row:
 						self.selection.mode = (self.selection.mode + 1) % 4
 				self.selection.begin = self.row
 				self.keystartselect = self.row
-				self.selection.end = max(self.row+self.resolution,self.selection.end)	
+				self.selection.end = max(self.row+self.resolution, self.selection.end)	
 				self.adjust_selection()
 				self.update_plugin_info()				
 				self.redraw()
@@ -2150,10 +2151,10 @@ class PatternView(gtk.DrawingArea):
 		Callback that responds to key release
 		"""
 		player = com.get('aldrin.core.player')
-		if config.get_config().get_pattern_noteoff():
+		if True or config.get_config().get_pattern_noteoff():
 			kv = event.keyval
 			k = gtk.gdk.keyval_name(kv)
-			if (k == 'Shift_L' or k=='Shift_R'):
+			if k == 'Shift_L' or k=='Shift_R':
 				self.shiftselect = None
 			if self.plugin:
 				parameter = self.plugin.get_parameter(self.group,0, self.index)
