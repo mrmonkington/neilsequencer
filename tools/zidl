@@ -118,6 +118,16 @@ def dlsym(lib, name, restype, *args):
 	proc.o_restype = restype
 	proc.o_args = args
 	return proc
+
+
+def callback_from_param(cls, obj):
+	\"""
+	A workaround to assign None to a CFUNCTYPE object.
+	\"""
+	if obj is None:
+		return None # return a NULL pointer
+	from ctypes import _CFuncPtr
+	return _CFuncPtr.from_param(obj)
 """
 
 class ParseError(Exception):
@@ -1138,6 +1148,7 @@ class Function(zzubIDLObject):
 				args.append('("' + arg.name + '",' + arg.py_c_type + ')')
 		if self.func_type:
 			print >> f, self.c_name + '_t' + ' = CFUNCTYPE(' + ', '.join(args) + ')'
+			print >>f, self.c_name + ".from_param = classmethod(callback_from_param)"
 		else:
 			print >> f, self.c_name + ' = dlsym(' + ', '.join(args) + ')'
 
