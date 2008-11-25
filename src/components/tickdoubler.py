@@ -111,6 +111,7 @@ class TickDoublerDialog(gtk.Dialog):
 	def on_double(self, widget, multiplier):
 		# multiply pattern positions
 		player = com.get('aldrin.core.player')
+		player.set_callback_state(False)
 		seq = player.get_current_sequencer()
 		for track in seq.get_track_list():
 			events = list(track.get_event_list())
@@ -129,6 +130,9 @@ class TickDoublerDialog(gtk.Dialog):
 				else:
 					self.halve_pattern(plugin, id)		
 		player.history_commit("tick resolution resizing")
+		player.set_callback_state(True)
+		eventbus = com.get('aldrin.core.eventbus')
+		eventbus.document_loaded()	
 		message(self, "Resizing complete")
 	
 	def on_left_down(self, widget, event, data=None):
