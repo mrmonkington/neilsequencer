@@ -134,8 +134,7 @@ class AldrinPlayer(Player, PropertyEventHandler):
 	)
 	
 	def __init__(self):
-		Player.__init__(self, Player.create())
-		
+		Player.__init__(self, Player.create())		
 		self._cbtime = time.time()
 		self._cbcalls = 0
 		self._hevcalls = 0
@@ -198,7 +197,28 @@ class AldrinPlayer(Player, PropertyEventHandler):
 		self._callback = zzub.zzub_callback_t(self.handle_event)
 		self.set_callback(self._callback, None)
 		gobject.timeout_add(int(1000/50), self.on_handle_events)
+		# event queue disabling count for overlapping disable calls
+		self.__disable_level = 0
 		
+	def set_callback_state(self, enable):
+		#self.set_event_queue_state(enable)
+		#return
+		if enable:
+			if self.__disable_level == 1:
+				#while self.get_next_event(): pass
+				#self.set_callback(self._callback, None)
+				self.set_event_queue_state(True)				
+				self.__disable_level -= 1							
+				return True
+			print 1, self.__disable_level
+			self.__disable_level -= 1			
+		else:
+			#self.set_callback(None, None)
+			print 0, self.__disable_level
+			self.set_event_queue_state(False)
+			self.__disable_level += 1
+		return False
+	
 	def is_loading(self):
 		return self.__loading
 		

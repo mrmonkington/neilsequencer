@@ -248,7 +248,7 @@ class PatternToolBar(gtk.HBox):
 		)
 		eventbus.zzub_new_plugin += self.pluginselect.update
 		eventbus.zzub_delete_plugin += self.pluginselect.update
-		eventbus.active_plugins_changed += self.pluginselect.update
+		eventbus.active_plugins_changed += self.pluginselect.update		
 		
 		self.pluginlabel.set_mnemonic_widget(self.pluginselect)
 		self.patternlabel = gtk.Label()
@@ -688,6 +688,7 @@ class PatternView(gtk.DrawingArea):
 		eventbus.zzub_pattern_insert_rows += self.on_pattern_insert_rows
 		eventbus.zzub_pattern_remove_rows += self.on_pattern_remove_rows
 		eventbus.zzub_parameter_changed += self.on_zzub_parameter_changed
+		eventbus.document_loaded += self.update_all
 		self.pattern_changed()
 	
 	def on_zzub_parameter_changed(self, plugin, group, track, param, value):
@@ -1315,6 +1316,8 @@ class PatternView(gtk.DrawingArea):
 		latter two will eventually lead to a narrowing of the
 		range.
 		"""
+		player = com.get('aldrin.core.player')
+		player.set_callback_state(False)
 		if not self.selection:
 			return
 		step = self.resolution
@@ -1408,15 +1411,19 @@ class PatternView(gtk.DrawingArea):
 						
 			self.plugin.set_pattern_value(self.pattern, g, t, i, r, v)
 		tmp_sel = self.selection
-		player = com.get('aldrin.core.player')
 		player.history_commit("randomize")
 		self.selection = tmp_sel
-
+		if player.set_callback_state(True):
+			eventbus = com.get('aldrin.core.eventbus')
+			eventbus.document_loaded()
+		
 	def interpolate_selection(self, widget=None):
 		"""
 		Fills the current selection with values interpolated
 		from selection start to selection end. 
 		"""
+		player = com.get('aldrin.core.player')
+		player.set_callback_state(False)
 		if not self.selection:
 			return		
 		if self.selection.end == self.selection.begin + self.resolution:
@@ -1451,9 +1458,11 @@ class PatternView(gtk.DrawingArea):
 						v = roundint((v2 - v1) * f + v1)
 				self.plugin.set_pattern_value(self.pattern,g,t,i,r,v)
 		tmp_sel = self.selection
-		player = com.get('aldrin.core.player')
 		player.history_commit("interpolate")
 		self.selection = tmp_sel
+		if player.set_callback_state(True):
+			eventbus = com.get('aldrin.core.eventbus')
+			eventbus.document_loaded()
 
 	def cut(self):
 		"""
@@ -1462,6 +1471,8 @@ class PatternView(gtk.DrawingArea):
 		if not self.selection:
 			return
 		self.copy()
+		player = com.get('aldrin.core.player')
+		player.set_callback_state(False)
 		for r,g,t,i in self.selection_range():
 			if r>self.plugin.get_pattern_length(self.pattern)-1:
 				break
@@ -1471,7 +1482,10 @@ class PatternView(gtk.DrawingArea):
 			self.plugin.set_pattern_value(self.pattern,g,t,i,r,p.get_value_none())
 		player = com.get('aldrin.core.player')
 		player.history_commit("remove event")
-
+		if player.set_callback_state(True):
+			eventbus = com.get('aldrin.core.eventbus')
+			eventbus.document_loaded()
+		
 	def copy(self):
 		"""
 		Copies the current selection into the clipboard
@@ -1492,6 +1506,8 @@ class PatternView(gtk.DrawingArea):
 		"""
 		Deletes the current selection
 		"""
+		player = com.get('aldrin.core.player')
+		player.set_callback_state(False)		
 		for r,g,t,i in self.selection_range():
 			if r>self.plugin.get_pattern_length(self.pattern)-1:
 				break
@@ -1501,7 +1517,10 @@ class PatternView(gtk.DrawingArea):
 			self.plugin.set_pattern_value(self.pattern,g,t,i,r,p.get_value_none())
 		player = com.get('aldrin.core.player')
 		player.history_commit("delete events")
-			
+		if player.set_callback_state(True):
+			eventbus = com.get('aldrin.core.eventbus')
+			eventbus.document_loaded()
+					
 	def unpack_clipboard_data(self, d):
 		"""
 		Unpacks clipboard data
@@ -1533,9 +1552,10 @@ class PatternView(gtk.DrawingArea):
 		Buzz used to not paste at all if the format wasnt right
 		we still try to make some sense out of what we get.
 		"""
-		
+		player = com.get('aldrin.core.player')
+		player.set_callback_state(False)
 		data = get_clipboard_text()
-		try:
+		try:			
 			gen = self.unpack_clipboard_data(data.strip())
 			mode = gen.next()
 			assert (mode >= 0) and (mode <= SEL_ALL)
@@ -1571,12 +1591,14 @@ class PatternView(gtk.DrawingArea):
 			#Non Buzz-like behaviour (naughty naughty!) ;)  :
 			#self.set_row(r+1)
 			self.update_statusbar()	
-			player = com.get('aldrin.core.player')
-			player.history_commit("paste events")
+			player.history_commit("paste events")			
 		except:
 			import traceback
 			traceback.print_exc()
 			error(self, "Couldn't paste.")
+		if player.set_callback_state(True):
+			eventbus = com.get('aldrin.core.eventbus')
+			eventbus.document_loaded()
 			
 	# upward is True to increase, False to decrease
 	def change_resolution(self, upward=True):
@@ -2342,6 +2364,11 @@ class PatternView(gtk.DrawingArea):
 			else:
 				self.statuslabels[1].set_label("")		
 					
+	def update_all(self):
+		if self.window and self.window.is_visible():
+			self.prepare_textbuffer()
+			self.refresh_view()
+		
 	def refresh_view(self):
 		if not self.plugin:
 			return
@@ -2507,7 +2534,6 @@ class PatternView(gtk.DrawingArea):
 		self.levels = {}
 		# find largest factor divisor of factor
 		self.factor_sources = {}
-		print self.factors
 		for i, factor in enumerate(self.factors):
 			largest_divisor = None
 			for k in range(i):

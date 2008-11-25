@@ -350,7 +350,8 @@ class SequencerView(gtk.DrawingArea):
 		eventbus = com.get('aldrin.core.eventbus')
 		eventbus.zzub_sequencer_changed += self.redraw
 		eventbus.zzub_set_sequence_event += self.redraw
-						
+		eventbus.document_loaded += self.redraw
+		
 	def track_row_to_pos(self, (track,row)):
 		"""
 		Converts track and row to a pixel coordinate.
@@ -572,6 +573,7 @@ class SequencerView(gtk.DrawingArea):
 		
 	def on_popup_merge(self, *args):
 		player = com.get('aldrin.core.player')
+		player.set_callback_state(False)	
 		seq = player.get_current_sequencer()
 		try:
 			start = (min(self.selection_start[0], self.selection_end[0]), 
@@ -611,6 +613,9 @@ class SequencerView(gtk.DrawingArea):
 						t.set_event(start[1], 0x10+i)
 						break
 		player.history_commit("merge pattern")
+		player.set_callback_state(True)
+		eventbus = com.get('aldrin.core.eventbus')
+		eventbus.document_loaded()	
 		
 	def on_popup_cut(self, *args):
 		self.on_popup_copy(*args)
@@ -618,6 +623,7 @@ class SequencerView(gtk.DrawingArea):
 		
 	def on_popup_paste(self, *args):	
 		player = com.get('aldrin.core.player')
+		player.set_callback_state(False)
 		seq = player.get_current_sequencer()
 		data = get_clipboard_text()
 		for track,row,value in self.unpack_clipboard_data(data.strip()):
@@ -627,9 +633,13 @@ class SequencerView(gtk.DrawingArea):
 			else:
 				t.set_event(self.row + row, value)
 		player.history_commit("paste selection")
+		player.set_callback_state(True)
+		eventbus = com.get('aldrin.core.eventbus')
+		eventbus.document_loaded()
 		
 	def on_popup_delete(self, *args):
 		player = com.get('aldrin.core.player')
+		player.set_callback_state(False)
 		seq = player.get_current_sequencer()
 		print self.selection_start
 		start = (min(self.selection_start[0], self.selection_end[0]), 
@@ -641,7 +651,10 @@ class SequencerView(gtk.DrawingArea):
 			for row in range(start[1], end[1]+1):
 				t.set_event(row, -1)
 		player.history_commit("delete selection")
-		
+		player.set_callback_state(True)
+		eventbus = com.get('aldrin.core.eventbus')
+		eventbus.document_loaded()
+				
 	def on_popup_delete_track(self, *args):
 		"""
 		Callback that handles track deletion via the popup menu
@@ -1070,7 +1083,7 @@ class SequencerView(gtk.DrawingArea):
 		return False
 		
 	def redraw(self, *args):
-		if self.window:
+		if self.window and self.window.is_visible():
 			rect = self.get_allocation()
 			self.window.invalidate_rect((0,0,rect.width,rect.height), False)
 

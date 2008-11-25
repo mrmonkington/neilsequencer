@@ -366,17 +366,25 @@ class AldrinFrame(gtk.Window):
 		"""
 		Called when an undo item is being called.
 		"""
-		print "UNDO"
-		com.get('aldrin.core.player').undo()
-		self.print_history()
-			
+		player = com.get('aldrin.core.player')		
+		player.set_callback_state(False)
+		player.undo()
+		player.set_callback_state(True)
+		eventbus = com.get('aldrin.core.eventbus')
+		eventbus.document_loaded()
+		#self.print_history()
+		
 	def on_redo(self, *args):
 		"""
 		Called when an undo item is being called.
 		"""
-		print "REDO"
-		com.get('aldrin.core.player').redo()
-		self.print_history()
+		player = com.get('aldrin.core.player')		
+		player.set_callback_state(False)
+		player.redo()
+		player.set_callback_state(True)		
+		eventbus = com.get('aldrin.core.eventbus')
+		eventbus.document_loaded()
+		#self.print_history()
 		
 	def print_history(self):
 		"""
@@ -620,6 +628,7 @@ class AldrinFrame(gtk.Window):
 			return
 		self.clear()
 		player = com.get('aldrin.core.player')
+
 		base,ext = os.path.splitext(filename)
 		if ext.lower() in ('.bmx','.bmw'):
 			#~ progress = ProgressDialog("Aldrin", "Loading BMX Song...")
@@ -645,7 +654,9 @@ class AldrinFrame(gtk.Window):
 			progBar.pulse()
 			refresh_gui()
 			gobject.timeout_add(50, progress_callback)
+			player.set_callback_state(False)
 			player.load_ccm(filename)
+			player.set_callback_state(True)
 			player.document_unchanged()
 			done = True
 			refresh_gui()
