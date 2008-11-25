@@ -90,9 +90,10 @@ class PluginContextMenu(gtk.Menu):
 			menu.add_item("_Signal Analysis", self.on_popup_show_signalanalysis, mp, index)
 		elif conntype == zzub.zzub_connection_type_event:
 			menu.add_separator()
-			mi = conn.get_input()
-			for param in mi.get_pluginloader().get_parameter_list(3):
-				print param
+			mi = mp.get_input_connection_plugin(index).get_pluginloader()
+			for i in range(mi.get_parameter_count(3)):
+				param = mi.get_parameter(3, i)
+				print param.get_name()
 		
 	def populate_pluginmenu(self, menu):
 		mp = menu.context

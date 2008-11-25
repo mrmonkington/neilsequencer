@@ -2766,8 +2766,10 @@ class PatternView(gtk.DrawingArea):
 			num_rows = min(rows - row, (h - clipy1) / PATROWHEIGHT*self.resolution + 1)
 			out_of_bounds = False
 			for t in range(self.group_track_count[CONN]):
-				extent = draw_parameters_range(row, num_rows, CONN, t, resolution=self.resolution)
-				out_of_bounds = extent > w
+				connectiontype = self.get_plugin().get_input_connection_type(t)
+				if connectiontype == zzub.zzub_connection_type_audio:
+					extent = draw_parameters_range(row, num_rows, CONN, t, resolution=self.resolution)
+					out_of_bounds = extent > w
 			if not out_of_bounds:	
 				if self.lines[GLOBAL]:
 					extent = draw_parameters_range(row, num_rows, GLOBAL, 0, resolution=self.resolution)
