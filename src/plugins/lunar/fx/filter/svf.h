@@ -7,6 +7,20 @@
 #define M_PI		3.14159265358979323846
 #endif
 
+//static inline float undenormalise(float sample)
+//{
+//  if ((((unsigned int)sample) & 0x7f800000) == 0)
+//         return 0.0f;
+//  return sample;
+//}
+static void inline undenormalise(float *sample)
+{
+    if (((*(unsigned int*)sample) & 0x7f800000) <  0x08000000)
+        *sample = 0.0f;
+}
+ 
+
+
 struct svf {
 	float fs; // sampling frequency
 	float fc; // cutoff frequency normally something like: 440.0*pow(2.0, (midi_note - 69.0)/12.0);
@@ -62,15 +76,23 @@ struct svf {
 		float in, out;
 		while (size--) {
 			in = *buffer;
-			v[0] = in - damp * v[3];
-			v[1] = v[1] + freq * v[3];
-			v[2] = v[0] - v[1];
-			v[3] = freq * v[2] + v[3] - drive * v[3] * v[3] * v[3];
+			v[0] = (in - damp * v[3]);
+			undenormalise(&v[0]);
+			v[1] = (v[1] + freq * v[3]);
+			undenormalise(&v[1]);
+			v[2] = (v[0] - v[1]);
+			undenormalise(&v[2]);
+			v[3] = (freq * v[2] + v[3] - drive * v[3] * v[3] * v[3]);
+			undenormalise(&v[3]);
 			out = 0.5 * v[mode];
-			v[0] = in - damp * v[3];
-			v[1] = v[1] + freq * v[3];
-			v[2] = v[0] - v[1];
-			v[3] = freq * v[2] + v[3] - drive * v[3] * v[3] * v[3];
+			v[0] = (in - damp * v[3]);
+			undenormalise(&v[0]);
+			v[1] = (v[1] + freq * v[3]);
+			undenormalise(&v[1]);
+			v[2] = (v[0] - v[1]);
+			undenormalise(&v[2]);
+			v[3] = (freq * v[2] + v[3] - drive * v[3] * v[3] * v[3]);				
+			undenormalise(&v[3]);			
 			out += 0.5 * v[mode];
 			*buffer++ = out;
 		}

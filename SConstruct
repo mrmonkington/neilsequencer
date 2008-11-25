@@ -189,7 +189,7 @@ if gcc:
 	if env['SSE2'] == True:
 		if not x86_64:
 			env.Append(CCFLAGS=[
-				'-march=i686',
+				'-march=i686', 
 			])
 		env.Append(CCFLAGS=[
 			'-mfpmath=sse',
