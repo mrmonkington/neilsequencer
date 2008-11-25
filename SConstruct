@@ -446,8 +446,10 @@ if (not is_cleaning()) and ('configure' in COMMAND_LINE_TARGETS):
 			env['OSS'] = True
 		if conf.CheckCHeader('ladspa.h'):
 			env['LADSPA'] = True
-		if conf.CheckCHeader('dssi.h'):
+		if conf.CheckCHeader('dssi.h') and conf.CheckCHeader('lo/lo.h'):
 			env['DSSI'] = True
+                else:
+			env['DSSI'] = False
 		if not sum([env['COREAUDIO'],env['ALSA'],env['JACK'],env['OSS']]):
 			print "Error: no sound library development files seem to be installed."
 			print "Libraries and headers for either ALSA, OSS, JACK or CoreAudio are required for building."

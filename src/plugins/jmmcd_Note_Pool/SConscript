@@ -20,36 +20,11 @@
 
 Import('pluginenv', 'build_plugin')
 
-build_plugin(pluginenv, 'Geonik_PrimiFun', [
-	'BuzzMachines/PrimiFun.cpp',
-])
-
-build_plugin(pluginenv, 'Geonik_PluckedString', [
-	'BuzzMachines/PluckedString.cpp',
-])
-
-# build_plugin(pluginenv, 'Geonik_Gapper', [
-# 	'BuzzMachines/Gapper.cpp',
-# ])
-
-build_plugin(pluginenv, 'Geonik_DF_Filter', [
-	'BuzzMachines/DfFilter.cpp',
-],
-	helpfiles=[
-		#'Geonik_DF_Filter.html',
-	]
-)
-
-# sndfile_pluginenv = pluginenv.Copy()
-# sndfile_pluginenv.Append(LIBS=[
-# 		'sndfile',
-# 	])
-# sndfile_pluginenv.Append(CCFLAGS=[
-# 		'-DUSE_SNDFILE',
-# 	])
-
-# build_plugin(sndfile_pluginenv, 'Geonik_Omega1', [
-# 	'BuzzMachines/Omega1.cpp',
+build_plugin(pluginenv, 'jmmcd_Note_Pool', [
+	'jmmcd_Note_Pool.cpp',
+	],
+# 	helpfiles=[
+# 		'index.html',
 # 	]
-# )
+)
 
