@@ -22,7 +22,7 @@
 Provides an interface to the freesound web XML api.
 """
 
-import urllib, urlparse, urllib2, cookielib, config
+import urllib, urlparse, urllib2, cookielib #, config
 import xml.dom.minidom
 import os,sys
 
@@ -49,7 +49,6 @@ class Freesound:
 	def make_url(self, baseurl, **kargs):
 		if kargs:
 			baseurl += '?' + urllib.urlencode(kargs)
-		#~ print baseurl
 		return baseurl
 
 	def call(self, baseurl, **kargs):
@@ -62,9 +61,9 @@ class Freesound:
 		self.call_post(self.LOGIN_URL, 
 			username=username,
 			password=password,
-			redirect="../index.php",
-			login="login",
-			autologin="1")
+			redirect="",
+			autologin="on",
+			login="Log in",)
 		assert self.is_logged_in()
 			
 	def is_logged_in(self):
@@ -115,6 +114,6 @@ class Freesound:
 
 if __name__ == '__main__':
 	fs = Freesound()
-	uname, passwd = config.get_config().get_credentials("Freesound")
+	config.get_config().get_credentials("Freesound")
 	fs.login(uname,passwd)
 	print "%i results found." % len(fs.search("apple").getElementsByTagName("sample"))

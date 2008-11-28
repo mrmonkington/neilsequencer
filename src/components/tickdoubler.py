@@ -39,7 +39,7 @@ class TickDoublerDialog(gtk.Dialog):
 	)
 	
 	def __init__(self, hide_on_delete=True):
-		gtk.Dialog.__init__(self, "double your tick size")
+		gtk.Dialog.__init__(self, "Change resolution of song")
 		
 		# do not destroy dialog on close
 		if hide_on_delete:
