@@ -915,6 +915,8 @@ class SequencerView(gtk.DrawingArea):
 				t.set_event(bp, -1)
 				player.history_commit("remove pattern reference")
 				self.set_cursor_pos(self.track, newrow - (newrow % self.step))
+			else:
+				self.set_cursor_pos(self.track, self.row + self.step)
 		elif k == 'Home' or k == 'KP_Home':
 			self.set_cursor_pos(self.track, 0)
 		elif k == 'End' or k == 'KP_End':
