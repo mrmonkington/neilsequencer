@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<zzub>
+  <plugin
+     uri="@mda/effect/mdaBandisto;1"
+     name="Lunar mdaBandisto"
+     shortname="mdaBandisto"
+     type="effect"
+     description="Multi-band distortion."
+     author="Vytautas Jancauskas"
+     email="unaudio@gmail.com">
+    <parameters>
+      <valuenamegroup>
+	<valuenames id="listen">
+	  <alias value="0" name="Low"/>
+	  <alias value="1" name="Mid"/>
+	  <alias value="2" name="High"/>
+	  <alias value="3" name="Output"/>
+	</valuenames>
+	<valuenames id="mode">
+	  <alias value="0" name="Bipolar"/>
+	  <alias value="1" name="Unipolar"/>
+	</valuenames>
+      </valuenamegroup>
+      <global>
+	<parameter
+	   id="fParam1_p"
+	   name="Listen:"
+	   type="byte"
+	   minvalue="0"
+	   maxvalue="3"
+	   defvalue="3"
+	   valuenames="listen"
+	   state="true"/>
+	<parameter
+	   id="fParam2_p"
+	   name="L - M"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0.4"
+	   precision="0.01"
+	   state="true"/>
+	<parameter
+	   id="fParam3_p"
+	   name="M - H"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0.5"
+	   precision="0.01"
+	   state="true"/>
+	<parameter
+	   id="fParam4_p"
+	   name="L Dist"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0.5"
+	   precision="0.01"
+	   state="true"/>
+	<parameter
+	   id="fParam5_p"
+	   name="M Dist"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0.5"
+	   precision="0.01"
+	   state="true"/>
+	<parameter
+	   id="fParam6_p"
+	   name="H Dist"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0.5"
+	   precision="0.01"
+	   state="true"/>
+	<parameter
+	   id="fParam7_p"
+	   name="L Out"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0.5"
+	   precision="0.01"
+	   state="true"/>
+	<parameter
+	   id="fParam8_p"
+	   name="M Out"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0.5"
+	   precision="0.01"
+	   state="true"/>
+	<parameter
+	   id="fParam9_p"
+	   name="H Out"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0.5"
+	   precision="0.01"
+	   state="true"/>
+	<parameter
+	   id="fParam10_p"
+	   name="Mode:"
+	   type="byte"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0"
+	   valuenames="mode"
+	   state="true"/>
+      </global>
+      <track>
+      </track>
+    </parameters>
+    <attributes>
+    </attributes>
+    <files>
+      <file ref="mdaBandisto.cpp"/>
+      <file ref="mdaBandisto.hpp"/>
+    </files>
+    <modules>
+      <module id="mdaBandisto">
+	<source language="c++" ref="mdaBandisto.cpp" fxdef="mdaBandisto.hpp"/>
+      </module>
+    </modules>
+  </plugin>
+</zzub>
