@@ -136,7 +136,7 @@ class WavetablePanel(gtk.Notebook):
 			('Name', str),
 			(None, gobject.TYPE_PYOBJECT),
 		])
-		self.view = self.samplelist
+		self.samplelist.get_selection().select_path(0)
 		# XXX: TODO
 		#~ imglist = wx.ImageList(16,16)
 		#~ self.IMG_SAMPLE_WAVE = imglist.Add(wx.Bitmap(filepath("res/wave.png"), wx.BITMAP_TYPE_ANY))
@@ -277,7 +277,8 @@ class WavetablePanel(gtk.Notebook):
 		self.waveedit.update()
 		
 	def handle_focus(self):
-		self.view.grab_focus()
+		self.samplelist.grab_focus()
+		self.samplelist.get_selection().select_path(0)
 		
 	def on_libpanel_selection_changed(self, widget):
 		"""
