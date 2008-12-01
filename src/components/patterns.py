@@ -1730,6 +1730,8 @@ class PatternView(gtk.DrawingArea):
 		Callback that doubles the length of the current pattern while
 		keeping notes intact
 		"""
+		player = com.get('aldrin.core.player')
+		player.set_callback_state(False)		
 		pattern_index=[]
 		pattern_contents=[]
 		for r,g,t,i in self.pattern_range():
@@ -1744,12 +1746,17 @@ class PatternView(gtk.DrawingArea):
 			item+=1
 		player = com.get('aldrin.core.player')
 		player.history_commit("double length")
+		if player.set_callback_state(True):
+			eventbus = com.get('aldrin.core.eventbus')
+			eventbus.document_loaded()		
 		
 	def on_popup_halve(self, *args):
 		"""
 		Callback that halves the length of the current pattern while
 		keeping notes intact
 		"""
+		player = com.get('aldrin.core.player')
+		player.set_callback_state(False)
 		if self.plugin.get_pattern_length(self.pattern)==1:
 			return
 		for r,g,t,i in self.pattern_range():
@@ -1759,7 +1766,10 @@ class PatternView(gtk.DrawingArea):
 		self.plugin.set_pattern_length(self.pattern,self.plugin.get_pattern_length(self.pattern)/2)
 		player = com.get('aldrin.core.player')
 		player.history_commit("halve length")
-		
+		if player.set_callback_state(True):
+			eventbus = com.get('aldrin.core.eventbus')
+			eventbus.document_loaded()
+			
 	def on_popup_create_copy(self, *args):
 		"""
 		Callback that creates a copy of the current pattern.
