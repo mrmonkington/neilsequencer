@@ -229,10 +229,10 @@ class AldrinFrame(gtk.Window):
 	)
 
 	OPEN_SONG_FILTER = [
-		file_filter("All songs (*.ccm,*.bmw,*.bmx)", "*.ccm", "*.bmw", "*.bmx"),
+		#file_filter("All songs (*.ccm,*.bmw,*.bmx)", "*.ccm", "*.bmw", "*.bmx"),
 		file_filter("CCM Songs (*.ccm)", "*.ccm"),
-		file_filter("BMX Songs with waves (*.bmx)","*.bmx"),
-		file_filter("BMX Songs without waves (*.bmw)","*.bmw"),
+		#file_filter("BMX Songs with waves (*.bmx)","*.bmx"),
+		#file_filter("BMX Songs without waves (*.bmw)","*.bmw"),
 	]
 	
 	SAVE_SONG_FILTER = [
@@ -630,15 +630,15 @@ class AldrinFrame(gtk.Window):
 		player = com.get('aldrin.core.player')
 
 		base,ext = os.path.splitext(filename)
-		if ext.lower() in ('.bmx','.bmw'):
+		#f ext.lower() in ('.bmx','.bmw'):
 			#~ progress = ProgressDialog("Aldrin", "Loading BMX Song...")
 			#~ Yield()
-			player.clear()
-			player.load_bmx(filename)
-			player.document_unchanged()
+			#player.clear()
+			#player.load_bmx(filename)
+			#player.document_unchanged()
 			#~ Yield()
 			#~ progress.Update(100)
-		elif ext.lower() in ('.ccm'):
+		if ext.lower() in ('.ccm'):
 			dlg = gtk.Dialog('Aldrin', flags=gtk.DIALOG_MODAL)
 			progBar = gtk.ProgressBar()
 			progBar.set_text('Loading CCM Song...')
