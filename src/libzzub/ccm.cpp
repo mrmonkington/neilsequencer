@@ -611,8 +611,17 @@ xml_node CcmWriter::savePatternTrack(xml_node &parent, const std::string &colnam
 				e.set_name("e");
 				e.append_attribute("t") = fac * double(i);
 				if (group == 0) {
-					e.append_attribute("ref") = id_from_ptr(player.plugin_get_input_connection(plugin, track)).c_str();
-					// we save normals, not exposing implementation details
+
+					// It's not clear how amp and pan values should be saved. One possibility
+					// is to save them as "amp" and "pan" attributes under the node corresponding to
+					// to the connection itself. That's what we do here. It might be nicer to
+					// store them as ordinary "v" attributes under the node corresponding to the param:
+					// ie maybe it should be like this instead, once for amp and once for pan:
+					// e.append_attribute("ref") = id_from_ptr(param).c_str();
+
+					// Values are converted to double for storage and converted back during load,
+					// to avoid exposing an implementation detail. Although every other parameter
+					// is stored as an implementation-specific int value. Hmm.
 					if (j == 0) {
 						e.append_attribute("amp") = amp_to_double(value);
 					} else if (j == 1) {
@@ -620,6 +629,10 @@ xml_node CcmWriter::savePatternTrack(xml_node &parent, const std::string &colnam
 					} else {
 						assert(0);
 					}
+					// Order is important here? "ref" has to be appended *after* "amp" or "pan"
+					// I don't know why.
+					e.append_attribute("ref") = id_from_ptr(player.plugin_get_input_connection(plugin, track)).c_str();					
+
 				} else {
 					e.append_attribute("ref") = id_from_ptr(param).c_str();
 					e.append_attribute("v") = value;
@@ -1628,18 +1641,39 @@ bool CcmReader::loadPlugins(xml_node plugins, zzub::player &player) {
 						}
 
 
-						if (group != 0) { // TODO: connections not supported yet
-							for (xml_node::iterator k = j->begin(); k != j->end(); ++k) {
-								if (!strcmp(k->name(), "e")) {
-									int row = int(double(k->attribute("t").as_double()) * tpbfac + 0.5);
-									assert(row < rows);
-									xml_node paraminfo = getNodeById(k->attribute("ref").value());
-									assert(!paraminfo.empty()); // not being able to deduce the index is fatal
-									player.plugin_set_pattern_value(plugin, pattern_index, group, track, long(paraminfo.attribute("index").as_int()), row, long(k->attribute("v").as_int()));
+						for (xml_node::iterator k = j->begin(); k != j->end(); ++k) {
+							if (!strcmp(k->name(), "e")) {
+								int row = int(double(k->attribute("t").as_double()) * tpbfac + 0.5);
+								assert(row < rows);
+								xml_node paraminfo = getNodeById(k->attribute("ref").value()); // not being able to deduce the index is fatal
+								assert(!paraminfo.empty());
+								
+								long idx = long(paraminfo.attribute("index").as_int());
+								long value;
+								xml_attribute v = k->attribute("v");
+								if (!v.empty()) {
+									value = long(v.as_int());
+								} else {
+									// maybe it's amp:
+									v = k->attribute("amp");
+									if (!v.empty()) {
+										value = long(double_to_amp(v.as_double()));
+										idx = 0;
+									} else {
+										// maybe it's pan:
+										if (!v.empty()) {
+											value = long(double_to_pan(v.as_double()));
+											idx = 1;
+										} else {
+											// Don't know what this node is.
+											assert(false);
+										}
+									}
 								}
+								
+								player.plugin_set_pattern_value(plugin, pattern_index, group, track, idx, row, value);
 							}
 						}
-
 					}
 				}
 			}
