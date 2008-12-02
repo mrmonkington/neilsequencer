@@ -664,8 +664,10 @@ class SequencerView(gtk.DrawingArea):
 		"""
 		player = com.get('aldrin.core.player')
 		seq = player.get_current_sequencer()
-		seq.remove_track(self.track)
+		t = seq.get_track_list()[self.track]
+		t.destroy()
 		track_count = seq.get_sequence_track_count()
+		player.history_commit("delete track")
 		# moves cursor if beyond existing tracks
 		if self.track > track_count-1:			
 			self.set_cursor_pos(track_count-1, self.row)
@@ -843,13 +845,17 @@ class SequencerView(gtk.DrawingArea):
 				self.on_popup_paste()
 			elif k == 'Up' or k == 'KP_Up':
 				if self.track > 0:
-					seq.move_track(self.track, self.track-1)
+					t = seq.get_track_list()[self.track]
+					t.move(self.track-1)
 					self.track -= 1
+					player.history_commit("move track")
 					self.redraw()	
 			elif k == 'Down' or k == 'KP_Down':
 				if self.track < (seq.get_sequence_track_count()-1):
-					seq.move_track(self.track, self.track+1)
+					t = seq.get_track_list()[self.track]
+					t.move(self.track+1)
 					self.track += 1
+					player.history_commit("move track")
 					self.redraw()
 			elif k == 'Left' or k == 'KP_Left':
 				self.set_cursor_pos(self.track, self.row - (self.step*16))

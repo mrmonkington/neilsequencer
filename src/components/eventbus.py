@@ -87,7 +87,7 @@ EVENTS = [
 	'zzub_pre_set_tracks', # ( plugin,... )
 	'zzub_sequencer_add_track', # ( plugin,... )
 	'zzub_sequencer_changed', # ( plugin,track,time,... )
-	'zzub_sequencer_remove_track', # ( plugin,... )
+	'zzub_sequencer_remove_track', # ( plugin,... ) ## FIXME has been renamed in zzub as sequence.destroy
 	'zzub_set_sequence_event', # ( plugin,track,time,... )
 	'zzub_set_sequence_tracks', # ( plugin,... )
 	'zzub_set_tracks', # ( plugin,... )
