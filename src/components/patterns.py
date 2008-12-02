@@ -246,6 +246,7 @@ class PatternToolBar(gtk.HBox):
 			get_selection_func=self.get_plugin_sel, 
 			set_selection_func=self.set_plugin_sel,
 		)
+		self.pluginselect.set_active(0)
 		eventbus.zzub_new_plugin += self.pluginselect.update
 		eventbus.zzub_delete_plugin += self.pluginselect.update
 		eventbus.active_plugins_changed += self.pluginselect.update		
