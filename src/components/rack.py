@@ -163,7 +163,9 @@ class ParameterView(gtk.VBox):
 		if plugin == self.plugin:
 			g,t,i,v = group, track, param, value
 			p = self.pluginloader.get_parameter(g,i)
-			if p and (p.get_flags() & zzub.zzub_parameter_flag_state):
+			# Try to get the parameter. If we can't, it might be an incoming amp/pan
+			# parameter (g == 0). Either way we can update the rack.
+			if (p and (p.get_flags() & zzub.zzub_parameter_flag_state)) or (not p and g == 0):
 				nl,s,vl = self.pid2ctrls[(g,t,i)]
 				v = self.plugin.get_parameter_value(g,t,i)
 				s.set_value(v)
