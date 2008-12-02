@@ -30,7 +30,7 @@ extern "C"
 {
 #include "utils.h"
 }
-
+#include <zzub/plugin.h>
 
 void query_programs(struct dssidapter *instance);
 void schedule_program_change(struct dssidapter *instance, unsigned long bank, unsigned long program);
