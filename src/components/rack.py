@@ -401,9 +401,13 @@ class ParameterView(gtk.VBox):
 		import aldrin.controller as controller
 		player = com.get('aldrin.core.player')
 		res = controller.learn_controller(self)
+
 		if res:
 			name, channel, ctrlid = res
-			player.add_midimapping(self.plugin, g, t, i, channel, ctrlid)
+			# FIXME: commented-out for now, because midi controllers crash aldrin
+			# after closing and reopening a rack.
+			# player.add_midimapping(self.plugin, g, t, i, channel, ctrlid)
+			# player.history_commit("add MIDI mapping")
 		self.update_namelabel(g,t,i)
 
 	def on_bind_controller(self, widget, (g,t,i), (name,channel,ctrlid)):
@@ -415,7 +419,10 @@ class ParameterView(gtk.VBox):
 		@type event: wx.Event
 		"""
 		player = com.get('aldrin.core.player')
-		player.add_midimapping(self.plugin, g, t, i, channel, ctrlid)
+		# FIXME: commented-out for now, because midi controllers crash aldrin
+		# after closing and reopening a rack.
+		# player.add_midimapping(self.plugin, g, t, i, channel, ctrlid)
+		# player.history_commit("add MIDI mapping")
 		self.update_namelabel(g,t,i)
 		
 	def get_event_connection_bindings(self, g,t,i):

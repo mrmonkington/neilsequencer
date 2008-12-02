@@ -27,6 +27,7 @@ import gtk
 import zzub
 import webbrowser
 
+import aldrin.com as com
 from utils import prepstr, buffersize_to_latency, filepath, error, add_scrollbars, new_listview
 import utils
 import config
@@ -83,6 +84,8 @@ class SelectControllerDialog(gtk.Dialog):
 		self.connect('response', self.on_close)
 		self.editname.connect('activate', self.on_editname_activate)
 		self.editname.connect('changed', self.on_editname_text)
+		eventbus = com.get('aldrin.core.eventbus')
+		eventbus.zzub_midi_control += self.on_player_callback
 		self.update()
 		self.show_all()
 		
@@ -121,35 +124,34 @@ class SelectControllerDialog(gtk.Dialog):
 		else:
 			self.btnok.set_sensitive(False)
 		
-	def on_player_callback(self, player, plugin, data):
+	def on_player_callback(self, status, ctrl, data):
 		"""
 		callback for ui events sent by zzub.
-		
-		@param player: player instance.
-		@type player: zzub.Player
-		@param plugin: plugin instance
-		@type plugin: zzub.Plugin
-		@param data: event data.
-		@type data: zzub_event_data_t
+
+		@param status: something to do with midi status?
+		@type status: int
+		@param controller: midi controller, eg 1 for modwheel, 7 for volume
+		@type controller: int
+		@param data: midi event data.
+		@type data: int
 		"""
-		if data.type == zzub.zzub_event_type_midi_control:
-			ctrl = getattr(data,'').midi_message
-			cmd = ctrl.status >> 4
-			if cmd == 0xb:
-				channel = ctrl.status & 0xf
-				controller = ctrl.data1
-				value = ctrl.data2
-				self.controllerlabel.set_label(prepstr("%i" % controller))
-				self.channellabel.set_label(prepstr("%i" % (channel+1)))
-				self.valuelabel.set_label(prepstr("%i" % value))
-				self._target = channel,controller
-				self.suggest_text("CC #%03i (CH%02i)" % (channel+1, controller))
-				self.update()
+		cmd = status >> 4
+		if cmd == 0xb:
+			channel = status & 0xf
+			controller = ctrl
+			value = data
+			self.controllerlabel.set_label(prepstr("%i" % controller))
+			self.channellabel.set_label(prepstr("%i" % (channel+1)))
+			self.valuelabel.set_label(prepstr("%i" % value))
+			self._target = channel,controller
+			self.suggest_text("CC #%03i (CH%02i)" % (channel+1, controller))
+			self.update()
 		
 	def on_close(self, widget, response):
 		"""
 		Called when the dialog is closed.
 		"""
+		# FIXME should we remove on_player_callback from the eventbus?
 		pass
 		
 def learn_controller(parent):
