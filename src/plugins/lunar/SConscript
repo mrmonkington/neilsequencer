@@ -58,6 +58,7 @@ if pluginenv["LUNAR"] == True:
 		])
 	pluginenv.Append(CCFLAGS=[
 		'-DZZUB_SHARE_DIR_PATH="\\"%s\\""' % str(pluginenv.Dir("${DESTDIR}${PREFIX}/share/zzub")),
+		'-DZZUB_LIB_DIR_PATH="\\"%s\\""' % str(pluginenv.Dir("${DESTDIR}${PREFIX}${LIBDIR}/zzub")),
 		'-DSHLIBSUFFIX="\\"%s\\""' % pluginenv['SHLIBSUFFIX'],
 		'-DUSE_LUNAR',
 	])

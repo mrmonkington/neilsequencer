@@ -1474,10 +1474,11 @@ struct dspplugincollection : zzub::plugincollection {
 		strcat(modulename, "\\..\\lunar\\fx");
 		enumerate_plugins(modulename);
 #else
-		enumerate_plugins("/usr/local/lib64/lunar/fx");
-		enumerate_plugins("/usr/local/lib/lunar/fx");
-		enumerate_plugins("/usr/lib64/lunar/fx");
-		enumerate_plugins("/usr/lib/lunar/fx");
+		char modulepath[PATH_MAX];
+		strncpy(modulepath, ZZUB_LIB_DIR_PATH, PATH_MAX);
+		modulepath[PATH_MAX] = '\0';
+		strcat(modulepath, "/../lunar/fx");
+		enumerate_plugins(modulepath);
 #endif
 		
 		this->factory = factory;
