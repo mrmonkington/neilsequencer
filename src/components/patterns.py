@@ -744,9 +744,9 @@ class PatternView(gtk.DrawingArea):
 		self.top_margin = fh # top margin
 		self.column_width = fw # column width
 		
-	def tab_to_second_track(self):
+	def tab_to_note_column(self):
 		"""
-		tab to (usually) first note column
+		Tab to group 1 track 0 -- usually the first note column
 		"""
 		if self.move_track_right():
 			self.set_index(0)
@@ -755,7 +755,7 @@ class PatternView(gtk.DrawingArea):
 			self.refresh_view()
 			
 	def plugin_created(self, *args):
-		self.jump_to_note = True # mark that we want tab_to_second_track on next update
+		self.jump_to_note = True # mark that we want tab_to_note_column on next update
 	
 	def on_copy(self, widget):
 		"""
@@ -1058,7 +1058,7 @@ class PatternView(gtk.DrawingArea):
 		if plugin:
 			self.plugin_info.get(plugin).reset_patterngfx()
 		if self.jump_to_note:
-			self.tab_to_second_track()
+			self.tab_to_note_column()
 			self.jump_to_note = False
 
 	def move_up(self, step = 1):
