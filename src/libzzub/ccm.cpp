@@ -596,7 +596,7 @@ xml_node CcmWriter::saveAttributes(xml_node &parent, zzub::song &player, int plu
 xml_node CcmWriter::savePatternTrack(xml_node &parent, const std::string &colname, double fac, zzub::song &player, int plugin, zzub::pattern &p, int group, int track) {
 	xml_node item = parent.append_child(node_element);
 	item.set_name(colname.c_str());
-	if (group == 2)
+	if (group == 2 || group == 0)
 		item.append_attribute("index") = track;
 	
 	//zzub::patterntrack& t = *p.getPatternTrack(group, track);
@@ -631,7 +631,7 @@ xml_node CcmWriter::savePatternTrack(xml_node &parent, const std::string &colnam
 					}
 					// Order is important here? "ref" has to be appended *after* "amp" or "pan"
 					// I don't know why.
-					e.append_attribute("ref") = id_from_ptr(player.plugin_get_input_connection(plugin, track)).c_str();					
+					e.append_attribute("ref") = id_from_ptr(player.plugin_get_input_connection(plugin, track)).c_str();
 
 				} else {
 					e.append_attribute("ref") = id_from_ptr(param).c_str();
@@ -1635,6 +1635,7 @@ bool CcmReader::loadPlugins(xml_node plugins, zzub::player &player) {
 							group = 1;
 						} else if (!strcmp(j->name(), "c")) {
 							group = 0;
+							track = (int)long(j->attribute("index").as_int());
 						} else if (!strcmp(j->name(), "t")) {
 							group = 2;
 							track = (int)long(j->attribute("index").as_int());
@@ -1661,6 +1662,7 @@ bool CcmReader::loadPlugins(xml_node plugins, zzub::player &player) {
 										idx = 0;
 									} else {
 										// maybe it's pan:
+										v = k->attribute("pan");
 										if (!v.empty()) {
 											value = long(double_to_pan(v.as_double()));
 											idx = 1;
