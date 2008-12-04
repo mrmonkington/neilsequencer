@@ -1858,8 +1858,10 @@ class PatternView(gtk.DrawingArea):
 		self.delete()
 		
 	def tab_left(self):
-		# move to previous track
-		if self.move_track_left():
+		if (self.index != 0 or self.subindex != 0) or self.move_track_left():
+			# If not at start of track, go there; if at
+			# start of track, move to previous track. Note
+			# short-circuit evaluation of 'or'.
 			self.set_index(0)
 			self.set_subindex(0)
 			self.show_cursor_left()
