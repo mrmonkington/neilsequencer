@@ -79,6 +79,10 @@ CONFIG_OPTIONS = dict(
 	),
 	PluginListBrowser = dict(
 		SearchTerm = dict(func='pluginlistbrowser_search_term',default='',vtype=str,doc="the current plugin search mask."),
+		ShowGenerators = dict(func='pluginlistbrowser_show_generators',default='true',vtype=bool,doc="Show generators."),
+		ShowEffects = dict(func='pluginlistbrowser_show_effects',default='true',vtype=bool,doc="Show effects."),
+		ShowControllers = dict(func='pluginlistbrowser_show_controllers',default='true',vtype=bool,doc="Show controllers."),
+		ShowNonNative = dict(func='pluginlistbrowser_show_nonnative',default='false',vtype=bool,doc="Show non-native plugins."),
 	),
 	WavetablePaths = dict(
 		Path = dict(list=True,func='wavetable_paths',vtype=str,doc="the list of wavetable paths."),

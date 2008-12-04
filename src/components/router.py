@@ -417,6 +417,28 @@ class PluginListBrowser(gtk.VBox):
 			(None, object),
 			(None, str, dict(markup=True)),
 		])
+
+		# checkboxes
+		self.check_containers = [gtk.HBox() for i in range(2)]
+		self.pack_end(self.check_containers[1], False, False)
+		self.pack_end(self.check_containers[0], False, False)
+
+		self.show_generators_button = gtk.CheckButton(label="Generators")
+		self.check_containers[0].add(self.show_generators_button)
+		self.show_generators_button.connect("toggled", self.on_checkbox_changed)
+
+		self.show_effects_button = gtk.CheckButton(label="Effects")
+		self.check_containers[0].add(self.show_effects_button)
+		self.show_effects_button.connect("toggled", self.on_checkbox_changed)
+
+		self.show_controllers_button = gtk.CheckButton(label="Controllers")
+		self.check_containers[1].add(self.show_controllers_button)
+		self.show_controllers_button.connect("toggled", self.on_checkbox_changed)
+
+		self.show_nonnative_button = gtk.CheckButton(label="Non-native")
+		self.check_containers[1].add(self.show_nonnative_button)
+		self.show_nonnative_button.connect("toggled", self.on_checkbox_changed)
+
 		self.store = self.treeview.get_model()
 		self.treeview.set_headers_visible(False)
 		self.treeview.set_rules_hint(True)
@@ -433,7 +455,12 @@ class PluginListBrowser(gtk.VBox):
 		self.treeview.connect('drag_data_get', self.on_treeview_drag_data_get)
 		cfg = com.get('aldrin.core.config')
 		self.searchbox.set_text(cfg.pluginlistbrowser_search_term)
-		
+		self.show_generators_button.set_active(cfg.pluginlistbrowser_show_generators)
+		self.show_effects_button.set_active(cfg.pluginlistbrowser_show_effects)
+		self.show_controllers_button.set_active(cfg.pluginlistbrowser_show_controllers)
+		self.show_nonnative_button.set_active(cfg.pluginlistbrowser_show_nonnative)
+
+
 	def get_icon_name(self, pluginloader):
 		uri = pluginloader.get_uri()
 		if uri.startswith('@zzub.org/dssidapter/'):
@@ -464,12 +491,40 @@ class PluginListBrowser(gtk.VBox):
 		terms = [word.strip().split(' ') for word in text.lower().strip().split(',')]
 		self.searchterms = terms
 		self.filter.refilter()
+
+	def on_checkbox_changed(self, check):
+		active = check.get_active()
+		cfg = com.get('aldrin.core.config')
+		lbl = check.get_label()
+		if lbl == "Generators":
+			cfg.pluginlistbrowser_show_generators = active
+		elif lbl == "Effects":
+			cfg.pluginlistbrowser_show_effects = active
+		elif lbl == "Controllers":
+			cfg.pluginlistbrowser_show_controllers = active
+		elif lbl == "Non-native":
+			cfg.pluginlistbrowser_show_nonnative = active
+		self.filter.refilter()
 		
 	def filter_item(self, model, it, data):
+		def is_native(pl):
+			name = pl.get_loader_name().lower()
+			if "ladspa" in name or "dssi" in name:
+				return False
+			else:
+				return True
 		if not self.searchterms:
 			return True
 		child = model.get(it, 2)[0]
 		name = child.get_name().lower()
+		if not self.show_nonnative_button.get_active() and not is_native(child):
+			return False
+		if not self.show_generators_button.get_active() and is_generator(child):
+			return False
+		if not self.show_effects_button.get_active() and is_effect(child):
+			return False
+		if not self.show_controllers_button.get_active() and is_controller(child):
+			return False
 		for group in self.searchterms:
 			found = True
 			for word in group:
