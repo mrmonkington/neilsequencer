@@ -23,7 +23,7 @@
 
 #include <dssi.h>
 #include <zzub/signature.h>
-#include <zzub/plugin.h>
+#include "zzub/plugin.h"
 
 #include <vector>
 #include <string>
@@ -756,9 +756,9 @@ void dssidapter::set_parameter_value_dssi(int port, float value) {
      // like it -- it says "_host" is of an incomplete type. Help?
 
      if (verbose) printf("set_parameter_value_dssi, port = %d, value = %f\n", port, value);
-      _host->_player->plugin_set_parameter(this, 0, 0, 
-      					  myinfo->portIdx2ControlInIdx[port],
-     	 					  (int) value, 0);
+     // _host->_player->plugin_set_parameter(this, 0, 0, 
+     // 					  myinfo->portIdx2ControlInIdx[port],
+     // 					  (int) value, 0);
 }
 
 
