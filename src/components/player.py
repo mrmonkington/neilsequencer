@@ -165,11 +165,15 @@ class AldrinPlayer(Player, PropertyEventHandler):
 		pluginpath = os.environ.get('ALDRIN_PLUGIN_PATH',None)
 		if pluginpath:
 			pluginpaths = pluginpath.split(os.pathsep)
+
 		else:
 			pluginpaths = []
 			paths = os.environ.get('LD_LIBRARY_PATH',None) # todo or PATH on mswindows
-			if paths: paths = paths.split(os.pathsep)
-			else: paths = []
+			print paths
+			if paths: 
+				paths = paths.split(os.pathsep)
+			else: 
+				paths = []
 			paths.extend([
 					'/usr/local/lib64',
 					'/usr/local/lib',
@@ -178,9 +182,11 @@ class AldrinPlayer(Player, PropertyEventHandler):
 				])
 			for path in [os.path.join(path, 'zzub') for path in paths]:
 				if os.path.exists(path) and not path in pluginpaths: pluginpaths.append(path)
+			print pluginpaths
 		for pluginpath in pluginpaths:
 			print 'plugin path:', pluginpath
 			self.add_plugin_path(pluginpath + os.sep)
+		
 		inputname, outputname, samplerate, buffersize = config.get_audiodriver_config()
 		self.initialize(samplerate)
 		self.init_lunar()
@@ -602,7 +608,7 @@ class AldrinPlayer(Player, PropertyEventHandler):
 			os.makedirs(userlunarpath)
 		pc.configure("local_storage_dir", userlunarpath)
 		
-	def solo(self, plugin):	
+	def solo(self, plugin):
 
 		if not plugin or plugin == self.solo_plugin:
 			# soloing deactived so apply muted states
