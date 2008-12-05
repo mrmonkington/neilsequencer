@@ -91,7 +91,7 @@ class Preset:
 			write_int(filehandle, param)
 		write_string(filehandle, self.comment)
 			
-	def apply(self, plugin):
+	def apply(self, plugin, dryrun=False):
 		"""
 		Apply the preset to a currently loaded plugin.
 		
@@ -116,7 +116,8 @@ class Preset:
 						idx += 1
 						state_param_count += 1
 						assert v >= p.get_value_min() and v <= p.get_value_max()
-						plugin.set_parameter_value(g,t,i,v,0)
+						if not dryrun:
+							plugin.set_parameter_value(g,t,i,v,0)
 				if g == 2 and (t % trackcount) == trackcount - 1:
 					# We've written all the tracks in this preset: if there are further
 					# tracks in the plugin, reset to the beginning of the preset tracks

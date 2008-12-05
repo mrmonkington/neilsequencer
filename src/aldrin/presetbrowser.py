@@ -125,6 +125,16 @@ class PresetView(gtk.VBox):
 		if response == gtk.RESPONSE_OK:
 			try:
 				new_presets = PresetCollection(self.import_dlg.get_filename())				
+				# Test them first
+				for preset in new_presets.presets:
+					try:
+						preset.apply(self.plugin, dryrun=True)
+					except AssertionError:
+						txt = "This preset file seems intended for a different plugin."
+						print txt
+						error(self, txt)
+						return
+				# If they're all ok, add them
 				for preset in new_presets.presets:
 					self.presets.presets.append(preset)
 				self.presets.sort()				
