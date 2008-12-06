@@ -34,6 +34,7 @@ import gobject
 from aldrin.utils import PLUGIN_FLAGS_MASK, ROOT_PLUGIN_FLAGS, GENERATOR_PLUGIN_FLAGS, EFFECT_PLUGIN_FLAGS, CONTROLLER_PLUGIN_FLAGS
 from aldrin.utils import prepstr, from_hsb, to_hsb, get_item_count, get_clipboard_text, set_clipboard_text, add_scrollbars
 from aldrin.utils import is_effect,is_generator,is_controller,is_root,get_new_pattern_name, filepath
+from aldrin.utils import Menu
 import random
 import config
 import aldrin.common as common
@@ -715,45 +716,35 @@ class SequencerView(gtk.DrawingArea):
 			paste_sensitive = True
 		else:
 			paste_sensitive = False
-		def make_submenu_item(submenu, name):
-			item = gtk.MenuItem(label=name)
-			item.set_submenu(submenu)
-			return item
-		def make_menu_item(label, desc, func, sensitive, *args):
-			item = gtk.MenuItem(label=label)
-			if func:
-				item.connect('activate', func, *args)
-			item.set_sensitive(sensitive)
-			return item
 			
-		wavemenu = gtk.Menu()
+		menu = Menu()
+		pmenu = Menu()
+		wavemenu = Menu()
+		for plugin in sorted(list(player.get_plugin_list()), lambda a,b: cmp(a.get_name().lower(),b.get_name().lower())):
+			pmenu.add_item(prepstr(plugin.get_name().replace("_","__")), self.on_popup_add_track, plugin)
 		for i in xrange(player.get_wave_count()):
 			w = player.get_wave(i)
 			name = "%02X. %s" % ((i+1), prepstr(w.get_name()))
-			wavemenu.append(make_menu_item(name, "", self.on_popup_record_to_wave, True, i))
-			
-		menu = gtk.Menu()
-		pmenu = gtk.Menu()
-		for plugin in sorted(list(player.get_plugin_list()), lambda a,b: cmp(a.get_name().lower(),b.get_name().lower())):
-			pmenu.append(make_menu_item(prepstr(plugin.get_name().replace("_","__")), "", self.on_popup_add_track, True, plugin))
-		menu.append(make_submenu_item(pmenu, "Add track"))
-		menu.append(make_menu_item("Delete track", "", self.on_popup_delete_track, True))
-		menu.append(gtk.SeparatorMenuItem())
-		menu.append(make_menu_item("Set loop start", "", self.set_loop_start, True))
-		menu.append(make_menu_item("Set loop end", "", self.set_loop_end, True))
-		menu.append(gtk.SeparatorMenuItem())
-		menu.append(make_submenu_item(wavemenu, "Record to instrument"))
-		menu.append(gtk.SeparatorMenuItem())
-		menu.append(make_menu_item("Cut", "", self.on_popup_cut, sel_sensitive))
-		menu.append(make_menu_item("Copy", "", self.on_popup_copy, sel_sensitive))
-		menu.append(make_menu_item("Paste", "", self.on_popup_paste, paste_sensitive))
-		menu.append(make_menu_item("Delete", "", self.on_popup_delete, sel_sensitive))
-		menu.append(gtk.SeparatorMenuItem())
-		menu.append(make_menu_item("Create pattern from selection", "", self.on_popup_create_pattern, sel_sensitive))
-		menu.append(make_menu_item("Merge selected patterns", "", self.on_popup_merge, sel_sensitive))
+			wavemenu.add_item(name, self.on_popup_record_to_wave, i)
+
+		menu.add_submenu("Add track", pmenu)
+		menu.add_item("Delete track", self.on_popup_delete_track)
+		menu.add_separator()
+		menu.add_item("Set loop start", self.set_loop_start)
+		menu.add_item("Set loop end", self.set_loop_end)
+		menu.add_separator()
+		menu.add_submenu("Record to instrument", wavemenu)
+		menu.add_separator()
+		menu.add_item("Cut", self.on_popup_cut).set_sensitive(sel_sensitive)
+		menu.add_item("Copy", self.on_popup_copy).set_sensitive(sel_sensitive)
+		menu.add_item("Paste", self.on_popup_paste).set_sensitive(paste_sensitive)
+		menu.add_item("Delete", self.on_popup_delete).set_sensitive(sel_sensitive)
+		menu.add_separator()
+		menu.add_item("Create pattern from selection", self.on_popup_create_pattern).set_sensitive(sel_sensitive)
+		menu.add_item("Merge selected patterns", self.on_popup_merge).set_sensitive(sel_sensitive)
 		menu.show_all()
 		menu.attach_to_widget(self, None)
-		menu.popup(None, None, None, event.button, event.time)
+		menu.popup(self, event)
 	
 	def show_plugin_dialog(self):
 		pmenu = []
