@@ -372,8 +372,10 @@ class ParameterView(gtk.VBox):
 		"""
 		Unbinds all midi controllers from the selected parameter.
 		"""
+		player = com.get('aldrin.core.player')
 		player.remove_midimapping(self.plugin, g, t, i)
 		self.update_namelabel(g,t,i)
+		player.history_commit("remove MIDI mapping")
 		
 	def on_unbind_event_connection_binding(self, widget, (g,t,i)):
 		"""
@@ -408,8 +410,9 @@ class ParameterView(gtk.VBox):
 			name, channel, ctrlid = res
 			# FIXME: commented-out for now, because midi controllers crash aldrin
 			# after closing and reopening a rack.
-			# player.add_midimapping(self.plugin, g, t, i, channel, ctrlid)
-			# player.history_commit("add MIDI mapping")
+			player.add_midimapping(self.plugin, g, t, i, channel, ctrlid)
+			
+			player.history_commit("add MIDI mapping")
 		self.update_namelabel(g,t,i)
 
 	def on_bind_controller(self, widget, (g,t,i), (name,channel,ctrlid)):
@@ -423,8 +426,8 @@ class ParameterView(gtk.VBox):
 		player = com.get('aldrin.core.player')
 		# FIXME: commented-out for now, because midi controllers crash aldrin
 		# after closing and reopening a rack.
-		# player.add_midimapping(self.plugin, g, t, i, channel, ctrlid)
-		# player.history_commit("add MIDI mapping")
+		player.add_midimapping(self.plugin, g, t, i, channel, ctrlid)
+		player.history_commit("add MIDI mapping")
 		self.update_namelabel(g,t,i)
 		
 	def get_event_connection_bindings(self, g,t,i):
@@ -462,7 +465,7 @@ class ParameterView(gtk.VBox):
 			markup = "<i>%s</i>" % markup
 		for mm in player.get_midimapping_list():
 			mp,mg,mt,mi = mm.get_plugin(), mm.get_group(), mm.get_track(), mm.get_column()
-			if (mp == self.plugin) and ((mg,mt,mi) == (g,t,i)):
+			if (player.get_plugin_by_id(mp) == self.plugin) and ((mg,mt,mi) == (g,t,i)):
 				markup = "<u>%s</u>" % markup
 				break
 		nl.set_markup(markup)
@@ -518,7 +521,7 @@ class ParameterView(gtk.VBox):
 				controllers = 0
 				for mm in player.get_midimapping_list():
 					mp,mg,mt,mi = mm.get_plugin(), mm.get_group(), mm.get_track(), mm.get_column()
-					if (mp == self.plugin) and ((mg,mt,mi) == (g,t,i)):
+					if (player.get_plugin_by_id(mp) == self.plugin) and ((mg,mt,mi) == (g,t,i)):
 						label = "Bound to CC #%03i (CH%02i)" % (mm.get_controller(), mm.get_channel()+1)
 						item = gtk.MenuItem(label=label)
 						item.set_sensitive(False)
@@ -768,7 +771,14 @@ class ParameterView(gtk.VBox):
 		"""
 		Handles destroy events.
 		"""
-		
+		player = com.get('aldrin.core.player')
+		print player.get_midimapping_count()
+#		for i in range(player.get_midimapping_count()):
+#			m =  player.get_midimapping(i)
+#			plugin = player.get_plugin_by_id(m.get_plugin())
+#			player.remove_midimapping(plugin, m.get_group(), m.get_track(), m.get_column())
+#			player.history_commit("remove MIDI mapping")	
+	
 	def on_mousewheel(self, widget, event, (g,t,i)):
 		"""
 		Sent when the mousewheel is used on a slider.

@@ -654,9 +654,9 @@ class AldrinFrame(gtk.Window):
 			progBar.pulse()
 			refresh_gui()
 			gobject.timeout_add(50, progress_callback)
-			player.set_callback_state(False)
+			#player.set_callback_state(False)
 			player.load_ccm(filename)
-			player.set_callback_state(True)
+			#player.set_callback_state(True)
 			player.document_unchanged()
 			done = True
 			refresh_gui()

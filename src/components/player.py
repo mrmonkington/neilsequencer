@@ -725,6 +725,11 @@ class AldrinPlayer(Player, PropertyEventHandler):
 	def delete_plugin(self, mp):
 		# add plugin information
 		common.get_plugin_infos().add_plugin(mp)
+		# remove midi mappings
+		for i in range(self.get_midimapping_count()):
+			m =  self.get_midimapping(i)
+			plugin = self.get_plugin_by_id(m.get_plugin())
+			self.remove_midimapping(plugin, m.get_group(), m.get_track(), m.get_column())
 		
 		inplugs = []
 		outplugs = []
