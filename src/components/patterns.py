@@ -780,7 +780,15 @@ class PatternView(gtk.DrawingArea):
 		Callback that constructs and displays the popup menu
 		"""
 		player = com.get('aldrin.core.player')
-			
+		if self.selection != None and self.selection.begin >= 0:
+			sel_sensitive = True
+		else:
+			sel_sensitive = False
+		if get_clipboard_text().startswith(self.CLIPBOARD_MAGIC):
+			paste_sensitive = True
+		else:
+			paste_sensitive = False
+
 		menu = Menu()
 		menu.add_item("Add track", self.on_popup_add_track)
 		menu.add_item("Remove last track", self.on_popup_delete_track)
@@ -788,25 +796,24 @@ class PatternView(gtk.DrawingArea):
 		menu.add_item("New pattern...", self.on_popup_create_pattern)
 		menu.add_item("Pattern properties...", self.on_popup_properties)
 		menu.add_item("Clone pattern...", self.on_popup_create_copy)
-		menu.add_separator()
 		menu.add_item("Remove pattern", self.on_popup_remove_pattern)
+		menu.add_separator()
+		menu.add_item("Cut", self.on_popup_cut).set_sensitive(sel_sensitive)
+		menu.add_item("Copy", self.on_popup_copy).set_sensitive(sel_sensitive)
+		menu.add_item("Paste", self.on_popup_paste).set_sensitive(paste_sensitive)
+		menu.add_item("Delete", self.on_popup_delete).set_sensitive(sel_sensitive)
 		menu.add_separator()
 		menu.add_item("Double", self.on_popup_double)
 		menu.add_item("Halve", self.on_popup_halve)
 		menu.add_separator()
-		menu.add_item("Transpose selection up", self.transpose_selection,1)
-		menu.add_item("Transpose selection down", self.transpose_selection,-1)
-		menu.add_item("Randomize selection", self.randomize_selection, None)
-		menu.add_item("Constrained randomize", self.randomize_selection, "constrain")
-		menu.add_item("Interpolate selection", self.interpolate_selection)
+		menu.add_item("Transpose selection up", self.transpose_selection,1).set_sensitive(sel_sensitive)
+		menu.add_item("Transpose selection down", self.transpose_selection,-1).set_sensitive(sel_sensitive)
+		menu.add_item("Randomize selection", self.randomize_selection, None).set_sensitive(sel_sensitive)
+		menu.add_item("Constrained randomize", self.randomize_selection, "constrain").set_sensitive(sel_sensitive)
+		menu.add_item("Interpolate selection", self.interpolate_selection).set_sensitive(sel_sensitive)
 		menu.add_separator()
 		issolo = player.solo_plugin == self.get_plugin()
 		menu.add_check_item("Solo Plugin", issolo, self.on_popup_solo)
-		menu.add_separator()
-		menu.add_item("Cut", self.on_popup_cut)
-		menu.add_item("Copy", self.on_popup_copy)
-		menu.add_item("Paste", self.on_popup_paste)
-		menu.add_item("Delete", self.on_popup_delete)
 
 		menu.show_all()
 		menu.attach_to_widget(self, None)

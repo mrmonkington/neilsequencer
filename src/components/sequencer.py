@@ -34,6 +34,7 @@ import gobject
 from aldrin.utils import PLUGIN_FLAGS_MASK, ROOT_PLUGIN_FLAGS, GENERATOR_PLUGIN_FLAGS, EFFECT_PLUGIN_FLAGS, CONTROLLER_PLUGIN_FLAGS
 from aldrin.utils import prepstr, from_hsb, to_hsb, get_item_count, get_clipboard_text, set_clipboard_text, add_scrollbars
 from aldrin.utils import is_effect,is_generator,is_controller,is_root,get_new_pattern_name, filepath
+from aldrin.utils import Menu
 import random
 import config
 import aldrin.common as common
@@ -351,7 +352,8 @@ class SequencerView(gtk.DrawingArea):
 		eventbus.zzub_sequencer_changed += self.redraw
 		eventbus.zzub_set_sequence_event += self.redraw
 		eventbus.document_loaded += self.redraw
-		
+		set_clipboard_text("invalid_clipboard_data")
+
 	def track_row_to_pos(self, (track,row)):
 		"""
 		Converts track and row to a pixel coordinate.
@@ -464,6 +466,7 @@ class SequencerView(gtk.DrawingArea):
 			return seq.get_sequence(self.track)
 		return None
 
+	# FIXME why does this fail when master is the only plugin and no patterns exist?
 	def create_track(self, plugin):
 		# get sequencer and add the track
 		player = com.get('aldrin.core.player')
@@ -620,7 +623,9 @@ class SequencerView(gtk.DrawingArea):
 	def on_popup_cut(self, *args):
 		self.on_popup_copy(*args)
 		self.on_popup_delete(*args)
-		
+
+	# FIXME it would be nice if pasting moved the cursor forward, so that
+	# repeated pasting would work
 	def on_popup_paste(self, *args):	
 		player = com.get('aldrin.core.player')
 		player.set_callback_state(False)
@@ -642,10 +647,14 @@ class SequencerView(gtk.DrawingArea):
 		player.set_callback_state(False)
 		seq = player.get_current_sequencer()
 		print self.selection_start
-		start = (min(self.selection_start[0], self.selection_end[0]), 
-			min(self.selection_start[1], self.selection_end[1]))
-		end = (max(self.selection_start[0], self.selection_end[0]), 
-					max(self.selection_start[1], self.selection_end[1]))
+		try:
+			start = (min(self.selection_start[0], self.selection_end[0]), 
+				 min(self.selection_start[1], self.selection_end[1]))
+			end = (max(self.selection_start[0], self.selection_end[0]), 
+			       max(self.selection_start[1], self.selection_end[1]))
+		except TypeError:
+			# There is no selection.
+			return
 		for track in range(start[0], end[0]+1):
 			t = seq.get_sequence(track)
 			for row in range(start[1], end[1]+1):
@@ -699,50 +708,43 @@ class SequencerView(gtk.DrawingArea):
 		track, row = self.pos_to_track_row((x,y))
 		self.set_cursor_pos(max(min(track,seq.get_sequence_track_count()),0),self.row)
 		
-		def make_submenu_item(submenu, name):
-			item = gtk.MenuItem(label=name)
-			item.set_submenu(submenu)
-			return item
-		def make_menu_item(label, desc, func, *args):
-			item = gtk.MenuItem(label=label)
-			if func:
-				item.connect('activate', func, *args)
-			return item
+		if self.selection_start != None:
+			sel_sensitive = True
+		else:
+			sel_sensitive = False
+		if get_clipboard_text().startswith(self.CLIPBOARD_SEQUENCER):
+			paste_sensitive = True
+		else:
+			paste_sensitive = False
 			
-		wavemenu = gtk.Menu()
+		menu = Menu()
+		pmenu = Menu()
+		wavemenu = Menu()
+		for plugin in sorted(list(player.get_plugin_list()), lambda a,b: cmp(a.get_name().lower(),b.get_name().lower())):
+			pmenu.add_item(prepstr(plugin.get_name().replace("_","__")), self.on_popup_add_track, plugin)
 		for i in xrange(player.get_wave_count()):
 			w = player.get_wave(i)
 			name = "%02X. %s" % ((i+1), prepstr(w.get_name()))
-			wavemenu.append(make_menu_item(name, "", self.on_popup_record_to_wave, i))
-			
-		menu = gtk.Menu()
-		pmenu = gtk.Menu()
-		for plugin in sorted(list(player.get_plugin_list()), lambda a,b: cmp(a.get_name().lower(),b.get_name().lower())):
-			pmenu.append(make_menu_item(prepstr(plugin.get_name().replace("_","__")), "", self.on_popup_add_track, plugin))
-		menu.append(make_submenu_item(pmenu, "Add track"))
-		menu.append(make_menu_item("Delete track", "", self.on_popup_delete_track))
-		menu.append(gtk.SeparatorMenuItem())
-		menu.append(make_menu_item("Set loop start", "", self.set_loop_start))
-		menu.append(make_menu_item("Set loop end", "", self.set_loop_end))
-		menu.append(gtk.SeparatorMenuItem())
-		menu.append(make_submenu_item(wavemenu, "Record to instrument"))
-		menu.append(gtk.SeparatorMenuItem())
-		menu.append(make_menu_item("Cut", "", self.on_popup_cut))
-		menu.append(make_menu_item("Copy", "", self.on_popup_copy))
-		menu.append(make_menu_item("Paste", "", self.on_popup_paste))
-		menu.append(make_menu_item("Delete", "", self.on_popup_delete))
-		menu.append(gtk.SeparatorMenuItem())
-		m = make_menu_item("Create pattern from selection", "", self.on_popup_create_pattern)
-		if self.selection_start == None:
-			m.set_sensitive(False)
-		menu.append(m)
-		m = make_menu_item("Merge selected patterns", "", self.on_popup_merge)
-		if self.selection_start == None:
-			m.set_sensitive(False)
-		menu.append(m)
+			wavemenu.add_item(name, self.on_popup_record_to_wave, i)
+
+		menu.add_submenu("Add track", pmenu)
+		menu.add_item("Delete track", self.on_popup_delete_track)
+		menu.add_separator()
+		menu.add_item("Set loop start", self.set_loop_start)
+		menu.add_item("Set loop end", self.set_loop_end)
+		menu.add_separator()
+		menu.add_submenu("Record to instrument", wavemenu)
+		menu.add_separator()
+		menu.add_item("Cut", self.on_popup_cut).set_sensitive(sel_sensitive)
+		menu.add_item("Copy", self.on_popup_copy).set_sensitive(sel_sensitive)
+		menu.add_item("Paste", self.on_popup_paste).set_sensitive(paste_sensitive)
+		menu.add_item("Delete", self.on_popup_delete).set_sensitive(sel_sensitive)
+		menu.add_separator()
+		menu.add_item("Create pattern from selection", self.on_popup_create_pattern).set_sensitive(sel_sensitive)
+		menu.add_item("Merge selected patterns", self.on_popup_merge).set_sensitive(sel_sensitive)
 		menu.show_all()
 		menu.attach_to_widget(self, None)
-		menu.popup(None, None, None, event.button, event.time)
+		menu.popup(self, event)
 	
 	def show_plugin_dialog(self):
 		pmenu = []
