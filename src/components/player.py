@@ -210,16 +210,16 @@ class AldrinPlayer(Player, PropertyEventHandler):
 		#self.set_event_queue_state(enable)
 		#return
 		if enable:
-			if self.__disable_level == 1:
+			if self.__disable_level == 1:				
 				#while self.get_next_event(): pass
-				#self.set_callback(self._callback, None)
-				self.set_event_queue_state(True)				
+				self.set_callback(self._callback, None)
+				#self.set_event_queue_state(True)				
 				self.__disable_level -= 1							
 				return True
 			self.__disable_level -= 1
 		else:
-			#self.set_callback(None, None)
-			self.set_event_queue_state(False)
+			self.set_callback(None, None)
+			#self.set_event_queue_state(False)
 			self.__disable_level += 1
 		return False
 	

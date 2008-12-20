@@ -160,6 +160,10 @@ class ParameterView(gtk.VBox):
 		@param data: event data.
 		@type data: zzub_event_data_t
 		"""
+		# exit if this is called and dialog is hidden
+		if not self.flags() & gtk.VISIBLE:
+			return
+
 		if plugin == self.plugin:
 			g,t,i,v = group, track, param, value
 			p = self.pluginloader.get_parameter(g,i)
@@ -771,8 +775,8 @@ class ParameterView(gtk.VBox):
 		"""
 		Handles destroy events.
 		"""
-		player = com.get('aldrin.core.player')
-		print player.get_midimapping_count()
+#		player = com.get('aldrin.core.player')
+#		print player.get_midimapping_count()
 #		for i in range(player.get_midimapping_count()):
 #			m =  player.get_midimapping(i)
 #			plugin = player.get_plugin_by_id(m.get_plugin())

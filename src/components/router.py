@@ -1088,6 +1088,7 @@ class RouteView(gtk.DrawingArea):
 						player.active_plugins = [mp] + player.active_plugins
 					else:
 						player.active_plugins = [mp]
+#					player.active_patterns = ([mp, 0])
 				player.set_midi_plugin(mp)
 				if (event.state & gtk.gdk.CONTROL_MASK) or (event.button == 2):
 					if is_controller(mp):

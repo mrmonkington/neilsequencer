@@ -249,7 +249,7 @@ class PatternToolBar(gtk.HBox):
 		self.pluginselect.set_active(0)
 		eventbus.zzub_new_plugin += self.pluginselect.update
 		eventbus.zzub_delete_plugin += self.pluginselect.update
-		eventbus.active_plugins_changed += self.pluginselect.update		
+		eventbus.active_plugins_changed += self.pluginselect.update
 		
 		self.pluginlabel.set_mnemonic_widget(self.pluginselect)
 		self.patternlabel = gtk.Label()
@@ -468,6 +468,12 @@ class PatternPanel(gtk.VBox):
 		framepanel.select_viewpanel(self)
 		
 	def handle_focus(self):
+		player = com.get('aldrin.core.player')
+		print 'pattern', self.view.plugin, self.view.pattern
+		print 'active', player.active_patterns
+		if not (self.view.plugin, self.view.pattern) in player.active_patterns:
+			self.view.init_values()
+			print 'SYNC', player.active_plugins
 		try:
 			self.view.show_cursor_right()
 		except AttributeError: #no pattern in current machine
@@ -684,6 +690,7 @@ class PatternView(gtk.DrawingArea):
 		self.vscroll.connect('change-value', self.on_vscroll_window)
 		eventbus = com.get('aldrin.core.eventbus')
 		eventbus.active_patterns_changed += self.on_active_patterns_changed
+		eventbus.active_plugins_changed += self.on_active_patterns_changed
 		eventbus.zzub_pattern_changed += self.on_pattern_changed
 		eventbus.zzub_edit_pattern += self.on_edit_pattern
 		eventbus.zzub_pattern_insert_rows += self.on_pattern_insert_rows
@@ -1053,8 +1060,9 @@ class PatternView(gtk.DrawingArea):
 			self.window.invalidate_rect((0,0,w,h), False)
 			
 	def on_active_patterns_changed(self, selpatterns):
-		self.pattern_changed()
-		
+		if self.window:		
+			self.pattern_changed()
+
 	def pattern_changed(self, *args):
 		"""
 		Loads and redraws the pattern view after the pattern has been changed.
