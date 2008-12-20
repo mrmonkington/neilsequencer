@@ -350,6 +350,10 @@ class PatternToolBar(gtk.HBox):
 		if sel:
 			player = com.get('aldrin.core.player')
 			player.active_plugins = [sel]
+			if sel.get_pattern_count() > 0:
+				player.active_patterns = [(sel, 0)]
+			else:
+				player.active_patterns = []
 	
 	def get_pattern_source(self):
 		player = com.get('aldrin.core.player')
@@ -469,11 +473,19 @@ class PatternPanel(gtk.VBox):
 		
 	def handle_focus(self):
 		player = com.get('aldrin.core.player')
-		print 'pattern', self.view.plugin, self.view.pattern
-		print 'active', player.active_patterns
+		#print 'pattern', self.view.plugin, self.view.pattern
+		#print 'active', player.active_patterns
+		# check if active patterns match the pattern view settings
 		if not (self.view.plugin, self.view.pattern) in player.active_patterns:
+			if player.active_plugins:
+				plugin = player.active_plugins[0]
+				# make sure there is a pattern of selected machine to edit
+				if plugin.get_pattern_count() > 0:
+					player.active_patterns = [(plugin, 0)]
+				else:
+					player.active_patterns = []				
+				self.view.plugin, self.view.pattern  = plugin, 0
 			self.view.init_values()
-			print 'SYNC', player.active_plugins
 		try:
 			self.view.show_cursor_right()
 		except AttributeError: #no pattern in current machine

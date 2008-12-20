@@ -384,12 +384,15 @@ class AldrinPlayer(Player, PropertyEventHandler):
 	def load_ccm(self, filename):
 		self.clear()
 		self.__loading = True
+		self.set_callback_state(False)
 		res = zzub.Player.load_ccm(self, filename)
+		self.set_callback_state(True)
 		self.__loading = False
 		if not res:
 			self.document_path = filename
 			eventbus = com.get('aldrin.core.eventbus')
 			eventbus.document_loaded()
+		self.active_plugins = [self.get_plugin(0)]
 		return res
 		
 	def save_ccm(self, filename):
