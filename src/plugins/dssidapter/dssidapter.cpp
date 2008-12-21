@@ -746,19 +746,59 @@ void dssidapter::save(zzub::archive *arc) {
 
 }
 
-void dssidapter::set_parameter_value_dssi(int port, float value) {
-     // FIXME DSSI guis talk directly to the plugin, so the
-     // self.plugin.set_parameter_value_direct() call in rack.py is
-     // never triggered. The player doesn't know the user has changed
-     // a value, so DSSI plugins' state is not saved with the song.
-     // Something like this should work (except that "value" should be
-     // converted to zzub representation!), but the compiler doesn't
-     // like it -- it says "_host" is of an incomplete type. Help?
 
-     if (verbose) printf("set_parameter_value_dssi, port = %d, value = %f\n", port, value);
-     // _host->_player->plugin_set_parameter(this, 0, 0, 
-     // 					  myinfo->portIdx2ControlInIdx[port],
-     // 					  (int) value, 0);
+float ipol_exp(float v1, float v2, float y) {
+	if (v1 == 0.0f)
+		v1 = -8; // -48dB or so
+	else
+		v1 = log(v1);
+	v2 = log(v2);
+	//return exp(v1*(1-x) + v2*x);
+	return log(y/exp(v1))/(v2 - v1);
+}
+
+int convert_ladspa_to_zzub(const ladspa_param &mp, float value, float sps) {
+	zzub::parameter *param = mp.param;
+	LADSPA_PortRangeHintDescriptor hd = mp.hint.HintDescriptor;
+	float lb,ub;
+	lb = mp.lb;
+	ub = mp.ub;
+//	if (LADSPA_IS_HINT_INTEGER(hd)) {
+//		value = (int)(value + 0.5f);
+//	} else if (LADSPA_IS_HINT_TOGGLED(hd)) {
+//		value = (int)(value + 0.5f);
+//	}
+	if (mp.sr)
+	{
+		lb *= sps;
+		ub *= sps;
+	}
+	float x;
+	int v;
+	if (LADSPA_IS_HINT_LOGARITHMIC(hd)) {
+		//reverse of v = ipol_log(lb,ub,x);
+		x = ipol_exp(lb, ub, value);
+	} else {
+		//reverse of v = lb + x * (ub - lb);
+		x = (value - lb) / (ub - lb);
+	}
+	v = param->value_min + x * (param->value_max - param->value_min);
+	return v;
+}
+
+void dssidapter::set_parameter_value_dssi(int port, float value) {
+	int val = 0;
+    std::vector<dssi_param>::const_iterator i;
+    int index = 0;
+    int offset = 0;
+    for (i = myinfo->m_metaparams.begin(); i != myinfo->m_metaparams.end(); ++i)
+    {
+     	if (index == myinfo->portIdx2ControlInIdx[port]) 
+     		break;
+     	index++;
+     }
+	val = convert_ladspa_to_zzub(*i, value, _master_info->samples_per_second);
+	_host->control_change(_metaplugin, 1, 0, myinfo->portIdx2ControlInIdx[port], val, false, true);
 }
 
 
