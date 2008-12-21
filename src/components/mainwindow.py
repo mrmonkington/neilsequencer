@@ -639,7 +639,7 @@ class AldrinFrame(gtk.Window):
 			#~ Yield()
 			#~ progress.Update(100)
 		if ext.lower() in ('.ccm'):
-			dlg = gtk.Dialog('Aldrin', flags=gtk.DIALOG_MODAL)
+			dlg = gtk.Dialog('Aldrin', parent=self, flags=gtk.DIALOG_MODAL)
 			progBar = gtk.ProgressBar()
 			progBar.set_text('Loading CCM Song...')
 			progBar.set_size_request(300, 40)
