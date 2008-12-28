@@ -1621,9 +1621,7 @@ class PatternView(gtk.DrawingArea):
 			self.update_statusbar()	
 			player.history_commit("paste events")			
 		except:
-			import traceback
-			traceback.print_exc()
-			error(self, "Couldn't paste.")
+			pass
 		if player.set_callback_state(True):
 			eventbus = com.get('aldrin.core.eventbus')
 			eventbus.document_loaded()

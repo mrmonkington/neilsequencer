@@ -530,7 +530,8 @@ class SequencerView(gtk.DrawingArea):
 		@type d: unicode
 		"""
 		magic,d = d[:len(self.CLIPBOARD_SEQUENCER)], d[len(self.CLIPBOARD_SEQUENCER):]
-		assert magic == self.CLIPBOARD_SEQUENCER
+		if magic != self.CLIPBOARD_SEQUENCER:
+			raise ValueError
 		while d:
 			track,d = int(d[:4],16),d[4:]
 			row,d = int(d[:8],16),d[8:]			
@@ -631,13 +632,16 @@ class SequencerView(gtk.DrawingArea):
 		player.set_callback_state(False)
 		seq = player.get_current_sequencer()
 		data = get_clipboard_text()
-		for track,row,value in self.unpack_clipboard_data(data.strip()):
-			t = seq.get_sequence(track)
-			if value == -1:
-				t.set_event(self.row + row, -1)
-			else:
-				t.set_event(self.row + row, value)
-		player.history_commit("paste selection")
+		try:
+			for track,row,value in self.unpack_clipboard_data(data.strip()):
+				t = seq.get_sequence(track)
+				if value == -1:
+					t.set_event(self.row + row, -1)
+				else:
+					t.set_event(self.row + row, value)
+			player.history_commit("paste selection")		
+		except ValueError:
+			pass
 		player.set_callback_state(True)
 		eventbus = com.get('aldrin.core.eventbus')
 		eventbus.document_loaded()
