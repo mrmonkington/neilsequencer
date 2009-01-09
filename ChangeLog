@@ -1,3 +1,14 @@
+Aldrin 0.13 (Mars)
+==================
+
+Enhancements:
+
+Reworked python user interface into a component system.
+Undo/Redo
+Searchable plugin list browser
+Pattern zooming
+Improved DSSI support
+
 Aldrin 0.12 (Luna)
 ==================
 

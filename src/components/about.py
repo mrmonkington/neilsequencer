@@ -37,7 +37,7 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 
 You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA."""
 
-WEBSITE = "http://aldrin.sf.net"
+WEBSITE = "http://aldrin.eu"
 
 AUTHORS = [
 'Leonard Ritter <contact@leonard-ritter.com>',
@@ -58,6 +58,7 @@ ARTISTS = [
 
 DOCUMENTERS = [
 'Leonard Ritter <contact@leonard-ritter.com>',
+'Pieter Holtzhausen <13682857@sun.ac.za>',
 'Phed',
 ]
 
