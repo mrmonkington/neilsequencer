@@ -11,10 +11,7 @@ TITLE="libzzub User Manual"
 HREF="index.html"><LINK
 REL="PREVIOUS"
 TITLE="Introduction"
-HREF="c15.html"><LINK
-REL="NEXT"
-TITLE="Building and installing pyzzub"
-HREF="x113.html"></HEAD
+HREF="c17.html"></HEAD
 ><BODY
 CLASS="chapter"
 BGCOLOR="#FFFFFF"
@@ -42,7 +39,7 @@ WIDTH="10%"
 ALIGN="left"
 VALIGN="bottom"
 ><A
-HREF="c15.html"
+HREF="c17.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -55,11 +52,7 @@ VALIGN="bottom"
 WIDTH="10%"
 ALIGN="right"
 VALIGN="bottom"
-><A
-HREF="x113.html"
-ACCESSKEY="N"
->Next</A
-></TD
+>&nbsp;</TD
 ></TR
 ></TABLE
 ><HR
@@ -80,6 +73,14 @@ CLASS="sect1"
 NAME="install_libzzub"
 >2.1. Building and installing libzzub</A
 ></H1
+><DIV
+CLASS="sect2"
+><H2
+CLASS="sect2"
+><A
+NAME="components"
+>2.1.1. Required Packages</A
+></H2
 ><P
 >If you use a popular distribution of GNU/Linux,
       chances are that your local package manager already offers a libzzub
@@ -94,10 +95,7 @@ NAME="install_libzzub"
 	  requirements. Some of these may already come with the distro that
 	  you are using, some are a bit exotic and require individual building.
 	  We have focused on keeping the number of dependencies small and to include
-	  as much as required in the distribution package itself. Lunar, the 
-	  DSP plugin host of libzzub, supports the latest version of LLVM,
-	  a JIT compiler suite that is presently not common in all distributions.
-	  This is an optional backend.</P
+	  as much as required in the distribution package itself.</P
 ><P
 >In order to assist you with building libzzub, libzzub features an
 	  extensive configuration process that notifies you of missing dependencies.</P
@@ -115,7 +113,7 @@ NAME="install_libzzub"
 ><A
 HREF="http://www.python.org/"
 TARGET="_top"
->Python 2.4</A
+>Python 2.5</A
 > or
           later.</P
 ></LI
@@ -124,7 +122,7 @@ TARGET="_top"
 ><A
 HREF="http://www.scons.org/"
 TARGET="_top"
->SCons 0.96.94</A
+>SCons 0.97</A
 > or
           later.</P
 ></LI
@@ -154,19 +152,11 @@ TARGET="_top"
 ></LI
 ><LI
 ><P
->(Optional) <A
-HREF="http://www.llvm.org/"
+><A
+HREF="http://www.mega-nerd.com/SRC/"
 TARGET="_top"
->LLVM 1.9</A
->.</P
-></LI
-><LI
-><P
->(Optional) <A
-HREF="http://www.llvm.org/"
-TARGET="_top"
->llvm-gcc 4.0.1</A
-> or later, built for LLVM 1.9.</P
+>libsamplerate 0.1.3</A
+></P
 ></LI
 ></UL
 ><P
@@ -192,17 +182,48 @@ TARGET="_top"
 > (libjack).</P
 ></LI
 ></UL
+></DIV
+><DIV
+CLASS="sect2"
+><H2
+CLASS="sect2"
+><A
+NAME="ubuntu_packages"
+>2.1.2. Ubuntu and Debian</A
+></H2
 ><P
 >On Debian-style distributions such as Ubuntu, you will require -dev packages additionally
-	  to regular library packages.</P
+	  to regular library packages.
+	  
+	  The following command fetches the Debian or Ubuntu packages required for compiling libzzub and running Aldrin:
+	  <PRE
+CLASS="screen"
+>sudo apt-get install python python-ctypes python-gtk2 librsvg2-common scons libsndfile1-dev zlib1g-dev libasound2-dev jackd libjack-dev libsamplerate0-dev libfftw3-dev</PRE
+></P
 ><P
->libzzub packages can currently be downloaded from Aldrins SourceForge.net <A
+>Substitute fftw3-dev for libfftw3-dev if you are using Gutsy or earlier distributions of Ubuntu.</P
+></DIV
+><DIV
+CLASS="sect2"
+><H2
+CLASS="sect2"
+><A
+NAME="instructions"
+>2.1.3. Downloading and Compiling</A
+></H2
+><P
+>libzzub packages can currently be downloaded from Aldrin's SourceForge.net <A
 HREF="http://aldrin.sf.net"
 TARGET="_top"
 >project website</A
 >. You can either
-      download a release or build libzzub from the source repository. In this
-      guide, we are going to download a release.</P
+      download a release or build libzzub from the source repository with the following command:
+      <PRE
+CLASS="screen"
+>svn co http://svn.zeitherrschaft.org/zzub/trunk zzub</PRE
+>
+       In this guide, we are going to download a release.
+	  </P
 ><P
 ></P
 ><OL
@@ -284,12 +305,17 @@ CLASS="command"
 >
 scons: Reading SConscript files ...
 Checking for C header file zlib.h... yes
+Checking for C header file sndfile.h... yes
+Checking for C header file samplerate.h... yes
+Checking for C header file fftw3.h... yes
 Checking for C header file CoreAudio/CoreAudio.h... no
 Checking for C header file alsa/asoundlib.h... yes
 Checking for C header file jack/jack.h... yes
 Checking for C header file sys/soundcard.h... yes
-Checking for llvm-config in PATH... (cached) /usr/bin/llvm-config
-Checking for version of '/usr/bin/llvm-config --version'... (cached) 1.9
+Checking for C header file ladspa.h... yes
+Checking for C header file dssi.h... yes
+Checking for 'sse' CPU flag... (cached) yes
+Checking for 'sse2' CPU flag... (cached) yes
 Finished configuration.
 
                   === Using ===                   
@@ -297,21 +323,29 @@ Finished configuration.
                          JACK: yes
                          ALSA: yes
                           OSS: yes
-                         LLVM: yes
+        Use SSE CPU Extension: no
+       Use SSE2 CPU Extension: yes
+           Use Timestretching: yes
 
                 === Components ===                
                Lunar DSP Host: yes
+                 Lunar Target: gcc
+                         DSSI: yes
+                       LADSPA: yes
+     pyzzub (zubb for Python): yes
 
                === Directories ===                
-                     llvm-gcc: /home/paniq/llvm-gcc4-1.9-x86-linux-RHEL4/bin
                        Prefix: /usr/local
                  Install into: /usr/local
             Library Directory: /usr/local/lib
 
+          Generate Debug Info: False
+
 Please check if above settings reflect what you want, then build libzzub using
         scons
 To install scons, run
-        [sudo] scons install</PRE
+        [sudo] scons install
+</PRE
 ><P
 >You can configure scons to install into a different target folder than /usr/local, to prevent libzzub from installing system wide:</P
 ><PRE
@@ -401,6 +435,7 @@ scons: done building targets.</PRE
 >libzzub is now installed.</P
 ></DIV
 ></DIV
+></DIV
 ><DIV
 CLASS="NAVFOOTER"
 ><HR
@@ -417,7 +452,7 @@ WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
 ><A
-HREF="c15.html"
+HREF="c17.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -434,11 +469,7 @@ ACCESSKEY="H"
 WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
-><A
-HREF="x113.html"
-ACCESSKEY="N"
->Next</A
-></TD
+>&nbsp;</TD
 ></TR
 ><TR
 ><TD
@@ -455,7 +486,7 @@ VALIGN="top"
 WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
->Building and installing pyzzub</TD
+>&nbsp;</TD
 ></TR
 ></TABLE
 ></DIV
