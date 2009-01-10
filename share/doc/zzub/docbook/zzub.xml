@@ -3,7 +3,7 @@
 "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd">
 <book lang="en">
   <bookinfo>
-    <title>libzzub User Manual</title>
+    <title>Armstrong User Manual</title>
 
     <authorgroup>
       <author>
@@ -14,18 +14,18 @@
       </author>
     </authorgroup>
 
-    <date>19/04/2008</date>
+    <date>10/01/2009</date>
 
-    <releaseinfo>0.2.3</releaseinfo>
+    <releaseinfo>0.2.6</releaseinfo>
 
     <copyright>
-      <year>2008</year>
+      <year>2009</year>
 
-      <holder>The libzzub Development Team</holder>
+      <holder>The Armstrong Development Team</holder>
     </copyright>
 
     <abstract>
-      <para>This book describes installation, configuration and usage of libzzub, a powerful
+      <para>This book describes installation, configuration and usage of Armstrong, a powerful
       music sequencing library for the GNU/Linux operating system.</para>
     </abstract>
   </bookinfo>
@@ -33,15 +33,15 @@
   <chapter id="introduction">
     <title>Introduction</title>
 
-    <para>Welcome to the libzzub User Manual. This book helps you with
-	configuration, installation and usage of libzzub, a powerful music sequencing
+    <para>Welcome to the Armstrong User Manual. This book helps you with
+	configuration, installation and usage of Armstrong, a powerful music sequencing
 	library for the GNU/Linux operating system. If you are searching for a
-	foundation of your next Soundtracker, libzzub is what you want. libzzub
+	foundation of your next Soundtracker, Armstrong is what you want. Armstrong
 	provides an extensible DSP plugin system, a wavetable, instruments, a
 	multitrack sequencer, support for major soundcard API's and full compatibility
 	with Jeskola Buzz on the Windows platform.</para>
 
-    <para>libzzub is currently being utilized as a core part of <ulink url="http://aldrin.sf.net">Aldrin</ulink> and <ulink url="http://trac.zeitherrschaft.org/buze">Buzé</ulink>.
+    <para>Armstrong is currently being utilized as a core part of <ulink url="http://aldrin.sf.net">Aldrin</ulink> and <ulink url="http://trac.zeitherrschaft.org/buze">Buzé</ulink>.
 	A <ulink url="http://www.zzub.org">community website</ulink> revolving around these programs is currently being built.
 	</para>
 
@@ -49,29 +49,29 @@
 
     <chapter id="installation">
       <title>Installation</title>
-	  <sect1 id="install_libzzub">
-	  <title>Building and installing libzzub</title>
+	  <sect1 id="install_armstrong">
+	  <title>Building and installing Armstrong</title>
       <sect2 id="components"><title>Required Packages</title>
 	  <para>If you use a popular distribution of GNU/Linux,
-      chances are that your local package manager already offers a libzzub
-      package. If not, you will need to build libzzub yourself.</para>
+      chances are that your local package manager already offers a Armstrong
+      package. If not, you will need to build Armstrong yourself.</para>
 	  
       <para>Independent of which distribution you use, building and installing
-      libzzub shouldn't be hard, given that you follow this guide. If you have
-      trouble installing libzzub, please contact your distribution maintainers
-      and ask them to include support for libzzub.</para>
+      Armstrong shouldn't be hard, given that you follow this guide. If you have
+      trouble installing Armstrong, please contact your distribution maintainers
+      and ask them to include support for Armstrong.</para>
 
-	  <para>libzzub consists of several components which have different
+	  <para>Armstrong consists of several components which have different
 	  requirements. Some of these may already come with the distro that
 	  you are using, some are a bit exotic and require individual building.
 	  We have focused on keeping the number of dependencies small and to include
 	  as much as required in the distribution package itself.</para>
 	  
-	  <para>In order to assist you with building libzzub, libzzub features an
+	  <para>In order to assist you with building Armstrong, Armstrong features an
 	  extensive configuration process that notifies you of missing dependencies.</para>
 
       <para>First make sure that you have all programs and libraries installed
-      required to build libzzub. Usually, all of them should be provided by
+      required to build Armstrong. Usually, all of them should be provided by
       your distribution of GNU/Linux. Please check with your distributions
       package manager documentation on how to search and install packages. You
       are going to need following packages:</para>
@@ -120,14 +120,14 @@
 	  <para>On Debian-style distributions such as Ubuntu, you will require -dev packages additionally
 	  to regular library packages.
 	  
-	  The following command fetches the Debian or Ubuntu packages required for compiling libzzub and running Aldrin:
+	  The following command fetches the Debian or Ubuntu packages required for compiling Armstrong and running Aldrin:
 	  <screen>sudo apt-get install python python-ctypes python-gtk2 librsvg2-common scons libsndfile1-dev zlib1g-dev libasound2-dev jackd libjack-dev libsamplerate0-dev libfftw3-dev</screen></para>
 	  <para>Substitute fftw3-dev for libfftw3-dev if you are using Gutsy or earlier distributions of Ubuntu.</para>
       </sect2>
 	  <sect2 id="instructions"><title>Downloading and Compiling</title>
-	  <para>libzzub packages can currently be downloaded from Aldrin's SourceForge.net <ulink
+	  <para>Armstrong packages can currently be downloaded from Aldrin's SourceForge.net <ulink
       url="http://aldrin.sf.net">project website</ulink>. You can either
-      download a release or build libzzub from the source repository with the following command:
+      download a release or build Armstrong from the source repository with the following command:
       <screen>svn co http://svn.zeitherrschaft.org/zzub/trunk zzub</screen>
        In this guide, we are going to download a release.
 	  </para>
@@ -141,7 +141,7 @@
 
         <listitem>
           <para>Download the sources of the most recent release. Usually, the
-          link should be named something like libzzub <replaceable>x.x Source
+          link should be named something like Armstrong <replaceable>x.x Source
           Release (x86, .tar.bz2)</replaceable>, where x.x is the release
           number.</para>
         </listitem>
@@ -149,21 +149,21 @@
         <listitem>
           <para>Unpack the downloaded sources into a new folder. You will get
           a new subfolder named something like
-          <replaceable>libzzub-x.x</replaceable>:</para>
+          <replaceable>armstrong-x.x</replaceable>:</para>
 
-          <screen><prompt>[paniq@aspera tmp]$</prompt><command> tar -vxf <replaceable>libzzub-x.x.tar.bz2</replaceable></command>
+          <screen><prompt>[paniq@aspera tmp]$</prompt><command> tar -vxf <replaceable>armstrong-x.x.tar.bz2</replaceable></command>
 ...
-libzzub-x.x/CREDITS
-libzzub-x.x/INSTALL
-libzzub-x.x/ChangeLog
-libzzub-x.x/LICENCE</screen>
+armstrong-x.x/CREDITS
+armstrong-x.x/INSTALL
+armstrong-x.x/ChangeLog
+armstrong-x.x/LICENCE</screen>
         </listitem>
 
         <listitem>
-          <para>Change into the newly created folder. and run scons to configure libzzub for your system. If everything runs fine, you are going to see an output as below. If not, scons configure will tell you what is missing.</para>
+          <para>Change into the newly created folder. and run scons to configure Armstrong for your system. If everything runs fine, you are going to see an output as below. If not, scons configure will tell you what is missing.</para>
 
-          <screen><prompt>[paniq@aspera tmp]$</prompt> <command>cd <replaceable>libzzub-x.x</replaceable></command><prompt>
-[paniq@aspera libzzub-x.x]$</prompt> <command>scons configure</command>
+          <screen><prompt>[paniq@aspera tmp]$</prompt> <command>cd <replaceable>armstrong-x.x</replaceable></command><prompt>
+[paniq@aspera armstrong-x.x]$</prompt> <command>scons configure</command>
 scons: Reading SConscript files ...
 Checking for C header file zlib.h... yes
 Checking for C header file sndfile.h... yes
@@ -202,22 +202,22 @@ Finished configuration.
 
           Generate Debug Info: False
 
-Please check if above settings reflect what you want, then build libzzub using
+Please check if above settings reflect what you want, then build Armstrong using
         scons
 To install scons, run
         [sudo] scons install
 </screen>
-		<para>You can configure scons to install into a different target folder than /usr/local, to prevent libzzub from installing system wide:</para>
-		<screen><prompt>[paniq@aspera libzzub-x.x]$</prompt> <command>scons configure PREFIX=<replaceable>/home/paniq/usr</replaceable></command></screen>
+		<para>You can configure scons to install into a different target folder than /usr/local, to prevent Armstrong from installing system wide:</para>
+		<screen><prompt>[paniq@aspera armstrong-x.x]$</prompt> <command>scons configure PREFIX=<replaceable>/home/paniq/usr</replaceable></command></screen>
 		<para>scons saves all settings, so you never need to pass an option twice.</para>
-		<para>If you wish to build libzzub without Lunar (and thus, missing out on a lot of nifty DSP plugins), you can turn it off:</para>
-		<screen><prompt>[paniq@aspera libzzub-x.x]$</prompt> <command>scons configure LUNAR=<replaceable>False</replaceable></command></screen>
+		<para>If you wish to build Armstrong without Lunar (and thus, missing out on a lot of nifty DSP plugins), you can turn it off:</para>
+		<screen><prompt>[paniq@aspera armstrong-x.x]$</prompt> <command>scons configure LUNAR=<replaceable>False</replaceable></command></screen>
 		<para>You can get a full list of options using the --help option:</para>
-		<screen><prompt>[paniq@aspera libzzub-x.x]$</prompt> <command>scons --help</command></screen>
+		<screen><prompt>[paniq@aspera armstrong-x.x]$</prompt> <command>scons --help</command></screen>
         </listitem>
         <listitem>
-		<para>Now that everything is set up, build libzzub:</para>
-		<screen><prompt>[paniq@aspera libzzub-x.x]$</prompt> <command>scons</command>
+		<para>Now that everything is set up, build Armstrong:</para>
+		<screen><prompt>[paniq@aspera armstrong-x.x]$</prompt> <command>scons</command>
 scons: Reading SConscript files ...
 scons: done reading SConscript files.
 scons: Building targets ...
@@ -225,20 +225,20 @@ scons: Building targets ...
 scons: done building targets.</screen>
         </listitem>
         <listitem>
-          <para>Now install libzzub to your system (you will need root rights if you are going to install libzzub system wide):</para>
+          <para>Now install Armstrong to your system (you will need root rights if you are going to install Armstrong system wide):</para>
 
-          <screen><prompt>[paniq@aspera libzzub-x.x]$</prompt> <command>sudo scons install</command>
+          <screen><prompt>[paniq@aspera armstrong-x.x]$</prompt> <command>sudo scons install</command>
 Password:
 scons: Reading SConscript files ...
 scons: done reading SConscript files.
 scons: Building targets ...
-Install file: "lib/libzzub" as "/usr/local/lib/libzzub"
+Install file: "lib/armstrong" as "/usr/local/lib/armstrong"
 ...
 scons: done building targets.</screen>
         </listitem>
       </orderedlist>
 
-      <para>libzzub is now installed.</para>
+      <para>Armstrong is now installed.</para>
       </sect2>
 	  </sect1>
   </chapter>
