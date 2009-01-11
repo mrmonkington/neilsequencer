@@ -757,6 +757,7 @@ float ipol_exp(float v1, float v2, float y) {
 	return log(y/exp(v1))/(v2 - v1);
 }
 
+
 int convert_ladspa_to_zzub(const ladspa_param &mp, float value, float sps) {
 	zzub::parameter *param = mp.param;
 	LADSPA_PortRangeHintDescriptor hd = mp.hint.HintDescriptor;
@@ -764,7 +765,7 @@ int convert_ladspa_to_zzub(const ladspa_param &mp, float value, float sps) {
 	lb = mp.lb;
 	ub = mp.ub;
 //	if (LADSPA_IS_HINT_INTEGER(hd)) {
-//		value = (int)(value + 0.5f);
+//		value = (int)(value - 0.5f);
 //	} else if (LADSPA_IS_HINT_TOGGLED(hd)) {
 //		value = (int)(value + 0.5f);
 //	}
@@ -775,6 +776,7 @@ int convert_ladspa_to_zzub(const ladspa_param &mp, float value, float sps) {
 	}
 	float x;
 	int v;
+	//printf("is int %d value %f  lb %f ub %f \n", LADSPA_IS_HINT_INTEGER(hd), value, lb, ub);	
 	if (LADSPA_IS_HINT_LOGARITHMIC(hd)) {
 		//reverse of v = ipol_log(lb,ub,x);
 		x = ipol_exp(lb, ub, value);
@@ -783,8 +785,10 @@ int convert_ladspa_to_zzub(const ladspa_param &mp, float value, float sps) {
 		x = (value - lb) / (ub - lb);
 	}
 	v = param->value_min + x * (param->value_max - param->value_min);
+	//printf("v %d x %f pmin %d pmax %d\n", v, x , param->value_min, param->value_max);		
 	return v;
 }
+
 
 void dssidapter::set_parameter_value_dssi(int port, float value) {
 	int val = 0;
@@ -797,6 +801,7 @@ void dssidapter::set_parameter_value_dssi(int port, float value) {
      		break;
      	index++;
      }
+    printf("%f\n", value);
 	val = convert_ladspa_to_zzub(*i, value, _master_info->samples_per_second);
 	_host->control_change(_metaplugin, 1, 0, myinfo->portIdx2ControlInIdx[port], val, false, true);
 }

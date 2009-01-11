@@ -46,7 +46,7 @@ float ipol_log(float v1, float v2, float x) {
 
 void setup_ladspa_parameter(zzub::parameter *param, LADSPA_PortRangeHint hint, ladspa_param &mp) {
 	LADSPA_PortRangeHintDescriptor hd = hint.HintDescriptor;
-
+	int range;
 	float lb, ub;
 	if (LADSPA_IS_HINT_BOUNDED_BELOW(hd))
 		lb = hint.LowerBound;
@@ -65,13 +65,14 @@ void setup_ladspa_parameter(zzub::parameter *param, LADSPA_PortRangeHint hint, l
 	
 	if (LADSPA_IS_HINT_INTEGER(hd)) {
 		param->value_min = std::max(0,int(lb));
+		range = int(ub - lb);
 		if (int(ub) > 0xFE) {
 			param->type = zzub::parameter_type_word;
-			param->value_max = std::min(0xFFFE,int(ub));
+			param->value_max = std::min(0xFFFE, param->value_min + range);
 			param->value_none = 0xFFFF;
 		} else {
 			param->type = zzub::parameter_type_byte;
-			param->value_max = std::min(0xFE,int(ub));
+			param->value_max =  std::min(0xFFFE, param->value_min + range);
 			param->value_none = 0xFF;
 		}
 		param->value_default = 0;
