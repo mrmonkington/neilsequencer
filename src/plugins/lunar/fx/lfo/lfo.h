@@ -7,8 +7,16 @@ extern "C" {
 typedef struct _lunar_attributes {
 } lunar_attributes_t;
 typedef struct _lunar_globals {
+	float *wave;
+	float *rate;
+	float *offset;
+	float *amp;
 } lunar_globals_t;
 typedef struct _lunar_global_values {
+	float wave;
+	float rate;
+	float offset;
+	float amp;
 } lunar_global_values_t;
 typedef struct _lunar_track {
 } lunar_track_t;

@@ -1,40 +1,84 @@
 <?xml version="1.0" encoding="utf-8"?>
 <zzub>
-	<plugin
-		uri="@trac.zeitherrschaft.org/aldrin/lunar/controller/lfo;1"
-		name="Lunar LFO"
-		shortname="LFO"
-		type="controller"
-		description="A simple controller which emits an LFO wave."
-		author="Leonard Ritter"
-		email="contact at leonard-ritter+com">
-		<parameters>
-			<global>
-			</global>
-			<track>
-			</track>
-			<controller>
-				<parameter
-					id="out1"
-					name="LFO Out 1"
-					description="LFO Signal"
-					type="float"
-					minvalue="0"
-					maxvalue="1"
-					defvalue="0"
-					precision="0.01"/>
-			</controller>
-		</parameters>
-		<attributes>
-		</attributes>
-		<files>
-			<file ref="lfo.cpp"/>
-			<file ref="lfo.h"/>
-		</files>
-		<modules>
-			<module id="lfo">
-				<source language="c++" ref="lfo.cpp" fxdef="lfo.h"/>
-			</module>
-		</modules>
-	</plugin>
+  <plugin
+     uri="@trac.zeitherrschaft.org/aldrin/lunar/controller/lfo;1"
+     name="Lunar LFO"
+     shortname="LFO"
+     type="controller"
+     description="A simple controller which emits an LFO wave."
+     author="Leonard Ritter"
+     email="contact at leonard-ritter+com">
+    <parameters>
+      <valuenamegroup>
+	<valuenames id="wave">
+	  <alias value="0" name="Sine"/>
+	  <alias value="1" name="Saw+"/>
+	  <alias value="2" name="Saw-"/>
+	  <alias value="3" name="Square"/>
+	</valuenames>
+      </valuenamegroup>
+      <global>
+	<parameter
+	   id="wave"
+	   name="Wave"
+	   type="byte"
+	   minvalue="0"
+	   maxvalue="3"
+	   defvalue="0"
+	   valuenames="wave"
+	   state="true"/>
+	<parameter
+	   id="rate"
+	   name="Rate"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="4"
+	   defvalue="0.1"
+	   precision="0.001"
+	   state="true"/>
+	<parameter
+	   id="offset"
+	   name="Offset"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0.5"
+	   precision="0.01"
+	   state="true"/>
+	<parameter
+	   id="amp"
+	   name="Amplitude"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0.5"
+	   precision="0.01"
+	   state="true"/>
+      </global>
+      <track>
+      </track>
+      <controller>
+	<parameter
+	   id="out1"
+	   name="LFO Out 1"
+	   description="LFO Signal"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0"
+	   precision="0.01"/>
+      </controller>
+    </parameters>
+    <attributes>
+    </attributes>
+    <files>
+      <file ref="lfo.cpp"/>
+      <file ref="lfo.h"/>
+    </files>
+    <modules>
+      <module id="lfo">
+	<source language="c++" ref="lfo.cpp" fxdef="lfo.h"/>
+      </module>
+    </modules>
+  </plugin>
 </zzub>
