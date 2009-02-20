@@ -938,14 +938,22 @@ class WavetablePanel(gtk.Notebook):
 		"""
 		# update sample list
 		block = self.ohg.autoblock()
-		self.samplestore.clear()
 		player = com.get('aldrin.core.player')
 		selection = self.samplelist.get_selection()
-		for i in range(player.get_wave_count()):
-			w = player.get_wave(i)
-			it = self.samplestore.append(["%02X." % (i+1), prepstr(w.get_name()), w])
-			if w in player.active_waves:
-				selection.select_iter(it)
+		iter = self.samplestore.get_iter_first()
+		if not iter: # empty
+			for i in range(player.get_wave_count()):
+				w = player.get_wave(i)
+				it = self.samplestore.append(["%02X." % (i+1), prepstr(w.get_name()), w])
+				if w in player.active_waves:
+					selection.select_iter(it)
+		else: # update, it's a bit faster than rebuilding the list.
+			while iter:
+				w = self.samplestore.get_value(iter, 2)
+				self.samplestore.set_value(iter, 1, prepstr(w.get_name()))
+				if w in player.active_waves:
+					selection.select_iter(iter)
+				iter = self.samplestore.iter_next(iter)
 		
 	def __set_properties(self):
 		"""
