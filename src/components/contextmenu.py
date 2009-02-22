@@ -33,7 +33,7 @@ from aldrin.utils import is_generator, is_root, is_controller, is_effect, \
 	prepstr, Menu, new_theme_image, gettext
 from aldrin.utils import PLUGIN_FLAGS_MASK, ROOT_PLUGIN_FLAGS, \
 	GENERATOR_PLUGIN_FLAGS, EFFECT_PLUGIN_FLAGS, CONTROLLER_PLUGIN_FLAGS
-
+from router import SignalAnalysisDialog
 class ContextMenu(Menu):
 	__aldrin__ = dict(
 		id = 'aldrin.core.contextmenu',
@@ -66,6 +66,7 @@ class ContextMenu(Menu):
 			item.destroy()
 		for item in com.get_from_category('contextmenu.handler'):
 			item.populate_contextmenu(self)
+		self.rootwindow = parent
 		return Menu.popup(self, parent, event)
 
 class PluginContextMenu(gtk.Menu):
@@ -178,11 +179,11 @@ class PluginContextMenu(gtk.Menu):
 		player = com.get('aldrin.core.player')
 		player.history_commit("disconnect")
 
-	def on_popup_show_signalanalysis(self, widget, conn):
+	def on_popup_show_signalanalysis(self, widget, mp, index):
 		"""
 		Event handler for the "Signal Analysis" context menu option.
 		"""
-		dlg = SignalAnalysisDialog(self.rootwindow, conn.get_input(), self)
+		dlg = SignalAnalysisDialog(self, mp, self)
 		dlg.show_all()
 		
 	def on_popup_show_attribs(self, widget, mp):
