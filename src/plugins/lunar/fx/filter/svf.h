@@ -13,12 +13,15 @@
 //         return 0.0f;
 //  return sample;
 //}
-static void inline undenormalise(float *sample)
-{
-    if (((*(unsigned int*)sample) & 0x7f800000) <  0x08000000)
-        *sample = 0.0f;
-}
+union dntmp
+{ float xflt;
+  unsigned int xint; } tmp;
  
+static void inline undenormalise(float *sample)
+{   tmp.xflt = *sample;
+    if ( (tmp.xint & 0x7f800000) <  0x08000000) *sample = 0.0;
+}
+
 
 
 struct svf {
@@ -77,22 +80,22 @@ struct svf {
 		while (size--) {
 			in = *buffer;
 			v[0] = (in - damp * v[3]);
-			undenormalise(&v[0]);
+			//undenormalise(&v[0]);
 			v[1] = (v[1] + freq * v[3]);
-			undenormalise(&v[1]);
+			//undenormalise(&v[1]);
 			v[2] = (v[0] - v[1]);
-			undenormalise(&v[2]);
+			//undenormalise(&v[2]);
 			v[3] = (freq * v[2] + v[3] - drive * v[3] * v[3] * v[3]);
-			undenormalise(&v[3]);
+			//undenormalise(&v[3]);
 			out = 0.5 * v[mode];
 			v[0] = (in - damp * v[3]);
-			undenormalise(&v[0]);
+			//undenormalise(&v[0]);
 			v[1] = (v[1] + freq * v[3]);
-			undenormalise(&v[1]);
+			//undenormalise(&v[1]);
 			v[2] = (v[0] - v[1]);
-			undenormalise(&v[2]);
+			//undenormalise(&v[2]);
 			v[3] = (freq * v[2] + v[3] - drive * v[3] * v[3] * v[3]);				
-			undenormalise(&v[3]);			
+			//undenormalise(&v[3]);			
 			out += 0.5 * v[mode];
 			*buffer++ = out;
 		}

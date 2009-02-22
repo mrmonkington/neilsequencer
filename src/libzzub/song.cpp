@@ -1246,7 +1246,14 @@ void mixer::work_plugin(plugin_descriptor plugin, int sample_count) {
 	if (m.is_bypassed || m.sequencer_state == sequencer_event_type_thru) {
 		m.last_work_audio_result = result;
 	} else {
+		SETABRPUN(); // turn on flush-to-zero for SSE machines
 		m.last_work_audio_result = m.plugin->process_stereo(plin, plout, sample_count, flags);
+		// (paniq) flush to zero should be turned off outside our DSP loop
+		// because the player library might be running in a process where
+		// precise computation is expected (i.e. realtime physics simulation).
+		// leaving it on will cause unexpected behavior on code paths
+		// we do not control.
+		SETGRADUN();		
 	}
 
 	std::copy(m.callbacks->feedback_buffer[0].begin() + sample_count, m.callbacks->feedback_buffer[0].begin() + buffer_size, m.callbacks->feedback_buffer[0].begin());
