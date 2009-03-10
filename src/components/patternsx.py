@@ -34,6 +34,7 @@ import gtk
 import gobject
 import pango
 import itertools
+import numpy
 from aldrin.utils import prepstr, filepath, get_item_count, get_clipboard_text, set_clipboard_text, question, error, get_new_pattern_name, \
 	new_liststore, new_combobox, db2linear, make_menu_item, make_check_item, ObjectHandlerGroup, \
 	AcceleratorMap, Menu, padded_partition
@@ -72,7 +73,7 @@ class PatternDialog(gtk.Dialog):
 			parent.get_toplevel(),
 			gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
 			None
-		)		
+		)
 		vbox = gtk.VBox(False, MARGIN)
 		vbox.set_border_width(MARGIN)
 		self.btnok = self.add_button(gtk.STOCK_OK, gtk.RESPONSE_OK)
@@ -408,7 +409,7 @@ class PatternPanel(gtk.VBox):
 	Panel containing the pattern toolbar and pattern view.
 	"""
 	__aldrin__ = dict(
-		id = 'aldrin.core.patternpanel',
+		id = 'aldrin.core.patternxpanel',
 		singleton = True,
 		categories = [
 			'aldrin.viewpanel',
@@ -417,9 +418,9 @@ class PatternPanel(gtk.VBox):
 	)
 	
 	__view__ = dict(
-			label = "Pattern Tracker",
+			label = "Sequence matrix",
 			stockid = "aldrin_pattern",
-			shortcut = 'F2',
+			shortcut = '<Shift>F2',
 			order = 2,
 	)
 	
@@ -462,7 +463,7 @@ class PatternPanel(gtk.VBox):
 		
 		self.view.grab_focus()
 		eventbus = com.get('aldrin.core.eventbus')
-		#eventbus.edit_pattern_request += self.on_edit_pattern_request
+		eventbus.edit_pattern_request += self.on_edit_pattern_request
 		
 	def on_edit_pattern_request(self, plugin, index):
 		player = com.get('aldrin.core.player')
@@ -485,6 +486,7 @@ class PatternPanel(gtk.VBox):
 				else:
 					player.active_patterns = []				
 				self.view.plugin, self.view.pattern  = plugin, 0
+			print "focus"
 			self.view.init_values()
 		try:
 			self.view.show_cursor_right()
@@ -649,6 +651,8 @@ class PatternView(gtk.DrawingArea):
 		self.shiftselect = None
 		self.clickpos = None
 		self.track_width=[0,0,0]
+		self.visible_columns = None
+		self.column_order = []
 		self.plugin_info = common.get_plugin_infos()
 		self.resolution = 1
 		self.factors = None
@@ -860,19 +864,49 @@ class PatternView(gtk.DrawingArea):
 		if not m:
 			m = self.get_plugin()
 		return get_new_pattern_name(m)
+	
+	def calculate_layout(self):
+		self.column_order = []	
+		i = 0
+		x = 0
+		for group in range(3):
+			for track in xrange(self.group_track_count[group]):
+				for index in xrange(self.parameter_count[group]): 
+						if self.visible_columns[i]:
+							width = self.parameter_width[group][index]
+							self.column_order.append((group, track, index, x, width))
+							x += width + 1
+						i += 1
+					
+		widths = [[], [], []]
+		self.track_width = [0, 0, 0]
+		index = 0
+		x = 0			
+		for group in range(3):
+			for x in self.parameter_width[group]:
+				if self.visible_columns[index]:
+					widths[group].append(x)
+				index += 1
+			self.track_width[group] = sum(widths[group]) + len(widths[group])
+	
+		self.group_position = [
+			0, 
+			(self.track_width[0]*self.group_track_count[0]), 
+			(self.track_width[0]*self.group_track_count[0])+(self.track_width[1]*self.group_track_count[1])
+		]
 		
 	def init_values(self):
 		"""
 		Initializes pattern storage and information.
 		"""
-		print "other"
+		print "init values"
 		# plugin
 		self.plugin = None
 		self.pattern = -1
 		# parameter count
 		self.parameter_count = [0,0,0]
 		self.parameter_width = [[],[],[]]
-		self.lines = None
+		self.matrix = None
 		self.levels = {}
 		self.factor_sources = {}
 		self.row_count = 0
@@ -902,7 +936,7 @@ class PatternView(gtk.DrawingArea):
 					group_parameter_count = 0
 				else:
 					# parameter counts
-					group_parameter_count = self.plugin.get_parameter_count(group,0)
+					group_parameter_count = self.plugin.get_parameter_count(group, 0)
 				self.parameter_count.append(group_parameter_count)
 				# parameter widths in columns
 				widths = []
@@ -1063,14 +1097,18 @@ class PatternView(gtk.DrawingArea):
 		self.subindex = min(max(si,0), self.subindex_count[self.group][self.index] - 1)
 		
 	def expose(self, widget, *args):
+		s = time.time()
 		self.context = widget.window.cairo_create()
+		print "cairo created", (time.time() - s) * 1000
 		self.draw(self.context)
 		return False
 		
 	def redraw(self,*args):
 		if self.window:
+			self.mark = time.time()	
 			w,h = self.get_client_size()
 			self.window.invalidate_rect((0,0,w,h), False)
+			#self.queue_draw()
 			
 	def on_active_patterns_changed(self, selpatterns):
 		if self.window:		
@@ -1080,6 +1118,7 @@ class PatternView(gtk.DrawingArea):
 		"""
 		Loads and redraws the pattern view after the pattern has been changed.
 		"""
+		print "changed"
 		self.init_values()
 		self.show_cursor_left()
 		plugin = self.get_plugin()
@@ -1116,79 +1155,77 @@ class PatternView(gtk.DrawingArea):
 		self.draw_cursor_xor()
 		self.update_statusbar()
 		#~ self.refresh_view()
+
+	def set_position(self, group, track, index, subindex=0):
+		self.set_group(group)
+		self.set_track(track)
+		self.set_index(index)
+		self.set_subindex(subindex)
 		
-	def move_track_left(self):
-		"""
-		Moves the cursor one track position left.
-		"""	
-		if (self.track == 0):
-			if (self.group == CONN) or not self.set_group(self.group - 1):
-				return False
-			self.set_track(self.group_track_count[self.group] - 1)
-		else:
-			self.set_track(self.track - 1)
-		return True
-		
-	def move_index_left(self):
-		"""
-		Moves the cursor one index position left.
-		"""	
-		if self.index == 0:
-			if not self.move_track_left():
-				return False
-			self.set_index(self.parameter_count[self.group] - 1)			
-		else:
-			self.set_index(self.index - 1)
-		return True
-		
-	def move_subindex_left(self):
-		"""
-		Moves the cursor one subindex position left.
-		"""	
-		if self.subindex == 0:
-			if not self.move_index_left():
-				return False
-			self.set_subindex(self.subindex_count[self.group][self.index] - 1)
-		else:
-			self.set_subindex(self.subindex - 1)
-		return True
-		
-	def move_track_right(self):
-		"""
-		Moves the cursor one track position right.
-		"""			
-		if (self.track == self.group_track_count[self.group]-1):					
-			if (self.group == TRACK) or not self.set_group(self.group + 1):
-				return False
-			self.set_track(0)
-		else:
-			self.set_track(self.track + 1)
-		return True
-		
-	def move_index_right(self):
-		"""
-		Moves the cursor one index position right.
-		"""	
-		if self.index == (self.parameter_count[self.group] - 1):
-			if not self.move_track_right():
-				return False
-			self.set_index(0)
-		else:
-			self.set_index(self.index + 1)
-		return True
-		
-	def move_subindex_right(self):
-		"""
-		Moves the cursor one subindex position right.
-		"""	
-		if self.subindex == (self.subindex_count[self.group][self.index] - 1):
-			if not self.move_index_right():
-				return False
-			self.set_subindex(0)
-		else:
-			self.set_subindex(self.subindex + 1)
-		return True
-		
+	def move_position_right(self, column_type="subindex"):
+		assert(column_type in ["group", "track", "index", "subindex"])
+		if column_type == "subindex":
+			if self.subindex+1 >= self.subindex_count[self.group][self.index]:
+				column_type = "index"
+			else:
+				self.set_subindex(self.subindex+1)
+		for group, track, index, x, width in self.column_order:	
+			if column_type == "group":
+				if group > self.group:
+					self.set_position(group, track, index)
+					break
+			elif column_type == "track":
+				if group == self.group and track > self.track:
+					self.set_position(group, track, index)
+					break
+				elif group > self.group:
+					self.set_position(group, track, index)
+					break				
+			elif column_type == "index":
+				if group == self.group and track == self.track and index > self.index:
+					self.set_position(group, track, index)
+					break
+				elif group == self.group and track > self.track:
+					self.set_position(group, track, index)
+					break
+				elif group > self.group:
+					self.set_position(group, track, index)
+					break
+								
+	def move_position_left(self, column_type="subindex"):
+		assert(column_type in ["group", "track", "index", "subindex"])
+		if column_type == "subindex":
+			if self.subindex-1 < 0:
+				column_type = "index"
+			else:
+				self.set_subindex(self.subindex-1)		
+		for group, track, index, x, width in reversed(self.column_order):
+			if column_type == "group":
+				if group < self.group:
+					self.set_position(group, track, index)
+					break
+			elif column_type == "track":
+				if group == self.group and track < self.track:
+					self.set_position(group, track, index)
+					break
+				elif group < self.group:
+					self.set_position(group, track, index)
+					break				
+			elif column_type == "index":
+				if group == self.group and track == self.track and index < self.index:
+					self.set_position(group, track, index)
+					self.set_subindex(self.subindex_count[self.group][self.index]-1)
+					break
+				elif group == self.group and track < self.track:
+					self.set_position(group, track, index)
+					self.set_subindex(self.subindex_count[self.group][self.index]-1)
+					break
+				elif group < self.group:
+					self.set_position(group, track, index)
+					self.set_subindex(self.subindex_count[self.group][self.index]-1)
+					break
+				
+
 	def show_cursor_left(self):
 		"""
 		Puts the cursor into visible frame after a jump to the left.
@@ -1217,8 +1254,9 @@ class PatternView(gtk.DrawingArea):
 		if self.pattern == -1:
 			return
 		self.draw_xor()
-		self.move_subindex_left()
-		self.show_cursor_left()
+		#self.move_subindex_left()
+		#self.show_cursor_left()
+		self.move_position_left()
 		self.draw_xor()
 		self.update_statusbar()
 		#~ self.refresh_view()		
@@ -1230,8 +1268,9 @@ class PatternView(gtk.DrawingArea):
 		if self.pattern == -1:
 			return
 		self.draw_xor()
-		self.move_subindex_right()
-		self.show_cursor_right()
+		#self.move_subindex_right()
+		#self.show_cursor_right()
+		self.move_position_right()
 		self.draw_xor()
 		self.update_statusbar()
 		#~ self.refresh_view()
@@ -1669,7 +1708,11 @@ class PatternView(gtk.DrawingArea):
 		if event.button == 1:
 			self.draw_xor()
 			x,y = int(event.x), int(event.y)
-			row, group, track, index, subindex = self.pos_to_pattern((x,y))
+			row, column, subindex = self.pos_to_pattern((x,y))			
+			group, track, index, x, width  = self.column_order[column]
+			self.clickpos = row, group, track, index, subindex
+			#print len(self.column_order), self.column_order
+			#print column, self.clickpos
 			self.set_row(row)
 			self.set_group(group)
 			self.set_track(track)
@@ -1680,7 +1723,6 @@ class PatternView(gtk.DrawingArea):
 			self.dragging = True
 			self.selection.begin = row
 			self.selection.end = row
-			self.clickpos = self.pos_to_pattern((x,y))
 			self.adjust_selection()
 			self.redraw()
 	
@@ -1693,9 +1735,9 @@ class PatternView(gtk.DrawingArea):
 		"""
 		x,y,state = self.window.get_pointer()
 		x, y = int(x),int(y)
-		row, group, track, index, subindex = self.pos_to_pattern((x,y))
 		if self.dragging:
-			row, group, track, index, subindex = self.pos_to_pattern((x,y))
+			row, order_index, subindex = self.pos_to_pattern((x,y))
+			group, track, index, x, width = self.column_order[order_index]
 			if group != self.clickpos[1]:
 				self.selection.mode=SEL_ALL
 			elif track != self.clickpos[2]:
@@ -1884,7 +1926,14 @@ class PatternView(gtk.DrawingArea):
 		self.delete()
 		
 	def tab_left(self):
-		if (self.index != 0 or self.subindex != 0) or self.move_track_left():
+		if self.index == 0 and self.subindex == 0:
+			self.move_position_left("track")
+		self.set_index(0)
+		self.set_subindex(0)
+		self.show_cursor_left()
+		self.refresh_view()
+		"""
+			 or self.move_track_left():
 			# If not at start of track, go there; if at
 			# start of track, move to previous track. Note
 			# short-circuit evaluation of 'or'.
@@ -1892,14 +1941,28 @@ class PatternView(gtk.DrawingArea):
 			self.set_subindex(0)
 			self.show_cursor_left()
 			self.refresh_view()
-			
+		"""
 	def tab_right(self):
 		# move to next track
-		if self.move_track_right():
-			self.set_index(0)
-			self.set_subindex(0)
-			self.show_cursor_right()
-			self.refresh_view()
+		self.move_position_right("track")
+		self.set_index(0)
+		self.set_subindex(0)
+		self.show_cursor_right()
+		self.refresh_view()
+	
+	def column_to_order(self, group, track, index):
+		for j, p in enumerate(self.column_order):
+			g, t, i, x , width = p
+			if g == group and t == track and i == index:
+				return j
+		return 0
+	
+	def column_to_index(self, group, track, index):
+		pos = 0
+		for g in range(group):
+			pos += self.parameter_count[g] * self.group_track_count[g]
+		pos += self.group_track_count[group] * track + index
+		return pos
 	
 	def on_key_down(self, widget, event):
 		"""
@@ -1962,7 +2025,7 @@ class PatternView(gtk.DrawingArea):
 			self.selection.mode = (self.selection.mode + 1) % 4
 			self.adjust_selection()
 			self.redraw()
-		elif (mask & gtk.gdk.CONTROL_MASK):
+		elif (mask & gtk.gdk.CONTROL_MASK):			
 			if k == 'b':
 				if not self.selection:
 					self.selection = self.Selection()
@@ -2000,6 +2063,23 @@ class PatternView(gtk.DrawingArea):
 				player.activate_plugin(-1)
 			elif k == 'Down':
 				player.activate_plugin(1)
+			elif k == 'h':
+				"""
+				print self.group, self.track
+				print self.column_order
+				for group, track, index, x, width in self.column_order:
+					if self.group == group and self.track == track:
+						break
+					pos += 1
+				print pos
+				"""
+				#print len(self.column_order), self.column_order
+				pos = self.column_to_order(self.group, self.track, self.index)
+				group, track, index, x, width = self.column_order[pos]
+				pos = self.column_to_index(group, track, index)
+				self.visible_columns[pos] = False
+				self.calculate_layout()
+				self.redraw()
 			else:
 				return False
 		elif k == 'Left' or k == 'KP_Left':
@@ -2070,7 +2150,7 @@ class PatternView(gtk.DrawingArea):
 #					indices += [self.group, self.track, i]
 #			else:
 #				indices += [self.group, self.track, self.index]
-#			self.plugin.remove_pattern_rows(self.pattern, indices, len(indices)/3, self.row, 1)
+#			self.plugin.reqmove_pattern_rows(self.pattern, indices, len(indices)/3, self.row, 1)
 			player.history_commit("remove row")
 		elif k == 'Return':
 			eventbus.edit_sequence_request()
@@ -2234,13 +2314,21 @@ class PatternView(gtk.DrawingArea):
 		@rtype: (int, int)
 		"""
 		y = row
-		x = self.group_position[group]
-		if self.parameter_count[group]:
-			x += self.parameter_position[group][index]
+#		x = self.group_position[group]
+#		if self.parameter_count[group]:
+#			x += self.parameter_position[group][index]
+#			x += self.subindex_offset[group][index][subindex]
+#		if group in (CONN, TRACK):
+#			x += self.track_width[group]*track
+		x = 0
+		if self.column_order and self.parameter_count[group]:
+			order_index = self.column_to_order(group, track, index)
+			g, t, i, x, width = self.column_order[order_index]
+			#print order_index, x
+			#print group, index, subindex
+			#print self.subindex_offset
 			x += self.subindex_offset[group][index][subindex]
-		if group in (CONN, TRACK):
-			x += self.track_width[group]*track
-		return x,y
+		return x, y
 
 	def pattern_to_pos(self, row, group, track=0, index=0, subindex=0):
 		"""
@@ -2255,10 +2343,10 @@ class PatternView(gtk.DrawingArea):
 		@return: (x,y) pixel coordinate
 		@rtype: (int, int)
 		"""
-		x,y = self.pattern_to_charpos(row,group,track,index,subindex)
+		x, y = self.pattern_to_charpos(row,group,track,index,subindex)
 		return ((x - self.start_col)*self.column_width) + PATLEFTMARGIN + 4, self.top_margin + ((y - self.start_row) * self.row_height/self.resolution)
 		
-	def charpos_to_pattern(self, position):
+	def charpos_to_pattern_old(self, position):
 		"""
 		Converts a (x,y) character coordinate into a pattern position.
 		
@@ -2266,7 +2354,7 @@ class PatternView(gtk.DrawingArea):
 		@type position: (int, int)
 		@return: (row, group, track, index, subindex) representing a pattern position.
 		@rtype: (int, int, int, int, int)
-		"""
+		"""				
 		x, y = position
 		# find group
 		if x < self.group_position[1]:
@@ -2285,7 +2373,7 @@ class PatternView(gtk.DrawingArea):
 			# bounds checking
 			if track >= self.group_track_count[group] or track < 0:
 				track = self.track
-				out_of_bounds = True			
+				out_of_bounds = True
 		# find index, subindex
 		index = self.index
 		subindex = self.subindex
@@ -2297,15 +2385,34 @@ class PatternView(gtk.DrawingArea):
 						break
 				else:
 					# last index
-					index = i			
+					index = i
 				x -= self.parameter_position[group][index]
 				# subindex is that what remains
 				subindex = x
 		# find row
 		row = min(max(0, y), self.row_count-1)
 		return (row, group, track, index, subindex)
+			
+	def charpos_to_pattern(self, position):
+		"""
+		Converts a (x,y) character coordinate into a pattern position.
 		
-	def pos_to_pattern(self, position):		
+		@param position: Character coordinate.
+		@type position: (int, int)
+		@return: (row, group, track, index, subindex) representing a pattern position.
+		@rtype: (int, int, int, int, int)
+		"""				
+		cx, cy = position
+		row = min(max(0, cy), self.row_count-1)
+		for i, p in enumerate(self.column_order):
+			group, track, index, x, width = p
+			if x <= cx <= x + width:
+				print cx, x
+				subindex = cx - x
+				return (row, i, subindex)
+		return (row, 0, 0)
+	
+	def pos_to_pattern(self, position):
 		"""
 		Converts a (x,y) pixel coordinate into a pattern position.
 		
@@ -2316,6 +2423,7 @@ class PatternView(gtk.DrawingArea):
 		"""
 		x, y = position
 		return self.charpos_to_pattern(((x - PATLEFTMARGIN - 4) / self.column_width + self.start_col, (y - self.top_margin) / self.row_height*self.resolution + self.start_row))
+
 
 	def get_charbounds(self):
 		"""
@@ -2405,7 +2513,6 @@ class PatternView(gtk.DrawingArea):
 				self.statuslabels[1].set_label("")		
 					
 	def update_all(self):
-		print "updated"
 		if self.window and self.window.is_visible():
 			self.prepare_textbuffer()
 			self.refresh_view()
@@ -2444,14 +2551,14 @@ class PatternView(gtk.DrawingArea):
 		drawable = self.window
 		if not hasattr(self, "xor_gc"):
 			self.create_xor_gc()
-		gc = self.xor_gc
-		cx,cy = self.pattern_to_pos(self.row, self.group, self.track, self.index, self.subindex)
+		gc = self.xor_gc		
+		cx, cy = self.pattern_to_pos(self.row, self.group, self.track, self.index, self.subindex)
 		if (cx >= (PATLEFTMARGIN+4)) and (cy >= self.top_margin):
 			drawable.draw_rectangle(gc, True,cx,cy,self.column_width,self.row_height)
-
+		
 	def draw_playpos_xor(self):
 		if self.pattern == -1:
-			return			
+			return
 		if not self.window:
 			return	
 		drawable = self.window
@@ -2522,15 +2629,18 @@ class PatternView(gtk.DrawingArea):
 		@param row: Line that will be updated.
 		@type row: int
 		"""	
+		index = 0
 		for g in range(3):
-			if self.lines[g]:
+			#if self.lines[g]:
 				tc = self.group_track_count[g]
 				for t in range(tc):
-					s = ' '.join([get_str_from_param(self.plugin.get_parameter(g, t, i),
-									 self.plugin.get_pattern_value(self.pattern, g, t, i, row))
-									for i in xrange(self.parameter_count[g])])
-					values = [self.plugin.get_pattern_value(self.pattern, g, t, i, row) != self.plugin.get_parameter(g, t, i).get_value_none()
-										for i in range(self.parameter_count[g])]
+					values = []
+					for i in xrange(self.parameter_count[g]):
+						self.lines[row][index] = get_str_from_param(self.plugin.get_parameter(g, t, i),
+									 self.plugin.get_pattern_value(self.pattern, g, t, i, row)) + ' '
+						index += 1				
+					values = [self.plugin.get_pattern_value(self.pattern, g, t, i, row) != self.plugin.get_parameter(g, t, i).get_value_none() for i in range(self.parameter_count[g])]	
+					"""
 					self.levels[1][g][t][row] = any(values)
 					for n in self.factors[1:]:
 						source = self.factor_sources[n]
@@ -2539,11 +2649,8 @@ class PatternView(gtk.DrawingArea):
 						# sum two values of the previous level
 						#print n, level_row, 'from', source, level_row*multiple, '..', (level_row+1)*multiple
 						self.levels[n][g][t][level_row] = sum(self.levels[source][g][t][level_row*multiple:(level_row+1)*multiple])
-					try: 
-						self.lines[g][t][row] = s
-					except IndexError:
-						pass
-
+					"""
+		self.lines[row][index] = "\n"
 	# This does the same job as update_line, but if we need to
 	# update a lot of data at once, it's faster to use update_col.
 	def update_col(self, group, track):
@@ -2558,19 +2665,30 @@ class PatternView(gtk.DrawingArea):
 				for row in range(self.row_count)]
 		
 		self.levels[1][group][track] = [any(r) for r in itertools.izip(*col_vals)]					
+		"""
 		for row in range(self.row_count):
 			try:
 				self.lines[group][track][row] =  ' '.join([cols[i][row] for i in range(count)])
 			except IndexError:
 				pass
-		
+		"""
 
 	def prepare_textbuffer(self):
 		"""
 		Initializes a buffer to handle the current pattern data.
 		"""
 		st = time.time()
-		self.lines = [None]*3	
+		# calculate column character width
+		row_length = 0
+		for g in range(3):
+			row_length += self.parameter_count[g] * self.group_track_count[g]
+			#for i in xrange(self.parameter_count[g]):
+				#row_length += 1
+				#len(get_str_from_param(self.plugin.get_parameter(g, 0, i),
+				#	self.plugin.get_pattern_value(self.pattern, g, 0, i, 0)))
+		row_length += 1
+		self.lines = numpy.zeros((self.row_count, row_length),  dtype='|S5')
+		self.visible_columns = numpy.ones(row_length, dtype=bool)
 		# generate zoom levels	
 		self.levels = {}
 		# find largest factor divisor of factor
@@ -2584,20 +2702,19 @@ class PatternView(gtk.DrawingArea):
 				
 		for key in self.factors:
 			self.levels[key] = [None]*3
+		
+		for row in range(self.row_count):
+			self.update_line(row)
+			
 		# update level 1
 		for group in range(3):
 			if self.parameter_count[group] > 0:
 				tc = self.group_track_count[group]
-				self.lines[group] = [None]*tc
 				for key in self.levels.keys():
 					self.levels[key][group] = [None]*tc
 				for track in range(tc):
-					self.lines[group][track] = [None]*self.row_count
 					self.levels[1][group][track] = [None]*self.row_count
 					self.update_col(group, track)
-			else:
-				self.lines[group] = []
-		
 		# update other levels				
 		for n in self.factors[1:]:
 			source = self.factor_sources[n]
@@ -2607,12 +2724,9 @@ class PatternView(gtk.DrawingArea):
 					tc = self.group_track_count[group]
 					for track in range(tc):
 						self.levels[n][group][track] = [sum(sub_list) for sub_list in padded_partition(self.levels[source][group][track], multiple, pad_val=0)]
-#		for i in range(len(self.levels)-1):
-#			for group in range(3):				
-#				if self.parameter_count[group] > 0:
-#					tc = self.group_track_count[group]
-#					for track in range(tc):
-#						self.levels[2**(i+1)][group][track] = [sum(sub_list) for sub_list in padded_partition(self.levels[2**i][group][track], 2, pad_val=0)]
+		for i, _ in enumerate(self.visible_columns[:-1]):
+			a = self.lines[:, i].tostring().replace(".", '').replace(" ", '').replace("\n", '').replace("\0", '')
+			self.visible_columns[i] = (len(a) != 0)
 		print "end of prepare_textbuffer %.2f" % ((time.time() - st) * 1000.0)
 
 	def get_line_pattern(self):
@@ -2631,8 +2745,9 @@ class PatternView(gtk.DrawingArea):
 		"""
 		Overriding a L{Canvas} method that paints onto an offscreen buffer.
 		Draws the pattern view graphics.
-		"""	
+		"""			
 		st = time.time()
+		print "enqueued", (st - self.mark) * 1000
 		row=None
 		rows=None
 		fulldraw=True
@@ -2648,7 +2763,8 @@ class PatternView(gtk.DrawingArea):
 		cm = gc.get_colormap()
 		drawable = self.window
 
-		bgbrush = cm.alloc_color(cfg.get_color('PE BG'))
+		#bgbrush = cm.alloc_color(cfg.get_color('PE BG'))
+		bgbrush = cm.alloc_color('#A0D0FF')
 		hiddenbrush =  cm.alloc_color('#FF0000')
 		 
 		fbrush1 = cm.alloc_color(cfg.get_color('PE BG Very Dark'))
@@ -2674,7 +2790,11 @@ class PatternView(gtk.DrawingArea):
 		clipy1 = PATROWHEIGHT + ((row - self.start_row) * self.row_height)
 		clipy2 = PATROWHEIGHT + ((rows - self.start_row) * self.row_height)
 		
-		start_row, start_group, start_track, start_index, start_subindex = self.charpos_to_pattern((self.start_col, self.start_row))
+		#row, order_index, start_subindex = self.charpos_to_pattern((self.start_col, self.start_row))
+		#print order_index
+		#start_group, start_track, start_index = self.column_order[order_index]
+		
+		start_row, start_group, start_track, start_index, start_subindex = self.charpos_to_pattern_old((self.start_col, self.start_row))
 		# full draw clears everything and draws all the line numbers and lines
 		if fulldraw:
 			drawable.draw_rectangle(gc, True, 0, 0, w, h)
@@ -2694,7 +2814,7 @@ class PatternView(gtk.DrawingArea):
 		i = row
 		y = clipy1
 		gc.set_clip_rectangle(gtk.gdk.Rectangle(startx, 0, w - startx, h))
-		if self.lines:
+		if self.lines != None:
 			linepattern = self.get_line_pattern()
 			lpcount = len(linepattern)
 			linecolors = []
@@ -2709,23 +2829,31 @@ class PatternView(gtk.DrawingArea):
 			
 			def draw_parameters_range(row, num_rows, group, track=0, resolution=1):
 				"""Draw the parameter values for a range of rows"""
-				x,y = self.pattern_to_pos(row, group, track, 0)
+				x, y = self.pattern_to_pos(row, group, track, 0)
 				s = '\n'.join([self.lines[group][track][i] for i in xrange(row, row+num_rows, resolution)])
 				w = PATCOLWIDTH * len(self.lines[group][track][row])
 				layout.set_text(s)
-				px,py = layout.get_pixel_size()
+				px, py = layout.get_pixel_size()
 				drawable.draw_layout(gc, x, y, layout)
 				return x + px
-			def draw_parameters(row, group, track=0):
-				"""Draw the parameter values"""
-				x,y = self.pattern_to_pos(row, group, track, 0)
-				s = self.lines[group][track][row]
-				w = PATCOLWIDTH * len(s)
-				layout.set_text(s)
-				px,py = layout.get_pixel_size()
-				drawable.draw_layout(gc, x,y + PATROWHEIGHT/2 - (py/2), layout)
 			
+			def draw_parameters(row, num_rows, resolution=1):
+				"""Draw the parameter values for a range of rows"""
+				x, y = self.pattern_to_pos(row, 0, 0, 0)
+				st3 = time.time()
+				s = self.lines[row:row+num_rows:resolution, self.visible_columns].tostring()
+				print (time.time() - st3) * 1000
+				st3 = time.time()
+				s= s.replace("\x00","")
+				print (time.time() - st3) * 1000
+				layout.set_text(s)
+				px, py = layout.get_pixel_size()
+				drawable.draw_layout(gc, x, y, layout)
+				return x + px
+				
 			# draw track background
+			if self.visible_columns != None:
+				self.calculate_layout()
 			gc.set_foreground(bgbrush)
 			gc.set_background(bgbrush)
 			for g in CONN,GLOBAL,TRACK:
@@ -2806,6 +2934,11 @@ class PatternView(gtk.DrawingArea):
 				drawable.draw_layout(gc, x + width/2 - px/2, PATROWHEIGHT/2 - (py/2), layout)
 			num_rows = min(rows - row, (h - clipy1) / PATROWHEIGHT*self.resolution + 1)
 			out_of_bounds = False
+			st2 = time.time()
+			draw_parameters(row, num_rows, self.resolution)
+			print "str %ims" % ((time.time() - st2)*1000)			
+			
+			"""
 			for t in range(self.group_track_count[CONN]):
 				connectiontype = self.get_plugin().get_input_connection_type(t)
 				if connectiontype == zzub.zzub_connection_type_audio:
@@ -2820,9 +2953,10 @@ class PatternView(gtk.DrawingArea):
 						extent = draw_parameters_range(row, num_rows, TRACK, t, resolution=self.resolution)
 						if extent > w:
 							break
-						
+			"""
+			
 		self.draw_xor()
-		print "%ims" % ((time.time() - st)*1000)
+		print "draw %ims" % ((time.time() - st)*1000)
 
 __all__ = [
 'PatternDialog',

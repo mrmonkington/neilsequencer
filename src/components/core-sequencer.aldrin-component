@@ -1,5 +1,5 @@
 [Aldrin COM]
-Module=sequencer
+Module=sequencematrix
 Name=Sequencer Panel
 Description=Provides a sequencer panel to the application.
 Icon=aldrin
