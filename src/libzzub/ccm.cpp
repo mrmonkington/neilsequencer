@@ -378,7 +378,7 @@ std::string paramtype_to_string(int paramtype) {
 
 std::string id_from_ptr(const void *p) {
 	char id[64];
-	sprintf(id, "%x", p);
+	sprintf(id, "%p", p);
 	return id;
 }
 

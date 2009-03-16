@@ -277,7 +277,7 @@ void crossfade::command(const int i)
 	       "The even-numbered inputs are mixed; the odd-numbered inputs are mixed;\n"
 	       "then the two groups are crossfaded together according to the parameter.\n"
 	       "Comments/suggestions/bug reports to jamesmichaelmcdermott@gmail.com\n\n");
-	sprintf(txt,"%s%i inputs", txt, Inputs.size());
+	sprintf(txt,"%s%zi inputs", txt, Inputs.size());
 	for (int j=0; j<Inputs.size(); j++)
 		sprintf(txt, "%s\n%i: %s", txt, j, Inputs[j].MacName);
 	sprintf(txt, "%s\n", txt);

@@ -350,7 +350,7 @@ struct ladspaplugincollection : zzub::plugincollection {
 		{
 			factory->register_info(infos[i]);
 		}	
-		printf("ladspadapter: enumerated %i plugin(s).\n", infos.size());
+		printf("ladspadapter: enumerated %zi plugin(s).\n", infos.size());
 	}
 	
 	// Called by the host upon song loading. If the collection

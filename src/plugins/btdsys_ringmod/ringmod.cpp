@@ -324,7 +324,7 @@ void ringmod::command(const int i)
 		"BTDSys RingMod v1.0\n"
 		"©2002 Ed Powley (BTDSys)\n\n"
 		"Comments/suggestions/bug reports to e@btd2001.freeserve.co.uk\n\n");
-	sprintf(txt,"%s%i inputs", txt, Inputs.size());
+	sprintf(txt,"%s%zi inputs", txt, Inputs.size());
 	for (int j=0; j<Inputs.size(); j++)
 		sprintf(txt, "%s\n%i: %s", txt, j, Inputs[j].MacName);
 	sprintf(txt, "%s\n", txt);
