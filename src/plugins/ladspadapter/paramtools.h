@@ -17,7 +17,7 @@
 
 #if !defined(__LADSPA_PARAMTOOLS_H__)
 #define __LADSPA_PARAMTOOLS_H__
-
+#include <cstdio>
 #include <math.h>
 #include <algorithm>
 

@@ -7,7 +7,7 @@
 #include <zzub/signature.h>
 #include <zzub/plugin.h>
 #include "miditracker.h"
-
+#include <cstdio>
 using namespace std;
 
 namespace miditracker {

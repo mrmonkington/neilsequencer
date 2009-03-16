@@ -24,7 +24,7 @@
 #	endif
 #endif
 
-
+#include <cstdio>
 #define TCHAR char
 #define _T(x) x
 

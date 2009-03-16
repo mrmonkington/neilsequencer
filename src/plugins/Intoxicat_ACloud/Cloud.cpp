@@ -1,6 +1,6 @@
 #include <zzub/signature.h>
 #include <zzub/plugin.h>
-
+#include <cstdio>
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>

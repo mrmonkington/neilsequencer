@@ -17,7 +17,7 @@
 
 
 // ladspadapter allows running LADSPA plugins as zzub plugins
-
+#include <cstdio>
 #include <ladspa.h>
 #include <zzub/signature.h>
 #include 	"zzub/plugin.h"

@@ -4,7 +4,7 @@
 
 // Lots of code from BTDSys RingMod -- thanks!
 
-
+#include <cstdio>
 #include <zzub/signature.h>
 #include <zzub/plugin.h>
 //#include "../buzz2zzub/mdk.h"

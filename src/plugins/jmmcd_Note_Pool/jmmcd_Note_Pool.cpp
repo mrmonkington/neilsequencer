@@ -6,7 +6,7 @@
 
 // thanks to btdsys, 7900, and usr for answering questions, but especially btdsys
 // for making peerlib, without which this wouldn't be possible.
-
+#include <cstdio>
 #define MACHINE_NAME "Peer Note-Pool"
 #define AUTHOR "jmmcd"
 #define FULL_NAME AUTHOR " " MACHINE_NAME

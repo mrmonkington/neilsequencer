@@ -4,7 +4,7 @@
 // CyanPhase DTMF-1
 // Copyright 2000 CyanPhase aka Edward L. Blake
 // Enjoy
-
+#include <cstdio>
 #include <zzub/signature.h>
 #include <zzub/plugin.h>
 
