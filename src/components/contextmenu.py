@@ -109,7 +109,7 @@ class PluginContextMenu(gtk.Menu):
 		menu.add_separator()
 		menu.add_item("_Rename...", self.on_popup_rename, mp)
 		if not is_root(mp):
-			menu.add_item("_Delete", self.on_popup_delete, mp)
+			menu.add_item("_Delete plugin", self.on_popup_delete, mp)
 		if is_effect(mp) or is_root(mp):
 			menu.add_separator()
 			menu.add_check_item("Default Target",player.autoconnect_target == mp,self.on_popup_set_target, mp)
