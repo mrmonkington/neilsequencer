@@ -462,7 +462,7 @@ class PatternPanel(gtk.VBox):
 		
 		self.view.grab_focus()
 		eventbus = com.get('aldrin.core.eventbus')
-		#eventbus.edit_pattern_request += self.on_edit_pattern_request
+		eventbus.edit_pattern_request += self.on_edit_pattern_request
 		
 	def on_edit_pattern_request(self, plugin, index):
 		player = com.get('aldrin.core.player')
