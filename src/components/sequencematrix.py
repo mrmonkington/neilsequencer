@@ -149,7 +149,84 @@ class SequencerToolBar(gtk.HBox):
 		self.parent.view.step = self.steps[widget.get_active()]
 		self.parent.update_all()
 
-class SequencerPanel(gtk.VBox):
+class Thing(gtk.DrawingArea):
+	def __init__(self):
+		super(Thing, self).__init__()
+		self.add_events(gtk.gdk.BUTTON_PRESS_MASK | gtk.gdk.BUTTON_RELEASE_MASK | gtk.gdk.POINTER_MOTION_MASK)
+		self.connect("expose_event", self.expose)
+		self.connect("button_press_event", self.click)
+		self.connect("motion_notify_event", self.drag)
+		self.connect("button_release_event", self.release)
+		self.click_point = None
+		print "Thing __init__ called"
+
+	def expose(self, widget, event):
+		print "Thing expose called"
+		context = None
+		###context = widget.window.cairo_create()
+		# set a clip region for the expose event
+		###context.rectangle(event.area.x, event.area.y,
+		###						  event.area.width, event.area.height)
+		###context.clip()
+		self.draw(context)
+		return False
+
+	def click(self, widget, event):
+		self.click_point = event.get_coords()
+		print "Thing.click at", self.click_point
+
+	def drag(self, widget, event):
+		if self.click_point:
+			x0, y0 = self.click_point
+			x1, y1 = event.get_coords()
+			print "Thing.drag:", (x1, y1)
+			dx = x1 - x0
+			dy = y1 - y0
+			x, y = self.parent.child_get(self, 'x', 'y')
+			self.parent.move(self, x + dx, y + dy)
+
+	def release(self, widget, event):
+		print "Thing.release"
+		self.click_point = None
+
+	def draw(self, context):
+		pass
+
+	def rect(self):
+		return self.get_allocation()
+	
+class RedBox(Thing):
+
+	def draw(self,context):
+		print "RedBox.draw" ###
+		x, y, w, h = self.rect()
+		win = self.window
+		colormap = self.get_colormap()
+		red = colormap.alloc_color("red")
+		gc = win.new_gc(foreground = red)
+		win.draw_rectangle(gc, True, 0, 0, w, h)
+		###context.set_source_rgb(1, 0, 0)
+		###context.rectangle(20, 20, 50, 50)
+		###context.fill()
+	
+class PatternView2(Thing):
+	"""
+	Pattern viewer class.
+	"""
+	def draw(self, ctx):	
+		"""
+		Overriding a L{Canvas} method that paints onto an offscreen buffer.
+		Draws the pattern view graphics.
+		"""			
+		print "PatternView.draw" ###
+		x, y, w, h = self.rect()
+		win = self.window
+		colormap = self.get_colormap()
+		red = colormap.alloc_color("blue")
+		gc = win.new_gc(foreground=red)
+		win.draw_rectangle(gc, True, 0, 0, w, h)
+		
+class SequencerPanel(gtk.Layout):
 	"""
 	Sequencer pattern panel.
 	
@@ -175,7 +252,7 @@ class SequencerPanel(gtk.VBox):
 		"""
 		Initialization.
 		"""
-		gtk.VBox.__init__(self)
+		gtk.Layout.__init__(self)
 		self.splitter = gtk.HPaned()
 		
 		self.seqliststore = gtk.ListStore(str, str)
@@ -199,33 +276,40 @@ class SequencerPanel(gtk.VBox):
 				
 		vscroll = gtk.VScrollbar()
 		hscroll = gtk.HScrollbar()
+		self.seqview = SequencerView(self, hscroll, vscroll)
+		#scrollwin = gtk.Table(2,2)
+		#scrollwin.attach(self.seqview, 0, 1, 0, 1, gtk.FILL|gtk.EXPAND, gtk.FILL|gtk.EXPAND)
+		#scrollwin.attach(vscroll, 1, 2, 0, 1, 0, gtk.FILL)
+		#scrollwin.attach(hscroll, 0, 1, 1, 2, gtk.FILL, 0)
 		
-		self.seq = gtk.Fixed()
-		self.seqview = SequencerView(self.seq, hscroll, vscroll)
-		self.seq.put(self.seqview, 100, 100)
-		"""
-		scrollwin = gtk.Table(2,2)
-		scrollwin.attach(self.seq, 0, 1, 0, 1, gtk.FILL|gtk.EXPAND, gtk.FILL|gtk.EXPAND)
-		scrollwin.attach(vscroll, 1, 2, 0, 1, 0, gtk.FILL)
-		scrollwin.attach(hscroll, 0, 1, 1, 2, gtk.FILL, 0)
-		"""
-		self.splitter.pack1(add_scrollbars(self.seqpatternlist), False, False)
-		self.splitter.pack2(self.seq, True, True)
+		#self.splitter.pack1(add_scrollbars(self.seqpatternlist), False, False)
+		#self.splitter.pack2(scrollwin, True, True)
+		#self.splitter.pack2(scrollwin, True, True)
 		self.view = self.seqview
 		self.toolbar = SequencerToolBar()
 
 		self.statusbar = gtk.HBox(False, MARGIN)
 		self.statusbar.set_border_width(MARGIN0)
-
-		self.pack_start(self.toolbar, expand=False)
-		self.pack_start(self.splitter)
-		self.pack_end(self.statusbar, expand=False)
 		
+		#rb = RedBox()
+		#rb.set_size_request(100, 100)		
+
+		#self.patterndraw = PatternView(self, None, None)
+		#self.patterndraw.set_size_request(100, 200)
+
+
+		#self.pack_start(self.toolbar, expand=False)
+		#self.pack_start(self.splitter)
+		#self.pack_end(self.statusbar, expand=False)
+		self.seqview.set_size_request(800, 600)
+		self.add(self.seqview)
+		#self.add(rb)
+		#self.add(self.patterndraw)
 		self.__set_properties()
 		self.__do_layout()
 		# end wxGlade
 		self.update_list()
-		self.toolbar.update_all()		
+		#self.toolbar.update_all()		
 		self.seqview.connect('size-allocate', self.on_sash_pos_changed)
 		self.seqview.grab_focus()
 		eventbus = com.get('aldrin.core.eventbus')
@@ -241,6 +325,7 @@ class SequencerPanel(gtk.VBox):
 				
 	def handle_focus(self):
 		self.view.grab_focus()
+		
 		
 	def update_all(self):
 		"""
@@ -267,7 +352,7 @@ class SequencerPanel(gtk.VBox):
 		if track:
 			for pattern, key in zip(track.get_plugin().get_pattern_list(), SEQKEYS):
 				self.seqliststore.append([key, pattern.get_name()])
-				print pattern.get_name()
+				#print pattern.get_name()
 				
 	def on_sash_pos_changed(self, widget, *args):
 		"""
@@ -327,7 +412,7 @@ class SequencerView(gtk.DrawingArea):
 		self.panel = panel
 		self.hscroll = hscroll
 		self.vscroll = vscroll
-		self.patterndraw = None
+		self.pattern_editors = None
 		
 		self.plugin_info = common.get_plugin_infos()
 		player = com.get('aldrin.core.player')
@@ -443,7 +528,7 @@ class SequencerView(gtk.DrawingArea):
 				while self.track < self.starttrack:
 					self.starttrack -= 1
 				self.redraw()
-			#self.panel.update_list()
+			self.panel.update_list()
 		if self.row != row:
 			self.row = row
 			endrow = self.get_endrow()
@@ -855,36 +940,38 @@ class SequencerView(gtk.DrawingArea):
 				self.on_popup_cut()
 			elif k == 'v':	
 				self.on_popup_paste()
-			elif k == 'Up' or k == 'KP_Up':
+			elif k == 'Left' or k == 'KP_Left':
 				if self.track > 0:
 					t = seq.get_track_list()[self.track]
 					t.move(self.track-1)
 					self.track -= 1
 					player.history_commit("move track")
 					self.redraw()	
-			elif k == 'Down' or k == 'KP_Down':
+			elif k == 'Right' or k == 'KP_Right':
 				if self.track < (seq.get_sequence_track_count()-1):
 					t = seq.get_track_list()[self.track]
 					t.move(self.track+1)
 					self.track += 1
 					player.history_commit("move track")
 					self.redraw()
-			elif k == 'Left' or k == 'KP_Left':
+
+			elif k == 'Up' or k == 'KP_Up':				
 				self.set_cursor_pos(self.track, self.row - (self.step*16))
-			elif k == 'Right' or k == 'KP_Right':
+
+			elif k == 'Down' or k == 'KP_Down':				
 				self.set_cursor_pos(self.track, self.row + (self.step*16))
 			else:
 				return False
-		elif k == 'Left' or k == 'KP_Left':
+		elif k == 'Up' or k == 'KP_Up':
 			self.set_cursor_pos(self.track, self.row - self.step)
 			self.adjust_scrollbars()
-		elif k == 'Right' or k == 'KP_Right':
+		elif k == 'Down' or k == 'KP_Down':
 			self.set_cursor_pos(self.track, self.row + self.step)
 			self.adjust_scrollbars()
-		elif k == 'Up' or k == 'KP_Up':
+		elif k == 'Left' or k == 'KP_Left':			
 			self.set_cursor_pos(self.track-1, self.row)
 			self.adjust_scrollbars()
-		elif k == 'Down' or k == 'KP_Down':
+		elif k == 'Right' or k == 'KP_Right':			
 			self.set_cursor_pos(self.track+1, self.row)
 			self.adjust_scrollbars()
 		elif (kv < 256) and (chr(kv).lower() in SEQKEYMAP):
@@ -1099,7 +1186,7 @@ class SequencerView(gtk.DrawingArea):
 		self.adjust_scrollbars()
 		self.context = widget.window.cairo_create()
 		self.draw(self.context)
-		#self.panel.update_list()
+		self.panel.update_list()
 		return False
 		
 	def redraw(self, *args):
@@ -1248,15 +1335,26 @@ class SequencerView(gtk.DrawingArea):
 		Draws the pattern view graphics.
 		"""	
 		player = com.get('aldrin.core.player')
-		if not self.patterndraw:
-			track = self.get_track()
-			machine = track.get_plugin()
-			pattern = list(machine.get_pattern_list())[0]
-			self.patterndraw = PatternView(self.panel, machine, pattern)
-			self.panel.put(self.patterndraw, 0,0)
-			
-		self.patterndraw.draw(ctx)
-		#return
+		if not self.pattern_editors:
+			self.pattern_editors = {}
+			self.track_widths = []
+			seq = player.get_current_sequencer()			
+			tracklist = seq.get_track_list()
+			for track_index in range(len(tracklist)):
+				track = tracklist[track_index]
+				machine = track.get_plugin()
+				#machine = track.get_plugin()
+				for pattern in list(machine.get_pattern_list())[:1]:
+					editor = PatternView(self, machine, pattern)
+					self.pattern_editors[machine.get_name() + pattern.get_name()] = editor
+					self.panel.add(editor)
+					self.panel.move(editor, 800, 100)
+					editor.show()
+					self.track_widths.append(editor.width)
+					
+		print self.track_widths
+			#self.panel.move(self.patterndraw, 800, 100)
+		#self.patterndraw.draw(ctx)
 		w,h = self.get_client_size()
 		gc = self.window.new_gc()
 		cm = gc.get_colormap()
@@ -1292,7 +1390,7 @@ class SequencerView(gtk.DrawingArea):
 		layout.set_width(-1)
 
 		# 14
-		x, y = SEQLEFTMARGIN, SEQTOPMARGIN
+		x, y = SEQLEFTMARGIN, SEQTOPMARGIN #XXX
 		i = self.startseqtime
 		while x < h:
 			if (i % (16*self.step)) == 0:
@@ -1356,14 +1454,19 @@ class SequencerView(gtk.DrawingArea):
 				if not bb:
 					if value >= 0x10:
 						pat = m.get_pattern(value-0x10)
-						name,length = prepstr(pat.get_name()), pat.get_row_count()
+						name, length = prepstr(pat.get_name()), pat.get_row_count()
+						if mname + name in self.pattern_editors:
+							editor = self.pattern_editors[mname + name]
+							if not editor.temp_moved:
+								self.panel.move(editor, y + SEQTRACKSIZE/2 - py/2, 100)
+								editor.temp_moved = True
 					elif value == 0x00:
-						name,length = "X", 1
+						name, length = "X", 1
 					elif value == 0x01:
-						name,length = "<", 1
+						name, length = "<", 1
 					else:
 						print "unknown value:",value
-						name,length = "???",0
+						name, length = "???",0
 					psize = max(int(((SEQROWSIZE * length) / self.step) + 0.5),2)
 					bb = gtk.gdk.Pixmap(self.window, SEQTRACKSIZE-1, psize-1, -1) #
 					pgfx[value] = bb					
@@ -1406,7 +1509,8 @@ class SequencerView(gtk.DrawingArea):
 						gc.set_function(gtk.gdk.XOR)
 						drawable.draw_rectangle(gc, True, y+1, x+ofs, bbh, bbw-ofs) #
 						gc.set_function(gtk.gdk.COPY)
-			y += SEQTRACKSIZE			
+			#y += SEQTRACKSIZE			
+			y += self.track_widths[track_index]
 			gc.set_foreground(vlinepen)
 			drawable.draw_line(gc, y, SEQLEFTMARGIN, y, w) #
 		gc.set_foreground(pen)
