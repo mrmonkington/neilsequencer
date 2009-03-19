@@ -276,6 +276,7 @@ class SequencerPanel(gtk.Layout):
 				
 		vscroll = gtk.VScrollbar()
 		hscroll = gtk.HScrollbar()
+
 		self.seqview = SequencerView(self, hscroll, vscroll)
 		#scrollwin = gtk.Table(2,2)
 		#scrollwin.attach(self.seqview, 0, 1, 0, 1, gtk.FILL|gtk.EXPAND, gtk.FILL|gtk.EXPAND)
@@ -409,6 +410,7 @@ class SequencerView(gtk.DrawingArea):
 		"""
 		Initialization.
 		"""
+		self.row_size = 1
 		self.panel = panel
 		self.hscroll = hscroll
 		self.vscroll = vscroll
@@ -459,7 +461,7 @@ class SequencerView(gtk.DrawingArea):
 		if row == -1:
 			x = 0
 		else:
-			x = int((((float(row) - self.startseqtime)/self.step) * SEQROWSIZE) + SEQLEFTMARGIN + 0.5)
+			x = int((((float(row) - self.startseqtime)/self.step) * self.row_size) + SEQLEFTMARGIN + 0.5)
 		if track == -1:
 			y = 0
 		else:
@@ -480,7 +482,7 @@ class SequencerView(gtk.DrawingArea):
 		if x < SEQLEFTMARGIN:
 			row = -1
 		else:
-			row = (((x - SEQLEFTMARGIN) / SEQROWSIZE) * self.step) + self.startseqtime
+			row = (((x - SEQLEFTMARGIN) / self.row_size) * self.step) + self.startseqtime
 		if y < SEQTOPMARGIN:
 			track = -1
 		else:
@@ -1259,7 +1261,7 @@ class SequencerView(gtk.DrawingArea):
 	def adjust_scrollbars(self):
 		w,h = self.get_client_size()
 		vw,vh = self.get_virtual_size()
-		pw,ph= int((w-SEQLEFTMARGIN)/float(SEQROWSIZE)+0.5), int((h-SEQTOPMARGIN)/float(SEQTRACKSIZE)+0.5)
+		pw,ph= int((w-SEQLEFTMARGIN)/float(self.row_size)+0.5), int((h-SEQTOPMARGIN)/float(SEQTRACKSIZE)+0.5)
 		hrange = vw - pw
 		vrange = vh - ph
 		if hrange <= 0:
@@ -1271,7 +1273,7 @@ class SequencerView(gtk.DrawingArea):
 		else:
 			self.vscroll.show()
 		adj = self.hscroll.get_adjustment()
-		adj.set_all(self.startseqtime/self.step, 0, int(vw+(w-SEQLEFTMARGIN)/float(SEQROWSIZE)-2), 1, 1, pw)
+		adj.set_all(self.startseqtime/self.step, 0, int(vw+(w-SEQLEFTMARGIN)/float(self.row_size)-2), 1, 1, pw)
 		adj = self.vscroll.get_adjustment()
 		adj.set_all(self.starttrack, 0, vh, 1, 1, ph)
 		#self.redraw()
@@ -1312,10 +1314,10 @@ class SequencerView(gtk.DrawingArea):
 		if track_count > 0:
 			if self.row >= self.startseqtime and self.track >= self.starttrack:
 				x,y = self.track_row_to_pos((self.track,self.row))
-				drawable.draw_rectangle(gc,True,y+1,x, SEQTRACKSIZE-1, SEQROWSIZE-1) #
+				drawable.draw_rectangle(gc,True,y+1,x, SEQTRACKSIZE-1, self.row_size-1) #
 		if self.playpos >= self.startseqtime:
 			# draw play cursor
-			x = SEQLEFTMARGIN + int((float(self.playpos - self.startseqtime) / self.step) * SEQROWSIZE)
+			x = SEQLEFTMARGIN + int((float(self.playpos - self.startseqtime) / self.step) * self.row_size)
 			drawable.draw_rectangle(gc,True, 0, x , h, 2) #
 			
 	def update(self):
@@ -1329,6 +1331,26 @@ class SequencerView(gtk.DrawingArea):
 			self.row = self.row - (self.row % self.step)
 		self.redraw()
 		
+	def load_patterns(self):
+		player = com.get('aldrin.core.player')
+		self.pattern_editors = {}
+		self.track_widths = []
+		seq = player.get_current_sequencer()			
+		tracklist = seq.get_track_list()
+		for track_index in range(len(tracklist)):
+			track = tracklist[track_index]
+			machine = track.get_plugin()
+			for pattern in list(machine.get_pattern_list())[:1]:
+				editor = PatternView(self, machine, pattern)
+				if self.row_size == 1:
+					self.row_size = editor.row_height
+				self.pattern_editors[machine.get_name() + pattern.get_name()] = editor
+				self.panel.add(editor)
+				self.panel.move(editor, 800, 100)
+				editor.show()
+				self.track_widths.append(editor.width)
+		
+		
 	def draw(self, ctx):
 		"""
 		Overriding a L{Canvas} method that paints onto an offscreen buffer.
@@ -1336,23 +1358,8 @@ class SequencerView(gtk.DrawingArea):
 		"""	
 		player = com.get('aldrin.core.player')
 		if not self.pattern_editors:
-			self.pattern_editors = {}
-			self.track_widths = []
-			seq = player.get_current_sequencer()			
-			tracklist = seq.get_track_list()
-			for track_index in range(len(tracklist)):
-				track = tracklist[track_index]
-				machine = track.get_plugin()
-				#machine = track.get_plugin()
-				for pattern in list(machine.get_pattern_list())[:1]:
-					editor = PatternView(self, machine, pattern)
-					self.pattern_editors[machine.get_name() + pattern.get_name()] = editor
-					self.panel.add(editor)
-					self.panel.move(editor, 800, 100)
-					editor.show()
-					self.track_widths.append(editor.width)
+			self.load_patterns()
 					
-		print self.track_widths
 			#self.panel.move(self.patterndraw, 800, 100)
 		#self.patterndraw.draw(ctx)
 		w,h = self.get_client_size()
@@ -1407,7 +1414,7 @@ class SequencerView(gtk.DrawingArea):
 				layout.set_text(str(i))
 				px,py = layout.get_pixel_size()
 				drawable.draw_layout(gc, SEQTRACKSIZE/2 - py/2, x, layout) #
-			x += SEQROWSIZE
+			x += self.row_size
 			i += self.step
 		gc.set_foreground(pen)
 		drawable.draw_line(gc, y, 0, y, w)
@@ -1446,8 +1453,8 @@ class SequencerView(gtk.DrawingArea):
 				while x < w:
 					if (i >= selstart[1]) and (i <= selend[1]):
 						gc.foreground = select_brush
-						drawable.draw_rectangle(gc, True, y+1, x, SEQTRACKSIZE-2, SEQROWSIZE-2) #
-					x += SEQROWSIZE
+						drawable.draw_rectangle(gc, True, y+1, x, SEQTRACKSIZE-2, self.row_size-2) #
+					x += self.row_size
 					i += self.step
 			for pos, value in track.get_event_list():
 				bb = pgfx.get(value, None)
@@ -1467,7 +1474,7 @@ class SequencerView(gtk.DrawingArea):
 					else:
 						print "unknown value:",value
 						name, length = "???",0
-					psize = max(int(((SEQROWSIZE * length) / self.step) + 0.5),2)
+					psize = max(int(((self.row_size * length) / self.step) + 0.5),2)
 					bb = gtk.gdk.Pixmap(self.window, SEQTRACKSIZE-1, psize-1, -1) #
 					pgfx[value] = bb					
 					if value < 0x10:
@@ -1500,7 +1507,7 @@ class SequencerView(gtk.DrawingArea):
 						gc.set_foreground(textcolor)
 						bb.draw_layout(gc,  0 + SEQTRACKSIZE/2 - py/2, 2, layout) #
 				bbw,bbh = bb.get_size()
-				x = SEQLEFTMARGIN + (((pos - self.startseqtime) * SEQROWSIZE) / self.step)
+				x = SEQLEFTMARGIN + (((pos - self.startseqtime) * self.row_size) / self.step)
 				if ((x+bbw) >= SEQLEFTMARGIN) and (x < w):
 					ofs = max(SEQLEFTMARGIN - x,0)
 					drawable.draw_drawable(gc, bb, 0, ofs, y+1,x+ofs, bbh, bbw-ofs) #

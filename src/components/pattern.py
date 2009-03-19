@@ -321,7 +321,8 @@ class PatternView(gtk.DrawingArea):
 		self.connect('button-release-event', self.on_button_up)
 		self.connect('motion-notify-event', self.on_motion)
 		self.connect('scroll-event', self.on_mousewheel)
-		self.connect("focus", self.handle_focus)
+		self.connect("focus-in-event", self.focus_in)
+		self.connect("focus-out-event", self.focus_out)
 
 		gobject.timeout_add(100, self.update_position)
 		eventbus = com.get('aldrin.core.eventbus')
@@ -329,16 +330,23 @@ class PatternView(gtk.DrawingArea):
 		eventbus.active_patterns_changed += self.on_active_patterns_changed
 		eventbus.active_plugins_changed += self.on_active_patterns_changed
 		eventbus.zzub_pattern_changed += self.on_pattern_changed
-		eventbus.zzub_edit_pattern += self.on_edit_pattern
 		eventbus.zzub_pattern_insert_rows += self.on_pattern_insert_rows
 		eventbus.zzub_pattern_remove_rows += self.on_pattern_remove_rows
-		eventbus.zzub_parameter_changed += self.on_zzub_parameter_changed
+		eventbus.zzub_parameter_changed += self.on_zzub_parameter_changed		
 		"""
+		eventbus.zzub_edit_pattern += self.on_edit_pattern
+		
 		eventbus.document_loaded += self.update_all
 		self.pattern_changed()
 	
-	def handle_focus(self):
-		print "here"
+	def focus_in(self, widget, event):
+		print "focus in"
+		player = com.get('aldrin.core.player')
+		player.active_plugins = [self.machine]
+		
+
+	def focus_out(self, widget, event):
+		print "focus out"
 	
 	def on_zzub_parameter_changed(self, plugin, group, track, param, value):
 		"""
