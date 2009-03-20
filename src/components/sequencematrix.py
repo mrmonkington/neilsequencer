@@ -459,16 +459,16 @@ class SequencerView(gtk.DrawingArea):
 		@rtype: (int, int)
 		"""
 		if row == -1:
-			x = 0
+			y = 0 #
 		else:
-			x = int((((float(row) - self.startseqtime)/self.step) * self.row_size) + SEQLEFTMARGIN + 0.5)
+			y = int((((float(row) - self.startseqtime)/self.step) * self.row_size) + SEQLEFTMARGIN + 0.5) #
 		if track == -1:
-			y = 0
+			x = 0 #
 		else:
-			y = ((track - self.starttrack) * SEQTRACKSIZE) + SEQTOPMARGIN
-		return x,y
+			x = ((track - self.starttrack) * SEQTRACKSIZE) + SEQTOPMARGIN #
+		return x, y
 		
-	def pos_to_track_row(self, (x,y)):
+	def pos_to_track_row(self, (x, y)):
 		"""
 		Converts pixel coordinate to a track and row.
 		
@@ -479,14 +479,14 @@ class SequencerView(gtk.DrawingArea):
 		@return: Tuple containing track and row index.
 		@rtype: (int, int)
 		"""
-		if x < SEQLEFTMARGIN:
+		if y < SEQLEFTMARGIN: #
 			row = -1
 		else:
-			row = (((x - SEQLEFTMARGIN) / self.row_size) * self.step) + self.startseqtime
-		if y < SEQTOPMARGIN:
+			row = (((y - SEQLEFTMARGIN) / self.row_size) * self.step) + self.startseqtime #
+		if x < SEQTOPMARGIN: #
 			track = -1
 		else:
-			track = ((y - SEQTOPMARGIN) / SEQTRACKSIZE) + self.starttrack
+			track = ((x - SEQTOPMARGIN) / SEQTRACKSIZE) + self.starttrack #
 		return track,row
 		
 	def get_endtrack(self):
@@ -494,14 +494,14 @@ class SequencerView(gtk.DrawingArea):
 		Get the last visible track.
 		"""
 		w,h = self.get_client_size()
-		return self.pos_to_track_row((0,h))[0]
+		return self.pos_to_track_row((w, 0))[0] #
 		
 	def get_endrow(self):
 		"""
 		Get the last visible row.
 		"""
 		w,h = self.get_client_size()
-		return self.pos_to_track_row((w,0))[1]
+		return self.pos_to_track_row((0, h))[1] #
 		
 	def set_cursor_pos(self, track, row):
 		"""
@@ -1314,11 +1314,11 @@ class SequencerView(gtk.DrawingArea):
 		if track_count > 0:
 			if self.row >= self.startseqtime and self.track >= self.starttrack:
 				x,y = self.track_row_to_pos((self.track,self.row))
-				drawable.draw_rectangle(gc,True,y+1,x, SEQTRACKSIZE-1, self.row_size-1) #
+				drawable.draw_rectangle(gc,True,x+1,y, SEQTRACKSIZE-1, self.row_size-1) 
 		if self.playpos >= self.startseqtime:
 			# draw play cursor
 			x = SEQLEFTMARGIN + int((float(self.playpos - self.startseqtime) / self.step) * self.row_size)
-			drawable.draw_rectangle(gc,True, 0, x , h, 2) #
+			drawable.draw_rectangle(gc, True, 0, x , h, 2) #
 			
 	def update(self):
 		"""
