@@ -298,8 +298,7 @@ class SequencerPanel(gtk.Layout):
 		#self.patterndraw = PatternView(self, None, None)
 		#self.patterndraw.set_size_request(100, 200)
 
-
-		#self.pack_start(self.toolbar, expand=False)
+		self.pack_start(self.toolbar, expand=False)
 		#self.pack_start(self.splitter)
 		#self.pack_end(self.statusbar, expand=False)
 		self.seqview.set_size_request(800, 600)
@@ -465,7 +464,9 @@ class SequencerView(gtk.DrawingArea):
 		if track == -1:
 			x = 0 #
 		else:
-			x = ((track - self.starttrack) * SEQTRACKSIZE) + SEQTOPMARGIN #
+			#x = ((track - self.starttrack) * SEQTRACKSIZE) + SEQTOPMARGIN #
+			x = SEQTOPMARGIN + sum(self.track_width[self.starttrack:track])
+		print x, y
 		return x, y
 		
 	def pos_to_track_row(self, (x, y)):
@@ -479,15 +480,24 @@ class SequencerView(gtk.DrawingArea):
 		@return: Tuple containing track and row index.
 		@rtype: (int, int)
 		"""
+		print x, y, self.starttrack, len(self.track_width)
 		if y < SEQLEFTMARGIN: #
 			row = -1
 		else:
 			row = (((y - SEQLEFTMARGIN) / self.row_size) * self.step) + self.startseqtime #
-		if x < SEQTOPMARGIN: #
-			track = -1
-		else:
-			track = ((x - SEQTOPMARGIN) / SEQTRACKSIZE) + self.starttrack #
-		return track,row
+		#track = ((x - SEQTOPMARGIN) / SEQTRACKSIZE) + self.starttrack #
+		track = -1
+		if x > SEQTOPMARGIN:
+			cx = SEQTOPMARGIN
+			for track_index in range(self.starttrack, len(self.track_width)):
+				width = self.track_width[track_index]
+				if cx <= x <= cx + width:
+					track = track_index
+					break
+				cx += width
+			else:
+				track = len(self.track_width)-1
+		return track, row
 		
 	def get_endtrack(self):
 		"""
@@ -521,8 +531,8 @@ class SequencerView(gtk.DrawingArea):
 		if self.track != track:
 			self.track = track
 			endtrack = self.get_endtrack()
-			if self.track >= endtrack:
-				while self.track >= endtrack:
+			if self.track > endtrack:
+				while self.track > endtrack:
 					self.starttrack += 1
 					endtrack = self.get_endtrack()
 				self.redraw()
@@ -1136,7 +1146,7 @@ class SequencerView(gtk.DrawingArea):
 		player = com.get('aldrin.core.player')
 		track_count = player.get_sequence_track_count()
 		x, y = int(event.x), int(event.y)
-		track, row = self.pos_to_track_row((x,y))		
+		track, row = self.pos_to_track_row((x,y))
 		if event.button == 1:
 			if track < track_count:
 				if track == -1:
@@ -1314,7 +1324,7 @@ class SequencerView(gtk.DrawingArea):
 		if track_count > 0:
 			if self.row >= self.startseqtime and self.track >= self.starttrack:
 				x,y = self.track_row_to_pos((self.track,self.row))
-				drawable.draw_rectangle(gc,True,x+1,y, SEQTRACKSIZE-1, self.row_size-1) 
+				drawable.draw_rectangle(gc,True,x+1,y, self.track_width[self.track]-1, self.row_size-1) 
 		if self.playpos >= self.startseqtime:
 			# draw play cursor
 			x = SEQLEFTMARGIN + int((float(self.playpos - self.startseqtime) / self.step) * self.row_size)
@@ -1334,7 +1344,7 @@ class SequencerView(gtk.DrawingArea):
 	def load_patterns(self):
 		player = com.get('aldrin.core.player')
 		self.pattern_editors = {}
-		self.track_widths = []
+		self.track_width = []
 		seq = player.get_current_sequencer()			
 		tracklist = seq.get_track_list()
 		for track_index in range(len(tracklist)):
@@ -1348,7 +1358,7 @@ class SequencerView(gtk.DrawingArea):
 				self.panel.add(editor)
 				self.panel.move(editor, 800, 100)
 				editor.show()
-				self.track_widths.append(editor.width)
+				self.track_width.append(editor.width)
 		
 		
 	def draw(self, ctx):
@@ -1517,7 +1527,7 @@ class SequencerView(gtk.DrawingArea):
 						drawable.draw_rectangle(gc, True, y+1, x+ofs, bbh, bbw-ofs) #
 						gc.set_function(gtk.gdk.COPY)
 			#y += SEQTRACKSIZE			
-			y += self.track_widths[track_index]
+			y += self.track_width[track_index]
 			gc.set_foreground(vlinepen)
 			drawable.draw_line(gc, y, SEQLEFTMARGIN, y, w) #
 		gc.set_foreground(pen)

@@ -614,8 +614,10 @@ class PatternView(gtk.DrawingArea):
 		self.set_index(self.index)
 		self.set_subindex(self.subindex)
 		self.calculate_layout()
-		self.set_size_request((self.column_order[-1][3] + self.column_order[-1][4] + 1) * self.column_width, self.row_count * self.row_height / self.resolution)
-		self.width = (self.column_order[-1][3] + self.column_order[-1][4] + 2) * self.column_width
+		last_column_x = self.column_order[-1][3]
+		last_column_width = self.column_order[-1][4]
+		self.set_size_request((last_column_x + last_column_width + 1) * self.column_width, self.row_count * self.row_height / self.resolution)
+		self.width = (last_column_x + last_column_width + 2) * self.column_width
 		self.refresh_view()
 		
 	def get_client_size(self):
@@ -1285,7 +1287,9 @@ class PatternView(gtk.DrawingArea):
 			self.resolution = self.factors[min(len(self.factors)-1, self.factors.index(self.resolution) + 1)]
 		self.row = self.row / self.resolution * self.resolution				
 		self.start_row = self.start_row / self.resolution * self.resolution				
-		self.set_size_request((self.column_order[-1][3] + self.column_order[-1][4] + 1) * self.column_width, self.row_count * self.row_height / self.resolution)		
+		last_column_x = self.column_order[-1][3]
+		last_column_width = self.column_order[-1][4]
+		self.set_size_request((last_column_x + last_column_width + 1) * self.column_width, self.row_count * self.row_height / self.resolution)
 		self.redraw()
 
 	def on_mousewheel(self, widget, event):
@@ -1948,61 +1952,14 @@ class PatternView(gtk.DrawingArea):
 		x, y = self.pattern_to_charpos(row,group,track,index,subindex)
 		return ((x - self.start_col)*self.column_width) + PATLEFTMARGIN + 4, self.top_margin + ((y - self.start_row) * self.row_height/self.resolution)
 		
-	def charpos_to_pattern_old(self, position):
-		"""
-		Converts a (x,y) character coordinate into a pattern position.
-		
-		@param position: Character coordinate.
-		@type position: (int, int)
-		@return: (row, group, track, index, subindex) representing a pattern position.
-		@rtype: (int, int, int, int, int)
-		"""				
-		x, y = position
-		# find group
-		if x < self.group_position[1]:
-			group = 0
-		elif x < self.group_position[2]:
-			group = 1
-		else:
-			group = 2
-		x -= self.group_position[group]
-		# find track
-		track = self.track
-		out_of_bounds = False
-		if self.track_width[group] != 0:
-			track = x / self.track_width[group]
-			x -= track*self.track_width[group]
-			# bounds checking
-			if track >= self.group_track_count[group] or track < 0:
-				track = self.track
-				out_of_bounds = True
-		# find index, subindex
-		index = self.index
-		subindex = self.subindex
-		if not out_of_bounds:
-			if self.parameter_count[group]:
-				for i, pos in enumerate(self.parameter_position[group]):
-					if x < pos:
-						index = i-1
-						break
-				else:
-					# last index
-					index = i
-				x -= self.parameter_position[group][index]
-				# subindex is that what remains
-				subindex = x
-		# find row
-		row = min(max(0, y), self.row_count-1)
-		return (row, group, track, index, subindex)
-			
 	def charpos_to_pattern(self, position):
 		"""
 		Converts a (x,y) character coordinate into a pattern position.
 		
 		@param position: Character coordinate.
 		@type position: (int, int)
-		@return: (row, group, track, index, subindex) representing a pattern position.
-		@rtype: (int, int, int, int, int)
+		@return: (row, column_index, subindex) representing a pattern position.
+		@rtype: (int, int, int)
 		"""				
 		cx, cy = position
 		row = min(max(0, cy), self.row_count-1)
@@ -2020,8 +1977,8 @@ class PatternView(gtk.DrawingArea):
 		
 		@param position: Pixel coordinate.
 		@type position: (int, int)
-		@return: (row, group, track, index, subindex) representing a pattern position.
-		@rtype: (int, int, int, int, int)
+		@return: (row, column_index, subindex) representing a pattern position.
+		@rtype: (int, int, int)
 		"""
 		x, y = position
 		return self.charpos_to_pattern(((x - PATLEFTMARGIN - 4) / self.column_width + self.start_col, (y - self.top_margin) / self.row_height*self.resolution + self.start_row))
@@ -2372,10 +2329,8 @@ class PatternView(gtk.DrawingArea):
 		#print order_index
 		#start_group, start_track, start_index = self.column_order[order_index]
 		
-		# XXX remove
-		start_row, start_group, start_track, start_index, start_subindex = self.charpos_to_pattern_old((self.start_col, self.start_row))
-		print self.charpos_to_pattern_old((self.start_col, self.start_row))
-		print self.start_row 
+		start_row, start_column_index, start_subindex = self.charpos_to_pattern((self.start_col, self.start_row))
+		start_group, start_track, start_index, start_x, start_width = self.column_order[start_column_index]		
 		# full draw clears everything and draws all the line numbers and lines
 		if fulldraw:
 			drawable.draw_rectangle(gc, True, 0, 0, w, h)
