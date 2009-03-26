@@ -226,7 +226,8 @@ class PatternView2(Thing):
 		gc = win.new_gc(foreground=red)
 		win.draw_rectangle(gc, True, 0, 0, w, h)
 		
-class SequencerPanel(gtk.Layout):
+#class SequencerPanel(gtk.Layout):
+class SequencerPanel(gtk.VBox):
 	"""
 	Sequencer pattern panel.
 	
@@ -252,7 +253,8 @@ class SequencerPanel(gtk.Layout):
 		"""
 		Initialization.
 		"""
-		gtk.Layout.__init__(self)
+		#gtk.Layout.__init__(self)
+		gtk.VBox.__init__(self)
 		self.splitter = gtk.HPaned()
 		
 		self.seqliststore = gtk.ListStore(str, str)
@@ -277,14 +279,18 @@ class SequencerPanel(gtk.Layout):
 		vscroll = gtk.VScrollbar()
 		hscroll = gtk.HScrollbar()
 
+		self.layout = gtk.Layout()
 		self.seqview = SequencerView(self, hscroll, vscroll)
-		#scrollwin = gtk.Table(2,2)
-		#scrollwin.attach(self.seqview, 0, 1, 0, 1, gtk.FILL|gtk.EXPAND, gtk.FILL|gtk.EXPAND)
-		#scrollwin.attach(vscroll, 1, 2, 0, 1, 0, gtk.FILL)
-		#scrollwin.attach(hscroll, 0, 1, 1, 2, gtk.FILL, 0)
+		self.seqview.set_size_request(800, 600)
+		self.layout.add(self.seqview)
 		
-		#self.splitter.pack1(add_scrollbars(self.seqpatternlist), False, False)
-		#self.splitter.pack2(scrollwin, True, True)
+		scrollwin = gtk.Table(2,2)
+		scrollwin.attach(self.layout, 0, 1, 0, 1, gtk.FILL|gtk.EXPAND, gtk.FILL|gtk.EXPAND)
+		scrollwin.attach(vscroll, 1, 2, 0, 1, 0, gtk.FILL)
+		scrollwin.attach(hscroll, 0, 1, 1, 2, gtk.FILL, 0)
+		
+		self.splitter.pack1(add_scrollbars(self.seqpatternlist), False, False)
+		self.splitter.pack2(scrollwin, True, True)
 		#self.splitter.pack2(scrollwin, True, True)
 		self.view = self.seqview
 		self.toolbar = SequencerToolBar()
@@ -299,10 +305,8 @@ class SequencerPanel(gtk.Layout):
 		#self.patterndraw.set_size_request(100, 200)
 
 		self.pack_start(self.toolbar, expand=False)
-		#self.pack_start(self.splitter)
-		#self.pack_end(self.statusbar, expand=False)
-		self.seqview.set_size_request(800, 600)
-		self.add(self.seqview)
+		self.pack_start(self.splitter)
+		self.pack_end(self.statusbar, expand=False)
 		#self.add(rb)
 		#self.add(self.patterndraw)
 		self.__set_properties()
@@ -466,7 +470,6 @@ class SequencerView(gtk.DrawingArea):
 		else:
 			#x = ((track - self.starttrack) * SEQTRACKSIZE) + SEQTOPMARGIN #
 			x = SEQTOPMARGIN + sum(self.track_width[self.starttrack:track])
-		print x, y
 		return x, y
 		
 	def pos_to_track_row(self, (x, y)):
@@ -480,7 +483,6 @@ class SequencerView(gtk.DrawingArea):
 		@return: Tuple containing track and row index.
 		@rtype: (int, int)
 		"""
-		print x, y, self.starttrack, len(self.track_width)
 		if y < SEQLEFTMARGIN: #
 			row = -1
 		else:
@@ -645,7 +647,6 @@ class SequencerView(gtk.DrawingArea):
 		"""
 		Copies the current selection into the clipboard
 		"""
-		print self.selection_start, self.selection_end
 		if self.selection_start == None:
 			return
 		data = self.CLIPBOARD_SEQUENCER
@@ -1051,13 +1052,18 @@ class SequencerView(gtk.DrawingArea):
 			sel = min(max(sel+1,0),get_item_count(spl.get_model())-1)
 			spl.get_selection().select_path((sel,))
 		elif k == 'Return':
-			m, index, bp = self.get_pattern_at(self.track, self.row)
-			if index == None:
-				track = self.get_track()
-				if track:
-					self.jump_to_pattern(track.get_plugin())
-				return
-			self.jump_to_pattern(m, index)
+			machine, pattern_index, best_position = self.get_pattern_at(self.track, self.row)
+			pattern = list(machine.get_pattern_list())[pattern_index]
+			editor = self.pattern_editors[machine.get_name()][pattern.get_name()]
+			x, y  = self.track_row_to_pos((self.track, best_position))
+			self.panel.layout.move(editor, x, y)
+#			m, index, bp = self.get_pattern_at(self.track, self.row)
+#			if index == None:
+#				track = self.get_track()
+#				if track:
+#					self.jump_to_pattern(track.get_plugin())
+#				return
+#			self.jump_to_pattern(m, index)
 		else:
 			return False
 		# update selection after cursor movement
@@ -1125,11 +1131,14 @@ class SequencerView(gtk.DrawingArea):
 		"""	
 		if event.state & gtk.gdk.CONTROL_MASK:
 			if event.direction == gtk.gdk.SCROLL_DOWN:
-				self.panel.toolbar.increase_step()
+				self.panel.toolbar.increase_step()				
 				self.set_cursor_pos(self.track, self.row)
 			elif event.direction == gtk.gdk.SCROLL_UP:
 				self.panel.toolbar.decrease_step()
 				self.set_cursor_pos(self.track, self.row)
+			for k1, track in self.pattern_editors.iteritems():
+				for k2, editor in track.iteritems():
+					editor.set_resolution(self.step)
 		elif event.direction == gtk.gdk.SCROLL_UP:
 			self.set_cursor_pos(self.track, self.row - self.step)
 		elif event.direction == gtk.gdk.SCROLL_DOWN:
@@ -1350,15 +1359,18 @@ class SequencerView(gtk.DrawingArea):
 		for track_index in range(len(tracklist)):
 			track = tracklist[track_index]
 			machine = track.get_plugin()
-			for pattern in list(machine.get_pattern_list())[:1]:
-				editor = PatternView(self, machine, pattern)
+			self.pattern_editors[machine.get_name()] = {}
+			for pattern_index, pattern in enumerate(list(machine.get_pattern_list())):
+				editor = PatternView(self, machine, pattern_index)
+				editor.set_resolution(self.step)
 				if self.row_size == 1:
 					self.row_size = editor.row_height
-				self.pattern_editors[machine.get_name() + pattern.get_name()] = editor
-				self.panel.add(editor)
-				self.panel.move(editor, 800, 100)
+				self.pattern_editors[machine.get_name()][pattern.get_name()] = editor
+				print machine.get_name(), pattern.get_name()
+				#self.panel.layout.add(editor)
+				#self.panel.layout.move(editor, 800, 100)
 				editor.show()
-				self.track_width.append(editor.width)
+			self.track_width.append(editor.width)
 		
 		
 	def draw(self, ctx):
@@ -1467,16 +1479,20 @@ class SequencerView(gtk.DrawingArea):
 					x += self.row_size
 					i += self.step
 			for pos, value in track.get_event_list():
+				x = SEQLEFTMARGIN + (((pos - self.startseqtime) * self.row_size) / self.step)
 				bb = pgfx.get(value, None)
+				pat = m.get_pattern(value-0x10)
+				name, length = prepstr(pat.get_name()), pat.get_row_count()				
 				if not bb:
 					if value >= 0x10:
-						pat = m.get_pattern(value-0x10)
-						name, length = prepstr(pat.get_name()), pat.get_row_count()
-						if mname + name in self.pattern_editors:
-							editor = self.pattern_editors[mname + name]
-							if not editor.temp_moved:
-								self.panel.move(editor, y + SEQTRACKSIZE/2 - py/2, 100)
-								editor.temp_moved = True
+						#print self.pattern_editors, m, pat
+ 						if mname in self.pattern_editors and name in self.pattern_editors[mname]:
+							editor = self.pattern_editors[mname][name]
+							if editor not in self.panel.children():
+								editor.sequence_track = track
+								editor.sequence_row = pos
+								self.panel.layout.add(editor)
+														
 					elif value == 0x00:
 						name, length = "X", 1
 					elif value == 0x01:
@@ -1484,6 +1500,7 @@ class SequencerView(gtk.DrawingArea):
 					else:
 						print "unknown value:",value
 						name, length = "???",0
+										
 					psize = max(int(((self.row_size * length) / self.step) + 0.5),2)
 					bb = gtk.gdk.Pixmap(self.window, SEQTRACKSIZE-1, psize-1, -1) #
 					pgfx[value] = bb					
@@ -1515,12 +1532,18 @@ class SequencerView(gtk.DrawingArea):
 						layout.set_text(name)
 						px,py = layout.get_pixel_size()
 						gc.set_foreground(textcolor)
-						bb.draw_layout(gc,  0 + SEQTRACKSIZE/2 - py/2, 2, layout) #
-				bbw,bbh = bb.get_size()
-				x = SEQLEFTMARGIN + (((pos - self.startseqtime) * self.row_size) / self.step)
+						bb.draw_layout(gc,  0 + SEQTRACKSIZE/2 - py/2, 0, layout) #
+											
+				bbw, bbh = bb.get_size()
+				
 				if ((x+bbw) >= SEQLEFTMARGIN) and (x < w):
+					if value >= 0x10:
+						if mname in self.pattern_editors and name in self.pattern_editors[mname]:
+							editor = self.pattern_editors[mname][name]
+							self.panel.layout.move(editor, y + SEQTRACKSIZE/2 - py/2, x)
+							print "HERE"					
 					ofs = max(SEQLEFTMARGIN - x,0)
-					drawable.draw_drawable(gc, bb, 0, ofs, y+1,x+ofs, bbh, bbw-ofs) #
+					#drawable.draw_drawable(gc, bb, 0, ofs, y+1,x+ofs, bbh, bbw-ofs) #
 					if intrack and (pos >= selstart[1]) and (pos <= selend[1]):
 						gc.set_foreground(invbrush)
 						gc.set_function(gtk.gdk.XOR)

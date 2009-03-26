@@ -241,6 +241,8 @@ class PatternView(gtk.DrawingArea):
 		"""
 		self.machine = machine
 		self.pattern = pattern
+		self.sequence_row = -1
+		self.sequence_track = -1
 		self.panel = panel
 		self.jump_to_note = False
 		self.patternsize = 16
@@ -536,7 +538,6 @@ class PatternView(gtk.DrawingArea):
 		print "init values"
 		# plugin
 		self.plugin = None
-		self.pattern = 0
 		# parameter count
 		self.parameter_count = [0,0,0]
 		self.parameter_width = [[],[],[]]
@@ -1278,19 +1279,30 @@ class PatternView(gtk.DrawingArea):
 		if player.set_callback_state(True):
 			eventbus = com.get('aldrin.core.eventbus')
 			eventbus.document_loaded()
-			
-	# upward is True to increase, False to decrease
-	def change_resolution(self, upward=True):
-		if upward:
-			self.resolution = self.factors[max(0, self.factors.index(self.resolution) - 1)]
-		else:
-			self.resolution = self.factors[min(len(self.factors)-1, self.factors.index(self.resolution) + 1)]
+	
+	def set_resolution(self, resolution=1):
+		if not resolution in self.factors:
+			if resolution < self.factors[0]:
+				resolution = 	self.factors[0]
+			elif resolution > self.factors[-1]:
+				resolution = 	self.factors[-1]
+			else:
+				return
+		self.resolution = resolution
 		self.row = self.row / self.resolution * self.resolution				
 		self.start_row = self.start_row / self.resolution * self.resolution				
 		last_column_x = self.column_order[-1][3]
 		last_column_width = self.column_order[-1][4]
 		self.set_size_request((last_column_x + last_column_width + 1) * self.column_width, self.row_count * self.row_height / self.resolution)
 		self.redraw()
+		
+	# upward is True to increase, False to decrease
+	def change_resolution(self, upward=True):
+		if upward:
+			self.resolution = self.factors[max(0, self.factors.index(self.resolution) - 1)]
+		else:
+			self.resolution = self.factors[min(len(self.factors)-1, self.factors.index(self.resolution) + 1)]
+		self.set_resolution(self.resolution)
 
 	def on_mousewheel(self, widget, event):
 		"""
