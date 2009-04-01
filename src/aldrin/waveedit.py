@@ -115,7 +115,7 @@ class WaveEditView(gtk.DrawingArea):
 		player = com.get('aldrin.core.player')
 		if self.selection:
 			begin,end = self.selection
-			self.level.remove_sample_range(begin,end)
+			self.level.remove_sample_range(begin,end-1)
 			self.selection = None
 			player.history_commit("remove sample range")
 			self.sample_changed()
