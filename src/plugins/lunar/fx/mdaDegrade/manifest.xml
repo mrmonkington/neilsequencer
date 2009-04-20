@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<zzub>
+  <plugin
+     uri="@bblunars/effect/mdaDegrade"
+     name="Lunar mdaDegrade"
+     shortname="mdaDegrade"
+     type="effect"
+     description="A bitcrush/downsampler by mda."
+     author="Vytautas Jancauskas"
+     email="unaudio@gmail.com">
+    <parameters>
+      <global>
+	<parameter
+	   id="fParam1"
+	   name="Headroom"
+	   description="Peak clipping threshold."
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0.8"
+	   precision="0.001"
+	   state="true"/>
+	<parameter
+	   id="fParam2"
+	   name="Quant"
+	   description="Bit depth."
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0.5"
+	   precision="0.001"
+	   state="true"/>
+	<parameter
+	   id="fParam3"
+	   name="Rate"
+	   description="Sampling rate."
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0.65"
+	   precision="0.001"
+	   state="true"/>
+	<parameter
+	   id="fParam4"
+	   name="Post Filter"
+	   description="Low pass filter to muffle the distortion."
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0.9"
+	   precision="0.001"
+	   state="true"/>
+	<parameter
+	   id="fParam5"
+	   name="Non-Linearity"
+	   description="Additional harmonic distortion."
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0.58"
+	   precision="0.001"
+	   state="true"/>
+	<parameter
+	   id="fParam6"
+	   name="Output"
+	   description="Level trim."
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0.5"
+	   precision="0.001"
+	   state="true"/>
+      </global>
+    </parameters>
+    <files>
+      <file ref="mdaDegrade.cpp"/>
+      <file ref="mdaDegrade.h"/>
+    </files>
+    <modules>
+      <module id="mdaDegrade">
+	<source language="c++" ref="mdaDegrade.cpp" fxdef="mdaDegrade.h"/>
+      </module>
+    </modules>
+  </plugin>
+</zzub>

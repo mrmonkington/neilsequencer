@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<zzub>
+  <plugin
+     uri="@trac.zeitherrschaft.org/aldrin/lunar/controller/LunarLFOII;1"
+     name="Lunar LFOII"
+     shortname="LFOII"
+     type="controller"
+     description="A simple controller which emits an LFO wave."
+     author="Leonard Ritter"
+     email="contact at leonard-ritter+com">
+    <parameters>
+      <valuenamegroup>
+	<valuenames id="wave">
+	  <alias value="0" name="Sine"/>
+	  <alias value="1" name="Sine^3"/>
+	  <alias value="2" name="Saw"/>
+	  <alias value="3" name="Saw^2"/>
+	  <alias value="4" name="Saw^3"/>
+	  <alias value="5" name="Pulse50"/>
+	  <alias value="6" name="Pulse40"/>
+	  <alias value="7" name="Pulse30"/>
+	  <alias value="8" name="Pulse20"/>
+	  <alias value="9" name="Pulse10"/>
+	</valuenames>
+	<valuenames id="on_off">
+	  <alias value="0" name="No"/>
+	  <alias value="1" name="Yes"/>
+	</valuenames>
+      </valuenamegroup>
+      <global>
+	<parameter
+	   id="wave"
+	   name="Wave"
+	   type="byte"
+	   minvalue="0"
+	   maxvalue="9"
+	   defvalue="0"
+	   valuenames="wave"
+	   state="true"/>
+	<parameter
+	   id="rate"
+	   name="Period"
+	   type="word"
+	   minvalue="2"
+	   maxvalue="256"
+	   defvalue="16"
+	   state="true"/>
+	<parameter
+	   id="invert"
+	   name="Invert?"
+	   type="byte"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0"
+	   valuenames="on_off"
+	   state="true"/>
+	<parameter
+	   id="offset"
+	   name="Add"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0.5"
+	   precision="0.01"
+	   state="true"/>
+	<parameter
+	   id="amp"
+	   name="Mul"
+	   type="float"
+	   minvalue="-1"
+	   maxvalue="1"
+	   defvalue="0.5"
+	   precision="0.01"
+	   state="true"/>
+      </global>
+      <track>
+      </track>
+      <controller>
+	<parameter
+	   id="out1"
+	   name="LFO Out 1"
+	   description="LFO Signal"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0"
+	   precision="0.01"/>
+      </controller>
+    </parameters>
+    <attributes>
+    </attributes>
+    <files>
+      <file ref="LunarLFOII.cpp"/>
+      <file ref="LunarLFOII.h"/>
+    </files>
+    <modules>
+      <module id="LunarLFOII">
+	<source language="c++" ref="LunarLFOII.cpp" fxdef="LunarLFOII.h"/>
+      </module>
+    </modules>
+  </plugin>
+</zzub>
