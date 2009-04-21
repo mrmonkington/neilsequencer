@@ -64,9 +64,9 @@ class TransportPanel(gtk.HBox):
 	eventbus.zzub_parameter_changed += self.on_zzub_parameter_changed
 	eventbus.zzub_player_state_changed += self.on_zzub_player_state_changed
 	eventbus.document_loaded += self.update_all
-	self.cpulabel = gtk.Label("CPU")
-	self.cpu = gtk.ProgressBar()
-	self.cpu.set_size_request(80,-1)
+	self.cpulabel = gtk.Label("CPU:")
+	#self.cpu = gtk.ProgressBar()
+	#self.cpu.set_size_request(80,-1)
 	self.cpuvalue = gtk.Label("100%")
 	self.cpuvalue.set_size_request(32,-1)
 	self.bpmlabel = gtk.Label("BPM")
@@ -137,7 +137,7 @@ class TransportPanel(gtk.HBox):
 	combosizer.pack_start(gtk.VSeparator(), expand=False)
 	cpubox = gtk.HBox(False, MARGIN)
 	cpubox.pack_start(self.cpulabel, expand=False)
-	cpubox.pack_start(self.cpu, expand=False)
+	#cpubox.pack_start(self.cpu, expand=False)
 	cpubox.pack_start(self.cpuvalue, expand=False)
 	cpuvbox = gtk.VBox(False, MARGIN0)
 	cpuvbox.pack_start(gtk.VBox())
@@ -220,7 +220,7 @@ class TransportPanel(gtk.HBox):
 
     def update_cpu(self):
 	cpu = com.get('aldrin.core.driver.audio').get_cpu_load()
-	self.cpu.set_fraction(cpu)
+	#self.cpu.set_fraction(cpu)
 	self.cpuvalue.set_label("%i%%" % int((cpu*100) + 0.5))
 	return True
 
