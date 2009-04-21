@@ -92,7 +92,7 @@ class WavetablePanel(gtk.Notebook):
 	self.tooltips.set_tip(btneditfile, "Open Sample in External Editor")
 	self.ohg.connect(btneditfile,'clicked', self.on_edit_file)
 	chkautoplay = gtk.CheckButton("_Automatic Preview")
-	chkautoplay.set_active(True)
+	chkautoplay.set_active(False)
 	self.chkautoplay = chkautoplay
 	hbox = gtk.HBox(False, MARGIN)
 	hbox.pack_end(btneditfile, expand=False)
