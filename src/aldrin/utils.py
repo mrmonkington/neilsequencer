@@ -788,6 +788,19 @@ def add_scrollbars(view):
 		scrollwin.add_with_viewport(view)
 	return scrollwin
 
+def add_vscrollbar(view):
+	"""
+	adds a vertical scrollbar to a view
+	"""
+	scrollwin = gtk.ScrolledWindow()
+	scrollwin.set_policy(gtk.POLICY_NEVER, gtk.POLICY_AUTOMATIC)
+	if isinstance(view, gtk.TreeView):
+		scrollwin.set_shadow_type(gtk.SHADOW_IN)
+		scrollwin.add(view)
+	else:
+		scrollwin.add_with_viewport(view)
+	return scrollwin      
+
 def file_filter(name,*patterns):
 	ff = gtk.FileFilter()
 	ff.set_name(name)
