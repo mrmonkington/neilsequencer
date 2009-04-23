@@ -203,10 +203,10 @@ public:
 	return -1.0;
     case 2: 
       // Saw wave.
-      return (float)phi;
+      return phi * 2.0 - 1.0;
     case 3: 
       // Inverted saw wave.
-      return (float)-phi;
+      return -phi * 2.0 - 1.0;
     default:
       // Silence.
       return 0.0;
@@ -215,6 +215,10 @@ public:
 };
 
 class superfm : public lunar::fx<superfm> {
+private:
+  unsigned int ms_to_samples(float ms) {
+    return transport->samples_per_second * (ms / 1000.0);
+  }
 public:
   CTrack Voices[MAX_TRACKS];
 
@@ -237,34 +241,28 @@ public:
     int i;
     if (globals->paraAttack) 
       for (i = 0; i < MAX_TRACKS; i++) 
-	Voices[i].VCA.attack((int)*globals->paraAttack);
+	Voices[i].VCA.attack(ms_to_samples(*globals->paraAttack));
     if (globals->paraDecay) 
       for (i = 0; i < MAX_TRACKS; i++) 
-	Voices[i].VCA.decay((int)*globals->paraDecay);
-    if (globals->paraSustain) 
-      for (i = 0; i < MAX_TRACKS; i++) 
-	Voices[i].VCA.sustain((int)*globals->paraSustain);
+	Voices[i].VCA.decay(ms_to_samples(*globals->paraDecay));
     if (globals->paraSustainv) 
       for (i = 0; i < MAX_TRACKS; i++) 
-	Voices[i].VCA.sustainv((float)*globals->paraSustainv);
+	Voices[i].VCA.sustainv((float)*globals->paraSustainv / 100.0);
     if (globals->paraRelease) 
       for (i = 0; i < MAX_TRACKS; i++) 
-	Voices[i].VCA.release(*globals->paraRelease);	
+	Voices[i].VCA.release(ms_to_samples(*globals->paraRelease));	
     if (globals->paraMAttack) 
       for (i = 0; i < MAX_TRACKS; i++) 
-	Voices[i].ENV.attack(*globals->paraMAttack);
+	Voices[i].ENV.attack(ms_to_samples(*globals->paraMAttack));
     if (globals->paraMDecay) 
       for (i = 0; i < MAX_TRACKS; i++) 
-	Voices[i].ENV.decay(*globals->paraMDecay);
-    if (globals->paraMSustain) 
-      for (i = 0; i < MAX_TRACKS; i++) 
-	Voices[i].ENV.sustain(*globals->paraMSustain);
+	Voices[i].ENV.decay(ms_to_samples(*globals->paraMDecay));
     if (globals->paraMSustainv) 
       for (i = 0; i < MAX_TRACKS; i++) 
-	Voices[i].ENV.sustainv((float)*globals->paraMSustainv);
+	Voices[i].ENV.sustainv((float)*globals->paraMSustainv / 100.0);
     if (globals->paraMRelease) 
       for (i = 0; i < MAX_TRACKS; i++) 
-	Voices[i].ENV.release(*globals->paraMRelease);	
+	Voices[i].ENV.release(ms_to_samples(*globals->paraMRelease));	
     if (globals->paraModNote1D) 
       for (i = 0; i < MAX_TRACKS; i++) 
 	Voices[i].Mot1dv = (float)*globals->paraModNote1D;

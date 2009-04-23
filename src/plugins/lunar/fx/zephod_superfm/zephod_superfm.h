@@ -11,12 +11,10 @@ typedef struct _lunar_globals {
 	float *paraModWave;
 	float *paraAttack;
 	float *paraDecay;
-	float *paraSustain;
 	float *paraSustainv;
 	float *paraRelease;
 	float *paraMAttack;
 	float *paraMDecay;
-	float *paraMSustain;
 	float *paraMSustainv;
 	float *paraMRelease;
 	float *paraModNote1D;
@@ -32,12 +30,10 @@ typedef struct _lunar_global_values {
 	float paraModWave;
 	float paraAttack;
 	float paraDecay;
-	float paraSustain;
 	float paraSustainv;
 	float paraRelease;
 	float paraMAttack;
 	float paraMDecay;
-	float paraMSustain;
 	float paraMSustainv;
 	float paraMRelease;
 	float paraModNote1D;
