@@ -21,25 +21,14 @@
       </valuenamegroup>
       <global>
 	<parameter
-	   id="paraWave"
-	   name="OSC Wave"
-	   description="Oscillator waveform"
-	   type="word"
-	   minvalue="0"
-	   maxvalue="3"
-	   defvalue="0"
-	   valuenames="waveforms"
-	   state="true"/>
-	<parameter
-	   id="paraModWave"
-	   name="MOD Wave"
-	   description="Modulator waveform"
+	   id="paraRoute"
+	   name="FM Rout Mode"
+	   description="Modulator Routing Mode"
 	   type="word"
 	   minvalue="0"
 	   maxvalue="3"
 	   defvalue="0"
 	   precision="1"
-	   valuenames="waveforms"
 	   state="true"/>
 	<parameter
 	   id="paraAttack"
@@ -136,8 +125,8 @@
 	   name="MOD1 Depth"
 	   description="Modulator 1 depth"
 	   type="float"
-	   minvalue="0"
-	   maxvalue="2"
+	   minvalue="0.0"
+	   maxvalue="1.0"
 	   defvalue="0.2"
 	   precision="0.001"
 	   state="true"/>
@@ -146,9 +135,9 @@
 	   name="MOD2 Depth"
 	   description="Modulator 2 depth"
 	   type="float"
-	   minvalue="0"
-	   maxvalue="2"
-	   defvalue="0"
+	   minvalue="0.0"
+	   maxvalue="1.0"
+	   defvalue="0.0"
 	   precision="0.001"
 	   state="true"/>
 	<parameter
@@ -156,9 +145,9 @@
 	   name="MOD3 Depth"
 	   description="Modulator 3 depth"
 	   type="float"
-	   minvalue="0"
-	   maxvalue="2"
-	   defvalue="0"
+	   minvalue="0.0"
+	   maxvalue="1.0"
+	   defvalue="0.0"
 	   precision="0.001"
 	   state="true"/>
 	<parameter
@@ -166,8 +155,8 @@
 	   name="MOD1 Env"
 	   description="Modulator 1 envelope amount"
 	   type="float"
-	   minvalue="-0.5"
-	   maxvalue="0.5"
+	   minvalue="-1.0"
+	   maxvalue="1.0"
 	   defvalue="0.5"
 	   precision="0.001"
 	   state="true"/>
@@ -176,8 +165,8 @@
 	   name="MOD2 Env"
 	   description="Modulator 2 envelope amount"
 	   type="float"
-	   minvalue="-0.5"
-	   maxvalue="0.5"
+	   minvalue="-1.0"
+	   maxvalue="1.0"
 	   defvalue="0.2"
 	   precision="0.001"
 	   state="true"/>
@@ -186,20 +175,52 @@
 	   name="MOD3 Env"
 	   description="Modulator 3 envelope amount"
 	   type="float"
-	   minvalue="-0.5"
-	   maxvalue="0.5"
+	   minvalue="-1.0"
+	   maxvalue="1.0"
 	   defvalue="0.3"
 	   precision="0.001"
 	   state="true"/>
 	<parameter
-	   id="paraRoute"
-	   name="FM Rout Mode"
-	   description="Modulator Routing Mode"
-	   type="word"
-	   minvalue="0"
-	   maxvalue="3"
-	   defvalue="0"
-	   precision="1"
+	   id="lfoFreq"
+	   name="LFO Freq (Hz)"
+	   description="LFO Frequency"
+	   type="float"
+	   logarithmic="true"
+	   power="0.7"
+	   minvalue="0.001"
+	   maxvalue="32.0"
+	   defvalue="0.3"
+	   precision="0.001"
+	   state="true"/>
+	<parameter
+	   id="lfoMod1"
+	   name="MOD1 Lfo"
+	   description="Amount of LFO modulation to MOD1"
+	   type="float"
+	   minvalue="-1.0"
+	   maxvalue="1.0"
+	   defvalue="0.0"
+	   precision="0.001"
+	   state="true"/>
+	<parameter
+	   id="lfoMod2"
+	   name="MOD2 Lfo"
+	   description="Amount of LFO modulation to MOD2"
+	   type="float"
+	   minvalue="-1.0"
+	   maxvalue="1.0"
+	   defvalue="0.0"
+	   precision="0.001"
+	   state="true"/>
+	<parameter
+	   id="lfoMod3"
+	   name="MOD3 Lfo"
+	   description="Amount of LFO modulation to MOD3"
+	   type="float"
+	   minvalue="-1.0"
+	   maxvalue="1.0"
+	   defvalue="0.0"
+	   precision="0.001"
 	   state="true"/>
 	</global>
       <track>

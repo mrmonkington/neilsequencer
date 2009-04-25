@@ -62,13 +62,20 @@ class CTrack {
   // A class representing a single voice.
 public:
   // These should be manually set when dealing with voices.
-  int oscWave, modWave, Note, route;
+  int Note, route;
 
   float Volume, freq, phase, oldout, Mot1dv, Mot2dv, Mot3dv, diference, 
-    target_vol, advance, current_vol, mod1_env, mod2_env, mod3_env;
+    target_vol, advance, current_vol, mod1_env, mod2_env, mod3_env,
+    lfo_freq, lfo_phase, lfo1, lfo2, lfo3;
   envelope VCA, ENV;
 
   void Init() {
+    lfo_freq = 0.0;
+    lfo_phase = 0.0;
+    lfo1 = 0.0;
+    lfo2 = 0.0;
+    lfo3 = 0.0;
+
     Mot1dv = 0;
     Mot2dv = 0;
     Mot3dv = 0;
@@ -97,12 +104,14 @@ public:
     // Turn off envelopes.
     VCA.stop();
     ENV.stop();
+    phase = 0.0;
+    lfo_phase = 0.0;
   }
 
   void Generate(float *psamplesleft, float *psamplesright, int numsamples) {
     // Generates the actual sample data.
     if (VCA.envstate != ENV_NONE) {
-      float cphase, bphase, dphase, temp;
+      float cphase, bphase, dphase, temp, lfo;
       float Mot1D, Mot2D, Mot3D;
       
       float const Mod1ea = mod1_env;
@@ -114,66 +123,70 @@ public:
       
       for(int i=0; i<numsamples; i++) {
 	// For each sample in the block.
-
-	Mot1D = Mot1dv + ENV.res() * Mod1ea;
-	Mot2D = Mot2dv + ENV.envvol * Mod2ea;
-	Mot3D = Mot3dv + ENV.envvol * Mod3ea;
+	lfo = Osc(lfo_phase);
+	lfo_phase += lfo_freq;
+	while (lfo_phase >= 1.0)
+	  lfo_phase -= 1.0;
+ 
+	Mot1D = Mot1dv + ENV.res() * Mod1ea + lfo * lfo1;
+	Mot2D = Mot2dv + ENV.envvol * Mod2ea + lfo * lfo2;
+	Mot3D = Mot3dv + ENV.envvol * Mod3ea + lfo * lfo3; 
 
 	switch (route) {
 	case 0:
 	  if (Mot3D > 0) 
-	    dphase = phase + Osc(phase, modWave) * Mot3D;
+	    dphase = phase + Osc(phase) * Mot3D;
 	  else 
 	    dphase = phase;
 	  if (Mot2D > 0) 
-	    cphase = phase + Osc(dphase, modWave) * Mot2D;
+	    cphase = phase + Osc(dphase) * Mot2D;
 	  else 
 	    cphase = phase;
 	  if (Mot1D > 0) 
-	    bphase = phase + Osc(cphase, modWave) * Mot1D;
+	    bphase = phase + Osc(cphase) * Mot1D;
 	  else 
 	    bphase = phase;
 	  break;  
 	case 1:
 	  if (Mot3D > 0) 
-	    cphase = phase + Osc(phase, modWave) * Mot3D;
+	    cphase = phase + Osc(phase) * Mot3D;
 	  else 
 	    cphase = phase;
 	  if (Mot2D > 0) 
-	    cphase = cphase + Osc(phase, modWave) * Mot2D;
+	    cphase = cphase + Osc(phase) * Mot2D;
 	  if (Mot1D > 0) 
-	    bphase = phase + Osc(cphase, modWave) * Mot1D;
+	    bphase = phase + Osc(cphase) * Mot1D;
 	  else 
 	    bphase = phase;
 	  break;
 	case 2:
 	  if (Mot3D > 0) 
-	    bphase = phase + Osc(phase, modWave) * Mot3D;
+	    bphase = phase + Osc(phase) * Mot3D;
 	  else 
 	    bphase = phase;
 	  if (Mot2D > 0) 
-	    bphase = bphase + Osc(phase, modWave) * Mot2D;
+	    bphase = bphase + Osc(phase) * Mot2D;
 	  if (Mot1D > 0) 
-	    bphase = bphase + Osc(phase, modWave) * Mot1D;
+	    bphase = bphase + Osc(phase) * Mot1D;
 	  break;
 	case 3:
 	  if (Mot3D > 0) 
-	    cphase = phase + Osc(phase, modWave) * Mot3D;
+	    cphase = phase + Osc(phase) * Mot3D;
 	  else 
 	    cphase = phase;
 	  if (Mot2D > 0) 
-	    bphase = phase + Osc(cphase, modWave) * Mot2D;
+	    bphase = phase + Osc(cphase) * Mot2D;
 	  else 
 	    bphase = phase;
 	  if (Mot1D > 0) 
-	    bphase = bphase + Osc(phase, modWave) * Mot1D;
+	    bphase = bphase + Osc(phase) * Mot1D;
 	  break;
 	default:
 	  bphase = phase;
 	  break;
 	}
 	if (VCA.envstate != ENV_NONE)
-	  temp = Osc(bphase, oscWave) * VCA.res() * Volume;
+	  temp = Osc(bphase) * VCA.res() * Volume;
 	else
 	  temp = 0;
 	// Adding to buffer
@@ -189,28 +202,8 @@ public:
     }
   }
 
-  float Osc(float phi, int type) {
-    // Generates audible waveforms.
-    switch(type) {
-    case 0:	
-      // Sine wave.
-      return (float)sin(phi * 2 * M_PI);
-    case 1:
-      // Square wave.
-      if (sin(phi * 2 * M_PI) > 0.0) 
-	return 1.0; 
-      else 
-	return -1.0;
-    case 2: 
-      // Saw wave.
-      return phi * 2.0 - 1.0;
-    case 3: 
-      // Inverted saw wave.
-      return -phi * 2.0 - 1.0;
-    default:
-      // Silence.
-      return 0.0;
-    }
+  inline float Osc(float phi) {
+    return sin(phi * 2 * M_PI);
   }
 };
 
@@ -281,15 +274,21 @@ public:
     if (globals->paraModEnv3)
       for (i = 0; i < MAX_TRACKS; i++)
 	Voices[i].mod3_env = (float)*globals->paraModEnv3;
-    if (globals->paraWave)
-      for (i = 0; i < MAX_TRACKS; i++)
-	Voices[i].oscWave = (int)*globals->paraWave;
-    if (globals->paraModWave)
-      for (i = 0; i < MAX_TRACKS; i++)
-	Voices[i].modWave = (int)*globals->paraModWave;
     if (globals->paraRoute)
       for (i = 0; i < MAX_TRACKS; i++)
 	Voices[i].route = (int)*globals->paraRoute;
+    if (globals->lfoFreq)
+      for (i = 0; i < MAX_TRACKS; i++)
+	Voices[i].lfo_freq = (float)*globals->lfoFreq / (float)SAMPLING_RATE;
+    if (globals->lfoMod1)
+      for (i = 0; i < MAX_TRACKS; i++)
+	Voices[i].lfo1 = *globals->lfoMod1;
+    if (globals->lfoMod2)
+      for (i = 0; i < MAX_TRACKS; i++)
+	Voices[i].lfo2 = *globals->lfoMod2;
+    if (globals->lfoMod3)
+      for (i = 0; i < MAX_TRACKS; i++)
+	Voices[i].lfo3 = *globals->lfoMod3;
     // Iterate across tracks to check for note events.
     // If on, they should reset envelopes, set freq and vol.
     for (int t = 0; t < track_count; ++t) {

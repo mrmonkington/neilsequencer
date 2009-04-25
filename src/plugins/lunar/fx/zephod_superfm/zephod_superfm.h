@@ -7,8 +7,7 @@ extern "C" {
 typedef struct _lunar_attributes {
 } lunar_attributes_t;
 typedef struct _lunar_globals {
-	float *paraWave;
-	float *paraModWave;
+	float *paraRoute;
 	float *paraAttack;
 	float *paraDecay;
 	float *paraSustainv;
@@ -23,11 +22,13 @@ typedef struct _lunar_globals {
 	float *paraModEnv1;
 	float *paraModEnv2;
 	float *paraModEnv3;
-	float *paraRoute;
+	float *lfoFreq;
+	float *lfoMod1;
+	float *lfoMod2;
+	float *lfoMod3;
 } lunar_globals_t;
 typedef struct _lunar_global_values {
-	float paraWave;
-	float paraModWave;
+	float paraRoute;
 	float paraAttack;
 	float paraDecay;
 	float paraSustainv;
@@ -42,7 +43,10 @@ typedef struct _lunar_global_values {
 	float paraModEnv1;
 	float paraModEnv2;
 	float paraModEnv3;
-	float paraRoute;
+	float lfoFreq;
+	float lfoMod1;
+	float lfoMod2;
+	float lfoMod3;
 } lunar_global_values_t;
 typedef struct _lunar_track {
 	float *note;
