@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <zzub>
   <plugin
-     uri="@trac.zeitherrschaft.org/aldrin/lunar/controller/lfo;1"
+     uri="@trac.zeitherrschaft.org/aldrin/lunar/controller/LunarLFO;1"
      name="Lunar LFO"
      shortname="LFO"
      type="controller"
@@ -12,9 +12,18 @@
       <valuenamegroup>
 	<valuenames id="wave">
 	  <alias value="0" name="Sine"/>
-	  <alias value="1" name="Saw+"/>
-	  <alias value="2" name="Saw-"/>
-	  <alias value="3" name="Square"/>
+	  <alias value="1" name="Saw"/>
+	  <alias value="2" name="Saw^2"/>
+	  <alias value="3" name="Saw^3"/>
+	  <alias value="4" name="Pulse50"/>
+	  <alias value="5" name="Pulse40"/>
+	  <alias value="6" name="Pulse30"/>
+	  <alias value="7" name="Pulse20"/>
+	  <alias value="8" name="Pulse10"/>
+	</valuenames>
+	<valuenames id="on_off">
+	  <alias value="0" name="No"/>
+	  <alias value="1" name="Yes"/>
 	</valuenames>
       </valuenamegroup>
       <global>
@@ -23,22 +32,30 @@
 	   name="Wave"
 	   type="byte"
 	   minvalue="0"
-	   maxvalue="3"
+	   maxvalue="8"
 	   defvalue="0"
 	   valuenames="wave"
 	   state="true"/>
 	<parameter
 	   id="rate"
-	   name="Rate"
-	   type="float"
+	   name="Period"
+	   type="word"
+	   minvalue="2"
+	   maxvalue="256"
+	   defvalue="16"
+	   state="true"/>
+	<parameter
+	   id="invert"
+	   name="Invert?"
+	   type="byte"
 	   minvalue="0"
-	   maxvalue="4"
-	   defvalue="0.1"
-	   precision="0.001"
+	   maxvalue="1"
+	   defvalue="0"
+	   valuenames="on_off"
 	   state="true"/>
 	<parameter
 	   id="offset"
-	   name="Offset"
+	   name="Add"
 	   type="float"
 	   minvalue="0"
 	   maxvalue="1"
@@ -47,9 +64,9 @@
 	   state="true"/>
 	<parameter
 	   id="amp"
-	   name="Amplitude"
+	   name="Mul"
 	   type="float"
-	   minvalue="0"
+	   minvalue="-1"
 	   maxvalue="1"
 	   defvalue="0.5"
 	   precision="0.01"
@@ -72,12 +89,12 @@
     <attributes>
     </attributes>
     <files>
-      <file ref="lfo.cpp"/>
-      <file ref="lfo.h"/>
+      <file ref="LunarLFO.cpp"/>
+      <file ref="LunarLFO.h"/>
     </files>
     <modules>
-      <module id="lfo">
-	<source language="c++" ref="lfo.cpp" fxdef="lfo.h"/>
+      <module id="LunarLFO">
+	<source language="c++" ref="LunarLFO.cpp" fxdef="LunarLFO.h"/>
       </module>
     </modules>
   </plugin>
