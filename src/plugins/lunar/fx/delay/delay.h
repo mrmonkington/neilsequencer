@@ -8,13 +8,27 @@ typedef struct _lunar_attributes {
 	int delaymode;
 } lunar_attributes_t;
 typedef struct _lunar_globals {
-	float *delay;
+	float *mode;
+	float *l_delay_ms;
+	float *r_delay_ms;
+	float *l_delay_ticks;
+	float *r_delay_ticks;
+	float *filter_mode;
+	float *cutoff;
+	float *resonance;
 	float *fb;
 	float *wet;
 	float *dry;
 } lunar_globals_t;
 typedef struct _lunar_global_values {
-	float delay;
+	float mode;
+	float l_delay_ms;
+	float r_delay_ms;
+	float l_delay_ticks;
+	float r_delay_ticks;
+	float filter_mode;
+	float cutoff;
+	float resonance;
 	float fb;
 	float wet;
 	float dry;

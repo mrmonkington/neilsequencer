@@ -1,75 +1,145 @@
 <?xml version="1.0" encoding="utf-8"?>
 <zzub>
-	<plugin
-		uri="@trac.zeitherrschaft.org/aldrin/lunar/effect/delay;1"
-		name="Lunar Delay"
-		shortname="Delay"
-		type="effect"
-		description="A delay effect."
-		author="Leonard Ritter"
-		email="contact at leonard-ritter+com">
-		<parameters>
-			<global>
-				<parameter
-					id="delay"
-					name="Delay"
-					description="Delay of output signal in 1024 steps per beat."
-					type="word"
-					minvalue="1"
-					maxvalue="2048"
-					novalue="65535"
-					defvalue="768"
-					state="true"/>
-				<parameter
-					id="fb"
-					name="Feedback (dB)"
-					description="Gain of feedback signal"
-					type="float"
-					minvalue="-48"
-					maxvalue="12"
-					defvalue="-8"
-					precision="0.01"
-					state="true"/>
-				<parameter
-					id="wet"
-					name="Wet Gain (dB)"
-					description="Gain of delay signal"
-					type="float"
-					minvalue="-48"
-					maxvalue="12"
-					defvalue="0"
-					precision="0.01"
-					state="true"/>
-				<parameter
-					id="dry"
-					name="Dry Gain (dB)"
-					description="Gain of dry signal"
-					type="float"
-					minvalue="-48"
-					maxvalue="12"
-					defvalue="0"
-					precision="0.01"
-					state="true"/>
-			</global>
-			<track>
-			</track>
-		</parameters>
-		<attributes>
-			<attribute
-				id="delaymode"
-				name="Delay Mode"
-				minvalue="0"
-				maxvalue="1"
-				defvalue="0"/>
-		</attributes>		
-		<files>
-			<file ref="delay.cpp"/>
-			<file ref="delay.h"/>
-		</files>
-		<modules>
-			<module id="delay">
-				<source language="c++" ref="delay.cpp" fxdef="delay.h"/>
-			</module>
-		</modules>
-	</plugin>
+  <plugin
+     uri="@trac.zeitherrschaft.org/aldrin/lunar/effect/delay;1"
+     name="Lunar Delay"
+     shortname="Delay"
+     type="effect"
+     description="A delay effect."
+     author="Leonard Ritter"
+     email="contact at leonard-ritter+com">
+    <parameters>
+      <global>
+	<parameter
+	   id="mode"
+	   name="Delay Mode"
+	   description="Choose between two delay timing modes."
+	   type="byte"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0"
+	   state="true"/>
+	<parameter
+	   id="l_delay_ms"
+	   name="Delay L (ms)"
+	   description="Left channel delay in milliseconds."
+	   type="float"
+	   logarithmic="true"
+	   power="0.7"
+	   minvalue="10.0"
+	   maxvalue="12000.0"
+	   defvalue="700.0"
+	   precision="0.01"
+	   state="true"/>
+	<parameter
+	   id="r_delay_ms"
+	   name="Delay R (ms)"
+	   description="Right channel delay in milliseconds."
+	   type="float"
+	   logarithmic="true"
+	   power="0.7"
+	   minvalue="10.0"
+	   maxvalue="12000.0"
+	   defvalue="700.0"
+	   precision="0.01"
+	   state="true"/>
+ 	<parameter
+	   id="l_delay_ticks"
+	   name="Delay L (tick)"
+	   description="Left channel delay in ticks."
+	   type="byte"
+	   minvalue="1"
+	   maxvalue="64"
+	   defvalue="3"
+	   state="true"/>
+ 	<parameter
+	   id="r_delay_ticks"
+	   name="Delay R (tick)"
+	   description="Right channel delay in ticks."
+	   type="byte"
+	   minvalue="1"
+	   maxvalue="64"
+	   defvalue="3"
+	   state="true"/>
+	<parameter
+	   id="filter_mode"
+	   name="Filter Mode"
+	   description="Choose between low-pass, high-pass and band-pass modes."
+	   type="byte"
+	   minvalue="0"
+	   maxvalue="2"
+	   defvalue="0"
+	   state="true"/>
+  	<parameter
+	   id="cutoff"
+	   name="Cutoff"
+	   description="Filter cutoff."
+	   type="float"
+	   logarithmic="true"
+	   power="0.7"
+	   minvalue="20.0"
+	   maxvalue="20000.0"
+	   defvalue="20000.0"
+	   state="true"/>
+  	<parameter
+	   id="resonance"
+	   name="Resonance"
+	   description="Filter resonance."
+	   type="float"
+	   minvalue="0.0"
+	   maxvalue="1.0"
+	   defvalue="0.0"
+	   state="true"/>
+	<parameter
+	   id="fb"
+	   name="Feedback (dB)"
+	   description="Gain of feedback signal"
+	   type="float"
+	   minvalue="-48"
+	   maxvalue="12"
+	   defvalue="-8"
+	   precision="0.01"
+	   state="true"/>
+	<parameter
+	   id="wet"
+	   name="Wet Gain (dB)"
+	   description="Gain of delay signal"
+	   type="float"
+	   minvalue="-48"
+	   maxvalue="12"
+	   defvalue="0"
+	   precision="0.01"
+	   state="true"/>
+	<parameter
+	   id="dry"
+	   name="Dry Gain (dB)"
+	   description="Gain of dry signal"
+	   type="float"
+	   minvalue="-48"
+	   maxvalue="12"
+	   defvalue="0"
+	   precision="0.01"
+	   state="true"/>
+      </global>
+      <track>
+      </track>
+    </parameters>
+    <attributes>
+      <attribute
+	 id="delaymode"
+	 name="Delay Mode"
+	 minvalue="0"
+	 maxvalue="1"
+	 defvalue="0"/>
+    </attributes>		
+    <files>
+      <file ref="delay.cpp"/>
+      <file ref="delay.h"/>
+    </files>
+    <modules>
+      <module id="delay">
+	<source language="c++" ref="delay.cpp" fxdef="delay.h"/>
+      </module>
+    </modules>
+  </plugin>
 </zzub>

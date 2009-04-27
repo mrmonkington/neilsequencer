@@ -1,95 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
 <zzub>
-	<plugin
-		uri="@trac.zeitherrschaft.org/aldrin/lunar/effect/distortion;1"
-		name="Lunar Distortion"
-		shortname="Distortion"
-		type="effect"
-		description="A simple distortion effect that can do multiple clipping modes."
-		author="Leonard Ritter"
-		email="contact at leonard-ritter+com">
-		<parameters>
-			<valuenamegroup>
-				<valuenames id="dtypes">
-					<alias value="0" name="Digital Clip"/>
-					<alias value="1" name="Arctangent Clip"/>
-				</valuenames>
-			</valuenamegroup>
-			<global>
-				<parameter
-					id="pregain"
-					name="Gain In (dB)"
-					description="Gain of input signal"
-					type="float"
-					minvalue="-12"
-					maxvalue="96"
-					defvalue="0"
-					precision="0.01"
-					state="true"/>
-				<parameter
-					id="postgain"
-					name="Gain Out (dB)"
-					description="Gain of output signal"
-					type="float"
-					minvalue="-48"
-					maxvalue="12"
-					defvalue="0"
-					precision="0.01"
-					state="true"/>
-				<parameter
-					id="fxtype"
-					name="Effect Type"
-					description="Type of Distortion"
-					type="byte"
-					minvalue="0"
-					maxvalue="1"
-					defvalue="0"
-					novalue="255"
-					valuenames="dtypes"
-					state="true"/>
-				<parameter
-					id="lfospeed"
-					name="DC LFO Freq (Hz)"
-					description="Speed of LFO"
-					type="float"
-					logarithmic="true"
-					minvalue="0.1"
-					maxvalue="10000"
-					defvalue="3"
-					precision="0.1"
-					state="true"/>
-				<parameter
-					id="lfodepth"
-					name="DC LFO Depth (dB)"
-					description="Gain of LFO"
-					type="float"
-					minvalue="-48"
-					maxvalue="48"
-					defvalue="-48"
-					precision="0.01"
-					state="true"/>
-				<parameter
-					id="lfophase"
-					name="DC LFO phase"
-					description="Manual LFO phase"
-					type="float"
-					minvalue="0"
-					maxvalue="1"
-					precision="0.01"
-					defvalue="0"
-					state="true"/>
-			</global>
-			<track>
-			</track>
-		</parameters>
-		<files>
-			<file ref="distortion.cpp"/>
-			<file ref="distortion.h"/>
-		</files>
-		<modules>
-			<module id="distortion">
-				<source language="c++" ref="distortion.cpp" fxdef="distortion.h"/>
-			</module>
-		</modules>
-	</plugin>
+  <plugin
+     uri="@trac.zeitherrschaft.org/aldrin/lunar/effect/distortion;1"
+     name="Lunar Distortion"
+     shortname="Distortion"
+     type="effect"
+     description="An exponential distortion plug-in."
+     author="Vytautas Jančauskas"
+     email="unaudio@gmail.com">
+    <parameters>
+      <global>
+	<parameter
+	   id="pregain"
+	   name="Gain In (dB)"
+	   description="Gain of input signal"
+	   type="float"
+	   minvalue="-12"
+	   maxvalue="32"
+	   defvalue="0"
+	   precision="0.01"
+	   state="true"/>
+	<parameter
+	   id="asymmetry"
+	   name="Assymetry"
+	   description="Assymetry coefficient."
+	   type="float"
+	   minvalue="1.0"
+	   maxvalue="1.2"
+	   defvalue="1.0"
+	   precision="0.001"
+	   state="true"/>
+	<parameter
+	   id="rectification"
+	   name="Rectification"
+	   description="Rectification parameter (DC offset)."
+	   type="float"
+	   minvalue="0.0"
+	   maxvalue="1.0"
+	   defvalue="0.0"
+	   precision="0.001"
+	   state="true"/>
+	<parameter
+	   id="postgain"
+	   name="Gain Out (dB)"
+	   description="Gain of output signal"
+	   type="float"
+	   minvalue="-32"
+	   maxvalue="12"
+	   defvalue="0"
+	   precision="0.01"
+	   state="true"/>
+      </global>
+      <track>
+      </track>
+    </parameters>
+    <files>
+      <file ref="distortion.cpp"/>
+      <file ref="distortion.h"/>
+    </files>
+    <modules>
+      <module id="distortion">
+	<source language="c++" ref="distortion.cpp" fxdef="distortion.h"/>
+      </module>
+    </modules>
+  </plugin>
 </zzub>
