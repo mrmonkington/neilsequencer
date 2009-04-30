@@ -15,8 +15,8 @@
 	   name="Gain In (dB)"
 	   description="Gain of input signal"
 	   type="float"
-	   minvalue="-12"
-	   maxvalue="32"
+	   minvalue="0"
+	   maxvalue="16"
 	   defvalue="0"
 	   precision="0.01"
 	   state="true"/>
@@ -25,8 +25,8 @@
 	   name="Gain Out (dB)"
 	   description="Gain of output signal"
 	   type="float"
-	   minvalue="-32"
-	   maxvalue="12"
+	   minvalue="-16"
+	   maxvalue="0"
 	   defvalue="0"
 	   precision="0.01"
 	   state="true"/>

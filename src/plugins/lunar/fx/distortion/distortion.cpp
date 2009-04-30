@@ -29,12 +29,16 @@ public:
     dsp_copy(inR, outR, n);
     dsp_amp(inL, n, preamp);
     dsp_amp(inR, n, preamp);
-    float ls, rs;
+    float ls, rs, le, re;
     for (int i = 0; i < n; i++) {
       ls = inL[i];
       rs = inR[i];
-      outL[i] = (exp(ls) - exp(-ls)) / (exp(ls) + exp(-ls));
-      outR[i] = (exp(rs) - exp(-rs)) / (exp(rs) + exp(-rs));
+      le = exp(ls);
+      re = exp(rs);
+      le = le * le;
+      re = re * re;
+      outL[i] = (le - 1.0) / (le + 1.0);
+      outR[i] = (re - 1.0) / (re + 1.0);
     }
     dsp_amp(outL, n, postamp);
     dsp_amp(outR, n, postamp);
