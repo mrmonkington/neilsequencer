@@ -21,26 +21,6 @@
 	   precision="0.01"
 	   state="true"/>
 	<parameter
-	   id="asymmetry"
-	   name="Assymetry"
-	   description="Assymetry coefficient."
-	   type="float"
-	   minvalue="1.0"
-	   maxvalue="1.2"
-	   defvalue="1.0"
-	   precision="0.001"
-	   state="true"/>
-	<parameter
-	   id="rectification"
-	   name="Rectification"
-	   description="Rectification parameter (DC offset)."
-	   type="float"
-	   minvalue="0.0"
-	   maxvalue="1.0"
-	   defvalue="0.0"
-	   precision="0.001"
-	   state="true"/>
-	<parameter
 	   id="postgain"
 	   name="Gain Out (dB)"
 	   description="Gain of output signal"

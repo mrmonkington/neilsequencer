@@ -8,14 +8,10 @@ typedef struct _lunar_attributes {
 } lunar_attributes_t;
 typedef struct _lunar_globals {
 	float *pregain;
-	float *asymmetry;
-	float *rectification;
 	float *postgain;
 } lunar_globals_t;
 typedef struct _lunar_global_values {
 	float pregain;
-	float asymmetry;
-	float rectification;
 	float postgain;
 } lunar_global_values_t;
 typedef struct _lunar_track {
