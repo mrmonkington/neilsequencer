@@ -4,16 +4,18 @@
 
 #define MAX_DELAY_LENGTH 192000 // in samples
 
-struct svf {
-  float fs; // sampling frequency
-  float fc; // cutoff frequency normally something like: 440.0*pow(2.0, (midi_note - 69.0)/12.0);
-  float res; // resonance 0 to 1;
-  float drive; // internal distortion 0 to 0.1
-  float freq; // 2.0*sin(PI*MIN(0.25, fc/(fs*2)));  // the fs*2 is because it's double sampled
-  float damp; // MIN(2.0*(1.0 - pow(res, 0.25)), MIN(2.0, 2.0/freq - freq*0.5));
-  float v[5]; // 0=notch,1=low,2=high,3=band,4=peak
+class Svf {
+public:
+  float fs;
+  float fc;
+  float res;
+  float drive;
+  float freq;
+  float damp;
+  // 0=notch,1=low,2=high,3=band,4=peak
+  float v[5];
 	
-  svf() {
+  Svf() {
     fs = 44100;
     fc = 523;
     res = 0;
@@ -33,23 +35,25 @@ struct svf {
     freq = 2.0 * sin(M_PI*min(0.25f, fc/(fs*2)));
     damp = min(2.0f*(1.0f - pow(res, 0.25f)), min(2.0f, 2.0f/freq - freq*0.5f));
   }
-		
-  void process(float *buffer, int size, int mode) {
+
+  inline float sample(float sample, int mode) {
     float in, out;
-    while (size--) {
-      in = *buffer;
-      v[0] = (in - damp * v[3]);
-      v[1] = (v[1] + freq * v[3]);
-      v[2] = (v[0] - v[1]);
-      v[3] = (freq * v[2] + v[3] - drive * v[3] * v[3] * v[3]);
-      out = 0.5 * v[mode];
-      v[0] = (in - damp * v[3]);
-      v[1] = (v[1] + freq * v[3]);
-      v[2] = (v[0] - v[1]);
-      v[3] = (freq * v[2] + v[3] - drive * v[3] * v[3] * v[3]);
-      out += 0.5 * v[mode];
-      *buffer++ = out;
-    }
+
+    // To make it possible to select only low, high and band (hackish).
+    mode = mode + 1;
+
+    in = sample;
+    v[0] = (in - damp * v[3]);
+    v[1] = (v[1] + freq * v[3]);
+    v[2] = (v[0] - v[1]);
+    v[3] = (freq * v[2] + v[3] - drive * v[3] * v[3] * v[3]);
+    out = 0.5 * v[mode];
+    v[0] = (in - damp * v[3]);
+    v[1] = (v[1] + freq * v[3]);
+    v[2] = (v[0] - v[1]);
+    v[3] = (freq * v[2] + v[3] - drive * v[3] * v[3] * v[3]);
+    out += 0.5 * v[mode];
+    return out;    
   }
 };
 
@@ -69,7 +73,9 @@ public:
   float wet;
   float dry;
   float fb;
-  int mode;
+  int mode, filter_mode;
+  float cutoff, resonance;
+  Svf filters[2];
 
   void rb_init(ringbuffer_t *rb) {
     dsp_zero(rb->buffer, MAX_DELAY_LENGTH);
@@ -83,12 +89,13 @@ public:
       rb->pos -= size;
   }
 
-  void rb_mix(ringbuffer_t *rb, float *out, int n) {
+  void rb_mix(ringbuffer_t *rb, Svf *filter, float *out, int n) {
     float s;
     while (n--) {
       s = *out;
       *out = (*out * dry) + (*rb->pos * wet);
       *rb->pos = min(max((*rb->pos * fb) + s, -1.0f), 1.0f);
+      *rb->pos = filter->sample(*rb->pos, mode);
       out++;
       rb->pos++;
       if (rb->pos == rb->eob) // wrap
@@ -126,6 +133,7 @@ public:
   }
 
   void process_events() {
+    int update = 0;
     if (globals->mode)
       this->mode = (int)*globals->mode;
     if (globals->l_delay_ms)
@@ -136,6 +144,18 @@ public:
       this->ldelay_ticks = (float)*globals->l_delay_ticks;
     if (globals->r_delay_ticks)
       this->rdelay_ticks = (float)*globals->r_delay_ticks;
+    if (globals->filter_mode) {
+      this->filter_mode = (int)*globals->filter_mode;
+      update = 1;
+    }
+    if (globals->cutoff) {
+      this->cutoff = (float)*globals->cutoff;
+      update = 1;
+    }
+    if (globals->resonance) {
+      this->resonance = (float)*globals->resonance;
+      update = 1;
+    }
     if (globals->wet) {
       wet = dbtoamp(*globals->wet, -48.0f);
     }
@@ -145,6 +165,12 @@ public:
     if (globals->fb) {
       fb = dbtoamp(*globals->fb, -48.0f);
     }
+    if (update == 1) {
+      int srate = transport->samples_per_second;
+      for (int i = 0; i < 2; i++) {
+	filters[i].setup((float)srate, this->cutoff, this->resonance, 0.0);
+      }
+    }
   }
 
   void process_stereo(float *inL, float *inR, float *outL, float *outR, int n) {
@@ -153,8 +179,8 @@ public:
     dsp_copy(inL, outL, n);
     dsp_copy(inR, outR, n);
 
-    rb_mix(&rb[0], outL, n);
-    rb_mix(&rb[1], outR, n);
+    rb_mix(&rb[0], &filters[0], outL, n);
+    rb_mix(&rb[1], &filters[1], outR, n);
 
     dsp_clip(outL, n, 1); // signal may never exceed -1..1
     dsp_clip(outR, n, 1);

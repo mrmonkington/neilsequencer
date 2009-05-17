@@ -9,6 +9,17 @@
      author="Leonard Ritter"
      email="contact at leonard-ritter+com">
     <parameters>
+      <valuenamegroup>
+	<valuenames id="delay_modes">
+	  <alias value="0" name="ms"/>
+	  <alias value="1" name="Ticks"/>
+	</valuenames>
+	<valuenames id="filter_modes">
+	  <alias value="0" name="Low"/>
+	  <alias value="1" name="High"/>
+	  <alias value="2" name="Band"/>
+	</valuenames>
+      </valuenamegroup>
       <global>
 	<parameter
 	   id="mode"
@@ -18,6 +29,7 @@
 	   minvalue="0"
 	   maxvalue="1"
 	   defvalue="0"
+	   valuenames="delay_modes"
 	   state="true"/>
 	<parameter
 	   id="l_delay_ms"
@@ -69,10 +81,11 @@
 	   minvalue="0"
 	   maxvalue="2"
 	   defvalue="0"
+	   valuenames="filter_modes"
 	   state="true"/>
   	<parameter
 	   id="cutoff"
-	   name="Cutoff"
+	   name="Cutoff (Hz)"
 	   description="Filter cutoff."
 	   type="float"
 	   logarithmic="true"
