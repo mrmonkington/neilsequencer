@@ -1,166 +1,166 @@
 <?xml version="1.0" encoding="utf-8"?>
 <zzub>
-	<plugin
-		uri="@mda-vst/epiano;1"
-		name="mda ePiano"
-		shortname="ePiano"
-		type="generator"
-		mintracks="8"
-		maxtracks="32"
-		description="Lunar port of mda ePiano VST. Port by andyw."
-		author="mda"
-		email="">
-		<parameters>
-			<global>
-				<parameter
-					id="envdecay"
-					name="Envelope Decay"
-					type="float"
-					minvalue="0"
-					maxvalue="1"
-					defvalue="0.5"
-					novalue="2"
-					state="true"
-				/>
-				<parameter
-					id="envrelease"
-					name="Envelope Release"
-					type="float"
-					minvalue="0"
-					maxvalue="1"
-					defvalue="0.5"
-					novalue="2"
-					state="true"
-				/>
-				<parameter
-					id="hardness"
-					name="Hardness"
-					type="float"
-					minvalue="0"
-					maxvalue="1"
-					defvalue="0.5"
-					novalue="2"
-					state="true"
-				/>
-				<parameter
-					id="trebleboost"
-					name="Treble Boost"
-					type="float"
-					minvalue="0"
-					maxvalue="1"
-					defvalue="0.5"
-					novalue="2"
-					state="true"
-				/>
-				<parameter
-					id="modulation"
-					name="Modulation"
-					type="float"
-					minvalue="0"
-					maxvalue="1"
-					defvalue="0.5"
-					novalue="2"
-					state="true"
-				/>
-				<parameter
-					id="lforate"
-					name="LFO Rate"
-					type="float"
-					minvalue="0"
-					maxvalue="1"
-					defvalue="0.65"
-					novalue="2"
-					state="true"
-				/>
-				<parameter
-					id="velsense"
-					name="Velocity Sense"
-					type="float"
-					minvalue="0"
-					maxvalue="1"
-					defvalue="0.25"
-					novalue="2"
-					state="true"
-				/>
-				<parameter
-					id="stereowidth"
-					name="Stereo Width"
-					type="float"
-					minvalue="0"
-					maxvalue="1"
-					defvalue="0.5"
-					novalue="2"
-					state="true"
-				/>
-				<parameter
-					id="poly"
-					name="Polyphony"
-					type="float"
-					minvalue="0"
-					maxvalue="1"
-					defvalue="0.5"
-					novalue="2"
-					state="true"
-				/>
-				<parameter
-					id="finetune"
-					name="Fine Tuning"
-					type="float"
-					minvalue="0"
-					maxvalue="1"
-					defvalue="0.5"
-					novalue="2"
-					state="true"
-				/>
-				<parameter
-					id="randomtune"
-					name="Random Tuning"
-					type="float"
-					minvalue="0"
-					maxvalue="1"
-					defvalue="0.146"
-					novalue="2"
-					state="true"
-				/>
-				<parameter
-					id="overdrive"
-					name="Overdrive"
-					type="float"
-					minvalue="0"
-					maxvalue="1"
-					defvalue="0.0"
-					novalue="2"
-					state="true"
-				/>
-			</global>
-			<track>
-				<parameter
-					id="note"
-					type="midinote"/>
-				<parameter
-					id="volume"
-					name="Volume"
-					description="Volume of note."
-					type="byte"
-					minvalue="0"
-					maxvalue="128"
-					defvalue="128"
-					novalue="255"/>
-			</track>
-			<controller>
-			</controller>
-		</parameters>
-		<attributes>
-		</attributes>
-		<files>
-			<file ref="epiano.cpp" />
-			<file ref="epiano.h" />
-			<file ref="mdaEPianoData.h" />
-		</files>
-		<modules>
-			<module id="epiano">
-				<source language="c++" ref="epiano.cpp" fxdef="epiano.h"/>
-			</module>
-		</modules>
-	</plugin>
+  <plugin
+     uri="@mda-vst/epiano;1"
+     name="mda ePiano"
+     shortname="ePiano"
+     type="generator"
+     mintracks="1"
+     maxtracks="32"
+     description="Lunar port of mda ePiano VST. Port by andyw."
+     author="mda"
+     email="">
+    <parameters>
+      <global>
+	<parameter
+	   id="envdecay"
+	   name="Envelope Decay"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0.5"
+	   novalue="2"
+	   state="true"
+	   />
+	<parameter
+	   id="envrelease"
+	   name="Envelope Release"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0.5"
+	   novalue="2"
+	   state="true"
+	   />
+	<parameter
+	   id="hardness"
+	   name="Hardness"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0.5"
+	   novalue="2"
+	   state="true"
+	   />
+	<parameter
+	   id="trebleboost"
+	   name="Treble Boost"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0.5"
+	   novalue="2"
+	   state="true"
+	   />
+	<parameter
+	   id="modulation"
+	   name="Modulation"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0.5"
+	   novalue="2"
+	   state="true"
+	   />
+	<parameter
+	   id="lforate"
+	   name="LFO Rate"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0.65"
+	   novalue="2"
+	   state="true"
+	   />
+	<parameter
+	   id="velsense"
+	   name="Velocity Sense"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0.25"
+	   novalue="2"
+	   state="true"
+	   />
+	<parameter
+	   id="stereowidth"
+	   name="Stereo Width"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0.5"
+	   novalue="2"
+	   state="true"
+	   />
+	<parameter
+	   id="poly"
+	   name="Polyphony"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0.5"
+	   novalue="2"
+	   state="true"
+	   />
+	<parameter
+	   id="finetune"
+	   name="Fine Tuning"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0.5"
+	   novalue="2"
+	   state="true"
+	   />
+	<parameter
+	   id="randomtune"
+	   name="Random Tuning"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0.146"
+	   novalue="2"
+	   state="true"
+	   />
+	<parameter
+	   id="overdrive"
+	   name="Overdrive"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0.0"
+	   novalue="2"
+	   state="true"
+	   />
+      </global>
+      <track>
+	<parameter
+	   id="note"
+	   type="midinote"/>
+	<parameter
+	   id="volume"
+	   name="Volume"
+	   description="Volume of note."
+	   type="byte"
+	   minvalue="0"
+	   maxvalue="128"
+	   defvalue="128"
+	   novalue="255"/>
+      </track>
+      <controller>
+      </controller>
+    </parameters>
+    <attributes>
+    </attributes>
+    <files>
+      <file ref="epiano.cpp" />
+      <file ref="epiano.h" />
+      <file ref="mdaEPianoData.h" />
+    </files>
+    <modules>
+      <module id="epiano">
+	<source language="c++" ref="epiano.cpp" fxdef="epiano.h"/>
+      </module>
+    </modules>
+  </plugin>
 </zzub>
