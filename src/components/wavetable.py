@@ -37,11 +37,9 @@ import zzub
 import config
 from aldrin.envelope import EnvelopeView, ADSRPanel
 from aldrin.waveedit import WaveEditPanel
-import aldrin.freesound as freesound
 import popen2
 import aldrin.common as common
 from aldrin.common import MARGIN, MARGIN2, MARGIN3
-from aldrin.fspanel import FreesoundPanel
 import aldrin.com as com
 
 class WavetablePanel(gtk.Notebook):
@@ -123,11 +121,8 @@ class WavetablePanel(gtk.Notebook):
 	self.libpanel.add_filter(file_filter('MPEG-1 Audio Layer 3 (*.mp3)', '*.mp3'))
 	self.libpanel.set_local_only(True)
 	self.libpanel.set_select_multiple(True)
-	self.fspanel = FreesoundPanel(self)
-	self.fspanel.set_border_width(MARGIN2)
 	self.append_page(self.instrpanel, gtk.Label("Instruments"))
 	self.append_page(self.libpanel, gtk.Label("Library"))
-	self.append_page(self.fspanel, gtk.Label("freesound"))
 	self.set_current_page(0)
 	self.adsrpanel = ADSRPanel(self)
 	self.samplelist, self.samplestore, columns = new_listview([
@@ -150,9 +145,6 @@ class WavetablePanel(gtk.Notebook):
 	self.btnstrloop = new_image_button(imagepath("fitloop.png"), "Stretch Loop", self.tooltips)
 	self.samplename = gtk.Label("")
 	self.samplename.set_alignment(0, 0.5)
-	self.volumeslider = gtk.HScale()
-	self.volumeslider.set_draw_value(False)
-	self.volumeslider.set_range(-4800, 2400)
 	self.chkloop = gtk.CheckButton("_Loop")
 	self.edloopstart = gtk.Entry()
 	self.edloopstart.set_size_request(50, -1)
@@ -175,6 +167,8 @@ class WavetablePanel(gtk.Notebook):
 	samplesel.pack_start(samplebuttons, expand=False)
 	samplesel.pack_end(add_scrollbars(self.samplelist))
 	loopprops = gtk.HBox(False, MARGIN)
+	loopprops.pack_start(self.btnplay, expand=False)
+	loopprops.pack_start(self.btnstop, expand=False)
 	loopprops.pack_start(self.chkloop, expand=False)
 	loopprops.pack_start(self.edloopstart, expand=False)
 	loopprops.pack_start(self.edloopend, expand=False)
@@ -188,12 +182,6 @@ class WavetablePanel(gtk.Notebook):
 	envprops.pack_start(self.cbenvelope, expand=False)
 	envprops.pack_start(self.chkenable, expand=False)
 	sampleprops = gtk.VBox(False, MARGIN)
-	sampleplayer = gtk.HBox(False, MARGIN)
-	sampleplayer.pack_start(self.btnplay, expand=False)
-	sampleplayer.pack_start(self.btnstop, expand=False)
-	sampleplayer.pack_start(self.samplename)
-	sampleprops.pack_start(sampleplayer, expand=False)
-	sampleprops.pack_start(self.volumeslider, expand=False)
 	sampleprops.pack_start(loopprops, expand=False)
 	nbsampleprops = gtk.Notebook()
 	envsection = gtk.VBox(False, MARGIN)
@@ -227,8 +215,6 @@ class WavetablePanel(gtk.Notebook):
 	self.ohg.connect(self.btnadsr,'clicked', self.on_show_adsr)
 	self.ohg.connect(self.btnfitloop,'clicked', self.on_fit_loop)
 	self.ohg.connect(self.btnstrloop,'clicked', self.on_stretch_loop)
-	self.ohg.connect(self.volumeslider,'scroll-event', self.on_mousewheel)
-	self.ohg.connect(self.volumeslider,'change-value', self.on_scroll_changed)
 	self.ohg.connect(self.chkloop,'clicked', self.on_check_loop)
 	self.ohg.connect(self.chkpingpong,'clicked', self.on_check_pingpong)
 	self.ohg.connect(self.chkenable,'clicked', self.on_check_envdisabled)
@@ -541,15 +527,16 @@ class WavetablePanel(gtk.Notebook):
 	@param event: A mouse event.
 	@type event: wx.MouseEvent
 	"""
-	vol = int(self.volumeslider.get_value())
-	step = 100
-	if event.direction == gtk.gdk.SCROLL_UP:
-	    vol += step
-	elif event.direction == gtk.gdk.SCROLL_DOWN:
-	    vol -= step
-	vol = min(max(-4800,vol), 2400)
-	self.volumeslider.set_value(vol)
-	self.on_scroll_changed(widget, gtk.SCROLL_NONE, vol)
+	pass
+	#vol = int(self.volumeslider.get_value())
+	#step = 100
+	#if event.direction == gtk.gdk.SCROLL_UP:
+	#    vol += step
+	#elif event.direction == gtk.gdk.SCROLL_DOWN:
+	#    vol -= step
+	#vol = min(max(-4800,vol), 2400)
+	#self.volumeslider.set_value(vol)
+	#self.on_scroll_changed(widget, gtk.SCROLL_NONE, vol)
 
     def on_clear(self, widget):
 	"""
@@ -783,23 +770,18 @@ class WavetablePanel(gtk.Notebook):
 	@param event: Key event
 	@type event: wx.KeyEvent
 	"""
+	# Read the name of the key pressed.
 	k = gtk.gdk.keyval_name(event.keyval)
-	mask = event.state
-	kv = event.keyval
-	sellist = list(self.get_sample_selection())
-	sel = sellist and sellist[0] or 0
-	if kv == 32:
+	# When space button is pressed play the wave.
+	if k == 'Space':
 	    self.on_play_wave(event)
 	elif k in ('BackSpace', 'Return'):
-	    if (mask & gtk.gdk.SHIFT_MASK):
-		self.set_current_page(2)
-		self.fspanel.edsearch.grab_focus()
+	    # If backspace or return are pressed go to file browser.
+	    self.set_current_page(1)
+	    if self.filetreeview:
+		self.filetreeview.grab_focus()
 	    else:
-		self.set_current_page(1)
-		if self.filetreeview:
-		    self.filetreeview.grab_focus()
-		else:
-		    self.libpanel.grab_focus()
+		self.libpanel.grab_focus()
 	else:
 	    return False
 	return True
@@ -865,7 +847,7 @@ class WavetablePanel(gtk.Notebook):
 	else:
 	    w = player.get_wave(sel)
 	    iswave = w.get_level_count() >= 1
-	self.volumeslider.set_sensitive(iswave)
+	#self.volumeslider.set_sensitive(iswave)
 	self.samplename.set_label("")
 	self.chkloop.set_sensitive(iswave)
 	self.edloopstart.set_sensitive(iswave)
@@ -896,7 +878,7 @@ class WavetablePanel(gtk.Notebook):
 	self.samplename.set_label(w.get_path())
 	#self.samplename.set_label("Sample Name: "+w.get_name())
 	v = int(linear2db(w.get_volume()) * 100)
-	self.volumeslider.set_value(v)
+	#self.volumeslider.set_value(v)
 	f = w.get_flags()
 	isloop = bool(f & zzub.zzub_wave_flag_loop)
 	ispingpong = bool(f & zzub.zzub_wave_flag_pingpong)

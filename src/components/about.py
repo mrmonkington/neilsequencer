@@ -26,8 +26,8 @@ import sys
 from aldrin.utils import prepstr
 import gtk
 
-NAME = "Aldrin"
-VERSION = "0.13 (Mars)"
+NAME = "Neil"
+VERSION = "0.9"
 COPYRIGHT = "Copyright (C) 2006, 2007, 2008 The Aldrin Development Team"
 COMMENTS = '"no insult, but i think you\'re too weird to really make the best music app ever created." -- rpfr'
 
