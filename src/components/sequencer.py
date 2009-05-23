@@ -87,13 +87,14 @@ class SequencerToolBar(gtk.HBox):
 
     Allows to set the step size for the sequencer view.
     """
-    def __init__(self):
+    def __init__(self, seqview):
 	"""
 	Initialization.
 	"""
 	# begin wxGlade: SequencerFrame.__init__
 	# kwds['style'] = wx.TB_HORIZONTAL|wx.TB_FLAT
 	gtk.HBox.__init__(self, False, MARGIN)
+	self.seqview = seqview
 	self.set_border_width(MARGIN)
 	self.steplabel = gtk.Label()
 	self.steplabel.set_text_with_mnemonic("_Step")
@@ -101,12 +102,36 @@ class SequencerToolBar(gtk.HBox):
 	self.steps = [1,2,4,8,12,16,20,24,28,32,36,40,44,48,52,56,60,64,96,128,192,256,512,1024]
 	self.stepselect.connect('changed', self.on_stepselect)
 	self.steplabel.set_mnemonic_widget(self.stepselect)
+	# The buttons for zooming on the sequencer window horizontally.
+	self.btn_zoom_in = gtk.Button("Zoom+")
+	self.btn_zoom_out = gtk.Button("Zoom-")
+	self.btn_zoom_in.connect("button_press_event", self.on_zoom_in)
+	self.btn_zoom_out.connect("button_press_event", self.on_zoom_out)
+	# Follow song checkbox.
 	self.followsong = gtk.CheckButton("Follow Song Position")
 	self.followsong.set_active(False)
-
+	# Display all the components.
 	self.pack_start(self.steplabel, expand=False)
 	self.pack_start(self.stepselect, expand=False)
+	self.pack_start(self.btn_zoom_in, expand=False)
+	self.pack_start(self.btn_zoom_out, expand=False)
 	self.pack_start(self.followsong)
+
+    def on_zoom_in(self, widget, event):
+	"""
+	This is a callback that is called when the user presses the Zoom+
+	button in the sequencer view.
+	"""
+	self.seqview.seq_row_size += 8
+	self.seqview.redraw()
+
+    def on_zoom_out(self, widget, event):
+	"""
+	This is a callback that is called when the user presses the Zoom-
+	button in the sequencer view.
+	"""
+	self.seqview.seq_row_size -= 8
+	self.seqview.redraw()
 
     def increase_step(self):
 	if self.parent.view.step < 1024:
@@ -201,14 +226,15 @@ class SequencerPanel(gtk.VBox):
 
 	self.seqview = SequencerView(self, hscroll, vscroll)
 	scrollwin = gtk.Table(2,2)
-	scrollwin.attach(self.seqview, 0, 1, 0, 1, gtk.FILL|gtk.EXPAND, gtk.FILL|gtk.EXPAND)
+	scrollwin.attach(self.seqview, 0, 1, 0, 1,
+			 gtk.FILL | gtk.EXPAND, gtk.FILL | gtk.EXPAND)
 	scrollwin.attach(vscroll, 1, 2, 0, 1, 0, gtk.FILL)
 	scrollwin.attach(hscroll, 0, 1, 1, 2, gtk.FILL, 0)
 
 	self.splitter.pack1(add_scrollbars(self.seqpatternlist), False, False)
 	self.splitter.pack2(scrollwin, True, True)
 	self.view = self.seqview
-	self.toolbar = SequencerToolBar()
+	self.toolbar = SequencerToolBar(self.seqview)
 
 	self.statusbar = gtk.HBox(False, MARGIN)
 	self.statusbar.set_border_width(MARGIN0)
@@ -303,12 +329,6 @@ class SequencerPanel(gtk.VBox):
 
 # end of class SequencerFrame
 
-SEQTRACKSIZE = 22
-SEQSTEP = 16
-SEQLEFTMARGIN = 96
-SEQTOPMARGIN = SEQTRACKSIZE
-SEQROWSIZE = 24
-
 class SequencerView(gtk.DrawingArea):
     """
     Sequence viewer class.
@@ -323,6 +343,13 @@ class SequencerView(gtk.DrawingArea):
 	self.hscroll = hscroll
 	self.vscroll = vscroll
 
+	# Variables that were previously defined as constants.
+	self.seq_track_size = 30
+	self.seq_step = 16
+	self.seq_left_margin = 96
+	self.seq_top_margin = self.seq_track_size
+	self.seq_row_size = 32
+
 	self.plugin_info = common.get_plugin_infos()
 	player = com.get('aldrin.core.player')
 	self.playpos = player.get_position()
@@ -330,7 +357,7 @@ class SequencerView(gtk.DrawingArea):
 	self.track = 0
 	self.startseqtime = 0
 	self.starttrack = 0
-	self.step = config.get_config().get_default_int('SequencerStep', SEQSTEP)
+	self.step = config.get_config().get_default_int('SequencerStep', self.seq_step)
 	self.wmax=0
 	player.set_loop_end(self.step)
 	self.selection_start = None
@@ -368,11 +395,11 @@ class SequencerView(gtk.DrawingArea):
 	if row == -1:
 	    x = 0
 	else:
-	    x = int((((float(row) - self.startseqtime)/self.step) * SEQROWSIZE) + SEQLEFTMARGIN + 0.5)
+	    x = int((((float(row) - self.startseqtime)/self.step) * self.seq_row_size) + self.seq_left_margin + 0.5)
 	if track == -1:
 	    y = 0
 	else:
-	    y = ((track - self.starttrack) * SEQTRACKSIZE) + SEQTOPMARGIN
+	    y = ((track - self.starttrack) * self.seq_track_size) + self.seq_top_margin
 	return x,y
 
     def pos_to_track_row(self, (x,y)):
@@ -386,14 +413,14 @@ class SequencerView(gtk.DrawingArea):
 	@return: Tuple containing track and row index.
 	@rtype: (int, int)
 	"""
-	if x < SEQLEFTMARGIN:
+	if x < self.seq_left_margin:
 	    row = -1
 	else:
-	    row = (((x - SEQLEFTMARGIN) / SEQROWSIZE) * self.step) + self.startseqtime
-	if y < SEQTOPMARGIN:
+	    row = (((x - self.seq_left_margin) / self.seq_row_size) * self.step) + self.startseqtime
+	if y < self.seq_top_margin:
 	    track = -1
 	else:
-	    track = ((y - SEQTOPMARGIN) / SEQTRACKSIZE) + self.starttrack
+	    track = ((y - self.seq_top_margin) / self.seq_track_size) + self.starttrack
 	return track,row
 
     def get_endtrack(self):
@@ -1056,7 +1083,7 @@ class SequencerView(gtk.DrawingArea):
 		    self.dragging = True
 		    self.grab_add()
 	elif event.button == 3:
-	    if (x < SEQLEFTMARGIN) and (track < track_count):
+	    if (x < self.seq_left_margin) and (track < track_count):
 		mp = player.get_sequence(track).get_plugin()
 		menu = com.get('aldrin.core.contextmenu', 'plugin', mp)
 		menu.popup(self, event)
@@ -1099,7 +1126,7 @@ class SequencerView(gtk.DrawingArea):
     def redraw(self, *args):
 	if self.window and self.window.is_visible():
 	    rect = self.get_allocation()
-	    self.window.invalidate_rect((0,0,rect.width,rect.height), False)
+	    self.window.invalidate_rect((0, 0, rect.width, rect.height), False)
 
     def on_left_up(self, widget, event):
 	"""
@@ -1166,7 +1193,7 @@ class SequencerView(gtk.DrawingArea):
     def adjust_scrollbars(self):
 	w,h = self.get_client_size()
 	vw,vh = self.get_virtual_size()
-	pw,ph= int((w-SEQLEFTMARGIN)/float(SEQROWSIZE)+0.5), int((h-SEQTOPMARGIN)/float(SEQTRACKSIZE)+0.5)
+	pw,ph= int((w-self.seq_left_margin)/float(self.seq_row_size)+0.5), int((h-self.seq_top_margin)/float(self.seq_track_size)+0.5)
 	hrange = vw - pw
 	vrange = vh - ph
 	if hrange <= 0:
@@ -1178,7 +1205,7 @@ class SequencerView(gtk.DrawingArea):
 	else:
 	    self.vscroll.show()
 	adj = self.hscroll.get_adjustment()
-	adj.set_all(self.startseqtime/self.step, 0, int(vw+(w-SEQLEFTMARGIN)/float(SEQROWSIZE)-2), 1, 1, pw)
+	adj.set_all(self.startseqtime/self.step, 0, int(vw+(w-self.seq_left_margin)/float(self.seq_row_size)-2), 1, 1, pw)
 	adj = self.vscroll.get_adjustment()
 	adj.set_all(self.starttrack, 0, vh, 1, 1, ph)
 	#self.redraw()
@@ -1219,10 +1246,10 @@ class SequencerView(gtk.DrawingArea):
 	if track_count > 0:
 	    if self.row >= self.startseqtime and self.track >= self.starttrack:
 		x,y = self.track_row_to_pos((self.track,self.row))
-		drawable.draw_rectangle(gc,True,x,y+1,SEQROWSIZE-1,SEQTRACKSIZE-1)
+		drawable.draw_rectangle(gc,True,x,y+1,self.seq_row_size-1,self.seq_track_size-1)
 	if self.playpos >= self.startseqtime:
 	    # draw play cursor
-	    x = SEQLEFTMARGIN + int((float(self.playpos - self.startseqtime) / self.step) * SEQROWSIZE)
+	    x = self.seq_left_margin + int((float(self.playpos - self.startseqtime) / self.step) * self.seq_row_size)
 	    drawable.draw_rectangle(gc,True,x, 0, 2, h)
 
     def update(self):
@@ -1270,42 +1297,51 @@ class SequencerView(gtk.DrawingArea):
 
 	gc.set_foreground(bgbrush)
 	gc.set_background(bgbrush)
+	# Draw the background.
 	drawable.draw_rectangle(gc, True, 0, 0, w, h)
 
 	layout = pango.Layout(self.get_pango_context())
-	#~ layout.set_font_description(self.fontdesc)
 	layout.set_width(-1)
 
 	# 14
-	x, y = SEQLEFTMARGIN, SEQTOPMARGIN
+	x, y = self.seq_left_margin, self.seq_top_margin
 	i = self.startseqtime
+
+	# Draw the markers every some number of steps.
 	while x < w:
-	    if (i % (16*self.step)) == 0:
+	    # Draw a vertical blue line every 16 steps.
+	    if (i % (16 * self.step)) == 0:
 		gc.set_foreground(pen1)
-		drawable.draw_line(gc, x-1, 0, x-1, h)
+		drawable.draw_line(gc, x - 1, 0, x - 1, h)
 		gc.set_foreground(textcolor)
 		layout.set_text(str(i))
-		px,py = layout.get_pixel_size()
-		drawable.draw_layout(gc, x, SEQTRACKSIZE/2 - py/2, layout)
-	    elif (i % (4*self.step)) == 0:
+		px, py = layout.get_pixel_size()
+		drawable.draw_layout(gc, x, self.seq_track_size / 2 - py / 2, layout)
+	    # Draw a vertical light gray line every 4 steps.
+	    elif (i % (4 * self.step)) == 0:
 		gc.set_foreground(pen2)
-		drawable.draw_line(gc, x-1, 0, x-1, h)
+		drawable.draw_line(gc, x - 1, 0, x - 1, h)
 		gc.set_foreground(textcolor)
 		layout.set_text(str(i))
-		px,py = layout.get_pixel_size()
-		drawable.draw_layout(gc, x, SEQTRACKSIZE/2 - py/2, layout)
-	    x += SEQROWSIZE
+		px, py = layout.get_pixel_size()
+		drawable.draw_layout(gc, x, self.seq_track_size / 2 - py / 2, layout)
+	    x += self.seq_row_size
 	    i += self.step
+	    
 	gc.set_foreground(pen)
 	drawable.draw_line(gc, 0, y, w, y)
 	tracklist = seq.get_track_list()
+
+	# Get selection start and selection end.
 	sel = False
 	if self.selection_start != None and self.selection_end != None:
 	    sel = True
 	    selstart = (min(self.selection_start[0], self.selection_end[0]), 
-		    min(self.selection_start[1], self.selection_end[1]))
+			min(self.selection_start[1], self.selection_end[1]))
 	    selend = (max(self.selection_start[0], self.selection_end[0]), 
-		    max(self.selection_start[1], self.selection_end[1]))
+		      max(self.selection_start[1], self.selection_end[1]))
+	    
+	# Draw tracks and pattern boxes.
 	for track_index in range(self.starttrack, len(tracklist)):
 	    track = tracklist[track_index]
 	    m = track.get_plugin()
@@ -1317,55 +1353,67 @@ class SequencerView(gtk.DrawingArea):
 		title = "[%s]" % title
 	    elif self.plugin_info[m].muted:
 		title = "(%s)" % title
-	    gc.set_foreground(type2brush.get(m.get_flags() & PLUGIN_FLAGS_MASK, type2brush[GENERATOR_PLUGIN_FLAGS]))
-	    drawable.draw_rectangle(gc, True, 0, y, SEQLEFTMARGIN-1, SEQTRACKSIZE)
+	    gc.set_foreground(type2brush.get(m.get_flags() & PLUGIN_FLAGS_MASK,
+					     type2brush[GENERATOR_PLUGIN_FLAGS]))
+	    # Draw a box that states the name of the machine on that track.
+	    drawable.draw_rectangle(gc, True, 0, y, self.seq_left_margin - 1,
+				    self.seq_track_size)
 	    gc.set_foreground(pen)
-	    drawable.draw_rectangle(gc, False, 0, y, SEQLEFTMARGIN-1, SEQTRACKSIZE)
+	    # Draw an outline on the track name box.
+	    drawable.draw_rectangle(gc, False, 0, y, self.seq_left_margin - 1,
+				    self.seq_track_size)
 	    gc.set_foreground(textcolor)
 	    layout.set_text(title)
-	    px,py = layout.get_pixel_size()
-	    drawable.draw_layout(gc, SEQLEFTMARGIN-4 -px, y + SEQTRACKSIZE/2 - py/2, layout)
+	    px, py = layout.get_pixel_size()
+	    # Draw the label with the track name
+	    drawable.draw_layout(gc, self.seq_left_margin - 4 - px,
+				 y + self.seq_track_size / 2 - py / 2, layout)
+
+	    # If track is in the selection...
 	    intrack = sel and ((track_index >= selstart[0]) and (track_index <= selend[0]))
-	    # draw selected block if it falls within selection
+	    # Draw the selection box over the empty track.
 	    if intrack:
-		x = SEQLEFTMARGIN
+		x = self.seq_left_margin
 		i = self.startseqtime
 		while x < w:
 		    if (i >= selstart[1]) and (i <= selend[1]):
 			gc.foreground = select_brush
-			drawable.draw_rectangle(gc, True, x, y+1, SEQROWSIZE-2,SEQTRACKSIZE-2)
-		    x += SEQROWSIZE
+			drawable.draw_rectangle(gc, True, x, y + 1,
+						self.seq_row_size - 2,
+						self.seq_track_size - 2)
+		    x += self.seq_row_size
 		    i += self.step
+		    
 	    for pos, value in track.get_event_list():
 		bb = pgfx.get(value, None)
 		if not bb:
 		    if value >= 0x10:
-			pat = m.get_pattern(value-0x10)
-			name,length = prepstr(pat.get_name()), pat.get_row_count()
+			pat = m.get_pattern(value - 0x10)
+			name, length = prepstr(pat.get_name()), pat.get_row_count()
 		    elif value == 0x00:
 			name,length = "X", 1
 		    elif value == 0x01:
 			name,length = "<", 1
 		    else:
-			print "unknown value:",value
-			name,length = "???",0
-		    psize = max(int(((SEQROWSIZE * length) / self.step) + 0.5),2)
-		    bb = gtk.gdk.Pixmap(self.window, psize-1, SEQTRACKSIZE-1, -1)
+			print "unknown value:", value
+			name, length = "???", 0
+		    psize = max(int(((self.seq_row_size * length) / self.step) + 0.5), 2)
+		    bb = gtk.gdk.Pixmap(self.window, psize-1, self.seq_track_size-1, -1)
 		    pgfx[value] = bb					
 		    if value < 0x10:
 			gc.set_foreground(sbrushes[value])
-			bb.draw_rectangle(gc, True, 0, 0, psize-1, SEQTRACKSIZE-1)
+			bb.draw_rectangle(gc, True, 0, 0, psize-1, self.seq_track_size-1)
 		    else:
 			random.seed(mname+name)
 			hue = random.random()
 			cb = 1.0
 			r,g,b = from_hsb(hue, 0.2, cb*bgb)
 			gc.set_foreground(cm.alloc_color('#%02X%02X%02X' % (int(r*255),int(g*255),int(b*255))))
-			bb.draw_rectangle(gc, True, 0,0, psize-2, SEQTRACKSIZE-2)
+			bb.draw_rectangle(gc, True, 0,0, psize - 2, self.seq_track_size - 2)
 			r,g,b = from_hsb(hue, 0.5, cb*bgb*0.5)
 			gc.set_foreground(cm.alloc_color('#%02X%02X%02X' % (int(r*255),int(g*255),int(b*255))))
 			pat = m.get_pattern(value-0x10)
-			bh = SEQTRACKSIZE-2-4
+			bh = self.seq_track_size-2-4
 			bw = max(psize-2-2, 1)
 			# 0.3: DEAD - no get_bandwidth_digest
 			#~ digest = pat.get_bandwidth_digest(bw)
@@ -1375,31 +1423,31 @@ class SequencerView(gtk.DrawingArea):
 				#~ bb.draw_rectangle(gc, True, 1+evx, 2+bh-evh, 1, evh )
 			r,g,b = from_hsb(hue, 1.0, cb*bgb*0.7)
 			gc.set_foreground(cm.alloc_color('#%02X%02X%02X' % (int(r*255),int(g*255),int(b*255))))
-			bb.draw_rectangle(gc, False, 0, 0, psize-2, SEQTRACKSIZE-2)
+			bb.draw_rectangle(gc, False, 0, 0, psize - 2, self.seq_track_size - 2)
 			ofs = 0
 			layout.set_text(name)
 			px,py = layout.get_pixel_size()
 			gc.set_foreground(textcolor)
-			bb.draw_layout(gc, 2, 0 + SEQTRACKSIZE/2 - py/2, layout)
+			bb.draw_layout(gc, 2, 0 + self.seq_track_size/2 - py/2, layout)
 		bbw,bbh = bb.get_size()
-		x = SEQLEFTMARGIN + (((pos - self.startseqtime) * SEQROWSIZE) / self.step)
-		if ((x+bbw) >= SEQLEFTMARGIN) and (x < w):
-		    ofs = max(SEQLEFTMARGIN - x,0)
+		x = self.seq_left_margin + (((pos - self.startseqtime) * self.seq_row_size) / self.step)
+		if ((x+bbw) >= self.seq_left_margin) and (x < w):
+		    ofs = max(self.seq_left_margin - x,0)
 		    drawable.draw_drawable(gc, bb, ofs, 0, x+ofs, y+1, bbw-ofs, bbh)
 		    if intrack and (pos >= selstart[1]) and (pos <= selend[1]):
 			gc.set_foreground(invbrush)
 			gc.set_function(gtk.gdk.XOR)
 			drawable.draw_rectangle(gc, True, x+ofs, y+1, bbw-ofs, bbh)
 			gc.set_function(gtk.gdk.COPY)
-	    y += SEQTRACKSIZE			
+	    y += self.seq_track_size			
 	    gc.set_foreground(vlinepen)
-	    drawable.draw_line(gc, SEQLEFTMARGIN, y, w, y)
+	    drawable.draw_line(gc, self.seq_left_margin, y, w, y)
 	gc.set_foreground(pen)
-	x = SEQLEFTMARGIN-1
+	x = self.seq_left_margin-1
 	drawable.draw_line(gc, x, 0, x, h)
 	se = player.get_song_end()
 	x,y = self.track_row_to_pos((0,se))
-	if (x >= SEQLEFTMARGIN):
+	if (x >= self.seq_left_margin):
 	    gc.set_foreground(pen)
 	    drawable.draw_line(gc, x-1, 0, x-1, h)
 	gc.set_foreground(loop_pen)
@@ -1407,10 +1455,10 @@ class SequencerView(gtk.DrawingArea):
 	gc.set_dashes(0, (1,1))
 	lb,le = player.get_loop()
 	x,y = self.track_row_to_pos((0,lb))
-	if (x >= SEQLEFTMARGIN):
+	if (x >= self.seq_left_margin):
 	    drawable.draw_line(gc, x-1, 0, x-1, h)
 	x,y = self.track_row_to_pos((0,le))
-	if (x >= SEQLEFTMARGIN):
+	if (x >= self.seq_left_margin):
 	    drawable.draw_line(gc, x-1, 0, x-1, h)
 	self.draw_xor()
 
