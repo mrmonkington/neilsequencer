@@ -24,7 +24,7 @@
 	<parameter
 	   id="mode"
 	   name="Delay Mode"
-	   description="Choose between two delay timing modes."
+	   description="Choose between two delay timing modes"
 	   type="byte"
 	   minvalue="0"
 	   maxvalue="1"
@@ -34,7 +34,7 @@
 	<parameter
 	   id="l_delay_ms"
 	   name="Delay L (ms)"
-	   description="Left channel delay in milliseconds."
+	   description="Left channel delay in milliseconds"
 	   type="float"
 	   logarithmic="true"
 	   power="0.7"
@@ -46,7 +46,7 @@
 	<parameter
 	   id="r_delay_ms"
 	   name="Delay R (ms)"
-	   description="Right channel delay in milliseconds."
+	   description="Right channel delay in milliseconds"
 	   type="float"
 	   logarithmic="true"
 	   power="0.7"
@@ -58,7 +58,7 @@
  	<parameter
 	   id="l_delay_ticks"
 	   name="Delay L (tick)"
-	   description="Left channel delay in ticks."
+	   description="Left channel delay in ticks"
 	   type="byte"
 	   minvalue="1"
 	   maxvalue="64"
@@ -67,7 +67,7 @@
  	<parameter
 	   id="r_delay_ticks"
 	   name="Delay R (tick)"
-	   description="Right channel delay in ticks."
+	   description="Right channel delay in ticks"
 	   type="byte"
 	   minvalue="1"
 	   maxvalue="64"
@@ -76,7 +76,7 @@
 	<parameter
 	   id="filter_mode"
 	   name="Filter Mode"
-	   description="Choose between low-pass, high-pass and band-pass modes."
+	   description="Choose between low-pass, high-pass and band-pass modes"
 	   type="byte"
 	   minvalue="0"
 	   maxvalue="2"
@@ -86,7 +86,7 @@
   	<parameter
 	   id="cutoff"
 	   name="Cutoff (Hz)"
-	   description="Filter cutoff."
+	   description="Filter cutoff"
 	   type="float"
 	   logarithmic="true"
 	   power="0.7"
@@ -97,7 +97,7 @@
   	<parameter
 	   id="resonance"
 	   name="Resonance"
-	   description="Filter resonance."
+	   description="Filter resonance"
 	   type="float"
 	   minvalue="0.0"
 	   maxvalue="1.0"

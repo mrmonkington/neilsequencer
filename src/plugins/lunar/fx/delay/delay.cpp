@@ -184,7 +184,7 @@ public:
 
     dsp_copy(inL, outL, n);
     dsp_copy(inR, outR, n);
-
+    
     rb_mix(&rb[0], &filters[0], outL, n);
     rb_mix(&rb[1], &filters[1], outR, n);
 

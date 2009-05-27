@@ -17,8 +17,6 @@ typedef struct _lunar_globals {
 	float *cutoff;
 	float *amp;
 	float *pitchslide;
-	float *plfospeed;
-	float *plfodepth;
 } lunar_globals_t;
 typedef struct _lunar_global_values {
 	float waveform;
@@ -31,16 +29,16 @@ typedef struct _lunar_global_values {
 	float cutoff;
 	float amp;
 	float pitchslide;
-	float plfospeed;
-	float plfodepth;
 } lunar_global_values_t;
 typedef struct _lunar_track {
 	float *note;
 	float *volume;
+	float *slide;
 } lunar_track_t;
 typedef struct _lunar_track_values {
 	float note;
 	float volume;
+	float slide;
 } lunar_track_values_t;
 typedef struct _lunar_controllers {
 } lunar_controllers_t;
