@@ -125,7 +125,6 @@ class TransportPanel(gtk.HBox):
 		e.set_size_request(w,w)
 	self.connect('realize', on_realize)
 
-
 	combosizer.pack_start(hbox, expand=False)
 	combosizer.pack_start(gtk.VSeparator(), expand=False)
 

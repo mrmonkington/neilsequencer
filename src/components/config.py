@@ -93,9 +93,6 @@ CONFIG_OPTIONS = dict(
 	Packages = dict(
 		package = dict(list=True,func='packages',vtype=str,doc="the list of python packages to be loaded."),
 	),
-	Freesound = dict(
-		MaxSearchResults = dict(func='freesound_max_search_results',default=100,doc="the number of max search results in freesound."),
-	),
 	Debug = dict(
 		Commands = dict(list=True,func='debug_commands',vtype=str,doc="the current list of debug commands for the python console."),
 	)
@@ -690,7 +687,7 @@ class AldrinConfig(object, ConfigParser.ConfigParser):
 	@param window: The window whose properties to save.
 	@type window: wx.Window
 	"""
-	self.set_section('Layout/'+windowid)
+	self.set_section('Layout/' + windowid)
 	if isinstance(window, gtk.Window):
 	    try:
 		x = int(self.read_value('X'))
@@ -701,8 +698,8 @@ class AldrinConfig(object, ConfigParser.ConfigParser):
 		return
 	    except ValueError:
 		return
-	    window.move(x,y)
-	    window.resize(w,h)
+	    window.move(x, y)
+	    window.resize(w, h)
 	    #~ if hasattr(window, 'IsMaximized'):
 		#~ if self.read_value("Maximize") == 'true':
 		    #~ window.Maximize()
