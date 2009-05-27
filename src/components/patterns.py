@@ -42,6 +42,7 @@ import zzub
 import time
 import random
 import aldrin.common as common
+
 MARGIN = common.MARGIN
 MARGIN2 = common.MARGIN2
 MARGIN3 = common.MARGIN3
@@ -61,7 +62,8 @@ class PatternDialog(gtk.Dialog):
     """
     Pattern Dialog Box.
 
-    This dialog is used to create a new pattern or a copy of a pattern, and to modify existent patterns.
+    This dialog is used to create a new pattern or a copy of a pattern,
+    and to modify existent patterns.
     """
     def __init__(self, parent):
 	"""

@@ -18,7 +18,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 """
-Contains all classes and functions needed to render the wavetable editor and the envelope viewer.
+Contains all classes and functions needed to render the wavetable editor and
+the envelope viewer.
 """
 
 if __name__ == '__main__':
@@ -29,9 +30,10 @@ if __name__ == '__main__':
 import gtk
 import gobject
 import os, sys, stat
-from aldrin.utils import prepstr, db2linear, linear2db, note2str, filepath, new_listview, \
-	new_image_button, add_scrollbars, file_filter, question, new_image_toggle_button, format_filesize, error, \
-	new_stock_image_button, ObjectHandlerGroup, imagepath
+from aldrin.utils import prepstr, db2linear, linear2db, note2str, filepath,\
+     new_listview, new_image_button, add_scrollbars, file_filter, question,\
+     new_image_toggle_button, format_filesize, error, new_stock_image_button,\
+     ObjectHandlerGroup, imagepath
 import aldrin.utils as utils
 import zzub
 import config
@@ -209,6 +211,7 @@ class WavetablePanel(gtk.Notebook):
 
 	self.filetreeview = None
 	try:
+	    # WTF
 	    self.filetreeview = self.libpanel.get_children()[0].get_children()[0].get_children()[2].get_child2().get_children()[0].get_children()[0].get_child()
 	except:
 	    print "unable to get filetreeview."
@@ -229,7 +232,6 @@ class WavetablePanel(gtk.Notebook):
 	self.ohg.connect(self.chkpingpong,'clicked', self.on_check_pingpong)
 	self.ohg.connect(self.chkenable,'clicked', self.on_check_envdisabled)
 
-
 	self.ohg.connect(self.edloopstart,'focus-out-event', self.on_loop_start_apply)
 	self.ohg.connect(self.edloopstart,'activate', self.on_loop_start_apply)
 	self.ohg.connect(self.edloopend,'focus-out-event', self.on_loop_end_apply)
@@ -237,17 +239,18 @@ class WavetablePanel(gtk.Notebook):
 	self.ohg.connect(self.edsamplerate,'focus-out-event', self.on_samplerate_apply)
 	self.ohg.connect(self.edsamplerate,'activate', self.on_samplerate_apply)
 
-
 	self.ohg.connect(self.libpanel,'key-press-event', self.on_filelist_key_down)
 	self.ohg.connect(self.libpanel,'file-activated', self.on_load_sample)
 	self.ohg.connect(self.libpanel,'selection-changed', self.on_libpanel_selection_changed)
 
 	currentpath = config.get_config().get_default('SampleBrowserPath')
+	
 	if currentpath:
 	    try:
 		self.libpanel.set_current_folder(currentpath)
 	    except:
 		print "couldn't set current sample browser path: '%s'." % currentpath
+		
 	eventbus = com.get('aldrin.core.eventbus')
 	eventbus.zzub_wave_allocated += self.update_samplelist
 	eventbus.zzub_wave_allocated += self.update_sampleprops
@@ -891,6 +894,7 @@ class WavetablePanel(gtk.Notebook):
 	#self.volumeslider.set_value(v)
 
 	f = w.get_flags()
+	
 	isloop = bool(f & zzub.zzub_wave_flag_loop)
 	ispingpong = bool(f & zzub.zzub_wave_flag_pingpong)
 	

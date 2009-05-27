@@ -131,43 +131,43 @@ class WaveEditView(gtk.DrawingArea):
 
     def fix_range(self):
 	begin,end = self.range
-	begin = max(min(begin, self.level.get_sample_count()-1), 0)
-	end = max(min(end, self.level.get_sample_count()), begin+1)
+	begin = max(min(begin, self.level.get_sample_count() - 1), 0)
+	end = max(min(end, self.level.get_sample_count()), begin + 1)
 	self.range = [begin, end]
 
     def set_range(self, begin, end):
-	self.range = [begin,end]
+	self.range = [begin, end]
 	self.view_changed()
 
     def set_selection(self, begin, end):
 	if begin == end:
 	    self.selection = None
 	else:
-	    begin = max(min(begin, self.level.get_sample_count()-1), 0)
-	    end = max(min(end, self.level.get_sample_count()), begin+1)
+	    begin = max(min(begin, self.level.get_sample_count() - 1), 0)
+	    end = max(min(end, self.level.get_sample_count()), begin + 1)
 	    self.selection = [begin, end]
 	self.redraw()
 
     def client_to_sample(self, x, y, db=False):
-	w,h = self.get_client_size()
+	w, h = self.get_client_size()
 	sample = self.range[0] + (float(x) / float(w)) * (self.range[1] - self.range[0])
 	if db:
 	    amp = 1.0 - (float(y) / float(h))
 	else:
 	    amp = (float(y) / float(h)) * 2.0 - 1.0
-	return int(sample+0.5),amp
+	return int(sample + 0.5), amp
 
     def sample_to_client(self, s, a):
-	w,h = self.get_client_size()
+	w, h = self.get_client_size()
 	x = ((float(s) - self.range[0]) / (self.range[1] - self.range[0])) * w
 	y = (a + 1.0) * float(h) / 2.0
-	return x,y
+	return x, y
 
     def on_mousewheel(self, widget, event):
 	"""
 	Callback that responds to mousewheeling in pattern view.
 	"""		
-	mx,my = int(event.x), int(event.y)
+	mx, my = int(event.x), int(event.y)
 	s,a = self.client_to_sample(mx,my)
 	b,e = self.range
 	diffl = s - b
@@ -183,7 +183,7 @@ class WaveEditView(gtk.DrawingArea):
 
     def apply_slices(self):
 	self.level.clear_slices()
-	for i,x in enumerate(self.peaks):
+	for i, x in enumerate(self.peaks):
 	    res = self.level.add_slice(x)
 	    assert res == 0
 	self.redraw()
@@ -244,7 +244,7 @@ class WaveEditView(gtk.DrawingArea):
 	"""
 	Callback that responds to left mouse down over the wave view.
 	"""
-	mx,my = int(event.x), int(event.y)
+	mx, my = int(event.x), int(event.y)
 	if (event.button == 1):
 	    s,a = self.client_to_sample(mx,my)
 	    if (event.state & gtk.gdk.SHIFT_MASK):
@@ -368,7 +368,7 @@ class WaveEditView(gtk.DrawingArea):
 	os = 0.0
 	power = 0
 	for s in ampbuf:
-	    s = 1.0 + linear2db(s,-80.0) / 80.0
+	    s = 1.0 + linear2db(s, -80.0) / 80.0
 	    power += s
 	    d = s - os
 	    os = s
@@ -389,19 +389,19 @@ class WaveEditView(gtk.DrawingArea):
 	peaktop = (self.onpeak - minpeak) / (maxpeak - minpeak)
 	peakbottom = (self.offpeak - minpeak) / (maxpeak - minpeak)
 	for i,s in enumerate(ampbuf):
-	    s = 1.0 + linear2db(s,-80.0) / 80.0
+	    s = 1.0 + linear2db(s, -80.0) / 80.0
 	    # normalize peak sample
 	    s = (s - minpeak) / (maxpeak - minpeak)
 	    p = s#max(p - falloff, s)
 	    if sleeping: # we are sleeping
 		if (p >= peaktop): # noise reaches threshold
 		    sleeping = False # wake up
-		    pos = max(i*blocksize - blocksize/2, 0)
+		    pos = max(i * blocksize - blocksize / 2, 0)
 		    minb, maxb, ampb = self.level.get_samples_digest(0, pos, pos+blocksize, blocksize)
-		    bestmin = 1.0 + linear2db(ampb[0],-80.0) / 80.0
+		    bestmin = 1.0 + linear2db(ampb[0], -80.0) / 80.0
 		    bestpos = 0
-		    for j,t in enumerate(ampb):
-			t = 1.0 + linear2db(t,-80.0) / 80.0
+		    for j, t in enumerate(ampb):
+			t = 1.0 + linear2db(t, -80.0) / 80.0
 			if t < bestmin:
 			    bestpos = j
 			    bestmin = t
@@ -420,7 +420,7 @@ class WaveEditView(gtk.DrawingArea):
 	Overriding a L{Canvas} method that paints onto an offscreen buffer.
 	Draws the envelope view graphics.
 	"""
-	w,h = self.get_client_size()
+	w, h = self.get_client_size()
 	cfg = config.get_config()
 
 	bgbrush = cfg.get_float_color('WE BG')
@@ -446,7 +446,7 @@ class WaveEditView(gtk.DrawingArea):
 
 	player = com.get('aldrin.core.player')
 	ctx.set_source_rgb(*gridpen)
-	rb,re = self.range
+	rb, re = self.range
 	rsize = re - rb
 	spb = (60.0 * float(self.level.get_samples_per_second())) / float(player.get_bpm()) # samples per beat
 	ppb = (float(w) * spb)/ rsize # pixels begin

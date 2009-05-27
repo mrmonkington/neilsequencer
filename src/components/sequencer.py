@@ -102,36 +102,72 @@ class SequencerToolBar(gtk.HBox):
 	self.steps = [1,2,4,8,12,16,20,24,28,32,36,40,44,48,52,56,60,64,96,128,192,256,512,1024]
 	self.stepselect.connect('changed', self.on_stepselect)
 	self.steplabel.set_mnemonic_widget(self.stepselect)
-	# The buttons for zooming on the sequencer window horizontally.
-	self.btn_zoom_in = gtk.Button("Zoom+")
-	self.btn_zoom_out = gtk.Button("Zoom-")
-	self.btn_zoom_in.connect("button_press_event", self.on_zoom_in)
-	self.btn_zoom_out.connect("button_press_event", self.on_zoom_out)
+	# The buttons for zooming on the sequencer window.
+	self.btn_hzoom_in = gtk.Button("HZoom+")
+	self.btn_hzoom_out = gtk.Button("HZoom-")
+	self.btn_vzoom_in = gtk.Button("VZoom+")
+	self.btn_vzoom_out = gtk.Button("VZoom-")
+	self.btn_hzoom_in.connect("button_press_event", self.on_hzoom_in)
+	self.btn_hzoom_out.connect("button_press_event", self.on_hzoom_out)
+	self.btn_vzoom_in.connect("button_press_event", self.on_vzoom_in)
+	self.btn_vzoom_out.connect("button_press_event", self.on_vzoom_out)	
 	# Follow song checkbox.
 	self.followsong = gtk.CheckButton("Follow Song Position")
 	self.followsong.set_active(False)
 	# Display all the components.
 	self.pack_start(self.steplabel, expand=False)
 	self.pack_start(self.stepselect, expand=False)
-	self.pack_start(self.btn_zoom_in, expand=False)
-	self.pack_start(self.btn_zoom_out, expand=False)
+	self.pack_start(self.btn_hzoom_in, expand=False)
+	self.pack_start(self.btn_hzoom_out, expand=False)
+	self.pack_start(self.btn_vzoom_in, expand=False)
+	self.pack_start(self.btn_vzoom_out, expand=False)
 	self.pack_start(self.followsong)
 
-    def on_zoom_in(self, widget, event):
+    def on_hzoom_in(self, widget, event):
 	"""
-	This is a callback that is called when the user presses the Zoom+
+	A callback that is called when the user presses the HZoom+
 	button in the sequencer view.
-	"""
-	self.seqview.seq_row_size += 8
-	self.seqview.redraw()
 
-    def on_zoom_out(self, widget, event):
+	Increases the size of the horizontal representation.
 	"""
-	This is a callback that is called when the user presses the Zoom-
+	if self.seqview.seq_row_size < 100:
+	    self.seqview.seq_row_size += 5
+	self.parent.update_all()
+
+    def on_hzoom_out(self, widget, event):
+	"""
+	A callback that is called when the user presses the HZoom-
 	button in the sequencer view.
+
+	Decreases the size of the horizontal representation.
 	"""
-	self.seqview.seq_row_size -= 8
-	self.seqview.redraw()
+	if self.seqview.seq_row_size > 10:
+	    self.seqview.seq_row_size -= 5
+	self.parent.update_all()
+
+    def on_vzoom_in(self, widget, event):
+	"""
+	A callback that is called when the user presses the VZoom+
+	button in the sequencer view.
+
+	Increases the size of the tracks as seen on screen and redraws.
+	"""
+	if self.seqview.seq_track_size < 100:
+	    self.seqview.seq_track_size += 5
+	    self.seqview.seq_top_margin += 5
+	self.parent.update_all()
+
+    def on_vzoom_out(self, widget, event):
+	"""
+	A callback that is called when the user presses the VZoom-
+	button in the sequencer view.
+
+	Decreases the size of the tracks as seen on screen and redraws.
+	"""
+	if self.seqview.seq_track_size > 20:
+	    self.seqview.seq_track_size -= 5
+	    self.seqview.seq_top_margin -= 5
+	self.parent.update_all()
 
     def increase_step(self):
 	if self.parent.view.step < 1024:
@@ -348,7 +384,7 @@ class SequencerView(gtk.DrawingArea):
 	self.seq_step = 16
 	self.seq_left_margin = 96
 	self.seq_top_margin = self.seq_track_size
-	self.seq_row_size = 32
+	self.seq_row_size = 30
 
 	self.plugin_info = common.get_plugin_infos()
 	player = com.get('aldrin.core.player')

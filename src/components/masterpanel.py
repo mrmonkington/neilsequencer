@@ -61,10 +61,10 @@ class AmpView(gtk.DrawingArea):
 	player = com.get('aldrin.core.player')
 	master = player.get_plugin(0)
 	vol = master.get_parameter_value(1, 0, 0)
-	self.amp = min(master.get_last_peak()[self.channel],1.0)
+	self.amp = min(master.get_last_peak()[self.channel], 1.0)
 	rect = self.get_allocation()
 	if self.window:
-	    self.window.invalidate_rect((0,0,rect.width,rect.height), False)
+	    self.window.invalidate_rect((0, 0, rect.width,rect.height), False)
 	return True
 
     def draw(self, ctx):
@@ -74,16 +74,16 @@ class AmpView(gtk.DrawingArea):
 	rect = self.get_allocation()
 	w,h = rect.width,rect.height
 	if self.amp >= 1.0:
-	    ctx.set_source_rgb(1,0,0)
-	    ctx.rectangle(0,0,w,h)
+	    ctx.set_source_rgb(1, 0, 0)
+	    ctx.rectangle(0, 0, w, h)
 	    ctx.fill()
 	else:
 	    y = 0
-	    ctx.set_source_pixbuf(self.pixbuf, 0,0)
+	    ctx.set_source_pixbuf(self.pixbuf, 0, 0)
 	    ctx.rectangle(0, 0, w, h)
 	    ctx.fill()
 	    bh = int((h * (utils.linear2db(self.amp,limit=-self.range) + self.range)) / self.range)
-	    ctx.set_source_rgba(0,0,0,0.6)
+	    ctx.set_source_rgba(0, 0, 0, 0.6)
 	    ctx.rectangle(0, 0, w, h - bh)
 	    ctx.fill()
 
@@ -120,8 +120,8 @@ class MasterPanel(gtk.VBox):
 	eventbus.document_loaded += self.update_all
 	self.masterslider = gtk.VScale()
 	self.masterslider.set_draw_value(False)
-	self.masterslider.set_range(0,16384)
-	self.masterslider.set_size_request(-1,200)
+	self.masterslider.set_range(0, 16384)
+	self.masterslider.set_size_request(-1, 200)
 	self.masterslider.set_increments(500, 500)
 	self.masterslider.set_inverted(True)
 	#self.ohg.connect(self.masterslider, 'scroll-event', self.on_mousewheel)
@@ -187,7 +187,7 @@ class MasterPanel(gtk.VBox):
 	if vol == 16384:
 	    text = "(muted)"
 	else:
-	    db = (-vol*self.ampl.range/16384.0)
+	    db = (-vol*self.ampl.range / 16384.0)
 	    if db == 0.0:
 		db = 0.0
 	    text = "%.1f dB" % db
