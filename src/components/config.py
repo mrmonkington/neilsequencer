@@ -398,20 +398,20 @@ class AldrinConfig(object, ConfigParser.ConfigParser):
 	Returns a certain theme color as a float (r,g,b) tuple
 	"""
 	color = self.current_theme[name]
-	r = ((color>>16) & 0xff) / 255.0
-	g = ((color>>8) & 0xff) / 255.0
+	r = ((color >> 16) & 0xff) / 255.0
+	g = ((color >> 8) & 0xff) / 255.0
 	b = (color & 0xff) / 255.0
-	return r,g,b
+	return r, g, b
 
     def get_color16(self, name):
 	"""
 	Returns a certain theme color as a 16-bit (r,g,b) tuple
 	"""
 	color = self.current_theme[name]
-	r = ((color>>16) & 0xff) * 257
-	g = ((color>>8) & 0xff)  * 257
+	r = ((color >> 16) & 0xff) * 257
+	g = ((color >> 8) & 0xff)  * 257
 	b = (color & 0xff) * 257
-	return r,g,b
+	return r, g, b
 
     def get_color(self, name):
 	"""
@@ -547,7 +547,7 @@ class AldrinConfig(object, ConfigParser.ConfigParser):
 	Retrieves current audiodriver settings.
 
 	@return: A tuple containing input driver name, output driver name, samplerate and buffer size.
-	@rtype: (str,str,int,int)
+	@rtype: (str, str, int, int)
 	"""
 	self.set_section('AudioDevice')
 	return self.read_value('InputName',''), self.read_value('OutputName','') or self.read_value('Name',''), self.read_int_value('SampleRate',44100), self.read_int_value('BufferSize',2048)	
