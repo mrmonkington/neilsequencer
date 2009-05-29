@@ -87,7 +87,7 @@ class WavetablePanel(gtk.Notebook):
 					   gtk.STOCK_OPEN,
 					   gtk.RESPONSE_OK))
 	preview = gtk.VBox(False, MARGIN)
-	preview.set_size_request(100,-1)
+	#preview.set_size_request(100,-1)
 	
 	#btnopen = new_stock_image_button(gtk.STOCK_ADD, "Add/Insert Instrument", self.tooltips)
 	#self.ohg.connect(btnopen,'clicked', self.on_load_sample)
@@ -98,9 +98,11 @@ class WavetablePanel(gtk.Notebook):
 	#btneditfile= gtk.Button("Edit")
 	#self.tooltips.set_tip(btneditfile, "Open Sample in External Editor")
 	#self.ohg.connect(btneditfile,'clicked', self.on_edit_file)
-	#chkautoplay = gtk.CheckButton("_Automatic Preview")
-	#chkautoplay.set_active(False)
-	#self.chkautoplay = chkautoplay
+
+	chkautoplay = gtk.CheckButton("_Automatic Preview")
+	chkautoplay.set_active(False)
+	self.chkautoplay = chkautoplay
+
 	#hbox = gtk.HBox(False, MARGIN)
 	#hbox.pack_end(btneditfile, expand=False)
 	#hbox.pack_end(btnrenamefile, expand=False)
@@ -108,7 +110,7 @@ class WavetablePanel(gtk.Notebook):
 	#hbox.pack_end(btnopen, expand=False)
 	#hbox.pack_end(chkautoplay, expand=False)
 	
-	self.libpanel.set_extra_widget(hbox)
+	#self.libpanel.set_extra_widget(hbox)
 	self.previewdesc = gtk.Label()
 	self.previewdesc.set_alignment(0, 0)
 	btnpreviewplay = new_stock_image_button(gtk.STOCK_MEDIA_PLAY,
@@ -125,6 +127,7 @@ class WavetablePanel(gtk.Notebook):
 	hbox.pack_start(btnpreviewstop, expand=False)
 	preview.pack_start(hbox, expand=False)
 	preview.pack_start(self.previewdesc, expand=False)
+	preview.pack_start(chkautoplay, expand=False)
 	preview.show_all()
 	
 	self.libpanel.set_preview_widget(preview)
@@ -139,7 +142,7 @@ class WavetablePanel(gtk.Notebook):
 	self.libpanel.set_select_multiple(True)
 	self.append_page(self.instrpanel, gtk.Label("Instruments"))
 	#self.append_page(self.libpanel, gtk.Label("Library"))
-	self.set_current_page(0)
+	#self.set_current_page(0)
 	self.adsrpanel = ADSRPanel(self)
 	self.samplelist, self.samplestore, columns = new_listview([
 		('#', str),

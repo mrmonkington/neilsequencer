@@ -46,11 +46,10 @@ class AmpView(gtk.DrawingArea):
 	self.range = 80
 	self.amp = 0.0
 	self.channel = channel
-	self.pixbuf = gtk.gdk.pixbuf_new_from_file(imagepath('vubar.svg'))
 	self.stops = (0.0, 6.0 / self.range, 12.0 / self.range) # red, yellow, green
 	self.index = 0
 	gtk.DrawingArea.__init__(self)
-	self.set_size_request(self.pixbuf.get_width(),self.pixbuf.get_height())
+	self.set_size_request(10, -1)
 	self.connect("expose_event", self.expose)
 	gobject.timeout_add(100, self.on_update)
 
@@ -64,7 +63,7 @@ class AmpView(gtk.DrawingArea):
 	self.amp = min(master.get_last_peak()[self.channel], 1.0)
 	rect = self.get_allocation()
 	if self.window:
-	    self.window.invalidate_rect((0, 0, rect.width,rect.height), False)
+	    self.window.invalidate_rect((0, 0, rect.width, rect.height), False)
 	return True
 
     def draw(self, ctx):
@@ -72,18 +71,18 @@ class AmpView(gtk.DrawingArea):
 	Draws the VU bar client region.
 	"""
 	rect = self.get_allocation()
-	w,h = rect.width,rect.height
+	w, h = rect.width, rect.height
 	if self.amp >= 1.0:
 	    ctx.set_source_rgb(1, 0, 0)
 	    ctx.rectangle(0, 0, w, h)
 	    ctx.fill()
 	else:
 	    y = 0
-	    ctx.set_source_pixbuf(self.pixbuf, 0, 0)
+	    ctx.set_source_rgb(0, 1, 0)
 	    ctx.rectangle(0, 0, w, h)
 	    ctx.fill()
-	    bh = int((h * (utils.linear2db(self.amp,limit=-self.range) + self.range)) / self.range)
-	    ctx.set_source_rgba(0, 0, 0, 0.6)
+	    bh = int((h * (utils.linear2db(self.amp, limit =- self.range) + self.range)) / self.range)
+	    ctx.set_source_rgba(0, 0, 0, 0.8)
 	    ctx.rectangle(0, 0, w, h - bh)
 	    ctx.fill()
 
@@ -136,8 +135,8 @@ class MasterPanel(gtk.VBox):
 	vbox = gtk.VBox()
 	self.volumelabel = gtk.Label("0 dB")
 	vbox.pack_start(hbox)
-	vbox.pack_start(self.volumelabel)
-	self.pack_start(vbox, expand=False, fill=False)
+	vbox.pack_start(self.volumelabel, expand=False, fill=False)
+	self.pack_start(vbox)
 	self.update_all()
 
     def on_zzub_parameter_changed(self, plugin,group,track,param,value):
