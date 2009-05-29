@@ -77,9 +77,14 @@ class WavetablePanel(gtk.Notebook):
 	self.files = []
 	gtk.Notebook.__init__(self)
 	self.tooltips=gtk.Tooltips()
-	self.instrpanel = gtk.HPaned() # wx.Panel(self.notebook, -1)
+	self.instrpanel = gtk.HPaned()
 	self.instrpanel.set_border_width(MARGIN2)
-	self.libpanel = gtk.FileChooserWidget() #gtk.VBox() # wx.Panel(self.notebook, -1)
+	self.libpanel = gtk.FileChooserDialog(title="Open Sample",
+					      action=gtk.FILE_CHOOSER_ACTION_OPEN,
+					      buttons=(gtk.STOCK_CANCEL,
+						       gtk.RESPONSE_CANCEL,
+						       gtk.STOCK_OPEN,
+						       gtk.RESPONSE_OK))
 	preview = gtk.VBox(False, MARGIN)
 	preview.set_size_request(200,-1)
 	btnopen = new_stock_image_button(gtk.STOCK_ADD, "Add/Insert Instrument", self.tooltips)
@@ -115,7 +120,7 @@ class WavetablePanel(gtk.Notebook):
 	preview.show_all()
 	self.libpanel.set_preview_widget(preview)
 	self.libpanel.set_border_width(MARGIN2)
-	self.libpanel.add_shortcut_folder(config.get_config().get_freesound_samples_folder())
+	#self.libpanel.add_shortcut_folder(config.get_config().get_freesound_samples_folder())
 	self.libpanel.add_filter(file_filter('All Supported Formats', '*.wav', '*.flac', '*.mp3', '*.aif', '*.aiff'))
 	self.libpanel.add_filter(file_filter('Free Lossless Audio Codec (*.flac)', '*.flac'))
 	self.libpanel.add_filter(file_filter('WAVE (*.wav)', '*.wav'))
@@ -124,7 +129,7 @@ class WavetablePanel(gtk.Notebook):
 	self.libpanel.set_local_only(True)
 	self.libpanel.set_select_multiple(True)
 	self.append_page(self.instrpanel, gtk.Label("Instruments"))
-	self.append_page(self.libpanel, gtk.Label("Library"))
+	#self.append_page(self.libpanel, gtk.Label("Library"))
 	self.set_current_page(0)
 	self.adsrpanel = ADSRPanel(self)
 	self.samplelist, self.samplestore, columns = new_listview([
@@ -137,6 +142,7 @@ class WavetablePanel(gtk.Notebook):
 	#~ imglist = wx.ImageList(16,16)
 	#~ self.IMG_SAMPLE_WAVE = imglist.Add(wx.Bitmap(filepath("res/wave.png"), wx.BITMAP_TYPE_ANY))
 	#~ self.samplelist.AssignImageList(imglist, wx.IMAGE_LIST_SMALL)
+	self.btnloadsample = new_stock_image_button(gtk.STOCK_OPEN, "Load Instrument", self.tooltips)
 	self.btnstoresample = new_stock_image_button(gtk.STOCK_SAVE_AS, "Save Instrument", self.tooltips)
 	self.btnstop = new_stock_image_button(gtk.STOCK_MEDIA_STOP, "Stop Preview", self.tooltips)
 	self.btnplay = new_stock_image_button(gtk.STOCK_MEDIA_PLAY, "Preview Sample", self.tooltips)
@@ -168,6 +174,7 @@ class WavetablePanel(gtk.Notebook):
 	self.btn_end_next = gtk.Button(">")
 
 	samplebuttons = gtk.HBox(False, MARGIN)
+	samplebuttons.pack_start(self.btnloadsample, expand=False)
 	samplebuttons.pack_start(self.btnstoresample, expand=False)
 	samplebuttons.pack_start(self.btnrename, expand=False)
 	samplebuttons.pack_start(self.btnclear, expand=False)
@@ -202,8 +209,8 @@ class WavetablePanel(gtk.Notebook):
 	envsection.pack_start(self.adsrpanel, expand=False)
 	self.envscrollwin = add_scrollbars(self.envelope)
 	envsection.pack_start(self.envscrollwin)
-	nbsampleprops.append_page(envsection, gtk.Label("Envelopes"))
 	nbsampleprops.append_page(self.waveedit, gtk.Label("Sample Editor"))
+	nbsampleprops.append_page(envsection, gtk.Label("Envelopes"))
 	sampleprops.pack_start(nbsampleprops)
 	self.instrpanel.add1(samplesel)
 	self.instrpanel.add2(sampleprops)
@@ -220,6 +227,7 @@ class WavetablePanel(gtk.Notebook):
 	self.ohg.connect(self.samplelist,'button-press-event', self.on_samplelist_dclick)
 	self.ohg.connect(self.samplelist,'key-press-event', self.on_samplelist_key_down)
 
+	self.ohg.connect(self.btnloadsample, 'clicked', self.on_load_sample)
 	self.ohg.connect(self.btnstoresample,'clicked', self.on_save_sample)
 	self.ohg.connect(self.btnplay,'clicked', self.on_play_wave)
 	self.ohg.connect(self.btnstop,'clicked', self.on_stop_wave)
@@ -684,15 +692,19 @@ class WavetablePanel(gtk.Notebook):
 	Callback that responds to clicking the load sample button. 
 	Loads a sample from the file list into the sample list of the song.
 	"""
-	samplepaths = [path for path in self.libpanel.get_filenames() if os.path.isfile(path)]
-	self.load_samples(samplepaths)
+	response = self.libpanel.run()
+	if response == gtk.RESPONSE_OK:
+	    filenames = self.libpanel.get_filenames()
+	    samplepaths = [path for path in filenames if os.path.isfile(path)]
+	    self.load_samples(samplepaths)
+	self.libpanel.hide()
 
     def get_wavetable_paths(self):
 	"""
 	Returns a list of wavetable paths
 	"""
 	cfg = config.get_config()
-	return cfg.get_wavetable_paths() + [cfg.get_freesound_samples_folder()]
+	return cfg.get_wavetable_paths()
 
     def on_parent_click(self, event):
 	"""

@@ -25,7 +25,8 @@ Provides dialogs, classes and controls to display/load/save envelopes
 import gtk
 import os, sys
 from utils import prepstr, db2linear, linear2db, note2str, file_filter
-from utils import read_int, write_int, add_scrollbars, new_image_button, filepath
+from utils import read_int, write_int, add_scrollbars, new_image_button,\
+     filepath
 import zzub
 import config
 import common
