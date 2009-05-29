@@ -79,47 +79,56 @@ class WavetablePanel(gtk.Notebook):
 	self.tooltips=gtk.Tooltips()
 	self.instrpanel = gtk.HPaned()
 	self.instrpanel.set_border_width(MARGIN2)
-	self.libpanel = gtk.FileChooserDialog(title="Open Sample",
-					      action=gtk.FILE_CHOOSER_ACTION_OPEN,
-					      buttons=(gtk.STOCK_CANCEL,
-						       gtk.RESPONSE_CANCEL,
-						       gtk.STOCK_OPEN,
-						       gtk.RESPONSE_OK))
+	self.libpanel =\
+	    gtk.FileChooserDialog(title="Open Sample",
+				  action=gtk.FILE_CHOOSER_ACTION_OPEN,
+				  buttons=(gtk.STOCK_CANCEL,
+					   gtk.RESPONSE_CANCEL,
+					   gtk.STOCK_OPEN,
+					   gtk.RESPONSE_OK))
 	preview = gtk.VBox(False, MARGIN)
-	preview.set_size_request(200,-1)
-	btnopen = new_stock_image_button(gtk.STOCK_ADD, "Add/Insert Instrument", self.tooltips)
-	self.ohg.connect(btnopen,'clicked', self.on_load_sample)
-	btndeletefile = new_stock_image_button(gtk.STOCK_DELETE, "Delete File", self.tooltips)
-	self.ohg.connect(btndeletefile, 'clicked', self.on_delete_file)
-	btnrenamefile = new_stock_image_button(gtk.STOCK_BOLD, "Rename File", self.tooltips)
-	self.ohg.connect(btnrenamefile,'clicked', self.on_rename_file)
-	btneditfile= gtk.Button("Edit")
-	self.tooltips.set_tip(btneditfile, "Open Sample in External Editor")
-	self.ohg.connect(btneditfile,'clicked', self.on_edit_file)
-	chkautoplay = gtk.CheckButton("_Automatic Preview")
-	chkautoplay.set_active(False)
-	self.chkautoplay = chkautoplay
-	hbox = gtk.HBox(False, MARGIN)
-	hbox.pack_end(btneditfile, expand=False)
-	hbox.pack_end(btnrenamefile, expand=False)
-	hbox.pack_end(btndeletefile, expand=False)
-	hbox.pack_end(btnopen, expand=False)
-	hbox.pack_end(chkautoplay, expand=False)
+	preview.set_size_request(100,-1)
+	
+	#btnopen = new_stock_image_button(gtk.STOCK_ADD, "Add/Insert Instrument", self.tooltips)
+	#self.ohg.connect(btnopen,'clicked', self.on_load_sample)
+	#btndeletefile = new_stock_image_button(gtk.STOCK_DELETE, "Delete File", self.tooltips)
+	#self.ohg.connect(btndeletefile, 'clicked', self.on_delete_file)
+	#btnrenamefile = new_stock_image_button(gtk.STOCK_BOLD, "Rename File", self.tooltips)
+	#self.ohg.connect(btnrenamefile,'clicked', self.on_rename_file)
+	#btneditfile= gtk.Button("Edit")
+	#self.tooltips.set_tip(btneditfile, "Open Sample in External Editor")
+	#self.ohg.connect(btneditfile,'clicked', self.on_edit_file)
+	#chkautoplay = gtk.CheckButton("_Automatic Preview")
+	#chkautoplay.set_active(False)
+	#self.chkautoplay = chkautoplay
+	#hbox = gtk.HBox(False, MARGIN)
+	#hbox.pack_end(btneditfile, expand=False)
+	#hbox.pack_end(btnrenamefile, expand=False)
+	#hbox.pack_end(btndeletefile, expand=False)
+	#hbox.pack_end(btnopen, expand=False)
+	#hbox.pack_end(chkautoplay, expand=False)
+	
 	self.libpanel.set_extra_widget(hbox)
 	self.previewdesc = gtk.Label()
 	self.previewdesc.set_alignment(0, 0)
-	btnpreviewplay = new_stock_image_button(gtk.STOCK_MEDIA_PLAY, "Preview Sample", self.tooltips)
+	btnpreviewplay = new_stock_image_button(gtk.STOCK_MEDIA_PLAY,
+						"Preview Sample",
+						self.tooltips)
 	self.ohg.connect(btnpreviewplay,'clicked', self.on_play_filelist_wave)
-	btnpreviewstop = new_stock_image_button(gtk.STOCK_MEDIA_STOP, "Stop Preview", self.tooltips)
+	btnpreviewstop = new_stock_image_button(gtk.STOCK_MEDIA_STOP,
+						"Stop Preview",
+						self.tooltips)
 	self.ohg.connect(btnpreviewstop,'clicked', self.on_stop_wave)
+	
 	hbox = gtk.HBox(False, MARGIN)
 	hbox.pack_start(btnpreviewplay, expand=False)
 	hbox.pack_start(btnpreviewstop, expand=False)
 	preview.pack_start(hbox, expand=False)
 	preview.pack_start(self.previewdesc, expand=False)
 	preview.show_all()
+	
 	self.libpanel.set_preview_widget(preview)
-	self.libpanel.set_border_width(MARGIN2)
+	#self.libpanel.set_border_width(MARGIN2)
 	#self.libpanel.add_shortcut_folder(config.get_config().get_freesound_samples_folder())
 	self.libpanel.add_filter(file_filter('All Supported Formats', '*.wav', '*.flac', '*.mp3', '*.aif', '*.aiff'))
 	self.libpanel.add_filter(file_filter('Free Lossless Audio Codec (*.flac)', '*.flac'))
@@ -168,10 +177,10 @@ class WavetablePanel(gtk.Notebook):
 	self.waveedit = WaveEditPanel(self)
 	
 	# Buttons to find zero crossings for looping samples.
-	self.btn_start_prev = gtk.Button("<")
-	self.btn_start_next = gtk.Button(">")
-	self.btn_end_prev = gtk.Button("<")
-	self.btn_end_next = gtk.Button(">")
+	#self.btn_start_prev = gtk.Button("<")
+	#self.btn_start_next = gtk.Button(">")
+	#self.btn_end_prev = gtk.Button("<")
+	#self.btn_end_next = gtk.Button(">")
 
 	samplebuttons = gtk.HBox(False, MARGIN)
 	samplebuttons.pack_start(self.btnloadsample, expand=False)
@@ -185,12 +194,12 @@ class WavetablePanel(gtk.Notebook):
 	loopprops.pack_start(self.btnplay, expand=False)
 	loopprops.pack_start(self.btnstop, expand=False)
 	loopprops.pack_start(self.chkloop, expand=False)
-	loopprops.pack_start(self.btn_start_prev, expand=False)
-	loopprops.pack_start(self.btn_start_next, expand=False)
+	#loopprops.pack_start(self.btn_start_prev, expand=False)
+	#loopprops.pack_start(self.btn_start_next, expand=False)
 	loopprops.pack_start(self.edloopstart, expand=False)
 	loopprops.pack_start(self.edloopend, expand=False)
-	loopprops.pack_start(self.btn_end_prev, expand=False)
-	loopprops.pack_start(self.btn_end_next, expand=False)
+	#loopprops.pack_start(self.btn_end_prev, expand=False)
+	#loopprops.pack_start(self.btn_end_next, expand=False)
 	loopprops.pack_start(self.chkpingpong, expand=False)
 	loopprops.pack_start(self.edsamplerate, expand=False)
 	#loopprops.pack_start(self.btnfitloop, expand=False)
@@ -216,12 +225,15 @@ class WavetablePanel(gtk.Notebook):
 	self.instrpanel.add2(sampleprops)
 	self.instrpanel.set_position(250)
 
-	self.filetreeview = None
-	try:
-	    # WTF
-	    self.filetreeview = self.libpanel.get_children()[0].get_children()[0].get_children()[2].get_child2().get_children()[0].get_children()[0].get_child()
-	except:
-	    print "unable to get filetreeview."
+	#self.filetreeview = None
+	#try:
+	#    # WTF
+	#    self.filetreeview =\
+	#	self.libpanel.get_children()[0].\
+	#	get_children()[0].get_children()[2].\
+	#	get_child2().get_children()[0].get_children()[0].get_child()
+	#except:
+	#    print "unable to get filetreeview."
 
 	self.ohg.connect(self.samplelist.get_selection(),'changed', self.on_samplelist_select)
 	self.ohg.connect(self.samplelist,'button-press-event', self.on_samplelist_dclick)
