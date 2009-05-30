@@ -78,7 +78,7 @@ class InfoPanel(gtk.VBox):
 		    label = "Info",
 		    stockid = "aldrin_info",
 		    shortcut = 'F11',
-		    order = 10,
+		    order = 11,
     )
 
     def __init__(self, *args, **kwds):

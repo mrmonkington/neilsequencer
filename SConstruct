@@ -34,14 +34,14 @@ mac = os.name == 'mac'
 ######################################
 
 def tools_converter(value):
-	return value.split(',')
-	
+    return value.split(',')
+
 def bool_converter(value):
-	if value == 'True':
-		return True
-	elif value == 'False':
-		return False
-	return bool(value)
+    if value == 'True':
+	return True
+    elif value == 'False':
+	return False
+    return bool(value)
 
 opts = Options( 'options.conf', ARGUMENTS )
 opts.Add("PREFIX", 'Set the install "prefix" ( /path/to/PREFIX )', "/usr/local")
@@ -57,7 +57,8 @@ env.SConsignFile()
 ######################################
 
 env['ROOTPATH'] = os.getcwd()
-env['SITE_PACKAGE_PATH'] = distutils.sysconfig.get_python_lib(prefix="${DESTDIR}${PREFIX}")
+env['SITE_PACKAGE_PATH'] = \
+    distutils.sysconfig.get_python_lib(prefix="${DESTDIR}${PREFIX}")
 env['APPLICATIONS_PATH'] = '${DESTDIR}${PREFIX}/share/applications'
 env['BIN_PATH'] = '${DESTDIR}${PREFIX}/bin'
 env['SHARE_PATH'] = '${DESTDIR}${PREFIX}/share/aldrin'
@@ -91,10 +92,10 @@ Help( opts.GenerateHelpText( env ) )
 ######################################
 
 try:
-	umask = os.umask(022)
-	#print 'setting umask to 022 (was 0%o)' % umask
+    umask = os.umask(022)
+    #print 'setting umask to 022 (was 0%o)' % umask
 except OSError:     # ignore on systems that don't support umask
-	pass
+    pass
 
 import SCons
 from SCons.Script.SConscript import SConsEnvironment
@@ -102,46 +103,46 @@ SConsEnvironment.Chmod = SCons.Action.ActionFactory(os.chmod,
 		lambda dest, mode: 'Chmod: "%s" with 0%o' % (dest, mode))
 
 def InstallPerm(env, dir, source, perm):
-	obj = env.Install(dir, source)
-	for i in obj:
-		env.AddPostAction(i, env.Chmod(str(i), perm))
-	return dir
+    obj = env.Install(dir, source)
+    for i in obj:
+	env.AddPostAction(i, env.Chmod(str(i), perm))
+    return dir
 
 SConsEnvironment.InstallPerm = InstallPerm
 
 def install(target, source, perm=None):
-	if not perm:
-		env.Install(dir=env.Dir(target), source=source)
-	else:
-		env.InstallPerm(dir=env.Dir(target), source=source, perm=perm)
+    if not perm:
+	env.Install(dir=env.Dir(target), source=source)
+    else:
+	env.InstallPerm(dir=env.Dir(target), source=source, perm=perm)
 
 env.Alias(target='install', source="${DESTDIR}${PREFIX}")
 env.Alias(target='install', source="${DESTDIR}${ETCDIR}")
 
 def install_recursive(target, path, mask):
-	for f in glob.glob(os.path.join(path, mask)):
-		install(target, f)
-	for filename in os.listdir(path):
-		fullpath = os.path.join(path, filename)
-		if os.path.isdir(fullpath):
-			install_recursive(os.path.join(target,filename), fullpath, mask)
+    for f in glob.glob(os.path.join(path, mask)):
+	install(target, f)
+    for filename in os.listdir(path):
+	fullpath = os.path.join(path, filename)
+	if os.path.isdir(fullpath):
+	    install_recursive(os.path.join(target,filename), fullpath, mask)
 
 def build_path_config(target, source, env):
-	outpath = str(target[0])
-	from StringIO import StringIO
-	from ConfigParser import ConfigParser
-	s = StringIO()
-	cfg = ConfigParser()
-	cfg.add_section('Paths')
-	remove_prefix = '${DESTDIR}'
-	for key, value in CONFIG_PATHS.iteritems():
-		value = env[value]
-		if value.startswith(remove_prefix):
-			value = value[len(remove_prefix):]
-		cfg.set('Paths', key, os.path.abspath(str(env.Dir(value))))
-	cfg.write(s)
-	file(outpath, 'w').write(s.getvalue())
-	
+    outpath = str(target[0])
+    from StringIO import StringIO
+    from ConfigParser import ConfigParser
+    s = StringIO()
+    cfg = ConfigParser()
+    cfg.add_section('Paths')
+    remove_prefix = '${DESTDIR}'
+    for key, value in CONFIG_PATHS.iteritems():
+	value = env[value]
+	if value.startswith(remove_prefix):
+	    value = value[len(remove_prefix):]
+	cfg.set('Paths', key, os.path.abspath(str(env.Dir(value))))
+    cfg.write(s)
+    file(outpath, 'w').write(s.getvalue())
+
 builders = dict(
 	BuildPathConfig = Builder(action = build_path_config),
 )

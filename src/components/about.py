@@ -67,46 +67,46 @@ AUTHORS = [prepstr(x) for x in AUTHORS]
 from aldrin.utils import filepath, imagepath
 
 def about_visit_website(dialog, link, user_data):
-	import webbrowser
-	webbrowser.open_new(link)
+    import webbrowser
+    webbrowser.open_new(link)
 
 def about_send_email(dialog, link, user_data):
-	import webbrowser
-	print link
-	webbrowser.open_new('mailto:'+link)
-	
+    import webbrowser
+    print link
+    webbrowser.open_new('mailto:'+link)
+
 gtk.about_dialog_set_url_hook(about_visit_website, None)
 gtk.about_dialog_set_email_hook(about_send_email, None)
 
 class AboutDialog(gtk.AboutDialog):
+    """
+    A simple about dialog with a text control and an OK button.
+    """
+
+    __aldrin__ = dict(
+	    id = "aldrin.core.dialog.about",
+    )
+
+    def __init__(self, parent):
 	"""
-	A simple about dialog with a text control and an OK button.
+	Initialization.
 	"""
-	
-	__aldrin__ = dict(
-		id = "aldrin.core.dialog.about",
-	)
-	
-	def __init__(self, parent):
-		"""
-		Initialization.
-		"""
-		gtk.AboutDialog.__init__(self)
-		self.set_name(NAME)
-		self.set_version(VERSION)
-		self.set_copyright(COPYRIGHT)
-		self.set_comments(COMMENTS)
-		self.set_license(LICENSE)
-		self.set_wrap_license(True)
-		self.set_website(WEBSITE)
-		self.set_authors(AUTHORS)
-		self.set_artists(ARTISTS)
-		self.set_documenters(DOCUMENTERS)
-		self.set_logo(gtk.gdk.pixbuf_new_from_file(imagepath("splash.png")))
-		
-	def show(self):
-		self.run()
-		self.destroy()
+	gtk.AboutDialog.__init__(self)
+	self.set_name(NAME)
+	self.set_version(VERSION)
+	self.set_copyright(COPYRIGHT)
+	self.set_comments(COMMENTS)
+	self.set_license(LICENSE)
+	self.set_wrap_license(True)
+	self.set_website(WEBSITE)
+	self.set_authors(AUTHORS)
+	self.set_artists(ARTISTS)
+	self.set_documenters(DOCUMENTERS)
+	self.set_logo(gtk.gdk.pixbuf_new_from_file(imagepath("splash.jpeg")))
+
+    def show(self):
+	self.run()
+	self.destroy()
 
 __aldrin__ = dict(
 	classes = [
@@ -118,4 +118,4 @@ __all__ = [
 ]
 
 if __name__ == '__main__':
-	AboutDialog(None).run()
+    AboutDialog(None).run()

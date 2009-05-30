@@ -16,18 +16,17 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+# USA.
 
-Import('env', 'install', 'install_recursive', 'win32')
+Import('env', 'install', 'install_recursive')
 import glob
 
+for filename in glob.glob('*.jpeg'):
+    install('${PIXMAPS_PATH}', filename, 0644)
+
 for filename in glob.glob('*.png'):
-	install('${PIXMAPS_PATH}', filename, 0644)
+    install('${PIXMAPS_PATH}', filename, 0644)
 
 for filename in glob.glob('*.svg'):
-	install('${PIXMAPS_PATH}', filename, 0644)
-
-if win32:
-	for filename in glob.glob('*.ico'):
-		install('${PIXMAPS_PATH}', filename, 0644)
-
+    install('${PIXMAPS_PATH}', filename, 0644)
