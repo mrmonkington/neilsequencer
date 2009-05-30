@@ -62,97 +62,97 @@ LICENSES = [
 ]
 
 class InfoPanel(gtk.VBox):
-	"""
-	Contains the info view.
-	"""
-	__aldrin__ = dict(
-		id = 'aldrin.core.infopanel',
-		singleton = True,
-		categories = [
-			'aldrin.viewpanel',
-			'view',
-		]
-	)		
+    """
+    Contains the info view.
+    """
+    __aldrin__ = dict(
+	    id = 'aldrin.core.infopanel',
+	    singleton = True,
+	    categories = [
+		    'aldrin.viewpanel',
+		    'view',
+	    ]
+    )		
 
-	__view__ = dict(
-			label = "Info",
-			stockid = "aldrin_info",
-			shortcut = 'F10',
-			order = 10,
-	)
+    __view__ = dict(
+		    label = "Info",
+		    stockid = "aldrin_info",
+		    shortcut = 'F11',
+		    order = 10,
+    )
 
-	def __init__(self, *args, **kwds):
-		"""
-		Initializer.
-		"""
-		gtk.VBox.__init__(self, False, MARGIN)
-		self.set_border_width(MARGIN)
-		hbox = gtk.HBox(False, MARGIN)
-		hbox.pack_start(gtk.Label('License'), expand=False)
-		self.cblicense = gtk.combo_box_new_text()
-		for license in LICENSES:
-			if license.get('group',None):
-				text = "%s: %s" % (license['group'],license['title'])
-			else:
-				text = "%s" % (license['title'])
-			self.cblicense.append_text(text)
-		hbox.pack_start(self.cblicense, expand=False)
-		self.view = InfoView()
-		self.pack_start(hbox, expand=False)
-		self.pack_start(add_scrollbars(self.view))
-		
-	def handle_focus(self):
-		self.view.grab_focus()
-		
-	def reset(self):
-		"""
-		Resets the router view. Used when
-		a new song is being loaded.
-		"""
-		self.view.reset()
-		
-	def update_all(self):		
-		self.view.update()
+    def __init__(self, *args, **kwds):
+	"""
+	Initializer.
+	"""
+	gtk.VBox.__init__(self, False, MARGIN)
+	self.set_border_width(MARGIN)
+	hbox = gtk.HBox(False, MARGIN)
+	hbox.pack_start(gtk.Label('License'), expand=False)
+	self.cblicense = gtk.combo_box_new_text()
+	for license in LICENSES:
+	    if license.get('group',None):
+		text = "%s: %s" % (license['group'],license['title'])
+	    else:
+		text = "%s" % (license['title'])
+	    self.cblicense.append_text(text)
+	hbox.pack_start(self.cblicense, expand=False)
+	self.view = InfoView()
+	self.pack_start(hbox, expand=False)
+	self.pack_start(add_scrollbars(self.view))
+
+    def handle_focus(self):
+	self.view.grab_focus()
+
+    def reset(self):
+	"""
+	Resets the router view. Used when
+	a new song is being loaded.
+	"""
+	self.view.reset()
+
+    def update_all(self):		
+	self.view.update()
 
 class InfoView(gtk.TextView):
+    """
+    Allows to enter and view text saved with the module.
+    """	
+
+    def __init__(self):
 	"""
-	Allows to enter and view text saved with the module.
-	"""	
-	
-	def __init__(self):
-		"""
-		Initializer.
-		"""
-		gtk.TextView.__init__(self)
-		self.set_wrap_mode(gtk.WRAP_WORD)
-		self.connect('insert-at-cursor', self.on_edit)
-		self.connect('delete-from-cursor', self.on_edit)
-		
-	def on_edit(self, event):
-		"""
-		Handler for text changes.
-		
-		@param event: Event
-		@type event: wx.Event
-		"""
-		player = com.get('aldrin.core.player')
-		player.set_infotext(self.get_buffer().get_property('text'))
-		
-	def reset(self):
-		"""
-		Resets the view.
-		"""
-		self.get_buffer().set_property('text', '')
-		
-	def update(self):
-		"""
-		Updates the view.
-		"""
-		player = com.get('aldrin.core.player')
-		text = player.get_infotext()
-		#~ if not text:
-			#~ text = "Composed with Aldrin.\n\nThe revolution will not be televised."
-		self.get_buffer().set_property('text', text)
+	Initializer.
+	"""
+	gtk.TextView.__init__(self)
+	self.set_wrap_mode(gtk.WRAP_WORD)
+	self.connect('insert-at-cursor', self.on_edit)
+	self.connect('delete-from-cursor', self.on_edit)
+
+    def on_edit(self, event):
+	"""
+	Handler for text changes.
+
+	@param event: Event
+	@type event: wx.Event
+	"""
+	player = com.get('aldrin.core.player')
+	player.set_infotext(self.get_buffer().get_property('text'))
+
+    def reset(self):
+	"""
+	Resets the view.
+	"""
+	self.get_buffer().set_property('text', '')
+
+    def update(self):
+	"""
+	Updates the view.
+	"""
+	player = com.get('aldrin.core.player')
+	text = player.get_infotext()
+	#~ if not text:
+	    #~ text = "Composed with Aldrin.\n\nThe revolution will not be televised."
+	self.get_buffer().set_property('text', text)
 
 
 _all__ = [
@@ -169,7 +169,7 @@ __aldrin__ = dict(
 
 
 if __name__ == '__main__':
-	import sys
-	from main import run
-	#sys.argv.append(filepath('demosongs/test.bmx'))
-	run(sys.argv)
+    import sys
+    from main import run
+    #sys.argv.append(filepath('demosongs/test.bmx'))
+    run(sys.argv)
