@@ -63,11 +63,11 @@ class FramePanel(gtk.Notebook):
     self.set_tab_pos(gtk.POS_LEFT)
     self.set_show_border(True)
     self.set_border_width(1)
-    self.set_show_tabs(False)
+    self.set_show_tabs(True)
     com.get("aldrin.core.icons") # make sure theme icons are loaded
     defaultpanel = None
     pages = sorted(com.get_from_category('aldrin.viewpanel'), cmp=cmp_view)
-    for index,panel in enumerate(pages):
+    for index, panel in enumerate(pages):
       if not hasattr(panel, '__view__'):
 	print "panel",panel,"misses attribute __view__"
 	continue
@@ -115,7 +115,8 @@ class Accelerators(gtk.AccelGroup):
 
   def add_accelerator(self, shortcut, widget, signal="activate"):
     key, modifier = gtk.accelerator_parse(shortcut)
-    return widget.add_accelerator(signal, self,  key,  modifier, gtk.ACCEL_VISIBLE)
+    return widget.add_accelerator(signal, self,  key,  modifier,
+				  gtk.ACCEL_VISIBLE)
 
 class ViewMenu(Menu):
   __aldrin__ = dict(
@@ -158,7 +159,9 @@ class ViewMenu(Menu):
 	item = self.add_check_item(label, False, self.on_check_item, view)
 	self.connect('show', self.on_activate, item, view)
       elif stockid:
-	item = self.add_image_item(label, new_theme_image(stockid, gtk.ICON_SIZE_MENU), self.on_activate_item, view)
+	item = self.add_image_item(label, new_theme_image(stockid,
+							  gtk.ICON_SIZE_MENU),
+				   self.on_activate_item, view)
       else:
 	item = self.add_item(label, self.on_activate_item)
       if shortcut:
@@ -229,10 +232,7 @@ class AldrinFrame(gtk.Window):
   )
 
   OPEN_SONG_FILTER = [
-	  #file_filter("All songs (*.ccm,*.bmw,*.bmx)", "*.ccm", "*.bmw", "*.bmx"),
 	  file_filter("CCM Songs (*.ccm)", "*.ccm"),
-	  #file_filter("BMX Songs with waves (*.bmx)","*.bmx"),
-	  #file_filter("BMX Songs without waves (*.bmw)","*.bmw"),
   ]
 
   SAVE_SONG_FILTER = [
@@ -244,7 +244,8 @@ class AldrinFrame(gtk.Window):
   title = "Aldrin"
   filename = ""
 
-  event_to_name = dict([(getattr(zzub,x),x) for x in dir(zzub) if x.startswith('zzub_event_type_')])
+  event_to_name = dict([(getattr(zzub,x),x) for x in dir(zzub) if \
+			x.startswith('zzub_event_type_')])
 
   def __init__(self):
     """
