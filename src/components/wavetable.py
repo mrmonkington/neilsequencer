@@ -62,7 +62,7 @@ class WavetablePanel(gtk.Notebook):
     )	
 
     __view__ = dict(
-		    label = "Sound Library",
+		    label = "Wavetable",
 		    stockid = "aldrin_samplebank",
 		    shortcut = 'F9',
 		    order = 9,

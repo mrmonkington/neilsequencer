@@ -419,7 +419,7 @@ class PatternPanel(gtk.VBox):
     )
 
     __view__ = dict(
-		    label = "Pattern Tracker",
+		    label = "Patterns",
 		    stockid = "aldrin_pattern",
 		    shortcut = 'F2',
 		    order = 2,
