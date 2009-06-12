@@ -2,20 +2,19 @@
 <zzub>
   <plugin
      uri="@trac.zeitherrschaft.org/aldrin/lunar/generator/synth;1"
-     name="Lunar MiniSynth"
-     shortname="Synth"
+     name="Solar Mercury"
+     shortname="Mercury"
      type="generator"
      mintracks="1"
-     maxtracks="8"
-     description="A simple synth demonstrating dsp scripting with Lunar."
-     author="Leonard Ritter"
-     email="contact at leonard-ritter+com">
+     maxtracks="1"
+     description="A high quality monosynth similar to a famous silver box."
+     author="Vytautas Jančauskas"
+     email="unaudio@gmail.com">
     <parameters>
       <valuenamegroup>
 	<valuenames id="waveform_types">
 	  <alias value="0" name="Saw"/>
 	  <alias value="1" name="Square"/>
-	  <alias value="2" name="Sine"/>
 	</valuenames>
       </valuenamegroup>
       <global>
@@ -25,53 +24,33 @@
 	   description="Waveform used by the synthesizer."
 	   type="byte"
 	   minvalue="0"
-	   maxvalue="2"
+	   maxvalue="1"
 	   defvalue="0"
 	   valuenames="waveform_types"
 	   state="true"/>
 	<parameter
 	   id="attack"
 	   name="Attack (ms)"
-	   description="How long until a tone is fully amplified."
+	   description="How long until a tone is fully amplified"
 	   type="float"
 	   logarithmic="true"
+	   power="0.7"
 	   minvalue="0.1"
-	   maxvalue="1000"
-	   defvalue="1"
-	   precision="0.1"
+	   maxvalue="100.0"
+	   defvalue="1.0"
+	   precision="0.01"
 	   state="true"/>
 	<parameter
 	   id="decay"
 	   name="Decay (ms)"
-	   description="How long until a tone is at sustain volume."
+	   description="How long until a tone is at sustain volume"
 	   type="float"
 	   logarithmic="true"
-	   minvalue="0.1"
-	   maxvalue="1000"
-	   defvalue="200"
-	   precision="0.1"
-	   state="true"/>
-	<parameter
-	   id="sustain"
-	   name="Sustain (%)"
-	   description="Level of the sustain volume."
-	   type="float"
-	   logarithmic="true"
-	   minvalue="0"
-	   maxvalue="100"
-	   defvalue="0"
-	   precision="0.1"
-	   state="true"/>
-	<parameter
-	   id="release"
-	   name="Release (ms)"
-	   description="How long until the tone is fully silent."
-	   type="float"
-	   logarithmic="true"
-	   minvalue="0.1"
-	   maxvalue="1000"
-	   defvalue="160"
-	   precision="0.1"
+	   power="0.7"
+	   minvalue="100.0"
+	   maxvalue="1000.0"
+	   defvalue="300.0"
+	   precision="0.01"
 	   state="true"/>
 	<parameter
 	   id="freq"
@@ -84,26 +63,36 @@
 	   precision="0.01"
 	   state="true"/>
 	<parameter
-	   id="res"
-	   name="Resonance"
-	   description="Resonance of VCF"
-	   type="float"
-	   minvalue="0"
-	   maxvalue="0.99"
-	   defvalue="0"
-	   precision="0.01"
-	   state="true"/>
-	<parameter
 	   id="cutoff"
 	   name="Cutoff (Hz)"
 	   description="Cutoff frequency of filter"
 	   type="float"
 	   logarithmic="true"
-	   power="0.7"
-	   minvalue="10"
-	   maxvalue="20000"
-	   defvalue="10"
+	   power="0.4"
+	   minvalue="10.0"
+	   maxvalue="12000.0"
+	   defvalue="1000.0"
 	   precision="1"
+	   state="true"/>
+	<parameter
+	   id="res"
+	   name="Resonance"
+	   description="Resonance of VCF"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1.0"
+	   defvalue="0"
+	   precision="0.01"
+	   state="true"/>
+	<parameter
+	   id="dist"
+	   name="Distortion"
+	   description="Filter distortion"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1.0"
+	   defvalue="0"
+	   precision="0.01"
 	   state="true"/>
 	<parameter
 	   id="amp"
@@ -126,6 +115,36 @@
 	   defvalue="0.1"
 	   precision="1"
 	   power="0.6"
+	   state="true"/>
+	<parameter
+	   id="vel_cutoff"
+	   name="Vel->Cutoff"
+	   description="How much does velocity affect cutoff frequency"
+	   type="float"
+	   minvalue="0.0"
+	   maxvalue="1.0"
+	   defvalue="0.0"
+	   precision="0.01"
+	   state="true"/>
+	<parameter
+	   id="vel_reso"
+	   name="Vel->Reso"
+	   description="How much does velocity affect resonance"
+	   type="float"
+	   minvalue="0.0"
+	   maxvalue="1.0"
+	   defvalue="0.0"
+	   precision="0.01"
+	   state="true"/>
+	<parameter
+	   id="vel_attack"
+	   name="Vel->Attack"
+	   description="How much does velocity affect attack time"
+	   type="float"
+	   minvalue="0.0"
+	   maxvalue="1.0"
+	   defvalue="0.0"
+	   precision="0.01"
 	   state="true"/>
       </global>
       <track>

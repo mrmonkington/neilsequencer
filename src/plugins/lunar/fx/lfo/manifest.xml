@@ -13,17 +13,8 @@
 	<valuenames id="wave">
 	  <alias value="0" name="Sine"/>
 	  <alias value="1" name="Saw"/>
-	  <alias value="2" name="Saw^2"/>
-	  <alias value="3" name="Saw^3"/>
-	  <alias value="4" name="Pulse50"/>
-	  <alias value="5" name="Pulse40"/>
-	  <alias value="6" name="Pulse30"/>
-	  <alias value="7" name="Pulse20"/>
-	  <alias value="8" name="Pulse10"/>
-	</valuenames>
-	<valuenames id="on_off">
-	  <alias value="0" name="No"/>
-	  <alias value="1" name="Yes"/>
+	  <alias value="2" name="Square"/>
+	  <alias value="3" name="Triangle"/>
 	</valuenames>
       </valuenamegroup>
       <global>
@@ -32,7 +23,7 @@
 	   name="Wave"
 	   type="byte"
 	   minvalue="0"
-	   maxvalue="8"
+	   maxvalue="3"
 	   defvalue="0"
 	   valuenames="wave"
 	   state="true"/>
@@ -41,34 +32,25 @@
 	   name="Period"
 	   type="word"
 	   minvalue="2"
-	   maxvalue="256"
-	   defvalue="16"
+	   maxvalue="512"
+	   defvalue="64"
 	   state="true"/>
 	<parameter
-	   id="invert"
-	   name="Invert?"
-	   type="byte"
-	   minvalue="0"
-	   maxvalue="1"
-	   defvalue="0"
-	   valuenames="on_off"
-	   state="true"/>
-	<parameter
-	   id="offset"
-	   name="Add"
+	   id="minimum"
+	   name="Min"
 	   type="float"
-	   minvalue="0"
-	   maxvalue="1"
-	   defvalue="0.5"
+	   minvalue="0.0"
+	   maxvalue="1.0"
+	   defvalue="0.0"
 	   precision="0.01"
 	   state="true"/>
 	<parameter
-	   id="amp"
-	   name="Mul"
+	   id="maximum"
+	   name="Max"
 	   type="float"
-	   minvalue="-1"
-	   maxvalue="1"
-	   defvalue="0.5"
+	   minvalue="0.0"
+	   maxvalue="1.0"
+	   defvalue="1.0"
 	   precision="0.01"
 	   state="true"/>
       </global>

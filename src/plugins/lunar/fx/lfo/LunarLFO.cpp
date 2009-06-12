@@ -5,12 +5,10 @@
 class LunarLFO : public lunar::fx<LunarLFO> {
 private:
   static const int tsize = 2048;
-  bool invert;
-  float rate, amp, offset;
+  float rate, min, max;
 
-  inline float lookup(float table[], float phi, 
-		      float offset, float amp) {
-    float temp = offset + table[(int)(phi * tsize)] * amp;
+  inline float lookup(float table[], float phi, float min, float max) {
+    float temp = min + table[(int)(phi * tsize)] * (max - min);
     if (temp <= 0.0)
       return 0.0;
     if (temp >= 1.0)
@@ -23,30 +21,21 @@ public:
   float val;
   int table;
   float tables[32][tsize];
-  
+   
   void init() {
     val = 0;
     phase = 0;
     table = 0;
     for (int i = 0; i < tsize; i++) {
+      float phase = (float)i / (float)tsize;
       // sin
-      tables[0][i] = sin(2 * M_PI * ((float)i / (float)tsize));
+      tables[0][i] = (sin(2 * M_PI * phase) + 1.0) * 0.5;
       // saw
-      tables[1][i] = ((float)i / (float)tsize - 0.5) * 2.0;
-      // saw^2
-      tables[2][i] = (pow((float)i / (float)tsize, 2.0) - 0.5) * 2.0;
-      // saw^3
-      tables[3][i] = (pow((float)i / (float)tsize, 3.0) - 0.5) * 2.0;
-      // pulse (50%)
-      tables[4][i] = (((float)i / (float)tsize) < 0.5) ? -1.0 : 1.0;
-      // pulse (40%)
-      tables[5][i] = (((float)i / (float)tsize) < 0.4) ? -1.0 : 1.0;
-      // pulse (30%)
-      tables[6][i] = (((float)i / (float)tsize) < 0.3) ? -1.0 : 1.0;
-      // pulse (20%)
-      tables[7][i] = (((float)i / (float)tsize) < 0.2) ? -1.0 : 1.0;
-      // pulse (10%)
-      tables[8][i] = (((float)i / (float)tsize) < 0.1) ? -1.0 : 1.0;
+      tables[1][i] = phase;
+      // sqr
+      tables[2][i] = phase < 0.5 ? 0.0 : 1.0;
+      // tri
+      tables[3][i] = phase < 0.5 ? phase * 2.0 : (1.0 - phase) * 2.0;
     }
   }
   
@@ -57,30 +46,20 @@ public:
   void process_events() {
     if (globals->wave)
       table = *globals->wave;
-    if (globals->rate)
+    if (globals->rate) {
+      phase = 0.0;
       rate = *globals->rate;
-    if (globals->invert) {
-      if (*globals->invert == 0)
-	invert = false;
-      else
-	invert = true;
     }
-    if (globals->offset)
-      offset = *globals->offset;
-    if (globals->amp)
-      amp = *globals->amp;
-
-    if (invert)
-      phase -= 1.0 / rate;
-    else
-      phase += 1.0 / rate;
+    if (globals->minimum)
+      min = *globals->minimum;
+    if (globals->maximum)
+      max = *globals->maximum;
     
-    if (phase <= 0.0)
-      phase += 1.0;
-    if (phase >= 1.0)
+    while (phase >= 1.0)
       phase -= 1.0;
 
-    val = lookup(tables[table], phase, offset, amp);
+    val = lookup(tables[table], phase, min, max);
+    phase += 1.0 / rate;
   }
   
   void process_controller_events() {
@@ -88,6 +67,7 @@ public:
   }
   
   void process_stereo(float *inL, float *inR, float *outL, float *outR, int n) {
+
   }
 };
 

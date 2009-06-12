@@ -7,263 +7,309 @@
 
 #define MAX_TRACKS 8
 #define MAX_WAVES 16
-#define TABSIZE 8192
-#define POWTABSIZE 8192
+#define TABSIZE 4096
+#define POWTABSIZE 16384
+#define OCTAVES 10
+
+class BLOsc {
+private:
+  float oct[OCTAVES];
+  float saw[OCTAVES][TABSIZE];
+  float sqr[OCTAVES][TABSIZE];
+  float srate;
+  float phi;
+  float mu;
+  int wave;
+
+  inline float cubic(float y0, float y1, float y2, float y3, float mu) {
+    // Cubic interpolation.
+    float a0, a1, a2, a3, mu2;
+    mu2 = mu * mu;
+    a0 = y3 - y2 - y0 + y1;
+    a1 = y0 - y1 - a0;
+    a2 = y2 - y0;
+    a3 = y1;
+    return (a0 * mu * mu2 + a1 * mu2 + a2 * mu + a3);
+  }
+
+public:
+  BLOsc(float srate) {
+    phi = 0.0;
+    mu = 0.0;
+    wave = 0;
+    float cfreq = 32.703;
+    for (int i = 0; i < OCTAVES; i++) {
+      this->oct[i] = cfreq;
+      cfreq *= 2;
+    }
+    // Sampling rate.
+    this->srate = srate;
+    // Each octave get's a bandlimited table.
+    for (int i = 0; i < OCTAVES; i++) {
+      // Frequency of the C note for the octave.
+      float curfreq = oct[i];
+      // Index of harmonic partial.
+      int partial = 1;
+
+      // These will be later used to reduce the amplitude of the table.
+      float saw_divisor = 0.0;
+      float sqr_divisor = 0.0;
+      // Partial weight.
+      float mult = 1.0 / (float)partial;
+      // While the frequency is less then the nyquist frequency.
+      float nyquist = this->srate * 0.5 * 0.80;
+      while (curfreq < nyquist) {
+	// Add a sine wave for the corresponding partial to the table.
+	for (int j = 0; j < TABSIZE; j++) {
+	  // Sine phase.
+	  float phase = (float)j / (float)TABSIZE;
+	  // Saw gets every harmonic,
+	  saw[i][j] += sin(2.0 * M_PI * (float)partial * phase) * mult;
+	  // while square gets only odd ones.
+	  if (partial % 2 != 0) {
+	    sqr[i][j] += sin(2.0 * M_PI * (float)partial * phase) * mult;
+	  }
+	}
+	if (partial % 2 != 0)
+	  sqr_divisor += mult;
+	saw_divisor += mult;
+	// Increment frequency to the next harmonic.
+	curfreq += oct[i];
+	// Increment partial index.
+	partial += 1;
+      }
+      // Scale table to (-1.0, 1.0) range.
+      for (int j = 0; j < TABSIZE; j++) {
+	saw[i][j] /= saw_divisor;
+	sqr[i][j] /= sqr_divisor;
+      }
+    }
+  }
+
+  inline float cubic_lookup(float *tab, int tabsize, float phi) {
+    float indexf = (tabsize * phi);
+    int index = (int)floor(indexf);
+    float mu = indexf - floor(indexf);
+    int i0 = (index - 1) < 0 ? tabsize - 1 : index - 1;
+    float result = 
+      cubic(tab[i0],  tab[index % tabsize], tab[(index + 1) % tabsize], 
+	    tab[(index + 2) % tabsize], mu);
+    return result;
+  }
+
+  void set_wave(int wave) {
+    if (wave == 0) {
+      this->wave = 0;
+    } else {
+      this->wave = 1;
+    }
+  }
+
+  void play(float *out, float *freq, int n) {
+    // For each sample of output ...
+    for (int i = 0; i < n; i++) {
+      // This is the increment by which the oscillator phase is changing.
+      float dphi = freq[i] / this->srate;
+
+      // First find the table just below the frequency we need.
+      int wave = 0;
+      for (int j = 1; j < OCTAVES; j++) {
+	if (oct[j] > freq[i]) {
+	  wave = j - 1;
+	  break;
+	}
+      }
+
+      // Where between the two tables are we frequency-wise?
+      float diff = oct[wave + 1] - oct[wave];
+      // Amount of the lower frequency table influence.
+      float bal1 = 1.0 - (freq[i] - oct[wave]) / diff;
+      // Amount of the higher frequency table influence.
+      float bal2 = 1.0 - bal1;
+
+      // Update the samples in cubic interpolation array.
+      if (this->wave == 0) {
+	out[i] = 
+	  bal1 * cubic_lookup(saw[wave], TABSIZE, phi) +
+	  bal2 * cubic_lookup(saw[wave + 1], TABSIZE, phi);
+      } else {
+	out[i] = 
+	  bal1 * cubic_lookup(sqr[wave], TABSIZE, phi) +
+	  bal2 * cubic_lookup(sqr[wave + 1], TABSIZE, phi);
+      }
+      // Increment oscillator phase just advancing the sound wave.
+      this->phi += dphi;
+      while (phi > 1.0)
+	phi -= 1.0;
+    }
+  }
+};
+
+class Inertia {
+private:
+  float y, d;
+  int delay;
+public:
+  Inertia() {
+    y = 0.0;
+    d = 0.0;
+    delay = 0;
+  }
+
+  void set_target(float target, int delay) {
+    this->delay = delay;
+    this->d = (target - this->y) / (float)delay;
+  }
+
+  void play(float *out, int n) {
+    for (int i = 0; i < n; i++) {
+      out[i] = y;
+      if (delay) {
+	y += d;
+	delay -= 1;
+      }
+    }
+  }
+};
+
+#define AMP_SUSTAIN 0.70
+#define FLT_SUSTAIN 0.25
+#define MAX_RESO 1.5
+#define MIN_DIST 0.5
+#define MAX_DIST 3.5
 
 class synth : public lunar::fx<synth> {
 public:
-  float sawtab[TABSIZE];
-  float sqrtab[TABSIZE];
-  float sintab[TABSIZE];
-
   float lattack, ldecay, lsustain, lrelease;
-  float scutoff, sreso, scutoff2;
+  float scutoff, sreso, scutoff2, dist;
   float amp;
   float pitchslide;
-
-  struct lfo {
-    float phase;
-    float phasestep;
-    float amp;
-
-    lfo() {
-      phase = 0.0f;
-      phasestep = 0.0f;
-      amp = 0.0f;
-    }
-  };
-
-  struct voice {
-    float powtab[POWTABSIZE];
-    float start_phasestep;
-    float end_phasestep;
-    float slide_step;
-    float slide_length;
-    float phasestep;
-    float phase;
-    float freq;
-    adsr a;
-    svf s;
-    float cutoff;
-    float volume;
-    float *curtab;
-    lfo pitch;
-		
-    inline void update_powtab(float scutoff) {
-      float c = min(cutoff + freq,20000);
-      for (int i = 0; i < POWTABSIZE; ++i) {
-	powtab[i] = c * pow(2.0f, 1.0f + ((i / float(POWTABSIZE - 1)) * scutoff));
-      }
-    }
-		
-    voice() {
-      freq = 0.0f;
-      start_phasestep = 0.0f;
-      end_phasestep = 0.0f;
-      slide_step = 0.0f;
-      slide_length = 0.1f / 1000.0f;
-      phasestep = 0.0f;
-      phase = 0.0f;
-      cutoff = 0.0f;
-      volume = 1.0f;
-    }
-  };
-
-  voice voices[MAX_TRACKS];
-
-  void update_adsr_tracks() {
-    int t;
-		
-    for (t = 0; t < MAX_TRACKS; t++) {
-      voices[t].a.setup(transport->samples_per_second, lattack / 
-			1000.0f, ldecay / 1000.0f, lsustain / 
-			100.0f, lrelease / 1000.0f, 9999.0f);
-    }
-  }
-
-  void update_svf_tracks() {
-    int t;
-    for (t = 0; t < MAX_TRACKS; t++) {
-      voices[t].s.setup(transport->samples_per_second, scutoff, sreso, 0.0);
-    }
-  }
-
-  void update_waveform_tracks(float *tab) {
-    int t;
-    for(t = 0; t < MAX_TRACKS; t++) {
-      voices[t].curtab = tab;
-    }
-  }
+  float velocity, vcutoff, vreso, vattack;
+  BLOsc *osc;
+  Inertia *freq, *cutoff;
+  LPF18 *filter;
+  adsr *envelope, *fenv;
 
   void init() {
-    int index, size, i, t;
-		
     amp = 1.0f;
-    update_waveform_tracks(sawtab);
-		
-    for (i = 0; i < TABSIZE; ++i) {
-      sawtab[i] = 1.0f - (float(i) / float(TABSIZE))*2.0f;
-      sqrtab[i] = ((i < (TABSIZE / 2)) ? -1.0f : 1.0f );
-      sintab[i] = sin(-M_PI + (M_PI * (float(i*2) / float(TABSIZE-1))));
-    }
+    this->osc = new BLOsc(transport->samples_per_second);
+    this->freq = new Inertia();
+    this->cutoff = new Inertia();
+    this->filter = new LPF18((float)transport->samples_per_second);
+    this->envelope = new adsr();
+    this->fenv = new adsr();
   }
 
   void exit() {
-    int t;
-		
+    delete this->osc;
+    delete this->freq;
+    delete this->cutoff;
+    delete this->filter;
+    delete this->envelope;
+    delete this->fenv;
+  }
+
+  void update_envelope() {
+    this->envelope->setup((float)transport->samples_per_second, 0.001, 
+			  this->ldecay, AMP_SUSTAIN, 0.001);
+    this->fenv->setup((float)transport->samples_per_second,
+		      this->lattack, this->ldecay, FLT_SUSTAIN, 0.001);
   }
 
   void process_events() {
     int update_adsr = 0;
-    int update_svf = 0;
-		
+
+    if (tracks[0].volume) {
+      this->velocity = (float)*tracks[0].volume / 128.0;
+    }
+    if (globals->vel_cutoff) {
+      this->vcutoff = *globals->vel_cutoff;
+    }
+    if (globals->vel_reso) {
+      this->vreso = *globals->vel_reso;
+    }
+    if (globals->vel_attack) {
+      this->vattack = *globals->vel_attack;
+    }		
     if (globals->attack) {
-      lattack = *globals->attack;
+      lattack = *globals->attack / 1000.0;
       update_adsr = 1;
     }
     if (globals->decay) {
-      ldecay = *globals->decay;
+      ldecay = *globals->decay / 1000.0;
       update_adsr = 1;
     }
-    if (globals->sustain) {
-      lsustain = *globals->sustain;
-      update_adsr = 1;
-    }
-    if (globals->release) {
-      lrelease = *globals->release;
-      update_adsr = 1;
-    }
-
     if (globals->freq) {
       scutoff = *globals->freq;
-      update_svf = 1;
     }
     if (globals->res) {
       sreso = *globals->res;
-      update_svf = 1;
+      this->filter->set_res(*globals->res * MAX_RESO);
     }
     if (globals->cutoff) {
-      scutoff2 = *globals->cutoff;
+      this->cutoff->set_target(*globals->cutoff, transport->samples_per_tick);
+    }
+    if (globals->dist) {
+      this->dist = *globals->dist;
+      this->filter->set_dist(MIN_DIST + *globals->dist * MAX_DIST);
     }
     if (globals->amp) {
       amp = dbtoamp(*globals->amp, -48);
     }
-    if ( globals->waveform ) {
-      switch((int)*globals->waveform) {
-      default:
-      case 0:
-	update_waveform_tracks(sawtab);
-	break;
-      case 1:
-	update_waveform_tracks(sqrtab);
-	break;
-      case 2:
-	update_waveform_tracks(sintab);
-	break;
-      }
+    if (globals->waveform) {
+      this->osc->set_wave(*globals->waveform);
     }
-		
     if (update_adsr) {
-      update_adsr_tracks();
+      update_envelope();
     }
-    if (update_svf) {
-      update_svf_tracks();
-    }
-		
-    for (int t = 0; t < track_count; ++t) {
-      if (globals->pitchslide)
-	this->pitchslide = *globals->pitchslide;
-      if (tracks[t].slide && *tracks[t].slide) {
-	// If slide is enabled calculate slide step from a specified value.
-	voices[t].slide_length = (this->pitchslide) / 1000.0f;
-	voices[t].slide_step = 1.0f / voices[t].slide_length * 
-	  (voices[t].end_phasestep - voices[t].start_phasestep) / 
-	  float(transport->samples_per_second);
+    if (globals->pitchslide)
+      this->pitchslide = *globals->pitchslide;
+
+    if (tracks[0].note) {
+      if (*tracks[0].note == 0.0 && tracks[0].slide && *tracks[0].slide) {
+	  this->envelope->off();
+	  this->fenv->off();
       } else {
-	// Otherwise set slide step to a very small value.
-	voices[t].slide_length = 0.00001f;
-	voices[t].slide_step = 1.0f / voices[t].slide_length *
-	  (voices[t].end_phasestep - voices[t].start_phasestep) /
-	  float(transport->samples_per_second);
-      }
-      if (tracks[t].note) {
-	if (*tracks[t].note == 0.0f) {
-	  voices[t].a.off();
-	} else {
-	  // If slide is on, don't restart the envelope.
-	  if (!(tracks[t].slide && *tracks[t].slide))
-	    voices[t].a.on();
-	  voices[t].volume = 1.0f;
-	  voices[t].freq = *tracks[t].note;
-	  voices[t].start_phasestep = voices[t].phasestep;
-	  voices[t].end_phasestep = ((*tracks[t].note)*float(TABSIZE)) /
-	    float(transport->samples_per_second);
-	  // no sliding at start
-	  if (voices[t].phasestep == 0.0f) {
-	    voices[t].start_phasestep = voices[t].end_phasestep;
-	    voices[t].phasestep = voices[t].end_phasestep;
-	  }
-	  voices[t].slide_step = 1 / voices[t].slide_length * 
-	    (voices[t].end_phasestep - voices[t].start_phasestep) / 
-	    float(transport->samples_per_second);
-	  voices[t].phase = 0.0f;
-	  voices[t].cutoff = scutoff2;
-	  voices[t].update_powtab(scutoff * 2.0f);          
+	if (tracks[0].slide && *tracks[0].slide)
+	  ;
+	else {
+	  this->envelope->on();
+	  this->fenv->on();
 	}
-      }
-      if (tracks[t].volume) {
-	voices[t].volume = float(*tracks[t].volume) / 128.0f;
-	if (voices[t].volume == 1.0f)
-	  voices[t].pitch.phase = 0.0f;
+	int delay = (int)(this->pitchslide / 1000.0 * 
+			  transport->samples_per_second);
+	if (tracks[0].slide && *tracks[0].slide) {
+	  this->freq->set_target(*tracks[0].note, delay);
+	} else {
+	  this->freq->set_target(*tracks[0].note, 8);
+	}
       }
     }
   }
 
   void process_stereo(float *inL, float *inR, float *outL, float *outR, int n) {
-    voice *v; // active voice
-    int slen; 
-		
-    dsp_zero(outL, n);
-    for (int t = 0; t < track_count; ++t) {
-      v = &voices[t];
-      if (v->a.state != adsr::state_off) {
-	int count = n;
-	float *b = outL;
-	float vol = v->volume;
-	while (count--) {
-	  float adsr = v->a.process();
-	  float c = v->powtab[int(adsr * float(POWTABSIZE-1))];
-	  *b++ += v->s.envprocess(v->curtab[int(v->phase)%TABSIZE],c,1) * vol * adsr;
-	  // pitch sliding
-	  if (((v->slide_step > 0) && (v->phasestep < v->end_phasestep)) ||   
-	      ((v->slide_step < 0) && (v->phasestep > v->end_phasestep))) { 
-	    v->phasestep += v->slide_step;
-	  } else {
-	    v->phasestep = v->end_phasestep;
-	  }
-	  // pitch lfo
-	  if (v->pitch.amp) {
-	    float rp = v->pitch.amp * sintab[int(v->pitch.phase)%TABSIZE];
-	    float scale = pow(2.0f, rp / 12.0f);
-	    v->phase += v->phasestep * scale;
-	  } else {
-	    v->phase += v->phasestep;
-	  }
-	  while (v->phase > TABSIZE)
-	    v->phase -= TABSIZE;
-	  v->pitch.phase += v->pitch.phasestep;
-	  while (v->pitch.phase > TABSIZE)
-	    v->pitch.phase -= TABSIZE;
-	}
-      } else {
-	v->pitch.phase += v->pitch.phasestep * (float)n;
-	while (v->pitch.phase > TABSIZE)
-	  v->pitch.phase -= TABSIZE;
-      }
+    float *glide = new float[n];
+    float *cutoff = new float[n];
+    float *envelope = new float[n];
+    float *fenv = new float[n];
+    this->freq->play(glide, n);
+    this->cutoff->play(cutoff, n);
+    this->osc->play(outL, glide, n);
+    this->envelope->play(envelope, n);
+    this->fenv->play(fenv, n);
+    for (int i = 0; i < n; i++) {
+      outL[i] *= envelope[i];
+      cutoff[i] *= 
+	(1.0 - this->scutoff) + (fenv[i] * this->scutoff);
+      outL[i] *= this->amp * this->velocity;
     }
-    dsp_amp(outL, n, amp); 
+    this->filter->play(outL, cutoff, outL, n);
     dsp_clip(outL, n, 1);
     dsp_copy(outL, outR, n);
+    delete glide;
+    delete cutoff;
+    delete envelope;
+    delete fenv;
   }
 };
 
