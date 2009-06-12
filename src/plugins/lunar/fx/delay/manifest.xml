@@ -21,57 +21,25 @@
 	</valuenames>
       </valuenamegroup>
       <global>
-	<parameter
-	   id="mode"
-	   name="Delay Mode"
-	   description="Choose between two delay timing modes"
-	   type="byte"
-	   minvalue="0"
-	   maxvalue="1"
-	   defvalue="0"
-	   valuenames="delay_modes"
-	   state="true"/>
-	<parameter
-	   id="l_delay_ms"
-	   name="Delay L (ms)"
-	   description="Left channel delay in milliseconds"
-	   type="float"
-	   logarithmic="true"
-	   power="0.7"
-	   minvalue="10.0"
-	   maxvalue="12000.0"
-	   defvalue="700.0"
-	   precision="0.01"
-	   state="true"/>
-	<parameter
-	   id="r_delay_ms"
-	   name="Delay R (ms)"
-	   description="Right channel delay in milliseconds"
-	   type="float"
-	   logarithmic="true"
-	   power="0.7"
-	   minvalue="10.0"
-	   maxvalue="12000.0"
-	   defvalue="700.0"
-	   precision="0.01"
-	   state="true"/>
  	<parameter
 	   id="l_delay_ticks"
 	   name="Delay L (tick)"
 	   description="Left channel delay in ticks"
-	   type="byte"
-	   minvalue="1"
-	   maxvalue="64"
-	   defvalue="3"
+	   type="float"
+	   minvalue="0.25"
+	   maxvalue="64.0"
+	   defvalue="3.0"
+	   precision="0.25"
 	   state="true"/>
  	<parameter
 	   id="r_delay_ticks"
 	   name="Delay R (tick)"
 	   description="Right channel delay in ticks"
-	   type="byte"
-	   minvalue="1"
-	   maxvalue="64"
-	   defvalue="3"
+	   type="float"
+	   minvalue="0.25"
+	   maxvalue="32.0"
+	   defvalue="4.0"
+	   precision="0.25"
 	   state="true"/>
 	<parameter
 	   id="filter_mode"

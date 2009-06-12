@@ -67,7 +67,7 @@ public:
   };
 
   ringbuffer_t rb[2];
-  float ldelay_ms, rdelay_ms, ldelay_ticks, rdelay_ticks;
+  float ldelay_ticks, rdelay_ticks;
   float ldelay;
   float rdelay;
   float wet;
@@ -121,13 +121,8 @@ public:
   }
 	
   void update_buffer() {
-    if (mode == 0) {
-      ldelay = (ldelay_ms / 1000.0) * transport->samples_per_second;
-      rdelay = (rdelay_ms / 1000.0) * transport->samples_per_second;
-    } else {
-      ldelay = ldelay_ticks * transport->samples_per_tick;
-      rdelay = rdelay_ticks * transport->samples_per_tick;
-    }
+    ldelay = ldelay_ticks * transport->samples_per_tick;
+    rdelay = rdelay_ticks * transport->samples_per_tick;
     int rbsizel = (int)min(ldelay, MAX_DELAY_LENGTH);
     int rbsizer = (int)min(rdelay, MAX_DELAY_LENGTH);
     rb_setup(&rb[0], rbsizel);
@@ -140,12 +135,6 @@ public:
 
   void process_events() {
     int update = 0;
-    if (globals->mode)
-      this->mode = (int)*globals->mode;
-    if (globals->l_delay_ms)
-      this->ldelay_ms = (float)*globals->l_delay_ms;
-    if (globals->r_delay_ms)
-      this->rdelay_ms = (float)*globals->r_delay_ms;
     if (globals->l_delay_ticks)
       this->ldelay_ticks = (float)*globals->l_delay_ticks;
     if (globals->r_delay_ticks)
