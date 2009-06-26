@@ -137,7 +137,7 @@ public:
 	  bal1 * cubic_lookup(sqr[wave], TABSIZE, phi) +
 	  bal2 * cubic_lookup(sqr[wave + 1], TABSIZE, phi);
       }
-      // Increment oscillator phase just advancing the sound wave.
+      // Increment oscillator phase, advancing the sound wave.
       this->phi += dphi;
       while (phi > 1.0)
 	phi -= 1.0;
@@ -174,7 +174,7 @@ public:
 
 #define AMP_SUSTAIN 0.70
 #define FLT_SUSTAIN 0.25
-#define MAX_RESO 1.5
+#define MAX_RESO 1.4
 #define MIN_DIST 0.5
 #define MAX_DIST 3.5
 
@@ -182,7 +182,7 @@ class synth : public lunar::fx<synth> {
 public:
   float lattack, ldecay, lsustain, lrelease;
   float scutoff, sreso, scutoff2, dist;
-  float amp;
+  float amp, oct;
   float pitchslide;
   float velocity, vcutoff, vreso, vattack;
   BLOsc *osc;
@@ -218,19 +218,6 @@ public:
 
   void process_events() {
     int update_adsr = 0;
-
-    if (tracks[0].volume) {
-      this->velocity = (float)*tracks[0].volume / 128.0;
-    }
-    if (globals->vel_cutoff) {
-      this->vcutoff = *globals->vel_cutoff;
-    }
-    if (globals->vel_reso) {
-      this->vreso = *globals->vel_reso;
-    }
-    if (globals->vel_attack) {
-      this->vattack = *globals->vel_attack;
-    }		
     if (globals->attack) {
       lattack = *globals->attack / 1000.0;
       update_adsr = 1;
@@ -254,7 +241,7 @@ public:
       this->filter->set_dist(MIN_DIST + *globals->dist * MAX_DIST);
     }
     if (globals->amp) {
-      amp = dbtoamp(*globals->amp, -48);
+      this->amp = dbtoamp(*globals->amp, -48);
     }
     if (globals->waveform) {
       this->osc->set_wave(*globals->waveform);
@@ -262,9 +249,12 @@ public:
     if (update_adsr) {
       update_envelope();
     }
-    if (globals->pitchslide)
+    if (globals->pitchslide) {
       this->pitchslide = *globals->pitchslide;
-
+    }
+    if (globals->oct) {
+      this->oct = *globals->oct;
+    }
     if (tracks[0].note) {
       if (*tracks[0].note == 0.0 && tracks[0].slide && *tracks[0].slide) {
 	  this->envelope->off();
@@ -293,6 +283,13 @@ public:
     float *envelope = new float[n];
     float *fenv = new float[n];
     this->freq->play(glide, n);
+    for (int i = 0; i < n; i++) {
+      if (this->oct > 0.0) {
+	glide[i] *= 1.0 + this->oct;
+      } else if (this->oct < 0.0) {
+	glide[i] *= 1.0 / (1.0 + -this->oct);
+      }
+    }
     this->cutoff->play(cutoff, n);
     this->osc->play(outL, glide, n);
     this->envelope->play(envelope, n);
@@ -301,7 +298,7 @@ public:
       outL[i] *= envelope[i];
       cutoff[i] *= 
 	(1.0 - this->scutoff) + (fenv[i] * this->scutoff);
-      outL[i] *= this->amp * this->velocity;
+      outL[i] *= this->amp;
     }
     this->filter->play(outL, cutoff, outL, n);
     dsp_clip(outL, n, 1);

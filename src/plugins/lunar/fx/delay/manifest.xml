@@ -27,7 +27,7 @@
 	   description="Left channel delay in ticks"
 	   type="float"
 	   minvalue="0.25"
-	   maxvalue="64.0"
+	   maxvalue="32.0"
 	   defvalue="3.0"
 	   precision="0.25"
 	   state="true"/>

@@ -7,7 +7,7 @@
      type="generator"
      mintracks="1"
      maxtracks="1"
-     description="A high quality monosynth similar to a famous silver box."
+     description="A high quality sound monosynth similar to a famous silver box."
      author="Vytautas Jančauskas"
      email="unaudio@gmail.com">
     <parameters>
@@ -47,7 +47,7 @@
 	   type="float"
 	   logarithmic="true"
 	   power="0.7"
-	   minvalue="100.0"
+	   minvalue="50.0"
 	   maxvalue="1000.0"
 	   defvalue="300.0"
 	   precision="0.01"
@@ -105,6 +105,16 @@
 	   precision="0.01"
 	   state="true"/>
 	<parameter
+	   id="oct"
+	   name="Transpose (oct)"
+	   description="Transpose by a specified number of octaves"
+	   type="float"
+	   minvalue="-2"
+	   maxvalue="2"
+	   defvalue="0"
+	   precision="1.0"
+	   state="true"/>
+	<parameter
 	   id="pitchslide"
 	   name="Pitch Slide (ms)"
 	   description="How long the pitch slides from current to new note"
@@ -112,39 +122,9 @@
 	   logarithmic="true"
 	   minvalue="0.1"
 	   maxvalue="10000"
-	   defvalue="0.1"
+	   defvalue="35.0"
 	   precision="1"
 	   power="0.6"
-	   state="true"/>
-	<parameter
-	   id="vel_cutoff"
-	   name="Vel->Cutoff"
-	   description="How much does velocity affect cutoff frequency"
-	   type="float"
-	   minvalue="0.0"
-	   maxvalue="1.0"
-	   defvalue="0.0"
-	   precision="0.01"
-	   state="true"/>
-	<parameter
-	   id="vel_reso"
-	   name="Vel->Reso"
-	   description="How much does velocity affect resonance"
-	   type="float"
-	   minvalue="0.0"
-	   maxvalue="1.0"
-	   defvalue="0.0"
-	   precision="0.01"
-	   state="true"/>
-	<parameter
-	   id="vel_attack"
-	   name="Vel->Attack"
-	   description="How much does velocity affect attack time"
-	   type="float"
-	   minvalue="0.0"
-	   maxvalue="1.0"
-	   defvalue="0.0"
-	   precision="0.01"
 	   state="true"/>
       </global>
       <track>
@@ -152,18 +132,15 @@
 	   id="note"
 	   type="note"/>
 	<parameter
-	   id="volume"
-	   name="Volume"
-	   description="Volume of the note"
-	   type="byte"
-	   minvalue="0"
-	   maxvalue="128"
-	   defvalue="128"
-	   novalue="255"/>
-	<parameter
 	   id="slide"
 	   name="Slide"
 	   description="Slide to this note"
+	   type="switch"
+	   defvalue="0"/>
+	<parameter
+	   id="accent"
+	   name="Accent"
+	   description="Accent the note"
 	   type="switch"
 	   defvalue="0"/>
       </track>
