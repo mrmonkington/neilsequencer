@@ -19,7 +19,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 """
-Provides dialogs, classes and controls to display/load/save envelopes
+Provides dialogs, classes and controls to edit samples.
 """
 
 import gtk
@@ -51,16 +51,36 @@ class WaveEditPanel(gtk.VBox):
 	self.waveedscrollwin = add_scrollbars(self.view)
 	self.pack_start(self.waveedscrollwin)
 	waveedbuttons = gtk.HBox(False, MARGIN)
-	self.btndelrange = gtk.Button("Delete Range")
+	self.btnzoomin = gtk.Button("Zoom+")
+	self.btnzoomout = gtk.Button("Zoom-")
+	waveedbuttons.pack_start(self.btnzoomin, expand=False)
+	waveedbuttons.pack_start(self.btnzoomout, expand=False)
+	self.btnzoomin.connect('clicked', self.on_zoom_in)
+	self.btnzoomout.connect('clicked', self.on_zoom_out)
+	self.btndelrange = gtk.Button("Delete")
 	waveedbuttons.pack_start(self.btndelrange, expand=False)
-	self.btnstoresel = gtk.Button("Save Sel/Slices")
-	waveedbuttons.pack_start(self.btnstoresel, expand=False)
-	self.btnapplyslices = gtk.Button("Apply Slices")
-	waveedbuttons.pack_start(self.btnapplyslices, expand=False)
+	#self.btnstoresel = gtk.Button("Save Sel/Slices")
+	#waveedbuttons.pack_start(self.btnstoresel, expand=False)
+	#self.btnapplyslices = gtk.Button("Apply Slices")
+	#waveedbuttons.pack_start(self.btnapplyslices, expand=False)
 	self.pack_end(waveedbuttons, expand=False)
 	self.btndelrange.connect('clicked', self.on_delete_range)
-	self.btnstoresel.connect('clicked', self.on_store_range)
-	self.btnapplyslices.connect('clicked', self.on_apply_slices)
+	#self.btnstoresel.connect('clicked', self.on_store_range)
+	#self.btnapplyslices.connect('clicked', self.on_apply_slices)
+
+    def on_zoom_in(self, widget):
+	"""
+	A callback that handles zooming in on the wave edit view.
+	"""
+	w, h = self.view.get_client_size()
+	self.view.set_size_request(w * 1.5, h)
+
+    def on_zoom_out(self, widget):
+	"""
+	A callback that handles zooming out off the wave edit view.
+	"""
+	w, h = self.view.get_client_size()
+	self.view.set_size_request(w / 1.5, h)
 
     def update(self, *args):
 	self.view.update()
@@ -103,6 +123,9 @@ class WaveEditView(gtk.DrawingArea):
 	self.connect('scroll-event', self.on_mousewheel)
 	self.connect("expose_event", self.expose)
 
+	self.loop_start = 0
+	self.loop_end = 150
+
     def expose(self, widget, event):
 	self.context = widget.window.cairo_create()
 	self.draw(self.context)
@@ -123,12 +146,13 @@ class WaveEditView(gtk.DrawingArea):
 
     def redraw(self):
 	if self.window:
-	    w,h = self.get_client_size()
-	    self.window.invalidate_rect((0,0,w,h), False)
+	    w, h = self.get_client_size()
+	    self.window.invalidate_rect((0, 0, w, h), False)
 
     def update_digest(self):
-	w,h = self.get_client_size()
-	self.minbuffer, self.maxbuffer, self.ampbuffer = self.level.get_samples_digest(0, self.range[0], self.range[1],  w)
+	w, h = self.get_client_size()
+	self.minbuffer, self.maxbuffer, self.ampbuffer = \
+	    self.level.get_samples_digest(0, self.range[0], self.range[1],  w)
 
     def fix_range(self):
 	begin,end = self.range
@@ -473,7 +497,8 @@ class WaveEditView(gtk.DrawingArea):
   	if len(self.ampbuffer) != w:
   	    self.update_digest()
 	    
-  	minbuffer, maxbuffer, ampbuffer = self.minbuffer, self.maxbuffer, self.ampbuffer
+  	minbuffer, maxbuffer, ampbuffer = \
+	    self.minbuffer, self.maxbuffer, self.ampbuffer
 
 #  	ctx.set_source_rgba(*(brush2 + (0.5,)))
 #  	ctx.move_to(0, h-1)
@@ -507,7 +532,7 @@ class WaveEditView(gtk.DrawingArea):
   	for x in xrange(w):
   	    ctx.line_to(x, hm - h * maxbuffer[x] * 0.5)
   	for x in xrange(w):
-  	    ctx.line_to(w-x, hm - h * minbuffer[w - x - 1] * 0.5)
+  	    ctx.line_to(w - x, hm - h * minbuffer[w - x - 1] * 0.5)
   	ctx.fill_preserve()
   	ctx.set_source_rgb(*pen)
   	ctx.stroke()

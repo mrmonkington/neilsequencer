@@ -55,7 +55,8 @@ GLOBAL = 1
 TRACK = 2
 
 patternsizes = [
-1,4,8,12,16,24,32,48,64,96,128,192,256,512,1024
+    1, 4, 8, 12, 16, 24, 32, 48, 64, 96, 128, 192, 256, 512, 1024,
+    2048, 4096, 8192
 ]
 
 class PatternDialog(gtk.Dialog):
@@ -656,7 +657,7 @@ class PatternView(gtk.DrawingArea):
 	self.factors = None
 	self.play_notes = True
 	gtk.DrawingArea.__init__(self)
-	#"Bitstream Vera Sans Mono"
+	# "Bitstream Vera Sans Mono"
 	self.update_font()
 	# implements horizontal scrolling
 	self.start_col = 0
@@ -664,32 +665,46 @@ class PatternView(gtk.DrawingArea):
 	self.set_property('can-focus', True)
 
 	self.accel_map = AcceleratorMap()
-	self.accel_map.add_accelerator('<Control><Shift>Return', self.on_popup_create_copy)
+	self.accel_map.add_accelerator('<Control><Shift>Return',
+				       self.on_popup_create_copy)
 	self.accel_map.add_accelerator('<Shift>ISO_Left_Tab', self.tab_left)
 	self.accel_map.add_accelerator('Tab', self.tab_right)
-	self.accel_map.add_accelerator('<Control>Return', self.on_popup_create_pattern)
-	self.accel_map.add_accelerator('<Control>BackSpace', self.on_popup_properties)
-	self.accel_map.add_accelerator('<Control>Delete', self.on_popup_remove_pattern)
-	self.accel_map.add_accelerator('<Shift>KP_Add', self.transpose_selection, None, 1)
-	self.accel_map.add_accelerator('<Shift>asterisk', self.transpose_selection, None, 1)
-	self.accel_map.add_accelerator('<Shift>plus', self.transpose_selection, None, 1)		
-	self.accel_map.add_accelerator('<Shift>KP_Subtract', self.transpose_selection, None, -1)
-	self.accel_map.add_accelerator('<Shift>minus', self.transpose_selection, None, -1)
-	self.accel_map.add_accelerator('<Shift>underscore', self.transpose_selection, None, -1)
-	self.accel_map.add_accelerator('<Control>Page_Up', self.change_resolution, True)
-	self.accel_map.add_accelerator('<Control>Page_Down', self.change_resolution, False)
+	self.accel_map.add_accelerator('<Control>Return',
+				       self.on_popup_create_pattern)
+	self.accel_map.add_accelerator('<Control>BackSpace',
+				       self.on_popup_properties)
+	self.accel_map.add_accelerator('<Control>Delete',
+				       self.on_popup_remove_pattern)
+	self.accel_map.add_accelerator('<Shift>KP_Add',
+				       self.transpose_selection, None, 1)
+	self.accel_map.add_accelerator('<Shift>asterisk',
+				       self.transpose_selection, None, 1)
+	self.accel_map.add_accelerator('<Shift>plus',
+				       self.transpose_selection, None, 1)
+	self.accel_map.add_accelerator('<Shift>KP_Subtract',
+				       self.transpose_selection, None, -1)
+	self.accel_map.add_accelerator('<Shift>minus',
+				       self.transpose_selection, None, -1)
+	self.accel_map.add_accelerator('<Shift>underscore',
+				       self.transpose_selection, None, -1)
+	self.accel_map.add_accelerator('<Control>Page_Up',
+				       self.change_resolution, True)
+	self.accel_map.add_accelerator('<Control>Page_Down',
+				       self.change_resolution, False)
 	self.accel_map.add_accelerator('<Control>c', self.copy)
 	self.accel_map.add_accelerator('<Control>v', self.paste)
 	self.accel_map.add_accelerator('<Control>x', self.cut)
 	self.accel_map.add_accelerator('<Control>i', self.interpolate_selection)
 	self.accel_map.add_accelerator('<Control>l', self.on_popup_solo)
-	self.accel_map.add_accelerator('<Control>KP_Add', self.on_popup_add_track)
-	self.accel_map.add_accelerator('<Control>plus', self.on_popup_add_track)
-	self.accel_map.add_accelerator('<Control>KP_Subtract', self.on_popup_delete_track)
-	self.accel_map.add_accelerator('<Control>minus', self.on_popup_delete_track)
-
+	self.accel_map.add_accelerator('<Control>KP_Add',
+				       self.on_popup_add_track)
+	self.accel_map.add_accelerator('<Control>plus',
+				       self.on_popup_add_track)
+	self.accel_map.add_accelerator('<Control>KP_Subtract',
+				       self.on_popup_delete_track)
+	self.accel_map.add_accelerator('<Control>minus',
+				       self.on_popup_delete_track)
 	self.connect('key-press-event', self.accel_map.handle_key_press_event)
-
 	self.connect("expose_event", self.expose)
 	self.connect('key-press-event', self.on_key_down)
 	self.connect('key-release-event', self.on_key_up)
@@ -750,9 +765,6 @@ class PatternView(gtk.DrawingArea):
     def update_font(self):
 	pctx = self.get_pango_context()
 	desc = pango.FontDescription(config.get_config().get_pattern_font()) #.get_font_description()
-	#~ desc.set_style(pango.STYLE_NORMAL)
-	#~ desc.set_family('Monospace')
-	#~ desc.set_weight(pango.WEIGHT_BOLD)
 	pctx.set_font_description(desc)
 	self.fontdesc = desc
 	self.font = pctx.load_font(desc)
@@ -882,15 +894,17 @@ class PatternView(gtk.DrawingArea):
 	if datasource:
 	    # plugin loader, pattern data
 	    self.plugin, self.pattern = datasource
-	    self.row, self.group, self.track, self.index, self.subindex = self.plugin_info.get(self.plugin).pattern_position
+	    self.row, self.group, self.track, self.index, self.subindex =\
+		      self.plugin_info.get(self.plugin).pattern_position
 	    self.selection = self.plugin_info.get(self.plugin).selection
-	    self.input_connection_count = self.get_plugin().get_input_connection_count()
+	    self.input_connection_count =\
+		self.get_plugin().get_input_connection_count()
 	    # track count
 	    track_count = self.plugin.get_track_count()
 	    # global track not considered a track
-	    #~ if self.plugin.get_parameter_count(1) > 0:
-		#~ self.track_count -= 1
-	    self.group_track_count = [self.input_connection_count, 1, track_count] # track count by group
+	    # track count by group
+	    self.group_track_count =\
+		[self.input_connection_count, 1, track_count]
 	    self.parameter_count = []
 	    self.parameter_width = []
 	    self.parameter_type = []
@@ -951,9 +965,10 @@ class PatternView(gtk.DrawingArea):
 	return rect.width, rect.height
 
     def adjust_scrollbars(self):
-	w,h = self.get_client_size()
-	vw,vh = self.get_virtual_size()
-	pw, ph = int((w - PATLEFTMARGIN) / float(self.column_width) + 0.5), int((h - self.row_height) / float(self.row_height) + 0.5)
+	w, h = self.get_client_size()
+	vw, vh = self.get_virtual_size()
+	pw, ph = int((w - PATLEFTMARGIN) / float(self.column_width) + 0.5),\
+		 int((h - self.row_height) / float(self.row_height) + 0.5)
 	hrange = vw - pw
 	vrange = vh - ph
 	if hrange <= 0:
@@ -1098,7 +1113,6 @@ class PatternView(gtk.DrawingArea):
 	self.set_row(self.row - step)
 	self.draw_cursor_xor()
 	self.update_statusbar()
-	#~ self.refresh_view()
 
     def move_down(self, step = 1):
 	"""
@@ -1113,7 +1127,6 @@ class PatternView(gtk.DrawingArea):
 	self.set_row(self.row + step)
 	self.draw_cursor_xor()
 	self.update_statusbar()
-	#~ self.refresh_view()
 
     def move_track_left(self):
 	"""
@@ -1192,7 +1205,8 @@ class PatternView(gtk.DrawingArea):
 	Puts the cursor into visible frame after a jump to the left.
 	"""
 	w, h = self.get_charbounds()
-	x, y = self.pattern_to_charpos(self.row, self.group, self.track, self.index, self.subindex)
+	x, y = self.pattern_to_charpos(self.row, self.group,
+				       self.track, self.index, self.subindex)
 	if x < self.start_col:
 	    self.start_col = max(x - (w / 3), 0)
 	    self.redraw()
@@ -1203,9 +1217,11 @@ class PatternView(gtk.DrawingArea):
 	"""
 	w, h = self.get_charbounds()
 	vw, vh = self.get_virtual_size()
-	x, y = self.pattern_to_charpos(self.row, self.group, self.track, self.index, self.subindex)
+	x, y = self.pattern_to_charpos(self.row, self.group,
+				       self.track, self.index, self.subindex)
 	if x > w:
-	    self.start_col = min(self.start_col + x - w + (w / 3), vw - w + self.start_col)
+	    self.start_col = min(self.start_col + x - w + (w / 3),
+				 vw - w + self.start_col)
 	    self.redraw()
 
     def move_left(self):
@@ -1219,7 +1235,6 @@ class PatternView(gtk.DrawingArea):
 	self.show_cursor_left()
 	self.draw_xor()
 	self.update_statusbar()
-	#~ self.refresh_view()		
 
     def move_right(self):
 	"""
@@ -1232,7 +1247,6 @@ class PatternView(gtk.DrawingArea):
 	self.show_cursor_right()
 	self.draw_xor()
 	self.update_statusbar()
-	#~ self.refresh_view()
 
     def adjust_selection(self):
 	"""
@@ -1427,21 +1441,18 @@ class PatternView(gtk.DrawingArea):
     def unpack_clipboard_data(self, d):
 	"""
 	Unpacks clipboard data
-
-	@param d: Data that is to be unpacked.
-	@type d: unicode
 	"""
-	magic,d = d[:len(self.CLIPBOARD_MAGIC)], d[len(self.CLIPBOARD_MAGIC):]
+	magic, d = d[:len(self.CLIPBOARD_MAGIC)], d[len(self.CLIPBOARD_MAGIC):]
 	assert magic == self.CLIPBOARD_MAGIC
-	mode,d = int(d[:1],16),d[1:]
+	mode, d = int(d[:1], 16), d[1:]
 	yield mode
 	while d:
-	    r,d = int(d[:4],16),d[4:]
-	    g,d = int(d[:1],16),d[1:]
-	    t,d = int(d[:2],16),d[2:]
-	    i,d = int(d[:2],16),d[2:]
-	    v,d = int(d[:4],16),d[4:]
-	    yield r,g,t,i,v
+	    r, d = int(d[:4], 16), d[4:]
+	    g, d = int(d[:1], 16), d[1:]
+	    t, d = int(d[:2], 16), d[2:]
+	    i, d = int(d[:2], 16), d[2:]
+	    v, d = int(d[:4], 16), d[4:]
+	    yield r, g, t, i, v
 
     def paste(self):
 	"""
@@ -1778,15 +1789,14 @@ class PatternView(gtk.DrawingArea):
     def on_key_down(self, widget, event):
 	"""
 	Callback that responds to key stroke in pattern view.
-
-	@param event: Key event
-	@type event: wx.KeyEvent
 	"""
 	mask = event.state
 	kv = event.keyval
 	# convert keypad numbers	
-	if gtk.gdk.keyval_from_name('KP_0') <= kv <= gtk.gdk.keyval_from_name('KP_9'):
-	    kv = kv - gtk.gdk.keyval_from_name('KP_0')  + gtk.gdk.keyval_from_name('0')
+	if gtk.gdk.keyval_from_name('KP_0') <= kv <= \
+	       gtk.gdk.keyval_from_name('KP_9'):
+	    kv = kv - gtk.gdk.keyval_from_name('KP_0') + \
+		 gtk.gdk.keyval_from_name('0')
 	k = gtk.gdk.keyval_name(kv)
 	player = com.get('aldrin.core.player')
 	eventbus = com.get('aldrin.core.eventbus')
@@ -1804,7 +1814,7 @@ class PatternView(gtk.DrawingArea):
 		self.shiftselect = self.row
 	    self.move_down(self.resolution)
 	    if self.row < self.shiftselect:
-		self.selection.end = self.shiftselect+self.resolution
+		self.selection.end = self.shiftselect + self.resolution
 		self.selection.begin = self.row
 	    else:
 		self.selection.begin = self.shiftselect
@@ -1822,8 +1832,7 @@ class PatternView(gtk.DrawingArea):
 		self.selection.begin = self.row
 	    else:
 		self.selection.begin = self.shiftselect
-		self.selection.end = self.row+self.resolution
-	    print self.shiftselect, self.row, self.selection.begin, self.selection.end
+		self.selection.end = self.row + self.resolution
 	    self.adjust_selection()
 	    self.redraw()
 	elif mask & gtk.gdk.SHIFT_MASK and (k == 'Right' or k == 'Left'):
@@ -1848,7 +1857,8 @@ class PatternView(gtk.DrawingArea):
 		    self.selection.mode = (self.selection.mode + 1) % 4
 		self.selection.begin = self.row
 		self.keystartselect = self.row
-		self.selection.end = max(self.row+self.resolution, self.selection.end)	
+		self.selection.end =\
+		    max(self.row+self.resolution, self.selection.end)	
 		self.adjust_selection()
 		self.update_plugin_info()				
 		self.redraw()
@@ -1863,7 +1873,9 @@ class PatternView(gtk.DrawingArea):
 		    self.selection.mode = (self.selection.mode + 1) % 4
 		self.selection.end = self.row+self.resolution
 		self.keyendselect=self.row+self.resolution
-		self.selection.begin = max(min(self.selection.end-self.resolution,self.selection.begin),0)
+		self.selection.begin =\
+		    max(min(self.selection.end - self.resolution,
+			    self.selection.begin), 0)
 		self.adjust_selection()
 		self.redraw()
 	    elif k == 'u':
@@ -1914,37 +1926,27 @@ class PatternView(gtk.DrawingArea):
 	elif k == 'Insert' or k == 'KP_Insert':
 	    indices = []
 	    for index in range(self.resolution):
-		for i in xrange(self.plugin.get_parameter_count(self.group, self.track)):
+		for i in xrange(self.plugin.get_parameter_count(self.group,
+								self.track)):
 		    indices += [self.group, self.track, i]
 		self.lines[self.group][self.track].insert(self.row + index, "")
 		self.update_line(self.row + index)
 	    del self.lines[self.group][self.track][-self.resolution]
-	    self.plugin.insert_pattern_rows(self.pattern, indices, len(indices)/3, self.row, 1)
-#			if not shiftdown:
-#				for i in xrange(self.plugin.get_parameter_count(self.group, self.track)):
-#					indices += [self.group, self.track, i]
-#			else:
-#				indices += [self.group, self.track, self.index]
-#			self.plugin.insert_pattern_rows(self.pattern, indices, len(indices)/3, self.row, 1) 
+	    self.plugin.insert_pattern_rows(self.pattern, indices,
+					    len(indices) / 3, self.row, 1)
 	    player.history_commit("insert row")
-
-
 	elif k == 'Delete':
-	    del self.lines[self.group][self.track][self.row:self.row+self.resolution]
+	    del self.lines[self.group][self.track][self.row:self.row +\
+						   self.resolution]
 	    indices = []			
 	    for index in range(self.resolution):
 		self.lines[self.group][self.track].append('')
-		for i in xrange(self.plugin.get_parameter_count(self.group, self.track)):
+		for i in xrange(self.plugin.get_parameter_count(self.group,
+								self.track)):
 		    indices += [self.group, self.track, i]
 		self.update_line(self.row_count-self.resolution+index-1)
-	    self.plugin.remove_pattern_rows(self.pattern, indices, len(indices)/3, self.row, 1)				
-#			indices = []
-#			if not shiftdown:
-#				for i in xrange(self.plugin.get_parameter_count(self.group, self.track)):
-#					indices += [self.group, self.track, i]
-#			else:
-#				indices += [self.group, self.track, self.index]
-#			self.plugin.remove_pattern_rows(self.pattern, indices, len(indices)/3, self.row, 1)
+	    self.plugin.remove_pattern_rows(self.pattern, indices,
+					    len(indices) / 3, self.row, 1)
 	    player.history_commit("remove row")
 	elif k == 'Return':
 	    eventbus.edit_sequence_request()
@@ -1963,30 +1965,36 @@ class PatternView(gtk.DrawingArea):
 	    self.shiftselect = None
 	    self.update_plugin_info()
 	    self.redraw()
+	# A key to insert a note or a parameter value was pressed.
 	elif self.plugin and (kv < 256):
-	    p = self.plugin.get_parameter(self.group,self.track,self.index)
+	    # Get the parameter that you are currently editing.
+	    p = self.plugin.get_parameter(self.group, self.track, self.index)
+	    # Get parameter type.
 	    param_type = p.get_type()
 	    playtrack = False
-	    if (param_type == 0): # note
-		# is there a wavetable param?
+	    # If parameter is a note.
+	    if (param_type == 0):
+		# Is there a wavetable parameter?
 		wi = None
 		wp = None
 		wdata = None
+		# Iterate over all available parameters.
 		for i in range(self.parameter_count[self.group]):
-		    pwp = self.plugin.get_parameter(self.group,self.track,i)
-		    if pwp.get_flags() & zzub.zzub_parameter_flag_wavetable_index:
+		    pwp = self.plugin.get_parameter(self.group, self.track, i)
+		    if pwp.get_flags() &\
+			   zzub.zzub_parameter_flag_wavetable_index:
 			wp = pwp
 			wi = i
 			break
 		if self.subindex == 0:
 		    on = key_to_note(kv)
 		    if on:
-			o,n = on
+			o, n = on
 			player = com.get('aldrin.core.player')
-			data = (min(player.octave+o,9)<<4) | (n+1)
+			data = (min(player.octave + o, 9) << 4) | (n + 1)
 			if (wp != None):
 			    if player.active_waves:
-				wdata = player.active_waves[0].get_index()+1
+				wdata = player.active_waves[0].get_index() + 1
 			    else:
 				wdata = 1
 			playtrack = True
@@ -2002,21 +2010,29 @@ class PatternView(gtk.DrawingArea):
 		    else:
 			return False
 		    if wdata != None:
-			self.plugin.set_pattern_value(self.pattern, self.group, self.track, wi, self.row, wdata)
+			self.plugin.set_pattern_value(self.pattern,
+						      self.group,
+						      self.track, wi,
+						      self.row, wdata)
 			player.history_commit("enter event")
 		elif (self.subindex == 1) and (k >= '1') and (k <= '9'):
-		    o = ord(k)-ord('1')+1
-		    data = (self.plugin.get_pattern_value(self.pattern, self.group, self.track, self.index, self.row) & 0xf) | (o << 4)
+		    o = ord(k) - ord('1') + 1
+		    data = (self.plugin.get_pattern_value(self.pattern,
+							  self.group,
+							  self.track,
+							  self.index,
+							  self.row) & 0xf) |\
+							  (o << 4)
 		else:
 		    return False
 	    elif param_type == 1: # switch
 		if k == '1' or k == '0':
-		    data = {'1':p.get_value_max(), '0':p.get_value_min()}[k]
+		    data = {'1' : p.get_value_max(), '0' : p.get_value_min()}[k]
 		elif k == 'period':
 		    data = p.get_value_none()
 		else:
 		    return False
-	    elif param_type in (2,3): # byte or word
+	    elif param_type in (2, 3): # byte or word
 		pw = self.parameter_width[self.group][self.index]
 		if k >= '0' and k <= '9':
 		    o = ord(k)-ord('0')
@@ -2028,17 +2044,24 @@ class PatternView(gtk.DrawingArea):
 		else:
 		    return False
 		if o != None:
-		    bofs = (pw - self.subindex - 1)*4
-		    data = self.plugin.get_pattern_value(self.pattern, self.group, self.track, self.index, self.row)
+		    bofs = (pw - self.subindex - 1) * 4
+		    data = self.plugin.get_pattern_value(self.pattern,
+							 self.group,
+							 self.track,
+							 self.index,
+							 self.row)
 		    if data == p.get_value_none():
 			data = 0
-		    data = (data ^ (data & (0xf << bofs))) | (o << bofs) # mask out old nibble, put in new nibble
-		    data = min(p.get_value_max(),max(p.get_value_min(), data))
+		    # mask out old nibble, put in new nibble
+		    data = (data ^ (data & (0xf << bofs))) | (o << bofs)
+		    data = min(p.get_value_max(), max(p.get_value_min(), data))
 		    if p.get_flags() & zzub.zzub_parameter_flag_wavetable_index:
 			player.active_waves = [player.get_wave(data - 1)]
 	    else:
 		return False
-	    self.plugin.set_pattern_value(self.pattern, self.group, self.track, self.index, self.row, data)
+	    self.plugin.set_pattern_value(self.pattern, self.group,
+					  self.track, self.index,
+					  self.row, data)
 	    player.history_commit("enter event")
 	    self.play_note(playtrack)
 	else:
@@ -2053,10 +2076,12 @@ class PatternView(gtk.DrawingArea):
 	if playtrack and self.play_notes:
 	    m = self.get_plugin()
 	    for index in range(self.parameter_count[self.group]):
-		v = self.plugin.get_pattern_value(self.pattern, self.group, self.track, index, self.row)
+		v = self.plugin.get_pattern_value(self.pattern, self.group,
+						  self.track, index, self.row)
 		p = self.plugin.get_parameter(self.group, self.track, index)
 		if v != p.get_value_none():
-		    m.set_parameter_value_direct(self.group, self.track, index, v, 0)
+		    m.set_parameter_value_direct(self.group, self.track,
+						 index, v, 0)
 	self.move_down(self.resolution)
 
     def on_key_up(self, widget, event):
@@ -2071,11 +2096,13 @@ class PatternView(gtk.DrawingArea):
 		self.shiftselect = None
 	    if self.plugin:
 		parameter = self.plugin.get_parameter(self.group,0, self.index)
-		if parameter.get_description() == "Note" and kv<256:
+		if parameter.get_description() == "Note" and kv < 256:
 		    on = key_to_note(kv)
 		    if on:
 			m = self.get_plugin()
-			m.set_parameter_value(self.group, self.track, self.index, zzub.zzub_note_value_off, 0)
+			m.set_parameter_value(self.group, self.track,
+					      self.index,
+					      zzub.zzub_note_value_off, 0)
 			player.history_commit("add event")
 
     def on_char(self, event):

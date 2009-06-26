@@ -44,7 +44,7 @@ import aldrin.common as common
 from aldrin.common import MARGIN, MARGIN2, MARGIN3
 import aldrin.com as com
 
-class WavetablePanel(gtk.Notebook):
+class WavetablePanel(gtk.VBox):
     """
     Wavetable editor.
 
@@ -75,7 +75,7 @@ class WavetablePanel(gtk.Notebook):
 	self.ohg = ObjectHandlerGroup()
 	self.working_directory = ''
 	self.files = []
-	gtk.Notebook.__init__(self)
+	gtk.VBox.__init__(self)
 	self.tooltips=gtk.Tooltips()
 	self.instrpanel = gtk.HPaned()
 	self.instrpanel.set_border_width(MARGIN2)
@@ -140,9 +140,10 @@ class WavetablePanel(gtk.Notebook):
 	self.libpanel.add_filter(file_filter('MPEG-1 Audio Layer 3 (*.mp3)', '*.mp3'))
 	self.libpanel.set_local_only(True)
 	self.libpanel.set_select_multiple(True)
-	self.append_page(self.instrpanel, gtk.Label("Instruments"))
+	#self.append_page(self.instrpanel, gtk.Label("Instruments"))
 	#self.append_page(self.libpanel, gtk.Label("Library"))
 	#self.set_current_page(0)
+	self.pack_start(self.instrpanel, expand=True)
 	self.adsrpanel = ADSRPanel(self)
 	self.samplelist, self.samplestore, columns = new_listview([
 		('#', str),
@@ -227,16 +228,6 @@ class WavetablePanel(gtk.Notebook):
 	self.instrpanel.add1(samplesel)
 	self.instrpanel.add2(sampleprops)
 	self.instrpanel.set_position(250)
-
-	#self.filetreeview = None
-	#try:
-	#    # WTF
-	#    self.filetreeview =\
-	#	self.libpanel.get_children()[0].\
-	#	get_children()[0].get_children()[2].\
-	#	get_child2().get_children()[0].get_children()[0].get_child()
-	#except:
-	#    print "unable to get filetreeview."
 
 	self.ohg.connect(self.samplelist.get_selection(),'changed', self.on_samplelist_select)
 	self.ohg.connect(self.samplelist,'button-press-event', self.on_samplelist_dclick)
@@ -698,7 +689,7 @@ class WavetablePanel(gtk.Notebook):
 	    else:
 		w.set_name(os.path.splitext(os.path.basename(source))[0])
 	player.history_commit("load instrument")
-	self.set_current_page(0)
+	#self.set_current_page(0)
 	self.samplelist.grab_focus()
 	self.samplelist.set_cursor(selects[0])
 
