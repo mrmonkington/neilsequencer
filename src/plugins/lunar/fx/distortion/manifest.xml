@@ -9,14 +9,62 @@
      author="Vytautas Jančauskas"
      email="unaudio@gmail.com">
     <parameters>
+      <valuenamegroup>
+	<valuenames id="algs">
+	  <alias value="0" name="Harmonic"/>
+	  <alias value="1" name="Shaper1"/>
+	  <alias value="2" name="Shaper2"/>
+	  <alias value="3" name="Shaper3"/>
+	</valuenames>
+      </valuenamegroup>
       <global>
+	<parameter
+	   id="alg"
+	   name="Algorithm"
+	   description="Select distortion type"
+	   type="byte"
+	   minvalue="0"
+	   maxvalue="3"
+	   defvalue="0"
+	   valuenames="algs"
+	   state="true"/>
 	<parameter
 	   id="pregain"
 	   name="Gain In (dB)"
 	   description="Gain of input signal"
 	   type="float"
 	   minvalue="0"
-	   maxvalue="16"
+	   maxvalue="32"
+	   defvalue="0"
+	   precision="0.01"
+	   state="true"/>
+	<parameter
+	   id="a"
+	   name="Param A"
+	   description="Parameter A for the distortion algorithm"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0"
+	   precision="0.01"
+	   state="true"/>
+	<parameter
+	   id="b"
+	   name="Param B"
+	   description="Parameter B for the distortion algorithm"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0"
+	   precision="0.01"
+	   state="true"/>
+	<parameter
+	   id="c"
+	   name="Param C"
+	   description="Parameter C for the distortion algorithm"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
 	   defvalue="0"
 	   precision="0.01"
 	   state="true"/>
@@ -25,7 +73,7 @@
 	   name="Gain Out (dB)"
 	   description="Gain of output signal"
 	   type="float"
-	   minvalue="-16"
+	   minvalue="-32"
 	   maxvalue="0"
 	   defvalue="0"
 	   precision="0.01"

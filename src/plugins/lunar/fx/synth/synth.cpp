@@ -177,14 +177,16 @@ public:
 #define MAX_RESO 1.4
 #define MIN_DIST 0.5
 #define MAX_DIST 3.5
+#define ACC_VOLUME 0.5
+#define ACC_CUTOFF 1.0
 
 class synth : public lunar::fx<synth> {
 public:
-  float lattack, ldecay, lsustain, lrelease;
+  float attack, decay;
   float scutoff, sreso, scutoff2, dist;
   float amp, oct;
   float pitchslide;
-  float velocity, vcutoff, vreso, vattack;
+  float accent, acc_cutoff, acc_reso, acc_attack;
   BLOsc *osc;
   Inertia *freq, *cutoff;
   LPF18 *filter;
@@ -196,8 +198,8 @@ public:
     this->freq = new Inertia();
     this->cutoff = new Inertia();
     this->filter = new LPF18((float)transport->samples_per_second);
-    this->envelope = new adsr();
-    this->fenv = new adsr();
+    this->envelope = new adsr(transport->samples_per_second);
+    this->fenv = new adsr(transport->samples_per_second);
   }
 
   void exit() {
@@ -209,29 +211,23 @@ public:
     delete this->fenv;
   }
 
-  void update_envelope() {
-    this->envelope->setup((float)transport->samples_per_second, 0.001, 
-			  this->ldecay, AMP_SUSTAIN, 0.001);
-    this->fenv->setup((float)transport->samples_per_second,
-		      this->lattack, this->ldecay, FLT_SUSTAIN, 0.001);
-  }
-
   void process_events() {
     int update_adsr = 0;
     if (globals->attack) {
-      lattack = *globals->attack / 1000.0;
-      update_adsr = 1;
+      attack = *globals->attack / 1000.0;
     }
     if (globals->decay) {
-      ldecay = *globals->decay / 1000.0;
-      update_adsr = 1;
+      decay = *globals->decay / 1000.0;
     }
     if (globals->freq) {
       scutoff = *globals->freq;
     }
     if (globals->res) {
       sreso = *globals->res;
-      this->filter->set_res(*globals->res * MAX_RESO);
+      this->filter->set_res(sreso * MAX_RESO);
+    }
+    if (globals->accent) {
+      this->accent = *globals->accent;
     }
     if (globals->cutoff) {
       this->cutoff->set_target(*globals->cutoff, transport->samples_per_tick);
@@ -245,9 +241,6 @@ public:
     }
     if (globals->waveform) {
       this->osc->set_wave(*globals->waveform);
-    }
-    if (update_adsr) {
-      update_envelope();
     }
     if (globals->pitchslide) {
       this->pitchslide = *globals->pitchslide;
@@ -263,8 +256,22 @@ public:
 	if (tracks[0].slide && *tracks[0].slide)
 	  ;
 	else {
-	  this->envelope->on();
-	  this->fenv->on();
+	  // Check if the accent tick was checked in this step,
+	  if (tracks[0].accent) {
+	    // if it was checked then increase filter and amplitude envelope
+	    // multipliers,
+	    this->envelope->on(0.001, this->decay,
+			       AMP_SUSTAIN, 0.001,
+			       1.0 + this->accent * ACC_VOLUME);
+	    this->fenv->on(this->attack * (1.0 - this->accent), this->decay,
+			   FLT_SUSTAIN, 0.001, 1.0 + this->accent * ACC_CUTOFF);
+	  } else {
+	    // otherwise set those multipliers to 1.0
+	    this->envelope->on(0.001, this->decay, 
+			       AMP_SUSTAIN, 0.001, 1.0);
+	    this->fenv->on(this->attack, this->decay, 
+			   FLT_SUSTAIN, 0.001, 1.0);
+	  }
 	}
 	int delay = (int)(this->pitchslide / 1000.0 * 
 			  transport->samples_per_second);

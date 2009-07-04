@@ -1,4 +1,3 @@
-
 // adsr generator
 
 struct adsr {
@@ -12,6 +11,7 @@ struct adsr {
   int state;
   float a;
   int suswait;
+  float mul; // Envelope value multiplier.
 	
   enum {
     state_off,
@@ -21,24 +21,24 @@ struct adsr {
     state_release
   };
 	
-  adsr() {
+  adsr(float sps) {
+    this->sps = sps;
     a = 0.0;
     state = state_off;
   }
-	
-  void setup(float sps, float attack, float decay, float sustain, 
-	     float release) {
+		
+  void on(float a, float d, float s, float r, float mul) {
     float mintime = 0.00001f; // 0.01ms
-    this->sps = sps;
-    this->attack = 1.0 / (sps * max(attack, mintime));
-    this->decay = (1.0 - sustain) / (sps * max(decay, mintime));
-    this->sustain = sustain;
-    this->release = sustain / (sps * max(release, mintime));
-  }
-	
-  void on() {
     a = 0.0;
     state = state_attack;
+    this->attack = 1.0 / (this->sps * max(a, mintime));
+    printf("sps = %d\n", this->sps);
+    printf("a = %.4f\n", a);
+    printf("attack = %.5f\n", this->attack);
+    this->decay = (1.0 - s) / (this->sps * max(d, mintime));
+    this->sustain = s;
+    this->release = s / (this->sps * max(r, mintime));
+    this->mul = mul;
   }
 	
   void off() {
@@ -81,7 +81,7 @@ struct adsr {
 	a = 0.0;
       } break;
     }
-    return a;
+    return a * this->mul;
   }
 
   void play(float *out, int n) {

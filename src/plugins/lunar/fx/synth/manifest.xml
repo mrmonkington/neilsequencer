@@ -79,9 +79,19 @@
 	   name="Resonance"
 	   description="Resonance of VCF"
 	   type="float"
-	   minvalue="0"
+	   minvalue="0.0"
 	   maxvalue="1.0"
-	   defvalue="0"
+	   defvalue="0.0"
+	   precision="0.01"
+	   state="true"/>
+	<parameter
+	   id="accent"
+	   name="Accent"
+	   description="Amount of accent on accented notes"
+	   type="float"
+	   minvalue="0.0"
+	   maxvalue="1.0"
+	   defvalue="0.5"
 	   precision="0.01"
 	   state="true"/>
 	<parameter
