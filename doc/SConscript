@@ -19,6 +19,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 Import('env', 'install', 'install_recursive')
+
 import glob
 
 install('${DOC_PATH}', glob.glob('*.ccm'), 0644)
@@ -31,4 +32,16 @@ install('${DOC_PATH}/images',
 	glob.glob('aldrin/images/*.gif')
 	+ glob.glob('aldrin/images/*.png'))
 
+# Install Matilde Tracker help files.
+install('${DOC_PATH}/plugins/matilde_tracker',
+	glob.glob('libneil/plugins/matilde_tracker/*'))
 
+# Install Lunar Distortion help files.
+Default(env.Install('${DOC_PATH}/plugins/lunar_distortion/',
+		    'libneil/plugins/lunar_distortion/index.html'))
+Default(env.Install('${DOC_PATH}/plugins/lunar_distortion/img/',
+		    'libneil/plugins/lunar_distortion/img/tanh.gif'))
+Default(env.Install('${DOC_PATH}/plugins/lunar_distortion/img/',
+		    'libneil/plugins/lunar_distortion/img/smart.gif'))
+Default(env.Install('${DOC_PATH}/plugins/lunar_distortion/img/',
+		    'libneil/plugins/lunar_distortion/img/sinus.gif'))

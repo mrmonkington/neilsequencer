@@ -125,7 +125,7 @@ def install_recursive(target, path, mask):
     for filename in os.listdir(path):
 	fullpath = os.path.join(path, filename)
 	if os.path.isdir(fullpath):
-	    install_recursive(os.path.join(target,filename), fullpath, mask)
+	    install_recursive(os.path.join(target, filename), fullpath, mask)
 
 def build_path_config(target, source, env):
     outpath = str(target[0])

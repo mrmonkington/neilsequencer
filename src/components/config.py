@@ -31,72 +31,72 @@ import ConfigParser
 import new
 
 CONFIG_OPTIONS = dict(
-	# insert all sections at this level, in the format
+    # insert all sections at this level, in the format
+    #
+    # <section name> = <descriptor dict>
+    Global = dict(
+	# insert options at this level, in the format
 	#
-	# <section name> = <descriptor dict>
-	Global = dict(
-		# insert options at this level, in the format
-		#
-		# <option name> = <descriptor dict>
-		#
-		# keys you can enter into the dict:
-		#
-		# func: name of the getter/setter/property values. if omitted, 
-		#       the option name will be used in unix notation.
-		#
-		# default: default value to pass for get access if the value is not
-		#          yet stored in the configuration. if omitted,
-		#          a default will be deduced from the value type.
-		#
-		# vtype: value type as type object. if omitted, the type will be deduced from
-		#        the default value. allowed types are int, bool, str, float.
-		#
-		# doc: a doc string describing the meaning of the option. name it so that
-		#      it can be appended to "Returns ..." and "Sets ...". if omitted,
-		#      a default will be used.
-		#
-		# onset: an optional function to be called before the value is written to
-		#        the configuration. the function should have the signature
-		#
-		#        def func(value): -> value
-		#
-		# onget: an optional function to be called before the value is returned
-		#        to the calling function.
-		#
-		#        def func(value): -> value
-		#
-		# for the setting below, SamplePreviewVolume, the default funcname is sample_preview_volume,
-		# and so you can access config.get_sample_preview_volume([default]), config.set_sample_preview_volume(value),
-		# and config.sample_preview_volume as a property.
-		SamplePreviewVolume = dict(default=-12.0,doc="the volume with which samples shall be previewed."),
-		Theme = dict(func='active_theme',default=None,vtype=str,onget=lambda v:v or None,doc="the name of the currently active theme."),
-		KeymapLanguage = dict(default='en',onset=lambda s:s.lower(),onget=lambda s:s.lower(),doc="the current keymap language."),
-		AudioEditorCommand = dict(func='audioeditor_command',default='audacity',doc="the audio editor command."),
-		IncrementalSaving = dict(default=True,doc="the incremental saving option."),
-		PatternFontName = dict(func='pattern_font',default='Monospace Bold 8',doc="the font used in the pattern editor."),
-		LedDraw = dict(default=True,doc="the led draw option."),
-		PatNoteOff = dict(func='pattern_noteoff',default=False,doc="pattern noteoff option."),
+	# <option name> = <descriptor dict>
+	#
+	# keys you can enter into the dict:
+	#
+	# func: name of the getter/setter/property values. if omitted, 
+	#       the option name will be used in unix notation.
+	#
+	# default: default value to pass for get access if the value is not
+	#          yet stored in the configuration. if omitted,
+	#          a default will be deduced from the value type.
+	#
+	# vtype: value type as type object. if omitted, the type will be deduced from
+	#        the default value. allowed types are int, bool, str, float.
+	#
+	# doc: a doc string describing the meaning of the option. name it so that
+	#      it can be appended to "Returns ..." and "Sets ...". if omitted,
+	#      a default will be used.
+	#
+	# onset: an optional function to be called before the value is written to
+	#        the configuration. the function should have the signature
+	#
+	#        def func(value): -> value
+	#
+	# onget: an optional function to be called before the value is returned
+	#        to the calling function.
+	#
+	#        def func(value): -> value
+	#
+	# for the setting below, SamplePreviewVolume, the default funcname is sample_preview_volume,
+	# and so you can access config.get_sample_preview_volume([default]), config.set_sample_preview_volume(value),
+	# and config.sample_preview_volume as a property.
+	SamplePreviewVolume = dict(default=-12.0,doc="the volume with which samples shall be previewed."),
+	Theme = dict(func='active_theme',default=None,vtype=str,onget=lambda v:v or None,doc="the name of the currently active theme."),
+	KeymapLanguage = dict(default='en',onset=lambda s:s.lower(),onget=lambda s:s.lower(),doc="the current keymap language."),
+	AudioEditorCommand = dict(func='audioeditor_command', default='audacity', doc="the audio editor command."),
+	IncrementalSaving = dict(default=True, doc="the incremental saving option."),
+	PatternFontName = dict(func='pattern_font',default='Monospace Bold 8',doc="the font used in the pattern editor."),
+	LedDraw = dict(default=True,doc="the led draw option."),
+	PatNoteOff = dict(func='pattern_noteoff',default=False,doc="pattern noteoff option."),
 	),
-	PluginListBrowser = dict(
-		SearchTerm = dict(func='pluginlistbrowser_search_term',default='',vtype=str,doc="the current plugin search mask."),
-		ShowGenerators = dict(func='pluginlistbrowser_show_generators',default='true',vtype=bool,doc="Show generators."),
-		ShowEffects = dict(func='pluginlistbrowser_show_effects',default='true',vtype=bool,doc="Show effects."),
-		ShowControllers = dict(func='pluginlistbrowser_show_controllers',default='true',vtype=bool,doc="Show controllers."),
-		ShowNonNative = dict(func='pluginlistbrowser_show_nonnative',default='false',vtype=bool,doc="Show non-native plugins."),
+    PluginListBrowser = dict(
+	SearchTerm = dict(func='pluginlistbrowser_search_term',default='',vtype=str,doc="the current plugin search mask."),
+	ShowGenerators = dict(func='pluginlistbrowser_show_generators',default='true',vtype=bool,doc="Show generators."),
+	ShowEffects = dict(func='pluginlistbrowser_show_effects',default='true',vtype=bool,doc="Show effects."),
+	ShowControllers = dict(func='pluginlistbrowser_show_controllers',default='true',vtype=bool,doc="Show controllers."),
+	ShowNonNative = dict(func='pluginlistbrowser_show_nonnative',default='false',vtype=bool,doc="Show non-native plugins."),
 	),
-	WavetablePaths = dict(
-		Path = dict(list=True,func='wavetable_paths',vtype=str,doc="the list of wavetable paths."),
+    WavetablePaths = dict(
+	Path = dict(list=True,func='wavetable_paths',vtype=str,doc="the list of wavetable paths."),
 	),
-	Extensions = dict(
-		URI = dict(list=True,func='enabled_extensions',vtype=str,doc="the current list of enabled extension uris."),
+    Extensions = dict(
+	URI = dict(list=True,func='enabled_extensions',vtype=str,doc="the current list of enabled extension uris."),
 	),
-	Packages = dict(
-		package = dict(list=True,func='packages',vtype=str,doc="the list of python packages to be loaded."),
+    Packages = dict(
+	package = dict(list=True,func='packages',vtype=str,doc="the list of python packages to be loaded."),
 	),
-	Debug = dict(
-		Commands = dict(list=True,func='debug_commands',vtype=str,doc="the current list of debug commands for the python console."),
+    Debug = dict(
+	Commands = dict(list=True,func='debug_commands',vtype=str,doc="the current list of debug commands for the python console."),
 	)
-)
+    )
 
 # the key of this dictionary is the language code associated with the keyboard. the 
 # value is a series of keyboard characters associated with each note, in the order 
