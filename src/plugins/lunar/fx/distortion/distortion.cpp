@@ -3,33 +3,7 @@
 #include <lunar/dsp.h>
 
 class Dist {
-protected:
-  float a, b, c;
 public:
-  void set_a(float a) {
-    this->a = a;
-  }
-
-  float get_a() {
-    return this->a;
-  }
-
-  void set_b(float b) {
-    this->b = b;
-  }
-
-  float get_b() {
-    return this->b;
-  }
-
-  void set_c(float c) {
-    this->c = c;
-  }
-
-  float get_c() {
-    return this->c;
-  }
-
   virtual void process(float *in, float *out, int n) {
     for (int i = 0; i < n; i++) {
       out[i] = in[i];
@@ -37,65 +11,57 @@ public:
   }
 };
 
-class Harmonic : public Dist {
-  void process(float *in, float *out, int n) {
-    float a, b, c, x;
-    a = this->get_a();
-    b = this->get_b();
-    c = this->get_c();
-    for (int i = 0; i < n; i++) {
-      x = in[i];
-      out[i] = sin(x) + a * sin(2.0 * x) + b * sin(3.0 * x) + c * sin(3.0 * x);
-      out[i] /= 1.0 + a + b + c;
-    }
-  }
-};
-
-class Shaper1 : public Dist {
-  void process(float *in, float *out, int n) {
-    float a, x, k;
-    a = (this->get_a() - 0.5) * 1.99;
-    k = 2.0 * a / (1.0 - a);
-    for (int i = 0; i < n; i++) {
-      x = in[i];
-      out[i] = (1.0 + k) * x / (1.0 + k * abs(x));
-    }
-  }
-};
-
-class Shaper2 : public Dist {
+class Smooth : public Dist {
   void process(float *in, float *out, int n) {
     float x;
     for (int i = 0; i < n; i++) {
       x = in[i];
-      out[i] = 1.5 * x - 0.5 * x * x * x;
+      if (x >= 1.0)
+	out[i] = 1.0;
+      else if (x <= -1.0)
+	out[i] = -1.0;
+      else
+	out[i] = 1.5 * x - 0.5 * x * x * x;
     }
   }
 };
 
-class Shaper3 : public Dist {
+class Hard : public Dist {
   void process(float *in, float *out, int n) {
-    float x, a;
+    float x;
     for (int i = 0; i < n; i++) {
-      x = in[i] * 0.686306;
-      a = 1.0 + exp(sqrt(fabs(x)) * -0.75);
-      out[i] = (exp(x) - exp(-x * a)) / (exp(x) + exp(-x));
+      x = in[i];
+      if (x >= 1.0)
+	out[i] = 1.0;
+      else if (x <= -1.0)
+	out[i] = -1.0;
+      else
+	out[i] = x;      
+    }
+  }
+};
+
+class Sine : public Dist {
+  void process(float *in, float *out, int n) {
+    float x;
+    for (int i = 0; i < n; i++) {
+      x = in[i];
+      out[i] = sin(2.0 * M_PI * x);
     }
   }
 };
 
 class distortion : public lunar::fx<distortion> {
 public:
-  static const int n_algs = 4;
+  static const int n_algs = 3;
   int alg;
   float preamp, postamp;
   Dist *algs[n_algs];
 
   void init() {
-    algs[0] = new Harmonic();
-    algs[1] = new Shaper1();
-    algs[2] = new Shaper2();
-    algs[3] = new Shaper3();
+    algs[0] = new Smooth();
+    algs[1] = new Hard();
+    algs[2] = new Sine();
     preamp = 1.0f;
     postamp = 1.0f;
   }
@@ -114,21 +80,6 @@ public:
     if (globals->pregain) {
       preamp = pow(10.0, *globals->pregain / 10.0);
     }
-    if (globals->a) {
-      for (int i = 0; i < n_algs; i++) {
-	algs[i]->set_a(*globals->a);
-      }
-    }
-    if (globals->b) {
-      for (int i = 0; i < n_algs; i++) {
-	algs[i]->set_b(*globals->b);
-      }
-    }
-    if (globals->c) {
-      for (int i = 0; i < n_algs; i++) {
-	algs[i]->set_c(*globals->c);
-      }
-    }
     if (globals->postgain) {
       postamp = pow(10.0, *globals->postgain / 10.0);
     }
@@ -137,6 +88,7 @@ public:
   void process_stereo(float *inL, float *inR, float *outL, float *outR, int n) {
     dsp_copy(inL, outL, n);
     dsp_copy(inR, outR, n);
+
     dsp_amp(inL, n, preamp);
     dsp_amp(inR, n, preamp);
 
@@ -145,6 +97,7 @@ public:
 
     dsp_amp(outL, n, postamp);
     dsp_amp(outR, n, postamp);
+
     dsp_clip(outL, n, 1); // signal may never exceed -1..1
     dsp_clip(outR, n, 1);
   }

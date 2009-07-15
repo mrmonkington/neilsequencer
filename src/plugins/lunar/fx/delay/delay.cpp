@@ -77,9 +77,15 @@ public:
   float cutoff, resonance;
   Svf filters[2];
 
-  inline float tanh(float x) {
-    float raised = exp(x);
-    return (raised - 1.0) / (raised + 1.0);
+  inline float squash(float x) {
+    //float raised = exp(x);
+    //return (raised - 1.0) / (raised + 1.0);
+    if (x >= 1.0)
+      return 1.0;
+    else if (x <= -1.0)
+      return -1.0;
+    else
+      return 1.5 * x - 0.5 * x * x * x;
   }
 
   void rb_init(ringbuffer_t *rb) {
@@ -101,7 +107,7 @@ public:
       *out = (*out * dry) + (*rb->pos * wet);
       *rb->pos = min(max((*rb->pos * fb) + s, -1.0f), 1.0f);
       *rb->pos = filter->sample(*rb->pos, filter_mode);
-      *rb->pos = tanh(*rb->pos);
+      *rb->pos = squash(*rb->pos);
       out++;
       rb->pos++;
       if (rb->pos == rb->eob) // wrap

@@ -11,20 +11,19 @@
     <parameters>
       <valuenamegroup>
 	<valuenames id="algs">
-	  <alias value="0" name="Harmonic"/>
-	  <alias value="1" name="Shaper1"/>
-	  <alias value="2" name="Shaper2"/>
-	  <alias value="3" name="Shaper3"/>
+	  <alias value="0" name="Smooth"/>
+	  <alias value="1" name="Hard"/>
+	  <alias value="2" name="Sine"/>
 	</valuenames>
       </valuenamegroup>
       <global>
 	<parameter
 	   id="alg"
-	   name="Algorithm"
+	   name="Function"
 	   description="Select distortion type"
 	   type="byte"
 	   minvalue="0"
-	   maxvalue="3"
+	   maxvalue="2"
 	   defvalue="0"
 	   valuenames="algs"
 	   state="true"/>
@@ -34,37 +33,7 @@
 	   description="Gain of input signal"
 	   type="float"
 	   minvalue="0"
-	   maxvalue="32"
-	   defvalue="0"
-	   precision="0.01"
-	   state="true"/>
-	<parameter
-	   id="a"
-	   name="Param A"
-	   description="Parameter A for the distortion algorithm"
-	   type="float"
-	   minvalue="0"
-	   maxvalue="1"
-	   defvalue="0"
-	   precision="0.01"
-	   state="true"/>
-	<parameter
-	   id="b"
-	   name="Param B"
-	   description="Parameter B for the distortion algorithm"
-	   type="float"
-	   minvalue="0"
-	   maxvalue="1"
-	   defvalue="0"
-	   precision="0.01"
-	   state="true"/>
-	<parameter
-	   id="c"
-	   name="Param C"
-	   description="Parameter C for the distortion algorithm"
-	   type="float"
-	   minvalue="0"
-	   maxvalue="1"
+	   maxvalue="24"
 	   defvalue="0"
 	   precision="0.01"
 	   state="true"/>
@@ -73,7 +42,7 @@
 	   name="Gain Out (dB)"
 	   description="Gain of output signal"
 	   type="float"
-	   minvalue="-32"
+	   minvalue="-24"
 	   maxvalue="0"
 	   defvalue="0"
 	   precision="0.01"
