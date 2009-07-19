@@ -1,6 +1,8 @@
 // adsr generator
 
 struct adsr {
+  static const mintime = 0.00001;
+
   float sps;
   float attack; // amp per sample
   float decay; // amp per sample
@@ -26,19 +28,28 @@ struct adsr {
     a = 0.0;
     state = state_off;
   }
+
+  void set_a(float a) {
+    this->attack = 1.0 / (this->sps * max(a, mintime));
+  }
+
+  void set_d(float d) {
+    this->decay = (1.0 - this->sustain) / (this->sps * max(d, mintime));
+  }
+
+  void set_s(float s) {
+    this->sustain = s;
+  }
+
+  void set_r(float r) {
+    this->release = s / (this->sps * max(r, mintime));
+  }
 		
-  void on(float a, float d, float s, float r, float mul) {
+  void on(float vel) {
     float mintime = 0.00001f; // 0.01ms
     a = 0.0;
     state = state_attack;
-    this->attack = 1.0 / (this->sps * max(a, mintime));
-    printf("sps = %d\n", this->sps);
-    printf("a = %.4f\n", a);
-    printf("attack = %.5f\n", this->attack);
-    this->decay = (1.0 - s) / (this->sps * max(d, mintime));
-    this->sustain = s;
-    this->release = s / (this->sps * max(r, mintime));
-    this->mul = mul;
+    this->mul = vel;
   }
 	
   void off() {

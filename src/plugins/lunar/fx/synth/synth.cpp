@@ -180,6 +180,13 @@ public:
 #define ACC_VOLUME 0.5
 #define ACC_CUTOFF 1.0
 
+class Voice {
+public:
+  void new_note(float attack, float decay, bool slide, bool accent) {
+
+  }
+};
+
 class synth : public lunar::fx<synth> {
 public:
   float attack, decay;
