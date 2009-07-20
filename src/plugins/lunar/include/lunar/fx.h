@@ -30,6 +30,7 @@ void *lunar_realloc(void *ptr, lunar_size_t len);
 // math
 float lunar_pow(float, float);
 float lunar_log(float);
+  float lunar_log2(float);
 float lunar_log10(float);
 float lunar_exp(float);
 float lunar_abs(float);
@@ -38,6 +39,7 @@ inline float lunar_max(float a, float b) { return (a > b)?a:b; }
 float lunar_sin(float);
 float lunar_cos(float);
 float lunar_tan(float);
+  float lunar_round(float);
 float lunar_sinh(float);
 float lunar_cosh(float);
 float lunar_atan(float);
@@ -48,6 +50,9 @@ float lunar_fabs(float);
 float lunar_floor(float);
 float lunar_ceil(float);
 long int lunar_lrint(float);
+
+  //other:
+  int lunar_rand();
 
 #if !defined(LUNAR_NO_FX_STDLIB_DEFINES)
 
@@ -66,6 +71,7 @@ long int lunar_lrint(float);
 // math
 #define pow lunar_pow
 #define log lunar_log
+#define log2 lunar_log2
 #define log10 lunar_log10
 #define exp lunar_exp
 #define abs lunar_abs
@@ -74,6 +80,7 @@ long int lunar_lrint(float);
 #define sin lunar_sin
 #define cos lunar_cos
 #define tan lunar_tan
+#define round lunar_round
 
 #define sinh lunar_sinh
 #define cosh lunar_cosh
@@ -84,6 +91,9 @@ long int lunar_lrint(float);
 #define floor lunar_floor
 #define ceil lunar_ceil
 #define lrint lunar_lrint
+
+  // other:
+#define rand lunar_rand
 #endif // LUNAR_NO_FX_STDLIB_DEFINES
 
 #endif // LUNAR_NO_FX_STDLIB

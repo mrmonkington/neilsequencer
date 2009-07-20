@@ -1,0 +1,382 @@
+<?xml version="1.0" encoding="utf-8"?>
+<zzub>
+  <plugin
+     uri="@neil/lunar/generator/ArguruSynth2;1"
+     name="Arguru Synth2"
+     shortname="Synth2"
+     type="generator"
+     mintracks="1"
+     maxtracks="16"
+     description="Arguru Synth 2 final edition."
+     author="Vytautas Jančauskas"
+     email="unaudio@gmail.com">
+    <parameters>
+      <valuenamegroup>
+	<valuenames id="waves">
+	  <alias value="0" name="Sine"/>
+	  <alias value="1" name="Sawtooth"/>
+	  <alias value="2" name="Square"/>
+	  <alias value="3" name="Triangle"/>
+	  <alias value="4" name="Random"/>
+	</valuenames>
+	<valuenames id="on_off">
+	  <alias value="0" name="Off"/>
+	  <alias value="1" name="On"/>
+	</valuenames>
+	<valuenames id="filters">
+	  <alias value="0" name="Lowpass A"/>
+	  <alias value="1" name="Hipass A"/>
+	  <alias value="2" name="Bandpass A"/>
+	  <alias value="3" name="Bandreject A"/>
+	  <alias value="4" name="ParaEQ1 A"/>
+	  <alias value="5" name="InvParaEQ1 A"/>
+	  <alias value="6" name="ParaEQ2 A"/>
+	  <alias value="7" name="InvParaEQ2 A"/>
+	  <alias value="8" name="ParaEQ3 A"/>
+	  <alias value="9" name="InvParaEQ3 A"/>
+	  <alias value="10" name="Lowpass B"/>
+	  <alias value="11" name="Hipass B"/>
+	  <alias value="12" name="Bandpass B"/>
+	  <alias value="13" name="Bandreject B"/>
+	  <alias value="14" name="ParaEQ1 B"/>
+	  <alias value="15" name="InvParaEQ1 B"/>
+	  <alias value="16" name="ParaEQ2 B"/>
+	  <alias value="17" name="InvParaEQ2 B"/>
+	  <alias value="18" name="ParaEQ3 B"/>
+	  <alias value="19" name="InvParaEQ3 B"/>
+	</valuenames>
+	<valuenames id="arpeggios">
+	  <alias value="0" name="Off"/>
+	  <alias value="1" name="Minor1"/>
+	  <alias value="2" name="Major1"/>
+	  <alias value="3" name="Minor2"/>
+	  <alias value="4" name="Major2"/>
+	  <alias value="5" name="Riffer1"/>
+	  <alias value="6" name="Riffer2"/>
+	  <alias value="7" name="Riffer3"/>
+	  <alias value="8" name="Minor Bounce"/>
+	  <alias value="9" name="Major Bounce"/>
+	</valuenames>
+      </valuenamegroup>
+      <global>
+	<parameter
+	   id="paraOSC1wave"
+	   name="OSC1 Wave"
+	   description="Waveform of the first oscillator"
+	   type="byte"
+	   minvalue="0"
+	   maxvalue="4"
+	   defvalue="1"
+	   valuenames="waves"
+	   state="true"/>
+	<parameter
+	   id="paraOSC2wave"
+	   name="OSC2 Wave"
+	   description="Waveform of the second oscillator"
+	   type="byte"
+	   minvalue="0"
+	   maxvalue="4"
+	   defvalue="1"
+	   valuenames="waves"
+	   state="true"/>
+	<parameter
+	   id="paraOSC2detune"
+	   name="OSC2 Detune"
+	   description="Second oscillator detune"
+	   type="float"
+	   minvalue="-36.0"
+	   maxvalue="36.0"
+	   defvalue="0.0"
+	   precision="1.0"
+	   state="true"/>
+	<parameter
+	   id="paraOSC2finetune"
+	   name="OSC2 Finetune"
+	   description="Second oscillator finetune"
+	   type="word"
+	   minvalue="0"
+	   maxvalue="256"
+	   defvalue="40"
+	   state="true"/>
+	<parameter
+	   id="paraOSC2sync"
+	   name="OSC2 Sync"
+	   description="Second oscillator sync"
+	   type="byte"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0"
+	   valuenames="on_off"
+	   state="true"/>
+	<parameter
+	   id="paraVCAattack"
+	   name="VCA Attack (s)"
+	   description="Amplitude envelopes attack time"
+	   type="float"
+	   minvalue="0.001"
+	   maxvalue="5.0"
+	   defvalue="0.001"
+	   precision="0.001"
+	   logarithmic="true"
+	   power="0.3"
+	   state="true"/>
+	<parameter
+	   id="paraVCAdecay"
+	   name="VCA Decay (s)"
+	   description="Amplitude envelopes decay time"
+	   type="float"
+	   minvalue="0.001"
+	   maxvalue="5.0"
+	   defvalue="1.0"
+	   precision="0.001"
+	   logarithmic="true"
+	   power="0.3"
+	   state="true"/>
+	<parameter
+	   id="paraVCAsustain"
+	   name="VCA Sustain"
+	   description="Amplitude envelopes sustain value"
+	   type="float"
+	   minvalue="0.0"
+	   maxvalue="1.0"
+	   defvalue="0.0"
+	   precision="0.001"
+	   state="true"/>
+	<parameter
+	   id="paraVCArelease"
+	   name="VCA Release (s)"
+	   description="Amplitude envelopes release time"
+	   type="float"
+	   minvalue="0.001"
+	   maxvalue="5.0"
+	   defvalue="0.001"
+	   precision="0.001"
+	   logarithmic="true"
+	   power="0.3"
+	   state="true"/>
+	<parameter
+	   id="paraVCFattack"
+	   name="VCF Attack (s)"
+	   description="Filter envelopes attack time"
+	   type="float"
+	   minvalue="0.001"
+	   maxvalue="5.0"
+	   defvalue="0.001"
+	   precision="0.001"
+	   logarithmic="true"
+	   power="0.3"
+	   state="true"/>
+	<parameter
+	   id="paraVCFdecay"
+	   name="VCF Decay (s)"
+	   description="Filter envelopes decay time"
+	   type="float"
+	   minvalue="0.001"
+	   maxvalue="5.0"
+	   defvalue="0.6"
+	   precision="0.001"
+	   logarithmic="true"
+	   power="0.3"
+	   state="true"/>
+	<parameter
+	   id="paraVCFsustain"
+	   name="VCF Sustain"
+	   description="Filter envelopes sustain value"
+	   type="float"
+	   minvalue="0.0"
+	   maxvalue="1.0"
+	   defvalue="0.0"
+	   precision="0.001"
+	   state="true"/>
+	<parameter
+	   id="paraVCFrelease"
+	   name="VCF Release (s)"
+	   description="Filter envelopes release time"
+	   type="float"
+	   minvalue="0.001"
+	   maxvalue="5.0"
+	   defvalue="0.001"
+	   precision="0.001"
+	   logarithmic="true"
+	   power="0.3"
+	   state="true"/>
+	<parameter
+	   id="paraVCFlfospeed"
+	   name="VCF LFO Speed"
+	   description="Filter lfos speed"
+	   type="word"
+	   minvalue="1"
+	   maxvalue="65535"
+	   defvalue="1"
+	   state="true"/>
+	<parameter
+	   id="paraVCFlfoamplitude"
+	   name="VCF LFO Amp"
+	   description="Filter lfos amplitude"
+	   type="word"
+	   minvalue="0"
+	   maxvalue="240"
+	   defvalue="0"
+	   state="true"/>
+	<parameter
+	   id="paraVCFcutoff"
+	   name="VCF Cutoff"
+	   description="Filter cutoff"
+	   type="word"
+	   minvalue="0"
+	   maxvalue="240"
+	   defvalue="80"
+	   state="true"/>
+	<parameter
+	   id="paraVCFresonance"
+	   name="VCF Resonance"
+	   description="Filter resonance"
+	   type="word"
+	   minvalue="1"
+	   maxvalue="240"
+	   defvalue="40"
+	   state="true"/>
+ 	<parameter
+	   id="paraVCFtype"
+	   name="VCF Type"
+	   description="Filter type"
+	   type="word"
+	   minvalue="0"
+	   maxvalue="19"
+	   defvalue="10"
+	   valuenames="filters"
+	   state="true"/>
+ 	<parameter
+	   id="paraVCFenvmod"
+	   name="VCF Envmod"
+	   description="How much is the filter affected by its envelope"
+	   type="float"
+	   minvalue="-240.0"
+	   maxvalue="240.0"
+	   defvalue="120.0"
+	   precision="1.0"
+	   state="true"/>
+ 	<parameter
+	   id="paraOSCmix"
+	   name="OSC Mix"
+	   description="Mixing between the two of the synths oscillators"
+	   type="byte"
+	   minvalue="0"
+	   maxvalue="255"
+	   defvalue="128"
+	   state="true"/>
+ 	<parameter
+	   id="paraOUTvol"
+	   name="Volume"
+	   description="Synthesizer volume"
+	   type="byte"
+	   minvalue="0"
+	   maxvalue="255"
+	   defvalue="128"
+	   state="true"/>
+ 	<parameter
+	   id="paraARPmode"
+	   name="Arpeggiator"
+	   description="Arpeggiator mode"
+	   type="byte"
+	   minvalue="0"
+	   maxvalue="16"
+	   defvalue="0"
+	   valuenames="arpeggs"
+	   state="true"/>
+ 	<parameter
+	   id="paraARPbpm"
+	   name="Arp. BPM"
+	   description="Arpeggiator tempo in beats per minute"
+	   type="word"
+	   minvalue="32"
+	   maxvalue="1024"
+	   defvalue="32"
+	   state="true"/>
+ 	<parameter
+	   id="paraARPcount"
+	   name="Arp. Steps"
+	   description="Arpeggiator steps"
+	   type="byte"
+	   minvalue="0"
+	   maxvalue="16"
+	   defvalue="4"
+	   state="true"/>
+ 	<parameter
+	   id="paraGlobalDetune"
+	   name="Glb. Detune"
+	   description="Global detune"
+	   type="float"
+	   minvalue="-36.0"
+	   maxvalue="36.0"
+	   defvalue="0.0"
+	   state="true"/>
+ 	<parameter
+	   id="paraGlobalFinetune"
+	   name="Glb. Finetune"
+	   description="Global finetune"
+	   type="float"
+	   minvalue="-256.0"
+	   maxvalue="256.0"
+	   defvalue="0.0"
+	   prevision="1.0"
+	   state="true"/>
+ 	<parameter
+	   id="paraGlide"
+	   name="Glide Depth"
+	   description="Glide depth"
+	   type="word"
+	   minvalue="0"
+	   maxvalue="255"
+	   defvalue="40"
+	   state="true"/>
+ 	<parameter
+	   id="paraInterpolation"
+	   name="Interpolation"
+	   description="Interpolation method used"
+	   type="byte"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="1"
+	   valuenames="on_off"
+	   state="true"/>
+      </global>
+      <track>
+	<parameter
+	   id="note"
+	   type="note"/>
+	<parameter
+	   id="command"
+	   name="Command"
+	   description="Synth command"
+	   type="byte"
+	   minvalue="0"
+	   maxvalue="255"
+	   defvalue="0"
+	   novalue="0"/>
+	<parameter
+	   id="value"
+	   name="Value"
+	   description="Synth command value"
+	   type="byte"
+	   minvalue="0"
+	   maxvalue="255"
+	   defvalue="0"
+	   novalue="0"/>
+      </track>
+    </parameters>
+    <files>
+      <file ref="ArguruSynth2.cpp"/>
+      <file ref="ArguruSynth2.hpp"/>
+      <file ref="Filter.cpp"/>
+      <file ref="Filter.hpp"/>
+      <file ref="SynthTrack.cpp"/>
+      <file ref="SynthTrack.hpp"/>
+    </files>
+    <modules>
+      <module id="ArguruSynth2">
+	<source language="c++" ref="ArguruSynth2.cpp" fxdef="ArguruSynth2.hpp"/>
+      </module>
+    </modules>
+  </plugin>
+</zzub>

@@ -19,23 +19,23 @@
 #include "include/lunar/fx.h"
 
 namespace zzub {
-	struct host;
+  struct host;
 };
 
 struct _lunar_voice {
-	zzub::host *cb;
+  zzub::host *cb;
 	
-	int instr;
-	float note;
-	float speed;
-	int offset;
-	float frac;
-	const zzub::wave_info *wi;
-	const zzub::wave_level *wl;
+  int instr;
+  float note;
+  float speed;
+  int offset;
+  float frac;
+  const zzub::wave_info *wi;
+  const zzub::wave_level *wl;
 };
 
 struct _lunar_host {
-	zzub::host *cb;
-	std::vector<lunar_voice_t> voices;
+  zzub::host *cb;
+  std::vector<lunar_voice_t> voices;
 };
 

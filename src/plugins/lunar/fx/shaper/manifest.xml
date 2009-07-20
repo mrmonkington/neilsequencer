@@ -1,202 +1,190 @@
 <?xml version="1.0" encoding="utf-8"?>
 <zzub>
   <plugin
-     uri="@neil/lunar/controller/CustomLFO;1"
-     name="Lunar CustomLFO"
-     shortname="CustomLFO"
-     type="controller"
-     description="A custom 16 step LFO."
+     uri="@neil/lunar/effect/Shaper;1"
+     name="Lunar Shaper"
+     shortname="Shaper"
+     type="effect"
+     description="A custom curve shaper."
      author="Vytautas Jančauskas"
      email="unaudio@gmail.com">
     <parameters>
       <global>
 	<parameter
-	   id="length"
-	   name="Length"
-	   description="Length of the cycle."
-	   type="byte"
-	   minvalue="4"
-	   maxvalue="8"
-	   defvalue="8"
+	   id="pre"
+	   name="Pre-Gain (dB)"
+	   type="float"
+	   minvalue="-12"
+	   maxvalue="12"
+	   defvalue="0"
+	   precision="0.001"
 	   state="true"/>
 	<parameter
 	   id="step1"
-	   name="Step 1"
+	   name="Step 01"
 	   type="float"
-	   minvalue="0"
+	   minvalue="-1"
 	   maxvalue="1"
-	   defvalue="0.5"
+	   defvalue="-1.0"
 	   precision="0.001"
-	   state="true"/>
-	<parameter
-	   id="time1"
-	   name="Time 1"
-	   type="word"
-	   minvalue="0"
-	   maxvalue="256"
-	   defvalue="8"
 	   state="true"/>
 	<parameter
 	   id="step2"
-	   name="Step 2"
+	   name="Step 02"
 	   type="float"
-	   minvalue="0"
+	   minvalue="-1"
 	   maxvalue="1"
-	   defvalue="0.5"
+	   defvalue="-0.875"
 	   precision="0.001"
-	   state="true"/>
-	<parameter
-	   id="time2"
-	   name="Time 2"
-	   type="word"
-	   minvalue="0"
-	   maxvalue="256"
-	   defvalue="8"
 	   state="true"/>
 	<parameter
 	   id="step3"
-	   name="Step 3"
+	   name="Step 03"
 	   type="float"
-	   minvalue="0"
+	   minvalue="-1"
 	   maxvalue="1"
-	   defvalue="0.5"
+	   defvalue="-0.75"
 	   precision="0.001"
-	   state="true"/>
-	<parameter
-	   id="time3"
-	   name="Time 3"
-	   type="word"
-	   minvalue="0"
-	   maxvalue="256"
-	   defvalue="8"
 	   state="true"/>
 	<parameter
 	   id="step4"
-	   name="Step 4"
+	   name="Step 04"
 	   type="float"
-	   minvalue="0"
+	   minvalue="-1"
 	   maxvalue="1"
-	   defvalue="0.5"
+	   defvalue="-0.625"
 	   precision="0.001"
-	   state="true"/>
-	<parameter
-	   id="time4"
-	   name="Time 4"
-	   type="word"
-	   minvalue="0"
-	   maxvalue="256"
-	   defvalue="8"
 	   state="true"/>
 	<parameter
 	   id="step5"
-	   name="Step 5"
+	   name="Step 05"
 	   type="float"
-	   minvalue="0"
+	   minvalue="-1"
 	   maxvalue="1"
-	   defvalue="0.5"
+	   defvalue="-0.5"
 	   precision="0.001"
-	   state="true"/>
-	<parameter
-	   id="time5"
-	   name="Time 5"
-	   type="word"
-	   minvalue="0"
-	   maxvalue="256"
-	   defvalue="8"
 	   state="true"/>
 	<parameter
 	   id="step6"
-	   name="Step 6"
+	   name="Step 06"
 	   type="float"
-	   minvalue="0"
+	   minvalue="-1"
 	   maxvalue="1"
-	   defvalue="0.5"
+	   defvalue="-0.375"
 	   precision="0.001"
-	   state="true"/>
-	<parameter
-	   id="time6"
-	   name="Time 6"
-	   type="word"
-	   minvalue="0"
-	   maxvalue="256"
-	   defvalue="8"
 	   state="true"/>
 	<parameter
 	   id="step7"
-	   name="Step 7"
+	   name="Step 07"
 	   type="float"
-	   minvalue="0"
+	   minvalue="-1"
 	   maxvalue="1"
-	   defvalue="0.5"
+	   defvalue="-0.25"
 	   precision="0.001"
-	   state="true"/>
-	<parameter
-	   id="time7"
-	   name="Time 7"
-	   type="word"
-	   minvalue="0"
-	   maxvalue="256"
-	   defvalue="8"
 	   state="true"/>
 	<parameter
 	   id="step8"
-	   name="Step 8"
+	   name="Step 08"
 	   type="float"
-	   minvalue="0"
+	   minvalue="-1"
+	   maxvalue="1"
+	   defvalue="-0.125"
+	   precision="0.001"
+	   state="true"/>
+	<parameter
+	   id="step9"
+	   name="Step 09"
+	   type="float"
+	   minvalue="-1"
+	   maxvalue="1"
+	   defvalue="0.0"
+	   precision="0.001"
+	   state="true"/>
+	<parameter
+	   id="step10"
+	   name="Step 10"
+	   type="float"
+	   minvalue="-1"
+	   maxvalue="1"
+	   defvalue="0.125"
+	   precision="0.001"
+	   state="true"/>
+	<parameter
+	   id="step11"
+	   name="Step 11"
+	   type="float"
+	   minvalue="-1"
+	   maxvalue="1"
+	   defvalue="0.25"
+	   precision="0.001"
+	   state="true"/>
+	<parameter
+	   id="step12"
+	   name="Step 12"
+	   type="float"
+	   minvalue="-1"
+	   maxvalue="1"
+	   defvalue="0.375"
+	   precision="0.001"
+	   state="true"/>
+	<parameter
+	   id="step13"
+	   name="Step 13"
+	   type="float"
+	   minvalue="-1"
 	   maxvalue="1"
 	   defvalue="0.5"
 	   precision="0.001"
 	   state="true"/>
 	<parameter
-	   id="time8"
-	   name="Time 8"
-	   type="word"
-	   minvalue="0"
-	   maxvalue="256"
-	   defvalue="8"
+	   id="step14"
+	   name="Step 14"
+	   type="float"
+	   minvalue="-1"
+	   maxvalue="1"
+	   defvalue="0.625"
+	   precision="0.001"
 	   state="true"/>
 	<parameter
-	   id="minimum"
-	   name="Min"
+	   id="step15"
+	   name="Step 15"
 	   type="float"
-	   minvalue="0.0"
-	   maxvalue="1.0"
-	   defvalue="0.0"
-	   precision="0.01"
+	   minvalue="-1"
+	   maxvalue="1"
+	   defvalue="0.75"
+	   precision="0.001"
 	   state="true"/>
 	<parameter
-	   id="maximum"
-	   name="Max"
+	   id="step16"
+	   name="Step 16"
 	   type="float"
-	   minvalue="0.0"
-	   maxvalue="1.0"
-	   defvalue="1.0"
-	   precision="0.01"
+	   minvalue="-1"
+	   maxvalue="1"
+	   defvalue="0.875"
+	   precision="0.001"
+	   state="true"/>
+	<parameter
+	   id="post"
+	   name="Post-Gain (dB)"
+	   type="float"
+	   minvalue="-12"
+	   maxvalue="12"
+	   defvalue="0"
+	   precision="0.001"
 	   state="true"/>
       </global>
       <track>
       </track>
-      <controller>
-	<parameter
-	   id="out1"
-	   name="Output"
-	   description="CustomLFO Output"
-	   type="float"
-	   minvalue="0"
-	   maxvalue="1"
-	   defvalue="0"
-	   precision="0.01"/>
-      </controller>
     </parameters>
     <attributes>
     </attributes>
     <files>
-      <file ref="CustomLFO.cpp"/>
-      <file ref="CustomLFO.h"/>
+      <file ref="Shaper.cpp"/>
+      <file ref="Shaper.h"/>
     </files>
     <modules>
-      <module id="CustomLFO">
-	<source language="c++" ref="CustomLFO.cpp" fxdef="CustomLFO.h"/>
+      <module id="Shaper">
+	<source language="c++" ref="Shaper.cpp" fxdef="Shaper.h"/>
       </module>
     </modules>
   </plugin>
