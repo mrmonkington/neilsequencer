@@ -205,18 +205,45 @@ public:
   void setfilter(int type, int c,int r) {
     switch(type) {
       case 0: 
-	SetFilter_4PoleLP(c,r); 
+	SetFilter_4PoleLP(c, r); 
 	invert = false; 
 	break;
-      case 1: SetFilter_4PoleLP(c,r); invert=true; break;
-      case 2: SetFilter_4PoleEQ1(c,r); invert=false; break;
-      case 3: SetFilter_4PoleEQ1(c,r); invert=true; break;
-      case 4: SetFilter_4PoleEQ2(c,r); invert=false; break;
-      case 5: SetFilter_4PoleEQ2(c,r); invert=true; break;
-      case 6: SetFilter_Vocal1(c,r);invert=false; break;
-      case 7: SetFilter_Vocal1(c,r);invert=true; break;
-      case 8: SetFilter_Vocal2(c,r);invert=false; break;
-      case 9: SetFilter_Vocal2(c,r);invert=true; break;
+      case 1: 
+	SetFilter_4PoleLP(c, r); 
+	invert = true; 
+	break;
+      case 2: 
+	SetFilter_4PoleEQ1(c, r); 
+	invert = false; 
+	break;
+      case 3: 
+	SetFilter_4PoleEQ1(c, r); 
+	invert = true; 
+	break;
+      case 4: 
+	SetFilter_4PoleEQ2(c, r); 
+	invert = false; 
+	break;
+      case 5: 
+	SetFilter_4PoleEQ2(c, r); 
+	invert = true; 
+	break;
+      case 6: 
+	SetFilter_Vocal1(c, r);
+	invert = false; 
+	break;
+      case 7: 
+	SetFilter_Vocal1(c, r);
+	invert = true; 
+	break;
+      case 8: 
+	SetFilter_Vocal2(c, r);
+	invert = false; 
+	break;
+      case 9: 
+	SetFilter_Vocal2(c, r);
+	invert = true; 
+	break;
       }
     _type=type;
   }

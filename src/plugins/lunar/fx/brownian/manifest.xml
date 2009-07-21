@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<zzub>
+  <plugin
+     uri="@trac.zeitherrschaft.org/aldrin/lunar/controller/brownian;1"
+     name="Lunar Brownian"
+     shortname="Brownian"
+     type="controller"
+     description="A brownian motion generator to be used as a controller."
+     author="Vytautas Jančauskas"
+     email="unaudio@gmail.com">
+    <parameters>
+      <global>
+	<parameter
+	   id="seed"
+	   name="Seed"
+	   type="word"
+	   minvalue="0"
+	   maxvalue="32767"
+	   defvalue="1"
+	   precision="1"
+	   state="true"/>
+	<parameter
+	   id="rate"
+	   name="Rate"
+	   type="word"
+	   minvalue="0"
+	   maxvalue="32"
+	   defvalue="0"
+	   precision="1"
+	   state="true"/>
+	<parameter
+	   id="bmin"
+	   name="Min"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0.0"
+	   precision="0.001"
+	   state="true"/>
+	<parameter
+	   id="bmax"
+	   name="Max"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="1.0"
+	   precision="0.001"
+	   state="true"/>
+	<parameter
+	   id="step"
+	   name="Step"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0.1"
+	   precision="0.001"
+	   state="true"/>
+      </global>
+      <track>
+      </track>
+      <controller>
+	<parameter
+	   id="out1"
+	   name="Brown"
+	   description="Brownian Signal"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0"
+	   precision="0.01"/>
+      </controller>
+    </parameters>
+    <attributes>
+    </attributes>
+    <files>
+      <file ref="brownian.cpp"/>
+      <file ref="brownian.h"/>
+    </files>
+    <modules>
+      <module id="brownian">
+	<source language="c++" ref="brownian.cpp" fxdef="brownian.h"/>
+      </module>
+    </modules>
+  </plugin>
+</zzub>
