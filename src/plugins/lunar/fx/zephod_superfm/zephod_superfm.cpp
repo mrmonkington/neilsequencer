@@ -66,12 +66,17 @@ public:
 
   float Volume, freq, phase, oldout, Mot1dv, Mot2dv, Mot3dv, diference, 
     target_vol, advance, current_vol, mod1_env, mod2_env, mod3_env,
-    lfo_freq, lfo_phase, lfo1, lfo2, lfo3;
+    lfo1_freq, lfo1_phase, lfo2_freq, lfo2_phase, lfo3_freq, lfo3_phase, 
+    lfo1, lfo2, lfo3;
   envelope VCA, ENV;
 
   void Init() {
-    lfo_freq = 0.0;
-    lfo_phase = 0.0;
+    lfo1_freq = 0.0;
+    lfo1_phase = 0.0;
+    lfo2_freq = 0.0;
+    lfo2_phase = 0.0;
+    lfo3_freq = 0.0;
+    lfo3_phase = 0.0;
     lfo1 = 0.0;
     lfo2 = 0.0;
     lfo3 = 0.0;
@@ -105,13 +110,21 @@ public:
     VCA.stop();
     ENV.stop();
     phase = 0.0;
-    lfo_phase = 0.0;
+    lfo1_phase = 0.0;
+    lfo2_phase = 0.0;
+    lfo3_phase = 0.0;
+  }
+
+  void reset_lfos() {
+    lfo1_phase = 0.0;
+    lfo2_phase = 0.0;
+    lfo3_phase = 0.0;
   }
 
   void Generate(float *psamplesleft, float *psamplesright, int numsamples) {
     // Generates the actual sample data.
     if (VCA.envstate != ENV_NONE) {
-      float cphase, bphase, dphase, temp, lfo;
+      float cphase, bphase, dphase, temp, lfo1, lfo2, lfo3;
       float Mot1D, Mot2D, Mot3D;
       
       float const Mod1ea = mod1_env;
@@ -123,14 +136,22 @@ public:
       
       for(int i=0; i<numsamples; i++) {
 	// For each sample in the block.
-	lfo = Osc(lfo_phase);
-	lfo_phase += lfo_freq;
-	while (lfo_phase >= 1.0)
-	  lfo_phase -= 1.0;
+	lfo1 = FOsc(lfo1_phase);
+	lfo1_phase += lfo1_freq;
+	while (lfo1_phase >= 1.0)
+	  lfo1_phase -= 1.0;
+	lfo2 = FOsc(lfo2_phase);
+	lfo2_phase += lfo2_freq;
+	while (lfo2_phase >= 1.0)
+	  lfo2_phase -= 1.0;
+	lfo3 = FOsc(lfo3_phase);
+	lfo3_phase += lfo3_freq;
+	while (lfo3_phase >= 1.0)
+	  lfo3_phase -= 1.0;
  
-	Mot1D = Mot1dv + ENV.res() * Mod1ea + lfo * lfo1;
-	Mot2D = Mot2dv + ENV.envvol * Mod2ea + lfo * lfo2;
-	Mot3D = Mot3dv + ENV.envvol * Mod3ea + lfo * lfo3; 
+	Mot1D = Mot1dv + ENV.res() * Mod1ea + lfo1 * this->lfo1;
+	Mot2D = Mot2dv + ENV.envvol * Mod2ea + lfo2 * this->lfo2;
+	Mot3D = Mot3dv + ENV.envvol * Mod3ea + lfo3 * this->lfo3; 
 
 	switch (route) {
 	case 0:
@@ -146,7 +167,7 @@ public:
 	    bphase = phase + Osc(cphase) * Mot1D;
 	  else 
 	    bphase = phase;
-	  break;  
+	  break;
 	case 1:
 	  if (Mot3D > 0) 
 	    cphase = phase + Osc(phase) * Mot3D;
@@ -204,6 +225,11 @@ public:
 
   inline float Osc(float phi) {
     return sin(phi * 2 * M_PI);
+  }
+
+  inline float FOsc(float phi) {
+    phi = phi * 2.0 - 1.0;
+    return (phi - phi * abs(phi)) * 4.0;
   }
 };
 
@@ -277,15 +303,21 @@ public:
     if (globals->paraRoute)
       for (i = 0; i < MAX_TRACKS; i++)
 	Voices[i].route = (int)*globals->paraRoute;
-    if (globals->lfoFreq)
+    if (globals->lfoFreq1)
       for (i = 0; i < MAX_TRACKS; i++)
-	Voices[i].lfo_freq = (float)*globals->lfoFreq / (float)SAMPLING_RATE;
+	Voices[i].lfo1_freq = (float)*globals->lfoFreq1 / (float)SAMPLING_RATE;
     if (globals->lfoMod1)
       for (i = 0; i < MAX_TRACKS; i++)
 	Voices[i].lfo1 = *globals->lfoMod1;
+    if (globals->lfoFreq2)
+      for (i = 0; i < MAX_TRACKS; i++)
+	Voices[i].lfo2_freq = (float)*globals->lfoFreq2 / (float)SAMPLING_RATE;
     if (globals->lfoMod2)
       for (i = 0; i < MAX_TRACKS; i++)
 	Voices[i].lfo2 = *globals->lfoMod2;
+    if (globals->lfoFreq3)
+      for (i = 0; i < MAX_TRACKS; i++)
+	Voices[i].lfo3_freq = (float)*globals->lfoFreq3 / (float)SAMPLING_RATE;
     if (globals->lfoMod3)
       for (i = 0; i < MAX_TRACKS; i++)
 	Voices[i].lfo3 = *globals->lfoMod3;
@@ -302,6 +334,7 @@ public:
 	  Voices[t].freq = ((float)*tracks[t].note / float(SAMPLING_RATE * 2));
 	  Voices[t].VCA.reset();
 	  Voices[t].ENV.reset();
+	  Voices[t].reset_lfos();
 	}
       }
       if (tracks[t].volume) {

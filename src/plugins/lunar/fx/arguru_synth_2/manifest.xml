@@ -280,9 +280,9 @@
 	   description="Arpeggiator mode"
 	   type="byte"
 	   minvalue="0"
-	   maxvalue="16"
+	   maxvalue="9"
 	   defvalue="0"
-	   valuenames="arpeggs"
+	   valuenames="arpeggios"
 	   state="true"/>
  	<parameter
 	   id="paraARPbpm"

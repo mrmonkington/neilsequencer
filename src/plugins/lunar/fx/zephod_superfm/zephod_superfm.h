@@ -22,9 +22,11 @@ typedef struct _lunar_globals {
 	float *paraModEnv1;
 	float *paraModEnv2;
 	float *paraModEnv3;
-	float *lfoFreq;
+	float *lfoFreq1;
 	float *lfoMod1;
+	float *lfoFreq2;
 	float *lfoMod2;
+	float *lfoFreq3;
 	float *lfoMod3;
 } lunar_globals_t;
 typedef struct _lunar_global_values {
@@ -43,9 +45,11 @@ typedef struct _lunar_global_values {
 	float paraModEnv1;
 	float paraModEnv2;
 	float paraModEnv3;
-	float lfoFreq;
+	float lfoFreq1;
 	float lfoMod1;
+	float lfoFreq2;
 	float lfoMod2;
+	float lfoFreq3;
 	float lfoMod3;
 } lunar_global_values_t;
 typedef struct _lunar_track {

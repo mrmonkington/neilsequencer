@@ -7,16 +7,16 @@
      type="generator"
      mintracks="1"
      maxtracks="8"
-     description="A port of Zephod SuperFM synthesizer to Lunar."
+     description="A port of Zephod SuperFM synthesizer to Lunar"
      author="Vytautas Jancauskas"
      email="unaudio@gmail.com">
     <parameters>
       <valuenamegroup>
-	<valuenames id="waveforms">
-	  <alias value="0" name="Sine"/>
-	  <alias value="1" name="Square"/>
-	  <alias value="2" name="+Saw"/>
-	  <alias value="3" name="-Saw"/>
+	<valuenames id="routings">
+	  <alias value="0" name="O(M(M(M)))"/>
+	  <alias value="1" name="O(M(M+M))"/>
+	  <alias value="2" name="O(M+M+M)"/>
+	  <alias value="3" name="O(M+M(M))"/>
 	</valuenames>
       </valuenamegroup>
       <global>
@@ -28,7 +28,7 @@
 	   minvalue="0"
 	   maxvalue="3"
 	   defvalue="0"
-	   precision="1"
+	   valuenames="routings"
 	   state="true"/>
 	<parameter
 	   id="paraAttack"
@@ -126,7 +126,7 @@
 	   description="Modulator 1 depth"
 	   type="float"
 	   minvalue="0.0"
-	   maxvalue="1.0"
+	   maxvalue="0.5"
 	   defvalue="0.2"
 	   precision="0.001"
 	   state="true"/>
@@ -136,7 +136,7 @@
 	   description="Modulator 2 depth"
 	   type="float"
 	   minvalue="0.0"
-	   maxvalue="1.0"
+	   maxvalue="0.5"
 	   defvalue="0.0"
 	   precision="0.001"
 	   state="true"/>
@@ -146,7 +146,7 @@
 	   description="Modulator 3 depth"
 	   type="float"
 	   minvalue="0.0"
-	   maxvalue="1.0"
+	   maxvalue="0.5"
 	   defvalue="0.0"
 	   precision="0.001"
 	   state="true"/>
@@ -155,8 +155,8 @@
 	   name="MOD1 Env"
 	   description="Modulator 1 envelope amount"
 	   type="float"
-	   minvalue="-1.0"
-	   maxvalue="1.0"
+	   minvalue="-0.5"
+	   maxvalue="0.5"
 	   defvalue="0.5"
 	   precision="0.001"
 	   state="true"/>
@@ -165,8 +165,8 @@
 	   name="MOD2 Env"
 	   description="Modulator 2 envelope amount"
 	   type="float"
-	   minvalue="-1.0"
-	   maxvalue="1.0"
+	   minvalue="-0.5"
+	   maxvalue="0.5"
 	   defvalue="0.2"
 	   precision="0.001"
 	   state="true"/>
@@ -175,18 +175,18 @@
 	   name="MOD3 Env"
 	   description="Modulator 3 envelope amount"
 	   type="float"
-	   minvalue="-1.0"
-	   maxvalue="1.0"
+	   minvalue="-0.5"
+	   maxvalue="0.5"
 	   defvalue="0.3"
 	   precision="0.001"
 	   state="true"/>
 	<parameter
-	   id="lfoFreq"
-	   name="LFO Freq (Hz)"
-	   description="LFO Frequency"
+	   id="lfoFreq1"
+	   name="LFO1 Freq (Hz)"
+	   description="LFO1 Frequency"
 	   type="float"
 	   logarithmic="true"
-	   power="0.7"
+	   power="0.5"
 	   minvalue="0.001"
 	   maxvalue="32.0"
 	   defvalue="0.3"
@@ -197,9 +197,21 @@
 	   name="MOD1 Lfo"
 	   description="Amount of LFO modulation to MOD1"
 	   type="float"
-	   minvalue="-1.0"
-	   maxvalue="1.0"
+	   minvalue="-0.5"
+	   maxvalue="0.5"
 	   defvalue="0.0"
+	   precision="0.001"
+	   state="true"/>
+	<parameter
+	   id="lfoFreq2"
+	   name="LFO2 Freq (Hz)"
+	   description="LFO2 Frequency"
+	   type="float"
+	   logarithmic="true"
+	   power="0.5"
+	   minvalue="0.001"
+	   maxvalue="32.0"
+	   defvalue="0.3"
 	   precision="0.001"
 	   state="true"/>
 	<parameter
@@ -207,9 +219,21 @@
 	   name="MOD2 Lfo"
 	   description="Amount of LFO modulation to MOD2"
 	   type="float"
-	   minvalue="-1.0"
-	   maxvalue="1.0"
+	   minvalue="-0.5"
+	   maxvalue="0.5"
 	   defvalue="0.0"
+	   precision="0.001"
+	   state="true"/>
+	<parameter
+	   id="lfoFreq3"
+	   name="LFO3 Freq (Hz)"
+	   description="LFO3 Frequency"
+	   type="float"
+	   logarithmic="true"
+	   power="0.5"
+	   minvalue="0.001"
+	   maxvalue="32.0"
+	   defvalue="0.3"
 	   precision="0.001"
 	   state="true"/>
 	<parameter
@@ -217,8 +241,8 @@
 	   name="MOD3 Lfo"
 	   description="Amount of LFO modulation to MOD3"
 	   type="float"
-	   minvalue="-1.0"
-	   maxvalue="1.0"
+	   minvalue="-0.5"
+	   maxvalue="0.5"
 	   defvalue="0.0"
 	   precision="0.001"
 	   state="true"/>
