@@ -7,49 +7,50 @@ extern "C" {
 
 #if !defined(LUNAR_NO_FX_STDLIB)
 
-// if your platform expects a different type
-// for size_t, you need to pass a define
-// at build time stating the platform,
-// catch it here with an ifdef and have different 
-// typedefs per platform.
+  // if your platform expects a different type
+  // for size_t, you need to pass a define
+  // at build time stating the platform,
+  // catch it here with an ifdef and have different 
+  // typedefs per platform.
 #if defined(__X86_64__) || defined(CONFIG_X86_64) || defined(__APPLE__)	|| defined(__powerpc64__)
 
-typedef long unsigned int lunar_size_t;
+  typedef long unsigned int lunar_size_t;
 #else
-typedef unsigned int lunar_size_t;
+  typedef unsigned int lunar_size_t;
 #endif
 
-// stdlib
-int lunar_printf(const char *format, ...);
-void *lunar_memset(void *b, int c, lunar_size_t len);
-void *lunar_memcpy(void *b, const void *a, lunar_size_t num);
-void *lunar_calloc(lunar_size_t nelem, lunar_size_t elsize);
-void *lunar_malloc(lunar_size_t len);
-void lunar_free (void *);
-void *lunar_realloc(void *ptr, lunar_size_t len);
-// math
-float lunar_pow(float, float);
-float lunar_log(float);
+  // stdlib
+  int lunar_printf(const char *format, ...);
+  void *lunar_memset(void *b, int c, lunar_size_t len);
+  void *lunar_memcpy(void *b, const void *a, lunar_size_t num);
+  void *lunar_calloc(lunar_size_t nelem, lunar_size_t elsize);
+  void *lunar_malloc(lunar_size_t len);
+  void lunar_free (void *);
+  void *lunar_realloc(void *ptr, lunar_size_t len);
+  // math
+  float lunar_pow(float, float);
+  float lunar_log(float);
   float lunar_log2(float);
-float lunar_log10(float);
-float lunar_exp(float);
-float lunar_abs(float);
-inline float lunar_min(float a, float b) { return (a < b)?a:b; }
-inline float lunar_max(float a, float b) { return (a > b)?a:b; }
-float lunar_sin(float);
-float lunar_cos(float);
-float lunar_tan(float);
+  float lunar_log10(float);
+  float lunar_exp(float);
+  float lunar_abs(float);
+  inline float lunar_min(float a, float b) { return (a < b)?a:b; }
+  inline float lunar_max(float a, float b) { return (a > b)?a:b; }
+  float lunar_sin(float);
+  float lunar_cos(float);
+  float lunar_tan(float);
+  float lunar_tanh(float);
   float lunar_round(float);
-float lunar_sinh(float);
-float lunar_cosh(float);
-float lunar_atan(float);
-float lunar_sqrt(float);
-float lunar_sqrt(float);
-float lunar_fabs(float);
-// new:
-float lunar_floor(float);
-float lunar_ceil(float);
-long int lunar_lrint(float);
+  float lunar_sinh(float);
+  float lunar_cosh(float);
+  float lunar_atan(float);
+  float lunar_sqrt(float);
+  float lunar_sqrt(float);
+  float lunar_fabs(float);
+  // new:
+  float lunar_floor(float);
+  float lunar_ceil(float);
+  long int lunar_lrint(float);
 
   //other:
   int lunar_rand();
@@ -59,7 +60,7 @@ long int lunar_lrint(float);
 #define M_PI 3.14159265358979323846
 
 
-// stdlib
+  // stdlib
 #define size_t lunar_size_t
 #define printf lunar_printf
 #define memset lunar_memset
@@ -68,7 +69,7 @@ long int lunar_lrint(float);
 #define malloc lunar_malloc
 #define free lunar_free
 #define realloc lunar_realloc
-// math
+  // math
 #define pow lunar_pow
 #define log lunar_log
 #define log2 lunar_log2
@@ -80,6 +81,7 @@ long int lunar_lrint(float);
 #define sin lunar_sin
 #define cos lunar_cos
 #define tan lunar_tan
+#define tanh lunar_tanh
 #define round lunar_round
 
 #define sinh lunar_sinh
@@ -87,7 +89,7 @@ long int lunar_lrint(float);
 #define atan lunar_atan
 #define sqrt lunar_sqrt
 #define fabs lunar_fabs
-// new:
+  // new:
 #define floor lunar_floor
 #define ceil lunar_ceil
 #define lrint lunar_lrint
@@ -98,62 +100,62 @@ long int lunar_lrint(float);
 
 #endif // LUNAR_NO_FX_STDLIB
 
-typedef struct _lunar_transport {
-	int beats_per_minute;
-	int ticks_per_beat;
-	int samples_per_second;
-	float samples_per_tick;
-	int tick_position;
-	float ticks_per_second;
-} lunar_transport_t;
+  typedef struct _lunar_transport {
+    int beats_per_minute;
+    int ticks_per_beat;
+    int samples_per_second;
+    float samples_per_tick;
+    int tick_position;
+    float ticks_per_second;
+  } lunar_transport_t;
 
-typedef struct _lunar_host lunar_host_t;
-typedef struct _lunar_voice lunar_voice_t;
+  typedef struct _lunar_host lunar_host_t;
+  typedef struct _lunar_voice lunar_voice_t;
 
-int lunar_is_envelope(lunar_host_t *, int instr, int envelope);
-float lunar_get_envelope_sustain_position(lunar_host_t *, int instr, int envelope);
-void lunar_get_envelope(lunar_host_t *, int instr, int envelope, float start, float size, float *buffer, int n);
-lunar_voice_t *lunar_new_voice(lunar_host_t *);
-void lunar_voice_set_instrument(lunar_voice_t *, int instr);
-void lunar_voice_set_note(lunar_voice_t *, float note);
-void lunar_voice_process_stereo(lunar_voice_t *, float *outL, float *outR, int n);
-void lunar_voice_reset(lunar_voice_t *);
+  int lunar_is_envelope(lunar_host_t *, int instr, int envelope);
+  float lunar_get_envelope_sustain_position(lunar_host_t *, int instr, int envelope);
+  void lunar_get_envelope(lunar_host_t *, int instr, int envelope, float start, float size, float *buffer, int n);
+  lunar_voice_t *lunar_new_voice(lunar_host_t *);
+  void lunar_voice_set_instrument(lunar_voice_t *, int instr);
+  void lunar_voice_set_note(lunar_voice_t *, float note);
+  void lunar_voice_process_stereo(lunar_voice_t *, float *outL, float *outR, int n);
+  void lunar_voice_reset(lunar_voice_t *);
 
 #if !defined(LUNAR_USE_LOCALS)
-typedef void lunar_globals_t;
-typedef void lunar_track_t;
-typedef void lunar_controllers_t;
-typedef void lunar_attributes_t;
+  typedef void lunar_globals_t;
+  typedef void lunar_track_t;
+  typedef void lunar_controllers_t;
+  typedef void lunar_attributes_t;
 #endif // !LUNAR_USE_LOCALS
 
-struct lunar_fx {
-	unsigned int size;
-	lunar_transport_t *transport;
-	lunar_host_t *host;
-	lunar_globals_t *globals;
-	lunar_track_t *tracks;
-	int track_count;
-	lunar_attributes_t *attributes;
- 	lunar_controllers_t *controllers;
-	void (*init)(lunar_fx *);
-	void (*exit)(lunar_fx *);
-	void (*process_events)(lunar_fx *);
-	void (*process_controller_events)(lunar_fx *);
-	void (*process_stereo)(lunar_fx *, float *, float *,float *, float *, int n);
-	void (*instrument_changed)(lunar_fx *, int instr);
-	void (*transport_changed)(lunar_fx *);
-	void (*tracks_changed)(lunar_fx *);
-	void (*attributes_changed)(lunar_fx *);
-};
+  struct lunar_fx {
+    unsigned int size;
+    lunar_transport_t *transport;
+    lunar_host_t *host;
+    lunar_globals_t *globals;
+    lunar_track_t *tracks;
+    int track_count;
+    lunar_attributes_t *attributes;
+    lunar_controllers_t *controllers;
+    void (*init)(lunar_fx *);
+    void (*exit)(lunar_fx *);
+    void (*process_events)(lunar_fx *);
+    void (*process_controller_events)(lunar_fx *);
+    void (*process_stereo)(lunar_fx *, float *, float *,float *, float *, int n);
+    void (*instrument_changed)(lunar_fx *, int instr);
+    void (*transport_changed)(lunar_fx *);
+    void (*tracks_changed)(lunar_fx *);
+    void (*attributes_changed)(lunar_fx *);
+  };
 
-inline void lunar_init_fx(lunar_fx *fx) {
-	memset(fx, 0, sizeof(lunar_fx));
-	fx->size = sizeof(lunar_fx);
-}
+  inline void lunar_init_fx(lunar_fx *fx) {
+    memset(fx, 0, sizeof(lunar_fx));
+    fx->size = sizeof(lunar_fx);
+  }
 
-typedef lunar_fx *(*lunar_new_fx_t)();
+  typedef lunar_fx *(*lunar_new_fx_t)();
 
-lunar_fx *new_fx();
+  lunar_fx *new_fx();
 
 #if defined(__cplusplus)
 } // extern "C"

@@ -1,77 +1,111 @@
-// Channel.h: interface for the CChannel class.
-//
-//////////////////////////////////////////////////////////////////////
-
-#if !defined(AFX_CHANNEL_H__2EE63E18_CAF9_44DA_9C74_8891690EEB93__INCLUDED_)
+#ifndef AFX_CHANNEL_H__2EE63E18_CAF9_44DA_9C74_8891690EEB93__INCLUDED_
 #define AFX_CHANNEL_H__2EE63E18_CAF9_44DA_9C74_8891690EEB93__INCLUDED_
 
-#include	"ISample.h"
-#include	"IInstrument.h"
+#include "ISample.h"
+#include "IInstrument.h"
+#include "Svf.hpp"
 
-class	CTrack;
+class CTrack;
 class CMatildeTrackerMachine;
 
-class	CChannel  
-{
+class CChannel {
+private:
+  static const int NFILTERS = 3;
 public:
-							CChannel();
-	virtual					~CChannel();
+  CChannel();
+  virtual ~CChannel();
+  void Free();
+  void Reset();
+  void SetRampTime(int iRamp);
+  void SetVolume(float fVol) { 
+    m_fVolume = fVol; 
+    UpdateAmp(); 
+  }
+  void SetPan(float fPan) { 
+    m_fPan = fPan; 
+    UpdateAmp(); 
+  }
+  void SetVolumeAndPan(float fVolume, float fPan) { 
+    m_fVolume = fVolume; 
+    m_fPan = fPan; 
+    UpdateAmp(); 
+  }
+  bool Generate_Move(float **psamples, int numsamples);
+  bool Generate_Add(float **psamples, int numsamples);
+  int GetWaveEnvPlayPos(const int env);
+  bool Release();
 
-	void					Free();
-	void					Reset();
-	void					SetRampTime( int iRamp );
-	void					SetVolume( float fVol ) { m_fVolume=fVol; UpdateAmp(); }
-	void					SetPan( float fPan ) { m_fPan=fPan; UpdateAmp(); }
-	void					SetVolumeAndPan( float fVolume, float fPan ) { m_fVolume=fVolume; m_fPan=fPan; UpdateAmp(); }
-	bool					Generate_Move( float **psamples, int numsamples );
-	bool					Generate_Add( float **psamples, int numsamples );
-	int						GetWaveEnvPlayPos( const int env );
-	bool					Release();
+  void set_filter_bypass(bool on) {
+    for (int i = 0; i < NFILTERS; i++) {
+      this->filters[i].set_bypass(on);
+    }
+  }
 
-	SurfDSPLib::CResampler	m_Resampler;
-	SurfDSPLib::CAmp		m_Amp;
-	SurfDSPLib::C2PFilter	m_Filter;
-	CEnvelope				m_VolumeEnvelope;
-	CEnvelope				m_PanningEnvelope;
-	CEnvelope				m_PitchEnvelope;
+  void set_filter_mode(Svf::FilterMode mode) {
+    for (int i = 0; i < NFILTERS; i++) {
+      this->filters[i].set_mode(mode);
+    }
+  }
 
-	CTrack				*	m_pOwner;
+  void set_filter_sampling_rate(int sampling_rate) {
+    for (int i = 0; i < NFILTERS; i++) {
+      this->filters[i].set_sampling_rate(sampling_rate);
+    }
+  }
 
-	CMatildeTrackerMachine			*	m_pMachine;
+  void set_filter_cutoff(float cutoff) {
+    for (int i = 0; i < NFILTERS; i++) {
+      this->filters[i].set_cutoff(cutoff);
+    }
+  }
 
-	ISample				*	m_pSample;
-	IInstrument			*	m_pInstrument;
-	/*
-	const CWaveLevel	*	m_pWaveLevel;
-	const CWaveInfo		*	m_pWaveInfo;
-	*/
+  void set_filter_resonance(float resonance) {
+    for (int i = 0; i < NFILTERS; i++) {
+      this->filters[i].set_resonance(resonance);
+    }
+  }
 
-	bool					m_oFree;
-	float					m_fPitchEnvFreq;
+  SurfDSPLib::CResampler m_Resampler;
+  SurfDSPLib::CAmp m_Amp;
+
+  Svf filters[NFILTERS];
+
+  CEnvelope m_VolumeEnvelope;
+  CEnvelope m_PanningEnvelope;
+  CEnvelope m_PitchEnvelope;
+
+  CTrack *m_pOwner;
+  CMatildeTrackerMachine *m_pMachine;
+  
+  ISample *m_pSample;
+  IInstrument *m_pInstrument;
+  /*
+    const CWaveLevel *m_pWaveLevel;
+    const CWaveInfo *m_pWaveInfo;
+  */
+
+  bool m_oFree;
+  float	m_fPitchEnvFreq;
 protected:
-	float					m_fVolume;
-	float					m_fPan;
+  float	m_fVolume;
+  float	m_fPan;
 
-	void					UpdateAmp()
-	{
-#ifdef	MONO
-		if( m_pSample )
-			m_Amp.SetVolume( m_fVolume*m_pSample->GetVolume(), 0 );
-		else
-			m_Amp.SetVolume( m_fVolume, 0 );
+  void UpdateAmp() {
+#ifdef MONO
+    if (m_pSample)
+      m_Amp.SetVolume(m_fVolume * m_pSample->GetVolume(), 0);
+    else
+      m_Amp.SetVolume(m_fVolume, 0);
 #else
-		if( m_pSample )
-			m_Amp.SetVolume( m_fVolume*m_pSample->GetVolume()*(1.0f-m_fPan), m_fVolume*m_pSample->GetVolume()*(1.0f+m_fPan) );
-		else
-			m_Amp.SetVolume( m_fVolume*(1.0f-m_fPan), m_fVolume*(1.0f+m_fPan) );
-		/*
-		if( m_pWaveInfo )
-			m_Amp.SetVolume( m_fVolume*m_pWaveInfo->Volume*(1.0f-m_fPan), m_fVolume*m_pWaveInfo->Volume*(1.0f+m_fPan) );
-		else
-			m_Amp.SetVolume( m_fVolume*(1.0f-m_fPan), m_fVolume*(1.0f+m_fPan) );
-			*/
+    if(m_pSample)
+      m_Amp.SetVolume(m_fVolume * m_pSample->GetVolume() * 
+		      (1.0f - m_fPan), m_fVolume * m_pSample->GetVolume() * 
+		      (1.0f + m_fPan) );
+    else
+      m_Amp.SetVolume(m_fVolume * (1.0f - m_fPan), 
+		      m_fVolume * (1.0f + m_fPan));
 #endif
-	}
+  }
 };
 
-#endif // !defined(AFX_CHANNEL_H__2EE63E18_CAF9_44DA_9C74_8891690EEB93__INCLUDED_)
+#endif // AFX_CHANNEL_H__2EE63E18_CAF9_44DA_9C74_8891690EEB93__INCLUDED_

@@ -37,6 +37,18 @@ extern "C" {
     }
   }
 
+  inline void dsp_sadd(float *i, float s, int numsamples) {
+    while (numsamples--) {
+      *i++ += s;
+    }
+  }
+
+  inline void dsp_smul(float *i, float s, int numsamples) {
+    while (numsamples--) {
+      *i++ *= s;
+    }
+  }
+
   inline void dsp_powmap(float *b, int numsamples, float c, float base, float offset, float factor) {
     while (numsamples--) {
       *b++ = c * pow(base, offset + (*b * factor));

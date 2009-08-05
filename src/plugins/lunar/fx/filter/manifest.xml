@@ -9,26 +9,7 @@
      author="Leonard Ritter"
      email="contact at leonard-ritter+com">
     <parameters>
-      <valuenamegroup>
-	<valuenames id="ftypes">
-	  <alias value="0" name="Notch"/>
-	  <alias value="1" name="Low Pass"/>
-	  <alias value="2" name="High Pass"/>
-	  <alias value="3" name="Band Pass"/>
-	  <alias value="4" name="Peak"/>
-	</valuenames>
-      </valuenamegroup>
       <global>
-	<parameter
-	   id="ftype"
-	   name="Type"
-	   description="Type of filter (0 = notch, 1 = low, 2 = high, 3 = band, 4 = peak)"
-	   type="byte"
-	   minvalue="0"
-	   maxvalue="4"
-	   defvalue="1"
-	   valuenames="ftypes"
-	   state="true"/>
 	<parameter
 	   id="freq"
 	   name="Cutoff (Hz)"
@@ -36,7 +17,7 @@
 	   type="float"
 	   logarithmic="true"
 	   power="0.7"
-	   minvalue="10"
+	   minvalue="20"
 	   maxvalue="20000"
 	   defvalue="20000"
 	   precision="1"
@@ -47,9 +28,38 @@
 	   description="Resonance of filter"
 	   type="float"
 	   minvalue="0"
-	   maxvalue="0.99"
+	   maxvalue="1"
 	   defvalue="0"
 	   precision="0.01"
+	   state="true"/>
+	<parameter
+	   id="x"
+	   name="X"
+	   description="State morph X parameter"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0"
+	   precision="0.01"
+	   state="true"/>
+	<parameter
+	   id="y"
+	   name="Y"
+	   description="State morph Y parameter"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0"
+	   precision="0.01"
+	   state="true"/>
+	<parameter
+	   id="inertia"
+	   name="Inertia (ticks)"
+	   description="Cutoff change inertia"
+	   type="byte"
+	   minvalue="0"
+	   maxvalue="16"
+	   defvalue="1"
 	   state="true"/>
       </global>
       <track>
@@ -58,7 +68,6 @@
     <files>
       <file ref="filter.cpp"/>
       <file ref="filter.h"/>
-      <file ref="svf.h"/>
     </files>
     <modules>
       <module id="filter">

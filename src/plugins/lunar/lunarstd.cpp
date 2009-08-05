@@ -141,6 +141,7 @@ float lunar_abs(float x) { return std::abs(x); }
 float lunar_sin(float x) { return std::sin(x); }
 float lunar_cos(float x) { return std::cos(x); }
 float lunar_tan(float x) { return std::tan(x); }
+float lunar_tanh(float x) { return std::tanh(x); }
 float lunar_round(float x) {return std::floor(x + 0.5); }
 
 float lunar_sinh(float x) { return std::sinh(x); }

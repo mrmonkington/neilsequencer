@@ -14,16 +14,18 @@
 	  <alias value="0" name="Smooth"/>
 	  <alias value="1" name="Hard"/>
 	  <alias value="2" name="Sine"/>
+	  <alias value="3" name="Fold"/>
+	  <alias value="4" name="Trash"/>
 	</valuenames>
       </valuenamegroup>
       <global>
 	<parameter
 	   id="alg"
-	   name="Function"
+	   name="Type"
 	   description="Select distortion type"
 	   type="byte"
 	   minvalue="0"
-	   maxvalue="2"
+	   maxvalue="4"
 	   defvalue="0"
 	   valuenames="algs"
 	   state="true"/>

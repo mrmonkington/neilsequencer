@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <zzub>
   <plugin
-     uri="@trac.zeitherrschaft.org/aldrin/lunar/generator/synth;1"
-     name="Solar Mercury"
-     shortname="Mercury"
+     uri="@trac.zeitherrschaft.org/aldrin/lunar/generator/bassline;1"
+     name="Lunar Bassline"
+     shortname="Bassline"
      type="generator"
      mintracks="1"
      maxtracks="1"
@@ -37,7 +37,7 @@
 	   power="0.7"
 	   minvalue="0.1"
 	   maxvalue="100.0"
-	   defvalue="1.0"
+	   defvalue="30.0"
 	   precision="0.01"
 	   state="true"/>
 	<parameter
@@ -49,17 +49,17 @@
 	   power="0.7"
 	   minvalue="50.0"
 	   maxvalue="1000.0"
-	   defvalue="300.0"
+	   defvalue="120.0"
 	   precision="0.01"
 	   state="true"/>
 	<parameter
-	   id="freq"
+	   id="env_mod"
 	   name="Envelope Mod"
 	   description="Envelope modulation of VCF"
 	   type="float"
 	   minvalue="0"
 	   maxvalue="1"
-	   defvalue="0.5"
+	   defvalue="1.0"
 	   precision="0.01"
 	   state="true"/>
 	<parameter
@@ -71,17 +71,17 @@
 	   power="0.4"
 	   minvalue="10.0"
 	   maxvalue="12000.0"
-	   defvalue="1000.0"
+	   defvalue="3000.0"
 	   precision="1"
 	   state="true"/>
 	<parameter
-	   id="res"
+	   id="resonance"
 	   name="Resonance"
 	   description="Resonance of VCF"
 	   type="float"
 	   minvalue="0.0"
 	   maxvalue="1.0"
-	   defvalue="0.0"
+	   defvalue="0.5"
 	   precision="0.01"
 	   state="true"/>
 	<parameter
@@ -91,17 +91,17 @@
 	   type="float"
 	   minvalue="0.0"
 	   maxvalue="1.0"
-	   defvalue="0.5"
+	   defvalue="0.8"
 	   precision="0.01"
 	   state="true"/>
 	<parameter
-	   id="dist"
+	   id="distortion"
 	   name="Distortion"
 	   description="Filter distortion"
 	   type="float"
 	   minvalue="0"
 	   maxvalue="1.0"
-	   defvalue="0"
+	   defvalue="0.25"
 	   precision="0.01"
 	   state="true"/>
 	<parameter
@@ -115,7 +115,7 @@
 	   precision="0.01"
 	   state="true"/>
 	<parameter
-	   id="oct"
+	   id="octave"
 	   name="Transpose (oct)"
 	   description="Transpose by a specified number of octaves"
 	   type="float"
@@ -156,14 +156,18 @@
       </track>
     </parameters>
     <files>
-      <file ref="synth.cpp"/>
-      <file ref="synth.h"/>
-      <file ref="svf.h"/>
-      <file ref="adsr.h"/>
+      <file ref="Bassline.cpp"/>
+      <file ref="Bassline.hpp"/>
+      <file ref="ADSR.cpp"/>
+      <file ref="ADSR.hpp"/>
+      <file ref="LPF18.cpp"/>
+      <file ref="LPF18.hpp"/>
+      <file ref="Inertia.cpp"/>
+      <file ref="Inertia.hpp"/>
     </files>
     <modules>
-      <module id="synth">
-	<source language="c++" ref="synth.cpp" fxdef="synth.h"/>
+      <module id="bassline">
+	<source language="c++" ref="Bassline.cpp" fxdef="Bassline.hpp"/>
       </module>
     </modules>
   </plugin>
