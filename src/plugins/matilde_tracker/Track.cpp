@@ -581,7 +581,7 @@ void CTrack::ProcessRetrig(int retrig) {
       m_fResonance = 25.0f;
     m_pChannel->set_filter_sampling_rate(m_pMachine->_master_info->
 					 samples_per_second);
-    m_pChannel->set_filter_resonance(m_fResonance);
+    m_pChannel->set_filter_resonance((m_fResonance - 1.0) / 25.0);
   }
 
   if (retrig & RETRIG_INS) {

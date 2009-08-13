@@ -47,74 +47,65 @@ typedef unsigned short int word;
 /* CMachineAttribute const *pAttributes[] = { NULL }; */
 
 
-const zzub::parameter *    paraNote = 0;
-const zzub::parameter *    paraSeed = 0;
-const zzub::parameter *    paraWaveNum1 = 0;
-const zzub::parameter *    paraOffset1 = 0;
-const zzub::parameter *    paraOffset2 = 0;
-const zzub::parameter *    paraWaveNum2 = 0;
-const zzub::parameter *    paraW2Offset1 = 0;
-const zzub::parameter *    paraW2Offset2 = 0;
-const zzub::parameter *    paraOffsType = 0;
-const zzub::parameter *    paraOffsMode = 0;
-const zzub::parameter *    paraSkipRate = 0;
-const zzub::parameter *    paraWaveMix = 0;
-const zzub::parameter *    paraDivider1 = 0;
-const zzub::parameter *    paraGrainDuration = 0;
-const zzub::parameter *    paraGrainDurRange = 0;
-const zzub::parameter *    paraGrainAmp = 0;
-const zzub::parameter *    paraRate = 0;
-const zzub::parameter *    paraRandRate = 0;
-const zzub::parameter *    paraEnvAmount = 0;
-const zzub::parameter *    paraEnvSkew = 0;
-const zzub::parameter *    paraPanL = 0;
-const zzub::parameter *    paraPanR = 0;
-const zzub::parameter *    paraDivider2 = 0;
-const zzub::parameter *    paraDensMode = 0;
-const zzub::parameter *    paraDensity = 0;
-const zzub::parameter *    paraMaxGrains = 0;
+const zzub::parameter *paraNote = 0;
+const zzub::parameter *paraSeed = 0;
+const zzub::parameter *paraWaveNum1 = 0;
+const zzub::parameter *paraOffset1 = 0;
+const zzub::parameter *paraOffset2 = 0;
+const zzub::parameter *paraWaveNum2 = 0;
+const zzub::parameter *paraW2Offset1 = 0;
+const zzub::parameter *paraW2Offset2 = 0;
+const zzub::parameter *paraOffsType = 0;
+const zzub::parameter *paraOffsMode = 0;
+const zzub::parameter *paraSkipRate = 0;
+const zzub::parameter *paraWaveMix = 0;
+const zzub::parameter *paraDivider1 = 0;
+const zzub::parameter *paraGrainDuration = 0;
+const zzub::parameter *paraGrainDurRange = 0;
+const zzub::parameter *paraGrainAmp = 0;
+const zzub::parameter *paraRate = 0;
+const zzub::parameter *paraRandRate = 0;
+const zzub::parameter *paraEnvAmount = 0;
+const zzub::parameter *paraEnvSkew = 0;
+const zzub::parameter *paraPanL = 0;
+const zzub::parameter *paraPanR = 0;
+const zzub::parameter *paraDivider2 = 0;
+const zzub::parameter *paraDensMode = 0;
+const zzub::parameter *paraDensity = 0;
+const zzub::parameter *paraMaxGrains = 0;
 
-
-
-#pragma pack(1)
-
-class gvals
-{
-public:
-	byte note;
-	word seed;
-	byte wnumber1;
-	word offset1;
-	word offset2;
-	byte wnumber2;
-	word w2offset1;
-	word w2offset2;
-	byte offstype;
-	byte offsmode;
-	byte skiprate;
-	word wavemix;
-	byte divider1;
-	word gduration;
-	word gdrange;
-	word amp;
-	byte rate;
-	byte rrate;
-	byte envamt;
-	byte envq;
-	byte lpan;
-	byte rpan;
-	byte divider2;
-	byte densmode;
-	word density;
-	byte maxgrains;
-	
+class gvals {
+ public:
+  byte note;
+  word seed;
+  byte wnumber1;
+  word offset1;
+  word offset2;
+  byte wnumber2;
+  word w2offset1;
+  word w2offset2;
+  byte offstype;
+  byte offsmode;
+  byte skiprate;
+  word wavemix;
+  byte divider1;
+  word gduration;
+  word gdrange;
+  word amp;
+  byte rate;
+  byte rrate;
+  byte envamt;
+  byte envq;
+  byte lpan;
+  byte rpan;
+  byte divider2;
+  byte densmode;
+  word density;
+  byte maxgrains;
 };
 
-
-
-class acloud: public zzub::plugin
-{
-public:
+class acloud:public zzub::plugin {
+ public:
   acloud();
   virtual ~acloud();
   virtual void process_events();
@@ -151,91 +142,84 @@ public:
   virtual void midi_control_change(int, int, int) {}
   virtual bool handle_input(int, int, int) { return false; }
   
-	//int numTracks;
-	//CTrack Tracks[MAX_TRACKS];
-	gvals gval;
+  //int numTracks;
+  //CTrack Tracks[MAX_TRACKS];
+  gvals gval;
 	
-	CGrain Grain[128];
-	struct WAVESEL;
+  CGrain Grain[128];
+  struct WAVESEL;
 
-public:	
-	inline int FindGrain(int maxgrains);
-	inline int SetNextGrain(int dens);
-	inline int SelectWave(int mix);
-	double SetOffset(int wave, int wnum);
-	inline bool CheckActivGrains(int maxg);
-	inline int SetGDRange();
-	inline float GetRandRate();
-	float GetRandPan();
-	void SelectWave2(int mix, WAVESEL * Wv);
-	inline int SetDens(int mode);
+ public:	
+  inline int FindGrain(int maxgrains);
+  inline int SetNextGrain(int dens);
+  inline int SelectWave(int mix);
+  double SetOffset(int wave, int wnum);
+  inline bool CheckActivGrains(int maxg);
+  inline int SetGDRange();
+  inline float GetRandRate();
+  float GetRandPan();
+  void SelectWave2(int mix, WAVESEL * Wv);
+  inline int SetDens(int mode);
 
-	int CountGrains();
+  int CountGrains();
 
-	  // float playpos;
-	   float rate, nrate;
-	   int rrate;
-	   int wavenum1;
-	   int wavenum2;
-	   int wavemix;
-	   int maxgrains;
-	   int gdur;
-	   int gdrange;
-	   int gnext;
-	   double gcount;
-	   float offset1, offset2;
-	   int offstype;
-	   float w2offset1, w2offset2;
-	   float envamt, envq;
-	   float lpan, rpan;
-	   float skiprate;
+  // float playpos;
+  float rate, nrate;
+  int rrate;
+  int wavenum1;
+  int wavenum2;
+  int wavemix;
+  int maxgrains;
+  int gdur;
+  int gdrange;
+  int gnext;
+  double gcount;
+  float offset1, offset2;
+  int offstype;
+  float w2offset1, w2offset2;
+  float envamt, envq;
+  float lpan, rpan;
+  float skiprate;
 	   
-	   int iamp;
-	   float ampt, ampb;
+  int iamp;
+  float ampt, ampb;
 		
-	   int density;
-	   float densfactor;
-	   int gotsomething;
-	   bool sample_is_playing; 
-	   bool cloud_is_playing;
+  int density;
+  float densfactor;
+  int gotsomething;
+  bool sample_is_playing; 
+  bool cloud_is_playing;
 
-	   int waveslot; //HACK I want to remove this and replace it with a struct to return wave num and wave slot from selectwave...
-	   double offsCount;
-	   int offsInc;
-	   int offsMode;
-	   int densMode;
+  int waveslot; //HACK I want to remove this and replace it with a struct to return wave num and wave slot from selectwave...
+  double offsCount;
+  int offsInc;
+  int offsMode;
+  int densMode;
 
 };
 
 
-
-
-
-
-
-
-
 struct acloud_plugin_info : zzub::info {
   acloud_plugin_info() {
-    this->flags = zzub::plugin_flag_has_audio_output | zzub::plugin_flag_plays_waves;
+    this->flags = 
+      zzub::plugin_flag_has_audio_output | 
+      zzub::plugin_flag_plays_waves;
     this->min_tracks = 0;
     this->max_tracks = 0;
     this->name = "Intoxicat ACloud";
     this->short_name = "ACloud";
-    this->author = "Intoxicat (ported by jmmcd <jamesmichaelmcdermott@gmail.com>)";
+    this->author = "Intoxicat (ported by jmmcd)";
     this->uri = "jamesmichaelmcdermott@gmail.com/generator/acloud;1";
     this->commands = "&About...\nReset!"; //"\nGrainLoad"
-
     paraNote = &add_global_parameter()
-      .set_note()			//Type
-      .set_name("Note Trigger")			//Short name
-      .set_description("Cloud Note Trigger")		//Long name
-      .set_value_min(zzub::note_value_min)					//Min value
-      .set_value_max(zzub::note_value_max)				//Max value
-      .set_value_none(zzub::note_value_none)				//No value
-      .set_flags(0)					//Flags
-      .set_value_default(zzub::note_value_none);					//Default value
-    
+      .set_note() //Type
+      .set_name("Note Trigger")	//Short name
+      .set_description("Cloud Note Trigger") //Long name
+      .set_value_min(zzub::note_value_min) //Min value
+      .set_value_max(zzub::note_value_max) // Max value
+      .set_value_none(zzub::note_value_none) //No value
+      .set_flags(0) //Flags
+      .set_value_default(zzub::note_value_none); //Default value
     paraSeed = &add_global_parameter()
       .set_word()
       .set_name("Seed")
@@ -245,7 +229,6 @@ struct acloud_plugin_info : zzub::info {
       .set_value_none(0xFFFF)
       .set_flags(0)
       .set_value_default(0);
-      
     paraWaveNum1 = &add_global_parameter()
       .set_wavetable_index()
       .set_name("Wave 1")
@@ -253,9 +236,9 @@ struct acloud_plugin_info : zzub::info {
       .set_value_min(zzub::wavetable_index_value_min)
       .set_value_max(zzub::wavetable_index_value_max)
       .set_value_none(zzub::wavetable_index_value_none)
-      .set_flags(zzub::parameter_flag_wavetable_index | zzub::parameter_flag_state)
+      .set_flags(zzub::parameter_flag_wavetable_index | 
+		 zzub::parameter_flag_state)
       .set_value_default(zzub::wavetable_index_value_min);
-    
     paraOffset1 = &add_global_parameter()
       .set_word()
       .set_name("  Offs Index")
@@ -265,7 +248,6 @@ struct acloud_plugin_info : zzub::info {
       .set_value_none(0xFFFF)
       .set_flags(zzub::parameter_flag_state)
       .set_value_default(0);
-    
     paraOffset2 = &add_global_parameter()
       .set_word()
       .set_name("  Offs Range")
@@ -275,7 +257,6 @@ struct acloud_plugin_info : zzub::info {
       .set_value_none(0xFFFF)
       .set_flags(zzub::parameter_flag_state)
       .set_value_default(0);
-    
     paraWaveNum2 = &add_global_parameter()
       .set_byte()
       .set_name("Wave 2")
@@ -283,9 +264,9 @@ struct acloud_plugin_info : zzub::info {
       .set_value_min(zzub::wavetable_index_value_min)
       .set_value_max(zzub::wavetable_index_value_max)
       .set_value_none(zzub::wavetable_index_value_none)
-      .set_flags(zzub::parameter_flag_wavetable_index | zzub::parameter_flag_state)
+      .set_flags(zzub::parameter_flag_wavetable_index | 
+		 zzub::parameter_flag_state)
       .set_value_default(zzub::wavetable_index_value_min);
-
     paraW2Offset1 = &add_global_parameter()
       .set_word()
       .set_name("  Offs Index")
@@ -295,17 +276,15 @@ struct acloud_plugin_info : zzub::info {
       .set_value_none(0xFFFF)
       .set_flags(zzub::parameter_flag_state)
       .set_value_default(0);
-    
     paraW2Offset2 = &add_global_parameter()
       .set_word()
-      .set_name("  Offs Index")
+      .set_name("  Offs Range")
       .set_description("Wave 2 Offset Range")
       .set_value_min(0)
       .set_value_max(0xFFFE)
       .set_value_none(0xFFFF)
       .set_flags(zzub::parameter_flag_state)
       .set_value_default(0);
-    
     paraOffsType = &add_global_parameter()
       .set_switch()
       .set_name("Slave Offs 2")
@@ -315,7 +294,6 @@ struct acloud_plugin_info : zzub::info {
       .set_value_none(0xFF)
       .set_flags(zzub::parameter_flag_state)
       .set_value_default(0);
-
     paraOffsMode = &add_global_parameter()
       .set_byte()
       .set_name("Skip Mode")
@@ -325,7 +303,6 @@ struct acloud_plugin_info : zzub::info {
       .set_value_none(0xFF)
       .set_flags(zzub::parameter_flag_state)
       .set_value_default(0);
-
     paraSkipRate = &add_global_parameter()
       .set_byte()
       .set_name("Skip Rate")
@@ -334,8 +311,7 @@ struct acloud_plugin_info : zzub::info {
       .set_value_max(254)
       .set_value_none(0xFF)
       .set_flags(zzub::parameter_flag_state)
-      .set_value_default(127);
-    
+      .set_value_default(127);    
     paraWaveMix = &add_global_parameter()
       .set_word()
       .set_name("Wave Mix")
@@ -345,17 +321,6 @@ struct acloud_plugin_info : zzub::info {
       .set_value_none(0xFFFF)
       .set_flags(zzub::parameter_flag_state)
       .set_value_default(0x8000/2);
-      
-    paraDivider1 = &add_global_parameter()
-      .set_switch()
-      .set_name("----------")
-      .set_description("UNUSED DIVIDER")
-      .set_value_min(zzub::switch_value_off)
-      .set_value_max(zzub::switch_value_on)
-      .set_value_none(zzub::switch_value_none)
-      .set_flags(0)
-      .set_value_default(zzub::switch_value_none);
-    
     paraGrainDuration = &add_global_parameter()
       .set_word()
       .set_name("Grain Dur")
@@ -365,7 +330,6 @@ struct acloud_plugin_info : zzub::info {
       .set_value_none(0xFFFF)
       .set_flags(zzub::parameter_flag_state)
       .set_value_default(1000);
-    
     paraGrainDurRange = &add_global_parameter()
       .set_word()
       .set_name("Dur Range")
@@ -375,7 +339,6 @@ struct acloud_plugin_info : zzub::info {
       .set_value_none(0xFFFF)
       .set_flags(zzub::parameter_flag_state)
       .set_value_default(10);
-    
     paraGrainAmp = &add_global_parameter()
       .set_word()
       .set_name("Grain Amp")
@@ -385,7 +348,6 @@ struct acloud_plugin_info : zzub::info {
       .set_value_none(0xFFFF)
       .set_flags(zzub::parameter_flag_state)
       .set_value_default(0xFFFE);
-    
     paraRate = &add_global_parameter()
       .set_byte()
       .set_name("Rate")
@@ -395,7 +357,6 @@ struct acloud_plugin_info : zzub::info {
       .set_value_none(0xFF)
       .set_flags(zzub::parameter_flag_state)
       .set_value_default(127);
-    
     paraRandRate = &add_global_parameter()
       .set_byte()
       .set_name("Rand Rate")
@@ -405,17 +366,15 @@ struct acloud_plugin_info : zzub::info {
       .set_value_none(0xFF)
       .set_flags(zzub::parameter_flag_state)
       .set_value_default(0);
-    
     paraEnvAmount = &add_global_parameter()
       .set_byte()
-      .set_name("Envelope Amount")
+      .set_name("Env Amount")
       .set_description("Env Amt")
       .set_value_min(0)
       .set_value_max(0xFE)
       .set_value_none(0xFF)
       .set_flags(zzub::parameter_flag_state)
       .set_value_default(0);
-    
     paraEnvSkew = &add_global_parameter()
       .set_byte()
       .set_name("Env Skew")
@@ -425,7 +384,6 @@ struct acloud_plugin_info : zzub::info {
       .set_value_none(0xFF)
       .set_flags(zzub::parameter_flag_state)
       .set_value_default(127);
-    
     paraPanL = &add_global_parameter()
       .set_byte()
       .set_name("Left Pan")
@@ -435,7 +393,6 @@ struct acloud_plugin_info : zzub::info {
       .set_value_none(0xFF)
       .set_flags(zzub::parameter_flag_state)
       .set_value_default(64);
-    
     paraPanR = &add_global_parameter()
       .set_byte()
       .set_name("Right Pan")
@@ -445,17 +402,6 @@ struct acloud_plugin_info : zzub::info {
       .set_value_none(0xFF)
       .set_flags(zzub::parameter_flag_state)
       .set_value_default(64);
-    
-    paraDivider2 = &add_global_parameter()
-      .set_switch()
-      .set_name("----------")
-      .set_description("UNUSED DIVIDER")
-      .set_value_min(zzub::switch_value_off)
-      .set_value_max(zzub::switch_value_on)
-      .set_value_none(zzub::switch_value_none)
-      .set_flags(0)
-      .set_value_default(zzub::switch_value_none);
-    
     paraDensMode = &add_global_parameter()
       .set_switch()
       .set_name("Dens Mode")
@@ -464,8 +410,7 @@ struct acloud_plugin_info : zzub::info {
       .set_value_max(1)
       .set_value_none(0xFF)
       .set_flags(zzub::parameter_flag_state)
-      .set_value_default(0);
-    
+      .set_value_default(0);    
     paraDensity = &add_global_parameter()
       .set_word()
       .set_name("Density")
@@ -475,7 +420,6 @@ struct acloud_plugin_info : zzub::info {
       .set_value_none(0xFFFF)
       .set_flags(zzub::parameter_flag_state)
       .set_value_default(20);
-    
     paraMaxGrains = &add_global_parameter()
       .set_byte()
       .set_name("MaxGrains")
@@ -487,25 +431,35 @@ struct acloud_plugin_info : zzub::info {
       .set_value_default(20);
     
   } 
-  virtual zzub::plugin* create_plugin() const { return new acloud(); }
-  virtual bool store_info(zzub::archive *data) const { return false; }
+  virtual zzub::plugin* create_plugin() const { 
+    return new acloud(); 
+  }
+  virtual bool store_info(zzub::archive *data) const { 
+    return false; 
+  }
 } acloud_info;
 
 struct acloudplugincollection : zzub::plugincollection {
   virtual void initialize(zzub::pluginfactory *factory) {
     factory->register_info(&acloud_info);
   }
-  
-  virtual const zzub::info *get_info(const char *uri, zzub::archive *data) { return 0; }
-  virtual void destroy() { delete this; }
+  virtual const zzub::info *get_info(const char *uri, zzub::archive *data) { 
+    return 0; 
+  }
+  virtual void destroy() { 
+    delete this; 
+  }
   // Returns the uri of the collection to be identified,
   // return zero for no uri. Collections without uri can not be 
   // configured.
-  virtual const char *get_uri() { return 0; }
-  
+  virtual const char *get_uri() { 
+    return 0; 
+  }
   // Called by the host to set specific configuration options,
   // usually related to paths.
-  virtual void configure(const char *key, const char *value) {}
+  virtual void configure(const char *key, const char *value) {
+
+  }
 };
 
 zzub::plugincollection *zzub_get_plugincollection() {

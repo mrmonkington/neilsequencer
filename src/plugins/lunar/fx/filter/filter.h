@@ -11,14 +11,12 @@ typedef struct _lunar_globals {
 	float *res;
 	float *x;
 	float *y;
-	float *inertia;
 } lunar_globals_t;
 typedef struct _lunar_global_values {
 	float freq;
 	float res;
 	float x;
 	float y;
-	float inertia;
 } lunar_global_values_t;
 typedef struct _lunar_track {
 } lunar_track_t;

@@ -52,15 +52,6 @@
 	   defvalue="0"
 	   precision="0.01"
 	   state="true"/>
-	<parameter
-	   id="inertia"
-	   name="Inertia (ticks)"
-	   description="Cutoff change inertia"
-	   type="byte"
-	   minvalue="0"
-	   maxvalue="16"
-	   defvalue="1"
-	   state="true"/>
       </global>
       <track>
       </track>
