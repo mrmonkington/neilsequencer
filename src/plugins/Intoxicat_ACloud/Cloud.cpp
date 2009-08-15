@@ -58,7 +58,7 @@ void acloud::process_events() {
       nrate = powf(2.0f, ((n) / 12.0f));
       offsCount = 0;
     }
-    else{
+    else {
       cloud_is_playing = false;
     }
   }
@@ -175,10 +175,15 @@ bool acloud::process_stereo(float **pin, float **pout,
   gcount += numsamples;
   if (gcount > gnext && cloud_is_playing) {
     do {
-      g = FindGrain(maxgrains);		 
+      // Find a free grain and assign it's index to g.
+      g = FindGrain(maxgrains);
+      // If there are free grains (FindGrain returns -1 otherwise)...
       if (g >= 0) {
-	Grain[g].IsActive = 0;		
+	// ...indicate that the grain is busy...
+	Grain[g].IsActive = 0;
+	// ... and pick a wave from which sample data will be read.
 	w = SelectWave(wavemix);
+	// ~
 	if (_host->get_wave_level(w, 0)) {	
 	  Grain[g].CDown = last_gnext;
 	  Grain[g].Set(SetGDRange(), SetOffset(waveslot, w), 1, 
@@ -222,6 +227,8 @@ bool acloud::process_stereo(float **pin, float **pout,
 }
 
 void acloud::command(int i) {
+  // This is a callback that get's called when user selects a plug-in
+  // command from a menu in the host sequencer.
   int j;
   switch (i) {
   case 0:
@@ -394,9 +401,11 @@ inline int f2i(double d) {
 }
 
 inline int acloud::FindGrain(int maxg) {
+  // Iterate over all grains in the cloud and select the first free one.
   for (int i = 0; i < maxg; i++) 
     if (Grain[i].IsActive == 0) 
       return i;
+  // In case that no grains are currently free return -1.
   return -1;
 }
 
@@ -407,10 +416,11 @@ inline int acloud::SetNextGrain(int dens) {
 }
 
 inline int acloud::CountGrains() {
+  // This procedure counts grains that are currently free (not doing work).
   int c = 0;
   for (int i = 0; i < maxgrains; i++)
-    if (Grain[i].IsActive) c++;
-
+    if (Grain[i].IsActive) 
+      c++;
   return c;
 }
 
@@ -443,17 +453,20 @@ double acloud::SetOffset(int wave, int wnum) {
   }
 
 
-  offsCount += (offsInc * skiprate * ((float)pwl->samples_per_second / (float)_master_info->samples_per_second));
-  offsInc = 0; //191205 to reset now incremental counter.
+  offsCount += (offsInc * skiprate * 
+		((float)pwl->samples_per_second / 
+		 (float)_master_info->samples_per_second));
+  offsInc = 0;
 
-  if(offsMode == 0) {
-    if (e == 0.0f) return s * wnums;//check if no range
-    if (e > (1.0f-s)) e = (1.0f-s);//check if range greater than available range
-    float r = (float)rand()/RAND_MAX;//random factor
-    return ((r*e)+s)*wnums;
+  if (offsMode == 0) {
+    if (e == 0.0f) 
+      return s * wnums;
+    if (e > (1.0f - s)) 
+      e = (1.0f - s);
+    float r = (float)rand() / RAND_MAX;
+    return ((r * e) + s) * wnums;
   }
-	
-  if(offsMode == 1) {
+  if (offsMode == 1) {
     if (offsCount + (wnums * s) > wnums) 
       offsCount = 0;
     if (e == 0.0f) 
@@ -492,27 +505,29 @@ double acloud::SetOffset(int wave, int wnum) {
 }
 
 inline int acloud::SelectWave(int mix) {
-  // The win version, I think, assumed that RAND_MAX was always
-  // 0xffff, and used the value of the paraWaveMix parameter directly
-  // as a probability (because 0xffff is its maximum value). Here,
-  // instead, we calculate: (mix / paraWaveMix->value_max) and and
-  // (rand() / RAND_MAX). Each of these two quantities is in [0, 1] so
-  // they can be directly compared. Similar story in SelectWave2,
-  // below. -- jmmcd
-  float r = (float)rand() / (float) RAND_MAX;
+  // Let r be a random number from 0 to 1.
+  float r = (float)rand() / (float)RAND_MAX;
+  // Let m be a number from 0 to 1 which tells which waveform is more likely
+  // to be chosen for playback (if closer to 0 wave 1 if closer to 1 wave 2).
   float m = mix / (float)paraWaveMix->value_none;
+  // If random number r is in the interval [0, m] pick wave 2,
+  // if r is in the interval [m, 1] pick wave 1.
+  // This seems reversed but it's not because we want the wave 1 to have
+  // a higher probability of being selected if r is closer to 0 and we
+  // want wave 2 to have higher probability when r is closer to 1.
   if (r > m) {
-    waveslot = 1;
-    return wavenum1;
+    this->waveslot = 1;
+    return this->wavenum1;
+  } else {
+    this->waveslot = 2;
+    return this->wavenum2;
   }
-  waveslot = 2;
-  return wavenum2;
 }
 
-void acloud::SelectWave2(int mix, WAVESEL * Wv){
+void acloud::SelectWave2(int mix, WAVESEL *Wv){
   Wv->wnum = wavenum2;
   Wv->waveslot = 2;
-  if (rand() / (float) RAND_MAX < mix / (float) paraWaveMix->value_max) {
+  if (rand() / (float) RAND_MAX < mix / (float)paraWaveMix->value_max) {
     Wv->wnum = wavenum1;
     Wv->waveslot = 1;
   }

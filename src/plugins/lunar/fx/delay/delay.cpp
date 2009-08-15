@@ -78,8 +78,6 @@ public:
   Svf filters[2];
 
   inline float squash(float x) {
-    //float raised = exp(x);
-    //return (raised - 1.0) / (raised + 1.0);
     if (x >= 1.0)
       return 1.0;
     else if (x <= -1.0)
