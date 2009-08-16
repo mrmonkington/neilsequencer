@@ -1,6 +1,4 @@
-#include "gAHDEnv.h"
-#include "assert.h"
-
+#include "gAHDEnv.hpp"
 
 void gAHDEnv::Init() {
   A = H = D = false;
@@ -18,11 +16,9 @@ void gAHDEnv::SetEnvParams(float a, float q) {
   ddec = 1.0f / dec; //to remove divs 
   hld = 1.0f - atk - dec;
   dcs = atk + hld;
-  //assert(atk>0 && < 1.0f);
 }
 
 float gAHDEnv::Envelope2(float c, int skip) {
-  //assert(c>0 && c < 1.0f);
   if (c < atk) 
     return c * datk;
   if (c > dcs) 
@@ -33,7 +29,6 @@ float gAHDEnv::Envelope2(float c, int skip) {
 }
 
 float gAHDEnv::Envelope3(float c, int skip) {
-  //assert(c>0 && c < 1.0f);	
   //lastValue
   float rtn = 1.0f;
   if (c <= atk){
@@ -48,7 +43,6 @@ float gAHDEnv::Envelope3(float c, int skip) {
     //H = true;
     rtn = 1.0f;
   }
-  //assert(rtn>0 && rtn < 1.0f);
   return rtn;
 
 }

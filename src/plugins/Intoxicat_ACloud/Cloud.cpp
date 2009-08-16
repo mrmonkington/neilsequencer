@@ -5,11 +5,8 @@
 #include <math.h>
 #include <string.h>
 
-//#include "gAHDEnv.h"
-#include "CGrain.h"
-#include "themi.h"
-
-class CGrain;
+#include "CGrain.hpp"
+#include "Cloud.hpp"
 
 inline int b2n(int b) {
   int n = ((int(b / 16) * 12) + (b % 16));
@@ -124,11 +121,6 @@ void acloud::process_events() {
 }
 
 void acloud::init(zzub::archive *arc) {
-
-  // ThisMachine = _host->get_metaplugin();
-  // _host->set_track_count(ThisMachine,2);
-
-  //mi vars
   wavenum1 = wavenum2 = 1;
   wavemix = 0x4000; 
   maxgrains = 20;
@@ -163,7 +155,6 @@ void acloud::init(zzub::archive *arc) {
   cloud_is_playing = false;
 }
 
-
 bool acloud::process_stereo(float **pin, float **pout, 
 			    int numsamples, int mode) {
   float psamples[256 * 2];
@@ -179,11 +170,11 @@ bool acloud::process_stereo(float **pin, float **pout,
       g = FindGrain(maxgrains);
       // If there are free grains (FindGrain returns -1 otherwise)...
       if (g >= 0) {
-	// ...indicate that the grain is busy...
+	// ...indicate that the grain is not busy...
 	Grain[g].IsActive = 0;
 	// ... and pick a wave from which sample data will be read.
 	w = SelectWave(wavemix);
-	// ~
+	// If 
 	if (_host->get_wave_level(w, 0)) {	
 	  Grain[g].CDown = last_gnext;
 	  Grain[g].Set(SetGDRange(), SetOffset(waveslot, w), 1, 
@@ -202,28 +193,19 @@ bool acloud::process_stereo(float **pin, float **pout,
     } while (last_gnext < numsamples);
     gcount = numsamples - (last_gnext - gnext);
   }
-  if (!CheckActivGrains(maxgrains)) {
-    memset(pout[0], 0, (numsamples) * sizeof(float));
-    memset(pout[1], 0, (numsamples) * sizeof(float));
-    return false;
-  }
-  memset(pout[0], 0, (numsamples) * sizeof(float));
-  memset(pout[1], 0, (numsamples) * sizeof(float));
+  memset(pout[0], 0, numsamples * sizeof(float));
+  memset(pout[1], 0, numsamples * sizeof(float));
   for (int j = 0; j < maxgrains; j++) {
-    if (Grain[j].IsActive == 1 && IsFirstInWork) 
-      Grain[j].Generate(psamples, numsamples, 
-			_host->get_wave_level(Grain[j].Wave, 0));
-    if(Grain[j].IsActive == 1 && !IsFirstInWork) 
-      Grain[j].GenerateAdd(psamples, numsamples, 
-			   _host->get_wave_level(Grain[j].Wave, 0));
-    IsFirstInWork = false;
+    if(Grain[j].IsActive == 1) { 
+      const zzub::wave_level *wave = _host->get_wave_level(Grain[j].Wave, 0);
+      Grain[j].GenerateAdd(psamples, numsamples, wave);
+    }
   }
   for (int i = 0; i < numsamples; i++) {
     pout[0][i] = psamples[2 * i] * downscale;
     pout[1][i] = psamples[2 * i + 1] * downscale;
   }
   return true;
-
 }
 
 void acloud::command(int i) {
@@ -247,7 +229,7 @@ void acloud::command(int i) {
   }
 }
 
-const char * acloud::describe_value(int param, int value) {
+const char *acloud::describe_value(int param, int value) {
   static char txt[16];
   float t, p;
   switch(param) {
