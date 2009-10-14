@@ -1,0 +1,5 @@
+Import('pluginenv', 'build_plugin')
+pluginenv.Append(LIBS=["lanternfish"])
+build_plugin(pluginenv, 'somono_cloud',
+	     files=['Cloud.cpp', 'ACloud.cpp', 'Grain.cpp'],
+	     helpfiles=['doc/index.html'])
