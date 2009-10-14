@@ -20,7 +20,7 @@
 
 Import('env', 'posix', 'win32', 'install_lib', 'install', 'cl', 'vs_projects')
 
-localenv = env.Copy()
+localenv = env.Clone()
 
 localenv.Append(CPPPATH=[
 	'include',

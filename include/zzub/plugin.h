@@ -79,9 +79,9 @@ namespace zzub {
     event_type_pattern_remove_rows = zzub_event_type_pattern_remove_rows,
 
     // global/master events
-    event_type_load_progress	= zzub_event_type_load_progress,
-    event_type_midi_control	= zzub_event_type_midi_control,
-    event_type_wave_allocated	= zzub_event_type_wave_allocated,
+    event_type_load_progress = zzub_event_type_load_progress,
+    event_type_midi_control = zzub_event_type_midi_control,
+    event_type_wave_allocated = zzub_event_type_wave_allocated,
 	
     event_type_player_state_changed = zzub_event_type_player_state_changed,
     event_type_osc_message = zzub_event_type_osc_message,
@@ -109,7 +109,7 @@ namespace zzub {
     // Indicates that the parameter is a switch, which
     // can either be on or off. This parameter has a size of 1
     // byte.
-    parameter_type_switch	= zzub_parameter_type_switch,
+    parameter_type_switch = zzub_parameter_type_switch,
 	
     // Indicates that the parameter is a byte, which can
     // take any random value between 0 and 255. This parameter
@@ -123,49 +123,49 @@ namespace zzub {
   };
 
   enum wave_buffer_type {
-    wave_buffer_type_si16	= zzub_wave_buffer_type_si16,    // signed int 16bit
-    wave_buffer_type_f32	= zzub_wave_buffer_type_f32,    // float 32bit
-    wave_buffer_type_si32	= zzub_wave_buffer_type_si32,    // signed int 32bit
-    wave_buffer_type_si24	= zzub_wave_buffer_type_si24,    // signed int 24bit
+    wave_buffer_type_si16 = zzub_wave_buffer_type_si16, // signed int 16bit
+    wave_buffer_type_f32 = zzub_wave_buffer_type_f32, // float 32bit
+    wave_buffer_type_si32 = zzub_wave_buffer_type_si32, // signed int 32bit
+    wave_buffer_type_si24 = zzub_wave_buffer_type_si24, // signed int 24bit
   };
 
   enum note_value {
     // predefined values for notes
-    note_value_none	= zzub_note_value_none,
-    note_value_off	= zzub_note_value_off,
-    note_value_min	= zzub_note_value_min,
-    note_value_max	= zzub_note_value_max,
+    note_value_none = zzub_note_value_none,
+    note_value_off = zzub_note_value_off,
+    note_value_min = zzub_note_value_min,
+    note_value_max = zzub_note_value_max,
     note_value_c4 = zzub_note_value_c4
   };
 
   enum switch_value {
     // predefined values for switches
-    switch_value_none	= zzub_switch_value_none,
-    switch_value_off	= zzub_switch_value_off,
-    switch_value_on	= zzub_switch_value_on,
+    switch_value_none = zzub_switch_value_none,
+    switch_value_off = zzub_switch_value_off,
+    switch_value_on = zzub_switch_value_on,
   };
 
   enum wavetable_index_value {
     // predefined values for wavetable indices
-    wavetable_index_value_none	= zzub_wavetable_index_value_none,
-    wavetable_index_value_min	= zzub_wavetable_index_value_min,
-    wavetable_index_value_max	= zzub_wavetable_index_value_max,
+    wavetable_index_value_none = zzub_wavetable_index_value_none,
+    wavetable_index_value_min = zzub_wavetable_index_value_min,
+    wavetable_index_value_max = zzub_wavetable_index_value_max,
   };
 
   enum parameter_flag {
     // parameter flags
-    parameter_flag_wavetable_index	= zzub_parameter_flag_wavetable_index,
-    parameter_flag_state	= zzub_parameter_flag_state,
-    parameter_flag_event_on_edit	= zzub_parameter_flag_event_on_edit,
+    parameter_flag_wavetable_index = zzub_parameter_flag_wavetable_index,
+    parameter_flag_state = zzub_parameter_flag_state,
+    parameter_flag_event_on_edit = zzub_parameter_flag_event_on_edit,
   };
 
   enum plugin_flag {
     // plugin flags
-    plugin_flag_plays_waves	= zzub_plugin_flag_plays_waves,
-    plugin_flag_uses_lib_interface	= zzub_plugin_flag_uses_lib_interface,
-    plugin_flag_uses_instruments	= zzub_plugin_flag_uses_instruments,
-    plugin_flag_does_input_mixing	= zzub_plugin_flag_does_input_mixing,
-    plugin_flag_no_output	= zzub_plugin_flag_no_output,
+    plugin_flag_plays_waves = zzub_plugin_flag_plays_waves,
+    plugin_flag_uses_lib_interface = zzub_plugin_flag_uses_lib_interface,
+    plugin_flag_uses_instruments = zzub_plugin_flag_uses_instruments,
+    plugin_flag_does_input_mixing = zzub_plugin_flag_does_input_mixing,
+    plugin_flag_no_output = zzub_plugin_flag_no_output,
     plugin_flag_is_root = zzub_plugin_flag_is_root,
     plugin_flag_has_audio_input = zzub_plugin_flag_has_audio_input,
     plugin_flag_has_audio_output = zzub_plugin_flag_has_audio_output,
@@ -184,23 +184,23 @@ namespace zzub {
   };
 
   enum wave_flag {
-    wave_flag_loop	= zzub_wave_flag_loop,
-    wave_flag_extended	= zzub_wave_flag_extended,
+    wave_flag_loop = zzub_wave_flag_loop,
+    wave_flag_extended = zzub_wave_flag_extended,
     wave_flag_stereo = zzub_wave_flag_stereo,
-    wave_flag_pingpong	= zzub_wave_flag_pingpong,
-    wave_flag_envelope	= zzub_wave_flag_envelope,
+    wave_flag_pingpong = zzub_wave_flag_pingpong,
+    wave_flag_envelope = zzub_wave_flag_envelope,
   };
 
   enum envelope_flag {
-    envelope_flag_sustain	= zzub_envelope_flag_sustain,
-    envelope_flag_loop	= zzub_envelope_flag_loop,
+    envelope_flag_sustain = zzub_envelope_flag_sustain,
+    envelope_flag_loop = zzub_envelope_flag_loop,
   };
 
   enum process_mode {
     // processing modes
-    process_mode_no_io	= zzub_process_mode_no_io,
-    process_mode_read	= zzub_process_mode_read,
-    process_mode_write	= zzub_process_mode_write,
+    process_mode_no_io = zzub_process_mode_no_io,
+    process_mode_read = zzub_process_mode_read,
+    process_mode_write = zzub_process_mode_write,
     process_mode_read_write = zzub_process_mode_read_write,
   };
 
@@ -231,7 +231,10 @@ namespace zzub {
       value_default = 0;
     }
 	
-    parameter &set_type(parameter_type type) { this->type = type; return *this; }
+    parameter &set_type(parameter_type type) { 
+      this->type = type; return *this; 
+    }
+
     parameter &set_note() {
       this->type = parameter_type_note;
       this->name = "Note";
@@ -358,7 +361,6 @@ namespace zzub {
     float samples_per_tick_frac;    // zzub extension
   };
 
-
   struct envelope_point {
     unsigned short x, y;
     unsigned char flags;		// flags: bit 0 = sustain
@@ -402,6 +404,7 @@ namespace zzub {
       case wave_buffer_type_si24:
 	return 3;
       case wave_buffer_type_si32:
+	return 4;
       case wave_buffer_type_f32:
 	return 4;
       default:
@@ -426,9 +429,9 @@ namespace zzub {
   };
 
   struct host_info {
-  int id;
-  int version;
-  void* host_ptr;	// host-specific data
+    int id;
+    int version;
+    void* host_ptr;	// host-specific data
   };
 
   enum sequence_type {
@@ -437,415 +440,417 @@ namespace zzub {
     sequence_type_automation = zzub_sequence_type_automation,
   };
     
-    struct sequence_pattern_event {
+  struct sequence_pattern_event {
     int value;
     int length;
-    };
+  };
       
-      struct sequence_wave_event {
-      int wave;
-      int offset;
-      int length;
-      };
+  struct sequence_wave_event {
+    int wave;
+    int offset;
+    int length;
+  };
 	
-	struct sequence_automation_event {
-	int value;
-	};
+  struct sequence_automation_event {
+    int value;
+  };
 	  
-	  struct sequence_event {
-	  int time;
-	  union {
-	  sequence_pattern_event pattern_event;
-	  sequence_wave_event wave_event;
-	  sequence_automation_event automation_event;
-	  };
-	  };
+  struct sequence_event {
+    int time;
+    union {
+      sequence_pattern_event pattern_event;
+      sequence_wave_event wave_event;
+      sequence_automation_event automation_event;
+    };
+  };
 
-	  struct host {
-	    virtual const wave_info* get_wave(int index);
-	    virtual const wave_level* get_wave_level(int index, int level);
-	    virtual void message(const char *text);
-	    virtual void lock ();
-	    virtual void unlock();
-	    virtual void set_swap_mode(bool free);
-	    virtual int get_write_position();
-	    virtual int get_play_position();
-	    virtual void set_play_position(int pos);
-	    virtual float ** get_auxiliary_buffer();
-	    virtual void clear_auxiliary_buffer();
-	    virtual int get_next_free_wave_index();
-	    virtual bool allocate_wave(int index, int level, int samples, wave_buffer_type type, bool stereo, const char *name);
-	    virtual bool allocate_wave_direct(int index, int level, int samples, wave_buffer_type type, bool stereo, const char *name);
-	    virtual void midi_out(int time, unsigned int data);
-	    virtual int get_envelope_size(int wave, int envelope);
-	    virtual bool get_envelope_point(int wave, int envelope, int index, unsigned short &x, unsigned short &y, int &flags);
-	    virtual const wave_level* get_nearest_wave_level(int index, int note);
-	    virtual void set_track_count(int count);
-	    virtual int create_pattern(const char *name, int length);
-	    //virtual int get_pattern(int index);
-	    virtual char const * get_pattern_name(int _pattern);
-	    virtual int get_pattern_length(int _pattern);
-	    virtual int get_pattern_count();
-	    virtual void rename_pattern(char const *oldname, char const *newname);
-	    virtual void delete_pattern(int _pattern);
-	    virtual int get_pattern_data(int _pattern, int row, int group, int track, int field);
-	    virtual void set_pattern_data(int _pattern, int row, int group, int track, int field, int value);
-	    virtual zzub_sequence_t* create_sequence();
-	    virtual void delete_sequence(zzub_sequence_t* _sequence);
-	    virtual int  get_sequence_data(int row);
-	    virtual void set_sequence_data(int row, int pattern);
-	    virtual sequence_type get_sequence_type(zzub_sequence_t* seq);
-	    virtual void _legacy_control_change(int group, int track, int param, int value);
-	    virtual int audio_driver_get_channel_count(bool input);
-	    virtual void audio_driver_write(int channel, float *samples, int buffersize);
-	    virtual void audio_driver_read(int channel, float *samples, int buffersize);
-	    virtual zzub_plugin_t* get_metaplugin();
-	    //virtual int get_metaplugin_by_index(int plugin_desc);
-	    virtual void control_change(zzub_plugin_t* _metaplugin, int group, int track, int param, int value, bool record, bool immediate);
+  struct host {
+    virtual const wave_info* get_wave(int index);
+    virtual const wave_level* get_wave_level(int index, int level);
+    virtual void message(const char *text);
+    virtual void lock ();
+    virtual void unlock();
+    virtual void set_swap_mode(bool free);
+    virtual int get_write_position();
+    virtual int get_play_position();
+    virtual void set_play_position(int pos);
+    virtual float ** get_auxiliary_buffer();
+    virtual void clear_auxiliary_buffer();
+    virtual int get_next_free_wave_index();
+    virtual bool allocate_wave(int index, int level, int samples, wave_buffer_type type, bool stereo, const char *name);
+    virtual bool allocate_wave_direct(int index, int level, int samples, wave_buffer_type type, bool stereo, const char *name);
+    virtual void midi_out(int time, unsigned int data);
+    virtual int get_envelope_size(int wave, int envelope);
+    virtual bool get_envelope_point(int wave, int envelope, int index, unsigned short &x, unsigned short &y, int &flags);
+    virtual const wave_level* get_nearest_wave_level(int index, int note);
+    virtual void set_track_count(int count);
+    virtual int create_pattern(const char *name, int length);
+    //virtual int get_pattern(int index);
+    virtual char const * get_pattern_name(int _pattern);
+    virtual int get_pattern_length(int _pattern);
+    virtual int get_pattern_count();
+    virtual void rename_pattern(char const *oldname, char const *newname);
+    virtual void delete_pattern(int _pattern);
+    virtual int get_pattern_data(int _pattern, int row, int group, int track, int field);
+    virtual void set_pattern_data(int _pattern, int row, int group, int track, int field, int value);
+    virtual zzub_sequence_t* create_sequence();
+    virtual void delete_sequence(zzub_sequence_t* _sequence);
+    virtual int  get_sequence_data(int row);
+    virtual void set_sequence_data(int row, int pattern);
+    virtual sequence_type get_sequence_type(zzub_sequence_t* seq);
+    virtual void _legacy_control_change(int group, int track, int param, int value);
+    virtual int audio_driver_get_channel_count(bool input);
+    virtual void audio_driver_write(int channel, float *samples, int buffersize);
+    virtual void audio_driver_read(int channel, float *samples, int buffersize);
+    virtual zzub_plugin_t* get_metaplugin();
+    //virtual int get_metaplugin_by_index(int plugin_desc);
+    virtual void control_change(zzub_plugin_t* _metaplugin, int group, int track, int param, int value, bool record, bool immediate);
 	
-	    virtual zzub_sequence_t* get_playing_sequence(zzub_plugin_t* _metaplugin);
-	    virtual void * get_playing_row(zzub_sequence_t* _sequence, int group, int track);
-	    virtual int get_state_flags();
-	    virtual void set_state_flags(int state);
-	    virtual void set_event_handler(zzub_plugin_t* _metaplugin, event_handler* handler);
-	    virtual void remove_event_handler(zzub_plugin_t* _metaplugin, event_handler* handler);
-	    virtual const char * get_wave_name(int index);
-	    virtual void set_internal_wave_name(zzub_plugin_t* _metaplugin, int index, const char *name);
-	    virtual void get_plugin_names(outstream *os);
-	    virtual zzub_plugin_t* get_metaplugin(const char *name);
-	    virtual info const * get_info(zzub_plugin_t* _metaplugin);
-	    virtual char const * get_name(zzub_plugin_t* _metaplugin);
-	    virtual bool get_input(int index, float *samples, int buffersize, bool stereo, float *extrabuffer);
-	    virtual bool get_osc_url(zzub_plugin_t* pmac, char *url);
+    virtual zzub_sequence_t* get_playing_sequence(zzub_plugin_t* _metaplugin);
+    virtual void * get_playing_row(zzub_sequence_t* _sequence, int group, int track);
+    virtual int get_state_flags();
+    virtual void set_state_flags(int state);
+    virtual void set_event_handler(zzub_plugin_t* _metaplugin, event_handler* handler);
+    virtual void remove_event_handler(zzub_plugin_t* _metaplugin, event_handler* handler);
+    virtual const char * get_wave_name(int index);
+    virtual void set_internal_wave_name(zzub_plugin_t* _metaplugin, int index, const char *name);
+    virtual void get_plugin_names(outstream *os);
+    virtual zzub_plugin_t* get_metaplugin(const char *name);
+    virtual info const * get_info(zzub_plugin_t* _metaplugin);
+    virtual char const * get_name(zzub_plugin_t* _metaplugin);
+    virtual bool get_input(int index, float *samples, int buffersize, bool stereo, float *extrabuffer);
+    virtual bool get_osc_url(zzub_plugin_t* pmac, char *url);
 	
-	    // peerctrl extensions
-	    virtual int get_parameter(zzub_plugin_t* _metaplugin, int group, int track, int param);
-	    virtual plugin *get_plugin(zzub_plugin_t* _metaplugin);
+    // peerctrl extensions
+    virtual int get_parameter(zzub_plugin_t* _metaplugin, int group, int track, int param);
+    virtual plugin *get_plugin(zzub_plugin_t* _metaplugin);
 
-	    // hacked extensions
-	    virtual int get_song_begin();
-	    virtual void set_song_begin(int pos);
-	    virtual int get_song_end();
-	    virtual void set_song_end(int pos);
-	    virtual int get_song_begin_loop();
-	    virtual void set_song_begin_loop(int pos);
-	    virtual int get_song_end_loop();
-	    virtual void set_song_end_loop(int pos);
-	    virtual host_info* get_host_info();
+    // hacked extensions
+    virtual int get_song_begin();
+    virtual void set_song_begin(int pos);
+    virtual int get_song_end();
+    virtual void set_song_end(int pos);
+    virtual int get_song_begin_loop();
+    virtual void set_song_begin_loop(int pos);
+    virtual int get_song_end_loop();
+    virtual void set_song_end_loop(int pos);
+    virtual host_info* get_host_info();
 
-	    zzub::player* _player;
-	    zzub::song* plugin_player;		// plugin_player is used for accessing plugins and is the same as player except during initialization
-	    zzub_plugin_t* _plugin;
+    zzub::player* _player;
+    // plugin_player is used for accessing plugins and is the 
+    // same as player except during initialization
+    zzub::song* plugin_player;
+    zzub_plugin_t* _plugin;
 
-	    host(zzub::player*, zzub_plugin_t*);
-	    ~host();
-	    std::vector<std::vector<float> > aux_buffer;
-	    std::vector<std::vector<float> > feedback_buffer;
-	  };
+    host(zzub::player*, zzub_plugin_t*);
+    ~host();
+    std::vector<std::vector<float> > aux_buffer;
+    std::vector<std::vector<float> > feedback_buffer;
+  };
 
 
-	  struct lib {
-	    virtual void get_instrument_list(outstream *os) = 0;
-	  };
+  struct lib {
+    virtual void get_instrument_list(outstream *os) = 0;
+  };
 		
-	  struct instream	{
-	    virtual int read(void *buffer, int size) = 0;
+  struct instream	{
+    virtual int read(void *buffer, int size) = 0;
 
-	    virtual long position() = 0;
-	    virtual void seek(long, int) = 0;
+    virtual long position() = 0;
+    virtual void seek(long, int) = 0;
 	
-	    virtual long size() = 0;
+    virtual long size() = 0;
 
-	    template <typename T>
-	    int read(T &d) { return read(&d, sizeof(T)); }
+    template <typename T>
+    int read(T &d) { return read(&d, sizeof(T)); }
 
-	    int read(std::string& d) {
-	      char c = -1;
-	      d = "";
-	      int i = 0;
-	      do {
-		if (!read<char>(c)) break;
-		if (c) d += c;
-		i++;
-	      } while (c != 0);
-	      return i;
-	    }
-	  };
+    int read(std::string& d) {
+      char c = -1;
+      d = "";
+      int i = 0;
+      do {
+	if (!read<char>(c)) break;
+	if (c) d += c;
+	i++;
+      } while (c != 0);
+      return i;
+    }
+  };
 
-	  struct outstream {
-	    virtual int write(void *buffer, int size) = 0;
+  struct outstream {
+    virtual int write(void *buffer, int size) = 0;
 	
-	    template <typename T>
-	    int write(T d) { return write(&d, sizeof(T)); }
+    template <typename T>
+    int write(T d) { return write(&d, sizeof(T)); }
 
 #if defined(_STRING_H_) || defined(_INC_STRING)
-	    // include string.h or cstring before zzubplugin.h to get this function
-	    int write(const char *str) { return write((void*)str, (int)strlen(str) + 1); }
+    // include string.h or cstring before zzubplugin.h to get this function
+    int write(const char *str) { return write((void*)str, (int)strlen(str) + 1); }
 #elif defined(_GLIBCXX_CSTRING)
-	    int write(const char *str) { return write((void*)str, (int)std::strlen(str) + 1); }
+    int write(const char *str) { return write((void*)str, (int)std::strlen(str) + 1); }
 #endif
 
-	    virtual long position() = 0;
-	    virtual void seek(long, int) = 0;
-	  };
+    virtual long position() = 0;
+    virtual void seek(long, int) = 0;
+  };
 
-	  struct archive {
-	    virtual outstream *get_outstream(const char *path) = 0;
-	    virtual instream *get_instream(const char *path) = 0;
-	  };
+  struct archive {
+    virtual outstream *get_outstream(const char *path) = 0;
+    virtual instream *get_instream(const char *path) = 0;
+  };
 
-	  struct info	{
-	    int version;
-	    int flags;
-	    unsigned int min_tracks;
-	    unsigned int max_tracks;
-	    std::string name;
-	    std::string short_name;
-	    std::string author;
-	    std::string commands;
-	    lib* plugin_lib;
-	    std::string uri;
+  struct info	{
+    int version;
+    int flags;
+    unsigned int min_tracks;
+    unsigned int max_tracks;
+    std::string name;
+    std::string short_name;
+    std::string author;
+    std::string commands;
+    lib* plugin_lib;
+    std::string uri;
 	
-	    std::vector<const zzub::parameter*> global_parameters;
+    std::vector<const zzub::parameter*> global_parameters;
 	
-	    std::vector<const zzub::parameter*> track_parameters;
+    std::vector<const zzub::parameter*> track_parameters;
 
-	    // for controller plugins: those will be associated with parameters of remote plugins
-	    // they are purely internal and will not be visible in the pattern editor or gui
-	    std::vector<const zzub::parameter*> controller_parameters; 
+    // for controller plugins: those will be associated with parameters of remote plugins
+    // they are purely internal and will not be visible in the pattern editor or gui
+    std::vector<const zzub::parameter*> controller_parameters; 
 
-	    std::vector<const zzub::attribute*> attributes;
+    std::vector<const zzub::attribute*> attributes;
 
-	    // details about what formats import and stream plugins handle
-	    std::vector<std::string> supported_import_extensions;
-	    std::vector<std::string> supported_stream_extensions;
+    // details about what formats import and stream plugins handle
+    std::vector<std::string> supported_import_extensions;
+    std::vector<std::string> supported_stream_extensions;
 	
-	    virtual zzub::plugin* create_plugin() const = 0;
-	    virtual bool store_info(zzub::archive *arc) const = 0;
+    virtual zzub::plugin* create_plugin() const = 0;
+    virtual bool store_info(zzub::archive *arc) const = 0;
 
-	    zzub::parameter& add_global_parameter() {
-	      zzub::parameter *param = new zzub::parameter();
-	      global_parameters.push_back(param);
-	      return *param;
-	    }
+    zzub::parameter& add_global_parameter() {
+      zzub::parameter *param = new zzub::parameter();
+      global_parameters.push_back(param);
+      return *param;
+    }
 
-	    zzub::parameter& add_track_parameter() {
-	      zzub::parameter *param = new zzub::parameter();
-	      track_parameters.push_back(param);
-	      return *param;
-	    }
+    zzub::parameter& add_track_parameter() {
+      zzub::parameter *param = new zzub::parameter();
+      track_parameters.push_back(param);
+      return *param;
+    }
 
-	    zzub::parameter& add_controller_parameter() {
-	      zzub::parameter *param = new zzub::parameter();
-	      controller_parameters.push_back(param);
-	      return *param;
-	    }
+    zzub::parameter& add_controller_parameter() {
+      zzub::parameter *param = new zzub::parameter();
+      controller_parameters.push_back(param);
+      return *param;
+    }
 
-	    zzub::attribute& add_attribute() {
-	      zzub::attribute *attrib = new zzub::attribute();
-	      attributes.push_back(attrib);
-	      return *attrib;
-	    }
+    zzub::attribute& add_attribute() {
+      zzub::attribute *attrib = new zzub::attribute();
+      attributes.push_back(attrib);
+      return *attrib;
+    }
 	
-	    info() {
-	      version = zzub::version;
-	      flags = 0;
-	      min_tracks = 0;
-	      max_tracks = 0;
-	      name = "";
-	      short_name = "";
-	      author = "";
-	      commands = "";
-	      plugin_lib = 0;
-	      uri = "";
-	    }
+    info() {
+      version = zzub::version;
+      flags = 0;
+      min_tracks = 0;
+      max_tracks = 0;
+      name = "";
+      short_name = "";
+      author = "";
+      commands = "";
+      plugin_lib = 0;
+      uri = "";
+    }
 	
-	    virtual ~info() {
-	      for (std::vector<const zzub::parameter*>::iterator i = global_parameters.begin();
-		   i != global_parameters.end(); ++i) {
-		delete *i;
-	      }
-	      global_parameters.clear();
-	      for (std::vector<const zzub::parameter*>::iterator i = track_parameters.begin();
-		   i != track_parameters.end(); ++i) {
-		delete *i;
-	      }
-	      track_parameters.clear();
-	      for (std::vector<const zzub::parameter*>::iterator i = controller_parameters.begin();
-		   i != controller_parameters.end(); ++i) {
-		delete *i;
-	      }
-	      controller_parameters.clear();
-	      for (std::vector<const zzub::attribute*>::iterator i = attributes.begin();
-		   i != attributes.end(); ++i) {
-		delete *i;
-	      }
-	      attributes.clear();
-	    }
+    virtual ~info() {
+      for (std::vector<const zzub::parameter*>::iterator i = global_parameters.begin();
+	   i != global_parameters.end(); ++i) {
+	delete *i;
+      }
+      global_parameters.clear();
+      for (std::vector<const zzub::parameter*>::iterator i = track_parameters.begin();
+	   i != track_parameters.end(); ++i) {
+	delete *i;
+      }
+      track_parameters.clear();
+      for (std::vector<const zzub::parameter*>::iterator i = controller_parameters.begin();
+	   i != controller_parameters.end(); ++i) {
+	delete *i;
+      }
+      controller_parameters.clear();
+      for (std::vector<const zzub::attribute*>::iterator i = attributes.begin();
+	   i != attributes.end(); ++i) {
+	delete *i;
+      }
+      attributes.clear();
+    }
 
-	    static int calc_column_size(const std::vector<const zzub::parameter*> &params) {
-	      int size = 0;
-	      for (unsigned i = 0; i<params.size(); i++) {
-		size += params[i]->get_bytesize();
-	      }
-	      return size;
-	    }
+    static int calc_column_size(const std::vector<const zzub::parameter*> &params) {
+      int size = 0;
+      for (unsigned i = 0; i<params.size(); i++) {
+	size += params[i]->get_bytesize();
+      }
+      return size;
+    }
 
-	    int get_group_size(int group) const {
-	      switch (group) {
-	      case 0:
-                return 2*sizeof(short);
-	      case 1:
-                return calc_column_size(global_parameters);
-	      case 2:
-                return calc_column_size(track_parameters);
-	      default:
-                return 0;
-	      }
-	    }
+    int get_group_size(int group) const {
+      switch (group) {
+      case 0:
+	return 2*sizeof(short);
+      case 1:
+	return calc_column_size(global_parameters);
+      case 2:
+	return calc_column_size(track_parameters);
+      default:
+	return 0;
+      }
+    }
 
-	  };
+  };
 
-	  struct midi_message {
-	    int device;
-	    unsigned long message;
-	    unsigned long timestamp;
-	  };
+  struct midi_message {
+    int device;
+    unsigned long message;
+    unsigned long timestamp;
+  };
 
 	  
-	    struct plugin {
-	      virtual ~plugin() { }
-	      virtual void destroy() { delete this; }
-	      virtual void init(zzub::archive *arc) {}
-	      virtual void process_events() {}
-	      virtual void process_midi_events(midi_message* pin, int nummessages) {}
-	      virtual void process_controller_events() {}
-	      virtual bool process_stereo(float **pin, float **pout, int numsamples, int mode) { return false; }
-	      virtual bool process_offline(float **pin, float **pout, int *numsamples, int *channels, int *samplerate) { return false; }
-	      virtual void stop() {}
-	      virtual void load(zzub::archive *arc) {}
-	      virtual void save(zzub::archive *arc) {}
-	      virtual void attributes_changed() {}
-	      virtual void command(int index) {}
-	      virtual void set_track_count(int count) {}
-	      virtual void mute_track(int index) {}
-	      virtual bool is_track_muted(int index) const { return false; }
-	      virtual void midi_note(int channel, int value, int velocity)  {}
-	      virtual void event(unsigned int data)  {}
-	      virtual const char * describe_value(int param, int value) { return 0; }
-	      virtual const zzub::envelope_info ** get_envelope_infos() { return 0; }
-	      virtual bool play_wave(int wave, int note, float volume, int offset, int length) { return false; }
-	      virtual void stop_wave() {}
-	      virtual int get_wave_envelope_play_position(int env) { return -1; }
+  struct plugin {
+    virtual ~plugin() { }
+    virtual void destroy() { delete this; }
+    virtual void init(zzub::archive *arc) {}
+    virtual void process_events() {}
+    virtual void process_midi_events(midi_message* pin, int nummessages) {}
+    virtual void process_controller_events() {}
+    virtual bool process_stereo(float **pin, float **pout, int numsamples, int mode) { return false; }
+    virtual bool process_offline(float **pin, float **pout, int *numsamples, int *channels, int *samplerate) { return false; }
+    virtual void stop() {}
+    virtual void load(zzub::archive *arc) {}
+    virtual void save(zzub::archive *arc) {}
+    virtual void attributes_changed() {}
+    virtual void command(int index) {}
+    virtual void set_track_count(int count) {}
+    virtual void mute_track(int index) {}
+    virtual bool is_track_muted(int index) const { return false; }
+    virtual void midi_note(int channel, int value, int velocity)  {}
+    virtual void event(unsigned int data)  {}
+    virtual const char * describe_value(int param, int value) { return 0; }
+    virtual const zzub::envelope_info ** get_envelope_infos() { return 0; }
+    virtual bool play_wave(int wave, int note, float volume, int offset, int length) { return false; }
+    virtual void stop_wave() {}
+    virtual int get_wave_envelope_play_position(int env) { return -1; }
 
-	      // these have been in zzub::plugin2 before
-	      virtual const char* describe_param(int param) { return 0; }
-	      virtual bool set_instrument(const char *name) { return false; }
-	      virtual void get_sub_menu(int index, zzub::outstream *os) {}
-	      virtual void add_input(const char *name, zzub::connection_type type) {}
-	      virtual void delete_input(const char *name, zzub::connection_type type) {}
-	      virtual void rename_input(const char *oldname, const char *newname) {}
-	      virtual void input(float **samples, int size, float amp) {}
-	      virtual void midi_control_change(int ctrl, int channel, int value) {}
-	      virtual bool handle_input(int index, int amp, int pan) { return false; }
-	      // plugin_flag_has_midi_output
-	      virtual void get_midi_output_names(outstream *pout) {}
+    // these have been in zzub::plugin2 before
+    virtual const char* describe_param(int param) { return 0; }
+    virtual bool set_instrument(const char *name) { return false; }
+    virtual void get_sub_menu(int index, zzub::outstream *os) {}
+    virtual void add_input(const char *name, zzub::connection_type type) {}
+    virtual void delete_input(const char *name, zzub::connection_type type) {}
+    virtual void rename_input(const char *oldname, const char *newname) {}
+    virtual void input(float **samples, int size, float amp) {}
+    virtual void midi_control_change(int ctrl, int channel, int value) {}
+    virtual bool handle_input(int index, int amp, int pan) { return false; }
+    // plugin_flag_has_midi_output
+    virtual void get_midi_output_names(outstream *pout) {}
 
-	      // plugin_flag_stream | plugin_flag_has_audio_output
-	      virtual void set_stream_source(const char* resource) {}
-	      virtual const char* get_stream_source() { return 0; }
+    // plugin_flag_stream | plugin_flag_has_audio_output
+    virtual void set_stream_source(const char* resource) {}
+    virtual const char* get_stream_source() { return 0; }
 
-	      virtual void play_sequence_event(zzub_sequence_t* seq, const sequence_event& ev, int offset) {}
+    virtual void play_sequence_event(zzub_sequence_t* seq, const sequence_event& ev, int offset) {}
 	
-	      // Called by the host to set specific configuration options,
-	      // usually related to paths.
-	      virtual void configure(const char *key, const char *value) {}
+    // Called by the host to set specific configuration options,
+    // usually related to paths.
+    virtual void configure(const char *key, const char *value) {}
 
-	      plugin() {
-		global_values = 0;
-		track_values = 0;
-		controller_values = 0;
-		attributes = 0;
-		_master_info = 0;
-		_host = 0;
-	      }
+    plugin() {
+      global_values = 0;
+      track_values = 0;
+      controller_values = 0;
+      attributes = 0;
+      _master_info = 0;
+      _host = 0;
+    }
 
-	      void *global_values;
-	      void *track_values;
-	      void *controller_values;
-	      int *attributes;
+    void *global_values;
+    void *track_values;
+    void *controller_values;
+    int *attributes;
 
-	      master_info *_master_info;
-	      host *_host;
+    master_info *_master_info;
+    host *_host;
 
-	    };
+  };
 
-	    // A plugin factory allows to add and replace plugin infos
-	    // known to the host.
-	    struct pluginfactory {
+  // A plugin factory allows to add and replace plugin infos
+  // known to the host.
+  struct pluginfactory {
 	
-	      // Registers a plugin info to the host. If the uri argument
-	      // of the info struct designates a plugin already existing
-	      // to the host, the old info struct will be replaced.
-	      virtual void register_info(const zzub::info *_info) = 0;
-	    };
+    // Registers a plugin info to the host. If the uri argument
+    // of the info struct designates a plugin already existing
+    // to the host, the old info struct will be replaced.
+    virtual void register_info(const zzub::info *_info) = 0;
+  };
 
-	    // A plugin collection registers plugin infos and provides
-	    // serialization services for plugin info, to allow
-	    // loading of plugins from song data.
-	    struct plugincollection {
+  // A plugin collection registers plugin infos and provides
+  // serialization services for plugin info, to allow
+  // loading of plugins from song data.
+  struct plugincollection {
 	
-	      // Called by the host initially. The collection registers
-	      // plugins through the pluginfactory::register_info method.
-	      // The factory pointer remains valid and can be stored
-	      // for later reference.
-	      virtual void initialize(zzub::pluginfactory *factory) {}
+    // Called by the host initially. The collection registers
+    // plugins through the pluginfactory::register_info method.
+    // The factory pointer remains valid and can be stored
+    // for later reference.
+    virtual void initialize(zzub::pluginfactory *factory) {}
 	
-	      // Called by the host upon song loading. If the collection
-	      // can not provide a plugin info based on the uri or
-	      // the metainfo passed, it should return a null pointer.
-	      // This will usually only be called if the host does
-	      // not know about the uri already.
-	      virtual const zzub::info *get_info(const char *uri, zzub::archive *arc) { return 0; }
+    // Called by the host upon song loading. If the collection
+    // can not provide a plugin info based on the uri or
+    // the metainfo passed, it should return a null pointer.
+    // This will usually only be called if the host does
+    // not know about the uri already.
+    virtual const zzub::info *get_info(const char *uri, zzub::archive *arc) { return 0; }
 	
-	      // Returns the uri of the collection to be identified,
-	      // return zero for no uri. Collections without uri can not be 
-	      // configured.
-	      virtual const char *get_uri() { return 0; }
+    // Returns the uri of the collection to be identified,
+    // return zero for no uri. Collections without uri can not be 
+    // configured.
+    virtual const char *get_uri() { return 0; }
 	
-	      // Called by the host to set specific configuration options,
-	      // usually related to paths.
-	      virtual void configure(const char *key, const char *value) {}
+    // Called by the host to set specific configuration options,
+    // usually related to paths.
+    virtual void configure(const char *key, const char *value) {}
 	
-	      // Called by the host upon destruction. You should
-	      // delete the instance in this function
-	      virtual void destroy() { delete this; }
-	    };
+    // Called by the host upon destruction. You should
+    // delete the instance in this function
+    virtual void destroy() { delete this; }
+  };
 
-	    struct scopelock {
-	      scopelock(host *h) {
-		this->h = h;
-		h->lock ()
-		  ;
-	      }
-	      ~scopelock() {
-		h->unlock();
-	      }
+  struct scopelock {
+    scopelock(host *h) {
+      this->h = h;
+      h->lock ()
+	;
+    }
+    ~scopelock() {
+      h->unlock();
+    }
 
-	      host *h;
-	    };
+    host *h;
+  };
 
 #define SIGNAL_TRESHOLD (0.0000158489f)
 
-	    inline bool buffer_has_signals(const float *buffer, int ns) {
-	      while (ns--) {
-		if ((*buffer > SIGNAL_TRESHOLD)||(*buffer < -SIGNAL_TRESHOLD)) {
-		  return true;
-		}
-		buffer++;
-	      }
-	      return false;
-	    }
+  inline bool buffer_has_signals(const float *buffer, int ns) {
+    while (ns--) {
+      if ((*buffer > SIGNAL_TRESHOLD)||(*buffer < -SIGNAL_TRESHOLD)) {
+	return true;
+      }
+      buffer++;
+    }
+    return false;
+  }
 
 #define ZZUB_PLUGIN_LOCK zzub::scopelock _sl(this->_host);
 

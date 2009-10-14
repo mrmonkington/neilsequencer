@@ -23,10 +23,10 @@ import glob, os
 
 # replace this business with LoadableModule in SCONS 0.96.91 later:
 def ZzubPlugin(self, target, source):
-	if mac:
-		self['SHLINKFLAGS'] = '$LINKFLAGS -bundle -flat_namespace -undefined suppress'
-		self['SHLIBSUFFIX'] = '.so'
-	return self.SharedLibrary(target, source)
+    if mac:
+	self['SHLINKFLAGS'] = '$LINKFLAGS -bundle -flat_namespace -undefined suppress'
+	self['SHLIBSUFFIX'] = '.so'
+    return self.SharedLibrary(target, source)
 
 #######################################
 #
@@ -43,38 +43,38 @@ plugin_dir_path = ""
 base_plugin_path = ""
 pluginenv = None
 def build_plugin(localenv, libname, files, helpfiles=None, deffile='zzub_plugin.def'):
-	global vs_projects
-	files = [plugin_dir_path + "/" + filename for filename in files]
-	if win32:
-		files.append(os.path.join(base_plugin_path, deffile))
-	plugin = ZzubPlugin(localenv, '${LIB_BUILD_PATH}/zzub/'+libname, files)
-	if hasattr(localenv, 'MSVSProject'):
-		localenv.MSVSProject(target = libname + localenv['MSVSPROJECTSUFFIX'],
-			srcs = glob.glob(plugin_dir_path + "/" + '*.cpp'),
-			incs = glob.glob(plugin_dir_path + "/" + '*.h'),
-			buildtarget = plugin[0],
-			variant = 'Debug',
-			auto_build_solution=0)
-		vs_projects+=[plugin_dir_path + '/' + libname + localenv.subst('$MSVSPROJECTSUFFIX') ]
-	install_plugin(plugin)
-	if helpfiles:
-		helpsrcdir = '${ROOTPATH}/share/doc/zzub/plugins/'+libname+'/'
-		install_plugin_help(libname, [helpsrcdir+filename for filename in helpfiles])
-	return plugin
+    global vs_projects
+    files = [plugin_dir_path + "/" + filename for filename in files]
+    if win32:
+	files.append(os.path.join(base_plugin_path, deffile))
+    plugin = ZzubPlugin(localenv, '${LIB_BUILD_PATH}/zzub/'+libname, files)
+    if hasattr(localenv, 'MSVSProject'):
+	localenv.MSVSProject(target = libname + localenv['MSVSPROJECTSUFFIX'],
+		srcs = glob.glob(plugin_dir_path + "/" + '*.cpp'),
+		incs = glob.glob(plugin_dir_path + "/" + '*.h'),
+		buildtarget = plugin[0],
+		variant = 'Debug',
+		auto_build_solution=0)
+	vs_projects+=[plugin_dir_path + '/' + libname + localenv.subst('$MSVSPROJECTSUFFIX') ]
+    install_plugin(plugin)
+    if helpfiles:
+	helpsrcdir = '${ROOTPATH}/share/doc/zzub/plugins/'+libname+'/'
+	install_plugin_help(libname, [filename for filename in helpfiles])
+    return plugin
 
 Export('build_plugin')
 
 base_plugin_path = os.getcwd()
 for filename in os.listdir('.'):
-	plugin_dir_path = os.path.abspath(filename)
-	if os.path.isfile(os.path.join(plugin_dir_path,'SConscript')):
+    plugin_dir_path = os.path.abspath(filename)
+    if os.path.isfile(os.path.join(plugin_dir_path,'SConscript')):
+	pluginenv = env.Copy()
+	Export('plugin_dir_path','pluginenv')
+	env.SConscript(os.path.join(plugin_dir_path,'SConscript'))
+    elif filename == "buzz_ports":
+	for fname in os.listdir(os.path.abspath(filename)):
+	    plugin_dir_path = os.path.join(os.path.abspath(filename), fname)
+	    if os.path.isfile(os.path.join(plugin_dir_path,'SConscript')):
 		pluginenv = env.Copy()
 		Export('plugin_dir_path','pluginenv')
 		env.SConscript(os.path.join(plugin_dir_path,'SConscript'))
-	elif filename == "buzz_ports":
-		for fname in os.listdir(os.path.abspath(filename)):
-			plugin_dir_path = os.path.join(os.path.abspath(filename), fname)
-			if os.path.isfile(os.path.join(plugin_dir_path,'SConscript')):
-				pluginenv = env.Copy()
-				Export('plugin_dir_path','pluginenv')
-				env.SConscript(os.path.join(plugin_dir_path,'SConscript'))

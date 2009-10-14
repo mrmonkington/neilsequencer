@@ -1,0 +1,14 @@
+Import('env', 'posix', 'install_lib')
+
+import glob
+
+localenv = env.Clone()
+
+library = localenv.SharedLibrary(target="lanternfish",
+				 source=['Svf.cpp', 'Adsr.cpp',
+					 'Lfo.cpp', 'GrainEnv.cpp'])
+headers = ['Svf.hpp', 'Adsr.hpp', 'Lfo.hpp', 'GrainEnv.hpp']
+Install(dir='/usr/local/lib', source=library)
+Install(dir='/usr/local/include/lanternfish', source=headers)
+Alias('install', ['/usr/local/lib',
+		  '/usr/local/include/lanternfish'])

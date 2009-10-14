@@ -1,56 +1,47 @@
 #include <stdio.h>
-#include	"ExtResampler.h"
+#include "ExtResampler.h"
 
-void DSP_Resample(float *pout, int numsamples, CResamplerState &state, CResamplerParams const &params)
-{
+void DSP_Resample(float *pout, int numsamples, CResamplerState &state, 
+		  CResamplerParams const &params) {
   printf("DSP_Resample\n");
 }
 
-static	void	resample_with_reverse( float *pout, int numsamples, CExtResamplerState &state, CExtResamplerParams const &params )
-{
-  if( state.Active )
-    {
-      long long	d=(((long long)(params.StepInt)<<RS_STEP_FRAC_BITS)+params.StepFrac);
-      long long	p=(((long long)(state.PosInt)<<RS_STEP_FRAC_BITS)+state.PosFrac);
-
-      if( p+d*numsamples>=0 )
-	{
-	  DSP_Resample( pout, numsamples, state, params  );
+static void resample_with_reverse(float *pout, int numsamples, 
+				  CExtResamplerState &state, 
+				  CExtResamplerParams const &params) {
+  if (state.Active) {
+    long long d = (((long long)(params.StepInt) << RS_STEP_FRAC_BITS) + params.StepFrac);
+    long long p = (((long long)(state.PosInt) << RS_STEP_FRAC_BITS) + state.PosFrac);
+    if (p + d * numsamples >= 0) {
+      DSP_Resample(pout, numsamples, state, params);
+    } else {
+      while (state.Active && numsamples > 0) {
+	int n;
+	if ((params.LoopBegin != -1) && 
+	    (p >= ((long long)(params.LoopBegin) << RS_STEP_FRAC_BITS)))
+	  n = int((p - ((long long)(params.LoopBegin) << RS_STEP_FRAC_BITS)) / -d);
+	else
+	  n = int(p / -d);
+	if (numsamples < n)
+	  n = numsamples;
+	if (n > 0) {
+	  DSP_Resample(pout, n, state, params);
+	  numsamples -= n;
+	  if (params.LoopBegin != -1 && 
+	      ((((long long)(state.PosInt) << RS_STEP_FRAC_BITS) + state.PosFrac) <= 
+	       ((long long)(params.LoopBegin) << RS_STEP_FRAC_BITS))) {
+	    state.SetPos(params.numSamples);
+	  }
+	} else {
+	  state.Active = false;
 	}
-      else
-	{
-	  while( state.Active && numsamples>0 )
-	    {
-	      int	n;
-				
-	      if( (params.LoopBegin!=-1) && (p>=((long long)(params.LoopBegin)<<RS_STEP_FRAC_BITS)) )
-		n=int((p-((long long)(params.LoopBegin)<<RS_STEP_FRAC_BITS))/-d);
-	      else
-		n=int(p/-d);
-
-	      if( numsamples<n )
-		n=numsamples;
-
-	      if( n>0 )
-		{
-		  DSP_Resample( pout, n, state, params  );
-		  numsamples-=n;
-		  if( params.LoopBegin!=-1 && ((((long long)(state.PosInt)<<RS_STEP_FRAC_BITS)+state.PosFrac)<=((long long)(params.LoopBegin)<<RS_STEP_FRAC_BITS)) )
-		    {
-		      state.SetPos(params.numSamples);
-		    }
-		}
-	      else
-		{
-		  state.Active=false;
-		}
-	    }
-	}
+      }
     }
+  }
 }
 
 void EXTDSP_Resample(float *pout, int numsamples, CExtResamplerState &state, 
-		      CExtResamplerParams const &params) {
+		     CExtResamplerParams const &params) {
   if (state.Active) {
     if (params.AmpMode == RSA_LINEAR_INTP) {
       int n;

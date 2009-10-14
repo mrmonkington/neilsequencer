@@ -27,7 +27,4 @@ build_plugin(pluginenv, 'firesledge_parameq', files=[
 		'basic/basic_fnc.cpp',
 		'dsp/Biquad.cpp',
 		'dsp/BiquadS.cpp',
-	],
-	helpfiles=[
-		'index.html',
 	])

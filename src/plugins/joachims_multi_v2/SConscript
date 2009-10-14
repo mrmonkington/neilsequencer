@@ -22,7 +22,4 @@ Import('pluginenv', 'build_plugin')
 
 build_plugin(pluginenv, 'joachims_multi_v2', files=[
 		'main.cpp',
-	],
-	helpfiles=[
-		'index.html',
 	])

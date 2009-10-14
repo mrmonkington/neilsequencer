@@ -632,13 +632,12 @@ namespace zzub {
 
 
   bool wave_info_ex::get_looping() {
-    return flags&zzub::wave_flag_loop?true:false;
+    return flags & zzub::wave_flag_loop ? true : false;
   }
 
   bool wave_info_ex::get_bidir() {
-    return flags&zzub::wave_flag_pingpong?true:false;
+    return flags & zzub::wave_flag_pingpong ? true : false;
   }
-
 
   void wave_info_ex::set_extended() {
     if (get_extended()) return ;	// TODO: cant revert
@@ -652,8 +651,6 @@ namespace zzub {
       memset(l->samples, 0, 8);
     }
   }
-
-
 
   /***
 
@@ -675,6 +672,4 @@ namespace zzub {
       waves[i]->clear();
     }
   }
-
-
 };

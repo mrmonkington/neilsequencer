@@ -27,7 +27,7 @@ import glob
 #
 #######################################
 
-localenv = env.Copy()
+localenv = env.Clone()
 
 files = [
 	'bmxreader.cpp',
