@@ -55,7 +55,7 @@ GLOBAL = 1
 TRACK = 2
 
 patternsizes = [
-    1, 4, 8, 12, 16, 24, 32, 48, 64, 96, 128, 192, 256, 512, 1024
+    1, 4, 8, 12, 16, 24, 32, 48, 64, 96, 128, 192, 256, 512
 ]
 
 class PatternDialog(gtk.Dialog):
@@ -83,8 +83,6 @@ class PatternDialog(gtk.Dialog):
 	self.edtname = gtk.Entry()
 	self.lengthlabel = gtk.Label("Length")
 	self.lengthbox = gtk.combo_box_entry_new_text()
-	self.check_custom = gtk.CheckButton('Custom')
-	self.entry_custom = gtk.Entry()
 	self.chkswitch = gtk.CheckButton('Switch to new pattern')
 	for size in patternsizes:
 	    self.lengthbox.append_text(str(size))
@@ -101,26 +99,14 @@ class PatternDialog(gtk.Dialog):
 	    vbox.pack_start(row, expand=False)
 	add_row(self.namelabel, self.edtname)
 	add_row(self.rowslabel, self.lengthbox)
-	add_row(self.check_custom, self.entry_custom)
 	vbox.pack_start(self.chkswitch, expand=False)
 	self.edtname.connect('activate', self.on_enter)
 	self.lengthbox.child.connect('activate', self.on_enter)
-	self.check_custom.connect('toggled', self.on_custom_click)
 	self.vbox.add(vbox)
 	self.show_all()
 
     def on_enter(self, widget):
 	self.response(gtk.RESPONSE_OK)
-
-    def on_custom_click(self, widget):
-	if self.check_custom.get_active():
-	    self.rowslabel.set_sensitive(False)
-	    self.lengthbox.set_sensitive(False)
-	    self.entry_custom.set_sensitive(True)
-	else:
-	    self.rowslabel.set_sensitive(True)
-	    self.lengthbox.set_sensitive(True)
-	    self.entry_custom.set_sensitive(False)
 
 # pattern dialog modes
 DLGMODE_NEW = 0
@@ -144,7 +130,6 @@ def show_pattern_dialog(parent, name, length, dlgmode):
     @rtype: (string, int, int)
     """
     dlg = PatternDialog(parent)
-    dlg.check_custom.toggled()
     dlg.dlgmode = dlgmode
     if dlgmode == DLGMODE_NEW:
 	dlg.set_title("New Pattern")
@@ -165,10 +150,7 @@ def show_pattern_dialog(parent, name, length, dlgmode):
     if response == gtk.RESPONSE_OK:
 	switch = int(dlg.chkswitch.get_active())
 	config.get_config().set_default_int('SwitchToNewPattern', switch)
-	if dlg.check_custom.get_active():
-	    length = int(dlg.entry_custom.get_text())
-	else:
-	    length = int(dlg.lengthbox.child.get_text())
+	length = int(dlg.lengthbox.child.get_text())
 	result = str(dlg.edtname.get_text()), length, switch
     dlg.destroy()
     return result

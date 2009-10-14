@@ -727,10 +727,11 @@ class ParameterView(gtk.VBox):
 	@type event: wx.CommandEvent
 	"""
 	uri = filenameify(self.pluginloader.get_uri())
-	name = filenameify(self.pluginloader.get_name())		
+	name = filenameify(self.pluginloader.get_name())
+	print name
 	helpfilepaths = [
-		filepath('/usr/local/share/doc/aldrin/plugins/' + uri + '/index.html'),
-		filepath('/usr/local/share/doc/aldrin/plugins/' + name + '/index.html'),
+		filepath('/usr/local/share/doc/zzub/plugins/' + uri + '/index.html'),
+		filepath('/usr/local/share/doc/zzub/plugins/' + name + '/index.html'),
 	]
 	print helpfilepaths
 	for path in helpfilepaths:
