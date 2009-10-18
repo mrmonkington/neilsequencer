@@ -31,14 +31,7 @@ localenv = env.Copy()
 
 files = [
 	'__init__.py',
-	#'zzub.py',
-	#'library.py',
-	#'procwrap.py',
-	#'zzub_classes.py',
-	#'zzub_flat.py'
 ]
 
 files = ['zzub/'+filename for filename in files]
-
-if localenv['PYZZUB']:
-	install_python_extension('zzub', files)
+install_python_extension('zzub', files)

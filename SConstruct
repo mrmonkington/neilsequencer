@@ -287,7 +287,8 @@ binpath = "${DESTDIR}${PREFIX}/bin"
 libpath = "${DESTDIR}${PREFIX}${LIBDIR}"
 includepath = "${DESTDIR}${PREFIX}/include"
 pluginpath = "${DESTDIR}${PREFIX}${LIBDIR}/zzub"
-pyextpath = distutils.sysconfig.get_python_lib(prefix="${DESTDIR}${PREFIX}")
+pypath = "%s%s" % (env['DESTDIR'], env['PREFIX'])
+pyextpath = distutils.sysconfig.get_python_lib(prefix=pypath)
 
 def install(target, source, perm=None, symlink=False):
     if not perm:
