@@ -43,7 +43,7 @@ def bool_converter(value):
 	return False
     return bool(value)
 
-opts = Options( 'options.conf', ARGUMENTS )
+opts = Variables('options.conf', ARGUMENTS )
 opts.Add("PREFIX", 'Set the install "prefix" ( /path/to/PREFIX )', "/usr/local")
 opts.Add("DESTDIR", 'Set the root directory to install into ( /path/to/DESTDIR )', "")
 opts.Add("ETCDIR", 'Set the configuration dir "prefix" ( /path/to/ETC )', "/etc")
@@ -56,9 +56,11 @@ env.SConsignFile()
 # build settings
 ######################################
 
+distutils_prefix = "%s%s" % (env['DESTDIR'], env['PREFIX'])
+
 env['ROOTPATH'] = os.getcwd()
 env['SITE_PACKAGE_PATH'] = \
-    distutils.sysconfig.get_python_lib(prefix="${DESTDIR}${PREFIX}")
+    distutils.sysconfig.get_python_lib(prefix=distutils_prefix)
 env['APPLICATIONS_PATH'] = '${DESTDIR}${PREFIX}/share/applications'
 env['BIN_PATH'] = '${DESTDIR}${PREFIX}/bin'
 env['SHARE_PATH'] = '${DESTDIR}${PREFIX}/share/aldrin'
