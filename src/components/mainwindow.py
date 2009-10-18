@@ -241,7 +241,7 @@ class AldrinFrame(gtk.Window):
 
   DEFAULT_EXTENSION = '.ccm'
 
-  title = "Aldrin"
+  title = "Neil"
   filename = ""
 
   event_to_name = dict([(getattr(zzub,x),x) for x in dir(zzub) if \
