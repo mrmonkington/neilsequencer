@@ -102,7 +102,7 @@ class AboutDialog(gtk.AboutDialog):
 	self.set_authors(AUTHORS)
 	self.set_artists(ARTISTS)
 	self.set_documenters(DOCUMENTERS)
-	self.set_logo(gtk.gdk.pixbuf_new_from_file(imagepath("splash.jpeg")))
+	self.set_logo(gtk.gdk.pixbuf_new_from_file(imagepath("alien.png")))
 
     def show(self):
 	self.run()
