@@ -28,8 +28,8 @@ import gtk
 
 NAME = "Neil"
 VERSION = "0.9"
-COPYRIGHT = "Copyright (C) 2006, 2007, 2008 The Aldrin Development Team"
-COMMENTS = '"no insult, but i think you\'re too weird to really make the best music app ever created." -- rpfr'
+COPYRIGHT = "Copyright (C) 2009 Vytautas Jančauskas"
+COMMENTS = '"The highest activity a human being can attain is learning for understanding, because to understand is to be free" -- Baruch Spinoza'
 
 LICENSE = """This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
 
@@ -37,29 +37,32 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 
 You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA."""
 
-WEBSITE = "http://aldrin.eu"
+WEBSITE = "http://sites.google.com/site/neilsequencer/"
 
 AUTHORS = [
-'Leonard Ritter <contact@leonard-ritter.com>',
-'Pieter Holtzhausen <13682857@sun.ac.za>',
-'Anders Ervik <calvin@countzero.no>',
-'James Stone <jamesmstone@gmail.com>',
-'James McDermott <jamesmichaelmcdermott@gmail.com>',
-'Carsten S�rensen',
-'Joachim Michaelis <jm@binarywerks.dk>',
-'Aaron Oxford <aaron@hardwarehookups.com.au>',
-'Laurent De Soras <laurent.de.soras@club-internet.fr>',
-'Greg Raue <graue@oceanbase.org>',
+    'Vytautas Jančauskas <unaudio@gmail.com>',
+    'Leonard Ritter <contact@leonard-ritter.com>',
+    'Pieter Holtzhausen <13682857@sun.ac.za>',
+    'Anders Ervik <calvin@countzero.no>',
+    'James Stone <jamesmstone@gmail.com>',
+    'James McDermott <jamesmichaelmcdermott@gmail.com>',
+    'Carsten Sørensen',
+    'Joachim Michaelis <jm@binarywerks.dk>',
+    'Aaron Oxford <aaron@hardwarehookups.com.au>',
+    'Laurent De Soras <laurent.de.soras@club-internet.fr>',
+    'Greg Raue <graue@oceanbase.org>',
 ]
 
 ARTISTS = [
-'famfamfam http://www.famfamfam.com/lab/icons/silk/',
+    'syntax_the_nerd (the logo)'
+    'famfamfam http://www.famfamfam.com/lab/icons/silk/',
 ]
 
 DOCUMENTERS = [
-'Leonard Ritter <contact@leonard-ritter.com>',
-'Pieter Holtzhausen <13682857@sun.ac.za>',
-'Phed',
+    'Vytautas Jančauskas <unaudio@gmail.com>',
+    'Leonard Ritter <contact@leonard-ritter.com>',
+    'Pieter Holtzhausen <13682857@sun.ac.za>',
+    'Phed',
 ]
 
 AUTHORS = [prepstr(x) for x in AUTHORS]
