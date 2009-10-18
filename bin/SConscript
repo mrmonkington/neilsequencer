@@ -18,11 +18,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-Import('env', 'install', 'install_recursive', 'win32')
+Import('env', 'install')
 
-if win32:
-	install('${BIN_PATH}', 'aldrin.bat')
-else:
-	install('${BIN_PATH}', 'aldrin', 0755)
-	install('${BIN_PATH}', 'aldrin-combrowser', 0755)
+install('${BIN_PATH}', 'neil', 0755)
+install('${BIN_PATH}', 'neil-combrowser', 0755)
 
