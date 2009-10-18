@@ -86,7 +86,7 @@ opts.Add("LADSPA", "Support LADSPA plugins", False, None, bool_converter)
 opts.Add("RUBBERBAND", "Support timestretching with librubberband", True, None, bool_converter)
 opts.Add("DSSI", "Support DSSI plugins", False, None, bool_converter)
 opts.Add("JOBS", "Number of threads to compile with", '2') 
-opts.Add("PYZZUB", "Support pyzzub",True,None,bool_converter)
+opts.Add("PYZZUB", "Support pyzzub", True, None, bool_converter)
 opts.Add(EnumOption('MSVS_VERSION', 'MS Visual C++ version', None,
     allowed_values=('7.1', '8.0', '9.0')))
 
