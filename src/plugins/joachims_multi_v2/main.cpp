@@ -1068,7 +1068,7 @@ const char * multi2::describe_value(int param, int value)
 		break;
 	case 15:							// comp.output
 		percent = (float)( powf((float)(value-1),3) ) / 2048383.0f * 100.0f + 0.00016f;
-		sprintf(txt, "%+.1f %", logf(percent * 6.0f / 100.0f) / (logf(2.0f) / 6.0f) );		// *6 is +18 dB
+		sprintf(txt, "%+.1f %%", logf(percent * 6.0f / 100.0f) / (logf(2.0f) / 6.0f) );		// *6 is +18 dB
 		break;
 	case 16:							// lim.mode
 		sprintf(txt, "OFF");
