@@ -18,7 +18,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-Import('pluginenv', 'build_plugin')
+Import('env', 'pluginenv', 'build_plugin')
 
 build_plugin(pluginenv, 'matilde_tracker', files=[
 		'BuzzInstrument.cpp',

@@ -2,7 +2,7 @@
 #define SOMONO_PLUGINS_CLOUD_GRAIN_HPP
 
 #include <zzub/plugin.h>
-#include <lanternfish/GrainEnv.hpp>
+#include <GrainEnv.hpp>
 
 class Grain {
 public:
