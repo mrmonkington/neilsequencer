@@ -1,8 +1,0 @@
-library = SharedLibrary(target="lanternfish",
-			source=['UGen.cpp', 'Svf.cpp', 'Adsr.cpp',
-				'Lfo.cpp'])
-headers = ['UGen.hpp', 'Svf.hpp', 'Adsr.hpp', 'Lfo.hpp']
-Install(dir='/usr/local/lib/lanternfish', source=library)
-Install(dir='/usr/local/include/lanternfish', source=headers)
-Alias('install', ['/usr/local/lib/lanternfish',
-		  '/usr/local/include/lanternfish'])

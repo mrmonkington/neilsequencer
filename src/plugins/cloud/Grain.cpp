@@ -24,7 +24,6 @@ void Grain::set_wave(int wave) {
 
 void Grain::trigger(float length, float offset, float amp, float attack,
 		    float sustain, float release, float rate, float pan) {
-  printf("len=%.4f, off=%.4f, amp=%.4f, att=%.4f, sus=%.4f, rel=%.4f, rat=%.4f, pan=%.4f\n", length, offset, amp, attack, sustain, release, rate, pan);
   if (this->host->get_wave_level(this->wave, 0) &&
       this->status == STATUS_FREE) {
     const zzub::wave_level *wave_level;

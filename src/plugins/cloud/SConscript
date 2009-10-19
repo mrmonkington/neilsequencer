@@ -2,6 +2,7 @@ Import('pluginenv', 'build_plugin')
 
 localenv = pluginenv.Copy()
 localenv.Append(CPPPATH=["${LANTERNFISH_SRC_PATH}"])
+localenv.Append(LIBS=['lanternfish'])
 
 files = ["Cloud.cpp", "ACloud.cpp", "Grain.cpp"]
 
