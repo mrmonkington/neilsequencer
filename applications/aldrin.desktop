@@ -1,12 +1,12 @@
 [Desktop Entry]
 Categories=Application;AudioVideo;
-Comment=Aldrin Modular Sequencer
+Comment=Neil Modular Sequencer
 Encoding=UTF-8
-Exec=aldrin
+Exec=neil
 Hidden=false
 Icon=aldrin
-Name=Aldrin
-GenericName=Aldrin Modular Sequencer
+Name=Neil
+GenericName=Neil Modular Sequencer
 Terminal=false
 Type=Application
 MimeType=application/x-aldrin
