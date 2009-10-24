@@ -181,8 +181,8 @@ class ParameterView(gtk.VBox):
 	snamegroup = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
 	sslidergroup = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
 	svaluegroup = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
-	def add_controller(g,t,i):
-	    p = plugin.get_parameter(g,t,i)
+	def add_controller(g, t, i):
+	    p = plugin.get_parameter(g, t, i)
 	    name = "CC-%s" % prepstr(p.get_name())
 	    namelabel = gtk.Label()
 	    namelabel._default_name = name
@@ -193,8 +193,7 @@ class ParameterView(gtk.VBox):
 	    button.connect('drag-data-delete', self.on_drag_data_delete, (g,t,i))
 	    button.connect('drag-end', self.on_drag_end, (g,t,i))
 	    snamegroup.add_widget(namelabel)
-	    namelabel.set_alignment(1, 0.5)
-
+	    namelabel.set_alignment(0, 0.5)
 	    slidergroup = gtk.HBox(False, MARGIN)
 	    slidergroup.pack_start(namelabel, expand=False)	
 	    slidergroup.pack_end(button)
@@ -203,9 +202,9 @@ class ParameterView(gtk.VBox):
 	    button.connect('button-press-event', self.on_context_menu, (g,t,i))
 	    namelabel.add_events(gtk.gdk.ALL_EVENTS_MASK)
 	    namelabel.connect('button-press-event', self.on_context_menu, (g,t,i))
-	    self.update_namelabel(g,t,i)
+	    self.update_namelabel(g, t, i)
 
-	def add_nonstate_param(g,t,i):
+	def add_nonstate_param(g, t, i):
 	    p = plugin.get_parameter(g,t,i)
 	    if g == 2:
 		name = "%i-%s" % (t,prepstr(p.get_name()))
@@ -219,7 +218,7 @@ class ParameterView(gtk.VBox):
 	    button.connect('drag-data-received', self.on_drag_data_received, (g,t,i))
 	    button.connect('drag-drop', self.on_drag_drop, (g,t,i))
 	    snamegroup.add_widget(namelabel)
-	    namelabel.set_alignment(1, 0.5)
+	    namelabel.set_alignment(0, 0.5)
 
 	    slidergroup = gtk.HBox(False, MARGIN)
 	    slidergroup.pack_start(namelabel, expand=False)	
@@ -231,10 +230,10 @@ class ParameterView(gtk.VBox):
 	    namelabel.connect('button-press-event', self.on_context_menu, (g,t,i))
 	    self.update_namelabel(g,t,i)
 
-	def add_slider(g,t,i):
-	    p = plugin.get_parameter(g,t,i)
+	def add_slider(g, t, i):
+	    p = plugin.get_parameter(g, t, i)
 	    if not (p.get_flags() & zzub.zzub_parameter_flag_state):
-		return add_nonstate_param(g,t,i)
+		return add_nonstate_param(g, t, i)
 	    if g == 0:
 		try:
 		    in_plugin = self.plugin.get_input_connection_plugin(t)
@@ -244,7 +243,7 @@ class ParameterView(gtk.VBox):
 		volpanstr = ["Vol", "Pan"][i]
 		name = "%s-%i (%s)" % (volpanstr, t, prepstr(in_machine_name))
 	    elif g == 2:
-		name = "%i-%s" % (t,prepstr(p.get_name()))
+		name = "%i-%s" % (t, prepstr(p.get_name()))
 	    else:
 		name = prepstr(p.get_name())
 	    namelabel = gtk.Label()
@@ -255,18 +254,18 @@ class ParameterView(gtk.VBox):
 	    # set increment size for left and right arrow and mouse clicks
 	    increment = (p.get_value_max() - p.get_value_min()) / 10
 	    slider.set_increments(1, increment)
-	    v = plugin.get_parameter_value(g,t,i)
+	    v = plugin.get_parameter_value(g, t, i)
 	    slider.set_value(v)
 	    slider.drag_dest_set(gtk.DEST_DEFAULT_ALL, self.DROP_TARGETS,
 		    gtk.gdk.ACTION_COPY)
-	    slider.connect('drag-data-received', self.on_drag_data_received, (g,t,i))
-	    slider.connect('drag-drop', self.on_drag_drop, (g,t,i))
+	    slider.connect('drag-data-received', self.on_drag_data_received, (g, t, i))
+	    slider.connect('drag-drop', self.on_drag_drop, (g, t, i))
 	    valuelabel = gtk.Label("")
-	    valuelabel.set_alignment(0, 0.5)
+	    valuelabel.set_alignment(0, 0)
 	    valuelabel.set_size_request(80, -1)
 
 	    snamegroup.add_widget(namelabel)
-	    namelabel.set_alignment(1, 0.5)
+	    namelabel.set_alignment(0, 0)
 	    sslidergroup.add_widget(slider)
 	    svaluegroup.add_widget(valuelabel)
 
@@ -275,17 +274,17 @@ class ParameterView(gtk.VBox):
 	    slidergroup.add(slider)	
 	    slidergroup.pack_end(valuelabel, expand=False)	
 	    rowgroup.pack_start(slidergroup, expand=False)
-	    self.pid2ctrls[(g,t,i)] = [namelabel,slider,valuelabel]
-	    slider.connect('button-press-event', self.on_context_menu, (g,t,i))
+	    self.pid2ctrls[(g, t, i)] = [namelabel, slider, valuelabel]
+	    slider.connect('button-press-event', self.on_context_menu, (g, t, i))
 	    namelabel.add_events(gtk.gdk.ALL_EVENTS_MASK)
-	    namelabel.connect('button-press-event', self.on_context_menu, (g,t,i))
+	    namelabel.connect('button-press-event', self.on_context_menu, (g, t, i))
 	    valuelabel.add_events(gtk.gdk.ALL_EVENTS_MASK)
-	    valuelabel.connect('button-press-event', self.on_context_menu, (g,t,i))
-	    slider.connect('scroll-event', self.on_mousewheel, (g,t,i))
-	    slider.connect('change-value', self.on_scroll_changed, (g,t,i))
-	    slider.connect('key-press-event', self.on_key_down, (g,t,i))
-	    self.update_valuelabel(g,t,i)
-	    self.update_namelabel(g,t,i)
+	    valuelabel.connect('button-press-event', self.on_context_menu, (g, t, i))
+	    slider.connect('scroll-event', self.on_mousewheel, (g, t, i))
+	    slider.connect('change-value', self.on_scroll_changed, (g, t, i))
+	    slider.connect('key-press-event', self.on_key_down, (g, t, i))
+	    self.update_valuelabel(g, t, i)
+	    self.update_namelabel(g, t, i)
 
 	# input connections
 	for t in range(plugin.get_input_connection_count()):
@@ -295,14 +294,14 @@ class ParameterView(gtk.VBox):
 		    add_slider(0, t, i)
 	# globals
 	for i in range(pl.get_parameter_count(1)):
-	    add_slider(1,0,i)
+	    add_slider(1, 0, i)
 	# tracks
 	for t in range(plugin.get_track_count()):
 	    for i in range(pl.get_parameter_count(2)):
-		add_slider(2,t,i)
+		add_slider(2, t, i)
 	# controllers
 	for i in range(pl.get_parameter_count(3)):
-	    add_controller(3,0,i)
+	    add_controller(3, 0, i)
 
     def on_left_down(self, widget, event, data=None):
 	self.grab_focus()
