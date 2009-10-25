@@ -66,20 +66,15 @@ public:
 
   float Volume, freq, phase, oldout, Mot1dv, Mot2dv, Mot3dv, diference, 
     target_vol, advance, current_vol, mod1_env, mod2_env, mod3_env,
-    lfo1_freq, lfo1_phase, lfo2_freq, lfo2_phase, lfo3_freq, lfo3_phase, 
-    lfo1, lfo2, lfo3;
+    mod1vel, mod2vel, mod3vel, velocity;
   envelope VCA, ENV;
 
   void Init() {
-    lfo1_freq = 0.0;
-    lfo1_phase = 0.0;
-    lfo2_freq = 0.0;
-    lfo2_phase = 0.0;
-    lfo3_freq = 0.0;
-    lfo3_phase = 0.0;
-    lfo1 = 0.0;
-    lfo2 = 0.0;
-    lfo3 = 0.0;
+    mod1vel = 0.0;
+    mod2vel = 0.0;
+    mod3vel = 0.0;
+
+    velocity = 1.0;
 
     Mot1dv = 0;
     Mot2dv = 0;
@@ -110,21 +105,12 @@ public:
     VCA.stop();
     ENV.stop();
     phase = 0.0;
-    lfo1_phase = 0.0;
-    lfo2_phase = 0.0;
-    lfo3_phase = 0.0;
-  }
-
-  void reset_lfos() {
-    lfo1_phase = 0.0;
-    lfo2_phase = 0.0;
-    lfo3_phase = 0.0;
   }
 
   void Generate(float *psamplesleft, float *psamplesright, int numsamples) {
     // Generates the actual sample data.
     if (VCA.envstate != ENV_NONE) {
-      float cphase, bphase, dphase, temp, lfo1, lfo2, lfo3;
+      float cphase, bphase, dphase, temp;
       float Mot1D, Mot2D, Mot3D;
       
       float const Mod1ea = mod1_env;
@@ -134,24 +120,10 @@ public:
       --psamplesleft;
       --psamplesright;
       
-      for(int i=0; i<numsamples; i++) {
-	// For each sample in the block.
-	lfo1 = FOsc(lfo1_phase);
-	lfo1_phase += lfo1_freq;
-	while (lfo1_phase >= 1.0)
-	  lfo1_phase -= 1.0;
-	lfo2 = FOsc(lfo2_phase);
-	lfo2_phase += lfo2_freq;
-	while (lfo2_phase >= 1.0)
-	  lfo2_phase -= 1.0;
-	lfo3 = FOsc(lfo3_phase);
-	lfo3_phase += lfo3_freq;
-	while (lfo3_phase >= 1.0)
-	  lfo3_phase -= 1.0;
- 
-	Mot1D = Mot1dv + ENV.res() * Mod1ea + lfo1 * this->lfo1;
-	Mot2D = Mot2dv + ENV.envvol * Mod2ea + lfo2 * this->lfo2;
-	Mot3D = Mot3dv + ENV.envvol * Mod3ea + lfo3 * this->lfo3; 
+      for(int i=0; i<numsamples; i++) { 
+	Mot1D = Mot1dv + ENV.res() * Mod1ea + velocity * mod1vel;
+	Mot2D = Mot2dv + ENV.envvol * Mod2ea + velocity * mod2vel;
+	Mot3D = Mot3dv + ENV.envvol * Mod3ea + velocity * mod3vel; 
 
 	switch (route) {
 	case 0:
@@ -209,7 +181,7 @@ public:
 	if (VCA.envstate != ENV_NONE)
 	  temp = Osc(bphase) * VCA.res() * Volume;
 	else
-	  temp = 0;
+	  temp = 0.0f;
 	// Adding to buffer
 	++psamplesleft;
 	*psamplesleft = *psamplesleft + temp;
@@ -225,11 +197,6 @@ public:
 
   inline float Osc(float phi) {
     return sin(phi * 2 * M_PI);
-  }
-
-  inline float FOsc(float phi) {
-    phi = phi * 2.0 - 1.0;
-    return (phi - phi * abs(phi)) * 4.0;
   }
 };
 
@@ -303,24 +270,15 @@ public:
     if (globals->paraRoute)
       for (i = 0; i < MAX_TRACKS; i++)
 	Voices[i].route = (int)*globals->paraRoute;
-    if (globals->lfoFreq1)
+    if (globals->paraModVel1)
       for (i = 0; i < MAX_TRACKS; i++)
-	Voices[i].lfo1_freq = (float)*globals->lfoFreq1 / (float)SAMPLING_RATE;
-    if (globals->lfoMod1)
+	Voices[i].mod1vel = (float)*globals->paraModVel1;
+    if (globals->paraModVel2)
       for (i = 0; i < MAX_TRACKS; i++)
-	Voices[i].lfo1 = *globals->lfoMod1;
-    if (globals->lfoFreq2)
+	Voices[i].mod2vel = (float)*globals->paraModVel2;
+    if (globals->paraModVel3)
       for (i = 0; i < MAX_TRACKS; i++)
-	Voices[i].lfo2_freq = (float)*globals->lfoFreq2 / (float)SAMPLING_RATE;
-    if (globals->lfoMod2)
-      for (i = 0; i < MAX_TRACKS; i++)
-	Voices[i].lfo2 = *globals->lfoMod2;
-    if (globals->lfoFreq3)
-      for (i = 0; i < MAX_TRACKS; i++)
-	Voices[i].lfo3_freq = (float)*globals->lfoFreq3 / (float)SAMPLING_RATE;
-    if (globals->lfoMod3)
-      for (i = 0; i < MAX_TRACKS; i++)
-	Voices[i].lfo3 = *globals->lfoMod3;
+	Voices[i].mod3vel = (float)*globals->paraModVel3;
     // Iterate across tracks to check for note events.
     // If on, they should reset envelopes, set freq and vol.
     for (int t = 0; t < track_count; ++t) {
@@ -334,11 +292,11 @@ public:
 	  Voices[t].freq = ((float)*tracks[t].note / float(SAMPLING_RATE * 2));
 	  Voices[t].VCA.reset();
 	  Voices[t].ENV.reset();
-	  Voices[t].reset_lfos();
 	}
       }
       if (tracks[t].volume) {
-	Voices[t].Volume = (float)*tracks[t].volume * 0.000976562f;
+	Voices[t].velocity = (float)*tracks[t].volume / 128.0;
+	Voices[t].Volume = sqrt((float)*tracks[t].volume / 128.0);
       }
     }
   }
