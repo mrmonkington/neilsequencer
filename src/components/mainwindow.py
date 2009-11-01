@@ -301,6 +301,7 @@ class AldrinFrame(gtk.Window):
       item.destroy()
     tempmenu = gtk.Menu()
     tempmenu.append(make_stock_menu_item(gtk.STOCK_HELP, self.on_help_contents))
+    tempmenu.append(make_stock_menu_item(gtk.STOCK_HELP, self.on_help_shortcuts))
     tempmenu.append(gtk.SeparatorMenuItem())
     tempmenu.append(make_stock_menu_item(gtk.STOCK_ABOUT, self.on_about))
     self.aldrinframe_menubar.append(make_submenu_item(tempmenu, "_Help"))
@@ -553,6 +554,10 @@ class AldrinFrame(gtk.Window):
     """
     import webbrowser		
     webbrowser.open_new(filepath('../doc/aldrin/html/index.html'))
+
+  def on_help_shortcuts(self, *args):
+    import os
+    os.system("evince %s &" % "/usr/local/share/doc/aldrin/shortcuts.pdf")
 
   def on_about(self, *args):
     """

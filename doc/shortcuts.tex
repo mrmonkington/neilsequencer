@@ -1,0 +1,78 @@
+\starttext
+\setupbodyfont[sansserif, 14pt]
+\setuppagenumbering [location=]
+
+%\SetTableToWidth{400pt}
+
+\placetable[here]{Global shortcuts}
+\starttable[|l|l|]
+  \HL
+  \NC \bf Shortcut \NC \bf Action \NC \SR
+  \HL
+  \NC F2 \NC Switch to pattern view \NC \FR
+  \NC F3 \NC Switch to router view \NC \MR
+  \NC F4 \NC Switch to sequencer view \NC \MR
+  \NC F9 \NC Switch to wavetable view \NC \MR
+  \NC F11 \NC Switch to info view \NC \LR
+  \HL
+\stoptable
+
+\placetable[here]{Pattern view shortcuts}
+\starttable[|l|l|]
+  \HL
+  \NC \bf Shortcut \NC \bf Action \NC \SR
+  \HL
+  \NC <Ctrl><Shift> + Return \NC Create a copy of the current pattern \NC \FR
+  \NC <Ctrl> + Return \NC Create a new pattern \NC \MR
+  \NC <Ctrl> + Backspace \NC Display pattern properties \NC \MR
+  \NC <Ctrl> + Delete \NC Delete current pattern \NC \MR
+  \NC <Shift> + Plus \NC Transpose the note at cursor by +1 \NC \MR
+  \NC <Shift> + Minus \NC Transpose the note at cursor by -1 \NC \MR
+  \NC <Ctrl> + Page Up \NC Zoom in \NC \MR
+  \NC <Ctrl> + Page Down \NC Zoom out \NC \MR
+  \NC <Ctrl> + c \NC Copy selection into clipboard \NC \MR
+  \NC <Ctrl> + x \NC Cut selection into clipboard \NC \MR
+  \NC <Ctrl> + v \NC Paste the clipboard contents \NC \MR
+  \NC <Ctrl> + i \NC Interpolate selection \NC \MR
+  \NC <Ctrl> + Plus \NC Add a track \NC \MR
+  \NC <Ctrl> + Minus \NC Delete a track \NC \LR
+  \HL
+\stoptable
+
+\placetable[here]{Sequencer view shortcuts}
+\starttable[|l|l|]
+  \HL
+  \NC \bf Shortcut \NC \bf Action \NC \SR
+  \HL
+  \NC <Shift> + Plus \NC Increase the resolution \NC \FR
+  \NC <Shift> + Minus \NC Decrease the resolution \NC \MR
+  \NC <Ctrl> + Return \NC Add a new track \NC \MR
+  \NC <Ctrl> + Delete \NC Delete a track \NC \MR
+  \NC <Ctrl> + b \NC Set loop start to where the cursor is \NC \MR
+  \NC <Ctrl> + e \NC Set loop end to where the cursor is \NC \MR
+  \NC <Ctrl> + l \NC Solo the track on which the cursor is currently on \NC \MR
+  \NC <Ctrl> + i \NC Shift the whole song to the right \NC \MR
+  \NC <Ctrl> + d \NC Shift the whole song to the left \NC \MR
+  \NC <Ctrl> + c \NC Copy selection to clipboard \NC \MR
+  \NC <Ctrl> + x \NC Cut selection to clipboard \NC \MR
+  \NC <Ctrl> + v \NC Paste data from clipboard \NC \MR
+  \NC <Ctrl> + Up \NC Move the track up \NC \MR
+  \NC <Ctrl> + Down \NC Move the track down \NC \MR
+  \NC <Ctrl> + Left \NC Move the cursor 16 steps to the left \NC \MR
+  \NC <Ctrl> + Right \NC Move the cursor 16 steps to the right \NC \MR
+  \NC Left \NC Move the cursor left \NC \MR
+  \NC Right \NC Move the cursor right \NC \MR
+  \NC Up \NC Move the cursor up \NC \MR
+  \NC Down \NC Move the cursor down \NC \MR
+  \NC Space \NC Insert a pattern that is selected in the pattern selector \NC \MR
+  \NC Page Up \NC Move up in the pattern selector \NC \MR
+  \NC Page Down \NC Move down in the pattern selector \NC \MR
+  \NC Delete \NC Delete at cursor \NC \MR
+  \NC Insert \NC Insert at cursor \NC \MR
+  \NC Period \NC Remove pattern at cursor from sequence \NC \MR
+  \NC Home \NC Go to song start \NC \MR
+  \NC End \NC Go to song end \NC \MR
+  \NC Return \NC Open the pattern view with the pattern at cursor \NC \LR
+  \HL 
+\stoptable
+\stoptext

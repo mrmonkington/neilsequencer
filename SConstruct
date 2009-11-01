@@ -146,7 +146,7 @@ def build_path_config(target, source, env):
     file(outpath, 'w').write(s.getvalue())
 
 builders = dict(
-	BuildPathConfig = Builder(action = build_path_config),
+    BuildPathConfig = Builder(action=build_path_config),
 )
 
 env['BUILDERS'].update(builders)

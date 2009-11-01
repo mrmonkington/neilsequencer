@@ -927,9 +927,9 @@ class SequencerView(gtk.DrawingArea):
 		    player.history_commit("move track")
 		    self.redraw()
 	    elif k == 'Left' or k == 'KP_Left':
-		self.set_cursor_pos(self.track, self.row - (self.step*16))
+		self.set_cursor_pos(self.track, self.row - (self.step * 16))
 	    elif k == 'Right' or k == 'KP_Right':
-		self.set_cursor_pos(self.track, self.row + (self.step*16))
+		self.set_cursor_pos(self.track, self.row + (self.step * 16))
 	    else:
 		return False
 	elif k == 'Left' or k == 'KP_Left':
