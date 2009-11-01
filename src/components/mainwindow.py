@@ -301,8 +301,13 @@ class AldrinFrame(gtk.Window):
       item.destroy()
     tempmenu = gtk.Menu()
     tempmenu.append(make_stock_menu_item(gtk.STOCK_HELP, self.on_help_contents))
-    tempmenu.append(make_stock_menu_item(gtk.STOCK_HELP, self.on_help_shortcuts))
+    # Menu item that launches a pdf reader with a document explaining Neil shortcuts
+    shortcuts_menu_item = gtk.MenuItem("_Shortcuts")
+    shortcuts_menu_item.connect('activate', self.on_help_shortcuts)
+    tempmenu.append(shortcuts_menu_item)
+    # Separator
     tempmenu.append(gtk.SeparatorMenuItem())
+    # Menu item that launches the about box
     tempmenu.append(make_stock_menu_item(gtk.STOCK_ABOUT, self.on_about))
     self.aldrinframe_menubar.append(make_submenu_item(tempmenu, "_Help"))
     #~ # Menu Bar end
