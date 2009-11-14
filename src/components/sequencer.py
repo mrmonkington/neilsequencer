@@ -33,7 +33,7 @@ import pango
 import gobject
 from aldrin.utils import PLUGIN_FLAGS_MASK, ROOT_PLUGIN_FLAGS, GENERATOR_PLUGIN_FLAGS, EFFECT_PLUGIN_FLAGS, CONTROLLER_PLUGIN_FLAGS
 from aldrin.utils import prepstr, from_hsb, to_hsb, get_item_count, get_clipboard_text, set_clipboard_text, add_scrollbars
-from aldrin.utils import is_effect,is_generator,is_controller,is_root,get_new_pattern_name, filepath
+from aldrin.utils import is_effect, is_generator, is_controller, is_root, get_new_pattern_name, filepath
 from aldrin.utils import Menu
 import random
 import config
@@ -46,7 +46,7 @@ import aldrin.com as com
 import zzub
 
 SEQKEYS = '0123456789abcdefghijklmnopqrstuvwxyz'
-SEQKEYMAP = dict(zip(SEQKEYS,range(0x10,len(SEQKEYS)+0x10)))
+SEQKEYMAP = dict(zip(SEQKEYS, range(0x10, len(SEQKEYS) + 0x10)))
 SEQKEYMAP[chr(45)] = 0x00
 SEQKEYMAP[chr(44)] = 0x01
 
@@ -56,8 +56,6 @@ class PatternNotFoundException(Exception):
     """
     pass
 
-
-# TODO: This might be better as a ScrolledWindow rather than a ComboBox.
 class AddSequencerTrackDialog(gtk.Dialog):
     """
     Sequencer Dialog Box.
@@ -99,75 +97,17 @@ class SequencerToolBar(gtk.HBox):
 	self.steplabel = gtk.Label()
 	self.steplabel.set_text_with_mnemonic("_Step")
 	self.stepselect = gtk.combo_box_new_text()
-	self.steps = [1,2,4,8,12,16,20,24,28,32,36,40,44,48,52,56,60,64,96,128,192,256,512,1024]
+	self.steps = [1, 2, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 
+                      48, 52, 56, 60, 64, 96, 128, 192, 256, 512, 1024]
 	self.stepselect.connect('changed', self.on_stepselect)
 	self.steplabel.set_mnemonic_widget(self.stepselect)
-	# The buttons for zooming on the sequencer window.
-	self.btn_hzoom_in = gtk.Button("HZoom+")
-	self.btn_hzoom_out = gtk.Button("HZoom-")
-	self.btn_vzoom_in = gtk.Button("VZoom+")
-	self.btn_vzoom_out = gtk.Button("VZoom-")
-	self.btn_hzoom_in.connect("button_press_event", self.on_hzoom_in)
-	self.btn_hzoom_out.connect("button_press_event", self.on_hzoom_out)
-	self.btn_vzoom_in.connect("button_press_event", self.on_vzoom_in)
-	self.btn_vzoom_out.connect("button_press_event", self.on_vzoom_out)	
 	# Follow song checkbox.
 	self.followsong = gtk.CheckButton("Follow Song Position")
 	self.followsong.set_active(False)
 	# Display all the components.
 	self.pack_start(self.steplabel, expand=False)
 	self.pack_start(self.stepselect, expand=False)
-	self.pack_start(self.btn_hzoom_in, expand=False)
-	self.pack_start(self.btn_hzoom_out, expand=False)
-	self.pack_start(self.btn_vzoom_in, expand=False)
-	self.pack_start(self.btn_vzoom_out, expand=False)
 	self.pack_start(self.followsong)
-
-    def on_hzoom_in(self, widget, event):
-	"""
-	A callback that is called when the user presses the HZoom+
-	button in the sequencer view.
-
-	Increases the size of the horizontal representation.
-	"""
-	if self.seqview.seq_row_size < 100:
-	    self.seqview.seq_row_size += 5
-	self.parent.update_all()
-
-    def on_hzoom_out(self, widget, event):
-	"""
-	A callback that is called when the user presses the HZoom-
-	button in the sequencer view.
-
-	Decreases the size of the horizontal representation.
-	"""
-	if self.seqview.seq_row_size > 10:
-	    self.seqview.seq_row_size -= 5
-	self.parent.update_all()
-
-    def on_vzoom_in(self, widget, event):
-	"""
-	A callback that is called when the user presses the VZoom+
-	button in the sequencer view.
-
-	Increases the size of the tracks as seen on screen and redraws.
-	"""
-	if self.seqview.seq_track_size < 100:
-	    self.seqview.seq_track_size += 5
-	    self.seqview.seq_top_margin += 5
-	self.parent.update_all()
-
-    def on_vzoom_out(self, widget, event):
-	"""
-	A callback that is called when the user presses the VZoom-
-	button in the sequencer view.
-
-	Decreases the size of the tracks as seen on screen and redraws.
-	"""
-	if self.seqview.seq_track_size > 20:
-	    self.seqview.seq_track_size -= 5
-	    self.seqview.seq_top_margin -= 5
-	self.parent.update_all()
 
     def increase_step(self):
 	if self.parent.view.step < 1024:
