@@ -725,44 +725,42 @@ class AldrinPlayer(Player, PropertyEventHandler):
 	if active_patterns:
 	    self.active_patterns = active_patterns
 
-    def delete_plugin(self, mp):
+    def delete_plugin(self, plugin):
 	# add plugin information
-	common.get_plugin_infos().add_plugin(mp)
+	common.get_plugin_infos().add_plugin(plugin)
 	# remove midi mappings
-	for i in range(self.get_midimapping_count()):
-	    m =  self.get_midimapping(i)
-	    plugin = self.get_plugin_by_id(m.get_plugin())
-	    self.remove_midimapping(plugin, m.get_group(), m.get_track(), m.get_column())
-
+        for i in range(self.get_midimapping_count()):
+            mapping =  self.get_midimapping(i)
+            self.remove_midimapping(plugin, mapping.get_group(), mapping.get_track(), mapping.get_column())
 	inplugs = []
 	outplugs = []
 	# record all input connections
-	for index in xrange(mp.get_input_connection_count()):
-	    if mp.get_input_connection_type(index) != zzub.zzub_connection_type_audio:
+	for index in xrange(plugin.get_input_connection_count()):
+	    if plugin.get_input_connection_type(index) != zzub.zzub_connection_type_audio:
 		continue
-	    input = mp.get_input_connection_plugin(index)
-	    amp = mp.get_parameter_value(zzub.zzub_parameter_group_connection, index, 0)
-	    pan = mp.get_parameter_value(zzub.zzub_parameter_group_connection, index, 1)
-	    inplugs.append((input,amp,pan))
+	    input = plugin.get_input_connection_plugin(index)
+	    amp = plugin.get_parameter_value(zzub.zzub_parameter_group_connection, index, 0)
+	    pan = plugin.get_parameter_value(zzub.zzub_parameter_group_connection, index, 1)
+	    inplugs.append((input, amp, pan))
 	# record all output connections
-	for index in xrange(mp.get_output_connection_count()):
-	    if mp.get_output_connection_type(index) != zzub.zzub_connection_type_audio:
+	for index in xrange(plugin.get_output_connection_count()):
+	    if plugin.get_output_connection_type(index) != zzub.zzub_connection_type_audio:
 		continue
-	    output = mp.get_output_connection_plugin(index)
-	    index = output.get_input_connection_by_type(mp, zzub.zzub_connection_type_audio)
+	    output = plugin.get_output_connection_plugin(index)
+	    index = output.get_input_connection_by_type(plugin, zzub.zzub_connection_type_audio)
 	    amp = output.get_parameter_value(zzub.zzub_parameter_group_connection, index, 0)
 	    pan = output.get_parameter_value(zzub.zzub_parameter_group_connection, index, 1)
-	    outplugs.append((output,amp,pan))
+	    outplugs.append((output, amp, pan))
 	# destroy the plugin
-	del common.get_plugin_infos()[mp]
-	mp.destroy()
+	del common.get_plugin_infos()[plugin]
+	plugin.destroy()
 	# restore all connections
-	for inplug,iamp,ipan in inplugs:
-	    for outplug,oamp,opan in outplugs:
-		newamp = (iamp*oamp)/16384
+	for inplug, iamp, ipan in inplugs:
+	    for outplug, oamp, opan in outplugs:
+		newamp = (iamp * oamp) / 16384
 		newpan = ipan
 		outplug.add_input(inplug, zzub.zzub_connection_type_audio)
-		index = outplug.get_input_connection_count()-1
+		index = outplug.get_input_connection_count() - 1
 		outplug.set_parameter_value(zzub.zzub_parameter_group_connection, index, 0, newamp, False)
 		outplug.set_parameter_value(zzub.zzub_parameter_group_connection, index, 1, newpan, False)
 	self.history_commit("delete plugin")
