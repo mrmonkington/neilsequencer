@@ -18,6 +18,7 @@ private:
   unsigned int offset;
   unsigned int sampling_rate;
   unsigned int sample_count;
+  bool is_stereo;
   float amp, amp_l, amp_r, rate;
   lanternfish::GrainEnv *env;
   float interpolate(float x1, float x2, float phi);
