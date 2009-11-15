@@ -122,7 +122,7 @@ DEFAULT_THEME = {
 	'MV Controller Arrow': 0xef2929,
 	'MV Controller Arrow Border In': 0xf35d5d,
 	'MV Controller Arrow Border Out': 0xa40000,
-	'MV Background': 0xeeeeec,
+	'MV Background': 0xffffff,
 	'MV Effect': 0x729fcf,
 	'MV Effect LED Border': 0x96b8dc,
 	'MV Effect LED Off': 0x204a87,
@@ -181,7 +181,7 @@ DEFAULT_THEME = {
 	'SA Amp Line': 0xffffff,
 	'SA Freq BG': 0x007d5d,
 	'SA Freq Line': 0xffffff,
-	'SE BG': 0xeeeeee,
+	'SE BG': 0xffffff,
 	'SE BG Dark': 0xcccccc,
 	'SE BG Very Dark': 0x7f9aeb,
 	'SE Line': 0x000000,
@@ -208,6 +208,9 @@ DEFAULT_THEME = {
 	'WE Slice Bar': 0xFF0080,
 	'WE Wakeup Peaks': 0xff0080,
 	'WE Sleep Peaks': 0x8000ff,
+        'PT Outer Border' : 0x606060,
+        'PT Inner Border' : 0xf0f0f0,
+        'PT Background' : 0xe0e0e0
 }
 
 class AldrinConfig(object, ConfigParser.ConfigParser):

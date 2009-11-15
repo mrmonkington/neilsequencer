@@ -1233,7 +1233,7 @@ class AcceleratorMap:
 					func = ref()
 				func(*args,**kargs)
 				return True
-		print "unknown shortcut:",name
+		#print "unknown shortcut:",name
 		return False
 
 __all__ = [

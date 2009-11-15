@@ -561,7 +561,8 @@ class AldrinPlayer(Player, PropertyEventHandler):
 		    value = None
 		args.append(value)
 	if not data.type in self._exclude_event_debug_:
-	    print "[%s](%s)" % (eventname,','.join([('%s=%r' % (a,b)) for a,b in zip(argnames,args)]))
+            pass
+	    #print "[%s](%s)" % (eventname,','.join([('%s=%r' % (a,b)) for a,b in zip(argnames,args)]))
 	result = getattr(eventbus, eventname)(*args) or False
 	self._cbcalls += 1
 	if self.__loading:
