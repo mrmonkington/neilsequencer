@@ -110,7 +110,7 @@ class SequencerToolBar(gtk.HBox):
 	self.pack_start(self.followsong)
 
     def increase_step(self):
-	if self.parent.view.step < 1024:
+	if self.parent.view.step < 64:
 	    self.parent.view.step *= 2
 	self.update_stepselect()
 	self.parent.update_all()
@@ -1208,23 +1208,40 @@ class SequencerView(gtk.DrawingArea):
 	    return
 	player = com.get('aldrin.core.player')
         gc = self.window.new_gc()
-	cm = gc.get_colormap()
+	colormap = gc.get_colormap()
 	drawable = self.window
-	w,h = self.get_client_size()
-	bbrush = cm.alloc_color('#ff0000')
-	gc.set_foreground(bbrush)
-	gc.set_background(bbrush)
+	width, height = self.get_client_size()
+	red = colormap.alloc_color('#ff0000')
+        white = colormap.alloc_color('#ffffff')
+	gc.set_foreground(red)
+	gc.set_background(red)
         gc.line_width = 2
-	seq = player.get_current_sequencer()
-	track_count = seq.get_sequence_track_count()
+	sequencer = player.get_current_sequencer()
+	track_count = sequencer.get_sequence_track_count()
 	if track_count > 0:
 	    if self.row >= self.startseqtime and self.track >= self.starttrack:
-		x,y = self.track_row_to_pos((self.track,self.row))
-		drawable.draw_rectangle(gc, False, x + 2, y + 2, self.seq_row_size - 2, self.seq_track_size - 3)
+                if self.selection_start != None and self.selection_end != None:
+                    start_track, start_row = (min(self.selection_start[0], self.selection_end[0]),
+					      min(self.selection_start[1], self.selection_end[1]))
+                    end_track, end_row = (max(self.selection_start[0], self.selection_end[0]),
+					  max(self.selection_start[1], self.selection_end[1]))
+                    x1, y1 = self.track_row_to_pos((start_track, start_row))
+		    x2, y2 = self.track_row_to_pos((end_track + 1, end_row + self.step))
+		    print start_track, start_row
+		    print end_track, end_row
+		    cursor_x, cursor_y = x1, y1
+		    cursor_width, cursor_height = x2 - x1, y2 - y1
+                else:
+                    cursor_x, cursor_y = self.track_row_to_pos((self.track, self.row))
+                    cursor_width = self.seq_row_size
+                    cursor_height = self.seq_track_size
+                drawable.draw_rectangle(gc, False, cursor_x + 2, cursor_y + 2, cursor_width - 3, cursor_height - 3)
 	if self.playpos >= self.startseqtime:
+            gc.set_foreground(white)
+            gc.set_background(white)
             gc.set_function(gtk.gdk.XOR)
 	    x = self.seq_left_margin + int((float(self.playpos - self.startseqtime) / self.step) * self.seq_row_size)
-	    drawable.draw_rectangle(gc,True, x, 0, 2, h)
+	    drawable.draw_rectangle(gc,True, x, 1, 2, height - 2)
 
     def update(self):
 	"""
@@ -1258,7 +1275,7 @@ class SequencerView(gtk.DrawingArea):
         start = self.startseqtime
         while (x < width):
 	    if start % (4 * self.step) == 0:
-		gc.set_foreground(colormap.alloc_color('#808080'))
+		gc.set_foreground(colormap.alloc_color('#a0a0a0'))
 		drawable.draw_line(gc, x, 0, x, height)
 		gc.set_foreground(colormap.alloc_color('#000000'))
 		layout.set_text(str(start))
@@ -1288,20 +1305,6 @@ class SequencerView(gtk.DrawingArea):
         cfg = config.get_config()
 	sequencer = player.get_current_sequencer()
         tracks = sequencer.get_track_list()
-
-	type_to_brush = {
-            EFFECT_PLUGIN_FLAGS : colormap.alloc_color(cfg.get_color('MV Effect')),
-            GENERATOR_PLUGIN_FLAGS : colormap.alloc_color(cfg.get_color('MV Generator')),
-            ROOT_PLUGIN_FLAGS : colormap.alloc_color(cfg.get_color('MV Master')),
-            CONTROLLER_PLUGIN_FLAGS : colormap.alloc_color(cfg.get_color('MV Controller')),
-            }
-
-        pen = colormap.alloc_color(cfg.get_color('SE Line'))
-        textcolor = colormap.alloc_color(cfg.get_color('SE Text'))
-        background = colormap.alloc_color(cfg.get_color('SE BG'))
-        pattern_outer_border = colormap.alloc_color(cfg.get_color('PT Outer Border'))
-        pattern_inner_border = colormap.alloc_color(cfg.get_color('PT Inner Border'))
-        pattern_background = colormap.alloc_color(cfg.get_color('PT Background'))
         gc.set_foreground(colormap.alloc_color('#606060'))
         for track_index in range(self.starttrack, len(tracks)):
              track = tracks[track_index]
@@ -1309,22 +1312,30 @@ class SequencerView(gtk.DrawingArea):
              plugin_info = self.plugin_info.get(plugin)
              # Draw the pattern boxes
              for position, value in track.get_event_list():
+                 pattern = None
                  if value >= 0x10:
                      pattern = plugin.get_pattern(value - 0x10)
                      name, length =  prepstr(pattern.get_name()), pattern.get_row_count()
-                     end = position + length
-                     width_in_bars = (width / self.seq_row_size) * self.step
-                     if (end >= self.startseqtime) and (position < self.startseqtime + width_in_bars):
-                         box_size = max(int(((self.seq_row_size * length) / self.step) + 0.5), 2)
-                         x = self.seq_left_margin + ((position - self.startseqtime) * self.seq_row_size) / self.step
-                         gc.set_foreground(colormap.alloc_color('#e0e0e0'))
-                         drawable.draw_rectangle(gc, True, x + 2, y + 2, box_size - 4, self.seq_track_size - 4)
-                         gc.set_foreground(colormap.alloc_color('#000000'))
-                         drawable.draw_rectangle(gc, False, x + 2, y + 2, box_size - 4, self.seq_track_size - 4)
-                         layout.set_text(name)
-                         px, py = layout.get_pixel_size()
-                         gc.set_foreground(textcolor)
-                         drawable.draw_layout(gc, x + 4, y + 4, layout)
+                 elif value == 0x00:
+                     name, length = 'x', self.step
+                 elif value == 0x01:
+                     name, length = '<', self.step
+                 else:
+                     name, length = '???', self.step
+                 end = position + length
+                 width_in_bars = (width / self.seq_row_size) * self.step
+                 if (end >= self.startseqtime) and (position < self.startseqtime + width_in_bars):
+                     box_size = max(int(((self.seq_row_size * length) / self.step) + 0.5), 2)
+                     x = self.seq_left_margin + ((position - self.startseqtime) * self.seq_row_size) / self.step
+                     gc.set_foreground(colormap.alloc_color('#e0e0e0'))
+                     drawable.draw_rectangle(gc, True, x + 2, y + 2, box_size - 4, self.seq_track_size - 4)
+                     gc.set_foreground(colormap.alloc_color('#000000'))
+                     drawable.draw_rectangle(gc, False, x + 2, y + 2, box_size - 4, self.seq_track_size - 4)
+                     layout.set_text(name)
+                     px, py = layout.get_pixel_size()
+                     gc.set_foreground(colormap.alloc_color('#000000'))
+                     drawable.draw_layout(gc, x + 4, y + 4, layout)
+                 if pattern != None:
                      pattern.destroy()
              # Draw the track name boxes.
              name = plugin.get_name()
@@ -1354,21 +1365,21 @@ class SequencerView(gtk.DrawingArea):
         gc = drawable.new_gc()
         colormap = gc.get_colormap()
         width, height = self.get_client_size()
-	gc.line_width = 2
-	gc.set_dashes(0, (1, 1))
+	gc.line_width = 1
         loop_start, loop_end = player.get_loop()
         window_start, window_end = self.get_bounds()
-        if (loop_start > window_start and loop_start < window_end):
+        if (loop_start >= window_start and loop_start <= window_end):
             x, y = self.track_row_to_pos((0, loop_start))
             gc.set_foreground(colormap.alloc_color('#000000'))
             drawable.draw_line(gc, x, 0, x, height)
             drawable.draw_polygon(gc, filled=True, points=((x, 0), (x + 10, 0), (x, 10)))
-        if (loop_end > window_start and loop_end < window_end):
+        if (loop_end >= window_start and loop_end <= window_end):
             x, y = self.track_row_to_pos((0, loop_end))
             gc.set_foreground(colormap.alloc_color('#000000'))
             drawable.draw_line(gc, x, 0, x, height)
             drawable.draw_polygon(gc, filled=True, points=((x, 0), (x - 10, 0), (x, 10)))
         # Draw song end marker.
+	gc.line_width = 3
         song_end = player.get_song_end()
         if (song_end > window_start and song_end < window_end):
             x, y = self.track_row_to_pos((0, song_end))
@@ -1380,36 +1391,6 @@ class SequencerView(gtk.DrawingArea):
 	Overriding a L{Canvas} method that paints onto an offscreen buffer.
 	Draws the pattern view graphics.
 	"""	
-	# player = com.get('aldrin.core.player')
-	# width, height = self.get_client_size()
-	# gc = self.window.new_gc()
-	# colormap = gc.get_colormap()
-	# drawable = self.window
-        # cfg = config.get_config()
-	# bghsb = to_hsb(*cfg.get_float_color('SE BG'))
-	# bgb = max(bghsb[2], 0.1)
-
-	# type2brush = {
-        #     EFFECT_PLUGIN_FLAGS : colormap.alloc_color(cfg.get_color('MV Effect')),
-        #     GENERATOR_PLUGIN_FLAGS : colormap.alloc_color(cfg.get_color('MV Generator')),
-        #     ROOT_PLUGIN_FLAGS : colormap.alloc_color(cfg.get_color('MV Master')),
-        #     CONTROLLER_PLUGIN_FLAGS : colormap.alloc_color(cfg.get_color('MV Controller')),
-        #     }
-
-        # colors = {
-        #     "background" : colormap.alloc_color(cfg.get_color('SE BG')),
-        #     "sbrushes" : (colormap.alloc_color(cfg.get_color('SE Mute')), 
-        #                   colormap.alloc_color(cfg.get_color('SE Break'))),
-        #     "select_brush" : colormap.alloc_color(cfg.get_color('SE Sel BG')),
-        #     "vlinepen" : colormap.alloc_color(cfg.get_color('SE BG Dark')),
-        #     "pen1" : colormap.alloc_color(cfg.get_color('SE BG Very Dark')),
-        #     "pen2" : colormap.alloc_color(cfg.get_color('SE BG Dark')),
-        #     "pen" : colormap.alloc_color(cfg.get_color('SE Line')),
-        #     "loop_pen" : colormap.alloc_color(cfg.get_color('SE Loop Line')),
-        #     "invbrush" : colormap.alloc_color('#ffffff'),
-        #     "textcolor" : colormap.alloc_color(cfg.get_color('SE Text')),
-        #     }
-
         gc = self.window.new_gc()
 	colormap = gc.get_colormap()
 	drawable = self.window
@@ -1422,140 +1403,6 @@ class SequencerView(gtk.DrawingArea):
         self.draw_cursors()
         gc.set_foreground(colormap.alloc_color('#000000'))
         drawable.draw_rectangle(gc, False, 0, 0, width - 1, height - 1)
-
-        #self.draw_markers(gc, drawable, colors, self.startseqtime, x, y, width, height, self.seq_row_size, self.step)
-	    
-	#tracklist = sequencer.get_track_list()
-
-	# Get selection start and selection end.
-	#selection = False
-	#if self.selection_start != None and self.selection_end != None:
-        #    selection = True
-        #    selection_start = (min(self.selection_start[0], self.selection_end[0]), 
-        #                       min(self.selection_start[1], self.selection_end[1]))
-        #    selection_end = (max(self.selection_start[0], self.selection_end[0]), 
-        #                     max(self.selection_start[1], self.selection_end[1]))
-	    
-	# # Draw tracks and pattern boxes.
-	# for track_index in range(self.starttrack, len(tracklist)):
-	#     track = tracklist[track_index]
-	#     m = track.get_plugin()
-	#     pi = self.plugin_info.get(m)
-	#     pgfx = pi.patterngfx
-	#     mname = m.get_name()
-	#     title = prepstr(mname)
-	#     if player.solo_plugin and player.solo_plugin != m and is_generator(m):
-	# 	title = "[%s]" % title
-	#     elif self.plugin_info[m].muted:
-	# 	title = "(%s)" % title
-	#     gc.set_foreground(type2brush.get(m.get_flags() & PLUGIN_FLAGS_MASK,
-	# 				     type2brush[GENERATOR_PLUGIN_FLAGS]))
-	#     # Draw a box that states the name of the machine on that track.
-	#     drawable.draw_rectangle(gc, True, 0, y, self.seq_left_margin - 1,
-	# 			    self.seq_track_size)
-	#     gc.set_foreground(pen)
-	#     # Draw an outline on the track name box.
-	#     drawable.draw_rectangle(gc, False, 0, y, self.seq_left_margin - 1,
-	# 			    self.seq_track_size)
-	#     gc.set_foreground(textcolor)
-	#     layout.set_text(title)
-	#     px, py = layout.get_pixel_size()
-	#     # Draw the label with the track name
-	#     drawable.draw_layout(gc, self.seq_left_margin - 4 - px,
-	# 			 y + self.seq_track_size / 2 - py / 2, layout)
-
-	#     # If track is in the selection...
-	#     intrack = sel and ((track_index >= selstart[0]) and (track_index <= selend[0]))
-	#     # Draw the selection box over the empty track.
-	#     if intrack:
-	# 	x = self.seq_left_margin
-	# 	i = self.startseqtime
-	# 	while x < w:
-	# 	    if (i >= selstart[1]) and (i <= selend[1]):
-	# 		gc.foreground = select_brush
-	# 		drawable.draw_rectangle(gc, True, x, y + 1,
-	# 					self.seq_row_size - 2,
-	# 					self.seq_track_size - 2)
-	# 	    x += self.seq_row_size
-	# 	    i += self.step
-		    
-	#     for pos, value in track.get_event_list():
-	# 	bb = pgfx.get(value, None)
-	# 	if not bb:
-	# 	    if value >= 0x10:
-	# 		pat = m.get_pattern(value - 0x10)
-	# 		name, length = prepstr(pat.get_name()), pat.get_row_count()
-	# 	    elif value == 0x00:
-	# 		name,length = "X", 1
-	# 	    elif value == 0x01:
-	# 		name,length = "<", 1
-	# 	    else:
-	# 		print "unknown value:", value
-	# 		name, length = "???", 0
-	# 	    psize = max(int(((self.seq_row_size * length) / self.step) + 0.5), 2)
-	# 	    bb = gtk.gdk.Pixmap(self.window, psize-1, self.seq_track_size-1, -1)
-	# 	    pgfx[value] = bb					
-	# 	    if value < 0x10:
-	# 		gc.set_foreground(sbrushes[value])
-	# 		bb.draw_rectangle(gc, True, 0, 0, psize-1, self.seq_track_size-1)
-	# 	    else:
-	# 		random.seed(mname+name)
-	# 		hue = random.random()
-	# 		cb = 1.0
-	# 		r,g,b = from_hsb(hue, 0.2, cb*bgb)
-	# 		gc.set_foreground(cm.alloc_color('#%02X%02X%02X' % (int(r*255),int(g*255),int(b*255))))
-	# 		bb.draw_rectangle(gc, True, 0,0, psize - 2, self.seq_track_size - 2)
-	# 		r,g,b = from_hsb(hue, 0.5, cb*bgb*0.5)
-	# 		gc.set_foreground(cm.alloc_color('#%02X%02X%02X' % (int(r*255),int(g*255),int(b*255))))
-	# 		pat = m.get_pattern(value-0x10)
-	# 		bh = self.seq_track_size-2-4
-	# 		bw = max(psize-2-2, 1)
-	# 		# 0.3: DEAD - no get_bandwidth_digest
-	# 		#~ digest = pat.get_bandwidth_digest(bw)
-	# 		#~ for evx,evh in enumerate(digest):
-	# 		    #~ if evh:
-	# 			#~ evh = max(int(bh * (0.5 + evh*0.5) + 0.5), 1)
-	# 			#~ bb.draw_rectangle(gc, True, 1+evx, 2+bh-evh, 1, evh )
-	# 		r,g,b = from_hsb(hue, 1.0, cb*bgb*0.7)
-	# 		gc.set_foreground(cm.alloc_color('#%02X%02X%02X' % (int(r*255),int(g*255),int(b*255))))
-	# 		bb.draw_rectangle(gc, False, 0, 0, psize - 2, self.seq_track_size - 2)
-	# 		ofs = 0
-	# 		layout.set_text(name)
-	# 		px,py = layout.get_pixel_size()
-	# 		gc.set_foreground(textcolor)
-	# 		bb.draw_layout(gc, 2, 0 + self.seq_track_size/2 - py/2, layout)
-	# 	bbw,bbh = bb.get_size()
-	# 	x = self.seq_left_margin + (((pos - self.startseqtime) * self.seq_row_size) / self.step)
-	# 	if ((x+bbw) >= self.seq_left_margin) and (x < w):
-	# 	    ofs = max(self.seq_left_margin - x,0)
-	# 	    drawable.draw_drawable(gc, bb, ofs, 0, x+ofs, y+1, bbw-ofs, bbh)
-	# 	    if intrack and (pos >= selstart[1]) and (pos <= selend[1]):
-	# 		gc.set_foreground(invbrush)
-	# 		gc.set_function(gtk.gdk.XOR)
-	# 		drawable.draw_rectangle(gc, True, x+ofs, y+1, bbw-ofs, bbh)
-	# 		gc.set_function(gtk.gdk.COPY)
-	#     y += self.seq_track_size			
-	#     gc.set_foreground(vlinepen)
-	#     drawable.draw_line(gc, self.seq_left_margin, y, w, y)
-	# gc.set_foreground(pen)
-	# x = self.seq_left_margin-1
-	# drawable.draw_line(gc, x, 0, x, h)
-	# se = player.get_song_end()
-	# x,y = self.track_row_to_pos((0,se))
-	# if (x >= self.seq_left_margin):
-	#     gc.set_foreground(pen)
-	#     drawable.draw_line(gc, x-1, 0, x-1, h)
-	# gc.set_foreground(loop_pen)
-	# gc.line_style = gtk.gdk.LINE_ON_OFF_DASH
-	# gc.set_dashes(0, (1,1))
-	# lb,le = player.get_loop()
-	# x,y = self.track_row_to_pos((0,lb))
-	# if (x >= self.seq_left_margin):
-	#     drawable.draw_line(gc, x-1, 0, x-1, h)
-	# x,y = self.track_row_to_pos((0,le))
-	# if (x >= self.seq_left_margin):
-	#     drawable.draw_line(gc, x-1, 0, x-1, h)
-	#self.draw_xor()
 
 __all__ = [
 'PatternNotFoundException',
