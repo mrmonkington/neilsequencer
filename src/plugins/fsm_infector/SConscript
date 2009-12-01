@@ -21,11 +21,11 @@
 Import('pluginenv', 'build_plugin')
 
 build_plugin(pluginenv, 'fsm_infector', files=[
-		'infector.cpp',
-		'Vegetable.cpp',
-		'fourierf.c',
-		'fftmisc.c',
-		'Channel.cpp',
-		'Track.cpp',
-		'Filters.cpp',
-	])
+    'infector.cpp',
+    'Vegetable.cpp',
+    'fourierf.c',
+    'fftmisc.c',
+    'Channel.cpp',
+    'Track.cpp',
+    'Filters.cpp',
+    ])

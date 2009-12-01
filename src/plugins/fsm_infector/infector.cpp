@@ -1,12 +1,3 @@
-// globalny tuning
-// zakres dla suwaków (cutoff, resonance, modulation)
-// lepszy tryb mono
-// sustain 0 -> b³¹d
-// startuje -> bzdury
-// bug w seq<->buzz
-
-// lokalne/globalne LFO
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -17,15 +8,14 @@
 #include <float.h>
 #include <zzub/plugin.h>
 #include <iostream>
-#pragma optimize ("a", on)
 #include "DSPChips.h"
 
 #include "infector.h"
 
 namespace fsm {
 
-static int times[]={
-  1,2,3,4,6,8,12,16,24,28,32,48,64,96,128
+static int times[] = {
+  1, 2, 3, 4, 6, 8, 12, 16, 24, 28, 32, 48, 64, 96, 128
 };
 
 int intsinetable[2048];
@@ -33,9 +23,7 @@ float atanTable[8193];
 float atanTable2[8193];
 float atanTable3[8193];
 float atanTable4[8193];
-float *atanTables[4]={atanTable,atanTable2,atanTable3,atanTable4};
-
-///////////////////////////////////////////////////////////////////////////////////
+float *atanTables[4] = {atanTable, atanTable2, atanTable3, atanTable4};
 
 CBandlimitedTable sintable;
 CBandlimitedTable sawtable;
@@ -55,24 +43,44 @@ CBandlimitedTable pr3table;
 CBandlimitedTable spltable;
 CBandlimitedTable smntable;
 
-const char *tabnames[]={"Sine","Triangle","SuperSaw","PWM Sqr","Dbl Sqr","Hexagon","Carrot","Onion","Tomato","Cabbage","Cucumber","Octave","1-3","4-6","Regs","Saw","User A","User AA'","User B","User BB'","User C","User CC'","User D","User DD'"};
-const char *stabnames[]={"Sine","Tri","Saw","SuperSaw","Sqr","Oct","1-3","4-6","Regs","Hex","FM","XT1","XT2","User A","User A'","User B","User B'","User C","User C'","User D","User D'"};
+const char *tabnames[] = {
+  "Sine", "Triangle", "SuperSaw", "PWM Sqr", "Dbl Sqr", "Hexagon", "Carrot", 
+  "Onion", "Tomato", "Cabbage", "Cucumber", "Octave", "1-3", "4-6", "Regs", 
+  "Saw", "User A", "User AA'", "User B", "User BB'", "User C", "User CC'", 
+  "User D", "User DD'"
+};
 
-CBandlimitedTable *tablesA[]={&sintable,&tritable,&spstable,&sawtable,&sqrtable,&hextable,&xt1table,&sawtable,&fm1table,&fm1table,&xt2table,&octtable,&prttable,&pr2table,&pr3table,&spltable};
-CBandlimitedTable *tablesB[]={&nultable,&tritable,&sp2table,&sawtable,&sqrtable,&hextable,&xt1table,&sqrtable,&fm1table,&sqrtable,&xt2table,&octtable,&prttable,&pr2table,&pr3table,&smntable};
-CBandlimitedTable *tablesC[]={&sintable,&tritable,&sawtable,&spstable,&sqrtable,&octtable,&prttable,&pr2table,&pr3table,&hextable,&fm1table,&xt1table,&xt2table};
+const char *stabnames[] = {
+  "Sine", "Tri", "Saw", "SuperSaw", "Sqr", "Oct", "1-3", "4-6", "Regs", "Hex",
+  "FM", "XT1", "XT2", "User A", "User A'", "User B", "User B'", "User C", 
+  "User C'", "User D", "User D'"
+};
 
-void GenerateWaves()
-{
-	int i;
+CBandlimitedTable *tablesA[] = {
+  &sintable, &tritable, &spstable, &sawtable, &sqrtable, &hextable, &xt1table,
+  &sawtable, &fm1table, &fm1table, &xt2table, &octtable, &prttable, &pr2table,
+  &pr3table, &spltable
+};
 
-	for (i=0; i<8193; i++)
-	{
-		atanTable[i]=float((i-4096)/4096.0);
-		atanTable2[i]=float(atan(2*(i-4096)/7000.0)*2/PI);
-		atanTable3[i]=float(atan(2*sin(3*(i-4096)/7000.0)+2*(i-4096)/7000.0)/PI);
-		atanTable4[i]=float(sin(sin(3*(i-4096)/7000.0)+(i-4096)/7000.0)/2);
-	}
+CBandlimitedTable *tablesB[] = {
+  &nultable, &tritable, &sp2table, &sawtable, &sqrtable, &hextable, &xt1table,
+  &sqrtable, &fm1table, &sqrtable, &xt2table, &octtable, &prttable, &pr2table,
+  &pr3table, &smntable
+};
+
+CBandlimitedTable *tablesC[] = {
+  &sintable, &tritable, &sawtable, &spstable, &sqrtable, &octtable, &prttable,
+  &pr2table, &pr3table, &hextable, &fm1table, &xt1table, &xt2table
+};
+
+void GenerateWaves() {
+  int i;
+  for (i = 0; i < 8193; i++) {
+    atanTable[i] = float((i - 4096) / 4096.0);
+    atanTable2[i] = float(atan(2 * (i - 4096) / 7000.0) * 2 / PI);
+    atanTable3[i] = float(atan(2 * sin(3 * (i - 4096) / 7000.0) + 2 * (i - 4096) / 7000.0) / PI);
+    atanTable4[i] = float(sin(sin(3 * (i - 4096) / 7000.0) + (i - 4096) / 7000.0) / 2);
+  }
 
 //  for (i=0; i<2048; i++)
 //    intsinetable[i]=int(32768*sin(i*PI/1024));
