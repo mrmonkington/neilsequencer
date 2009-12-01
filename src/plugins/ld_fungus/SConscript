@@ -20,18 +20,14 @@
 
 Import('pluginenv', 'build_plugin', 'cl')
 
-if cl:
-	pluginenv.Append(LIBS=[
-		'gdi32',
-	])
- 	build_plugin(pluginenv, 'ld_fungus', files=[
-			'envelope.cpp',
-			'fft.cpp',
-			'filter.cpp',
-			'fungus.cpp',
-			'lib.cpp',
-			'main.cpp',
-			'pinknoise.cpp',
-		],
-		helpfiles=[
-		])
+build_plugin(pluginenv, 'ld_fungus', files=[
+    'envelope.cpp',
+    'fft.cpp',
+    'filter.cpp',
+    'fungus.cpp',
+    'lib.cpp',
+    'main.cpp',
+    'pinknoise.cpp',
+    ],
+	     helpfiles=[
+		 ])
