@@ -267,9 +267,7 @@ void CTrack::Tick(CTrackVals &tv) {
       m_pChannel->m_PanningEnvelope.Restart(1.0f / float(m_pMachine->_master_info->samples_per_tick * m_pMachine->m_Attributes.iVolumeEnvelopeTicks));
       m_pChannel->m_PitchEnvelope.Restart(1.0f / float(m_pMachine->_master_info->samples_per_tick * m_pMachine->m_Attributes.iVolumeEnvelopeTicks));
       m_pChannel->set_filter_bypass(m_iFilterType > 1 ? false : true);
-      m_pChannel->set_filter_mode(m_iFilterType == 2 ? 
-				  Svf::LOWPASS : 
-				  Svf::HIGHPASS);
+      m_pChannel->set_filter_mode(m_iFilterType == 2 ? Svf::LOWPASS : Svf::HIGHPASS);
       retrig |= RETRIG_CUTOFF | RETRIG_REZ;
     }
 

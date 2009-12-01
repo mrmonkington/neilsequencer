@@ -1,5 +1,5 @@
-#include	"WavetableManager.h"
-#include	"Tracker.h"
+#include "WavetableManager.h"
+#include "Tracker.h"
 
 CWavetableManager::CWavetableManager() {
   m_iNextFreeBuzzSample = 0;
