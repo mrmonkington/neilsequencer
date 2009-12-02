@@ -78,59 +78,34 @@ namespace fsm {
     for (i = 0; i < 8193; i++) {
       atanTable[i] = float((i - 4096) / 4096.0);
       atanTable2[i] = float(atan(2 * (i - 4096) / 7000.0) * 2 / PI);
-      atanTable3[i] = float(atan(2 * sin(3 * (i - 4096) / 7000.0) + 2 * (i - 4096) / 7000.0) / PI);
-      atanTable4[i] = float(sin(sin(3 * (i - 4096) / 7000.0) + (i - 4096) / 7000.0) / 2);
+      atanTable3[i] = float(atan(2 * sin(3 * (i - 4096) / 7000.0) + 
+				 2 * (i - 4096) / 7000.0) / PI);
+      atanTable4[i] = float(sin(sin(3 * (i - 4096) / 7000.0) + 
+				(i - 4096) / 7000.0) / 2);
     }
 
-    //  for (i=0; i<2048; i++)
-    //    intsinetable[i]=int(32768*sin(i*PI/1024));
-    for (i=0; i<2048; i++)
-      {
-	float phs=float((i-1024)/1024.0);
-	intsinetable[i]=int(32768*(2*phs*phs-1));
-      }
-    /*	for (i=0; i<1024; i++)
-	{
-	double phs=(i-512)/512.0;
-	intsinetable[i]=(int)(32767*(phs*phs-1));
-	intsinetable[i+1024]=-(int)(32767*(phs*phs-1));
-	}*/
-    /*
-      for (i=0; i<512; i++)
-      {
-      double phs=i/512.0;
-      intsinetable[i]=int(32767*phs);
-      intsinetable[i+512]=int(32767*(1-phs));
-      intsinetable[i+1024]=int(32767*(-phs));
-      intsinetable[i+1536]=int(32767*(phs-1));
-      }
-    */
-
-    /*
-      for (i=0; i<1024; i++)
-      intsinetable[i]=int(32768*i/1024.0);
-      for (i=1024; i<2048; i++)
-      intsinetable[i]=int(32768*(2048-i)/1024.0);
-    */
+    for (i = 0; i < 2048; i++) {
+      float phs = float((i - 1024) / 1024.0);
+      intsinetable[i] = int(32768 * (2 * phs * phs - 1));
+    }
 
     float triwave[2048];
-    for (i=0; i<512; i++)
-      {
-	triwave[i]=float(32000*(i/512.0));
-	triwave[i+512]=float(32000*(1-i/512.0));
-	triwave[i+1024]=float(-32000*(i/512.0));
-	triwave[i+1536]=float(-32000*(1-i/512.0));
-      }
-    tritable.m_pBuffer=triwave;
-    tritable.m_nBufSize=2048;
-    tritable.Make(2,0.25);
+    for (i = 0; i < 512; i++) {
+	triwave[i] = float(32000 * (i / 512.0));
+	triwave[i + 512] = float(32000 * (1 - i / 512.0));
+	triwave[i + 1024] = float(-32000 * (i / 512.0));
+	triwave[i + 1536] = float(-32000 * (1 - i / 512.0));
+    }
+    tritable.m_pBuffer = triwave;
+    tritable.m_nBufSize = 2048;
+    tritable.Make(2, 0.25);
 
     float nulwave[2048];
-    for (i=0; i<2048; i++)
-      nulwave[i]=0.0f;
-    nultable.m_pBuffer=nulwave;
-    nultable.m_nBufSize=2048;
-    nultable.Make(16,0.5);
+    for (i = 0; i < 2048; i++)
+      nulwave[i] = 0.0f;
+    nultable.m_pBuffer = nulwave;
+    nultable.m_nBufSize = 2048;
+    nultable.Make(16, 0.5);
 
     float sinwave[2048];
     for (i=0; i<2048; i++)

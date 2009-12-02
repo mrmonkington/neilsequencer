@@ -7,82 +7,72 @@
 #include "fourier.h"
 
 namespace fsm {
-
-#if defined(_MSC_VER)
-#define copysign _copysign
-#if !defined(M_PI)
-#define M_PI 3.14159265358979323846
-#endif
-#endif
-
 typedef float SIG;
 const double PI = M_PI;
-#define TWOPI_F (2.0f*3.141592665f)
+ const float TWOPI_F = (2.0f * 3.141592665f);
 
-class CDistortion
-{
+class CDistortion {
 public:
-	float m_dPreGain, m_dPostGain;
-	inline SIG ProcessSample(SIG dSmp) { 
-		return (float)(atan(m_dPreGain*dSmp)*(1.0/1.6*m_dPostGain));
-	}
+  float m_dPreGain, m_dPostGain;
+  inline SIG ProcessSample(SIG dSmp) { 
+    return (float)(atan(m_dPreGain * dSmp) * (1.0 / 1.6 * m_dPostGain));
+  }
 };
 
-class CInertia
-{
+class CInertia {
 protected:
   float m_fAI;
 public:
   float m_fAccum;
 public:
-  CInertia() : m_fAccum(0.0), m_fAI(1.0) {}
-  void SetInertia(double dInertia)
-  {
-    m_fAI=(float)(exp(-(dInertia+128)*4.5/240.0));
+  CInertia() : m_fAccum(0.0), m_fAI(1.0) {
+
   }
-  inline float Process(float value, int c)
-  {
-//    float diff=float(m_fAI*c*pow(fabs(value-m_fAccum),0.05));
-    if (m_fAccum==value)
+
+  void SetInertia(double dInertia) {
+    m_fAI = (float)(exp(-(dInertia + 128) * 4.5 / 240.0));
+  }
+
+  inline float Process(float value, int c) {
+    if (m_fAccum == value)
       return m_fAccum;
-    float diff=float(m_fAI*c);
-    if (fabs(m_fAccum-value)<diff)
-      m_fAccum=value;
+    float diff = float(m_fAI * c);
+    if (fabs(m_fAccum - value) < diff)
+      m_fAccum = value;
     else
-      m_fAccum+=(float)copysign(diff,value-m_fAccum);
+      m_fAccum += (float)copysign(diff, value - m_fAccum);
     return m_fAccum;
   }
 };
 
-class CBiquad
-{
-public:
-	float m_a1, m_a2, m_b0, m_b1, m_b2;
-	float m_Oa1, m_Oa2, m_Ob0, m_Ob1, m_Ob2;
-	float m_x1, m_x2, m_y1, m_y2;
-	CBiquad() { m_x1=0.0f; m_y1=0.0f; m_x2=0.0f; m_y2=0.0f; }
-	inline SIG ProcessSample(SIG dSmp) { 
-		SIG dOut=m_b0*dSmp+m_b1*m_x1+m_b2*m_x2-m_a1*m_y1-m_a2*m_y2;
-//    if (dOut>=-0.00001 && dOut<=0.00001) dOut=0.0;
-//    if (dOut>900000) dOut=900000.0;
-//		if (dOut<-900000) dOut=-900000.0;
-		m_y2=m_y1;
-		m_y1=dOut;
-		m_x2=m_x1;
-		m_x1=dSmp;
-		return dOut;
-	}
-	inline SIG ProcessSampleSafe(SIG dSmp) { 
-		SIG dOut=m_b0*dSmp+m_b1*m_x1+m_b2*m_x2-m_a1*m_y1-m_a2*m_y2;
+class CBiquad {
+ public:
+  float m_a1, m_a2, m_b0, m_b1, m_b2;
+  float m_Oa1, m_Oa2, m_Ob0, m_Ob1, m_Ob2;
+  float m_x1, m_x2, m_y1, m_y2;
+  CBiquad() { 
+    m_x1 = 0.0f; 
+    m_y1 = 0.0f; 
+    m_x2 = 0.0f; 
+    m_y2 = 0.0f; 
+  }
+  inline SIG ProcessSample(SIG dSmp) { 
+    SIG dOut=m_b0*dSmp+m_b1*m_x1+m_b2*m_x2-m_a1*m_y1-m_a2*m_y2;
+    m_y2=m_y1;
+    m_y1=dOut;
+    m_x2=m_x1;
+    m_x1=dSmp;
+    return dOut;
+  }
+  inline SIG ProcessSampleSafe(SIG dSmp) { 
+    SIG dOut=m_b0*dSmp+m_b1*m_x1+m_b2*m_x2-m_a1*m_y1-m_a2*m_y2;
     if (dOut>=-0.00001 && dOut<=0.00001) dOut=0.0;
-//    if (dOut>900000) dOut=900000.0;
-//		if (dOut<-900000) dOut=-900000.0;
-		m_x2=m_x1;
-		m_x1=dSmp;
-		m_y2=m_y1;
-		m_y1=dOut;
-		return dOut;
-	}
+    m_x2=m_x1;
+    m_x1=dSmp;
+    m_y2=m_y1;
+    m_y1=dOut;
+    return dOut;
+  }
   inline bool IsSilent()
   {
     return fabs(m_x1)<1 && fabs(m_x2)<1 && fabs(m_y1)<1 && fabs(m_y2)<1;
@@ -92,60 +82,60 @@ public:
     if (IsSilent())
       m_x1=0.0f, m_y1=0.0f, m_x2=0.0f, m_y2=0.0f;
   }
-	void PreNewFilter()
-	{
-		//m_Oa1=m_a1;
-		//m_Oa2=m_a2;
-		//m_Ob0=m_b0;
-		//m_Ob1=m_b1;
-		//m_Ob2=m_b2;
-	}
-	void PostNewFilter()
-	{
-		//m_x1=m_x1*m_Ob1/m_b1;
-		//m_x2=m_x2*m_Ob2/m_b2;
-		//m_y1=m_y1*m_Oa1/m_a1;
-		//m_y2=m_y2*m_Oa2/m_a2;
-	}
-
-	float PreWarp(float dCutoff, float dSampleRate)
-	{
-		if (dCutoff>dSampleRate*0.4) dCutoff=(float)(dSampleRate*0.4);
-		//return (float)(/*1.0/*/tan(3.1415926/2.0-3.1415926*dCutoff/dSampleRate));
-		return (float)(tan(3.1415926*dCutoff/dSampleRate));
-	}
-	float PreWarp2(float dCutoff, float dSampleRate)
-	{
-		if (dCutoff>dSampleRate*0.4) dCutoff=(float)(dSampleRate*0.4);
-		//return (float)(/*1.0/*/tan(3.1415926/2.0-3.1415926*dCutoff/dSampleRate));
-		return (float)(tan(3.1415926/2.0-3.1415926*dCutoff/dSampleRate));
-	}
-	void SetBilinear(float B0, float B1, float B2, float A0, float A1, float A2)
-	{
-		float q=(float)(1.0/(A0+A1+A2));
-		m_b0=(B0+B1+B2)*q;
-		m_b1=2*(B0-B2)*q;
-		m_b2=(B0-B1+B2)*q;
-		m_a1=2*(A0-A2)*q;
-		m_a2=(A0-A1+A2)*q;
-	}
+  void PreNewFilter()
+  {
+    //m_Oa1=m_a1;
+    //m_Oa2=m_a2;
+    //m_Ob0=m_b0;
+    //m_Ob1=m_b1;
+    //m_Ob2=m_b2;
+  }
+  void PostNewFilter()
+  {
+    //m_x1=m_x1*m_Ob1/m_b1;
+    //m_x2=m_x2*m_Ob2/m_b2;
+    //m_y1=m_y1*m_Oa1/m_a1;
+    //m_y2=m_y2*m_Oa2/m_a2;
+  }
+  
+  float PreWarp(float dCutoff, float dSampleRate)
+  {
+    if (dCutoff>dSampleRate*0.4) dCutoff=(float)(dSampleRate*0.4);
+    //return (float)(/*1.0/*/tan(3.1415926/2.0-3.1415926*dCutoff/dSampleRate));
+    return (float)(tan(3.1415926*dCutoff/dSampleRate));
+  }
+  float PreWarp2(float dCutoff, float dSampleRate)
+  {
+    if (dCutoff>dSampleRate*0.4) dCutoff=(float)(dSampleRate*0.4);
+    //return (float)(/*1.0/*/tan(3.1415926/2.0-3.1415926*dCutoff/dSampleRate));
+    return (float)(tan(3.1415926/2.0-3.1415926*dCutoff/dSampleRate));
+  }
+  void SetBilinear(float B0, float B1, float B2, float A0, float A1, float A2)
+  {
+    float q=(float)(1.0/(A0+A1+A2));
+    m_b0=(B0+B1+B2)*q;
+    m_b1=2*(B0-B2)*q;
+    m_b2=(B0-B1+B2)*q;
+    m_a1=2*(A0-A2)*q;
+    m_a2=(A0-A1+A2)*q;
+  }
   // Robert Bristow-Johnson, robert@audioheads.com
   void rbjLPF(double fc, double Q, double esr, double gain=1.0)
   {
-		PreNewFilter();
+    PreNewFilter();
     float omega=(float)(2*PI*fc/esr);
     float sn=(float)sin(omega);
     float cs=(float)cos(omega);
     float alpha=(float)(sn/(2*Q));
-
+    
     float inv=(float)(1.0/(1.0+alpha));
-
+    
     m_b0 =  (float)(gain*inv*(1 - cs)/2);
     m_b1 =  (float)(gain*inv*(1 - cs));
     m_b2 =  (float)(gain*inv*(1 - cs)/2);
     m_a1 =  (float)(-2*cs*inv);
     m_a2 =  (float)((1 - alpha)*inv);
-		PostNewFilter();
+    PostNewFilter();
   }
   void rbjHPF(double fc, double Q, double esr, double gain=1.0)
   {
@@ -153,7 +143,7 @@ public:
     float sn=(float)sin(omega);
     float cs=(float)cos(omega);
     float alpha=(float)(sn/(2*Q));
-
+    
     float inv=(float)(1.0/(1.0+alpha));
 
     m_b0 =  (float)(gain*inv*(1 + cs)/2);
