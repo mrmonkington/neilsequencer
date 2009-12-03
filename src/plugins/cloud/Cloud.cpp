@@ -15,7 +15,7 @@ Cloud::Cloud() {
 }
 
 Cloud::~Cloud() {
-
+  delete this;
 }
 
 void Cloud::init(zzub::archive* pi) {
