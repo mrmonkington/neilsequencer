@@ -977,6 +977,18 @@ def test_view(classname):
 	elif isinstance(obj, gtk.Widget) and not obj.get_parent():
 		dlg = com.get('aldrin.test.dialog', embed=obj, destroy_on_close=False)
 
+def show_plugin_manual(name):
+    helpfilepaths = [
+	filepath('/usr/share/doc/zzub/plugins/' + name + '/manual.pdf'),
+	filepath('/usr/local/share/doc/zzub/plugins/' + name + '/manual.pdf')
+	]
+    for path in helpfilepaths:
+	print path
+	if os.path.isfile(path):
+	    os.system("evince %s &" % path)
+	    return True
+    return False
+
 class ObjectHandlerGroup:
 	"""
 	allows to block/unblock a bank of handlers
@@ -1287,6 +1299,7 @@ __all__ = [
 'new_theme_image',
 'add_accelerator',
 'camelcase_to_unixstyle',
+'show_plugin_manual',
 ]
 
 if __name__ == '__main__':
