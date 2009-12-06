@@ -4,5 +4,5 @@ localenv = pluginenv.Copy()
 
 files = ["Chebyshev.cpp"]
 
-build_plugin(localenv, "SoMono_Chebyshev", files, helpfiles=['manual.pdf'])
+build_plugin(localenv, "somono_chebyshev", files, helpfiles=['manual.pdf'])
 	     
