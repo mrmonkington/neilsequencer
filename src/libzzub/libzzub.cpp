@@ -1447,7 +1447,7 @@ extern "C"
     int index = -1;
     zzub_plugin_pattern_to_linear_no_connections(plugin, group, 0, column, &index);
 
-    const parameter* para = plugin->_player->back.plugin_get_parameter_info(plugin->id, group, 0, column);
+    const zzub::parameter* para = plugin->_player->back.plugin_get_parameter_info(plugin->id, group, 0, column);
     if (index != -1) {
       if (value != getNoValue(para)) {	// infector crashen when trying to describe novalues (and out-of-range-values)
 			
