@@ -13,7 +13,7 @@ LFNoise::LFNoise() {
   rate = 1;
   counter = 1;
   for (int i = 0; i < 4; i++) {
-    buffer[i] = 0.0;
+    buffer[i] = float(rand()) / RAND_MAX;
   }
 }
 

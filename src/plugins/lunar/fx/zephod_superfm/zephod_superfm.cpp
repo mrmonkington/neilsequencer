@@ -121,9 +121,9 @@ public:
       --psamplesright;
       
       for(int i=0; i<numsamples; i++) { 
-	Mot1D = Mot1dv + ENV.res() * Mod1ea + velocity * mod1vel;
-	Mot2D = Mot2dv + ENV.envvol * Mod2ea + velocity * mod2vel;
-	Mot3D = Mot3dv + ENV.envvol * Mod3ea + velocity * mod3vel; 
+	Mot1D = Mot1dv + ENV.res() * Mod1ea;
+	Mot2D = Mot2dv + ENV.envvol * Mod2ea;
+	Mot3D = Mot3dv + ENV.envvol * Mod3ea;
 
 	switch (route) {
 	case 0:
