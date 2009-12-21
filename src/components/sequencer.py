@@ -1094,7 +1094,7 @@ class SequencerView(gtk.DrawingArea):
 
     def expose(self, widget, *args):
 	self.adjust_scrollbars()
-	self.context = widget.window.cairo_create()
+	self.context = widget.window.new_gc()
 	self.draw(self.context)
 	self.panel.update_list()
 	return False
@@ -1282,12 +1282,10 @@ class SequencerView(gtk.DrawingArea):
 	result = "#%2x%2x%2x" % (r, g, b)
 	return result.replace(' ', '0')
 
-    def draw_markers(self):
+    def draw_markers(self, ctx, colors):
         """
         Draw the vertical lines every few bars.
         """
-        gc = self.window.new_gc()
-        colormap = gc.get_colormap()
         drawable = self.window
         width, height = self.get_client_size()
         x, y = self.seq_left_margin, self.seq_top_margin
@@ -1296,30 +1294,28 @@ class SequencerView(gtk.DrawingArea):
         start = self.startseqtime
         while (x < width):
 	    if start % (4 * self.step) == 0:
-		gc.set_foreground(colormap.alloc_color('#a0a0a0'))
-		drawable.draw_line(gc, x, 0, x, height)
-		gc.set_foreground(colormap.alloc_color('#000000'))
+		ctx.set_foreground(colors['Strong Line'])
+		drawable.draw_line(ctx, x, 0, x, height)
+		ctx.set_foreground(colors['Text'])
 		layout.set_text(str(start))
 		px, py = layout.get_pixel_size()
-		drawable.draw_layout(gc, x + 2, self.seq_track_size / 2 - py / 2, layout)
+		drawable.draw_layout(ctx, x + 2, self.seq_track_size / 2 - py / 2, layout)
             else:
-                gc.set_foreground(colormap.alloc_color('#e0e0e0'))
-                drawable.draw_line(gc, x, self.seq_track_size, x, height)
+                ctx.set_foreground(colors['Weak Line'])
+                drawable.draw_line(ctx, x, self.seq_track_size, x, height)
             x += self.seq_row_size
             start += self.step
-	gc.set_foreground(colormap.alloc_color('#000000'))
-	drawable.draw_line(gc, 0, y, width, y)
-	drawable.draw_line(gc, self.seq_left_margin, 0, self.seq_left_margin, height)
-	gc.set_foreground(colormap.alloc_color('#d0d0d0'))
-	drawable.draw_rectangle(gc, True, 0, 0, self.seq_left_margin, height - 1) 
+	ctx.set_foreground(colors['Border'])
+	drawable.draw_line(ctx, 0, y, width, y)
+	drawable.draw_line(ctx, self.seq_left_margin, 0, self.seq_left_margin, height)
+	ctx.set_foreground(colors['Track Background'])
+	drawable.draw_rectangle(ctx, True, 0, 0, self.seq_left_margin, height - 1) 
 
-    def draw_tracks(self):
+    def draw_tracks(self, ctx, colors):
         """
         Draw tracks and pattern boxes.
         """
         player = com.get('aldrin.core.player')
-        gc = self.window.new_gc()
-        colormap = gc.get_colormap()
         drawable = self.window
         width, height = self.get_client_size()
         x, y = self.seq_left_margin, self.seq_top_margin
@@ -1329,7 +1325,6 @@ class SequencerView(gtk.DrawingArea):
         cfg = config.get_config()
 	sequencer = player.get_current_sequencer()
         tracks = sequencer.get_track_list()
-        gc.set_foreground(colormap.alloc_color('#606060'))
         for track_index in range(self.starttrack, len(tracks)):
 	    track = tracks[track_index]
 	    plugin = track.get_plugin()
@@ -1352,14 +1347,14 @@ class SequencerView(gtk.DrawingArea):
 		    box_size = max(int(((self.seq_row_size * length) / self.step) + 0.5), 2)
 		    x = self.seq_left_margin + ((position - self.startseqtime) * self.seq_row_size) / self.step
 		    pattern_color = self.get_random_color(plugin.get_name() + name)
-		    gc.set_foreground(colormap.alloc_color(pattern_color))
-		    drawable.draw_rectangle(gc, True, x + 2, y + 2, box_size - 4, self.seq_track_size - 4)
-		    gc.set_foreground(colormap.alloc_color('#000000'))
-		    drawable.draw_rectangle(gc, False, x + 2, y + 2, box_size - 4, self.seq_track_size - 4)
+		    ctx.set_foreground(ctx.get_colormap().alloc_color(pattern_color))
+		    drawable.draw_rectangle(ctx, True, x + 2, y + 2, box_size - 4, self.seq_track_size - 4)
+		    ctx.set_foreground(colors['Border'])
+		    drawable.draw_rectangle(ctx, False, x + 2, y + 2, box_size - 4, self.seq_track_size - 4)
 		    layout.set_text(name)
 		    px, py = layout.get_pixel_size()
-		    gc.set_foreground(colormap.alloc_color('#000000'))
-		    drawable.draw_layout(gc, x + 4, y + 4, layout)
+		    ctx.set_foreground(colors['Text'])
+		    drawable.draw_layout(ctx, x + 4, y + 4, layout)
 		if pattern != None:
 		    pattern.destroy()
 	    # Draw the track name boxes.
@@ -1370,66 +1365,81 @@ class SequencerView(gtk.DrawingArea):
 	    elif self.plugin_info[plugin].muted:
 		title = "(%s)" % title
 	    # Draw a box that states the name of the machine on that track.
-	    gc.set_foreground(colormap.alloc_color('#ffffff'))
-	    drawable.draw_rectangle(gc, True, 0, y, self.seq_left_margin, self.seq_track_size)
-	    gc.set_foreground(colormap.alloc_color('#000000'))
-	    drawable.draw_rectangle(gc, False, 0, y, self.seq_left_margin, self.seq_track_size)
-	    gc.set_foreground(colormap.alloc_color('#000000'))
+	    ctx.set_foreground(colors['Track Foreground'])
+	    drawable.draw_rectangle(ctx, True, 0, y, self.seq_left_margin, self.seq_track_size)
+	    ctx.set_foreground(colors['Border'])
+	    drawable.draw_rectangle(ctx, False, 0, y, self.seq_left_margin, self.seq_track_size)
+	    ctx.set_foreground(colors['Border'])
 	    layout.set_text(title)
 	    px, py = layout.get_pixel_size()
 	    # Draw the label with the track name
-	    drawable.draw_layout(gc, self.seq_left_margin - 4 - px, y + self.seq_track_size / 2 - py / 2, layout)
+	    drawable.draw_layout(ctx, self.seq_left_margin - 4 - px, y + self.seq_track_size / 2 - py / 2, layout)
 	    y += self.seq_track_size
 	    # Draw the horizontal lines separating tracks
-	    gc.set_foreground(colormap.alloc_color('#e0e0e0'))
-	    drawable.draw_line(gc, self.seq_left_margin, y, width, y)
+	    ctx.set_foreground(colors['Weak Line'])
+	    drawable.draw_line(ctx, self.seq_left_margin, y, width, y)
 
-    def draw_loop_points(self):
+    def draw_loop_points(self, ctx, colors):
         player = com.get('aldrin.core.player')
         drawable = self.window
-        gc = drawable.new_gc()
-        colormap = gc.get_colormap()
         width, height = self.get_client_size()
-	gc.line_width = 1
+	ctx.line_width = 1
         loop_start, loop_end = player.get_loop()
         window_start, window_end = self.get_bounds()
         if (loop_start >= window_start and loop_start <= window_end):
+	    # The right facing loop delimiter line with arrow.
             x, y = self.track_row_to_pos((0, loop_start))
-            gc.set_foreground(colormap.alloc_color('#000000'))
-            drawable.draw_line(gc, x, 0, x, height)
-            drawable.draw_polygon(gc, filled=True, points=((x, 0), (x + 10, 0), (x, 10)))
+            ctx.set_foreground(colors['Loop Line'])
+            drawable.draw_line(ctx, x, 0, x, height)
+            drawable.draw_polygon(ctx, filled=True, points=((x, 0), (x + 10, 0), (x, 10)))
         if (loop_end >= window_start and loop_end <= window_end):
+	    # The left facing loop delimiter with arrow.
             x, y = self.track_row_to_pos((0, loop_end))
-            gc.set_foreground(colormap.alloc_color('#000000'))
-            drawable.draw_line(gc, x, 0, x, height)
-            drawable.draw_polygon(gc, filled=True, points=((x, 0), (x - 10, 0), (x, 10)))
+            ctx.set_foreground(colors['Loop Line'])
+            drawable.draw_line(ctx, x, 0, x, height)
+            drawable.draw_polygon(ctx, filled=True, points=((x, 0), (x - 10, 0), (x, 10)))
         # Draw song end marker.
-	gc.line_width = 3
+	ctx.line_width = 3
         song_end = player.get_song_end()
         if (song_end > window_start and song_end < window_end):
             x, y = self.track_row_to_pos((0, song_end))
-            gc.set_foreground(colormap.alloc_color('#ff0000'))
-            drawable.draw_line(gc, x, 0, x, height)
+            ctx.set_foreground(colors['End Marker'])
+            drawable.draw_line(ctx, x, 0, x, height)
+	ctx.line_width = 1
+
+    def draw_cursor(self, ctx):
+	pass
 
     def draw(self, ctx):
 	"""
 	Overriding a L{Canvas} method that paints onto an offscreen buffer.
 	Draws the pattern view graphics.
 	"""	
-        gc = self.window.new_gc()
-	colormap = gc.get_colormap()
+	colormap = ctx.get_colormap()
 	drawable = self.window
         width, height = self.get_client_size()
+	cfg = config.get_config()
+	colors = {
+	    'Background' : colormap.alloc_color(cfg.get_color('SE Background')),
+	    'Border' : colormap.alloc_color(cfg.get_color('SE Border')),
+	    'Strong Line' : colormap.alloc_color(cfg.get_color('SE Strong Line')),
+	    'Weak Line' : colormap.alloc_color(cfg.get_color('SE Weak Line')),
+	    'Text' : colormap.alloc_color(cfg.get_color('SE Text')),
+	    'Track Background' : colormap.alloc_color(cfg.get_color('SE Track Background')),
+	    'Track Foreground' : colormap.alloc_color(cfg.get_color('SE Track Foreground')),
+	    'Loop Line' : colormap.alloc_color(cfg.get_color('SE Loop Line')),
+	    'End Marker' : colormap.alloc_color(cfg.get_color('SE End Marker')),
+	    }
 	# Draw the background
-	gc.set_foreground(colormap.alloc_color('#ffffff'))
-	drawable.draw_rectangle(gc, True, 0, 0, width, height)
-        self.draw_markers()
-        self.draw_tracks()
-        self.draw_loop_points()
+	ctx.set_foreground(colors['Background'])
+	drawable.draw_rectangle(ctx, True, 0, 0, width, height)
+        self.draw_markers(ctx, colors)
+        self.draw_tracks(ctx, colors)
+        self.draw_loop_points(ctx, colors)
         self.draw_cursors()
 	# Draw the black border
-        gc.set_foreground(colormap.alloc_color('#000000'))
-        drawable.draw_rectangle(gc, False, 0, 0, width - 1, height - 1)
+        ctx.set_foreground(colors['Border'])
+        drawable.draw_rectangle(ctx, False, 0, 0, width - 1, height - 1)
 
 __all__ = [
 'PatternNotFoundException',
