@@ -696,11 +696,11 @@ def new_image_button(path, tooltip, tooltips_object):
 	image = gtk.Image()
 	image.set_from_pixbuf(gtk.gdk.pixbuf_new_from_file(path))
 	button = gtk.Button()
-	tooltips_object.set_tip(button, tooltip)
+	button.set_tooltip_text(tooltip)
 	button.set_image(image)
 	return button
 	
-def new_stock_image_button(stockid, tooltip=None, tooltips_object=None):
+def new_stock_image_button(stockid, tooltip=None):
 	"""
 	Creates a button with a stock image.
 	"""
@@ -708,10 +708,7 @@ def new_stock_image_button(stockid, tooltip=None, tooltips_object=None):
 	image.set_from_stock(stockid, gtk.ICON_SIZE_BUTTON)
 	button = gtk.Button()
 	button.set_image(image)
-	if tooltips_object:
-		tooltips_object.set_tip(button, tooltip)
-	elif tooltip:
-		button.set_tooltip_text(tooltip)
+	button.set_tooltip_text(tooltip)
 	return button
 
 def new_stock_image_toggle_button(stockid, tooltip=None, tooltips_object=None):

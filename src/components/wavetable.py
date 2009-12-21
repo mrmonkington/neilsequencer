@@ -76,7 +76,6 @@ class WavetablePanel(gtk.VBox):
 	self.working_directory = ''
 	self.files = []
 	gtk.VBox.__init__(self)
-	self.tooltips=gtk.Tooltips()
 	self.instrpanel = gtk.HPaned()
 	self.instrpanel.set_border_width(MARGIN2)
 	self.libpanel =\
@@ -113,13 +112,9 @@ class WavetablePanel(gtk.VBox):
 	#self.libpanel.set_extra_widget(hbox)
 	self.previewdesc = gtk.Label()
 	self.previewdesc.set_alignment(0, 0)
-	btnpreviewplay = new_stock_image_button(gtk.STOCK_MEDIA_PLAY,
-						"Preview Sample",
-						self.tooltips)
+	btnpreviewplay = new_stock_image_button(gtk.STOCK_MEDIA_PLAY, "Preview Sample")
 	self.ohg.connect(btnpreviewplay,'clicked', self.on_play_filelist_wave)
-	btnpreviewstop = new_stock_image_button(gtk.STOCK_MEDIA_STOP,
-						"Stop Preview",
-						self.tooltips)
+	btnpreviewstop = new_stock_image_button(gtk.STOCK_MEDIA_STOP, "Stop Preview")
 	self.ohg.connect(btnpreviewstop,'clicked', self.on_stop_wave)
 	
 	hbox = gtk.HBox(False, MARGIN)
@@ -155,13 +150,13 @@ class WavetablePanel(gtk.VBox):
 	#~ imglist = wx.ImageList(16,16)
 	#~ self.IMG_SAMPLE_WAVE = imglist.Add(wx.Bitmap(filepath("res/wave.png"), wx.BITMAP_TYPE_ANY))
 	#~ self.samplelist.AssignImageList(imglist, wx.IMAGE_LIST_SMALL)
-	self.btnloadsample = new_stock_image_button(gtk.STOCK_OPEN, "Load Instrument", self.tooltips)
-	self.btnstoresample = new_stock_image_button(gtk.STOCK_SAVE_AS, "Save Instrument", self.tooltips)
-	self.btnstop = new_stock_image_button(gtk.STOCK_MEDIA_STOP, "Stop Preview", self.tooltips)
-	self.btnplay = new_stock_image_button(gtk.STOCK_MEDIA_PLAY, "Preview Sample", self.tooltips)
-	self.btnrename = new_stock_image_button(gtk.STOCK_BOLD, "Rename Instrument", self.tooltips)
-	self.btnclear = new_stock_image_button(gtk.STOCK_REMOVE, "Remove Instrument", self.tooltips)
-	self.btnadsr = new_image_toggle_button(imagepath("adsr.png"), "Create ADSR Envelope", self.tooltips)
+	self.btnloadsample = new_stock_image_button(gtk.STOCK_OPEN, "Load Instrument")
+	self.btnstoresample = new_stock_image_button(gtk.STOCK_SAVE_AS, "Save Instrument")
+	self.btnstop = new_stock_image_button(gtk.STOCK_MEDIA_STOP, "Stop Preview")
+	self.btnplay = new_stock_image_button(gtk.STOCK_MEDIA_PLAY, "Preview Sample")
+	self.btnrename = new_stock_image_button(gtk.STOCK_BOLD, "Rename Instrument")
+	self.btnclear = new_stock_image_button(gtk.STOCK_REMOVE, "Remove Instrument")
+	self.btnadsr = new_image_toggle_button(imagepath("adsr.png"), "Create ADSR Envelope")
 	#self.btnfitloop = new_image_button(imagepath("fitloop.png"), "Fit Loop", self.tooltips)
 	#self.btnstrloop = new_image_button(imagepath("fitloop.png"), "Stretch Loop", self.tooltips)
 	self.samplename = gtk.Label("")
