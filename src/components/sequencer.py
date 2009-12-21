@@ -1330,7 +1330,7 @@ class SequencerView(gtk.DrawingArea):
                  if (end >= self.startseqtime) and (position < self.startseqtime + width_in_bars):
                      box_size = max(int(((self.seq_row_size * length) / self.step) + 0.5), 2)
                      x = self.seq_left_margin + ((position - self.startseqtime) * self.seq_row_size) / self.step
-                     gc.set_foreground(colormap.alloc_color('#d0d0d0'))
+                     gc.set_foreground(colormap.alloc_color('#e0e0e0'))
                      drawable.draw_rectangle(gc, True, x + 2, y + 2, box_size - 4, self.seq_track_size - 4)
                      gc.set_foreground(colormap.alloc_color('#000000'))
                      drawable.draw_rectangle(gc, False, x + 2, y + 2, box_size - 4, self.seq_track_size - 4)
@@ -1347,7 +1347,7 @@ class SequencerView(gtk.DrawingArea):
                  title = "[%s]" % title
              elif self.plugin_info[plugin].muted:
                  title = "(%s)" % title
-             gc.set_foreground(colormap.alloc_color('#e0e0e0'))
+             gc.set_foreground(colormap.alloc_color('#d0d0d0'))
              # Draw a box that states the name of the machine on that track.
              drawable.draw_rectangle(gc, True, 0, y, self.seq_left_margin, self.seq_track_size)
              gc.set_foreground(colormap.alloc_color('#000000'))

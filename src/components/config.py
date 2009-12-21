@@ -211,10 +211,6 @@ DEFAULT_THEME = {
         'PT Outer Border' : 0x606060,
         'PT Inner Border' : 0xf0f0f0,
         'PT Background' : 0xe0e0e0,
-    'Main Background' : 0xffffff,
-    'Main Foreground' : 0x000000,
-    'Strong Line' : 0x0a0a0,
-    'Weak Line' : 0xe0e0e0,
 }
 
 class AldrinConfig(object, ConfigParser.ConfigParser):
