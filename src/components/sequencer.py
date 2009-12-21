@@ -1261,6 +1261,27 @@ class SequencerView(gtk.DrawingArea):
         end = start + width_in_bars
         return (start, end)
 
+    class memoize:
+	def __init__(self, function):
+	    self.function = function
+	    self.memoized = {}
+
+	def __call__(self, *args):
+	    try:
+		return self.memoized[args]
+	    except KeyError:
+		self.memoized[args] = self.function(*args)
+		return self.memoized[args]
+
+    @memoize
+    def get_random_color(seed):
+	random.seed(seed)
+	r = int(random.random() * 128) + 128
+	g = int(random.random() * 128) + 128
+	b = int(random.random() * 128) + 128
+	result = "#%2x%2x%2x" % (r, g, b)
+	return result.replace(' ', '0')
+
     def draw_markers(self):
         """
         Draw the vertical lines every few bars.
@@ -1289,7 +1310,7 @@ class SequencerView(gtk.DrawingArea):
 	gc.set_foreground(colormap.alloc_color('#000000'))
 	drawable.draw_line(gc, 0, y, width, y)
 	drawable.draw_line(gc, self.seq_left_margin, 0, self.seq_left_margin, height)
-	gc.set_foreground(colormap.alloc_color('#f0f0f0'))
+	gc.set_foreground(colormap.alloc_color('#d0d0d0'))
 	drawable.draw_rectangle(gc, True, 0, 0, self.seq_left_margin, height - 1) 
 
     def draw_tracks(self):
@@ -1310,57 +1331,58 @@ class SequencerView(gtk.DrawingArea):
         tracks = sequencer.get_track_list()
         gc.set_foreground(colormap.alloc_color('#606060'))
         for track_index in range(self.starttrack, len(tracks)):
-             track = tracks[track_index]
-             plugin = track.get_plugin()
-             plugin_info = self.plugin_info.get(plugin)
-             # Draw the pattern boxes
-             for position, value in track.get_event_list():
-                 pattern = None
-                 if value >= 0x10:
-                     pattern = plugin.get_pattern(value - 0x10)
-                     name, length =  prepstr(pattern.get_name()), pattern.get_row_count()
-                 elif value == 0x00:
-                     name, length = 'x', self.step
-                 elif value == 0x01:
-                     name, length = '<', self.step
-                 else:
-                     name, length = '???', self.step
-                 end = position + length
-                 width_in_bars = (width / self.seq_row_size) * self.step
-                 if (end >= self.startseqtime) and (position < self.startseqtime + width_in_bars):
-                     box_size = max(int(((self.seq_row_size * length) / self.step) + 0.5), 2)
-                     x = self.seq_left_margin + ((position - self.startseqtime) * self.seq_row_size) / self.step
-                     gc.set_foreground(colormap.alloc_color('#e0e0e0'))
-                     drawable.draw_rectangle(gc, True, x + 2, y + 2, box_size - 4, self.seq_track_size - 4)
-                     gc.set_foreground(colormap.alloc_color('#000000'))
-                     drawable.draw_rectangle(gc, False, x + 2, y + 2, box_size - 4, self.seq_track_size - 4)
-                     layout.set_text(name)
-                     px, py = layout.get_pixel_size()
-                     gc.set_foreground(colormap.alloc_color('#000000'))
-                     drawable.draw_layout(gc, x + 4, y + 4, layout)
-                 if pattern != None:
-                     pattern.destroy()
-             # Draw the track name boxes.
-             name = plugin.get_name()
-             title = prepstr(name)
-             if player.solo_plugin and player.solo_plugin != plugin and is_generator(plugin):
-                 title = "[%s]" % title
-             elif self.plugin_info[plugin].muted:
-                 title = "(%s)" % title
-             gc.set_foreground(colormap.alloc_color('#d0d0d0'))
-             # Draw a box that states the name of the machine on that track.
-             drawable.draw_rectangle(gc, True, 0, y, self.seq_left_margin, self.seq_track_size)
-             gc.set_foreground(colormap.alloc_color('#000000'))
-             drawable.draw_rectangle(gc, False, 0, y, self.seq_left_margin, self.seq_track_size)
-             gc.set_foreground(colormap.alloc_color('#000000'))
-             layout.set_text(title)
-             px, py = layout.get_pixel_size()
-             # Draw the label with the track name
-             drawable.draw_layout(gc, self.seq_left_margin - 4 - px, y + self.seq_track_size / 2 - py / 2, layout)
-             y += self.seq_track_size
-             # Draw the horizontal lines separating tracks
-             gc.set_foreground(colormap.alloc_color('#e0e0e0'))
-             drawable.draw_line(gc, self.seq_left_margin, y, width, y)
+	    track = tracks[track_index]
+	    plugin = track.get_plugin()
+	    plugin_info = self.plugin_info.get(plugin)
+	    # Draw the pattern boxes
+	    for position, value in track.get_event_list():
+		pattern = None
+		if value >= 0x10:
+		    pattern = plugin.get_pattern(value - 0x10)
+		    name, length =  prepstr(pattern.get_name()), pattern.get_row_count()
+		elif value == 0x00:
+		    name, length = 'x', self.step
+		elif value == 0x01:
+		    name, length = '<', self.step
+		else:
+		    name, length = '???', self.step
+		end = position + length
+		width_in_bars = (width / self.seq_row_size) * self.step
+		if (end >= self.startseqtime) and (position < self.startseqtime + width_in_bars):
+		    box_size = max(int(((self.seq_row_size * length) / self.step) + 0.5), 2)
+		    x = self.seq_left_margin + ((position - self.startseqtime) * self.seq_row_size) / self.step
+		    pattern_color = self.get_random_color(plugin.get_name() + name)
+		    gc.set_foreground(colormap.alloc_color(pattern_color))
+		    drawable.draw_rectangle(gc, True, x + 2, y + 2, box_size - 4, self.seq_track_size - 4)
+		    gc.set_foreground(colormap.alloc_color('#000000'))
+		    drawable.draw_rectangle(gc, False, x + 2, y + 2, box_size - 4, self.seq_track_size - 4)
+		    layout.set_text(name)
+		    px, py = layout.get_pixel_size()
+		    gc.set_foreground(colormap.alloc_color('#000000'))
+		    drawable.draw_layout(gc, x + 4, y + 4, layout)
+		if pattern != None:
+		    pattern.destroy()
+	    # Draw the track name boxes.
+	    name = plugin.get_name()
+	    title = prepstr(name)
+	    if player.solo_plugin and player.solo_plugin != plugin and is_generator(plugin):
+		title = "[%s]" % title
+	    elif self.plugin_info[plugin].muted:
+		title = "(%s)" % title
+	    # Draw a box that states the name of the machine on that track.
+	    gc.set_foreground(colormap.alloc_color('#ffffff'))
+	    drawable.draw_rectangle(gc, True, 0, y, self.seq_left_margin, self.seq_track_size)
+	    gc.set_foreground(colormap.alloc_color('#000000'))
+	    drawable.draw_rectangle(gc, False, 0, y, self.seq_left_margin, self.seq_track_size)
+	    gc.set_foreground(colormap.alloc_color('#000000'))
+	    layout.set_text(title)
+	    px, py = layout.get_pixel_size()
+	    # Draw the label with the track name
+	    drawable.draw_layout(gc, self.seq_left_margin - 4 - px, y + self.seq_track_size / 2 - py / 2, layout)
+	    y += self.seq_track_size
+	    # Draw the horizontal lines separating tracks
+	    gc.set_foreground(colormap.alloc_color('#e0e0e0'))
+	    drawable.draw_line(gc, self.seq_left_margin, y, width, y)
 
     def draw_loop_points(self):
         player = com.get('aldrin.core.player')
@@ -1398,6 +1420,7 @@ class SequencerView(gtk.DrawingArea):
 	colormap = gc.get_colormap()
 	drawable = self.window
         width, height = self.get_client_size()
+	# Draw the background
 	gc.set_foreground(colormap.alloc_color('#ffffff'))
 	drawable.draw_rectangle(gc, True, 0, 0, width, height)
         self.draw_markers()
