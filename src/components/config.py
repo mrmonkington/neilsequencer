@@ -95,7 +95,7 @@ CONFIG_OPTIONS = dict(
 	),
     Debug = dict(
 	Commands = dict(list=True,func='debug_commands',vtype=str,doc="the current list of debug commands for the python console."),
-	)
+	),
     )
 
 # the key of this dictionary is the language code associated with the keyboard. the 
@@ -210,7 +210,11 @@ DEFAULT_THEME = {
 	'WE Sleep Peaks': 0x8000ff,
         'PT Outer Border' : 0x606060,
         'PT Inner Border' : 0xf0f0f0,
-        'PT Background' : 0xe0e0e0
+        'PT Background' : 0xe0e0e0,
+    'Main Background' : 0xffffff,
+    'Main Foreground' : 0x000000,
+    'Strong Line' : 0x0a0a0,
+    'Weak Line' : 0xe0e0e0,
 }
 
 class AldrinConfig(object, ConfigParser.ConfigParser):

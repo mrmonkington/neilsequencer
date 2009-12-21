@@ -422,6 +422,7 @@ class KeyboardPanel(gtk.VBox):
 	"""
 	config.get_config().set_keymap_language(self.KEYMAPS[self.cblanguage.get_active()][0])
 
+
 def cmp_prefpanel(a,b):
     a_order = (hasattr(a, '__prefpanel__') and a.__prefpanel__.get('label','')) or ''
     b_order = (hasattr(b, '__prefpanel__') and b.__prefpanel__.get('label','')) or ''
@@ -536,13 +537,13 @@ def show_preferences(parent, *args):
 
 __aldrin__ = dict(
 	classes = [
-		CancelException,
-		GeneralPanel,
-		DriverPanel,
-		ControllerPanel,
-		MidiPanel,
-		KeyboardPanel,
-		PreferencesDialog,
+	CancelException,
+	GeneralPanel,
+	DriverPanel,
+	ControllerPanel,
+	MidiPanel,
+	KeyboardPanel,
+	PreferencesDialog,
 	],
 )
 

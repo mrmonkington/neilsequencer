@@ -1286,8 +1286,11 @@ class SequencerView(gtk.DrawingArea):
                 drawable.draw_line(gc, x, self.seq_track_size, x, height)
             x += self.seq_row_size
             start += self.step
-	gc.set_foreground(colormap.alloc_color('#e0e0e0'))
+	gc.set_foreground(colormap.alloc_color('#000000'))
 	drawable.draw_line(gc, 0, y, width, y)
+	drawable.draw_line(gc, self.seq_left_margin, 0, self.seq_left_margin, height)
+	gc.set_foreground(colormap.alloc_color('#f0f0f0'))
+	drawable.draw_rectangle(gc, True, 0, 0, self.seq_left_margin, height - 1) 
 
     def draw_tracks(self):
         """
@@ -1327,7 +1330,7 @@ class SequencerView(gtk.DrawingArea):
                  if (end >= self.startseqtime) and (position < self.startseqtime + width_in_bars):
                      box_size = max(int(((self.seq_row_size * length) / self.step) + 0.5), 2)
                      x = self.seq_left_margin + ((position - self.startseqtime) * self.seq_row_size) / self.step
-                     gc.set_foreground(colormap.alloc_color('#e0e0e0'))
+                     gc.set_foreground(colormap.alloc_color('#d0d0d0'))
                      drawable.draw_rectangle(gc, True, x + 2, y + 2, box_size - 4, self.seq_track_size - 4)
                      gc.set_foreground(colormap.alloc_color('#000000'))
                      drawable.draw_rectangle(gc, False, x + 2, y + 2, box_size - 4, self.seq_track_size - 4)
@@ -1344,12 +1347,12 @@ class SequencerView(gtk.DrawingArea):
                  title = "[%s]" % title
              elif self.plugin_info[plugin].muted:
                  title = "(%s)" % title
-             gc.set_foreground(colormap.alloc_color('#808080'))
+             gc.set_foreground(colormap.alloc_color('#e0e0e0'))
              # Draw a box that states the name of the machine on that track.
              drawable.draw_rectangle(gc, True, 0, y, self.seq_left_margin, self.seq_track_size)
              gc.set_foreground(colormap.alloc_color('#000000'))
              drawable.draw_rectangle(gc, False, 0, y, self.seq_left_margin, self.seq_track_size)
-             gc.set_foreground(colormap.alloc_color('#ffffff'))
+             gc.set_foreground(colormap.alloc_color('#000000'))
              layout.set_text(title)
              px, py = layout.get_pixel_size()
              # Draw the label with the track name
@@ -1401,6 +1404,7 @@ class SequencerView(gtk.DrawingArea):
         self.draw_tracks()
         self.draw_loop_points()
         self.draw_cursors()
+	# Draw the black border
         gc.set_foreground(colormap.alloc_color('#000000'))
         drawable.draw_rectangle(gc, False, 0, 0, width - 1, height - 1)
 
