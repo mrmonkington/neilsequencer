@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
+#include <ctime>
 #include <algorithm>
 
 #include "LFNoise.hpp"
@@ -66,11 +67,11 @@ float LFNoise::interpolate(float phi) {
 }
 
 void LFNoise::process_controller_events() {
+  float phi = float(this->rate - this->counter) / this->rate;
+  int out = int(this->min + interpolate(phi) * param_out->value_max *
+		(this->max - this->min));
   if (!this->counter) {
     float random_value = float(rand()) / RAND_MAX;
-    float phi = float(this->rate - this->counter) / this->rate;
-    this->cval.out = int(interpolate(phi) * param_out->value_max);
-    random_value = this->min + random_value * (this->max - this->min);
     // Shift the random value buffer left
     for (int i = 0; i < 3; i++) {
       this->buffer[i] = this->buffer[i + 1];
@@ -79,10 +80,9 @@ void LFNoise::process_controller_events() {
     this->buffer[3] = random_value;
     this->counter = this->rate;
   } else {
-    float phi = float(this->rate - this->counter) / this->rate;
-    this->cval.out = int(interpolate(phi) * param_out->value_max);
     this->counter--;
   }
+  this->cval.out = out;
 }
 
 bool LFNoise::process_stereo(float **pin, float **pout, int n, int mode) {
