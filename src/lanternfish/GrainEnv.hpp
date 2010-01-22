@@ -17,6 +17,7 @@ namespace lanternfish {
     int attack_length, sustain_length, release_length, counter;
   public:
     GrainEnv();
+    ~GrainEnv();
     void set_attack_length(int samples);
     void set_sustain_length(int samples);
     void set_release_length(int samples);

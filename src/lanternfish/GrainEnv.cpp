@@ -14,6 +14,10 @@ namespace lanternfish {
     this->stage = NONE_STAGE;
   }
 
+  GrainEnv::~GrainEnv() {
+    // Add destructor code here.
+  }
+
   void GrainEnv::set_attack_length(int samples) {
     this->attack_length = samples;
   }

@@ -23,6 +23,7 @@ private:
   lanternfish::GrainEnv *env;
   float interpolate(float x1, float x2, float phi);
 public:
+  std::vector <float> *samples;
   Grain(unsigned int sampling_rate, zzub::host *host);
   ~Grain();
   void set_wave(int wave);

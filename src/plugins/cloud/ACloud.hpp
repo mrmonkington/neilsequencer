@@ -41,6 +41,7 @@ private:
   void calculate_envelope(float *a, float *s, float *r);
   Grain *grains[MAX_GRAINS];
   float dist[DIST_SIZE];
+  std::vector <float> wave;
 public:
   ACloud(unsigned int sampling_rate, zzub::host *host);
   ~ACloud();

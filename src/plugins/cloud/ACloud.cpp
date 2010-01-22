@@ -82,6 +82,7 @@ ACloud::ACloud(unsigned int sampling_rate, zzub::host *host) {
   // Create grains
   for (int i = 0; i < MAX_GRAINS; i++) {
     this->grains[i] = new Grain(sampling_rate, host);
+    this->grains[i]->samples = &this->wave;
   }
 }
 
@@ -89,11 +90,22 @@ ACloud::~ACloud() {
   for (int i = 0; i < MAX_GRAINS; i++) {
     delete this->grains[i];
   }
+  printf("cloud done.\n");
 }
 
-void ACloud::set_wave(int wave) {
+void ACloud::set_wave(int wave_index) {
+  this->wave.clear();
+  const zzub::wave_level *wave_level;
+  wave_level = this->host->get_wave_level(wave_index, 0);
+  if (wave_level) {
+    int channels = this->host->get_wave(wave_index)->flags & 
+      zzub::wave_flag_stereo ? 2 : 1;
+    for (int i = 0; i < wave_level->sample_count; i++) {
+      this->wave.push_back(wave_level->samples[i * channels] / 32768.0);
+    }
+  }
   for (int i = 0; i < MAX_GRAINS; i++) {
-    this->grains[i]->set_wave(wave);
+    this->grains[i]->set_wave(wave_index);
   }
 }
 
