@@ -1407,7 +1407,7 @@ class SequencerView(gtk.DrawingArea):
             drawable.draw_line(ctx, x, 0, x, height)
 	ctx.line_width = 1
 
-    def draw_cursor(self, ctx):
+    def draw_cursor(self, ctx, colors):
 	pass
 
     def draw(self, ctx):
