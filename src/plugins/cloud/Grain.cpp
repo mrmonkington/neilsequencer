@@ -34,12 +34,8 @@ void Grain::trigger(float length, float offset, float amp, float attack,
     this->is_stereo = this->host->get_wave(this->wave)->flags & zzub::wave_flag_stereo;
     this->counter = 0.0;
     this->sample_count = (length / 1000.0) * this->sampling_rate;
-    /*
-    this->offset = (unsigned int)(offset * wave_level->sample_count);
-    */
     this->offset = (unsigned int)(offset * this->samples->size());
     this->rate = rate < 0.0 ? 1.0 + rate / 4.0 : 1.0 + rate;
-    //this->amp = amp / pow(2.0, wave_level->get_bytes_per_sample() * 8) * 2.0;
     this->amp = amp * 0.5;
     int attack_samples = this->sampling_rate * (attack * (length / 1000.0));
     int sustain_samples = this->sampling_rate * (sustain * (length / 1000.0));
@@ -59,22 +55,15 @@ void Grain::process(float *out_l, float *out_r, int n) {
   if (is_free())
     return;
   // First lets check wether the wave file is loaded.
-  //if (this->host->get_wave_level(this->wave, 0)) {
   if (!this->samples->empty()) {
     float *env_buffer = new float[n];
     this->env->process(env_buffer, n);
-    const zzub::wave_level *wave_level;
-    wave_level = this->host->get_wave_level(this->wave, 0);
     for (int i = 0; i < n; i++) {
       int counter_floor = floor(this->counter);
       int counter_ceil = ceil(this->counter);
       float phi;
       phi = this->counter - float(counter_floor);
       float x1, x2;
-      /*
-      x1 = wave_level->samples[(offset + counter_floor) % wave_level->sample_count];
-      x2 = wave_level->samples[(offset + counter_ceil) % wave_level->sample_count];
-      */
       x1 = (*samples)[(offset + counter_floor) % this->samples->size()];
       x2 = (*samples)[(offset + counter_ceil) % this->samples->size()];
       float sample;
