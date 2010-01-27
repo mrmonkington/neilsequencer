@@ -1,3 +1,5 @@
+#include <cmath>
+
 #include "Osc.hpp"
 
 namespace lanternfish {
@@ -19,7 +21,7 @@ namespace lanternfish {
     return (a0 * phi * phi2 + a1 * phi2 + a2 * phi + a3);
   }
 
-  void process(int n) {
+  void Osc::process(int n) {
     float srate = float(this->sampling_rate);
     if (n != this->out.size()) {
       this->out.resize(n);
@@ -28,16 +30,17 @@ namespace lanternfish {
     for (int i = 0; i < n; i++) {
       float f_index = this->phi * tabsize;
       float offset, intpart;
-      offset = modf(f_index, &intpart);
-      int i[4];
-      i[1] = int(intpart);
-      i[0] = i1 == 0 ? tabsize - 1 : i[1] - 1;
-      i[2] = (i[1] + 1) % tabsize;
-      i[3] = (i[2] + 1) % tabsize;
-      this->out[i] = interpolate(this->table[i[0]],
-				 this->table[i[1]],
-				 this->table[i[2]],
-				 this->table[i[3]],
+      intpart = floor(f_index);
+      offset = f_index - intpart;
+      int i0, i1, i2, i3;
+      i1 = int(intpart);
+      i0 = i1 == 0 ? tabsize - 1 : i1 - 1;
+      i2 = (i1 + 1) % tabsize;
+      i3 = (i2 + 1) % tabsize;
+      this->out[i] = interpolate((*table)[i0],
+				 (*table)[i1],
+				 (*table)[i2],
+				 (*table)[i3],
 				 offset);
     }
   }

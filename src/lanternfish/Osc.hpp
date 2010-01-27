@@ -1,6 +1,8 @@
 #ifndef LANTERNFISH_OSC_HPP
 #define LANTERNFISH_OSC_HPP
 
+#include <vector>
+
 namespace lanternfish {
   class Osc {
   private:
