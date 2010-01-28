@@ -1,6 +1,8 @@
 #ifndef LANTERNFISH_ADSR_HPP
 #define LANTERNFISH_ADSR_HPP
 
+#include <vector>
+
 namespace lanternfish {
   class Adsr {
   public:
@@ -27,7 +29,8 @@ namespace lanternfish {
     void set_power(float power);
     void note_on();
     void note_off();
-    void process(float *output, int n);
+    std::vector <float> out;
+    void process(int n);
   };
 }
 

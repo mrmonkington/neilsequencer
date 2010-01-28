@@ -49,7 +49,10 @@ namespace lanternfish {
     this->current_stage = RELEASE_STAGE;
   }
   
-  void Adsr::process(float *output, int n) {
+  void Adsr::process(int n) {
+    if (this->out.size() != n) {
+      this->out.resize(n);
+    }
     float return_value;
     if (this->current_stage != NONE_STAGE) {
       for (int i = 0; i < n; i++) {
@@ -72,7 +75,7 @@ namespace lanternfish {
 	  }
 	  break;
 	case SUSTAIN_STAGE:
-	  output[i] = this->sustain_level;
+	  this->out[i] = this->sustain_level;
 	  break;
 	case RELEASE_STAGE:
 	  return_value =
@@ -85,11 +88,11 @@ namespace lanternfish {
 	  }
 	  break;
 	}
-	output[i] = return_value;
+	this->out[i] = return_value;
       }
     } else {
       for (int i = 0; i < n; i++) {
-	output[i] = 0.0;
+	this->out[i] = 0.0;
       }
     }
   }

@@ -101,8 +101,8 @@ struct CloudInfo : zzub::info {
   CloudInfo() {
     this->flags = 
       zzub::plugin_flag_has_audio_output;
-    this->min_tracks = 1;
-    this->max_tracks = 1;
+    this->min_tracks = 0;
+    this->max_tracks = 0;
     this->name = "SoMono Cloud";
     this->short_name = "Cloud";
     this->author = "Vytautas Jančauskas";
