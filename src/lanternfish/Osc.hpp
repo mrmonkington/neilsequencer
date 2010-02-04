@@ -15,7 +15,7 @@ namespace lanternfish {
     std::vector <float> out;
     std::vector <float> *table;
     std::vector <float> *freq;
-    void process(int n);
+    void process(int n, float *out);
   };
 }
 
