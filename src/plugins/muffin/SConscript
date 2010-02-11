@@ -3,6 +3,7 @@ Import('pluginenv', 'build_plugin')
 localenv = pluginenv.Clone()
 localenv.Append(CPPPATH=["${LANTERNFISH_SRC_PATH}"])
 localenv.Append(LIBS=['lanternfish'])
+localenv.Append(CPPFLAGS=['-O3'])
 
 files = ["Muffin.cpp", "Voice.cpp"]
 

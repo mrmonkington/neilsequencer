@@ -8,14 +8,15 @@ namespace lanternfish {
   private:
     float interpolate(float x0, float x1, float x2, float x3, float phi);
     float phi;
+    int buff_size;
   public:
     Osc();
     ~Osc();
     int sampling_rate;
-    std::vector <float> out;
+    float *out;
     std::vector <float> *table;
-    std::vector <float> *freq;
-    void process(int n, float *out);
+    float *freq;
+    void process(int n);
   };
 }
 

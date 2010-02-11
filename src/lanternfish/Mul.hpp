@@ -5,10 +5,14 @@
 
 namespace lanternfish {
   class Mul {
+  private:
+    int buff_size;
   public:
-    std::vector <float> *in1;
-    std::vector <float> *in2;
-    std::vector <float> out;
+    Mul();
+    ~Mul();
+    float *in1;
+    float *in2;
+    float *out;
     void process(int n);
   };
 }

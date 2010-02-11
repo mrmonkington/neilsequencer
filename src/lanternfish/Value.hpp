@@ -8,11 +8,12 @@ namespace lanternfish {
   private:
     float val, dval;
     int counter;
+    int buff_size;
   public:
     Value();
     ~Value();
     void set_value(float val, int inertia);
-    std::vector <float> out;
+    float *out;
     void process(int n);
   };
 }

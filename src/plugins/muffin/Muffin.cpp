@@ -71,7 +71,7 @@ void Muffin::process_events() {
     float fvalue = 10.0 + (gval.release / float(paramRelease->value_max)) * 990.0;
     int ivalue = _master_info->samples_per_second * (fvalue / 1000.0);
     for (int i = 0; i < 16; i++) {
-      voices[i].set_decay(ivalue);
+      voices[i].set_release(ivalue);
     }
   }
   if (gval.mode != paramMode->value_none) {
@@ -110,23 +110,20 @@ void Muffin::process_events() {
   }
   for (int i = 0; i < active_voices; i++) {
     if (tval[i].note != zzub::note_value_none) {
-      if (tval[i].note != zzub::note_value_off) {
+      if (tval[i].note == zzub::note_value_off) {
+	voices[i].note_off();
+      } else {
 	int note = tval[i].note - 5;
 	voices[i].note_on(note);
-      } else {
-	voices[i].note_off();
       }
     }
   }
 }
 
 bool Muffin::process_stereo(float **pin, float **pout, int n, int mode) {
-  /*
   for (int i = 0; i < active_voices; i++) {
     voices[i].process(pout[0], pout[1], n);
   }
-  */
-  voices[0].process(pout[0], pout[1], n);
 }
 
 const char *Muffin::describe_value(int param, int value) {
@@ -157,7 +154,7 @@ const char *Muffin::describe_value(int param, int value) {
     // Release
   case 4:
     sprintf(str, "%.2fms", 10.0 + 
-	    (value / float(paramRelease->value_max)) * 990.0);
+	    (value / float(paramRelease->value_max)) * 3990.0);
     break;
     // Mode
   case 5:

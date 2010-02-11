@@ -18,7 +18,7 @@ namespace lanternfish {
     float attack_delta, decay_delta, release_delta;
     float sustain_level, power, value;
     EnvelopeStage current_stage;
-  protected:
+    int buff_size;
   public:
     Adsr();
     ~Adsr();
@@ -29,7 +29,7 @@ namespace lanternfish {
     void set_power(float power);
     void note_on();
     void note_off();
-    std::vector <float> out;
+    float *out;
     void process(int n);
   };
 }

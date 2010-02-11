@@ -10,10 +10,12 @@ namespace lanternfish {
     set_release_time(1024);
     set_power(1.0);
     this->current_stage = NONE_STAGE;
+    this->out = new float[256];
+    this->buff_size = 256;
   }
   
   Adsr::~Adsr() {
-    
+    delete[] this->out;
   }
   
   void Adsr::set_attack_time(int time) {
@@ -45,13 +47,15 @@ namespace lanternfish {
   }
   
   void Adsr::note_off() {
-    this->value = sustain_level;
+    this->value = 0.0;
     this->current_stage = RELEASE_STAGE;
   }
   
   void Adsr::process(int n) {
-    if (this->out.size() != n) {
-      this->out.resize(n);
+    if (this->buff_size < n) {
+      delete[] this->out;
+      this->out = new float[n];
+      this->buff_size = n;
     }
     float return_value;
     if (this->current_stage != NONE_STAGE) {
@@ -75,7 +79,7 @@ namespace lanternfish {
 	  }
 	  break;
 	case SUSTAIN_STAGE:
-	  this->out[i] = this->sustain_level;
+	  return_value = this->sustain_level;
 	  break;
 	case RELEASE_STAGE:
 	  return_value =

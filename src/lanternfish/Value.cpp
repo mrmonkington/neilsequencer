@@ -5,6 +5,8 @@ namespace lanternfish {
     this->val = 0.0;
     this->dval = 0.0;
     this->counter = 0;
+    this->out = new float[256];
+    this->buff_size = 256;
   }
 
   Value::~Value() {
@@ -17,8 +19,10 @@ namespace lanternfish {
   }
 
   void Value::process(int n) {
-    if (this->out.size() != n) {
-      this->out.resize(n);
+    if (this->buff_size < n) {
+      delete[] this->out;
+      this->out = new float[n];
+      this->buff_size = n;
     }
     for (int i = 0; i < n; i++) {
       if (this->counter == 0) {

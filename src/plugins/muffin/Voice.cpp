@@ -1,34 +1,28 @@
+#include <cstdio>
 #include <cstdlib>
 #include <cmath>
 
 #include "Voice.hpp"
 
 Voice::Voice() {
-  scale.set_min(0.0);
-  scale.set_max(1.0);
-  osc.freq = &freq.out;
+  osc.freq = freq.out;
   osc.table = &table;
-  scale.in = &env.out;
-  mul1.in1 = &cutoff.out;
-  mul1.in2 = &scale.out;
-  filter.in = &osc.out;
-  filter.cutoff = &mul1.out;
-  mul2.in1 = &filter.out_low;
-  mul2.in2 = &env.out;
+  filter.in = osc.out;
   samples = 0;
-  glide = 0;
+  glide = 1;
   table.resize(64);
   phi = 0.0;
+  env_mod_min = 1.0;
+  mode = 0;
 }
 
 void Voice::note_on(int note) {
-  if (samples) {
+  if (samples && (samples->size() != 0)) {
     float f = 440.0 * pow(2, (note - 69) / 12.0);
     freq.set_value(f, this->glide);
     int offset = rand() % samples->size();
     for (int i = 0; i < table.size(); i++) {
-      //table[i] = (*samples)[(offset + i) % samples->size()];
-      table[i] = sin(2.0 * M_PI * (i / float(table.size())));
+      table[i] = (*samples)[(offset + i) % samples->size()];
     }
     env.note_on();
   }
@@ -68,29 +62,16 @@ void Voice::set_resonance(float resonance) {
 }
 
 void Voice::set_env_amount(float env_amount) {
-  scale.set_min(1.0 - env_amount);
+  this->env_mod_min = 1.0 - env_amount;
 }
 
 void Voice::set_tabsize(int tabsize) {
-  //table.clear();
-  //table.resize(tabsize);
+  table.clear();
+  table.resize(tabsize);
 }
 
 void Voice::set_filter_mode(int mode) {
-  switch (mode) {
-  case 0:
-    mul2.in1 = &filter.out_low;
-    break;
-  case 1:
-    mul2.in1 = &filter.out_high;
-    break;
-  case 2:
-    mul2.in1 = &filter.out_band;
-    break;
-  case 3:
-    mul2.in1 = &filter.out_notch;
-    break;
-  }
+  this->mode = mode;
 }
 
 void Voice::set_volume(float vol) {
@@ -99,24 +80,35 @@ void Voice::set_volume(float vol) {
 
 void Voice::process(float *out_l, float *out_r, int n) {
   freq.process(n);
-  //cutoff.process(n);
-  osc.process(n, out_l);
-  //env.process(n);
-  //scale.process(n);
-  //mul1.process(n);
-  //filter.process(n);
-  //mul2.process(n);
+  cutoff.process(n);
+  osc.process(n);
+  env.process(n);
+  float *fcutoff = new float[n];
+  filter.cutoff = fcutoff;
   for (int i = 0; i < n; i++) {
-    //out_l[i] = osc.out[i] * this->vol;
-    //out_r[i] = osc.out[i] * this->vol;
-    /*
-    float dphi = 440.0 / 44100.0;
-    float sample = sin(2.0 * M_PI * phi);
-    out_l[i] = sample;
-    out_r[i] = sample;
-    phi += dphi;
-    while (phi > 1.0)
-      phi = phi - 1.0;
-    */
+    fcutoff[i] = cutoff.out[i] * 
+      (env_mod_min + (env.out[i] * (1.0 - env_mod_min)));
   }
+  filter.process(n);
+  float *filter_out;
+  switch (mode) {
+  case 0:
+    filter_out = filter.out_low;
+    break;
+  case 1:
+    filter_out = filter.out_high;
+    break;
+  case 2:
+    filter_out = filter.out_band;
+    break;
+  case 3:
+    filter_out = filter.out_notch;
+    break;
+  }
+  for (int i = 0; i < n; i++) {
+    sample = filter_out[i] * env.out[i];
+    out_l[i] += sample * this->vol;
+    out_r[i] += sample * this->vol;
+  }
+  delete[] fcutoff;
 }

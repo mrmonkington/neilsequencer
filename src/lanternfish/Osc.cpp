@@ -6,11 +6,12 @@
 namespace lanternfish {
   Osc::Osc() {
     phi = 0.0;
-    this->out.resize(256);
+    this->out = new float[256];
+    this->buff_size = 256;
   }
 
   Osc::~Osc() {
-
+    delete[] this->out;
   }
 
   float Osc::interpolate(float x0, float x1, float x2, float x3, float phi) {
@@ -23,10 +24,12 @@ namespace lanternfish {
     return (a0 * phi * phi2 + a1 * phi2 + a2 * phi + a3);
   }
 
-  void Osc::process(int n, float *out) {
+  void Osc::process(int n) {
     float srate = float(this->sampling_rate);
-    if (this->out.size() < n) {
-      this->out.resize(n);
+    if (this->buff_size < n) {
+      delete[] this->out;
+      this->out = new float[n];
+      this->buff_size = n;
     }
     int tabsize = this->table->size();
     for (int i = 0; i < n; i++) {
@@ -44,10 +47,9 @@ namespace lanternfish {
 			   (*table)[i2],
 			   (*table)[i3],
 			   offset);
-      //this->out[i] = (*table)[int(phi * tabsize)];
-      //out[i] = sin(2.0 * M_PI * this->phi);
-      float dphi = (*this->freq)[i] / srate;
-      //float dphi = 440.0 / 44100.0;
+      //printf("%.2f\n", this->freq[i]);
+      float dphi = this->freq[i] / srate;
+      //float dphi = 440.0 / srate;
       this->phi += dphi;
       while (this->phi > 1.0)
 	this->phi = this->phi - 1.0;

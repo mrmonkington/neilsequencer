@@ -5,14 +5,22 @@
 namespace lanternfish {
   Svf::Svf() {
     reset();
+    this->out_low = new float[256];
+    this->out_high = new float[256];
+    this->out_band = new float[256];
+    this->out_notch = new float[256];
+    this->buff_size = 256;
   }
   
   Svf::~Svf() {
-    
+    delete[] this->out_low;
+    delete[] this->out_high;
+    delete[] this->out_band;
+    delete[] this->out_notch;
   }
   
   void Svf::reset() {
-    bypass = true;
+    bypass = false;
     sps = 44100.0;
     low = high = band = notch = 0.0;
     q = 0.0;
@@ -31,20 +39,25 @@ namespace lanternfish {
   }
   
   void Svf::process(int n) {
-    if (this->out_low.size() != n) {
-      this->out_low.resize(n);
-      this->out_high.resize(n);
-      this->out_band.resize(n);
-      this->out_notch.resize(n);
+    if (this->buff_size < n) {
+      delete[] this->out_low;
+      delete[] this->out_high;
+      delete[] this->out_band;
+      delete[] this->out_notch;
+      this->out_low = new float[n];
+      this->out_high = new float[n];
+      this->out_band = new float[n];
+      this->out_notch = new float[n];
+      this->buff_size = n;
     }
     if (!this->bypass) {
       float scale, f;
       scale = sqrt(q);
       for (int i = 0; i < n; i++) {
-	f = (*this->cutoff)[i] / this->sps * 2.0;
+	f = this->cutoff[i] / this->sps * 2.0;
 	for (int j = 0; j < 2; j++) {
 	  low = low + f * band;
-	  high = scale * (*this->in)[i] - low - q * band;
+	  high = scale * this->in[i] - low - q * band;
 	  band = f * high + band;
 	  notch = high + low;
 	}
@@ -55,10 +68,10 @@ namespace lanternfish {
       }
     } else {
       for (int i = 0; i < n; i++) {
-	this->out_low[i] = (*this->in)[i];
-	this->out_high[i] = (*this->in)[i];
-	this->out_band[i] = (*this->in)[i];
-	this->out_notch[i] = (*this->in)[i];
+	this->out_low[i] = this->in[i];
+	this->out_high[i] = this->in[i];
+	this->out_band[i] = this->in[i];
+	this->out_notch[i] = this->in[i];
       }
     }
   }

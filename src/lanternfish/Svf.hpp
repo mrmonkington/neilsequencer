@@ -10,6 +10,7 @@ namespace lanternfish {
     float sps;
     float q;
     bool bypass;
+    int buff_size;
   public:
     Svf();
     ~Svf();
@@ -17,12 +18,12 @@ namespace lanternfish {
     void set_bypass(bool on);
     void set_sampling_rate(int rate);
     void set_resonance(float reso);
-    std::vector <float> out_low;
-    std::vector <float> out_high;
-    std::vector <float> out_band;
-    std::vector <float> out_notch;
-    std::vector <float> *cutoff;
-    std::vector <float> *in;
+    float *out_low;
+    float *out_high;
+    float *out_band;
+    float *out_notch;
+    float *cutoff;
+    float *in;
     void process(int n);
   };
 }

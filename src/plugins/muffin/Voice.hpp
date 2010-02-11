@@ -24,6 +24,9 @@ private:
   std::vector <float> table;
   float vol;
   float phi;
+  float env_mod_min;
+  int mode;
+  float sample;
 public:
   Voice();
   ~Voice();
