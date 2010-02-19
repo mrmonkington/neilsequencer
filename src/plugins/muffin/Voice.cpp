@@ -9,22 +9,26 @@ Voice::Voice() {
   osc.table = &table;
   filter.in = osc.out;
   samples = 0;
-  glide = 1;
+  glide = 256;
   table.resize(64);
   phi = 0.0;
   env_mod_min = 1.0;
   mode = 0;
 }
 
-void Voice::note_on(int note) {
-  if (samples && (samples->size() != 0)) {
+void Voice::note_on(int note, bool glide) {
+  if (samples) {
     float f = 440.0 * pow(2, (note - 69) / 12.0);
-    freq.set_value(f, this->glide);
-    int offset = rand() % samples->size();
-    for (int i = 0; i < table.size(); i++) {
-      table[i] = (*samples)[(offset + i) % samples->size()];
+    if (glide) {
+      freq.set_value(f, this->glide);
+    } else {
+      int offset = rand() % samples->size();
+      freq.set_value(f, 4);
+      for (int i = 0; i < table.size(); i++) {
+	table[i] = (*samples)[(offset + i) % samples->size()];
+      }
+      env.note_on();
     }
-    env.note_on();
   }
 }
 
@@ -74,6 +78,10 @@ void Voice::set_filter_mode(int mode) {
   this->mode = mode;
 }
 
+void Voice::set_glide(int glide) {
+  this->glide = glide;
+}
+
 void Voice::set_volume(float vol) {
   this->vol = vol;
 }
@@ -105,6 +113,7 @@ void Voice::process(float *out_l, float *out_r, int n) {
     filter_out = filter.out_notch;
     break;
   }
+  float sample;
   for (int i = 0; i < n; i++) {
     sample = filter_out[i] * env.out[i];
     out_l[i] += sample * this->vol;

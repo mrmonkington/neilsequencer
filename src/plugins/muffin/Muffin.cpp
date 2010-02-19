@@ -49,14 +49,14 @@ void Muffin::process_events() {
     }
   }
   if (gval.attack != paramAttack->value_none) {
-    float fvalue = 10.0 + (gval.attack / float(paramAttack->value_max)) * 990.0;
+    float fvalue = 10.0 + (gval.attack / float(paramAttack->value_max)) * 3990.0;
     int ivalue = _master_info->samples_per_second * (fvalue / 1000.0);
     for (int i = 0; i < 16; i++) {
       voices[i].set_attack(ivalue);
     }
   }
   if (gval.decay != paramDecay->value_none) {
-    float fvalue = 10.0 + (gval.decay / float(paramDecay->value_max)) * 990.0;
+    float fvalue = 10.0 + (gval.decay / float(paramDecay->value_max)) * 3990.0;
     int ivalue = _master_info->samples_per_second * (fvalue / 1000.0);
     for (int i = 0; i < 16; i++) {
       voices[i].set_decay(ivalue);
@@ -68,7 +68,7 @@ void Muffin::process_events() {
     }
   }
   if (gval.release != paramRelease->value_none) {
-    float fvalue = 10.0 + (gval.release / float(paramRelease->value_max)) * 990.0;
+    float fvalue = 10.0 + (gval.release / float(paramRelease->value_max)) * 3990.0;
     int ivalue = _master_info->samples_per_second * (fvalue / 1000.0);
     for (int i = 0; i < 16; i++) {
       voices[i].set_release(ivalue);
@@ -101,9 +101,15 @@ void Muffin::process_events() {
       voices[i].set_tabsize(gval.tabsize);
     }
   }
+  if (gval.glide != paramGlideTime->value_none) {
+    for (int i = 0; i < 16; i++) {
+      voices[i].set_glide((gval.glide / float(paramGlideTime->value_max)) * 
+			  _master_info->samples_per_second);
+    }
+  }
   if (gval.volume != paramVolume->value_none) {
     for (int i = 0; i < 16; i++) {
-      float db = 24.0 * (gval.volume / float(paramVolume->value_none)) - 18.0;
+      float db = 32.0 * (gval.volume / float(paramVolume->value_max)) - 18.0;
       float scale = pow(10.0, db / 10.0);
       voices[i].set_volume(scale);
     }
@@ -113,14 +119,16 @@ void Muffin::process_events() {
       if (tval[i].note == zzub::note_value_off) {
 	voices[i].note_off();
       } else {
+	bool glide = tval[i].glide != zzub::switch_value_none ? true : false;
 	int note = tval[i].note - 5;
-	voices[i].note_on(note);
+	voices[i].note_on(note, glide);
       }
     }
   }
 }
 
 bool Muffin::process_stereo(float **pin, float **pout, int n, int mode) {
+  printf("%d\n", active_voices);
   for (int i = 0; i < active_voices; i++) {
     voices[i].process(pout[0], pout[1], n);
   }
@@ -140,12 +148,12 @@ const char *Muffin::describe_value(int param, int value) {
     // Attack
   case 1:
     sprintf(str, "%.2fms", 10.0 + 
-	    (value / float(paramAttack->value_max)) * 990.0);
+	    (value / float(paramAttack->value_max)) * 3990.0);
     break;
     // Decay
   case 2:
     sprintf(str, "%.2fms", 10.0 + 
-	    (value / float(paramDecay->value_max)) * 990.0);
+	    (value / float(paramDecay->value_max)) * 3990.0);
     break;
     // Sustain
   case 3:
@@ -191,7 +199,10 @@ const char *Muffin::describe_value(int param, int value) {
     break;
     // Volume
   case 10:
-    sprintf(str, "%.2fdB", 24.0 * value / float(paramVolume->value_max) - 18.0);
+    sprintf(str, "%.2fms", (value * 1000) / float(paramGlideTime->value_max));
+    break;
+  case 11:
+    sprintf(str, "%.2fdB", 32.0 * value / float(paramVolume->value_max) - 18.0);
     break;
   default:
     sprintf(str, "%d", value);

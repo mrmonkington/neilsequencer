@@ -27,7 +27,7 @@ import os
 #######################################
 
 if pluginenv["LUNAR"] == True:
-	lunarstdenv = env.Copy()
+	lunarstdenv = env.Clone()
 	lunarstdfiles = [
 		'lunarstd.cpp',
 	]

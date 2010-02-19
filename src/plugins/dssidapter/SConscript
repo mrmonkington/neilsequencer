@@ -20,7 +20,7 @@
 
 Import('pluginenv', 'build_plugin')
 
-dssi_pluginenv = pluginenv.Copy()
+dssi_pluginenv = pluginenv.Clone()
 dssi_pluginenv.Append(LIBS=[
 		'lo', 'asound'
 	])

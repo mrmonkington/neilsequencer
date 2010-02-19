@@ -55,7 +55,7 @@ def audioengine_converter(value):
 	Exit(1)
     return value
 
-opts = Options( 'options.conf', ARGUMENTS )
+opts = Variables( 'options.conf', ARGUMENTS )
 opts.Add("PREFIX", 'Set the install "prefix" ( /path/to/PREFIX )', "/usr/local")
 opts.Add("LIBDIR", 'Set the install "libdir", will be concatenated to PREFIX', "/lib") 
 opts.Add("DESTDIR", 'Set the root directory to install into ( /path/to/DESTDIR )', "")
@@ -87,8 +87,8 @@ opts.Add("RUBBERBAND", "Support timestretching with librubberband", True, None, 
 opts.Add("DSSI", "Support DSSI plugins", False, None, bool_converter)
 opts.Add("JOBS", "Number of threads to compile with", '2') 
 opts.Add("PYZZUB", "Support pyzzub", True, None, bool_converter)
-opts.Add(EnumOption('MSVS_VERSION', 'MS Visual C++ version', None,
-    allowed_values=('7.1', '8.0', '9.0')))
+opts.Add(EnumVariable('MSVS_VERSION', 'MS Visual C++ version', None,
+                      allowed_values=('7.1', '8.0', '9.0')))
 
 env = Environment(ENV = os.environ, options = opts)
 

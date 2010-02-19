@@ -1,6 +1,6 @@
 Import('pluginenv', 'build_plugin')
 
-localenv = pluginenv.Copy()
+localenv = pluginenv.Clone()
 
 files = ["LFNoise.cpp"]
 

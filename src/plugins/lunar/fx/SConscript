@@ -111,7 +111,7 @@ def new_modenv():
 			#~ '-c'
 		]
 	elif env['LUNARTARGET'] == 'gcc':
-		modenv = env.Copy()
+		modenv = env.Clone()
 		modenv['CPPPATH'] = [
 			env.Dir('${LUNAR_INCLUDE}'),
 		]
@@ -157,7 +157,7 @@ for name in os.listdir(basepath):
 								if slang in ("c", "c++"):
 									if s.getAttribute("fxdef"):
 										defpath = os.path.join(fullpath,str(s.getAttribute("fxdef")))
-										defenv = env.Copy()
+										defenv = env.Clone()
 										defenv['PLUGIN'] = plugin
 										defenv.LunarFXHeader(target=defpath, source=manifestpath)
 									modenv.Object(target=mpath, source=spath)
@@ -173,7 +173,7 @@ for name in os.listdir(basepath):
 								if slang in ("c", "c++"):
 									if s.getAttribute("fxdef"):
 										defpath = os.path.join(fullpath,str(s.getAttribute("fxdef")))
-										defenv = env.Copy()
+										defenv = env.Clone()
 										defenv['PLUGIN'] = plugin
 										defenv.LunarFXHeader(target=defpath, source=manifestpath)
 									sources.append(spath)

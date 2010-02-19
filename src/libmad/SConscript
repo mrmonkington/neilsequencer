@@ -7,7 +7,7 @@ import glob
 #
 #######################################
 
-localenv = env.Copy()
+localenv = env.Clone()
 
 files = [
 	'bit.c',

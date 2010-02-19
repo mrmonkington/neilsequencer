@@ -212,7 +212,7 @@ static PmError alsa_write_byte(PmInternal *midi, unsigned char byte,
             when = (when - now) + midi->latency;
             if (when < 0) when = 0;
             VERBOSE printf("timestamp %d now %d latency %d, ", 
-                           (int) timestamp, (int) now, midi->latency);
+                           (int)timestamp, (int)now, (int)midi->latency);
             VERBOSE printf("scheduling event after %d\n", when);
             /* message is sent in relative ticks, where 1 tick = 1 ms */
             snd_seq_ev_schedule_tick(&ev, queue, 1, when);

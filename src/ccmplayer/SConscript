@@ -32,7 +32,7 @@ files = [
 	'main.c',
 ]
 
-localenv = env.Copy()
+localenv = env.Clone()
 localenv.Append(LIBS=[
 	'zzub', localenv['LIB_COMPAT']
 ])

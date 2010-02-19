@@ -19,6 +19,7 @@ struct Gvals {
   unsigned int resonance : 16;
   unsigned int env_amount : 16;
   unsigned int tabsize : 16;
+  unsigned int glide : 16;
   unsigned int volume : 16;
 } __attribute__((__packed__));
 
@@ -39,6 +40,7 @@ const zzub::parameter *paramCutoff = 0;
 const zzub::parameter *paramResonance = 0;
 const zzub::parameter *paramEnvAmount = 0;
 const zzub::parameter *paramTabsize = 0;
+const zzub::parameter *paramGlideTime = 0;
 const zzub::parameter *paramVolume = 0;
 
 const char *zzub_get_signature() { 
@@ -213,15 +215,24 @@ struct MuffinInfo : zzub::info {
       .set_value_none(0xFFFF)
       .set_flags(zzub::parameter_flag_state)
       .set_value_default(0x0040);
+   paramGlideTime = &add_global_parameter()
+     .set_word()
+     .set_name("Glide")
+     .set_description("Glide time")
+     .set_value_min(0x0001)
+     .set_value_max(0xFFFE)
+     .set_value_none(0xFFFF)
+     .set_flags(zzub::parameter_flag_state)
+     .set_value_default(0x2000);
    paramVolume = &add_global_parameter()
-      .set_word()
-      .set_name("Volume")
-      .set_description("Volume")
-      .set_value_min(0x0000)
-      .set_value_max(0xFFFE)
-      .set_value_none(0xFFFF)
-      .set_flags(zzub::parameter_flag_state)
-      .set_value_default(0x7FFF);
+     .set_word()
+     .set_name("Volume")
+     .set_description("Volume")
+     .set_value_min(0x0000)
+     .set_value_max(0xFFFE)
+     .set_value_none(0xFFFF)
+     .set_flags(zzub::parameter_flag_state)
+     .set_value_default(0x7FFF);
   }
   virtual zzub::plugin* create_plugin() const { return new Muffin(); }
   virtual bool store_info(zzub::archive *data) const { return false; }
