@@ -61,15 +61,17 @@ float LFNoise::interpolate(float phi) {
     a3 = buffer[1];
     out = a0 * phi * phi2 + a1 * phi2 + a2 * phi + a3;
   }
-  out = std::min(out, 1.0f);
-  out = std::max(out, 0.0f);
   return out;
 }
 
 void LFNoise::process_controller_events() {
   float phi = float(this->rate - this->counter) / this->rate;
-  int out = int(this->min + interpolate(phi) * param_out->value_max *
-		(this->max - this->min));
+  int pmin = param_out->value_min;
+  int pmax = param_out->value_max;
+  float fout = this->min + interpolate(phi) * (this->max - this->min);
+  fout = std::min(fout, 1.0f);
+  fout = std::max(fout, 0.0f);
+  int out = pmin + fout * (pmax - pmin);
   if (!this->counter) {
     float random_value = float(rand()) / RAND_MAX;
     // Shift the random value buffer left
