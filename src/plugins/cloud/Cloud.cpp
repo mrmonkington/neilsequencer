@@ -21,7 +21,7 @@ Cloud::~Cloud() {
 void Cloud::init(zzub::archive* pi) {
   this->srate = _master_info->samples_per_second;
   this->phase = 0.0;
-  this->the_cloud = new ACloud(_master_info->samples_per_second, _host);
+  this->the_cloud = new ACloud(_master_info->samples_per_second, _host);  
 }
 
 void Cloud::destroy() {

@@ -7,5 +7,5 @@ localenv.Append(CPPFLAGS=['-O3'])
 
 files = ["Cloud.cpp", "ACloud.cpp", "Grain.cpp"]
 
-build_plugin(localenv, "somono_cloud", files, helpfiles=["doc/index.html"])
+build_plugin(localenv, "somono_cloud", files, helpfiles=["manual.pdf"])
 	     
