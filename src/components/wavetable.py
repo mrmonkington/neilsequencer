@@ -519,12 +519,13 @@ class WavetablePanel(gtk.VBox):
 	player = com.get('aldrin.core.player')
 	for i in self.get_sample_selection():
 	    w = player.get_wave(i)
-	    if w.get_envelope_count():				
-		env = w.get_envelope(0)
-		enabled = self.chkenable.get_active()
-		env.enable(enabled)
-		if enabled:
-		    w.set_flags(w.get_flags() | zzub.zzub_wave_flag_envelope)
+	    if w.get_envelope_count() == 0:
+                w.set_envelope_count(1)
+            env = w.get_envelope(0)
+            enabled = self.chkenable.get_active()
+            env.enable(enabled)
+            if enabled:
+                w.set_flags(w.get_flags() | zzub.zzub_wave_flag_envelope)
 	player.history_commit("envelope option")
 	self.update_sampleprops()
 
