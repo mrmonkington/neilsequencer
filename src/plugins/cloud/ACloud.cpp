@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include "ACloud.hpp"
+#include "Utils.hpp"
 
 bool ACloud::random_event(float probability) {
   return ((float)rand() / (float)RAND_MAX) <= probability;
@@ -90,7 +91,6 @@ ACloud::~ACloud() {
   for (int i = 0; i < MAX_GRAINS; i++) {
     delete this->grains[i];
   }
-  printf("cloud done.\n");
 }
 
 void ACloud::set_wave(int wave_index) {
@@ -100,12 +100,12 @@ void ACloud::set_wave(int wave_index) {
   if (wave_level) {
     int channels = this->host->get_wave(wave_index)->flags & 
       zzub::wave_flag_stereo ? 2 : 1;
+    float *samples = 
+      lanternfish::load_to_float_mono(wave_level->samples, 2, channels, wave_level->sample_count);
     for (int i = 0; i < wave_level->sample_count; i++) {
-      this->wave.push_back(wave_level->samples[i * channels] / 32768.0);
+      this->wave.push_back(samples[i]);
     }
-  }
-  for (int i = 0; i < MAX_GRAINS; i++) {
-    this->grains[i]->set_wave(wave_index);
+    delete[] samples;
   }
 }
 

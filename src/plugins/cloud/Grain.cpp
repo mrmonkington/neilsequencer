@@ -6,7 +6,6 @@
 Grain::Grain(unsigned int sampling_rate, zzub::host *host) {
   this->status = STATUS_FREE;
   this->sampling_rate = sampling_rate;
-  this->wave = 0;
   this->host = host;
   this->env = new lanternfish::GrainEnv();
 }
@@ -21,17 +20,13 @@ inline float Grain::interpolate(float x1, float x2, float phi) {
 }
 
 void Grain::set_wave(int wave) {
-  this->wave = wave;
+
 }
 
 void Grain::trigger(float length, float offset, float amp, float attack,
 		    float sustain, float release, float rate, float pan) {
-  if (this->host->get_wave_level(this->wave, 0) &&
-      this->status == STATUS_FREE) {
-    const zzub::wave_level *wave_level;
-    wave_level = this->host->get_wave_level(this->wave, 0);
+  if (this->status == STATUS_FREE) {
     this->status = STATUS_PLAYING;
-    this->is_stereo = this->host->get_wave(this->wave)->flags & zzub::wave_flag_stereo;
     this->counter = 0.0;
     this->sample_count = (length / 1000.0) * this->sampling_rate;
     this->offset = (unsigned int)(offset * this->samples->size());

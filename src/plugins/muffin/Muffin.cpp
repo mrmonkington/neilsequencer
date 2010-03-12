@@ -128,7 +128,6 @@ void Muffin::process_events() {
 }
 
 bool Muffin::process_stereo(float **pin, float **pout, int n, int mode) {
-  printf("%d\n", active_voices);
   for (int i = 0; i < active_voices; i++) {
     voices[i].process(pout[0], pout[1], n);
   }

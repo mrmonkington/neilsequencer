@@ -6,7 +6,7 @@ localenv = env.Clone()
 localenv.Append(CPPFLAGS=['-O3'])
 
 files = ["Svf.cpp", "Adsr.cpp", "Lfo.cpp", "GrainEnv.cpp", "Osc.cpp",
-	 "Value.cpp", "Add.cpp", "Mul.cpp", "Scale.cpp"]
+	 "Value.cpp", "Utils.cpp"]
 
 lanternfish_static = localenv.StaticLibrary('${LIB_BUILD_PATH}/lanternfish', files)
 
