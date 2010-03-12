@@ -31,9 +31,13 @@ if __name__ == '__main__':
 import gtk
 import pango
 import gobject
-from aldrin.utils import PLUGIN_FLAGS_MASK, ROOT_PLUGIN_FLAGS, GENERATOR_PLUGIN_FLAGS, EFFECT_PLUGIN_FLAGS, CONTROLLER_PLUGIN_FLAGS
-from aldrin.utils import prepstr, from_hsb, to_hsb, get_item_count, get_clipboard_text, set_clipboard_text, add_scrollbars
-from aldrin.utils import is_effect, is_generator, is_controller, is_root, get_new_pattern_name, filepath
+from aldrin.utils import PLUGIN_FLAGS_MASK, ROOT_PLUGIN_FLAGS
+from aldrin.utils import GENERATOR_PLUGIN_FLAGS, EFFECT_PLUGIN_FLAGS
+from aldrin.utils import CONTROLLER_PLUGIN_FLAGS
+from aldrin.utils import prepstr, from_hsb, to_hsb, get_item_count
+from aldrin.utils import get_clipboard_text, set_clipboard_text, add_scrollbars
+from aldrin.utils import is_effect, is_generator, is_controller
+from aldrin.utils import is_root, get_new_pattern_name, filepath
 from aldrin.utils import Menu
 import random
 import config
@@ -424,9 +428,9 @@ class SequencerView(gtk.DrawingArea):
 	"""
 	player = com.get('aldrin.core.player')
 	seq = player.get_current_sequencer()
-	track = max(min(track, seq.get_sequence_track_count()-1),0)
-	row = max(row,0)
-	if (track,row) == (self.track,self.row):
+	track = max(min(track, seq.get_sequence_track_count() - 1),0)
+	row = max(row, 0)
+	if (track, row) == (self.track, self.row):
 	    return
 	if self.track != track:
 	    self.track = track
@@ -686,7 +690,7 @@ class SequencerView(gtk.DrawingArea):
 	player.history_commit("delete track")
 	# moves cursor if beyond existing tracks
 	if self.track > track_count-1:			
-	    self.set_cursor_pos(track_count-1, self.row)
+	    self.set_cursor_pos(track_count - 1, self.row)
 	self.adjust_scrollbars()
 	self.redraw()
 
@@ -884,20 +888,22 @@ class SequencerView(gtk.DrawingArea):
 	elif k == 'Down' or k == 'KP_Down':
 	    self.set_cursor_pos(self.track+1, self.row)
 	    self.adjust_scrollbars()
-	elif (kv < 256) and (chr(kv).lower() in SEQKEYMAP):
+	elif ((kv < 256) and (chr(kv).lower() in SEQKEYMAP) and
+              self.selection_start == None and self.selection_end == None):
 	    idx = SEQKEYMAP[chr(kv).lower()]
 	    t = self.get_track()
 	    if t:
 		mp = t.get_plugin()
 		if (idx < 0x10) or ((idx-0x10) < mp.get_pattern_count()):
 		    if (idx >= 0x10):
-			newrow = self.row + mp.get_pattern(idx-0x10).get_row_count()
+			newrow = self.row + mp.get_pattern(idx - 0x10).get_row_count()
 			newrow = newrow - (newrow % self.step)
 		    else:
 			newrow = self.row + self.step
 		    self.insert_at_cursor(idx)
 		    player.history_commit("add pattern reference")
 		    self.set_cursor_pos(self.track, newrow)
+                    print self.track, self.row
 		    self.adjust_scrollbars()
 	elif k == 'space': # space
 	    spl = self.panel.seqpatternlist
@@ -1044,17 +1050,17 @@ class SequencerView(gtk.DrawingArea):
 	player = com.get('aldrin.core.player')
 	track_count = player.get_sequence_track_count()
 	x, y = int(event.x), int(event.y)
-	track, row = self.pos_to_track_row((x,y))		
+	track, row = self.pos_to_track_row((x, y))		
 	if event.button == 1:
 	    if track < track_count:
 		if track == -1:
-		    player.set_position(max(row,0))
+		    player.set_position(max(row, 0))
 		elif row == -1:
 		    mp = player.get_sequence(track).get_plugin()
 		    player.toggle_mute(mp)
 		    self.redraw()
 		else:
-		    self.set_cursor_pos(track,row)
+		    self.set_cursor_pos(track, row)
 		    self.deselect()
 		    self.dragging = True
 		    self.grab_add()
@@ -1073,19 +1079,24 @@ class SequencerView(gtk.DrawingArea):
 	@param event: Mouse event
 	@type event: wx.MouseEvent
 	"""	
-	x,y,state = self.window.get_pointer()
-	x, y = int(x),int(y)
+	x, y, state = self.window.get_pointer()
+	x, y = int(x), int(y)
 	if self.dragging:
-	    select_track, select_row = self.pos_to_track_row((x,y))
+	    select_track, select_row = self.pos_to_track_row((x, y))
 	    # start selection if nothing selected			
 	    if self.selection_start == None:				
 		self.selection_start = (self.track, self.row)
 	    if self.selection_start:
 		player = com.get('aldrin.core.player')
 		seq = player.get_current_sequencer()
-		select_track = min(seq.get_sequence_track_count()-1, max(select_track, 0))
+		select_track = min(seq.get_sequence_track_count() - 1, max(select_track, 0))
 		select_row = max(select_row, 0)
 		self.selection_end = (select_track, select_row)
+                # If the user didn't drag enough to select more than one cell, we reset.
+                if (self.selection_start[0] == self.selection_end[0] and
+                    self.selection_start[1] == self.selection_end[1]):
+                    self.selection_start = None
+                    self.selection_end = None
 		self.redraw()
 
     def get_client_size(self):
@@ -1220,15 +1231,14 @@ class SequencerView(gtk.DrawingArea):
 	track_count = sequencer.get_sequence_track_count()
 	if track_count > 0:
 	    if self.row >= self.startseqtime and self.track >= self.starttrack:
-                if self.selection_start != None and self.selection_end != None:
+                if (self.selection_start != None and 
+                    self.selection_end != None):
                     start_track, start_row = (min(self.selection_start[0], self.selection_end[0]),
 					      min(self.selection_start[1], self.selection_end[1]))
                     end_track, end_row = (max(self.selection_start[0], self.selection_end[0]),
 					  max(self.selection_start[1], self.selection_end[1]))
                     x1, y1 = self.track_row_to_pos((start_track, start_row))
 		    x2, y2 = self.track_row_to_pos((end_track + 1, end_row + self.step))
-		    print start_track, start_row
-		    print end_track, end_row
 		    cursor_x, cursor_y = x1, y1
 		    cursor_width, cursor_height = x2 - x1, y2 - y1
                 else:
@@ -1241,7 +1251,7 @@ class SequencerView(gtk.DrawingArea):
             gc.set_background(white)
             gc.set_function(gtk.gdk.XOR)
 	    x = self.seq_left_margin + int((float(self.playpos - self.startseqtime) / self.step) * self.seq_row_size)
-	    drawable.draw_rectangle(gc,True, x, 1, 2, height - 2)
+	    drawable.draw_rectangle(gc, True, x, 1, 2, height - 2)
 
     def update(self):
 	"""
