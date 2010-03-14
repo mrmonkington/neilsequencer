@@ -1080,7 +1080,7 @@ class SequencerView(gtk.DrawingArea):
 	@type event: wx.MouseEvent
 	"""	
 	x, y, state = self.window.get_pointer()
-	x, y = int(x), int(y)
+        x = max(int(x), self.seq_left_margin)
 	if self.dragging:
 	    select_track, select_row = self.pos_to_track_row((x, y))
 	    # start selection if nothing selected			
@@ -1089,10 +1089,12 @@ class SequencerView(gtk.DrawingArea):
 	    if self.selection_start:
 		player = com.get('aldrin.core.player')
 		seq = player.get_current_sequencer()
-		select_track = min(seq.get_sequence_track_count() - 1, max(select_track, 0))
+		select_track = min(seq.get_sequence_track_count() - 1, 
+                                   max(select_track, 0))
 		select_row = max(select_row, 0)
 		self.selection_end = (select_track, select_row)
-                # If the user didn't drag enough to select more than one cell, we reset.
+                # If the user didn't drag enough to select more than one cell, 
+                # we reset.
                 if (self.selection_start[0] == self.selection_end[0] and
                     self.selection_start[1] == self.selection_end[1]):
                     self.selection_start = None
@@ -1178,9 +1180,9 @@ class SequencerView(gtk.DrawingArea):
 	return True
 
     def adjust_scrollbars(self):
-	w,h = self.get_client_size()
-	vw,vh = self.get_virtual_size()
-	pw,ph= int((w-self.seq_left_margin)/float(self.seq_row_size)+0.5), int((h-self.seq_top_margin)/float(self.seq_track_size)+0.5)
+	w, h = self.get_client_size()
+	vw, vh = self.get_virtual_size()
+	pw, ph= int((w-self.seq_left_margin)/float(self.seq_row_size)+0.5), int((h-self.seq_top_margin)/float(self.seq_track_size)+0.5)
 	hrange = vw - pw
 	vrange = vh - ph
 	if hrange <= 0:
@@ -1285,10 +1287,11 @@ class SequencerView(gtk.DrawingArea):
 
     @memoize
     def get_random_color(seed):
+        """Generates a random color in html format."""
 	random.seed(seed)
-	r = int(random.random() * 128) + 128
-	g = int(random.random() * 128) + 128
-	b = int(random.random() * 128) + 128
+	r = int(random.random() * 155) + 100
+	g = int(random.random() * 155) + 100
+	b = int(random.random() * 155) + 100
 	result = "#%2x%2x%2x" % (r, g, b)
 	return result.replace(' ', '0')
 
