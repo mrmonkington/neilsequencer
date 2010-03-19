@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <zzub>
   <plugin
-     uri="@mda/effect/mdaThruZero;1"
+     uri="SoMono/Effects/mdaThruZero"
      name="Lunar mdaThruZero"
      shortname="mdaThruZero"
      type="effect"

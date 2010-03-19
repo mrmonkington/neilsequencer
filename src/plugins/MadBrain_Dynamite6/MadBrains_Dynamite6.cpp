@@ -976,7 +976,7 @@ struct dynamite6_plugin_info : zzub::info {
     this->name = "MadBrain's Dynamite6";
     this->short_name = "Dynamite6";
     this->author = "MadBrain (ported by jmmcd <jamesmichaelmcdermott@gmail.com>)";
-    this->uri = "jamesmichaelmcdermott@gmail.com/generator/dynamite6;1";
+    this->uri = "jmmcd/Generators/Dynamite6";
 
     paraCoarseTune = &add_global_parameter()
       .set_byte()

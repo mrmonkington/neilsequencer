@@ -83,7 +83,7 @@ struct LFNoiseInfo : zzub::info {
     this->name = "SoMono LFNoise";
     this->short_name = "LFNoise";
     this->author = "Vytautas Jancauskas";
-    this->uri = "@libneil/somono/controller/lfnoise;1";
+    this->uri = "SoMono/Controllers/LFNoise";
     param_out = &add_controller_parameter()
       .set_word()
       .set_name("Out")

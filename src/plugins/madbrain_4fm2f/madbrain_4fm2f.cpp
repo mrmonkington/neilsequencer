@@ -1524,7 +1524,7 @@ struct C4fm2f_plugin_info : zzub::info {
     this->name = "Madbrain's 4fm2f";
     this->short_name = "4fm2f";
     this->author = "Madbrain (ported by jmmcd <jamesmichaelmcdermott@gmail.com>)";
-    this->uri = "jamesmichaelmcdermott@gmail.com/generator/4fm2f;1";
+    this->uri = "jmmcd/Generators/4fm2f";
 
     paraRouting = &add_global_parameter()
       .set_byte()

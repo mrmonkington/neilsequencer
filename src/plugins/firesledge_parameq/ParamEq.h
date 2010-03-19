@@ -79,7 +79,7 @@ public:
 			this->name = "FireSledge ParamEQ";
 			this->short_name = "ParamEQ";
 			this->author = "FireSledge";
-			this->uri = "@FireSledge.org/ParamEQ;1";
+			this->uri = "Other/Effects/ParamEQ";
 			
 			_param_type = &add_track_parameter()
 				.set_byte()

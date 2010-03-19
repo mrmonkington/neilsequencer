@@ -238,7 +238,7 @@ public:
 			this->name = "FSM Infector";
 			this->short_name = "Infector";
 			this->author = "Krzysztof Foltman";
-			this->uri = "@krzysztof_foltman/generator/infector;1";
+			this->uri = "Other/Generators/Infector";
 			
 			// 45 variables
 			paraWaveformA = &add_global_parameter()

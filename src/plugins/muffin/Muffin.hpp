@@ -107,7 +107,7 @@ struct MuffinInfo : zzub::info {
     this->name = "SoMono Muffin";
     this->short_name = "Muffin";
     this->author = "Vytautas Jancauskas";
-    this->uri = "@libneil/somono/generator/muffin;1";
+    this->uri = "SoMono/Generators/Muffin";
     paramNote = &add_track_parameter()
       .set_note()
       .set_name("Note")

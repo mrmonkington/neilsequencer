@@ -373,7 +373,7 @@ struct btdsys_ringmod_plugin_info : zzub::info {
     this->name = "BTDSys RingMod";
     this->short_name = "RingMod";
     this->author = "BTDSys (ported by jmmcd <jamesmichaelmcdermott@gmail.com>)";
-    this->uri = "jamesmichaelmcdermott@gmail.com/effect/btdsys_ringmod;1";
+    this->uri = "jmmcd/Effects/BTDSys-RingMod";
     this->commands = "About";
 
     paraDryOut = &add_global_parameter()

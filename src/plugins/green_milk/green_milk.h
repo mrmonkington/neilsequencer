@@ -505,7 +505,7 @@ public:
 			this->name = "kibibu Green Milk";
 			this->short_name = "Green Milk";
 			this->author = "Cameron Foale (kibibu)";
-			this->uri = "@cameron_foale/generator/green_milk;1";
+			this->uri = "Other/Generators/Green-Milk";
 
 			// 45 variables
 			paraWaveform1 = &add_global_parameter()

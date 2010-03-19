@@ -325,7 +325,7 @@ struct jmmcd_crossfade_plugin_info : zzub::info {
 		this->name = "jmmcd Crossfade";
 		this->short_name = "Crossfade";
 		this->author = "jmmcd <jamesmichaelmcdermott@gmail.com>";
-		this->uri = "jamesmichaelmcdermott@gmail.com/effect/jmmcd_crossfade;1";
+		this->uri = "jmmcd/Effects/jmmcd-Crossfade";
 		this->commands = "About";
     
 		paraCrossfade = &add_global_parameter()

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <zzub>
   <plugin
-     uri="@neil/lunar/effect/bitcrusher;1"
+     uri="SoMono/Effects/Bitcrusher"
      name="Lunar Bitcrusher"
      shortname="Bitcrusher"
      type="effect"

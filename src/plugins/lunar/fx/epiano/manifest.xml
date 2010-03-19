@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <zzub>
   <plugin
-     uri="@mda-vst/epiano;1"
+     uri="Other/Generators/mdaEPiano"
      name="mda ePiano"
      shortname="ePiano"
      type="generator"

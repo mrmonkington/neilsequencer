@@ -529,7 +529,7 @@ struct dtmf1_plugin_info : zzub::info {
     this->name = "CyanPhase DTMF-1";
     this->short_name = "DTMF-1";
     this->author = "CyanPhase (ported by jmmcd <jamesmichaelmcdermott@gmail.com>)";
-    this->uri = "jamesmichaelmcdermott@gmail.com/generator/DTMF_1;1";
+    this->uri = "jmmcd/Generators/DTMF-1";
     
     paraNumber = &add_global_parameter()
       .set_byte()

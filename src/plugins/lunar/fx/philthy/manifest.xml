@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <zzub>
 	<plugin
-		uri="@trac.zeitherrschaft.org/aldrin/lunar/effect/philthy;1"
+		uri="paniq/Effects/Philthy"
 		name="FSM Philthy"
 		shortname="Philthy"
 		type="effect"

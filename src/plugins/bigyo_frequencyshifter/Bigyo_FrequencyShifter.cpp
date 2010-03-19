@@ -63,7 +63,7 @@ machine_info::machine_info() {
 	this->name = "Bigyo FrequencyShifter";
 	this->short_name = "FreqShift";
 	this->author = "Marcin Dabrowski";
-	this->uri = "@bigyo/frequency+shifter;1";
+	this->uri = "Other/Effects/Frequency-Shifter";
 
 	paraRate = &add_global_parameter()
 		.set_word()

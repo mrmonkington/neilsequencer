@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <zzub>
   <plugin
-     uri="@bblunars/effect/mdaSubSynth"
+     uri="SoMono/Effects/mdaSubSynth"
      name="Lunar mdaSubSynth"
      shortname="mdaSubSynth"
      type="effect"

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <zzub>
   <plugin
-     uri="@bblunars/effect/mdaDegrade"
+     uri="SoMono/Effects/mdaDegrade"
      name="Lunar mdaDegrade"
      shortname="mdaDegrade"
      type="effect"

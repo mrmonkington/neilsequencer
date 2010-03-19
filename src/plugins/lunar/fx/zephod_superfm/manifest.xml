@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <zzub>
   <plugin
-     uri="@trac.zeitherrschaft.org/aldrin/lunar/generator/superfm;1"
+     uri="paniq/Generators/SuperFM"
      name="Zephod SuperFM"
      shortname="SuperFM"
      type="generator"

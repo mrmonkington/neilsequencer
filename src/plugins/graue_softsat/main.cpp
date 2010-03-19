@@ -162,7 +162,7 @@ struct graue_softsat_plugin_info : zzub::info {
     this->name = "Graue SoftSat";
     this->short_name = "SoftSat";
     this->author = "Graue <graue@oceanbase.org>";
-    this->uri = "graue@oceanbase.org/effect/softsat;1";
+    this->uri = "Other/Effects/SoftSat";
     paraThreshold = &add_global_parameter()
       .set_word()
       .set_name("Threshold")

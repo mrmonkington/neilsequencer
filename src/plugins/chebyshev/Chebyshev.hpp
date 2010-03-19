@@ -74,7 +74,7 @@ struct ChebyshevInfo : zzub::info {
     this->name = "SoMono Chebyshev";
     this->short_name = "Chebyshev";
     this->author = "Vytautas Jancauskas";
-    this->uri = "@libneil/somono/effect/chebyshev;1";
+    this->uri = "SoMono/Effects/Chebyshev";
     param_pregain = &add_global_parameter()
       .set_byte()
       .set_name("Pre-Gain")
