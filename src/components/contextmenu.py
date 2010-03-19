@@ -70,7 +70,10 @@ class ContextMenu(Menu):
 	return Menu.popup(self, parent, event)
 
 class PluginContextMenu(gtk.Menu):
-    __aldrin__=dict(id='aldrin.core.popupmenu',singleton=True,categories=['contextmenu.handler'])
+    __aldrin__ = dict(id='aldrin.core.popupmenu', 
+                      singleton=True, 
+                      categories=['contextmenu.handler'])
+
     def populate_contextmenu(self, menu):
 	if menu.context_id == 'plugin':
 	    self.populate_pluginmenu(menu)
@@ -80,6 +83,38 @@ class PluginContextMenu(gtk.Menu):
 	    self.populate_routermenu(menu)
 
     def populate_routermenu(self, menu):
+        def add_uri(tree, uri, loader):
+            if len(uri) == 1:
+                tree[uri[0]] = loader
+                return tree
+            elif uri[0] not in tree:
+                tree[uri[0]] = add_uri({}, uri[1:], loader)
+                return tree
+            else:
+                tree[uri[0]] = add_uri(tree[uri[0]], uri[1:], loader)
+                return tree
+        def populate_from_tree(menu, tree):
+            for key, value in tree.iteritems():
+                if type(value) is not type({}):
+                    menu.add_item(key, create_plugin, value)
+                else:
+                    item, submenu = menu.add_submenu(key)
+                    populate_from_tree(submenu, value)
+        def create_plugin(item, loader):
+            player = com.get('aldrin.core.player')
+            player.plugin_origin = menu.context
+            player.create_plugin(loader)
+        player = com.get('aldrin.core.player')
+        plugins = {}
+        tree = {}
+        item, add_machine_menu = menu.add_submenu("Add machine")
+	for pluginloader in player.get_pluginloader_list():
+	    plugins[pluginloader.get_uri()] = pluginloader
+        for uri, loader in plugins.iteritems():
+            uri_list = uri.split('/')
+            tree = add_uri(tree, uri_list, loader)
+        populate_from_tree(add_machine_menu, tree)
+        menu.add_separator()
 	menu.add_item("Unmute All", self.on_popup_unmute_all)
 
     def populate_connectionmenu(self, menu):

@@ -1206,12 +1206,13 @@ class SequencerView(gtk.DrawingArea):
 	player = com.get('aldrin.core.player')
 	seq = player.get_current_sequencer()
 	h = seq.get_sequence_track_count()
-	w = (max(self.row,player.get_song_end(), player.get_loop_end())/self.step)+3
-	return w,h
+	w = (max(self.row, player.get_song_end(), player.get_loop_end() / 
+                 self.step) + 3)
+	return w, h
 
     def draw_cursors(self):
 	"""
-	Overriding a L{Canvas} method that is called after painting is completed. 
+	Overriding a Canvas method that is called after painting is completed. 
 	Draws an XOR play cursor over the pattern view.
 
 	@param dc: wx device context.
@@ -1235,19 +1236,27 @@ class SequencerView(gtk.DrawingArea):
 	    if self.row >= self.startseqtime and self.track >= self.starttrack:
                 if (self.selection_start != None and 
                     self.selection_end != None):
-                    start_track, start_row = (min(self.selection_start[0], self.selection_end[0]),
-					      min(self.selection_start[1], self.selection_end[1]))
-                    end_track, end_row = (max(self.selection_start[0], self.selection_end[0]),
-					  max(self.selection_start[1], self.selection_end[1]))
+                    start_track = min(self.selection_start[0], 
+                                      self.selection_end[0])
+                    start_row = min(self.selection_start[1], 
+                                    self.selection_end[1])
+                    end_track = max(self.selection_start[0], 
+                                    self.selection_end[0])
+                    end_row = max(self.selection_start[1], 
+                                  self.selection_end[1])
                     x1, y1 = self.track_row_to_pos((start_track, start_row))
-		    x2, y2 = self.track_row_to_pos((end_track + 1, end_row + self.step))
+		    x2, y2 = self.track_row_to_pos((end_track + 1, 
+                                                    end_row + self.step))
 		    cursor_x, cursor_y = x1, y1
 		    cursor_width, cursor_height = x2 - x1, y2 - y1
                 else:
-                    cursor_x, cursor_y = self.track_row_to_pos((self.track, self.row))
+                    cursor_x, cursor_y = self.track_row_to_pos((self.track, 
+                                                                self.row))
                     cursor_width = self.seq_row_size
                     cursor_height = self.seq_track_size
-                drawable.draw_rectangle(gc, False, cursor_x + 2, cursor_y + 2, cursor_width - 3, cursor_height - 3)
+                drawable.draw_rectangle(gc, False, cursor_x + 2, 
+                                        cursor_y + 2, cursor_width - 3, 
+                                        cursor_height - 3)
 	if self.playpos >= self.startseqtime:
             gc.set_foreground(white)
             gc.set_background(white)
@@ -1312,7 +1321,8 @@ class SequencerView(gtk.DrawingArea):
 		ctx.set_foreground(colors['Text'])
 		layout.set_text(str(start))
 		px, py = layout.get_pixel_size()
-		drawable.draw_layout(ctx, x + 2, self.seq_track_size / 2 - py / 2, layout)
+		drawable.draw_layout(ctx, x + 2, 
+                                     self.seq_track_size / 2 - py / 2, layout)
             else:
                 ctx.set_foreground(colors['Weak Line'])
                 drawable.draw_line(ctx, x, self.seq_track_size, x, height)
@@ -1320,9 +1330,11 @@ class SequencerView(gtk.DrawingArea):
             start += self.step
 	ctx.set_foreground(colors['Border'])
 	drawable.draw_line(ctx, 0, y, width, y)
-	drawable.draw_line(ctx, self.seq_left_margin, 0, self.seq_left_margin, height)
+	drawable.draw_line(ctx, self.seq_left_margin, 0, 
+                           self.seq_left_margin, height)
 	ctx.set_foreground(colors['Track Background'])
-	drawable.draw_rectangle(ctx, True, 0, 0, self.seq_left_margin, height - 1) 
+	drawable.draw_rectangle(ctx, True, 0, 0, 
+                                self.seq_left_margin, height - 1) 
 
     def draw_tracks(self, ctx, colors):
         """
@@ -1347,7 +1359,8 @@ class SequencerView(gtk.DrawingArea):
 		pattern = None
 		if value >= 0x10:
 		    pattern = plugin.get_pattern(value - 0x10)
-		    name, length =  prepstr(pattern.get_name()), pattern.get_row_count()
+                    name = prepstr(pattern.get_name())
+                    length = pattern.get_row_count()
 		elif value == 0x00:
 		    name, length = 'x', self.step
 		elif value == 0x01:
@@ -1356,14 +1369,23 @@ class SequencerView(gtk.DrawingArea):
 		    name, length = '???', self.step
 		end = position + length
 		width_in_bars = (width / self.seq_row_size) * self.step
-		if (end >= self.startseqtime) and (position < self.startseqtime + width_in_bars):
-		    box_size = max(int(((self.seq_row_size * length) / self.step) + 0.5), 2)
-		    x = self.seq_left_margin + ((position - self.startseqtime) * self.seq_row_size) / self.step
-		    pattern_color = self.get_random_color(plugin.get_name() + name)
+		if ((end >= self.startseqtime) and 
+                    (position < self.startseqtime + width_in_bars)):
+		    box_size = max(int(((self.seq_row_size * length) / 
+                                        self.step) + 0.5), 4)
+		    x = (self.seq_left_margin + 
+                         ((position - self.startseqtime) * self.seq_row_size) / 
+                         self.step)
+		    pattern_color = self.get_random_color(plugin.get_name() + 
+                                                          name)
 		    ctx.set_foreground(ctx.get_colormap().alloc_color(pattern_color))
-		    drawable.draw_rectangle(ctx, True, x + 2, y + 2, box_size - 4, self.seq_track_size - 4)
+		    drawable.draw_rectangle(ctx, True, x + 2, y + 2, 
+                                            box_size - 4, 
+                                            self.seq_track_size - 4)
 		    ctx.set_foreground(colors['Border'])
-		    drawable.draw_rectangle(ctx, False, x + 2, y + 2, box_size - 4, self.seq_track_size - 4)
+		    drawable.draw_rectangle(ctx, False, x + 2, y + 2, 
+                                            box_size - 4, 
+                                            self.seq_track_size - 4)
 		    layout.set_text(name)
 		    px, py = layout.get_pixel_size()
 		    ctx.set_foreground(colors['Text'])
@@ -1373,20 +1395,25 @@ class SequencerView(gtk.DrawingArea):
 	    # Draw the track name boxes.
 	    name = plugin.get_name()
 	    title = prepstr(name)
-	    if player.solo_plugin and player.solo_plugin != plugin and is_generator(plugin):
+	    if (player.solo_plugin and 
+                player.solo_plugin != plugin and 
+                is_generator(plugin)):
 		title = "[%s]" % title
 	    elif self.plugin_info[plugin].muted:
 		title = "(%s)" % title
 	    # Draw a box that states the name of the machine on that track.
 	    ctx.set_foreground(colors['Track Foreground'])
-	    drawable.draw_rectangle(ctx, True, 0, y, self.seq_left_margin, self.seq_track_size)
+	    drawable.draw_rectangle(ctx, True, 0, y, self.seq_left_margin, 
+                                    self.seq_track_size)
 	    ctx.set_foreground(colors['Border'])
-	    drawable.draw_rectangle(ctx, False, 0, y, self.seq_left_margin, self.seq_track_size)
+	    drawable.draw_rectangle(ctx, False, 0, y, self.seq_left_margin, 
+                                    self.seq_track_size)
 	    ctx.set_foreground(colors['Border'])
 	    layout.set_text(title)
 	    px, py = layout.get_pixel_size()
 	    # Draw the label with the track name
-	    drawable.draw_layout(ctx, self.seq_left_margin - 4 - px, y + self.seq_track_size / 2 - py / 2, layout)
+	    drawable.draw_layout(ctx, self.seq_left_margin - 4 - px, 
+                                 y + self.seq_track_size / 2 - py / 2, layout)
 	    y += self.seq_track_size
 	    # Draw the horizontal lines separating tracks
 	    ctx.set_foreground(colors['Weak Line'])
@@ -1404,13 +1431,15 @@ class SequencerView(gtk.DrawingArea):
             x, y = self.track_row_to_pos((0, loop_start))
             ctx.set_foreground(colors['Loop Line'])
             drawable.draw_line(ctx, x, 0, x, height)
-            drawable.draw_polygon(ctx, filled=True, points=((x, 0), (x + 10, 0), (x, 10)))
+            drawable.draw_polygon(ctx, filled=True, 
+                                  points=((x, 0), (x + 10, 0), (x, 10)))
         if (loop_end >= window_start and loop_end <= window_end):
 	    # The left facing loop delimiter with arrow.
             x, y = self.track_row_to_pos((0, loop_end))
             ctx.set_foreground(colors['Loop Line'])
             drawable.draw_line(ctx, x, 0, x, height)
-            drawable.draw_polygon(ctx, filled=True, points=((x, 0), (x - 10, 0), (x, 10)))
+            drawable.draw_polygon(ctx, filled=True, 
+                                  points=((x, 0), (x - 10, 0), (x, 10)))
         # Draw song end marker.
 	ctx.line_width = 3
         song_end = player.get_song_end()
@@ -1419,9 +1448,6 @@ class SequencerView(gtk.DrawingArea):
             ctx.set_foreground(colors['End Marker'])
             drawable.draw_line(ctx, x, 0, x, height)
 	ctx.line_width = 1
-
-    def draw_cursor(self, ctx, colors):
-	pass
 
     def draw(self, ctx):
 	"""

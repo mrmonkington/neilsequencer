@@ -16,7 +16,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+# Boston, MA  02110-1301, USA.
 
 """
 Provides an object which eases access to the applications configuration.
@@ -116,12 +117,12 @@ DEFAULT_THEME = {
     'MV Amp BG': 0xffffff,
     'MV Amp Border': 0x000000,
     'MV Amp Handle': 0x999999,
-    'MV Arrow': 0x8ae234,
+    'MV Arrow': 0xffffff,
     'MV Arrow Border In': 0xafeb73,
-    'MV Arrow Border Out': 0x4e9a06,
-    'MV Controller Arrow': 0xef2929,
+    'MV Arrow Border Out': 0x000000,
+    'MV Controller Arrow': 0xd0d0d0,
     'MV Controller Arrow Border In': 0xf35d5d,
-    'MV Controller Arrow Border Out': 0xa40000,
+    'MV Controller Arrow Border Out': 0x000000,
     'MV Background': 0xffffff,
     'MV Effect': 0x729fcf,
     'MV Effect LED Border': 0x96b8dc,

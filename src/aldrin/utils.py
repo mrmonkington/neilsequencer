@@ -49,8 +49,8 @@ def is_frozen():
 	@rtype: bool
 	"""
 	return (hasattr(sys, "frozen") or # new py2exe
-			hasattr(sys, "importers") # old py2exe
-			or imp.is_frozen("__main__")) # tools/freeze
+		hasattr(sys, "importers") # old py2exe
+		or imp.is_frozen("__main__")) # tools/freeze
 
 def get_root_folder_path():
 	"""
@@ -93,7 +93,7 @@ def iconpath(path):
 	"""
 	from pathconfig import path_cfg
 	return path_cfg.get_path('icons_aldrin', path)
-	
+
 def hicoloriconpath(path):
 	"""
 	Translates a path relative to the hicolor icon directory into an absolute
@@ -169,7 +169,7 @@ def db2linear(val, limit = -48.0):
 	if val <= limit:
 		return 0.0
 	return 10 ** (val / 20.0)
-	
+
 def linear2db(val, limit = -48.0):
 	"""
 	Translates a linear amplitude to a dB volume.
@@ -435,7 +435,7 @@ def from_hsb(h=0.0,s=1.0,b=1.0):
 	elif index == 5:
 		return b,p,q
 	return b,p,q
-	
+
 def to_hsb(r,g,b):
 	"""
 	Converts red/green/blue into hue/saturation/brightness components.
@@ -460,7 +460,7 @@ def to_hsb(r,g,b):
 		s = diff / v
 		b = v
 	return h,s,b
-	
+
 def run_function_with_progress(parent, msg, allow_cancel, func, *args):
 	"""
 	Shows a progress dialog.
@@ -507,7 +507,7 @@ def run_function_with_progress(parent, msg, allow_cancel, func, *args):
 	response = dialog.run()
 	dialog.destroy()
 	return response
-	
+
 def gettext(parent, msg, text=''):
 	"""
 	Shows a dialog to get some text.
@@ -533,14 +533,14 @@ def gettext(parent, msg, text=''):
 	dialog.destroy()
 	if response == gtk.RESPONSE_OK:
 		return entry.get_text()
-		
+	
 def question(parent, msg, allowcancel = True):
 	"""
 	Shows a question dialog.
 	"""
 	dialog = gtk.MessageDialog(parent.get_toplevel(),
-		gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
-		gtk.MESSAGE_QUESTION , gtk.BUTTONS_NONE)
+				   gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
+				   gtk.MESSAGE_QUESTION , gtk.BUTTONS_NONE)
 	dialog.set_markup(msg)
 	dialog.add_buttons(
 		gtk.STOCK_YES, gtk.RESPONSE_YES,
@@ -556,8 +556,8 @@ def error(parent, msg, msg2=None, details=None):
 	Shows an error message dialog.
 	"""
 	dialog = gtk.MessageDialog(parent and parent.get_toplevel(),
-		gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
-		gtk.MESSAGE_ERROR , gtk.BUTTONS_NONE)
+				   gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
+				   gtk.MESSAGE_ERROR , gtk.BUTTONS_NONE)
 	dialog.set_markup(msg)
 	dialog.set_resizable(True)
 	if msg2:
@@ -587,8 +587,8 @@ def message(parent, msg):
 	Shows an info message dialog.
 	"""
 	dialog = gtk.MessageDialog(parent.get_toplevel(),
-		gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
-		gtk.MESSAGE_INFO , gtk.BUTTONS_NONE)
+				   gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
+				   gtk.MESSAGE_INFO , gtk.BUTTONS_NONE)
 	dialog.set_markup(msg)
 	dialog.add_buttons(gtk.STOCK_OK, gtk.RESPONSE_OK)
 	response = dialog.run()
@@ -600,8 +600,8 @@ def warning(parent, msg):
 	Shows an warning message dialog.
 	"""
 	dialog = gtk.MessageDialog(parent.get_toplevel(),
-		gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
-		gtk.MESSAGE_WARNING, gtk.BUTTONS_NONE)
+				   gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
+				   gtk.MESSAGE_WARNING, gtk.BUTTONS_NONE)
 	dialog.set_markup(msg)
 	dialog.add_buttons(gtk.STOCK_OK, gtk.RESPONSE_OK)
 	response = dialog.run()
@@ -688,7 +688,7 @@ def new_liststore(view, columns):
 	if isinstance(view, gtk.TreeView):
 		view.set_search_column(0)
 	return liststore, columncontrols
-	
+
 def new_image_button(path, tooltip, tooltips_object):
 	"""
 	Creates a button with a single image.
@@ -699,7 +699,7 @@ def new_image_button(path, tooltip, tooltips_object):
 	button.set_tooltip_text(tooltip)
 	button.set_image(image)
 	return button
-	
+
 def new_stock_image_button(stockid, tooltip=None):
 	"""
 	Creates a button with a stock image.
@@ -738,7 +738,7 @@ def new_image_toggle_button(path, tooltip=None, tooltips_object=None):
 		button.set_tooltip_text(tooltip)
 	button.set_image(image)
 	return button
-	
+
 def new_theme_image(name,size):
 	theme = gtk.icon_theme_get_default()
 	image = gtk.Image()
@@ -746,7 +746,7 @@ def new_theme_image(name,size):
 		pixbuf = theme.load_icon(name, size, 0)
 		image.set_from_pixbuf(pixbuf)
 	return image
-	
+
 def new_theme_image_toggle_button(name, tooltip=None, tooltips_object=None):
 	"""
 	Creates a toggle button with a default icon theme image.
@@ -771,7 +771,7 @@ def get_item_count(model):
 	count = Count()
 	model.foreach(inc_count,count)
 	return count.value
-	
+
 def add_scrollbars(view):
 	"""
 	adds scrollbars around a view
@@ -806,7 +806,7 @@ def file_filter(name,*patterns):
 		ff.add_pattern(pattern.lower())
 	return ff
 
-	
+
 def format_filesize(size):
 	if (size / (1<<40)):
 		return "%.2f TB" % (float(size) / (1<<40))
@@ -818,7 +818,7 @@ def format_filesize(size):
 		return "%.2f KB" % (float(size) / (1<<10))
 	else:
 		return "%i bytes" % size
-		
+	
 def set_clipboard_text(data):
 	clipboard = gtk.clipboard_get()
 	clipboard.set_text(data, len(data))
@@ -894,7 +894,7 @@ def get_new_pattern_name(plugin):
 		if not found:
 			break
 	return s
-		
+
 class CancelException(Exception):
 	"""
 	Is being thrown when the user hits cancel in a sequence of
@@ -975,16 +975,16 @@ def test_view(classname):
 		dlg = com.get('aldrin.test.dialog', embed=obj, destroy_on_close=False)
 
 def show_plugin_manual(name):
-    helpfilepaths = [
-	filepath('/usr/share/doc/zzub/plugins/' + name + '/manual.pdf'),
-	filepath('/usr/local/share/doc/zzub/plugins/' + name + '/manual.pdf')
-	]
-    for path in helpfilepaths:
-	print path
+	helpfilepaths = [
+		filepath('/usr/share/doc/zzub/plugins/' + name + '/manual.pdf'),
+		filepath('/usr/local/share/doc/zzub/plugins/' + name + '/manual.pdf')
+		]
+	for path in helpfilepaths:
+		print path
 	if os.path.isfile(path):
-	    os.system("evince %s &" % path)
-	    return True
-    return False
+		os.system("evince %s &" % path)
+		return True
+	return False
 
 class ObjectHandlerGroup:
 	"""
@@ -1032,7 +1032,7 @@ class Menu(gtk.Menu):
 		item.set_submenu(submenu)
 		self.append(item)
 		return item, submenu
-		
+	
 	def add_item(self, label, func, *args):
 		item = gtk.MenuItem(label=label)
 		item.connect('activate', func, *args)
@@ -1045,7 +1045,7 @@ class Menu(gtk.Menu):
 		item.connect('toggled', func, *args)
 		self.append(item)
 		return item
-		
+	
 	def add_image_item(self, label, icon_or_path, func, *args):
 		item = gtk.ImageMenuItem(stock_id=label)
 		if isinstance(icon_or_path, basestring):
@@ -1057,7 +1057,7 @@ class Menu(gtk.Menu):
 		item.connect('activate', func, *args)
 		self.append(item)
 		return item
-		
+	
 	def popup(self, parent, event=None):
 		self.show_all()
 		if not self.get_attach_widget():
@@ -1080,7 +1080,7 @@ class PropertyEventHandler:
 		if onget:
 			value = onget(value)
 		return value
-		
+	
 	def setter(self, membername, kwargs, value):		
 		onset = kwargs.get('onset',None)
 		if onset:
@@ -1096,7 +1096,7 @@ class PropertyEventHandler:
 		if onget:
 			value = onget(value)
 		return value[:]
-		
+	
 	def listsetter(self, membername, kwargs, values):
 		onset = kwargs.get('onset',None)
 		if onset:
@@ -1108,7 +1108,7 @@ class PropertyEventHandler:
 
 def generate_ui_method(class_, membername, kwargs):
 	doc = kwargs.get('doc', '')
-		
+	
 	onset = kwargs.get('onset', None)
 	onget = kwargs.get('onget', None)
 	
@@ -1246,58 +1246,58 @@ class AcceleratorMap:
 		return False
 
 __all__ = [
-'is_frozen',
-'get_root_folder_path',
-'run_function_with_progress',
-'filepath',
-'db2linear',
-'linear2db',
-'format_time',
-'ticks_to_time',
-'prepstr',
-'fixbn',
-'bn2mn',
-'mn2bn',
-'note2str',
-'switch2str',
-'byte2str',
-'word2str',
-'roundint',
-'buffersize_to_latency',
-'filenameify',
-'read_int',
-'read_string',
-'write_int',
-'write_string',
-'from_hsb',
-'to_hsb',
-'question',
-'error',
-'message',
-'warning',
-'new_listview',
-'new_liststore',
-'new_combobox',
-'new_image_button',
-'get_item_count',
-'add_scrollbars',
-'file_filter',
-'format_filesize',
-'set_clipboard_text',
-'get_clipboard_text',
-'gettext',
-'diff',
-'is_effect',
-'is_generator',
-'is_controller',
-'is_root',
-'is_streamer',
-'get_new_pattern_name',
-'new_theme_image',
-'add_accelerator',
-'camelcase_to_unixstyle',
-'show_plugin_manual',
-]
+	'is_frozen',
+	'get_root_folder_path',
+	'run_function_with_progress',
+	'filepath',
+	'db2linear',
+	'linear2db',
+	'format_time',
+	'ticks_to_time',
+	'prepstr',
+	'fixbn',
+	'bn2mn',
+	'mn2bn',
+	'note2str',
+	'switch2str',
+	'byte2str',
+	'word2str',
+	'roundint',
+	'buffersize_to_latency',
+	'filenameify',
+	'read_int',
+	'read_string',
+	'write_int',
+	'write_string',
+	'from_hsb',
+	'to_hsb',
+	'question',
+	'error',
+	'message',
+	'warning',
+	'new_listview',
+	'new_liststore',
+	'new_combobox',
+	'new_image_button',
+	'get_item_count',
+	'add_scrollbars',
+	'file_filter',
+	'format_filesize',
+	'set_clipboard_text',
+	'get_clipboard_text',
+	'gettext',
+	'diff',
+	'is_effect',
+	'is_generator',
+	'is_controller',
+	'is_root',
+	'is_streamer',
+	'get_new_pattern_name',
+	'new_theme_image',
+	'add_accelerator',
+	'camelcase_to_unixstyle',
+	'show_plugin_manual',
+	]
 
 if __name__ == '__main__':
 	oldlist = [1,2,6,3,4,5]

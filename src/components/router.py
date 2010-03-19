@@ -784,7 +784,7 @@ class RouteView(gtk.DrawingArea):
 	if data.format == 8:
 	    context.finish(True, False, time)
 	    player = com.get('aldrin.core.player')
-	    player.plugin_origin = self.pixel_to_float((x,y))
+	    player.plugin_origin = self.pixel_to_float((x, y))
 	    uri = data.data
 	    conn = None
 	    plugin = None
@@ -856,20 +856,22 @@ class RouteView(gtk.DrawingArea):
 	@param event: event.
 	@type event: wx.Event
 	"""
-	mx,my = int(event.x), int(event.y)
+	mx, my = int(event.x), int(event.y)
 	player = com.get('aldrin.core.player')
-	player.plugin_origin = self.pixel_to_float((mx,my))
-	res = self.get_plugin_at((mx,my))
+	player.plugin_origin = self.pixel_to_float((mx, my))
+	res = self.get_plugin_at((mx, my))
 	if res:
-	    mp,(x,y),area = res
+	    mp, (x, y), area = res
 	    menu = com.get('aldrin.core.contextmenu', 'plugin', mp)
 	else:
-	    res = self.get_connection_at((mx,my))
+	    res = self.get_connection_at((mx, my))
 	    if res:
 		mp, index = res
-		menu = com.get('aldrin.core.contextmenu', 'connection', (mp, index))
+		menu = com.get('aldrin.core.contextmenu', 
+                               'connection', (mp, index))
 	    else:
-		menu = com.get('aldrin.core.contextmenu', 'router', None)
+                point = self.pixel_to_float((mx, my))
+		menu = com.get('aldrin.core.contextmenu', 'router', point)
 	menu.popup(self, event)
 
     def float_to_pixel(self, (x, y)):
@@ -1259,35 +1261,40 @@ class RouteView(gtk.DrawingArea):
 	bgbrush = cfg.get_float_color("MV Background")
 	linepen = cfg.get_float_color("MV Line")
 
-	cx,cy = w*0.5,h*0.5
-	def get_pixelpos(x,y):
-	    return cx * (1+x), cy * (1+y)
+	cx, cy = w * 0.5, h * 0.5
 
-	def draw_line(bmpctx,crx,cry,rx,ry):
-	    vx, vy = (rx-crx), (ry-cry)
-	    length = (vx*vx+vy*vy)**0.5
+	def get_pixelpos(x, y):
+	    return cx * (1 + x), cy * (1 + y)
+
+	def draw_line(bmpctx, crx, cry, rx, ry):
+	    vx, vy = (rx - crx), (ry - cry)
+	    length = (vx * vx + vy * vy) ** 0.5
 	    if not length:
 		return
-	    vx, vy = vx/length, vy/length
-	    bmpctx.move_to(crx,cry)
-	    bmpctx.line_to(rx,ry)
+	    vx, vy = vx / length, vy / length
+	    bmpctx.move_to(crx, cry)
+	    bmpctx.line_to(rx, ry)
 	    bmpctx.set_source_rgb(*linepen)
 	    bmpctx.stroke()
-	def draw_line_arrow(bmpctx,clr,crx,cry,rx,ry):
-	    vx, vy = (rx-crx), (ry-cry)
-	    length = (vx*vx+vy*vy)**0.5
+
+	def draw_line_arrow(bmpctx, clr, crx, cry, rx, ry):
+	    vx, vy = (rx - crx), (ry - cry)
+	    length = (vx * vx + vy * vy) ** 0.5
 	    if not length:
 		return
-	    vx, vy = vx/length, vy/length
-	    bmpctx.move_to(crx,cry)
-	    bmpctx.line_to(rx,ry)
+	    vx, vy = vx / length, vy / length
+	    bmpctx.move_to(crx, cry)
+	    bmpctx.line_to(rx, ry)
 	    bmpctx.set_source_rgb(*linepen)
 	    bmpctx.stroke()
-	    cpx,cpy = crx + vx * (length * 0.5), cry + vy * (length * 0.5)
+	    cpx, cpy = crx + vx * (length * 0.5), cry + vy * (length * 0.5)
 	    def make_triangle(radius):
-		t1 = (int(cpx - vx * radius + vy * radius), int(cpy - vy * radius - vx * radius))
-		t2 = (int(cpx + vx * radius), int(cpy + vy * radius))
-		t3 = (int(cpx - vx * radius - vy * radius), int(cpy - vy * radius + vx * radius))
+		t1 = (int(cpx - vx * radius + vy * radius), 
+                      int(cpy - vy * radius - vx * radius))
+		t2 = (int(cpx + vx * radius), 
+                      int(cpy + vy * radius))
+		t3 = (int(cpx - vx * radius - vy * radius), 
+                      int(cpy - vy * radius + vx * radius))
 		return t1,t2,t3
 	    def draw_triangle(t1,t2,t3):
 		bmpctx.move_to(*t1)
@@ -1295,13 +1302,10 @@ class RouteView(gtk.DrawingArea):
 		bmpctx.line_to(*t3)
 		bmpctx.close_path()
 	    tri1 = make_triangle(ARROWRADIUS)
-	    tri2 = make_triangle(ARROWRADIUS-1)
+	    tri2 = make_triangle(ARROWRADIUS - 1)
 	    draw_triangle(*tri1)
 	    bmpctx.set_source_rgb(*clr[0])
 	    bmpctx.fill()
-	    draw_triangle(*tri2)
-	    bmpctx.set_source_rgb(*clr[1])
-	    bmpctx.stroke()
 	    draw_triangle(*tri1)
 	    bmpctx.set_source_rgb(*clr[2])
 	    bmpctx.stroke()

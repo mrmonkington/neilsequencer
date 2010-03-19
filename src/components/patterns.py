@@ -2472,7 +2472,7 @@ class PatternView(gtk.DrawingArea):
 	Initializes a buffer to handle the current pattern data.
 	"""
 	st = time.time()
-	self.lines = [None]*3	
+	self.lines = [None] * 3	
 	# generate zoom levels	
 	self.levels = {}
 	# find largest factor divisor of factor
@@ -2485,21 +2485,20 @@ class PatternView(gtk.DrawingArea):
 	    self.factor_sources[factor] = largest_divisor
 
 	for key in self.factors:
-	    self.levels[key] = [None]*3
+	    self.levels[key] = [None] * 3
 	# update level 1
 	for group in range(3):
 	    if self.parameter_count[group] > 0:
 		tc = self.group_track_count[group]
-		self.lines[group] = [None]*tc
+		self.lines[group] = [None] * tc
 		for key in self.levels.keys():
-		    self.levels[key][group] = [None]*tc
+		    self.levels[key][group] = [None] * tc
 		for track in range(tc):
-		    self.lines[group][track] = [None]*self.row_count
-		    self.levels[1][group][track] = [None]*self.row_count
+		    self.lines[group][track] = [None] * self.row_count
+		    self.levels[1][group][track] = [None] * self.row_count
 		    self.update_col(group, track)
 	    else:
 		self.lines[group] = []
-
 	# update other levels				
 	for n in self.factors[1:]:
 	    source = self.factor_sources[n]
@@ -2509,13 +2508,6 @@ class PatternView(gtk.DrawingArea):
 		    tc = self.group_track_count[group]
 		    for track in range(tc):
 			self.levels[n][group][track] = [sum(sub_list) for sub_list in padded_partition(self.levels[source][group][track], multiple, pad_val=0)]
-#		for i in range(len(self.levels)-1):
-#			for group in range(3):				
-#				if self.parameter_count[group] > 0:
-#					tc = self.group_track_count[group]
-#					for track in range(tc):
-#						self.levels[2**(i+1)][group][track] = [sum(sub_list) for sub_list in padded_partition(self.levels[2**i][group][track], 2, pad_val=0)]
-	print "end of prepare_textbuffer %.2f" % ((time.time() - st) * 1000.0)
 
     def get_line_pattern(self):
 	player = com.get('aldrin.core.player')
