@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <zzub>
 	<plugin
-		uri="paniq/Generators/SID"
+		uri="@zzub.org/lunar/sid;1"
 		name="Lunar SID"
 		shortname="SID"
 		type="generator"

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <zzub>
   <plugin
-     uri="paniq/Controllers/LFO"
+     uri="@trac.zeitherrschaft.org/aldrin/lunar/controller/LunarLFO;1"
      name="Lunar LFO"
      shortname="LFO"
      type="controller"

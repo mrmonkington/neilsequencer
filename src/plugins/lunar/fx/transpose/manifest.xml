@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <zzub>
 	<plugin
-		uri="paniq/Controllers/Transpose"
+		uri="@trac.zeitherrschaft.org/aldrin/lunar/controller/transpose;1"
 		name="Lunar Transpose"
 		shortname="Transpose"
 		type="controller"

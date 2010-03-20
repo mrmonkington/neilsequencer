@@ -100,7 +100,7 @@ public:
 			this->name = "Matilde Tracker";
 			this->short_name = "MTrk";
 			this->author = "Carsten Sørensen";
-			this->uri = "Other/Generators/Matilde-Tracker-1.5";
+			this->uri = "@rift.dk/generator/Matilde+Tracker;1.5";
 			
 			CMatildeTrackerMachine::m_paraNote = &add_track_parameter()
 				.set_note()

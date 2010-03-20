@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <zzub>
   <plugin
-     uri="SoMono/Controllers/Controller"
+     uri="@neil/lunar/controller/Controller;1"
      name="Lunar Controller"
      shortname="Controller"
      type="controller"

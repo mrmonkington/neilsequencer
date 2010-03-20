@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <zzub>
 	<plugin
-		uri="paniq/Effects/Phaser"
+		uri="@trac.zeitherrschaft.org/aldrin/lunar/effect/phaser;1"
 		name="Lunar Phaser"
 		shortname="Phaser"
 		type="effect"

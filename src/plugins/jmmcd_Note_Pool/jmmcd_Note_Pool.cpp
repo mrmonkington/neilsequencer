@@ -591,7 +591,7 @@ struct note_pool_plugin_info : zzub::info {
     this->name = "jmmcd Note_Pool";
     this->short_name = "Note_Pool";
     this->author = "jmmcd <jamesmichaelmcdermott@gmail.com>";
-    this->uri = "jmmcd/Controllers/Note-Pool";
+    this->uri = "jamesmichaelmcdermott@gmail.com/note-pool;1";
 
 //     int def_prob[numNotes];
 //     int p[] = {20, 0, 25, 0, 25, 15, 0, 10, 0, 30, 0, 10, 10};

@@ -1095,7 +1095,7 @@ struct multi2_info : zzub::info {
 		this->name = "Joachims Multi v2";
 		this->short_name = "Multi";
 		this->author = "Joachim Michaelis";
-		this->uri = "Other/Effects/Multi-2";
+		this->uri = "@binarywerks.dk/multi-2;1";
 		
 		paraInput = &add_global_parameter()
 			.set_byte()

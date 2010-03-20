@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <zzub>
   <plugin
-     uri="SoMono/Generators/ArguruSynth2"
+     uri="@neil/lunar/generator/ArguruSynth2;1"
      name="Arguru Synth2"
      shortname="Synth2"
      type="generator"

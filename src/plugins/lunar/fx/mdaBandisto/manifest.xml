@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <zzub>
   <plugin
-     uri="SoMono/Effects/mdaBandisto"
+     uri="@mda/effect/mdaBandisto;1"
      name="Lunar mdaBandisto"
      shortname="mdaBandisto"
      type="effect"

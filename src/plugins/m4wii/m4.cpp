@@ -768,7 +768,7 @@ struct m4wii_plugin_info : zzub::info {
 		this->name = "M4wII";
 		this->short_name = "M4wII";
 		this->author = "Makk, w/ mods by WhiteNoise";
-		this->uri = "Other/Generators/M4wII";
+		this->uri = "@makk.org/M4wII;1";
 		
 		paraMode = &add_global_parameter()
 			.set_byte()
