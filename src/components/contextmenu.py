@@ -83,6 +83,22 @@ class PluginContextMenu(gtk.Menu):
 	    self.populate_routermenu(menu)
 
     def populate_routermenu(self, menu):
+        def get_icon_name(self, pluginloader):
+            uri = pluginloader.get_uri()
+            if uri.startswith('@zzub.org/dssidapter/'):
+                return 'dssi'
+            if uri.startswith('@zzub.org/ladspadapter/'):
+                return 'ladspa'
+            if uri.startswith('@psycle.sourceforge.net/'):
+                return 'psycle'
+            filename = pluginloader.get_name()
+            filename = filename.strip().lower()
+            for c in '():[]/,.!"\'$%&\\=?*#~+-<>`@ ':
+                filename = filename.replace(c, '_')
+            while '__' in filename:
+                filename = filename.replace('__','_')
+            filename = filename.strip('_')
+            return filename
         def add_uri(tree, uri, loader):
             if len(uri) == 1:
                 tree[uri[0]] = loader
@@ -96,7 +112,7 @@ class PluginContextMenu(gtk.Menu):
         def populate_from_tree(menu, tree):
             for key, value in tree.iteritems():
                 if type(value) is not type({}):
-                    menu.add_item(key, create_plugin, value)
+                    menu.add_item(prepstr(key, fix_underscore=True), create_plugin, value)
                 else:
                     item, submenu = menu.add_submenu(key)
                     populate_from_tree(submenu, value)
@@ -111,7 +127,18 @@ class PluginContextMenu(gtk.Menu):
 	for pluginloader in player.get_pluginloader_list():
 	    plugins[pluginloader.get_uri()] = pluginloader
         for uri, loader in plugins.iteritems():
-            uri_list = uri.split('/')
+            type_ = "Generators"
+            if loader.get_flags() & zzub.zzub_plugin_flag_has_audio_input:
+                type_ = "Effects"
+            elif loader.get_flags() & zzub.zzub_plugin_flag_has_event_output:
+                type_ = "Controllers"
+            author = loader.get_author()
+            if len(author) > 20:
+                author = author[:20]
+            name = loader.get_short_name()
+            if len(name) > 20:
+                name = name[:20]
+            uri_list = [type_, author, name]
             tree = add_uri(tree, uri_list, loader)
         populate_from_tree(add_machine_menu, tree)
         menu.add_separator()
