@@ -8,7 +8,7 @@
      mintracks="1"
      maxtracks="8"
      description="A port of Zephod SuperFM synthesizer to Lunar"
-     author="Vytautas Jancauskas"
+     author="SoMono"
      email="unaudio@gmail.com">
     <parameters>
       <valuenamegroup>

@@ -6,7 +6,7 @@
 		shortname="Philthy"
 		type="effect"
 		description="A philthy filter"
-		author="Krzysztof Foltman"
+		author="FSM"
 		email="">
 		<parameters>
 			<valuenamegroup>

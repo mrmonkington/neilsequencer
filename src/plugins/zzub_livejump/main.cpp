@@ -218,7 +218,7 @@ struct livejump_info : zzub::info {
 	livejump_info() {
 		this->name = "zzub Live Jump";
 		this->short_name = "LiveJump";
-		this->author = "Andy Werk <calvin@countzero.no>";
+		this->author = "Andyw";
 		this->uri = "@zzub.org/livejump;1";
 		
 		paraNote = &add_global_parameter()

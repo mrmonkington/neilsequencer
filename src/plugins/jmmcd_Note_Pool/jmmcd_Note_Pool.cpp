@@ -590,7 +590,7 @@ struct note_pool_plugin_info : zzub::info {
     this->max_tracks = MAX_TRACKS;
     this->name = "jmmcd Note_Pool";
     this->short_name = "Note_Pool";
-    this->author = "jmmcd <jamesmichaelmcdermott@gmail.com>";
+    this->author = "jmmcd";
     this->uri = "jamesmichaelmcdermott@gmail.com/note-pool;1";
 
 //     int def_prob[numNotes];

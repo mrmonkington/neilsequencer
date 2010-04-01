@@ -161,7 +161,7 @@ struct graue_softsat_plugin_info : zzub::info {
       zzub::plugin_flag_has_audio_output;
     this->name = "Graue SoftSat";
     this->short_name = "SoftSat";
-    this->author = "Graue <graue@oceanbase.org>";
+    this->author = "Graue";
     this->uri = "graue@oceanbase.org/effect/softsat;1";
     paraThreshold = &add_global_parameter()
       .set_word()

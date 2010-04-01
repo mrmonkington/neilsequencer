@@ -730,7 +730,7 @@ struct modulator_plugin_info : zzub::info {
     this->max_tracks = 1;
     this->name = "Elenzil Modulator";
     this->short_name = "Modulator";
-    this->author = "Elenzil (ported by jmmcd <jamesmichaelmcdermott@gmail.com>)";
+    this->author = "Elenzil";
     this->uri = "jamesmichaelmcdermott@gmail.com/effect/modulator;1";
 
 

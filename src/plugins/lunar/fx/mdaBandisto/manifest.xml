@@ -6,7 +6,7 @@
      shortname="mdaBandisto"
      type="effect"
      description="Multi-band distortion."
-     author="Vytautas Jancauskas"
+     author="SoMono"
      email="unaudio@gmail.com">
     <parameters>
       <valuenamegroup>

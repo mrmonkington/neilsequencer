@@ -99,7 +99,7 @@ public:
 			this->max_tracks = MAX_TRACKS;
 			this->name = "Matilde Tracker";
 			this->short_name = "MTrk";
-			this->author = "Carsten Sørensen";
+			this->author = "Carsten Sorensen";
 			this->uri = "@rift.dk/generator/Matilde+Tracker;1.5";
 			
 			CMatildeTrackerMachine::m_paraNote = &add_track_parameter()

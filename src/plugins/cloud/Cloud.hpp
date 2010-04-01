@@ -105,7 +105,7 @@ struct CloudInfo : zzub::info {
     this->max_tracks = 0;
     this->name = "SoMono Cloud";
     this->short_name = "Cloud";
-    this->author = "Vytautas Jančauskas";
+    this->author = "SoMono";
     this->uri = "@libneil/somono/generator/cloud;1";
     paramWave = &add_global_parameter()
       .set_byte()

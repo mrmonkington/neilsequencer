@@ -6,7 +6,7 @@
      shortname="Controller"
      type="controller"
      description="A single value emitting controller useful with MIDI controllers"
-     author="Vytautas Jančauskas"
+     author="SoMono"
      email="unaudio@gmail.com">
     <parameters>
       <global>

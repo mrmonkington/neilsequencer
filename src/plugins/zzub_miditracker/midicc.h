@@ -87,7 +87,7 @@ struct midicc_info : zzub::info {
 		this->flags = zzub::plugin_flag_has_midi_output;
 		this->name = "zzub midicc";
 		this->short_name = "midicc";
-		this->author = "Lauri Koponen <ld0d@iki.fi>";
+		this->author = "Lauri Koponen";
 		this->uri = "@zzub.org/midicc;1";
 		//this->commands = "/MIDI Device";
 		this->min_tracks = 8;

@@ -73,7 +73,7 @@ struct ChebyshevInfo : zzub::info {
       zzub::plugin_flag_has_audio_input | zzub::plugin_flag_has_audio_output;
     this->name = "SoMono Chebyshev";
     this->short_name = "Chebyshev";
-    this->author = "Vytautas Jancauskas";
+    this->author = "SoMono";
     this->uri = "@libneil/somono/effect/chebyshev;1";
     param_pregain = &add_global_parameter()
       .set_byte()

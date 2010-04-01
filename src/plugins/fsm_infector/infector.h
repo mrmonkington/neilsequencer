@@ -237,7 +237,7 @@ public:
 			this->max_tracks = MAX_TRACKS;
 			this->name = "FSM Infector";
 			this->short_name = "Infector";
-			this->author = "Krzysztof Foltman";
+			this->author = "FSM";
 			this->uri = "@krzysztof_foltman/generator/infector;1";
 			
 			// 45 variables

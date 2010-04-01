@@ -5,8 +5,8 @@
      name="Lunar mdaThruZero"
      shortname="mdaThruZero"
      type="effect"
-     description="A flanger."
-     author="Vytautas Jancauskas"
+     description="A chorus/flanger type effect."
+     author="SoMono"
      email="unaudio@gmail.com">
     <parameters>
       <global>

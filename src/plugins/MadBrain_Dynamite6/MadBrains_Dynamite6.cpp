@@ -975,7 +975,7 @@ struct dynamite6_plugin_info : zzub::info {
     this->max_tracks = MAX_CHANNELS;
     this->name = "MadBrain's Dynamite6";
     this->short_name = "Dynamite6";
-    this->author = "MadBrain (ported by jmmcd <jamesmichaelmcdermott@gmail.com>)";
+    this->author = "Madbrain";
     this->uri = "jamesmichaelmcdermott@gmail.com/generator/dynamite6;1";
 
     paraCoarseTune = &add_global_parameter()

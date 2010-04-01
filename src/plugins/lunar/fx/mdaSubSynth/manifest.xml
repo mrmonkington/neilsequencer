@@ -6,7 +6,7 @@
      shortname="mdaSubSynth"
      type="effect"
      description="A low frequency amplifier/synthesizer by mda."
-     author="Vytautas Jancauskas"
+     author="SoMono"
      email="unaudio@gmail.com">
     <parameters>
       <valuenamegroup>

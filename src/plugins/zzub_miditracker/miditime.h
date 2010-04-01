@@ -71,7 +71,7 @@ struct miditime_info : zzub::info {
 		this->flags = zzub::plugin_flag_has_midi_output;
 		this->name = "zzub miditime";
 		this->short_name = "miditime";
-		this->author = "Lauri Koponen <ld0d@iki.fi>";
+		this->author = "Lauri Koponen";
 		this->uri = "@zzub.org/miditime;1";
 		this->commands = "";
 		this->min_tracks = 0;

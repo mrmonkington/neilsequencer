@@ -129,7 +129,7 @@ struct miditracker_info : zzub::info {
 		this->flags = zzub::plugin_flag_has_midi_output;
 		this->name = "zzub miditracker";
 		this->short_name = "miditracker";
-		this->author = "Calvin, Zoner";
+		this->author = "Andyw";
 		this->uri = "@zzub.org/miditracker;1";
 		this->commands = "/MIDI Device";
 		this->min_tracks = 1;

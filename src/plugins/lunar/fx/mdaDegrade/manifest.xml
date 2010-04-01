@@ -6,7 +6,7 @@
      shortname="mdaDegrade"
      type="effect"
      description="A bitcrush/downsampler by mda."
-     author="Vytautas Jancauskas"
+     author="SoMono"
      email="unaudio@gmail.com">
     <parameters>
       <global>

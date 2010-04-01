@@ -324,7 +324,7 @@ struct jmmcd_crossfade_plugin_info : zzub::info {
 		this->max_tracks = 0;
 		this->name = "jmmcd Crossfade";
 		this->short_name = "Crossfade";
-		this->author = "jmmcd <jamesmichaelmcdermott@gmail.com>";
+		this->author = "jmmcd";
 		this->uri = "jamesmichaelmcdermott@gmail.com/effect/jmmcd_crossfade;1";
 		this->commands = "About";
     

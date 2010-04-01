@@ -372,7 +372,7 @@ struct btdsys_ringmod_plugin_info : zzub::info {
     this->max_tracks = 0;
     this->name = "BTDSys RingMod";
     this->short_name = "RingMod";
-    this->author = "BTDSys (ported by jmmcd <jamesmichaelmcdermott@gmail.com>)";
+    this->author = "BTDSys";
     this->uri = "jamesmichaelmcdermott@gmail.com/effect/btdsys_ringmod;1";
     this->commands = "About";
 

@@ -6,7 +6,7 @@
      shortname="Bitcrusher"
      type="effect"
      description="A bitcrusher/downsampler effect."
-     author="Vytautas Jancauskas"
+     author="SoMono"
      email="unaudio@gmail.com">
      <parameters>
        <global>

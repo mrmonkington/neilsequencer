@@ -576,7 +576,7 @@ struct sprayman_plugin_info : zzub::info {
     this->max_tracks = 1;
     this->name = "FSM SprayMan";
     this->short_name = "SprayMan";
-    this->author = "FSM (ported by jmmcd <jamesmichaelmcdermott@gmail.com>)";
+    this->author = "FSM";
     this->uri = "jamesmichaelmcdermott@gmail.com/effect/sprayman;1";
 
     paraDryOut = &add_global_parameter()

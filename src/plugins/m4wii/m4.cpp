@@ -767,7 +767,7 @@ struct m4wii_plugin_info : zzub::info {
 		this->max_tracks = MAX_TRACKS;
 		this->name = "M4wII";
 		this->short_name = "M4wII";
-		this->author = "Makk, w/ mods by WhiteNoise";
+		this->author = "Makk";
 		this->uri = "@makk.org/M4wII;1";
 		
 		paraMode = &add_global_parameter()

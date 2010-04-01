@@ -8,7 +8,7 @@
 		mintracks="1"
 		maxtracks="3"
 		description="SID emulator"
-		author="Andyw, Dag Lem, et al."
+		author="Andyw"
 		email="">
 		<parameters>
 			<valuenamegroup>
