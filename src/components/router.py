@@ -16,7 +16,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+# Boston, MA  02110-1301, USA.
 
 """
 Provides dialogs and controls to render the plugin view/router and its associated components.
@@ -60,15 +61,15 @@ from patterns import key_to_note
 
 PLUGINWIDTH = 100
 PLUGINHEIGHT = 25
-LEDWIDTH,LEDHEIGHT = 8,PLUGINHEIGHT-6 # size of LED
-LEDOFSX,LEDOFSY = 3,3 # offset of LED
-CPUWIDTH,CPUHEIGHT = 8,PLUGINHEIGHT-6 # size of LED
-CPUOFSX,CPUOFSY = PLUGINWIDTH-CPUWIDTH-3,3 # offset of LED
+LEDWIDTH, LEDHEIGHT = 8, PLUGINHEIGHT - 6 # size of LED
+LEDOFSX, LEDOFSY = 3, 3 # offset of LED
+CPUWIDTH, CPUHEIGHT = 8, PLUGINHEIGHT - 6 # size of LED
+CPUOFSX, CPUOFSY = PLUGINWIDTH - CPUWIDTH - 3, 3 # offset of LED
 
 ARROWRADIUS = 8
 
-QUANTIZEX = PLUGINWIDTH+ARROWRADIUS*2
-QUANTIZEY = PLUGINHEIGHT+ARROWRADIUS*2
+QUANTIZEX = PLUGINWIDTH + ARROWRADIUS * 2
+QUANTIZEY = PLUGINHEIGHT + ARROWRADIUS * 2
 
 VOLBARWIDTH = 32
 VOLBARHEIGHT = 128
@@ -106,7 +107,7 @@ class AttributesDialog(gtk.Dialog):
 	vbox.set_border_width(MARGIN)
 	self.plugin = plugin
 	self.pluginloader = plugin.get_pluginloader()
-	self.resize(300,200)
+	self.resize(300, 200)
 	self.attriblist, self.attribstore, columns = new_listview([
 		('Attribute', str),
 		('Value', str),
@@ -119,7 +120,7 @@ class AttributesDialog(gtk.Dialog):
 	hsizer.set_spacing(MARGIN)
 	hsizer.set_layout(gtk.BUTTONBOX_START)
 	self.edvalue = gtk.Entry()
-	self.edvalue.set_size_request(50,-1)
+	self.edvalue.set_size_request(50, -1)
 	self.btnset = gtk.Button("_Set")
 	self.btnok = self.add_button(gtk.STOCK_OK, gtk.RESPONSE_OK)
 	self.btncancel = self.add_button(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL)

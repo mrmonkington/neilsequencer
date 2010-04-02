@@ -16,7 +16,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+# Boston, MA  02110-1301, USA.
 
 """
 This module contains the context menu component for different zzub objects
@@ -82,7 +83,7 @@ class PluginContextMenu(gtk.Menu):
 	elif menu.context_id == 'router':
 	    self.populate_routermenu(menu)
 
-    def populate_routermenu(self, menu):
+    def create_add_machine_submenu(self, menu, connection=False):
         def get_icon_name(self, pluginloader):
             uri = pluginloader.get_uri()
             if uri.startswith('@zzub.org/dssidapter/'):
@@ -112,14 +113,18 @@ class PluginContextMenu(gtk.Menu):
         def populate_from_tree(menu, tree):
             for key, value in tree.iteritems():
                 if type(value) is not type({}):
-                    menu.add_item(prepstr(key, fix_underscore=True), create_plugin, value)
+                    menu.add_item(prepstr(key, fix_underscore=True), 
+                                  create_plugin, value, connection)
                 else:
                     item, submenu = menu.add_submenu(key)
                     populate_from_tree(submenu, value)
-        def create_plugin(item, loader):
+        def create_plugin(item, loader, connection=False):
             player = com.get('aldrin.core.player')
-            player.plugin_origin = menu.context
-            player.create_plugin(loader)
+            if connection:
+                player.create_plugin(loader, connection=menu.context)
+            else:
+                player.plugin_origin = menu.context
+                player.create_plugin(loader)
         player = com.get('aldrin.core.player')
         plugins = {}
         tree = {}
@@ -127,11 +132,18 @@ class PluginContextMenu(gtk.Menu):
 	for pluginloader in player.get_pluginloader_list():
 	    plugins[pluginloader.get_uri()] = pluginloader
         for uri, loader in plugins.iteritems():
-            type_ = "Generators"
-            if loader.get_flags() & zzub.zzub_plugin_flag_has_audio_input:
+            flags = loader.get_flags()
+            has_input = zzub.zzub_plugin_flag_has_audio_input
+            has_output = zzub.zzub_plugin_flag_has_audio_output
+            has_event = zzub.zzub_plugin_flag_has_event_output
+            if (flags & has_input) and (flags & has_output):
                 type_ = "Effects"
-            elif loader.get_flags() & zzub.zzub_plugin_flag_has_event_output:
+            elif (flags & has_output) and not (flags & has_input):
+                type_ = "Generators"
+            elif flags & has_event:
                 type_ = "Controllers"
+            else:
+                type_ = "Other"
             author = loader.get_author()
             if len(author) > 20:
                 author = author[:20]
@@ -139,13 +151,19 @@ class PluginContextMenu(gtk.Menu):
             if len(name) > 20:
                 name = name[:20]
             uri_list = [type_, author, name]
-            tree = add_uri(tree, uri_list, loader)
+            if type_ == "Effects" or not connection:
+                tree = add_uri(tree, uri_list, loader)
         populate_from_tree(add_machine_menu, tree)
+
+    def populate_routermenu(self, menu):
+        self.create_add_machine_submenu(menu)
         menu.add_separator()
 	menu.add_item("Unmute All", self.on_popup_unmute_all)
 
     def populate_connectionmenu(self, menu):
 	mp, index = menu.context
+        self.create_add_machine_submenu(menu, connection=True)
+        menu.add_separator()
 	menu.add_item("Disconnect plugins", self.on_popup_disconnect, mp, index)
 	conntype = mp.get_input_connection_type(index)
 	if conntype == zzub.zzub_connection_type_audio:
@@ -162,9 +180,11 @@ class PluginContextMenu(gtk.Menu):
     def populate_pluginmenu(self, menu):
 	mp = menu.context
 	player = com.get('aldrin.core.player')
-	menu.add_check_item("_Mute", common.get_plugin_infos().get(mp).muted, self.on_popup_mute, mp)
+	menu.add_check_item("_Mute", common.get_plugin_infos().get(mp).muted, 
+                            self.on_popup_mute, mp)
 	if is_generator(mp):
-	    menu.add_check_item("_Solo", player.solo_plugin == mp, self.on_popup_solo, mp)
+	    menu.add_check_item("_Solo", player.solo_plugin == mp, 
+                                self.on_popup_solo, mp)
 	menu.add_separator()
 	menu.add_item("_Parameters...", self.on_popup_show_params, mp)
 	menu.add_item("_Attributes...", self.on_popup_show_attribs, mp)
@@ -175,7 +195,9 @@ class PluginContextMenu(gtk.Menu):
 	    menu.add_item("_Delete plugin", self.on_popup_delete, mp)
 	if is_effect(mp) or is_root(mp):
 	    menu.add_separator()
-	    menu.add_check_item("Default Target",player.autoconnect_target == mp,self.on_popup_set_target, mp)
+	    menu.add_check_item("Default Target",
+                                player.autoconnect_target == mp,
+                                self.on_popup_set_target, mp)
 	commands = mp.get_commands().split('\n')
 	if commands != ['']:
 	    menu.add_separator()
@@ -188,9 +210,12 @@ class PluginContextMenu(gtk.Menu):
 		    submenuindex += 1
 		    for subindex in range(len(subcommands)):
 			subcmd = subcommands[subindex]
-			submenu.add_item(prepstr(subcmd, fix_underscore=True), self.on_popup_command, mp, submenuindex, subindex)
+			submenu.add_item(prepstr(subcmd, fix_underscore=True), 
+                                         self.on_popup_command, mp, 
+                                         submenuindex, subindex)
 		else:
-		    menu.add_item(prepstr(cmd), self.on_popup_command, mp, 0, index)
+		    menu.add_item(prepstr(cmd), self.on_popup_command, 
+                                  mp, 0, index)
 
     def on_popup_rename(self, widget, mp):
 	text = gettext(self, "Enter new plugin name:", prepstr(mp.get_name()))
