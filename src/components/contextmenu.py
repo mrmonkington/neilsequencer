@@ -57,7 +57,7 @@ class ContextMenu(Menu):
     context = property(get_context)
     context_id = property(get_context_id)
 
-    def add_submenu(self, label, submenu = None):
+    def add_submenu(self, label, submenu=None):
 	if not submenu:
 	    submenu = ContextMenu(self.__context_id, self.__context)
 	return Menu.add_submenu(self, label, submenu)
@@ -100,15 +100,15 @@ class PluginContextMenu(gtk.Menu):
                 filename = filename.replace('__','_')
             filename = filename.strip('_')
             return filename
-        def add_uri(tree, uri, loader):
-            if len(uri) == 1:
-                tree[uri[0]] = loader
+        def add_path(tree, path, loader):
+            if len(path) == 1:
+                tree[path[0]] = loader
                 return tree
-            elif uri[0] not in tree:
-                tree[uri[0]] = add_uri({}, uri[1:], loader)
+            elif path[0] not in tree:
+                tree[path[0]] = add_path({}, path[1:], loader)
                 return tree
             else:
-                tree[uri[0]] = add_uri(tree[uri[0]], uri[1:], loader)
+                tree[path[0]] = add_path(tree[path[0]], path[1:], loader)
                 return tree
         def populate_from_tree(menu, tree):
             for key, value in tree.iteritems():
@@ -140,7 +140,7 @@ class PluginContextMenu(gtk.Menu):
                 type_ = "Effects"
             elif (flags & has_output) and not (flags & has_input):
                 type_ = "Generators"
-            elif flags & has_event:
+            elif (flags & has_event):
                 type_ = "Controllers"
             else:
                 type_ = "Other"
@@ -150,9 +150,9 @@ class PluginContextMenu(gtk.Menu):
             name = loader.get_short_name()
             if len(name) > 20:
                 name = name[:20]
-            uri_list = [type_, author, name]
+            path = [type_, author, name]
             if type_ == "Effects" or not connection:
-                tree = add_uri(tree, uri_list, loader)
+                tree = add_path(tree, path, loader)
         populate_from_tree(add_machine_menu, tree)
 
     def populate_routermenu(self, menu):

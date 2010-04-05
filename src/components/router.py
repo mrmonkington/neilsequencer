@@ -140,7 +140,8 @@ class AttributesDialog(gtk.Dialog):
 	    ])
 	self.btnset.connect('clicked', self.on_set)
 	self.connect('response', self.on_ok)
-	self.attriblist.get_selection().connect('changed', self.on_attrib_item_focused)
+	self.attriblist.get_selection().connect('changed', 
+                                                self.on_attrib_item_focused)
 	if self.attribs:
 	    self.attriblist.grab_focus()
 	    self.attriblist.get_selection().select_path((0,))
@@ -327,6 +328,12 @@ class PluginListBrowser(gtk.VBox):
 	    ]
     )
 
+    __view__ = dict(
+		    label = "Search",
+		    order = 0,
+		    toggle = True,
+    )
+
     def __init__(self):
 	gtk.VBox.__init__(self)
 	com.get("aldrin.core.icons") # make sure theme icons are loaded
@@ -381,7 +388,6 @@ class PluginListBrowser(gtk.VBox):
 	self.show_effects_button.set_active(cfg.pluginlistbrowser_show_effects)
 	self.show_controllers_button.set_active(cfg.pluginlistbrowser_show_controllers)
 	self.show_nonnative_button.set_active(cfg.pluginlistbrowser_show_nonnative)
-
 
     def get_icon_name(self, pluginloader):
 	uri = pluginloader.get_uri()
@@ -554,11 +560,7 @@ class RoutePanel(gtk.VBox):
 	"""
 	gtk.VBox.__init__(self)
 	self.view = com.get('aldrin.core.router.view', self)
-	self.splitter = gtk.HPaned()
-	self.listbrowser = com.get('aldrin.core.pluginlistbrowser')
-	self.splitter.pack1(self.listbrowser, False, False)
-	self.splitter.pack2(self.view, True, True)
-	self.add(self.splitter)
+	self.add(self.view)
 
     def handle_focus(self):
 	self.view.grab_focus()
@@ -631,7 +633,7 @@ class VolumeSlider(gtk.Window):
 	drawable = self.drawingarea.window
 
 	rect = self.drawingarea.get_allocation()
-	w,h = rect.width, rect.height
+	w, h = rect.width, rect.height
 
 	cfg = config.get_config()
 	whitebrush = cm.alloc_color(cfg.get_color('MV Amp BG'))
@@ -641,12 +643,13 @@ class VolumeSlider(gtk.Window):
 	gc.set_foreground(whitebrush)
 	drawable.draw_rectangle(gc, True, 0, 0, w, h)
 	gc.set_foreground(outlinepen)
-	drawable.draw_rectangle(gc, False, 0, 0, w-1, h-1)
+	drawable.draw_rectangle(gc, False, 0, 0, w - 1, h - 1)
 
 	if self.plugin:
 	    gc.set_foreground(blackbrush)
 	    pos = int(self.amp * (VOLBARHEIGHT - VOLKNOBHEIGHT))
-	    drawable.draw_rectangle(gc, True, 1, pos+1, VOLBARWIDTH-2, VOLKNOBHEIGHT-2)
+	    drawable.draw_rectangle(gc, True, 1, pos + 1, 
+                                    VOLBARWIDTH - 2, VOLKNOBHEIGHT - 2)
 
     def display(self, (mx,my), mp, index):
 	"""
@@ -1182,11 +1185,13 @@ class RouteView(gtk.DrawingArea):
 		    gc.set_foreground(cm.alloc_color(brushes[self.COLOR_MUTED]))
 		else:
 		    gc.set_foreground(cm.alloc_color(brushes[self.COLOR_DEFAULT]))
-		pi.plugingfx.draw_rectangle(gc, True, -1,-1,PLUGINWIDTH+1,PLUGINHEIGHT+1)
+		pi.plugingfx.draw_rectangle(gc, True, -1, -1,
+                                            PLUGINWIDTH + 1, PLUGINHEIGHT + 1)
 		gc.set_foreground(cm.alloc_color(brushes[self.COLOR_BORDER_OUT]))
-		pi.plugingfx.draw_rectangle(gc, False, 0, 0, PLUGINWIDTH-1,PLUGINHEIGHT-1)
-		gc.set_foreground(cm.alloc_color(brushes[self.COLOR_BORDER_IN]))
-		pi.plugingfx.draw_rectangle(gc, False, 1, 1, PLUGINWIDTH-3,PLUGINHEIGHT-3)
+		pi.plugingfx.draw_rectangle(gc, False, 0, 0, 
+                                            PLUGINWIDTH - 1, PLUGINHEIGHT - 1)
+		#gc.set_foreground(cm.alloc_color(brushes[self.COLOR_BORDER_IN]))
+		#pi.plugingfx.draw_rectangle(gc, False, 1, 1, PLUGINWIDTH-3,PLUGINHEIGHT-3)
 		if player.solo_plugin and player.solo_plugin != mp and is_generator(mp):
 		    title = prepstr('[' + mp.get_name() + ']')
 		elif pi.muted:
