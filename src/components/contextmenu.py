@@ -29,11 +29,13 @@ import gtk
 import aldrin.common as common
 from aldrin.com import com
 import zzub
+import os.path
 
 from aldrin.utils import is_generator, is_root, is_controller, is_effect, \
 	prepstr, Menu, new_theme_image, gettext
 from aldrin.utils import PLUGIN_FLAGS_MASK, ROOT_PLUGIN_FLAGS, \
 	GENERATOR_PLUGIN_FLAGS, EFFECT_PLUGIN_FLAGS, CONTROLLER_PLUGIN_FLAGS
+from aldrin.utils import iconpath
 
 class ContextMenu(Menu):
     __aldrin__ = dict(
@@ -84,14 +86,14 @@ class PluginContextMenu(gtk.Menu):
 	    self.populate_routermenu(menu)
 
     def create_add_machine_submenu(self, menu, connection=False):
-        def get_icon_name(self, pluginloader):
+        def get_icon_name(pluginloader):
             uri = pluginloader.get_uri()
             if uri.startswith('@zzub.org/dssidapter/'):
-                return 'dssi'
+                return iconpath("scalable/dssi.svg")
             if uri.startswith('@zzub.org/ladspadapter/'):
-                return 'ladspa'
+                return iconpath("scalable/ladspa.svg")
             if uri.startswith('@psycle.sourceforge.net/'):
-                return 'psycle'
+                return iconpath("scalable/psycle.svg")
             filename = pluginloader.get_name()
             filename = filename.strip().lower()
             for c in '():[]/,.!"\'$%&\\=?*#~+-<>`@ ':
@@ -99,7 +101,7 @@ class PluginContextMenu(gtk.Menu):
             while '__' in filename:
                 filename = filename.replace('__','_')
             filename = filename.strip('_')
-            return filename
+            return "%s.svg" % iconpath("scalable/" + filename)
         def add_path(tree, path, loader):
             if len(path) == 1:
                 tree[path[0]] = loader
@@ -113,8 +115,14 @@ class PluginContextMenu(gtk.Menu):
         def populate_from_tree(menu, tree):
             for key, value in tree.iteritems():
                 if type(value) is not type({}):
-                    menu.add_item(prepstr(key, fix_underscore=True), 
-                                  create_plugin, value, connection)
+                    icon = gtk.Image()
+                    filename = get_icon_name(value)
+                    if os.path.isfile(filename):
+                        icon.set_from_file(get_icon_name(value))
+                    item = gtk.ImageMenuItem(prepstr(key, fix_underscore=True))
+                    item.set_image(icon)
+                    item.connect('activate', create_plugin, value, connection)
+                    menu.add(item)
                 else:
                     item, submenu = menu.add_submenu(key)
                     populate_from_tree(submenu, value)
