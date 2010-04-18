@@ -181,7 +181,6 @@ class SequencerPanel(gtk.VBox):
 	"""
 	gtk.VBox.__init__(self)
 	self.splitter = gtk.HPaned()
-
 	self.seqliststore = gtk.ListStore(str, str)
 	self.seqpatternlist = gtk.TreeView(self.seqliststore)
 	self.seqpatternlist.set_rules_hint(True)
