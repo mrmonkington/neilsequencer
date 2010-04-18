@@ -615,7 +615,7 @@ class RouteView(gtk.DrawingArea):
 		'MV ${PLUGIN} Border In',
 		'MV Border',
 		'MV Border',
-		'MV Text',
+		'MV ${PLUGIN} Text',
 	]
 	flagids = [
 		(ROOT_PLUGIN_FLAGS, 'Master'),
