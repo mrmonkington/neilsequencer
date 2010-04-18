@@ -838,9 +838,13 @@ class PatternView(gtk.DrawingArea):
 	menu.add_item("Double", self.on_popup_double)
 	menu.add_item("Halve", self.on_popup_halve)
 	menu.add_separator()
-	menu.add_item("Transpose selection up", self.transpose_selection,1).set_sensitive(sel_sensitive)
-	menu.add_item("Transpose selection down", self.transpose_selection,-1).set_sensitive(sel_sensitive)
-	menu.add_item("Interpolate selection", self.interpolate_selection).set_sensitive(sel_sensitive)
+        label, transform = menu.add_submenu("Transform")
+	transform.add_item("Transpose +1", self.transpose_selection, 1).set_sensitive(sel_sensitive)
+	transform.add_item("Transpose -1", self.transpose_selection, -1).set_sensitive(sel_sensitive)
+	transform.add_item("Transpose +12", self.transpose_selection, 12).set_sensitive(sel_sensitive)
+	transform.add_item("Transpose -12", self.transpose_selection, -12).set_sensitive(sel_sensitive)
+	transform.add_item("Interpolate", self.interpolate_selection).set_sensitive(sel_sensitive)
+        transform.add_item("Reverse", self.reverse_selection).set_sensitive(sel_sensitive)
 	menu.add_separator()
 	issolo = player.solo_plugin == self.get_plugin()
 	menu.add_check_item("Solo Plugin", issolo, self.on_popup_solo)
@@ -1308,6 +1312,23 @@ class PatternView(gtk.DrawingArea):
 		for track in range(0, tc):
 		    for index in range(0, self.parameter_count[group]):
 			yield (row, group, track, index)
+
+    def reverse_selection(self, widget):
+        """
+        Reverse the current selection (retrograde).
+        """
+        values = []
+        for row, group, track, index in self.selection_range():
+            value = self.plugin.get_pattern_value(self.pattern, group, track, index, row)
+            values.append([row, group, track, index, value])
+        rows = [entry[0] for entry in values]
+        rows.reverse()
+        values = [[row] + entry[1:] for (row, entry) in zip(rows, values)]
+        for row, group, track, index, value in values:
+            print row, group, track, index, value
+            self.plugin.set_pattern_value(self.pattern, group, track, index, row, value)
+        player = com.get('aldrin.core.player')
+        player.history_commit("reverse")
 
     def transpose_selection(self, widget, offset):
 	"""
