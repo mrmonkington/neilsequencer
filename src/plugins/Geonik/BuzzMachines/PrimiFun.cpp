@@ -224,7 +224,7 @@ CTrack::CTrack() {								// Construction
 CTrack::~CTrack() { }							// Destruction
 
 void CTrack::Init() {							// One time initialization
-	cPulse.Init((zzub::plugin *)pMachine);
+	cPulse.Init();
 	cAdsr.Init();
 	cAdsr.SetAdsr(50,1000,0.8,3000); }
 

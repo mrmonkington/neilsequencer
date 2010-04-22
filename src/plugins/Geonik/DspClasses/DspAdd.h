@@ -4,9 +4,9 @@
 
 #pragma optimize ("a", on)
 
-#define UNROLL		4
+#define UNROLL 4
 
-void DspAdd(float *pout, float const *pin, dword const n) {
+void DspAdd(float *pout, float const *pin, int const n) {
 	if (n >= UNROLL) {
 		int c = n / UNROLL;
 		do {
