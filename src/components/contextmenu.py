@@ -16,7 +16,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+# Foundation, Inc., 51 Franklin Street, Fifth Floor,
 # Boston, MA  02110-1301, USA.
 
 """
@@ -73,8 +73,8 @@ class ContextMenu(Menu):
         return Menu.popup(self, parent, event)
 
 class PluginContextMenu(gtk.Menu):
-    __aldrin__ = dict(id='aldrin.core.popupmenu', 
-                      singleton=True, 
+    __aldrin__ = dict(id='aldrin.core.popupmenu',
+                      singleton=True,
                       categories=['contextmenu.handler'])
 
     def populate_contextmenu(self, menu):
@@ -92,8 +92,8 @@ class PluginContextMenu(gtk.Menu):
             #    return iconpath("scalable/dssi.svg")
             #if uri.startswith('@zzub.org/ladspadapter/'):
             #    return iconpath("scalable/ladspa.svg")
-            if uri.startswith('@psycle.sourceforge.net/'):
-                return iconpath("scalable/psycle.svg")
+            #if uri.startswith('@psycle.sourceforge.net/'):
+            #    return iconpath("scalable/psycle.svg")
             filename = pluginloader.get_name()
             filename = filename.strip().lower()
             for c in '():[]/,.!"\'$%&\\=?*#~+-<>`@ ':
@@ -144,6 +144,8 @@ class PluginContextMenu(gtk.Menu):
                 continue
             if uri.startswith('@zzub.org/ladspadapter/'):
                 continue
+            if uri.startswith('@psycle.sourceforge.net/'):
+                continue
             flags = loader.get_flags()
             has_input = zzub.zzub_plugin_flag_has_audio_input
             has_output = zzub.zzub_plugin_flag_has_audio_output
@@ -192,10 +194,10 @@ class PluginContextMenu(gtk.Menu):
     def populate_pluginmenu(self, menu):
         mp = menu.context
         player = com.get('aldrin.core.player')
-        menu.add_check_item("_Mute", common.get_plugin_infos().get(mp).muted, 
+        menu.add_check_item("_Mute", common.get_plugin_infos().get(mp).muted,
                             self.on_popup_mute, mp)
         if is_generator(mp):
-            menu.add_check_item("_Solo", player.solo_plugin == mp, 
+            menu.add_check_item("_Solo", player.solo_plugin == mp,
                                 self.on_popup_solo, mp)
         menu.add_separator()
         menu.add_item("_Parameters...", self.on_popup_show_params, mp)
@@ -222,11 +224,11 @@ class PluginContextMenu(gtk.Menu):
                     submenuindex += 1
                     for subindex in range(len(subcommands)):
                         subcmd = subcommands[subindex]
-                        submenu.add_item(prepstr(subcmd, fix_underscore=True), 
-                                         self.on_popup_command, mp, 
+                        submenu.add_item(prepstr(subcmd, fix_underscore=True),
+                                         self.on_popup_command, mp,
                                          submenuindex, subindex)
                 else:
-                    menu.add_item(prepstr(cmd), self.on_popup_command, 
+                    menu.add_item(prepstr(cmd), self.on_popup_command,
                                   mp, 0, index)
 
     def on_popup_rename(self, widget, mp):
@@ -242,7 +244,7 @@ class PluginContextMenu(gtk.Menu):
 
         @param event: Menu event.
         @type event: wx.MenuEvent
-        """             
+        """
         player = com.get('aldrin.core.player')
         if player.solo_plugin != mp:
             player.solo(mp)
@@ -257,7 +259,7 @@ class PluginContextMenu(gtk.Menu):
         @type event: wx.MenuEvent
         """
         player = com.get('aldrin.core.player')
-        player.toggle_mute(mp)          
+        player.toggle_mute(mp)
 
     def on_popup_delete(self, widget, mp):
         """
