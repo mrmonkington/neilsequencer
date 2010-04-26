@@ -2,17 +2,22 @@
 #define ARGURU_DISTORTION_HPP
 
 #include <cstdio>
+#include <stdint.h>
 
 #include <zzub/signature.h>
 #include <zzub/plugin.h>
 
 struct Gvals {
-  unsigned short paraThreshold : 16;
-  unsigned short paraGain : 16;
-  unsigned short paraInvert : 8;
-  unsigned short paraMode : 8;
+  uint16_t paraPreGain;
+  uint16_t paraThresholdNeg;
+  uint16_t paraThreshold;
+  uint16_t paraGain;
+  uint8_t paraInvert;
+  uint8_t paraMode;
 } __attribute__((__packed__));
 
+const zzub::parameter *paraPreGain = 0;
+const zzub::parameter *paraThresholdNeg = 0;
 const zzub::parameter *paraThreshold = 0;
 const zzub::parameter *paraGain = 0;
 const zzub::parameter *paraInvert = 0;
@@ -39,7 +44,7 @@ private:
 		       float const negthreshold, float const wet);
   float leftLim;
   float rightLim;
-  int Vals[4];
+  int Vals[6];
 public:
   Distortion();
   virtual ~Distortion();
@@ -92,10 +97,28 @@ struct DistortionInfo : zzub::info {
     this->short_name = "Distortion";
     this->author = "Arguru";
     this->uri = "@libneil/arguru/effect/distortion";
+    paraPreGain = &add_global_parameter()
+      .set_word()
+      .set_name("Input Gain")
+      .set_description("Input Gain")
+      .set_value_min(0x0001)
+      .set_value_max(0x0800)
+      .set_value_none(0xFFFF)
+      .set_state_flag()
+      .set_value_default(0x0100);
+    paraThresholdNeg = &add_global_parameter()
+      .set_word()
+      .set_name("Threshold (-)")
+      .set_description("Threshold level (negative)")
+      .set_value_min(0x0001)
+      .set_value_max(0x8000)
+      .set_value_none(0xFFFF)
+      .set_state_flag()
+      .set_value_default(0x200);
     paraThreshold = &add_global_parameter()
       .set_word()
-      .set_name("Threshold")
-      .set_description("Threshold level")
+      .set_name("Threshold (+)")
+      .set_description("Threshold level (positive)")
       .set_value_min(0x0001)
       .set_value_max(0x8000)
       .set_value_none(0xFFFF)

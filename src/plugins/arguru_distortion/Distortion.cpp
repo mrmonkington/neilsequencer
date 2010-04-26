@@ -25,6 +25,12 @@ void Distortion::destroy() {
 }
 
 void Distortion::process_events() {
+  if (gval.paraPreGain != paraPreGain->value_none) {
+    Vals[4] = gval.paraPreGain;
+  }
+  if (gval.paraThresholdNeg != paraThresholdNeg->value_none) {
+    Vals[5] = gval.paraThresholdNeg;
+  }
   if (gval.paraThreshold != paraThreshold->value_none) {
     Vals[0] = gval.paraThreshold;
   }
@@ -70,10 +76,17 @@ bool Distortion::process_stereo(float **pin, float **pout,
   float *psamplesright = pin[1];
 
   float const threshold = (float)(Vals[0]) / float(0x8000);
-  float const negthreshold = -(float)(Vals[0]) / float(0x8000);
+  float const negthreshold = -(float)(Vals[5]) / float(0x8000);
 
   float const wet = (float)Vals[1] * 0.00390625f;
   float const negwet = -(float)Vals[1] * 0.00390625f;
+
+  float const pre_gain = (float)Vals[4] * 0.00390625f;
+  
+  for (int i = 0; i < numsamples; i++) {
+    pin[0][i] = pin[0][i] * pre_gain;
+    pin[1][i] = pin[1][i] * pre_gain;
+  }
 
   if (Vals[3] == 0) {
     if (Vals[2] == 0) {
@@ -116,19 +129,33 @@ const char *Distortion::describe_value(int param, int value) {
   switch(param) {
   case 0: {
     if(value > 0)
+      sprintf(txt, "%.1f dB", 20.0f * log10(value * 0.00390625f));
+    else
+      sprintf(txt, "-Inf. dB");				
+    return txt;
+  }
+  case 1: {
+    if(value > 0)
       sprintf(txt, "%.1f dB", 20.0f * log10(value * 0.000030517578125f));
     else
       sprintf(txt,"-Inf. dB");				
     return txt;
   }
-  case 1: {
+  case 2: {
+    if(value > 0)
+      sprintf(txt, "%.1f dB", 20.0f * log10(value * 0.000030517578125f));
+    else
+      sprintf(txt,"-Inf. dB");				
+    return txt;
+  }
+  case 3: {
     if(value > 0)
       sprintf(txt, "%.1f dB", 20.0f * log10(value * 0.00390625f));
     else
       sprintf(txt, "-Inf. dB");				
     return txt;
   }
-  case 2: {
+  case 4: {
     switch(value) {
       case 0:
 	sprintf(txt, "Off");	
@@ -139,7 +166,7 @@ const char *Distortion::describe_value(int param, int value) {
     }
     return txt;
   }
-  case 3: {
+  case 5: {
     switch(value) {
     case 0:
       sprintf(txt, "Clip");	
