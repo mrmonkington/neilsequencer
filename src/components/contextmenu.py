@@ -88,10 +88,10 @@ class PluginContextMenu(gtk.Menu):
     def create_add_machine_submenu(self, menu, connection=False):
         def get_icon_name(pluginloader):
             uri = pluginloader.get_uri()
-            if uri.startswith('@zzub.org/dssidapter/'):
-                return iconpath("scalable/dssi.svg")
-            if uri.startswith('@zzub.org/ladspadapter/'):
-                return iconpath("scalable/ladspa.svg")
+            #if uri.startswith('@zzub.org/dssidapter/'):
+            #    return iconpath("scalable/dssi.svg")
+            #if uri.startswith('@zzub.org/ladspadapter/'):
+            #    return iconpath("scalable/ladspa.svg")
             if uri.startswith('@psycle.sourceforge.net/'):
                 return iconpath("scalable/psycle.svg")
             filename = pluginloader.get_name()
@@ -140,6 +140,10 @@ class PluginContextMenu(gtk.Menu):
         for pluginloader in player.get_pluginloader_list():
             plugins[pluginloader.get_uri()] = pluginloader
         for uri, loader in plugins.iteritems():
+            if uri.startswith('@zzub.org/dssidapter/'):
+                continue
+            if uri.startswith('@zzub.org/ladspadapter/'):
+                continue
             flags = loader.get_flags()
             has_input = zzub.zzub_plugin_flag_has_audio_input
             has_output = zzub.zzub_plugin_flag_has_audio_output
