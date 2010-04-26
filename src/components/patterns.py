@@ -2271,8 +2271,8 @@ class PatternView(gtk.DrawingArea):
         pagesize = adj.get_property('page-size')
         value = int(max(min(value, maxv - pagesize), minv) + 0.5)
         widget.set_value(value)
-        if self.start_row != value:
-            self.start_row = value
+        if self.start_row != value / self.resolution * self.resolution:
+            self.start_row = value / self.resolution * self.resolution
         self.redraw()
         return True
 
