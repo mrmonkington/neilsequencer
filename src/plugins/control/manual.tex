@@ -1,0 +1,37 @@
+\starttext
+\setupbodyfont[sansserif, 10pt]
+\setuppagenumbering [location=]
+
+\title{SoMono Control}
+
+\SetTableToWidth{\textwidth}
+
+Control is a controller bank. It can be used to control multiple
+parameters on multiple machines (up to 8 different parameters). Simply
+drag and drop from the appropriate control output to the slider you
+want to control. The intended use for this machine is to have a single
+machine that you can assign MIDI controller knobs to and control many
+aspects of your song while only having to insert a single long pattern
+in the sequencer view. I use it this way - compose a song or simply
+decide how long it will be, make a Control pattern slightly longer
+than that, assign MIDI controller knobs to the ``Value'' sliders in
+the machine, add said pattern to the sequencer view, assign outputs to
+parameters of other machines that I want to control, press record,
+twiddle the knobs, repeat until results are satisfactory.
+
+\placetable{none}{
+\starttable[|l|l|l|l|p50|]
+  \HL                   
+  \NC \bf Parameter \NC \bf Min \NC \bf Max \NC \bf Units \NC \bf Meaning \NC \AR
+  \HL
+  \NC Value \NC 0.0 \NC 1.0 \NC Float \NC Slider value, before any
+  post processing. \NC \AR
+  \NC Power \NC -5.0 \NC 5.0 \NC Float \NC Apply non-linear
+  processing to the slider value of specified strength. \NC \AR
+  \NC Min \NC 0.0 \NC 1.0 \NC Float \NC Minimum value the output can reach. \NC \AR
+  \NC Max \NC 0.0 \NC 1.0 \NC Float \NC Maximum value the output can reach. \NC \AR
+  \HL
+\stoptable
+}
+
+\stoptext
