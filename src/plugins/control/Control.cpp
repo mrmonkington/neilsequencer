@@ -53,9 +53,6 @@ void Control::process_controller_events() {
     float fmin = float(min[i]) / 0xFFFE;
     float fmax = float(max[i]) / 0xFFFE;
     float scale = fmin + fvalue * (fmax - fmin);
-    if (i == 0)
-      //printf("%.4f, %.4f, %.4f, %.4f\n", fvalue, fpower, fmin, fmax);
-      printf("%.4f, %.4f, %.4f\n", fpower, scale, pow(scale, fpower));
     cval[i] = int(cparams[i]->value_max * pow(scale, fpower));
   }
 }
