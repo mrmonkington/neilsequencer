@@ -370,10 +370,11 @@ class VolumeSlider(gtk.Window):
     only be summoned parametrically and will vanish when the
     left mouse button is being released.
     """
-    def __init__(self):
+    def __init__(self, parent):
 	"""
 	Initializer.
 	"""
+        self.parent_window = parent
 	self.plugin = None
 	self.index = -1
 	gtk.Window.__init__(self, gtk.WINDOW_POPUP)
@@ -381,7 +382,7 @@ class VolumeSlider(gtk.Window):
 	self.add(self.drawingarea)
 	self.drawingarea.add_events(gtk.gdk.ALL_EVENTS_MASK)
 	self.drawingarea.set_property('can-focus', True)
-	self.resize(VOLBARWIDTH,VOLBARHEIGHT)
+	self.resize(VOLBARWIDTH, VOLBARHEIGHT)
 	self.hide_all()
 	self.drawingarea.connect('motion-notify-event', self.on_motion)
 	self.drawingarea.connect('expose-event', self.expose)
@@ -394,13 +395,14 @@ class VolumeSlider(gtk.Window):
     def redraw(self):
 	if self.window:
 	    rect = self.drawingarea.get_allocation()
-	    self.drawingarea.window.invalidate_rect((0,0,rect.width, rect.height), False)
+            window = self.drawingarea.window
+	    window.invalidate_rect((0, 0, rect.width, rect.height), False)
 
     def on_motion(self, widget, event):
 	"""
 	Event handler for mouse movements.
 	"""
-	x,y,state = self.drawingarea.window.get_pointer()
+	x, y, state = self.drawingarea.window.get_pointer()
 	newpos = int(y)
 	delta = newpos - self.y
 	if delta == 0:
@@ -439,7 +441,7 @@ class VolumeSlider(gtk.Window):
 	    drawable.draw_rectangle(gc, True, 1, pos + 1, 
                                     VOLBARWIDTH - 2, VOLKNOBHEIGHT - 2)
 
-    def display(self, (mx,my), mp, index):
+    def display(self, (mx, my), mp, index):
 	"""
 	Called by the router view to show the control.
 
@@ -453,9 +455,10 @@ class VolumeSlider(gtk.Window):
 	self.y = VOLBARHEIGHT / 2
 	self.plugin = mp
 	self.index = index
-	self.amp = (linear2db((self.plugin.get_parameter_value(0,index,0)/ 16384.0), -48.0) / -48.0)
-	print self.amp
-	self.move(int(mx - VOLBARWIDTH*0.5), int(my - VOLBARHEIGHT*0.5))
+	self.amp = (linear2db((self.plugin.get_parameter_value(0, index, 0) / 
+                               16384.0), -48.0) / -48.0)
+	#print self.amp
+	self.move(int(mx - VOLBARWIDTH * 0.5), int(my - VOLBARHEIGHT * 0.5))
 	self.show_all()
 	self.drawingarea.grab_add()
 
@@ -467,6 +470,7 @@ class VolumeSlider(gtk.Window):
 	@param event: Mouse event.
 	@type event: wx.MouseEvent
 	"""
+        self.parent_window.redraw()
 	self.hide_all()
 	self.drawingarea.grab_remove()
 
@@ -527,7 +531,7 @@ class RouteView(gtk.DrawingArea):
 	self.autoconnect_target=None
 	self.chordnotes=[]
 	self.update_colors()
-	self.volume_slider = VolumeSlider()		
+	self.volume_slider = VolumeSlider(self)		
 	self.add_events(gtk.gdk.ALL_EVENTS_MASK)
 	self.set_property('can-focus', True)
 	self.connect('button-press-event', self.on_left_down)
@@ -1039,7 +1043,7 @@ class RouteView(gtk.DrawingArea):
 	    return
 	cfg = config.get_config()
 	rect = self.get_allocation()
-	w,h = rect.width,rect.height
+	w, h = rect.width,rect.height
 	arrowcolors = {
 		zzub.zzub_connection_type_audio : [
 			cfg.get_float_color("MV Arrow"),
@@ -1134,14 +1138,21 @@ class RouteView(gtk.DrawingArea):
 			pinfo = self.get_plugin_info(targetmp)
 			tmppos = pinfo.dragpos
 		    crx, cry = get_pixelpos(*tmppos)
-		    draw_line_arrow(bmpctx,arrowcolors[mp.get_input_connection_type(index)],int(crx),int(cry),int(rx),int(ry))
+                    if (mp.get_input_connection_type(index) != 
+                        zzub.zzub_connection_type_event):
+                        amp = mp.get_parameter_value(0, index, 0)
+                        amp /= 16384.0
+                        amp = amp ** 0.5
+                        color = [amp, amp, amp]
+                        arrowcolors[zzub.zzub_connection_type_audio][0] = color
+                    draw_line_arrow(bmpctx, arrowcolors[mp.get_input_connection_type(index)], int(crx), int(cry), int(rx), int(ry))
 	gc = self.window.new_gc()
 	self.window.draw_drawable(gc, self.routebitmap, 0, 0, 0, 0, -1, -1)
 	if self.connecting:
 	    ctx.set_line_width(1)
 	    crx, cry = get_pixelpos(*player.active_plugins[0].get_position())
 	    rx,ry= self.connectpos
-	    draw_line(ctx,int(crx),int(cry),int(rx),int(ry))
+	    draw_line(ctx, int(crx), int(cry), int(rx), int(ry))
 	self.draw_leds()
 
     # This method is not *just* for key-jazz, it handles all key-events in router. Rename?

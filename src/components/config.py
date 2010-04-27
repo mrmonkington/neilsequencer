@@ -120,7 +120,7 @@ DEFAULT_THEME = {
     'MV Arrow': 0xffffff,
     'MV Arrow Border In': 0xafeb73,
     'MV Arrow Border Out': 0x000000,
-    'MV Controller Arrow': 0xd0d0d0,
+    'MV Controller Arrow': 0x09c4cc,
     'MV Controller Arrow Border In': 0xf35d5d,
     'MV Controller Arrow Border Out': 0x000000,
     'MV Background': 0xffffff,
