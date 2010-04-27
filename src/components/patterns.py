@@ -1083,9 +1083,9 @@ class PatternView(gtk.DrawingArea):
 
     def expose(self, widget, *args):
         self.context = widget.window.cairo_create()
-        if self.current_plugin!=self.plugin:
+        if self.current_plugin!=self.get_plugin():
             self.pattern_changed()
-            self.current_plugin=self.plugin
+            self.current_plugin=self.get_plugin()
         self.draw(self.context)
         return False
 
