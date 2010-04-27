@@ -657,6 +657,7 @@ class PatternView(gtk.DrawingArea):
         self.resolution = 1
         self.factors = None
         self.play_notes = True
+        self.current_plugin = ""
         gtk.DrawingArea.__init__(self)
         # "Bitstream Vera Sans Mono"
         self.update_font()
@@ -1082,6 +1083,9 @@ class PatternView(gtk.DrawingArea):
 
     def expose(self, widget, *args):
         self.context = widget.window.cairo_create()
+        if self.current_plugin!=self.plugin:
+            self.pattern_changed()
+            self.current_plugin=self.plugin
         self.draw(self.context)
         return False
 

@@ -21,8 +21,8 @@
 import os
 import gtk
 from aldrin.utils import format_time, ticks_to_time, prepstr, linear2db, db2linear, filepath, \
-	is_debug, question, error, add_scrollbars, file_filter, new_stock_image_toggle_button, \
-	new_stock_image_button, message, refresh_gui
+        is_debug, question, error, add_scrollbars, file_filter, new_stock_image_toggle_button, \
+        new_stock_image_button, message, refresh_gui
 import zzub
 import gobject
 import config
@@ -35,8 +35,8 @@ MARGIN3 = common.MARGIN3
 MARGIN0 = common.MARGIN0
 
 from aldrin.utils import make_submenu_item, make_stock_menu_item, make_stock_tool_item, make_stock_toggle_item, \
-	make_stock_radio_item, make_menu_item, make_check_item, make_radio_item, new_theme_image,  \
-	hicoloriconpath, Menu
+        make_stock_radio_item, make_menu_item, make_check_item, make_radio_item, new_theme_image,  \
+        hicoloriconpath, Menu
 
 import preferences
 show_preferences = preferences.show_preferences
@@ -52,10 +52,10 @@ def cmp_view(a,b):
 
 class FramePanel(gtk.Notebook):
   __aldrin__ = dict(
-	  id = 'aldrin.core.framepanel',
-	  singleton = True,
-	  categories = [
-	  ],
+          id = 'aldrin.core.framepanel',
+          singleton = True,
+          categories = [
+          ],
   )
 
   def __init__(self):
@@ -69,14 +69,14 @@ class FramePanel(gtk.Notebook):
     pages = sorted(com.get_from_category('aldrin.viewpanel'), cmp=cmp_view)
     for index, panel in enumerate(pages):
       if not hasattr(panel, '__view__'):
-	print "panel",panel,"misses attribute __view__"
-	continue
+        print "panel",panel,"misses attribute __view__"
+        continue
       options = panel.__view__
       stockid = options['stockid']
       label = options['label']
       key = options.get('shortcut', '')
       if options.get('default'):
-	defaultpanel = panel
+        defaultpanel = panel
       panel.show_all()
       header = gtk.VBox()
       labelwidget = gtk.Label(label)
@@ -85,9 +85,9 @@ class FramePanel(gtk.Notebook):
       header.pack_start(new_theme_image(stockid, gtk.ICON_SIZE_MENU))
       header.show_all()
       if key:
-	header.set_tooltip_text("%s (%s)" % (label, key))
+        header.set_tooltip_text("%s (%s)" % (label, key))
       else:
-	header.set_tooltip_text(label)
+        header.set_tooltip_text(label)
       self.append_page(panel, header)
     if defaultpanel:
       self.select_viewpanel(defaultpanel)
@@ -96,18 +96,18 @@ class FramePanel(gtk.Notebook):
   def select_viewpanel(self, panel):
     for index in xrange(self.get_n_pages()):
       if self.get_nth_page(index) == panel:
-	self.set_current_page(index)
-	if hasattr(panel, 'handle_focus'):
-	  panel.handle_focus()
-	return
+        self.set_current_page(index)
+        if hasattr(panel, 'handle_focus'):
+          panel.handle_focus()
+        return
 
 class Accelerators(gtk.AccelGroup):
 
   __aldrin__ = dict(
-	  id = 'aldrin.core.accelerators',
-	  singleton = True,
-	  categories = [
-	  ],
+          id = 'aldrin.core.accelerators',
+          singleton = True,
+          categories = [
+          ],
   )
 
   def __init__(self):
@@ -116,14 +116,14 @@ class Accelerators(gtk.AccelGroup):
   def add_accelerator(self, shortcut, widget, signal="activate"):
     key, modifier = gtk.accelerator_parse(shortcut)
     return widget.add_accelerator(signal, self,  key,  modifier,
-				  gtk.ACCEL_VISIBLE)
+                                  gtk.ACCEL_VISIBLE)
 
 class ViewMenu(Menu):
   __aldrin__ = dict(
-	  id = 'aldrin.core.viewmenu',
-	  singleton = True,
-	  categories = [
-	  ],
+          id = 'aldrin.core.viewmenu',
+          singleton = True,
+          categories = [
+          ],
   )
 
   def on_check_item(self, menuitem, view):
@@ -149,23 +149,23 @@ class ViewMenu(Menu):
     accel = com.get('aldrin.core.accelerators')
     for view in views:
       if not hasattr(view, '__view__'):
-	print "view",view,"misses attribute __view__"
-	continue
+        print "view",view,"misses attribute __view__"
+        continue
       options = view.__view__
       label = options['label']
       stockid = options.get('stockid', None)
       shortcut = options.get('shortcut', None)
       if options.get('toggle'):
-	item = self.add_check_item(label, False, self.on_check_item, view)
-	self.connect('show', self.on_activate, item, view)
+        item = self.add_check_item(label, False, self.on_check_item, view)
+        self.connect('show', self.on_activate, item, view)
       elif stockid:
-	item = self.add_image_item(label, new_theme_image(stockid,
-							  gtk.ICON_SIZE_MENU),
-				   self.on_activate_item, view)
+        item = self.add_image_item(label, new_theme_image(stockid,
+                                                          gtk.ICON_SIZE_MENU),
+                                   self.on_activate_item, view)
       else:
-	item = self.add_item(label, self.on_activate_item)
+        item = self.add_item(label, self.on_activate_item)
       if shortcut:
-	accel.add_accelerator(shortcut, item)
+        accel.add_accelerator(shortcut, item)
     if 0:
       # TODO: themes
       tempsubmenu = gtk.Menu()
@@ -174,44 +174,44 @@ class ViewMenu(Menu):
       self.thememenu = tempsubmenu
       cfg = config.get_config()
       if not cfg.get_active_theme():
-	defaultitem.set_active(True)
+        defaultitem.set_active(True)
       defaultitem.connect('toggled', self.on_select_theme, None)
       for name in sorted(cfg.get_theme_names()):
-	item = gtk.RadioMenuItem(label=prepstr(name), group=defaultitem)
-	if name == cfg.get_active_theme():
-	  item.set_active(True)
-	item.connect('toggled', self.on_select_theme, name)
-	tempsubmenu.append(item)
+        item = gtk.RadioMenuItem(label=prepstr(name), group=defaultitem)
+        if name == cfg.get_active_theme():
+          item.set_active(True)
+        item.connect('toggled', self.on_select_theme, name)
+        tempsubmenu.append(item)
       self.append(make_submenu_item(tempsubmenu, "Themes"))
 
 #~class AldrinToolbar(gtk.Toolbar):
 #~ __aldrin__ = dict(
-#~	  id = 'aldrin.core.toolbar',
-#~	  singleton = True,
-#~	  categories = [
-#~		  'view',
-#~	  ],
+#~        id = 'aldrin.core.toolbar',
+#~        singleton = True,
+#~        categories = [
+#~                'view',
+#~        ],
 #~ )
 #~
 #~  __view__ = dict(
-#~		  label = "Toolbar",
-#~		  order = 0,
-#~		  toggle = True,
+#~                label = "Toolbar",
+#~                order = 0,
+#~                toggle = True,
 #~  )
 
 class AldrinStatusbar(gtk.Statusbar):
   __aldrin__ = dict(
-	  id = 'aldrin.core.statusbar',
-	  singleton = True,
-	  categories = [
-		  'view',
-	  ],
+          id = 'aldrin.core.statusbar',
+          singleton = True,
+          categories = [
+                  'view',
+          ],
   )
 
   __view__ = dict(
-		  label = "Statusbar",
-		  order = 0,
-		  toggle = True,
+                  label = "Statusbar",
+                  order = 0,
+                  toggle = True,
   )
 
   def __init__(self):
@@ -224,19 +224,19 @@ class AldrinFrame(gtk.Window):
   """
 
   __aldrin__ = dict(
-	  id = 'aldrin.core.window.root',
-	  singleton = True,
-	  categories = [
-		  'rootwindow',
-	  ],
+          id = 'aldrin.core.window.root',
+          singleton = True,
+          categories = [
+                  'rootwindow',
+          ],
   )
 
   OPEN_SONG_FILTER = [
-	  file_filter("CCM Songs (*.ccm)", "*.ccm"),
+          file_filter("CCM Songs (*.ccm)", "*.ccm"),
   ]
 
   SAVE_SONG_FILTER = [
-	  file_filter("CCM Songs (*.ccm)","*.ccm"),
+          file_filter("CCM Songs (*.ccm)","*.ccm"),
   ]
 
   DEFAULT_EXTENSION = '.ccm'
@@ -245,7 +245,7 @@ class AldrinFrame(gtk.Window):
   filename = ""
 
   event_to_name = dict([(getattr(zzub,x),x) for x in dir(zzub) if \
-			x.startswith('zzub_event_type_')])
+                        x.startswith('zzub_event_type_')])
 
   def __init__(self):
     """
@@ -258,13 +258,13 @@ class AldrinFrame(gtk.Window):
     self.set_position(gtk.WIN_POS_CENTER)
 
     self.open_dlg = gtk.FileChooserDialog(title="Open", parent=self, action=gtk.FILE_CHOOSER_ACTION_OPEN,
-	    buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_OPEN, gtk.RESPONSE_OK)
+            buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_OPEN, gtk.RESPONSE_OK)
     )
     self.open_dlg.add_shortcut_folder(filepath('demosongs'))
     for filefilter in self.OPEN_SONG_FILTER:
       self.open_dlg.add_filter(filefilter)
     self.save_dlg = gtk.FileChooserDialog(title="Save", parent=self, action=gtk.FILE_CHOOSER_ACTION_SAVE,
-	    buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_SAVE, gtk.RESPONSE_OK)
+            buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_SAVE, gtk.RESPONSE_OK)
     )
     self.save_dlg.set_do_overwrite_confirmation(True)
     for filefilter in self.SAVE_SONG_FILTER:
@@ -274,7 +274,7 @@ class AldrinFrame(gtk.Window):
     self.add(vbox)
 
     self.accelerators = com.get('aldrin.core.accelerators')
-    self.add_accel_group(self.accelerators)	
+    self.add_accel_group(self.accelerators)
 
     # Menu Bar
     self.aldrinframe_menubar = gtk.MenuBar()
@@ -322,7 +322,7 @@ class AldrinFrame(gtk.Window):
     #extrasep = gtk.SeparatorToolItem()
     #self.aldrinframe_toolbar.insert(extrasep,-1)
     #if not com.get_from_category('menuitem.toolbar', self.aldrinframe_toolbar):
-    #	extrasep.destroy()
+    #   extrasep.destroy()
 
     self.mastertoolbar = com.get('aldrin.core.panel.master')
     self.transport = com.get('aldrin.core.panel.transport')
@@ -340,11 +340,11 @@ class AldrinFrame(gtk.Window):
 
     self.update_title()
     gtk.window_set_default_icon_list(
-	    gtk.gdk.pixbuf_new_from_file(hicoloriconpath("48x48/apps/aldrin.png")),
-	    gtk.gdk.pixbuf_new_from_file(hicoloriconpath("32x32/apps/aldrin.png")),
-	    gtk.gdk.pixbuf_new_from_file(hicoloriconpath("24x24/apps/aldrin.png")),
-	    gtk.gdk.pixbuf_new_from_file(hicoloriconpath("22x22/apps/aldrin.png")),
-	    gtk.gdk.pixbuf_new_from_file(hicoloriconpath("16x16/apps/aldrin.png")))
+            gtk.gdk.pixbuf_new_from_file(hicoloriconpath("48x48/apps/aldrin.png")),
+            gtk.gdk.pixbuf_new_from_file(hicoloriconpath("32x32/apps/aldrin.png")),
+            gtk.gdk.pixbuf_new_from_file(hicoloriconpath("24x24/apps/aldrin.png")),
+            gtk.gdk.pixbuf_new_from_file(hicoloriconpath("22x22/apps/aldrin.png")),
+            gtk.gdk.pixbuf_new_from_file(hicoloriconpath("16x16/apps/aldrin.png")))
     self.resize(750, 550)
 
     self.connect('key-press-event', self.on_key_down)
@@ -366,14 +366,14 @@ class AldrinFrame(gtk.Window):
       self.open_file(args[1])
     for driver in com.get_from_category('driver'):
       if driver.init_failed:
-	gobject.timeout_add(50, show_preferences, self, 1)
-	break
+        gobject.timeout_add(50, show_preferences, self, 1)
+        break
 
   def on_undo(self, *args):
     """
     Called when an undo item is being called.
     """
-    player = com.get('aldrin.core.player')		
+    player = com.get('aldrin.core.player')
     player.set_callback_state(False)
     player.undo()
     player.set_callback_state(True)
@@ -385,10 +385,10 @@ class AldrinFrame(gtk.Window):
     """
     Called when an undo item is being called.
     """
-    player = com.get('aldrin.core.player')		
+    player = com.get('aldrin.core.player')
     player.set_callback_state(False)
     player.redo()
-    player.set_callback_state(True)		
+    player.set_callback_state(True)
     eventbus = com.get('aldrin.core.eventbus')
     eventbus.document_loaded()
     #self.print_history()
@@ -398,7 +398,7 @@ class AldrinFrame(gtk.Window):
     Dumps the current undo history to console.
     """
     player = com.get('aldrin.core.player')
-    pos = player.history_get_position()		
+    pos = player.history_get_position()
     historysize = player.history_get_size()
     if not historysize:
       print "no history."
@@ -408,7 +408,7 @@ class AldrinFrame(gtk.Window):
       desc = str(player.history_get_description(index))
       s = '#%i: "%s"' % (index,desc)
       if pos == index:
-	s += ' <-'
+        s += ' <-'
       print s
     print "----"
 
@@ -434,7 +434,7 @@ class AldrinFrame(gtk.Window):
       item.destroy()
     player = com.get('aldrin.core.player')
 
-    pos = player.history_get_position()		
+    pos = player.history_get_position()
     self.print_history()
 
     accel = com.get('aldrin.core.accelerators')
@@ -481,8 +481,8 @@ class AldrinFrame(gtk.Window):
     if recent_files:
       self.filemenu.append(gtk.SeparatorMenuItem())
       for i,filename in enumerate(recent_files):
-	filetitle=os.path.basename(filename).replace("_","__")
-	self.filemenu.append(make_menu_item("_%i %s" % (i+1,filetitle), "", self.open_recent_file, filename))
+        filetitle=os.path.basename(filename).replace("_","__")
+        self.filemenu.append(make_menu_item("_%i %s" % (i+1,filetitle), "", self.open_recent_file, filename))
     self.filemenu.append(gtk.SeparatorMenuItem())
     self.filemenu.append(make_stock_menu_item(gtk.STOCK_QUIT, self.on_exit))
     self.filemenu.show_all()
@@ -493,7 +493,7 @@ class AldrinFrame(gtk.Window):
     """
     for pindex,(ctrlid,(panel,menuitem)) in self.pages.iteritems():
       if panel.window and panel.window.is_visible() and hasattr(panel,'view'):
-	return panel.view
+        return panel.view
 
   def on_copy(self, event):
     """
@@ -557,7 +557,7 @@ class AldrinFrame(gtk.Window):
     @param event: menu event.
     @type event: MenuEvent
     """
-    import webbrowser		
+    import webbrowser
     webbrowser.open_new(filepath('../doc/aldrin/html/index.html'))
 
   def on_help_shortcuts(self, *args):
@@ -656,12 +656,12 @@ class AldrinFrame(gtk.Window):
       progBar.set_size_request(300, 40)
       progBar.set_fraction(0)
       progBar.show()
-      dlg.vbox.pack_start(progBar)			
+      dlg.vbox.pack_start(progBar)
       dlg.show()
       done = False
       def progress_callback():
-	progBar.pulse()
-	return not done
+        progBar.pulse()
+        return not done
       progBar.pulse()
       refresh_gui()
       gobject.timeout_add(50, progress_callback)
@@ -689,29 +689,29 @@ class AldrinFrame(gtk.Window):
     player = com.get('aldrin.core.player')
     try:
       if not os.path.splitext(filename)[1]:
-	filename += self.DEFAULT_EXTENSION
+        filename += self.DEFAULT_EXTENSION
       if os.path.isfile(filename):
-	if config.get_config().get_incremental_saving():
-	  # rename incremental
-	  path,basename = os.path.split(filename)
-	  basename,ext = os.path.splitext(basename)
-	  i = 0
-	  while True:
-	    newpath = os.path.join(path,"%s%s.%03i.bak" % (basename,ext,i))
-	    if not os.path.isfile(newpath):
-	      break
-	    i += 1
-	  print '%s => %s' % (filename, newpath)
-	  os.rename(filename, newpath)
-	else:
-	  # store one backup copy
-	  path,basename = os.path.split(filename)
-	  basename,ext = os.path.splitext(basename)
-	  newpath = os.path.join(path,"%s%s.bak" % (basename,ext))
-	  if os.path.isfile(newpath):
-	    os.remove(newpath)
-	  print '%s => %s' % (filename, newpath)
-	  os.rename(filename, newpath)
+        if config.get_config().get_incremental_saving():
+          # rename incremental
+          path,basename = os.path.split(filename)
+          basename,ext = os.path.splitext(basename)
+          i = 0
+          while True:
+            newpath = os.path.join(path,"%s%s.%03i.bak" % (basename,ext,i))
+            if not os.path.isfile(newpath):
+              break
+            i += 1
+          print '%s => %s' % (filename, newpath)
+          os.rename(filename, newpath)
+        else:
+          # store one backup copy
+          path,basename = os.path.split(filename)
+          basename,ext = os.path.splitext(basename)
+          newpath = os.path.join(path,"%s%s.bak" % (basename,ext))
+          if os.path.isfile(newpath):
+            os.remove(newpath)
+          print '%s => %s' % (filename, newpath)
+          os.rename(filename, newpath)
       base,ext = os.path.splitext(filename)
       result = player.save_ccm(filename)
       assert result == 0
@@ -825,7 +825,7 @@ class AldrinFrame(gtk.Window):
     """
     player = com.get('aldrin.core.player')
     player.set_position(max(com.get('aldrin.core.sequencerpanel').view.row,0))
-    player.play()		
+    player.play()
 
   def on_select_theme(self, widget, data):
     """
@@ -916,14 +916,14 @@ class AldrinFrame(gtk.Window):
 
 
 __aldrin__ = dict(
-	classes = [
-		FramePanel,
-		ViewMenu,
-		Accelerators,
-		AldrinFrame,
-		AldrinStatusbar,
-		#~AldrinToolbar,
-	],
+        classes = [
+                FramePanel,
+                ViewMenu,
+                Accelerators,
+                AldrinFrame,
+                AldrinStatusbar,
+                #~AldrinToolbar,
+        ],
 )
 
 if __name__ == '__main__':
