@@ -54,7 +54,7 @@ SID::SID()
   voice[1].set_sync_source(&voice[0]);
   voice[2].set_sync_source(&voice[1]);
 
-  set_sampling_parameters(985248, SAMPLE_FAST, 44100);
+  //set_sampling_parameters(985248, SAMPLE_FAST, 44100);
 
   bus_value = 0;
   bus_value_ttl = 0;
@@ -284,7 +284,7 @@ void SID::mute(reg8 channel, bool enable)
 
   voice[channel].mute (enable);
 }
-  
+
 
 // ----------------------------------------------------------------------------
 // Constructor.
@@ -459,7 +459,7 @@ double SID::I0(double x)
 // E.g. provided a clock frequency of ~ 1MHz, the sample frequency can not
 // be set lower than ~ 8kHz. A lower sample frequency would make the
 // resampling code overfill its 16k sample ring buffer.
-// 
+//
 // The end of passband frequency is also limited:
 //   pass_freq <= 0.9*sample_freq/2
 
@@ -468,8 +468,8 @@ double SID::I0(double x)
 // not overfilled.
 // ----------------------------------------------------------------------------
 bool SID::set_sampling_parameters(double clock_freq, sampling_method method,
-				  double sample_freq, double pass_freq,
-				  double filter_scale)
+                  double sample_freq, double pass_freq,
+                  double filter_scale)
 {
   // Check resampling constraints.
   if (method == SAMPLE_RESAMPLE_INTERPOLATE || method == SAMPLE_RESAMPLE_FAST)
@@ -572,11 +572,11 @@ bool SID::set_sampling_parameters(double clock_freq, sampling_method method,
       double wt = wc*jx/f_cycles_per_sample;
       double temp = jx/(fir_N/2);
       double Kaiser =
-	fabs(temp) <= 1 ? I0(beta*sqrt(1 - temp*temp))/I0beta : 0;
+    fabs(temp) <= 1 ? I0(beta*sqrt(1 - temp*temp))/I0beta : 0;
       double sincwt =
-	fabs(wt) >= 1e-6 ? sin(wt)/wt : 1;
+    fabs(wt) >= 1e-6 ? sin(wt)/wt : 1;
       double val =
-	(1 << FIR_SHIFT)*filter_scale*f_samples_per_cycle*wc/pi*sincwt*Kaiser;
+    (1 << FIR_SHIFT)*filter_scale*f_samples_per_cycle*wc/pi*sincwt*Kaiser;
       fir[fir_offset + j] = short(val + 0.5);
     }
   }
@@ -707,7 +707,7 @@ void SID::clock(cycle_count delta_t)
       // It is only necessary to clock on the MSB of an oscillator that is
       // a sync source and has freq != 0.
       if (!(wave.sync_dest->sync && wave.freq)) {
-	continue;
+    continue;
       }
 
       reg16 freq = wave.freq;
@@ -715,15 +715,15 @@ void SID::clock(cycle_count delta_t)
 
       // Clock on MSB off if MSB is on, clock on MSB on if MSB is off.
       reg24 delta_accumulator =
-	(accumulator & 0x800000 ? 0x1000000 : 0x800000) - accumulator;
+    (accumulator & 0x800000 ? 0x1000000 : 0x800000) - accumulator;
 
       cycle_count delta_t_next = delta_accumulator/freq;
       if (delta_accumulator%freq) {
-	++delta_t_next;
+    ++delta_t_next;
       }
 
       if (delta_t_next < delta_t_min) {
-	delta_t_min = delta_t_next;
+    delta_t_min = delta_t_next;
       }
     }
 
@@ -742,7 +742,7 @@ void SID::clock(cycle_count delta_t)
 
   // Clock filter.
   filter.clock(delta_t,
-	       voice[0].output(), voice[1].output(), voice[2].output(), ext_in);
+           voice[0].output(), voice[1].output(), voice[2].output(), ext_in);
 
   // Clock external filter.
   extfilt.clock(delta_t, filter.output());
@@ -761,7 +761,7 @@ void SID::clock(cycle_count delta_t)
 //   write(dsp, buf, bufindex*2);
 //   bufindex = 0;
 // }
-// 
+//
 // ----------------------------------------------------------------------------
 int SID::clock(cycle_count& delta_t, short* buf, int n, int interleave)
 {
@@ -783,7 +783,7 @@ int SID::clock(cycle_count& delta_t, short* buf, int n, int interleave)
 // ----------------------------------------------------------------------------
 RESID_INLINE
 int SID::clock_fast(cycle_count& delta_t, short* buf, int n,
-		    int interleave)
+            int interleave)
 {
   int s = 0;
 
@@ -820,7 +820,7 @@ int SID::clock_fast(cycle_count& delta_t, short* buf, int n,
 // ----------------------------------------------------------------------------
 RESID_INLINE
 int SID::clock_interpolate(cycle_count& delta_t, short* buf, int n,
-			   int interleave)
+               int interleave)
 {
   int s = 0;
   int i;
@@ -902,7 +902,7 @@ int SID::clock_interpolate(cycle_count& delta_t, short* buf, int n,
 // ----------------------------------------------------------------------------
 RESID_INLINE
 int SID::clock_resample_interpolate(cycle_count& delta_t, short* buf, int n,
-				    int interleave)
+                    int interleave)
 {
   int s = 0;
 
@@ -985,7 +985,7 @@ int SID::clock_resample_interpolate(cycle_count& delta_t, short* buf, int n,
 // ----------------------------------------------------------------------------
 RESID_INLINE
 int SID::clock_resample_fast(cycle_count& delta_t, short* buf, int n,
-			     int interleave)
+                 int interleave)
 {
   int s = 0;
 
