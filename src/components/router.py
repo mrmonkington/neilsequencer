@@ -1147,7 +1147,7 @@ class RouteView(gtk.DrawingArea):
                         zzub.zzub_connection_type_event):
                         amp = mp.get_parameter_value(0, index, 0)
                         amp /= 16384.0
-                        amp = amp ** 0.5
+                        amp = amp ** 0.3
                         color = [amp, amp, amp]
                         arrowcolors[zzub.zzub_connection_type_audio][0] = color
                     draw_line_arrow(bmpctx, arrowcolors[mp.get_input_connection_type(index)], int(crx), int(cry), int(rx), int(ry))
