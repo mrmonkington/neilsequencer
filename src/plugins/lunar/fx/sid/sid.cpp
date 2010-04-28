@@ -373,7 +373,7 @@ public:
         //printf("tdelta %i, n %i\n", tdelta, n);
         int samples = n;
         while (samples > 0) {
-            int tdelta = clockrate * samples / 44100 + 4;// - cycles;
+            int tdelta = clockrate * samples / samplerate + 4;// - cycles;
             int result = emu.clock(tdelta, buf, n); // en c64 går i hva, 1mhz?
             samples -= result;
             if (result < n)
