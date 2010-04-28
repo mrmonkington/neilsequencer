@@ -1,0 +1,35 @@
+\documentstyle{article}
+\begin{document}
+\title{Writing libneil Machines Tutorial}
+\author{Vytautas Jancauskas}
+\maketitle
+
+\section{Introduction}
+We are going to examine here how to write three types of libneil machines - an
+effect, a controller and a generator. They are used respectively to
+process audio, control parameters of other machines and generate
+sounds. For an effect we will write a simple ring modulator with
+selectable modulator waves, for controller - a logistic map based
+controller and for generator - a simple lo-fi style synth. These
+examples are meant to thoroughly demonstrate the capabilities of the
+API and what kind of plug-ins you can write.
+
+\section{Ring Modulator}
+
+A ring modulator is basically a device that takes two audio sources
+and multiplies them together. We will want one source to be built in
+to the effect itself so this gives us a rough outline of the machine -
+generate a waveform of some kind with a specified frequency, multiply
+it with the input and voila.
+
+Now let us decide what kind of a user interface we want. We will
+probably want a frequency control for the modulator, and the effect
+amount which will be the gain applied to the modulator. In effect we
+will scale the modulator before multiplying it with the input. We
+probably want our frequency slider to go from 20Hz to oh say 20000Hz
+and we will want our gain slider to go from, for example, -96dB up to
+0dB which will play the wave at full volume. Now that we have this
+information we will want to make a basic set of C++ files to create a
+stub for our machine. You should create a new directory, name it
+``ringmod'' and create three files in it.
+\end{document}
