@@ -243,11 +243,12 @@ class EnvelopeView(gtk.DrawingArea):
 	    if f & zzub.zzub_envelope_flag_sustain:
 		f = f ^ (f & zzub.zzub_envelope_flag_sustain)
 		self.envelope.set_point(i, x, y, f)
-	x, y, f = self.envelope.get_point(self.currentpoint)
-	self.envelope.set_point(self.currentpoint, x, y, f |
-				zzub.zzub_envelope_flag_sustain)
-	self.currentpoint = None
-	self.redraw()
+        print self.currentpoint
+        x, y, f = self.envelope.get_point(self.currentpoint)
+        self.envelope.set_point(self.currentpoint, x, y, f |
+                                zzub.zzub_envelope_flag_sustain)
+        self.currentpoint = None
+        self.redraw()
 
     def on_reset(self, widget, event):
 	"""
