@@ -13,21 +13,21 @@ public:
     float m_a1, m_a2, m_b0, m_b1, m_b2;
     float m_Oa1, m_Oa2, m_Ob0, m_Ob1, m_Ob2;
     float m_x1, m_x2, m_y1, m_y2;
-    CBiquad() { 
-        m_x1=0.0f; 
-        m_y1=0.0f; 
-        m_x2=0.0f; 
-        m_y2=0.0f; 
+    CBiquad() {
+        m_x1=0.0f;
+        m_y1=0.0f;
+        m_x2=0.0f;
+        m_y2=0.0f;
     }
-    inline float ProcessSample(float dSmp) { 
-        float dOut=m_b0*dSmp+m_b1*m_x1+m_b2*m_x2-m_a1*m_y1-m_a2*m_y2;        
+    inline float ProcessSample(float dSmp) {
+        float dOut=m_b0*dSmp+m_b1*m_x1+m_b2*m_x2-m_a1*m_y1-m_a2*m_y2;
         m_y2=m_y1;
         m_y1=dOut;
         m_x2=m_x1;
         m_x1=dSmp;
         return dOut;
     }
-    inline float ProcessSampleSafe(float dSmp) { 
+    inline float ProcessSampleSafe(float dSmp) {
         float dOut=m_b0*dSmp+m_b1*m_x1+m_b2*m_x2-m_a1*m_y1-m_a2*m_y2;
         if (dOut>=-0.00001 && dOut<=0.00001) dOut=0.0;
         m_x2=m_x1;
@@ -53,7 +53,7 @@ public:
         //m_Ob1=m_b1;
         //m_Ob2=m_b2;
     }
-    
+
     void PostNewFilter()
     {
         //m_x1=m_x1*m_Ob1/m_b1;
@@ -68,14 +68,14 @@ public:
         //return (float)(/*1.0/*/tan(3.1415926/2.0-3.1415926*dCutoff/dSampleRate));
         return (float)(tan(3.1415926*dCutoff/dSampleRate));
     }
-    
+
     float PreWarp2(float dCutoff, float dSampleRate)
     {
         if (dCutoff>dSampleRate*0.4) dCutoff=(float)(dSampleRate*0.4);
         //return (float)(/*1.0/*/tan(3.1415926/2.0-3.1415926*dCutoff/dSampleRate));
         return (float)(tan(3.1415926/2.0-3.1415926*dCutoff/dSampleRate));
     }
-    
+
     void SetBilinear(float B0, float B1, float B2, float A0, float A1, float A2)
     {
         float q=(float)(1.0/(A0+A1+A2));
@@ -85,7 +85,7 @@ public:
         m_a1=2*(A0-A2)*q;
         m_a2=(A0-A1+A2)*q;
     }
-    
+
   // Robert Bristow-Johnson, robert@audioheads.com
     void rbjLPF(double fc, double Q, double esr, double gain=1.0)
     {
@@ -119,7 +119,7 @@ public:
         m_a1 =  (float)(-2*cs*inv);
         m_a2 =  (float)((1 - alpha)*inv);
     }
-    
+
     void rbjBPF(double fc, double Q, double esr, double gain=1.0)
     {
         float omega=(float)(2*PI*fc/esr);
@@ -227,7 +227,7 @@ public:
         m_a2 =  float(oda0*(1.0f - k/q + kk));
         PostNewFilter();
     }
-      
+
     void SetLowpass1(float dCutoff, float dSampleRate)
     {
         float a=PreWarp(dCutoff, dSampleRate);
@@ -281,7 +281,7 @@ public:
         m_a1=(float)(2*R*cos(2*PI*dCutoff));
         m_a2=-R*R;
     }
-    
+
     void SetIntegrator()
     {
         m_b0=1.0;
@@ -290,7 +290,7 @@ public:
         m_b1=0.0;
         m_b2=0.0;
     }
-    
+
     void SetNothing()
     {
         m_b0=1.0;
@@ -299,7 +299,7 @@ public:
         m_b1=0.0;
         m_b2=0.0;
     }
-    
+
     void SetResonantLP(float dCutoff, float Q, float dSampleRate)
     {
         float a=(float)PreWarp2(dCutoff, dSampleRate);
@@ -307,7 +307,7 @@ public:
         float A=(float)(2*B*(1-B));
         SetBilinear(1, 0, 0, 1, A*a, B*a*a);
     }
-    
+
     void SetResonantHP(float dCutoff, float Q, float dSampleRate)  // doesn't work
     {
         float a=(float)PreWarp2((dSampleRate/2)/dCutoff, dSampleRate);
@@ -315,7 +315,7 @@ public:
         float A=(float)(2*B*(1-B));
         SetBilinear(0, 0, 1, B*a*a, A*a, 1);
     }
-    
+
     void SetAllpass2(float dCutoff, float fPoleR, float dSampleRate)
     {
         float a=PreWarp(dCutoff, dSampleRate);
@@ -327,7 +327,7 @@ public:
     {
         m_x1=m_y1=m_x2=m_y2=0.0f;
     }
-    
+
     void Copy(const CBiquad &src)
     {
         m_a1=src.m_a1;
@@ -347,20 +347,20 @@ public:
     float Resonance;
     float ThevFactor;
     int SampleFrequency;
-    
+
     C6thOrderFilter() {
-        SampleFrequency = 44100;        
+        //SampleFrequency = 44100;
         ResetFilter();
     }
-    
-    inline float ProcessSample(float fSmp) { 
-        return m_filter3.ProcessSample(m_filter2.ProcessSample(m_filter.ProcessSample(fSmp))); 
+
+    inline float ProcessSample(float fSmp) {
+        return m_filter3.ProcessSample(m_filter2.ProcessSample(m_filter.ProcessSample(fSmp)));
     }
-  
+
     void setup(float sample_frequency, float filter_type, float cutoff, float resonance, float thevfactor) {
-        this->SampleFrequency = int(sample_frequency);        
+        this->SampleFrequency = int(sample_frequency);
         ResetFilter();
-        CalcCoeffs(int(filter_type), cutoff, resonance, thevfactor/240.0f);        
+        CalcCoeffs(int(filter_type), cutoff, resonance, thevfactor/240.0f);
     }
 
     void process(float *buffer, int size) {
@@ -369,7 +369,7 @@ public:
             in = *buffer;
             out =m_filter3.ProcessSample(m_filter2.ProcessSample(m_filter.ProcessSample(in)));
             *buffer++ = out;
-        }            
+        }
     }
 
     void ResetFilter()
@@ -511,7 +511,7 @@ public:
 
         float CutoffFreq=(float)(132*pow((float)64,(float)(CurCutoff/240.0)));
         float cf=(float)CutoffFreq;
-        if (cf>=20000) cf=20000; 
+        if (cf>=20000) cf=20000;
         if (cf<33) cf=(float)(33.0);
         float ScaleResonance=(float)pow((float)(cf/20000.0),ThevFactor);
         // float ScaleResonance=1.0;
@@ -560,7 +560,7 @@ public:
 
         float CutoffFreq=(float)(132*pow((float)64,(float)(CurCutoff/240.0)));
         float cf=(float)CutoffFreq;
-        if (cf>=20000) cf=20000; 
+        if (cf>=20000) cf=20000;
         if (cf<33) cf=(float)(33.0);
         float ScaleResonance=(float)pow((float)(cf/22000.0),ThevFactor);
         // float ScaleResonance=1.0;

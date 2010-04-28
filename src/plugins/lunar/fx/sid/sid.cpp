@@ -40,350 +40,353 @@ unsigned char freqtblhi[] = {
 unsigned char sidorder[] = { 0x15,0x16,0x18,0x17,
 0x05,0x06,0x02,0x03,0x00,0x01,0x04,
 0x0c,0x0d,0x09,0x0a,0x07,0x08,0x0b,
-0x13,0x14,0x10,0x11,0x0e,0x0f,0x12 
+0x13,0x14,0x10,0x11,0x0e,0x0f,0x12
 };
 
 struct voice {
-	int wave;
-	int freq, note;
-	int attack, decay, sustain, release;
-	int on;
-	int filter;
-	int ringmod, sync;
+    int wave;
+    int freq, note;
+    int attack, decay, sustain, release;
+    int on;
+    int filter;
+    int ringmod, sync;
 };
 
 class sid : public lunar::fx<sid> {
 public:
-	int clockrate;
-	SID emu;
+    int clockrate;
+    SID emu;
+    float samplerate;
 
-	int cycles;
-	unsigned char regs[29];
+    int cycles;
+    unsigned char regs[29];
 
-	// states:
-	voice voices[3];
-	int volume, resonance, mode;
+    // states:
+    voice voices[3];
+    int volume, resonance, mode;
 
-	bool flush_regs;
+    bool flush_regs;
 
-	sid() {
-	}
+    sid() {
+    }
 
-	void init() {
-		clockrate = PALCLOCKRATE;
-		//emu.set_sampling_parameters(clockrate, SAMPLE_FAST, 44100);
-		//emu.reset();
-		//emu.set_chip_model(MOS8580);
-		emu.set_chip_model(MOS6581);
+    void init() {
+        clockrate = PALCLOCKRATE;
+        samplerate = transport->samples_per_second;
+        emu.set_sampling_parameters(clockrate, SAMPLE_FAST, samplerate);
+        //emu.reset();
+        //emu.set_chip_model(MOS8580);
+        emu.set_chip_model(MOS6581);
 
-		// reset states
-		memset(voices, 0, sizeof(voices));
-		memset(regs, 0, sizeof(regs));
-		resonance = 0;
-		mode = 0;
-		volume = 0;
-		cycles = 0;
-		flush_regs = false;
- 	}
-	
-	void exit() {
-		delete this;
-	}
-	
-	void sid_write(int reg, int value) {
-		//emu.clock(9);
-		printf("reg %x: %x\n", reg, value);
-		emu.write(reg, value);
-		cycles += 9;
-	}
-	
-	void process_events() {
-		
-		bool reg18_changed = false;	// mode/vol
-		bool reg17_changed = false;
+        // reset states
+        memset(voices, 0, sizeof(voices));
+        memset(regs, 0, sizeof(regs));
+        resonance = 0;
+        mode = 0;
+        volume = 0;
+        cycles = 0;
+        flush_regs = false;
+    }
 
-		if (globals->volume) {
-			volume = *globals->volume;
-			reg18_changed = true;
-		}
-		if (globals->cutoff) {
-			int cutoff = *globals->cutoff;
-			unsigned char fclo = cutoff & 0xFF;
-			unsigned char fchi = cutoff >> 8;
-			regs[0x15] = fclo;
-			regs[0x16] = fchi;
-//			sid_write(0x15, fclo);
-//			sid_write(0x16, fchi);
-		}
-		if (globals->resonance) {
-			resonance = *globals->resonance;
-			reg17_changed = true;
-		}
-		/*if (globals->filter) {
-			filter = 1 << ((int)*globals->filter);
-			reg17_changed = true;
-		}*/
-		if (globals->mode) {
-			mode = 1 << ((int)*globals->mode);
-			reg18_changed = true;
-		}
+    void exit() {
+        delete this;
+    }
 
-		int filters = 0;
-		for (int t = 0; t < track_count; t++) {
-			bool reg00_changed = false;	// reg 00 and 01: freq
-			bool reg02_changed = false;	// sustain+release
-			bool reg04_changed = false;	// wave + flags
-			bool reg05_changed = false;	// attack+decay
-			bool reg06_changed = false;	// attack+decay
+    void sid_write(int reg, int value) {
+        //emu.clock(9);
+        printf("reg %x: %x\n", reg, value);
+        emu.write(reg, value);
+        cycles += 9;
+    }
 
-			if (tracks[t].wave) {
-				voices[t].wave = 1 << ((int)*tracks[t].wave);
-				reg04_changed = true;
-			}
-			
-			if (tracks[t].pw) {
-				int pw = *tracks[t].pw;
-				unsigned char pwlo = pw & 0xFF;
-				unsigned char pwhi = pw >> 8;
-				regs[0x02 + t*7] = pwlo;
-				regs[0x03 + t*7] = pwhi;
-				//sid_write(0x02 + t*7, pwlo);
-				//sid_write(0x03 + t*7, pwhi);
-			}
-			
-			if (tracks[t].filtervoice) {
-				voices[t].filter = *tracks[t].filtervoice;
-				reg17_changed = true;
-			}
+    void process_events() {
 
-			bool no_new_note = false;
-			if (tracks[t].effect) {
-				int eff = *tracks[t].effect;
-				if (eff == 0x30)
-					no_new_note = true;
-			}
+        bool reg18_changed = false; // mode/vol
+        bool reg17_changed = false;
 
-			if (voices[t].filter)
-				filters |= (1 << t);
+        if (globals->volume) {
+            volume = *globals->volume;
+            reg18_changed = true;
+        }
+        if (globals->cutoff) {
+            int cutoff = *globals->cutoff;
+            unsigned char fclo = cutoff & 0xFF;
+            unsigned char fchi = cutoff >> 8;
+            regs[0x15] = fclo;
+            regs[0x16] = fchi;
+//          sid_write(0x15, fclo);
+//          sid_write(0x16, fchi);
+        }
+        if (globals->resonance) {
+            resonance = *globals->resonance;
+            reg17_changed = true;
+        }
+        /*if (globals->filter) {
+            filter = 1 << ((int)*globals->filter);
+            reg17_changed = true;
+        }*/
+        if (globals->mode) {
+            mode = 1 << ((int)*globals->mode);
+            reg18_changed = true;
+        }
 
-			
-			if (tracks[t].note) {
+        int filters = 0;
+        for (int t = 0; t < track_count; t++) {
+            bool reg00_changed = false; // reg 00 and 01: freq
+            bool reg02_changed = false; // sustain+release
+            bool reg04_changed = false; // wave + flags
+            bool reg05_changed = false; // attack+decay
+            bool reg06_changed = false; // attack+decay
 
-				voices[t].note = *tracks[t].note;
+            if (tracks[t].wave) {
+                voices[t].wave = 1 << ((int)*tracks[t].wave);
+                reg04_changed = true;
+            }
 
-				if (*tracks[t].note == 0) {
-					// stop voice
-					voices[t].on = false;
-					reg04_changed = true;		// disable voice
-				} else {
-					// set up note
-					float tnote = *tracks[t].note;
-					float Fout = 440.0f * pow(2.0f, (tnote - 69.0f) / 12.0f) * 44100 / 44100;
-					voices[t].freq = Fout;//Fout / 0.058725357f;	// Fout = (Fn * 0.058725357) Hz for PAL
+            if (tracks[t].pw) {
+                int pw = *tracks[t].pw;
+                unsigned char pwlo = pw & 0xFF;
+                unsigned char pwhi = pw >> 8;
+                regs[0x02 + t*7] = pwlo;
+                regs[0x03 + t*7] = pwhi;
+                //sid_write(0x02 + t*7, pwlo);
+                //sid_write(0x03 + t*7, pwhi);
+            }
 
-					reg18_changed = true;		// set new volume with note
-					//sid_write(0x18, 15);	// max volume
-					//sid_write(0x05 + t*7, 0xCC);	// attack/&decay
-					//sid_write(0x06 + t*7, 0xCC);	// sustain/release
+            if (tracks[t].filtervoice) {
+                voices[t].filter = *tracks[t].filtervoice;
+                reg17_changed = true;
+            }
 
-					//sid_write(0x02 + t*7, 0x2C);	// pw lo
-					//sid_write(0x03 + t*7, 0x0A);	// pw hi
+            bool no_new_note = false;
+            if (tracks[t].effect) {
+                int eff = *tracks[t].effect;
+                if (eff == 0x30)
+                    no_new_note = true;
+            }
 
-					voices[t].on = true;
-					reg00_changed = true;		// new freq
-					reg04_changed = true;		// enable voice
-				}
-			}
-			
-			if (tracks[t].ringmod) {
-				voices[t].ringmod = *tracks[t].ringmod;
-				reg04_changed;
-			}
-			if (tracks[t].sync) {
-				voices[t].sync = *tracks[t].sync;
-				reg04_changed;
-			}
-			if (tracks[t].attack) {
-				voices[t].attack = *tracks[t].attack;
-				reg05_changed = true;
-			}
-			if (tracks[t].decay) {
-				voices[t].decay = *tracks[t].decay;
-				reg05_changed = true;
-			}
-			if (tracks[t].sustain) {
-				voices[t].sustain = *tracks[t].sustain;
-				reg06_changed = true;
-			}
-			if (tracks[t].release) {
-				voices[t].release = *tracks[t].release;
-				reg06_changed = true;
-			}
+            if (voices[t].filter)
+                filters |= (1 << t);
 
-			// write out changed registers for this voice:
-			if (reg00_changed) {
-				// FREQUENCY = (REGISTER VALUE * CLOCK)/16777216 Hz
-				int value = voices[t].freq * 16777216.0f / clockrate;
-				unsigned char freqhi = value >> 8;
-				unsigned char freqlo = value & 0xFF;
-				
-				int tlo = freqtbllo[voices[t].note];
-				int thi = freqtblhi[voices[t].note];
-				
-				//printf("calculated freqs: %x %x; table freqs: %x, %x", freqhi, freqlo, thi, tlo);
-				regs[0x00 + t*7] = tlo;
-				regs[0x01 + t*7] = thi;
-				//sid_write(0x00 + t*7, tlo);
-				//sid_write(0x01 + t*7, thi);
-				//sid_write(0x00 + t*7, freqlo);
-				//sid_write(0x01 + t*7, freqhi);
-			}
-			if (reg05_changed) {
-				unsigned char attackdecay = (voices[t].attack << 4) | voices[t].decay;
-				regs[0x05 + t*7] = attackdecay;
-				//sid_write(0x05 + t*7, attackdecay);
-			}
-			if (reg06_changed) {
-				unsigned char sustainrelease = (voices[t].sustain << 4) | voices[t].release;
-				regs[0x06 + t*7] = sustainrelease;
-				//sid_write(0x06 + t*7, sustainrelease);
-			}
-			// reg04 = wave + enable, do this last
-			if (reg04_changed) {
-				unsigned char ctrl = 
-					(voices[t].wave << 4) | 
-					(voices[t].ringmod << 2) |
-					(voices[t].sync << 1) |
-					(voices[t].on);
-				regs[0x04 + t*7] = ctrl;
-				//sid_write(0x04 + t*7, ctrl);
-			}
-		}
 
-		// write out global registers
-		if (reg17_changed) {
-			unsigned char resfilt = (resonance << 4) | filters;
-			regs[0x17] = resfilt;
-			//sid_write(0x17,  resfilt);
-		}
-		if (reg18_changed) {
-			unsigned char modevol = (mode << 4) | volume;
-			regs[0x18] = modevol;
-			//sid_write(0x18,  modevol);
-		}
-		
-		flush_regs = true;
+            if (tracks[t].note) {
 
-	}
+                voices[t].note = *tracks[t].note;
 
-	// adapted from GoatTracker
+                if (*tracks[t].note == 0) {
+                    // stop voice
+                    voices[t].on = false;
+                    reg04_changed = true;       // disable voice
+                } else {
+                    // set up note
+                    float tnote = *tracks[t].note;
+                    float Fout = 440.0f * pow(2.0f, (tnote - 69.0f) / 12.0f) * samplerate / samplerate;
+
+                    voices[t].freq = Fout;//Fout / 0.058725357f;    // Fout = (Fn * 0.058725357) Hz for PAL
+
+                    reg18_changed = true;       // set new volume with note
+                    //sid_write(0x18, 15);  // max volume
+                    //sid_write(0x05 + t*7, 0xCC);  // attack/&decay
+                    //sid_write(0x06 + t*7, 0xCC);  // sustain/release
+
+                    //sid_write(0x02 + t*7, 0x2C);  // pw lo
+                    //sid_write(0x03 + t*7, 0x0A);  // pw hi
+
+                    voices[t].on = true;
+                    reg00_changed = true;       // new freq
+                    reg04_changed = true;       // enable voice
+                }
+            }
+
+            if (tracks[t].ringmod) {
+                voices[t].ringmod = *tracks[t].ringmod;
+                reg04_changed;
+            }
+            if (tracks[t].sync) {
+                voices[t].sync = *tracks[t].sync;
+                reg04_changed;
+            }
+            if (tracks[t].attack) {
+                voices[t].attack = *tracks[t].attack;
+                reg05_changed = true;
+            }
+            if (tracks[t].decay) {
+                voices[t].decay = *tracks[t].decay;
+                reg05_changed = true;
+            }
+            if (tracks[t].sustain) {
+                voices[t].sustain = *tracks[t].sustain;
+                reg06_changed = true;
+            }
+            if (tracks[t].release) {
+                voices[t].release = *tracks[t].release;
+                reg06_changed = true;
+            }
+
+            // write out changed registers for this voice:
+            if (reg00_changed) {
+                // FREQUENCY = (REGISTER VALUE * CLOCK)/16777216 Hz
+                int value = voices[t].freq * 16777216.0f / clockrate;
+                unsigned char freqhi = value >> 8;
+                unsigned char freqlo = value & 0xFF;
+
+                int tlo = freqtbllo[voices[t].note];
+                int thi = freqtblhi[voices[t].note];
+
+                //printf("calculated freqs: %x %x; table freqs: %x, %x", freqhi, freqlo, thi, tlo);
+                regs[0x00 + t*7] = tlo;
+                regs[0x01 + t*7] = thi;
+                //sid_write(0x00 + t*7, tlo);
+                //sid_write(0x01 + t*7, thi);
+                //sid_write(0x00 + t*7, freqlo);
+                //sid_write(0x01 + t*7, freqhi);
+            }
+            if (reg05_changed) {
+                unsigned char attackdecay = (voices[t].attack << 4) | voices[t].decay;
+                regs[0x05 + t*7] = attackdecay;
+                //sid_write(0x05 + t*7, attackdecay);
+            }
+            if (reg06_changed) {
+                unsigned char sustainrelease = (voices[t].sustain << 4) | voices[t].release;
+                regs[0x06 + t*7] = sustainrelease;
+                //sid_write(0x06 + t*7, sustainrelease);
+            }
+            // reg04 = wave + enable, do this last
+            if (reg04_changed) {
+                unsigned char ctrl =
+                    (voices[t].wave << 4) |
+                    (voices[t].ringmod << 2) |
+                    (voices[t].sync << 1) |
+                    (voices[t].on);
+                regs[0x04 + t*7] = ctrl;
+                //sid_write(0x04 + t*7, ctrl);
+            }
+        }
+
+        // write out global registers
+        if (reg17_changed) {
+            unsigned char resfilt = (resonance << 4) | filters;
+            regs[0x17] = resfilt;
+            //sid_write(0x17,  resfilt);
+        }
+        if (reg18_changed) {
+            unsigned char modevol = (mode << 4) | volume;
+            regs[0x18] = modevol;
+            //sid_write(0x18,  modevol);
+        }
+
+        flush_regs = true;
+
+    }
+
+    // adapted from GoatTracker
 
 #define NUMSIDREGS 0x19
 #define SIDWRITEDELAY 9 // lda $xxxx,x 4 cycles, sta $d400,x 5 cycles
 #define SIDWAVEDELAY 4 // and $xxxx,x 4 cycles extra
 
-	unsigned char sid_getorder(unsigned char index)
-	{
-	  //if (adparam >= 0xf000)
-	    //return altsidorder[index];
-	  //else
-	    return sidorder[index];
-	}
+    unsigned char sid_getorder(unsigned char index)
+    {
+      //if (adparam >= 0xf000)
+        //return altsidorder[index];
+      //else
+        return sidorder[index];
+    }
 
-	void process_stereo_goat(float *inL, float *inR, float *outL, float *outR, int n)
-	//int sid_fillbuffer(short *ptr, int samples)
-	{
-		short buf[512];
-		short* ptr = buf;
-		int samples = n;
+    void process_stereo_goat(float *inL, float *inR, float *outL, float *outR, int n)
+    //int sid_fillbuffer(short *ptr, int samples)
+    {
+        short buf[512];
+        short* ptr = buf;
+        int samples = n;
 
-		int tdelta;
-		int tdelta2;
-		int result;
-		int total = 0;
-		int c;
-		
-		int badline = 0;//rand() % NUMSIDREGS;
-		
-		tdelta = clockrate * samples / 44100 + 4;
-		
-		for (c = 0; c < NUMSIDREGS; c++)
-		{
-			unsigned char o = sid_getorder(c);
-			
-			// Extra delay for loading the waveform (and mt_chngate,x)
-			if ((o == 4) || (o == 11) || (o == 18))
-			{
-				tdelta2 = SIDWAVEDELAY;
-				result = emu.clock(tdelta2, ptr, samples);
-				total += result;
-				ptr += result;
-				samples -= result;
-				tdelta -= SIDWAVEDELAY;
-			}
-			
-			// Possible random badline delay once per writing
-			/*if ((badline == c) && (residdelay))
-			{
-				tdelta2 = residdelay;
-				result = sid->clock(tdelta2, ptr, samples);
-				total += result;
-				ptr += result;
-				samples -= result;
-				tdelta -= residdelay;
-			}*/
-			
-			emu.write(o, regs[o]);
-			
-			tdelta2 = SIDWRITEDELAY;
-			result = emu.clock(tdelta2, ptr, samples);
-			total += result;
-			ptr += result;
-			samples -= result;
-			tdelta -= SIDWRITEDELAY;
-		}
-		result = emu.clock(tdelta, ptr, samples);
-		total += result;
+        int tdelta;
+        int tdelta2;
+        int result;
+        int total = 0;
+        int c;
 
-		for (int i = 0; i < n; i++) {
-			short s = buf[i];//emu.output();
-			float fs = (float)s / 32767.0f;
-			outL[i] = fs;
-			outR[i] = fs;
-		}		
-	}
-	
+        int badline = 0;//rand() % NUMSIDREGS;
 
-	void process_stereo(float *inL, float *inR, float *outL, float *outR, int n) {
+        tdelta = clockrate * samples / samplerate + 4;
 
-		if (flush_regs) {
-			for (int i = 0; i < 29; i++) {
-				emu.write(i, regs[i]);
-				cycles += 9;
-			}
-			flush_regs = false;
-		}
-		
-		cycles = 0;
+        for (c = 0; c < NUMSIDREGS; c++)
+        {
+            unsigned char o = sid_getorder(c);
 
-		short buf[512];
-		//printf("tdelta %i, n %i\n", tdelta, n);
-		int samples = n;
-		while (samples > 0) {
-			int tdelta = clockrate * samples / 44100 + 4;// - cycles;
-			int result = emu.clock(tdelta, buf, n);	// en c64 går i hva, 1mhz?
-			samples -= result;
-			if (result < n)
-				printf("result: %i, was %i\n", result, n);
-		}
+            // Extra delay for loading the waveform (and mt_chngate,x)
+            if ((o == 4) || (o == 11) || (o == 18))
+            {
+                tdelta2 = SIDWAVEDELAY;
+                result = emu.clock(tdelta2, ptr, samples);
+                total += result;
+                ptr += result;
+                samples -= result;
+                tdelta -= SIDWAVEDELAY;
+            }
 
-		for (int i = 0; i < n; i++) {
-			short s = buf[i];//emu.output();
-			float fs = (float)s / 32767.0f;
-			outL[i] = fs;
-			outR[i] = fs;
-		}
-	}
+            // Possible random badline delay once per writing
+            /*if ((badline == c) && (residdelay))
+            {
+                tdelta2 = residdelay;
+                result = sid->clock(tdelta2, ptr, samples);
+                total += result;
+                ptr += result;
+                samples -= result;
+                tdelta -= residdelay;
+            }*/
+
+            emu.write(o, regs[o]);
+
+            tdelta2 = SIDWRITEDELAY;
+            result = emu.clock(tdelta2, ptr, samples);
+            total += result;
+            ptr += result;
+            samples -= result;
+            tdelta -= SIDWRITEDELAY;
+        }
+        result = emu.clock(tdelta, ptr, samples);
+        total += result;
+
+        for (int i = 0; i < n; i++) {
+            short s = buf[i];//emu.output();
+            float fs = (float)s / 32767.0f;
+            outL[i] = fs;
+            outR[i] = fs;
+        }
+    }
+
+
+    void process_stereo(float *inL, float *inR, float *outL, float *outR, int n) {
+
+        if (flush_regs) {
+            for (int i = 0; i < 29; i++) {
+                emu.write(i, regs[i]);
+                cycles += 9;
+            }
+            flush_regs = false;
+        }
+
+        cycles = 0;
+
+        short buf[512];
+        //printf("tdelta %i, n %i\n", tdelta, n);
+        int samples = n;
+        while (samples > 0) {
+            int tdelta = clockrate * samples / samplerate + 4;// - cycles;
+            int result = emu.clock(tdelta, buf, n); // en c64 går i hva, 1mhz?
+            samples -= result;
+            if (result < n)
+                printf("result: %i, was %i\n", result, n);
+        }
+
+        for (int i = 0; i < n; i++) {
+            short s = buf[i];//emu.output();
+            float fs = (float)s / 32767.0f;
+            outL[i] = fs;
+            outR[i] = fs;
+        }
+    }
 };
 
 lunar_fx *new_fx() {
