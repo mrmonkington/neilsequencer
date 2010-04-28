@@ -196,7 +196,9 @@ class EnvelopeView(gtk.DrawingArea):
 		return
 	    if location == NEXT:
 		self.context_menu.popup(None, None, None, event.button, event.time)
+                self.sustain.hide()
 	    else:
+                self.sustain.show()
 		self.context_menu.popup(None, None, None, event.button, event.time)
 
     def on_button_up(self, widget, event):
