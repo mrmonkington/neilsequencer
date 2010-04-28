@@ -35,11 +35,14 @@ void Control::process_events() {
   for (int i = 0; i < 4 * 8; i += 4) {
     if (gval[i] != 0xFFFF) {
       value[i / 4] = gval[i];
-    } else if (gval[i + 1] != 0xFFFF) {
+    } 
+    if (gval[i + 1] != 0xFFFF) {
       power[i / 4] = gval[i + 1];
-    } else if (gval[i + 2] != 0xFFFF) {
+    }
+    if (gval[i + 2] != 0xFFFF) {
       min[i / 4] = gval[i + 2];
-    } else if (gval[i + 3] != 0xFFFF) {
+    } 
+    if (gval[i + 3] != 0xFFFF) {
       max[i / 4] = gval[i + 3];
     }
   }
