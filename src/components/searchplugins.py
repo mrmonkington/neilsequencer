@@ -40,7 +40,7 @@ DRAG_FORMATS = [
 	('application/x-aldrin-plugin-uri', 0, DRAG_FORMAT_PLUGIN_URI)
 ]
 
-class SearchPluginsDialog(gtk.Dialog):
+class SearchPluginsDialog(gtk.Window):
 
     __aldrin__ = dict(
         id = 'aldrin.core.searchplugins',
@@ -58,7 +58,11 @@ class SearchPluginsDialog(gtk.Dialog):
 	)
 
     def __init__(self):
-	gtk.Dialog.__init__(self, "Search Plugins")
+	gtk.Window.__init__(self)
+        self.set_default_size(250, -1)
+        self.vbox = gtk.VBox()
+        self.add(self.vbox)
+        self.set_title("Search Plugins")
         self.connect('delete-event', self.hide_on_delete)
 	com.get("aldrin.core.icons") # make sure theme icons are loaded
 	self.searchterms = ['']
