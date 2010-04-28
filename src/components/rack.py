@@ -400,7 +400,7 @@ class ParameterView(gtk.VBox):
 		conn.get_output().delete_input(conn.get_input())
 	self.update_namelabel(g,t,i)
 
-    def on_learn_controller(self, widget, (g,t,i)):
+    def on_learn_controller(self, widget, (g, t, i)):
 	"""
 	Handles the learn entry from the context menu. Associates
 	a controller with a plugin parameter.
@@ -453,16 +453,16 @@ class ParameterView(gtk.VBox):
 
     # this fails to add italics to event-connected parameters
     # because get_event_connection_bindings() is broken, for now.
-    def update_namelabel(self, g,t,i):
+    def update_namelabel(self, g, t, i):
 	player = com.get('aldrin.core.player')
-	nl,s,vl = self.pid2ctrls[(g,t,i)]
+	nl, s, vl = self.pid2ctrls[(g, t, i)]
 	markup = "<b>%s</b>" % nl._default_name
-	if self.get_event_connection_bindings(g,t,i):
+	if self.get_event_connection_bindings(g, t, i):
 	    markup = "<i>%s</i>" % markup
 	for mm in player.get_midimapping_list():
-	    mp,mg,mt,mi = mm.get_plugin(), mm.get_group(), mm.get_track(), mm.get_column()
-	    if (player.get_plugin_by_id(mp) == self.plugin) and ((mg,mt,mi) == (g,t,i)):
-		markup = "<u>%s</u>" % markup
+	    mp, mg, mt, mi = mm.get_plugin(), mm.get_group(), mm.get_track(), mm.get_column()
+	    if (player.get_plugin_by_id(mp) == self.plugin) and ((mg, mt, mi) == (g, t, i)):
+		markup = "<u>%s</u> [%d]" % (markup, mm.get_controller())
 		break
 	nl.set_markup(markup)
 
