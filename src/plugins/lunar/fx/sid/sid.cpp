@@ -181,8 +181,6 @@ public:
                     // set up note
                     float tnote = *tracks[t].note;
                     float Fout = 440.0f * pow(2.0f, (tnote - 69.0f) / 12.0f) * samplerate / samplerate;
-                    printf("Fout = %f/n",Fout);
-                    printf("samplerate = %f/n",samplerate);
 
                     voices[t].freq = Fout;//Fout / 0.058725357f;    // Fout = (Fn * 0.058725357) Hz for PAL
 
