@@ -1083,9 +1083,12 @@ class PatternView(gtk.DrawingArea):
 
     def expose(self, widget, *args):
         self.context = widget.window.cairo_create()
-        if self.current_plugin!=self.get_plugin():
+        if self.current_plugin!=self.plugin:
             self.pattern_changed()
-            self.current_plugin=self.get_plugin()
+            self.current_plugin=self.plugin
+        player = com.get('aldrin.core.player')
+        if not(player.spinbox_edit):
+            self.grab_focus()
         self.draw(self.context)
         return False
 
@@ -1573,6 +1576,8 @@ class PatternView(gtk.DrawingArea):
         if not self.selection:
             self.selection = self.Selection()
         self.grab_focus()
+        player = com.get('aldrin.core.player')
+        player.spinbox_edit = False
         if event.button == 3:
             self.on_context_menu(event)
         if self.pattern == -1:
