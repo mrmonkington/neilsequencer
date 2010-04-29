@@ -292,9 +292,9 @@ class TransportPanel(gtk.HBox):
         @type event: wx.Event
         """
         player = com.get('aldrin.core.player')
-        player.get_plugin(0).set_parameter_value(1, 0, 2, int(self.tpb.get_value()), 1)
-        player.history_commit("change TPB")
-        config.get_config().set_default_int('TPB', int(self.tpb.get_value()))
+        player.get_plugin(0).set_parameter_value(1, 0, 2, int(self.bpm.get_value()), 1)
+        player.history_commit("change BPM")
+        config.get_config().set_default_int('BPM', int(self.bpm.get_value()))
 
     def on_tpb(self, widget):
         """
