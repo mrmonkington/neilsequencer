@@ -74,11 +74,13 @@ class TransportPanel(gtk.HBox):
         self.bpm.set_range(16,500)
         self.bpm.set_value(126)
         self.bpm.set_increments(1, 10)
+        self.bpm.connect('button-press-event', self.spinbox_clicked)
         self.tpblabel = gtk.Label("TPB")
         self.tpb = gtk.SpinButton()
         self.tpb.set_range(1,32)
         self.tpb.set_value(16)
         self.tpb.set_increments(1, 2)
+        self.tpb.connect('button-press-event', self.spinbox_clicked)
         self.btnplay = new_stock_image_toggle_button(gtk.STOCK_MEDIA_PLAY, "Play (F5/F6)")
         self.btnrecord = new_stock_image_toggle_button(gtk.STOCK_MEDIA_RECORD, "Record (F7)")
         self.btnstop = new_stock_image_button(gtk.STOCK_MEDIA_STOP, "Stop (F8)")
@@ -173,6 +175,10 @@ class TransportPanel(gtk.HBox):
         accel.add_accelerator('F12', self.btnpanic, 'clicked')
 
         self.update_all()
+
+    def spinbox_clicked(self, widget, event):
+        player = com.get('aldrin.core.player')
+        player.spinbox_edit = True
 
     def play(self, widget):
         player = com.get('aldrin.core.player')
@@ -289,7 +295,6 @@ class TransportPanel(gtk.HBox):
         player.get_plugin(0).set_parameter_value(1, 0, 2, int(self.tpb.get_value()), 1)
         player.history_commit("change TPB")
         config.get_config().set_default_int('TPB', int(self.tpb.get_value()))
-        player.spinbox_edit = True
 
     def on_tpb(self, widget):
         """
@@ -302,8 +307,6 @@ class TransportPanel(gtk.HBox):
         player.get_plugin(0).set_parameter_value(1, 0, 2, int(self.tpb.get_value()), 1)
         player.history_commit("change TPB")
         config.get_config().set_default_int('TPB', int(self.tpb.get_value()))
-        player.spinbox_edit = True
-
 
     def update_bpm(self):
         block = self.hgroup.autoblock()
