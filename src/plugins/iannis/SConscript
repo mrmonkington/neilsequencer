@@ -1,0 +1,8 @@
+Import('pluginenv', 'build_plugin')
+
+localenv = pluginenv.Clone()
+
+noise_files = ["noise/Noise.cpp"]
+
+build_plugin(localenv, "iannis_noise", noise_files)
+	     

@@ -1,4 +1,5 @@
-\documentstyle{article}
+\documentclass[a4paper, 12pt]{article}
+\usepackage{listings}
 \begin{document}
 \title{Writing libneil Machines Tutorial}
 \author{Vytautas Jancauskas}
@@ -31,5 +32,35 @@ and we will want our gain slider to go from, for example, -96dB up to
 0dB which will play the wave at full volume. Now that we have this
 information we will want to make a basic set of C++ files to create a
 stub for our machine. You should create a new directory, name it
-``ringmod'' and create three files in it.
+``ringmod'' and create three files in it. These files should be called
+``Ringmod.cpp'', ``Ringmod.hpp'' and ``SConstruct''. On Linux this can
+be done in the shell by running the following commands.
+
+\lstset{language=bash}
+
+\begin{lstlisting}[frame=trbl]{}
+  mkdir ringmod
+  cd ringmod
+  touch Ringmod.cpp
+  touch Ringmod.hpp
+  touch SConstruct
+\end{lstlisting}
+
+After doing this you will first have to open ``SConstruct'' file in
+your favorite text editor (mine is GNU Emacs). This file tells the
+build system we are using (scons) how to build our plug-in and where
+to install it after it is built. Now add the following text to the
+mentioned file. 
+
+\lstset{language=Python}
+\begin{lstlisting}[frame=trbl, caption=SConstruct]{}
+target = "ringmod"
+sources = ["Ringmod.cpp"]
+SharedLibrary(target=target, source=sources)
+\end{lstlisting}
+
+In this short file we specify our target library name, which C++ files
+to compile and then we specify we want to build a shared library
+(plug-ins are usually shared libraries).
+
 \end{document}
