@@ -189,9 +189,10 @@ class ParameterView(gtk.VBox):
 	    button = gtk.Button('Drag to connect')
 	    button.drag_source_set(gtk.gdk.BUTTON1_MASK | gtk.gdk.BUTTON3_MASK,
 		    self.DROP_TARGETS, gtk.gdk.ACTION_COPY)
-	    button.connect('drag-data-get', self.on_drag_data_get, (g,t,i))
-	    button.connect('drag-data-delete', self.on_drag_data_delete, (g,t,i))
-	    button.connect('drag-end', self.on_drag_end, (g,t,i))
+	    button.connect('drag-data-get', self.on_drag_data_get, (g, t, i))
+	    button.connect('drag-data-delete', self.on_drag_data_delete, 
+                           (g, t, i))
+	    button.connect('drag-end', self.on_drag_end, (g, t, i))
 	    snamegroup.add_widget(namelabel)
 	    namelabel.set_alignment(0, 0.5)
 	    slidergroup = gtk.HBox(False, MARGIN)
@@ -331,7 +332,7 @@ class ParameterView(gtk.VBox):
 	return True
 
     def on_drag_end(self, w, context, (g,t,i)):
-	self.update_namelabel(g,t,i)
+	self.update_namelabel(g, t, i)
 
     def find_event_connection(self, source):
 	for index in xrange(self.plugin.get_input_connection_count()):
