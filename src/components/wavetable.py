@@ -1,7 +1,7 @@
 #encoding: latin-1
-# Neil
+# Aldrin
 # Modular Sequencer
-# Copyright (C) 2006,2007,2008 The Neil Development Team
+# Copyright (C) 2006,2007,2008 The Aldrin Development Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -24,25 +24,25 @@ the envelope viewer.
 
 if __name__ == '__main__':
     import os	
-    os.system('../../bin/neil-combrowser neil.core.wavetablepanel')
+    os.system('../../bin/aldrin-combrowser aldrin.core.wavetablepanel')
     raise SystemExit
 
 import gtk
 import gobject
 import os, sys, stat
-from neil.utils import prepstr, db2linear, linear2db, note2str, filepath,\
+from aldrin.utils import prepstr, db2linear, linear2db, note2str, filepath,\
      new_listview, new_image_button, add_scrollbars, file_filter, question,\
      new_image_toggle_button, format_filesize, error, new_stock_image_button,\
      ObjectHandlerGroup, imagepath
-import neil.utils as utils
+import aldrin.utils as utils
 import zzub
 import config
-from neil.envelope import EnvelopeView, ADSRPanel
-from neil.waveedit import WaveEditPanel
+from aldrin.envelope import EnvelopeView, ADSRPanel
+from aldrin.waveedit import WaveEditPanel
 import popen2
-import neil.common as common
-from neil.common import MARGIN, MARGIN2, MARGIN3
-import neil.com as com
+import aldrin.common as common
+from aldrin.common import MARGIN, MARGIN2, MARGIN3
+import aldrin.com as com
 
 class WavetablePanel(gtk.VBox):
     """
@@ -52,18 +52,18 @@ class WavetablePanel(gtk.VBox):
     It contains controls to transfer files between the song and the file system, and components that facilitate
     sample editing for example loops and envelopes.
     """
-    __neil__ = dict(
-	    id = 'neil.core.wavetablepanel',
+    __aldrin__ = dict(
+	    id = 'aldrin.core.wavetablepanel',
 	    singleton = True,
 	    categories = [
-		    'neil.viewpanel',
+		    'aldrin.viewpanel',
 		    'view',
 	    ]
     )	
 
     __view__ = dict(
 		    label = "Wavetable",
-		    stockid = "neil_samplebank",
+		    stockid = "aldrin_samplebank",
 		    shortcut = 'F9',
 		    order = 9,
     )
@@ -260,7 +260,7 @@ class WavetablePanel(gtk.VBox):
 	    except:
 		print "couldn't set current sample browser path: '%s'." % currentpath
 		
-	eventbus = com.get('neil.core.eventbus')
+	eventbus = com.get('aldrin.core.eventbus')
 	eventbus.zzub_wave_allocated += self.update_samplelist
 	eventbus.zzub_wave_allocated += self.update_sampleprops
 	eventbus.zzub_wave_allocated += self.envelope.update
@@ -333,7 +333,7 @@ class WavetablePanel(gtk.VBox):
 	"""
 	Returns a list with currently selected sample indices.
 	"""
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	return [w.get_index() for w in player.active_waves]
 
     def get_samplelist_selection(self):
@@ -387,7 +387,7 @@ class WavetablePanel(gtk.VBox):
 	"""
 	Renames currently selected sample.
 	"""
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	selects = self.get_sample_selection()
 	if not(selects) or len(selects)>1:
 	    return
@@ -427,7 +427,7 @@ class WavetablePanel(gtk.VBox):
 	    v = min(max(int(self.edsamplerate.get_text()),50),200000)
 	except ValueError:
 	    return
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	for i in self.get_sample_selection():
 	    w = player.get_wave(i)
 	    if w.get_level_count() >= 1:
@@ -448,7 +448,7 @@ class WavetablePanel(gtk.VBox):
 	except ValueError:
 	    print "invalid value."
 	    return
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	for i in self.get_sample_selection():
 	    w = player.get_wave(i)
 	    if w.get_level_count() >= 1:
@@ -470,7 +470,7 @@ class WavetablePanel(gtk.VBox):
 	except ValueError:
 	    print "invalid value."
 	    return
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	for i in self.get_sample_selection():
 	    w = player.get_wave(i)
 	    if w.get_level_count() >= 1:
@@ -484,7 +484,7 @@ class WavetablePanel(gtk.VBox):
 	"""
 	Callback of checkbox that enables or disables bidirectional looping for the selected sample.
 	"""
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	for i in self.get_sample_selection():
 	    w = player.get_wave(i)
 	    flags = w.get_flags()
@@ -500,7 +500,7 @@ class WavetablePanel(gtk.VBox):
 	"""
 	Callback of checkbox that enables or disables looping for the selected sample.
 	"""
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	for i in self.get_sample_selection():
 	    w = player.get_wave(i)
 	    flags = w.get_flags()
@@ -516,7 +516,7 @@ class WavetablePanel(gtk.VBox):
 	"""
 	Callback of checkbox that enables or disables the envelope for the selected sample.
 	"""
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	for i in self.get_sample_selection():
 	    w = player.get_wave(i)
 	    if w.get_envelope_count() == 0:
@@ -536,7 +536,7 @@ class WavetablePanel(gtk.VBox):
 	@param event: CommandEvent event
 	@type event: wx.CommandEvent		
 	"""
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	vol = db2linear(int(value) / 100.0)		
 	for i in self.get_sample_selection():
 	    w = player.get_wave(i)
@@ -571,7 +571,7 @@ class WavetablePanel(gtk.VBox):
 		return
 	elif question(self, '<b><big>Really delete instrument?</big></b>',False) != gtk.RESPONSE_YES:
 	    return
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	for i in sel:
 	    player.get_wave(i).clear()
 	if len(sel) > 1:
@@ -596,7 +596,7 @@ class WavetablePanel(gtk.VBox):
 	"""
 	# master = player.get_plugin(0)
 	# vol = -76.0 * (master.get_parameter_value(1, 0, 0) / 16384.0)
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	vol = min(max(config.get_config().get_sample_preview_volume(),-76.0),0.0)
 	amp = db2linear(vol,limit=-76.0)
 	#player.set_wave_amp(amp)
@@ -611,7 +611,7 @@ class WavetablePanel(gtk.VBox):
 	"""
 	Callback of a button that plays the currently selected sample in the sample list.
 	"""		
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	selects = self.get_sample_selection()
 	if selects:
 	    w = player.get_wave(selects[0])
@@ -623,7 +623,7 @@ class WavetablePanel(gtk.VBox):
 	"""
 	Callback of a button that stops playback of a wave file that is currently playing.
 	"""
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	player.stop_preview()
 
     def on_save_sample(self, widget):
@@ -634,7 +634,7 @@ class WavetablePanel(gtk.VBox):
 	@param event: Command event
 	@type event: wx.CommandEvent
 	"""
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	selects = self.get_sample_selection()
 	for s in selects:
 	    w = player.get_wave(s)
@@ -674,7 +674,7 @@ class WavetablePanel(gtk.VBox):
 	elif len(selects) > len(samplepaths):
 	    selects = selects[:len(samplepaths)]
 	assert len(selects) == len(samplepaths)
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	for source,target in zip(samplepaths, selects):
 	    print "loading %s => %s" % (source,target)
 	    w = player.get_wave(target)
@@ -739,7 +739,7 @@ class WavetablePanel(gtk.VBox):
 	Previews a sample from the filesystem.
 	"""
 	base,ext = os.path.splitext(path)
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	# (4 << 4) + 1 ?
 	if not player.preview_file(path):
 	    error(self, "<b><big>Unable to preview <i>%s</i>.</big></b>\n\nThe file may be corrupt or the file type is not supported." % path)
@@ -847,7 +847,7 @@ class WavetablePanel(gtk.VBox):
 	sel = self.get_sample_selection()
 	if not sel:
 	    return
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	w = player.get_wave(sel[0])
 	for i in range(w.get_level_count()):
 	    level = w.get_level(i)
@@ -863,7 +863,7 @@ class WavetablePanel(gtk.VBox):
 	Includes volume slider and looping properties.
 	"""
 	block = self.ohg.autoblock()
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	sel = self.get_sample_selection()
 	if not sel:
 	    sel = -1
@@ -940,7 +940,7 @@ class WavetablePanel(gtk.VBox):
 	@param event: Command event
 	@type event: wx.CommandEvent
 	"""
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	player.active_waves = self.get_samplelist_selection()
 
     def update_samplelist(self, *args):
@@ -949,7 +949,7 @@ class WavetablePanel(gtk.VBox):
 	"""
 	# update sample list
 	block = self.ohg.autoblock()
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	selection = self.samplelist.get_selection()
 	iter = self.samplestore.get_iter_first()
 	if not iter: # empty
@@ -976,7 +976,7 @@ class WavetablePanel(gtk.VBox):
 	Stretches the sample so it fits the loop
 	"""
 	import math
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	bpm = player.get_bpm()
 	for sel in self.get_sample_selection():
 	    w = player.get_wave(sel)
@@ -1004,7 +1004,7 @@ class WavetablePanel(gtk.VBox):
 	the loop.
 	"""
 	import math
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	bpm = player.get_bpm()
 	for sel in self.get_sample_selection():
 	    w = player.get_wave(sel)
@@ -1056,7 +1056,7 @@ __all__ = [
 	'WavetablePanel',
 ]
 
-__neil__ = dict(
+__aldrin__ = dict(
 	classes = [
 		EnvelopeView,
 		WavetablePanel,

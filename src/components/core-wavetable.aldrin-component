@@ -1,0 +1,9 @@
+[Aldrin COM]
+Module=wavetable
+Name=Wavetable Panel
+Description=Provides a wavetable panel to the application.
+Icon=aldrin
+Authors=The Aldrin Development Team
+Copyright=Copyright (C) 2006,2007,2008 The Aldrin Development Team
+Website=http://www.aldrin.eu
+

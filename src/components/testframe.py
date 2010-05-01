@@ -1,8 +1,8 @@
 #encoding: latin-1
 
-# Neil
+# Aldrin
 # Modular Sequencer
-# Copyright (C) 2006,2007,2008 The Neil Development Team
+# Copyright (C) 2006,2007,2008 The Aldrin Development Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -19,14 +19,14 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import gtk
-import neil.com as com
+import aldrin.com as com
 
 class TestDialog(gtk.Dialog):
 	"""
 	A test dialog for testing embedded views.
 	"""
-	__neil__ = dict(
-		id = 'neil.test.dialog',
+	__aldrin__ = dict(
+		id = 'aldrin.test.dialog',
 		singleton = False,
 		categories = [
 		]
@@ -44,7 +44,7 @@ class TestDialog(gtk.Dialog):
 	def on_destroy(self, event):
 		gtk.main_quit()
 
-__neil__ = dict(
+__aldrin__ = dict(
 	classes = [
 		TestDialog,
 	],

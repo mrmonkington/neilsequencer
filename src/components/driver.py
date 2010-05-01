@@ -1,8 +1,8 @@
 #encoding: latin-1
 
-# Neil
+# Aldrin
 # Modular Sequencer
-# Copyright (C) 2006,2007,2008 The Neil Development Team
+# Copyright (C) 2006,2007,2008 The Aldrin Development Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -25,12 +25,12 @@ Contains tool functions to deal with audio and midi drivers.
 import config
 import zzub
 
-import neil.com as com
-from neil.utils import error
+import aldrin.com as com
+from aldrin.utils import error
 
 class MidiDriver:
-	__neil__ = dict(
-		id = 'neil.core.driver.midi',
+	__aldrin__ = dict(
+		id = 'aldrin.core.driver.midi',
 		singleton = True,
 		categories = [
 			'driver',
@@ -41,20 +41,20 @@ class MidiDriver:
 		pass
 	def __init__(self):
 		self.enabled = False
-		eventbus = com.get('neil.core.eventbus')
+		eventbus = com.get('aldrin.core.eventbus')
 		eventbus.shutdown += self.destroy
 		self.init_failed = False
 		try:
 			self.init()
 		except self.MidiInitException:
 			self.init_failed = True
-			error(self, "<b><big>Neil was unable to initialize MIDI output.</big></b>\n\nPlease check your MIDI settings.")
+			error(self, "<b><big>Aldrin was unable to initialize MIDI output.</big></b>\n\nPlease check your MIDI settings.")
 
 	def destroy(self):
 		if not self.enabled:
 			return
 		print "uninitializing midi driver..."
-		player = com.get('neil.core.player')
+		player = com.get('aldrin.core.player')
 		zzub.Mididriver.close_all(player)
 		self.enabled = False
 		
@@ -63,7 +63,7 @@ class MidiDriver:
 			self.destroy()
 		midiinputs = config.get_config().get_mididriver_inputs()
 		midioutputs = config.get_config().get_mididriver_outputs()
-		player = com.get('neil.core.player')
+		player = com.get('aldrin.core.player')
 		for i in range(zzub.Mididriver.get_count(player)):
 			drivername = zzub.Mididriver.get_name(player,i).strip() 
 			if zzub.Mididriver.is_input(player,i) and drivername in midiinputs:
@@ -77,8 +77,8 @@ class MidiDriver:
 		self.enabled = True
 
 class AudioDriver:
-	__neil__ = dict(
-		id = 'neil.core.driver.audio',
+	__aldrin__ = dict(
+		id = 'aldrin.core.driver.audio',
 		singleton = True,
 		categories = [
 			'driver',
@@ -93,14 +93,14 @@ class AudioDriver:
 		self.samplerate = 44100
 		self.buffersize = 256
 		self.driver = None
-		eventbus = com.get('neil.core.eventbus')
+		eventbus = com.get('aldrin.core.eventbus')
 		eventbus.shutdown += self.destroy
 		self.init_failed = False
 		try:
 			self.init()
 		except self.AudioInitException:
 			self.init_failed = True
-			error(None, "<b><big>Neil was unable to initialize audio output.</big></b>\n\nPlease check your audio settings in the preferences dialog.")
+			error(None, "<b><big>Aldrin was unable to initialize audio output.</big></b>\n\nPlease check your audio settings in the preferences dialog.")
 		
 	def destroy(self):
 		if not self.enabled:
@@ -129,7 +129,7 @@ class AudioDriver:
 			self.destroy()
 		inputname, outputname, samplerate, buffersize = config.get_config().get_audiodriver_config()
 		print inputname, outputname
-		player = com.get('neil.core.player')
+		player = com.get('aldrin.core.player')
 		self.driver = zzub.Audiodriver.create(player)
 		if not self.driver.get_count():
 			raise self.AudioInitException
@@ -186,7 +186,7 @@ class AudioDriver:
 		self.buffersize = buffersize
 		self.enabled = True
 
-__neil__ = dict(
+__aldrin__ = dict(
 	classes = [
 		AudioDriver,
 		MidiDriver,

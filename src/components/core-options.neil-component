@@ -1,9 +1,0 @@
-[Neil COM]
-Module=options
-Name=Options
-Description=Provides an interface to application options.
-Icon=neil
-Authors=The Neil Development Team
-Copyright=Copyright (C) 2006,2007,2008 The Neil Development Team
-Website=http://www.neil.eu
-

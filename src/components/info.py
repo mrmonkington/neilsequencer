@@ -1,8 +1,8 @@
 #encoding: latin-1
 
-# Neil
+# Aldrin
 # Modular Sequencer
-# Copyright (C) 2006,2007,2008 The Neil Development Team
+# Copyright (C) 2006,2007,2008 The Aldrin Development Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -23,10 +23,10 @@ Provides an info view which allows to enter text.
 """
 
 import gtk
-import neil.common as common
-from neil.utils import add_scrollbars
-from neil.common import MARGIN, MARGIN0, MARGIN2, MARGIN3
-import neil.com as com
+import aldrin.common as common
+from aldrin.utils import add_scrollbars
+from aldrin.common import MARGIN, MARGIN0, MARGIN2, MARGIN3
+import aldrin.com as com
 
 LICENSES = [
 	dict(
@@ -65,18 +65,18 @@ class InfoPanel(gtk.VBox):
     """
     Contains the info view.
     """
-    __neil__ = dict(
-	    id = 'neil.core.infopanel',
+    __aldrin__ = dict(
+	    id = 'aldrin.core.infopanel',
 	    singleton = True,
 	    categories = [
-		    'neil.viewpanel',
+		    'aldrin.viewpanel',
 		    'view',
 	    ]
     )		
 
     __view__ = dict(
 		    label = "Info",
-		    stockid = "neil_info",
+		    stockid = "aldrin_info",
 		    shortcut = 'F11',
 		    order = 11,
     )
@@ -135,7 +135,7 @@ class InfoView(gtk.TextView):
 	@param event: Event
 	@type event: wx.Event
 	"""
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	player.set_infotext(self.get_buffer().get_property('text'))
 
     def reset(self):
@@ -148,10 +148,10 @@ class InfoView(gtk.TextView):
 	"""
 	Updates the view.
 	"""
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	text = player.get_infotext()
 	#~ if not text:
-	    #~ text = "Composed with Neil.\n\nThe revolution will not be televised."
+	    #~ text = "Composed with Aldrin.\n\nThe revolution will not be televised."
 	self.get_buffer().set_property('text', text)
 
 
@@ -160,7 +160,7 @@ _all__ = [
 	'InfoView',
 ]
 
-__neil__ = dict(
+__aldrin__ = dict(
 	classes = [
 		InfoPanel,
 		InfoView,

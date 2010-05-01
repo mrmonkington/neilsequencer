@@ -1,8 +1,8 @@
 #encoding: latin-1
 
-# Neil
+# Aldrin
 # Modular Sequencer
-# Copyright (C) 2006 The Neil Development Team
+# Copyright (C) 2006 The Aldrin Development Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@ import glob, os
 
 #######################################
 #
-# neil extensions
+# aldrin extensions
 #
 #######################################
 
@@ -35,7 +35,7 @@ pvenv = None
 pvbasename = None
 
 def install_extension(source):
-	install('${NEIL_INSTALL_PATH}/pluginviews/' + pvbasename, source)
+	install('${ALDRIN_INSTALL_PATH}/pluginviews/' + pvbasename, source)
 
 for filename in os.listdir('.'):
 	pluginview_dir_path = os.path.abspath(filename)

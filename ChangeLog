@@ -1,4 +1,4 @@
-Neil 0.13 (Mars)
+Aldrin 0.13 (Mars)
 ==================
 
 Enhancements:
@@ -9,7 +9,7 @@ Searchable plugin list browser
 Pattern zooming
 Improved DSSI support
 
-Neil 0.12 (Luna)
+Aldrin 0.12 (Luna)
 ==================
 
 Enhancements:
@@ -66,12 +66,12 @@ Parameters display correctly on blackbox and other window managers
 #403 scrollbars in pattern editor are dodgy
 #405 Signal analysis in router needs converted from wx -> Gtk
 
-Neil 0.11 (Terra)
+Aldrin 0.11 (Terra)
 ===================
 
 Enhancements:
 
-#334: port neil from wxpython to pygtk
+#334: port aldrin from wxpython to pygtk
 #332: MIDI Learn function
 #188: Rearrange toolbar position
 #340: Ctrl-D in sequence view
@@ -86,7 +86,7 @@ Bugs fixed:
 #344: Crash when copy-pasting
 
 
-Neil 0.10.1 (Venus)
+Aldrin 0.10.1 (Venus)
 =====================
 
 Enhancements:
@@ -98,7 +98,7 @@ Bugs fixed:
 XXX: CPU spikes when in sequencer or pattern editor.
 
 
-Neil 0.10 (Venus)
+Aldrin 0.10 (Venus)
 ===================
 
 Enhancements:
@@ -121,7 +121,7 @@ Bugs fixed:
 #325: MIDI controls order not correct
 #269: CPU monitor not working
 
-Neil 0.9 (Mercury)
+Aldrin 0.9 (Mercury)
 ====================
 
 Enhancements:
@@ -151,7 +151,7 @@ Bugs fixed:
 #296: ccm corrupts if waves have wrong samplerate
 #303: remove missing tracks in recent files menu
 
-Neil 0.8 (Raccoon)
+Aldrin 0.8 (Raccoon)
 ====================
 
 Enhancements:
@@ -173,7 +173,7 @@ Bugs fixed:
 #215: Wavetable list in pattern sequencer is not updated when new samples are added in the wavetable view.
 #211: when selecting plugin commands, player is locked
 #223: Slider values don't update while sliding
-#250: Neil forgets the last used path for loading songs
+#250: Aldrin forgets the last used path for loading songs
 #263: Machine in double-click menu are sorted wrong
 #268: Doesn't ask to save before opening a new document
 #276: problem adding tracks in sequencer
@@ -181,7 +181,7 @@ Bugs fixed:
 #280: Reopening a .zxm creates a new Master
 #282: file appears not saving when extension missing
 
-Neil 0.7 (Vulture)
+Aldrin 0.7 (Vulture)
 ====================
 
 Enhancements:
@@ -202,7 +202,7 @@ Bugs fixed:
 
 #165: amd64 patches
 
-Neil 0.6 (Raven)
+Aldrin 0.6 (Raven)
 ==================
 
 Enhancements:
@@ -237,7 +237,7 @@ Bugs fixed:
 #229: Sequence editor key combos missing
 
 
-Neil 0.5 (Rat)
+Aldrin 0.5 (Rat)
 ================
 
 Enhancements:
@@ -278,7 +278,7 @@ Bugs fixed:
 #203: Pattern editor font
 #204: Mouse wheel direction reversed on sliders
 
-Neil 0.4 (Harvestman)
+Aldrin 0.4 (Harvestman)
 =======================
 
 Enhancements:
@@ -296,13 +296,13 @@ Bugs fixed:
 #126: Does not release ASIO driver properly
 #162: Pattern editor returns to 0,0 on insert, delete, paste, add/remove track
 #168: Generators accept connexions from Effects or from Master
-#170: A sequence of machine creation crashes Neil
+#170: A sequence of machine creation crashes Aldrin
 #160: Each machine should keep track of cursor position in its pattern view
 #164: Parameters for deleted machines appearing for new machines
 #166: wavtable preview playback playing whitenoise (windows)
 
 
-Neil 0.3 (Carrion Beetle)
+Aldrin 0.3 (Carrion Beetle)
 ===========================
 
 Enhancements:
@@ -315,7 +315,7 @@ Enhancements:
 #145: Horizontal scrolling in pattern view
 #154: merge zzub::plugin2 into zzub::plugin
 #157: remove hidden folders in wavetable loader fileview
-#161: move .neil config file to ~/.neil/settings.cfg
+#161: move .aldrin config file to ~/.aldrin/settings.cfg
 
 Bugs fixed:
 
@@ -328,7 +328,7 @@ Bugs fixed:
 #152: Switching to pattern view doesn't automatically select latest created pattern
 #155: Pattern view of master does not include connection tracks
 
-Neil 0.2 (Blowfly)
+Aldrin 0.2 (Blowfly)
 ====================
 
 NEW: close pattern dialog when hitting return.

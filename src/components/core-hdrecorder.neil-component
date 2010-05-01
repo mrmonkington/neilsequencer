@@ -1,9 +1,0 @@
-[Neil COM]
-Module=hdrecorder
-Name=Harddisk Recorder
-Description=Provides a dialog to record music to wave files.
-Icon=neil
-Authors=The Neil Development Team
-Copyright=Copyright (C) 2006,2007,2008 The Neil Development Team
-Website=http://www.neil.eu
-

@@ -1,8 +1,8 @@
 #encoding: latin-1
 
-# Neil
+# Aldrin
 # Modular Sequencer
-# Copyright (C) 2006,2007,2008 The Neil Development Team
+# Copyright (C) 2006,2007,2008 The Aldrin Development Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -25,30 +25,30 @@ editor and its associated dialogs.
 
 if __name__ == '__main__':
     import os
-    os.system('../../bin/neil-combrowser neil.core.patternpanel')
+    os.system('../../bin/aldrin-combrowser aldrin.core.patternpanel')
     raise SystemExit
 
-import neil.com as com
+import aldrin.com as com
 import os
 import gtk
 import gobject
 import pango
 import itertools
-from neil.utils import prepstr, filepath, get_item_count, get_clipboard_text, set_clipboard_text, question, error, get_new_pattern_name, \
+from aldrin.utils import prepstr, filepath, get_item_count, get_clipboard_text, set_clipboard_text, question, error, get_new_pattern_name, \
         new_liststore, new_combobox, db2linear, make_menu_item, make_check_item, ObjectHandlerGroup, \
         AcceleratorMap, Menu, padded_partition
 
 import zzub
 import time
 import random
-import neil.common as common
+import aldrin.common as common
 
 MARGIN = common.MARGIN
 MARGIN2 = common.MARGIN2
 MARGIN3 = common.MARGIN3
 MARGIN0 = common.MARGIN0
 
-from neil.utils import NOTES, roundint
+from aldrin.utils import NOTES, roundint
 PATLEFTMARGIN = 48
 CONN = 0
 GLOBAL = 1
@@ -189,7 +189,7 @@ class SelectComboBox(gtk.ComboBox):
             self.set_selection_func(self.get_active())
 
     def on_popup(self, widget, *args):
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         if self.get_property('popup-shown'):
             for win in gtk.window_list_toplevels():
                 if (len(win.get_children()) == 1) and (isinstance(win.get_children()[0],gtk.Menu)):
@@ -212,7 +212,7 @@ class SelectComboBox(gtk.ComboBox):
 
     def update(self, *args):
         block = self.ohg.autoblock()
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         store = self.get_model()
         store.clear()
         sel = None
@@ -240,7 +240,7 @@ class PatternToolBar(gtk.HBox):
         gtk.HBox.__init__(self, False, MARGIN)
         self.pattern_view = pattern_view
         self.set_border_width(MARGIN)
-        eventbus = com.get('neil.core.eventbus')
+        eventbus = com.get('aldrin.core.eventbus')
 
         self.pluginlabel = gtk.Label()
         self.pluginlabel.set_text_with_mnemonic("_Plugin")
@@ -329,30 +329,30 @@ class PatternToolBar(gtk.HBox):
         return [(str(i), i) for i in xrange(10)]
 
     def get_octave_sel(self):
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         return player.octave
 
     def set_octave_sel(self, sel):
         if sel:
-            player = com.get('neil.core.player')
+            player = com.get('aldrin.core.player')
             player.octave = sel
 
     def get_plugin_source(self):
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         def cmp_func(a,b):
             return cmp(a.get_name().lower(), b.get_name().lower())
         plugins = sorted(list(player.get_plugin_list()), cmp_func)
         return [(plugin.get_name(),plugin) for plugin in plugins]
 
     def get_plugin_sel(self):
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         sel = player.active_plugins
         sel = sel and sel[0] or None
         return sel
 
     def set_plugin_sel(self, sel):
         if sel:
-            player = com.get('neil.core.player')
+            player = com.get('aldrin.core.player')
             player.active_plugins = [sel]
             if sel.get_pattern_count() > 0:
                 player.active_patterns = [(sel, 0)]
@@ -360,7 +360,7 @@ class PatternToolBar(gtk.HBox):
                 player.active_patterns = []
 
     def get_pattern_source(self):
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         plugin = self.get_plugin_sel()
         if not plugin:
             return []
@@ -372,17 +372,17 @@ class PatternToolBar(gtk.HBox):
         return [(plugin.get_pattern_name(i),(plugin,i)) for plugin,i in patterns]
 
     def get_pattern_sel(self):
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         sel = player.active_patterns
         return sel and sel[0] or None
 
     def set_pattern_sel(self, sel):
         if sel:
-            player = com.get('neil.core.player')
+            player = com.get('aldrin.core.player')
             player.active_patterns = [sel]
 
     def get_wave_source(self):
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         waves = []
         for i in range(player.get_wave_count()):
             w = player.get_wave(i)
@@ -391,17 +391,17 @@ class PatternToolBar(gtk.HBox):
         return waves
 
     def get_wave_sel(self):
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         sel = player.active_waves
         return sel and sel[0] or None
 
     def set_wave_sel(self, sel):
         if sel:
-            player = com.get('neil.core.player')
+            player = com.get('aldrin.core.player')
             player.active_waves = [sel]
 
     def activate_wave(self, w):
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         if w and w.get_level_count() >= 1:
             player.preview_wave(w)
         else:
@@ -411,18 +411,18 @@ class PatternPanel(gtk.VBox):
     """
     Panel containing the pattern toolbar and pattern view.
     """
-    __neil__ = dict(
-            id = 'neil.core.patternpanel',
+    __aldrin__ = dict(
+            id = 'aldrin.core.patternpanel',
             singleton = True,
             categories = [
-                    'neil.viewpanel',
+                    'aldrin.viewpanel',
                     'view',
             ]
     )
 
     __view__ = dict(
                     label = "Patterns",
-                    stockid = "neil_pattern",
+                    stockid = "aldrin_pattern",
                     shortcut = 'F2',
                     order = 2,
     )
@@ -465,18 +465,18 @@ class PatternPanel(gtk.VBox):
         self.pack_end(self.statusbar, expand=False)
 
         self.view.grab_focus()
-        eventbus = com.get('neil.core.eventbus')
+        eventbus = com.get('aldrin.core.eventbus')
         eventbus.edit_pattern_request += self.on_edit_pattern_request
 
     def on_edit_pattern_request(self, plugin, index):
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         player.active_plugins = [plugin]
         player.active_patterns = [(plugin, index)]
-        framepanel = com.get('neil.core.framepanel')
+        framepanel = com.get('aldrin.core.framepanel')
         framepanel.select_viewpanel(self)
 
     def handle_focus(self):
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         #print 'pattern', self.view.plugin, self.view.pattern
         #print 'active', player.active_patterns
         # check if active patterns match the pattern view settings
@@ -496,7 +496,7 @@ class PatternPanel(gtk.VBox):
             pass
         self.view.grab_focus()
 
-from neil.utils import fixbn, bn2mn, mn2bn, note2str, switch2str, byte2str, word2str
+from aldrin.utils import fixbn, bn2mn, mn2bn, note2str, switch2str, byte2str, word2str
 
 t2c = [
         note2str,
@@ -717,7 +717,7 @@ class PatternView(gtk.DrawingArea):
         gobject.timeout_add(100, self.update_position)
         self.hscroll.connect('change-value', self.on_hscroll_window)
         self.vscroll.connect('change-value', self.on_vscroll_window)
-        eventbus = com.get('neil.core.eventbus')
+        eventbus = com.get('aldrin.core.eventbus')
         eventbus.active_patterns_changed += self.on_active_patterns_changed
         eventbus.active_plugins_changed += self.on_active_patterns_changed
         eventbus.zzub_pattern_changed += self.on_pattern_changed
@@ -733,7 +733,7 @@ class PatternView(gtk.DrawingArea):
         called when a parameter changes in zzub. checks whether this parameter
         is related to master bpm or tpb and updates the view.
         """
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         master = player.get_plugin(0)
         tpb = master.get_parameter_value(1, 0, 2)
         if (group, track) == (1, 0) and param == 2:
@@ -812,7 +812,7 @@ class PatternView(gtk.DrawingArea):
         """
         Callback that constructs and displays the popup menu
         """
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         if self.selection != None and self.selection.begin >= 0:
             sel_sensitive = True
         else:
@@ -861,7 +861,7 @@ class PatternView(gtk.DrawingArea):
         # TODO: find some other means to find out visibility
 #               if self.rootwindow.get_current_panel() != self.panel:
 #                       return True
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         playpos = player.get_position()
         if self.playpos != playpos:
             self.draw_playpos_xor()
@@ -997,7 +997,7 @@ class PatternView(gtk.DrawingArea):
         @param o: Octave
         @type o: int
         """
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         player.octave = min(max(o,0), 9)
 
     def set_index(self, i):
@@ -1083,12 +1083,9 @@ class PatternView(gtk.DrawingArea):
 
     def expose(self, widget, *args):
         self.context = widget.window.cairo_create()
-        if self.current_plugin!=self.plugin:
+        if self.current_plugin!=self.get_plugin():
             self.pattern_changed()
-            self.current_plugin=self.plugin
-        player = com.get('neil.core.player')
-        if not(player.spinbox_edit):
-            self.grab_focus()
+            self.current_plugin=self.get_plugin()
         self.draw(self.context)
         return False
 
@@ -1334,7 +1331,7 @@ class PatternView(gtk.DrawingArea):
         for row, group, track, index, value in values:
             print row, group, track, index, value
             self.plugin.set_pattern_value(self.pattern, group, track, index, row, value)
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         player.history_commit("reverse")
 
     def transpose_selection(self, widget, offset):
@@ -1359,7 +1356,7 @@ class PatternView(gtk.DrawingArea):
                     v = max(min(v+offset,p.get_value_max()),p.get_value_min())
                 self.plugin.set_pattern_value(self.pattern,g,t,i,r,v)
         tmp_sel = self.selection
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         player.history_commit("transpose")
         self.selection = tmp_sel
 
@@ -1368,7 +1365,7 @@ class PatternView(gtk.DrawingArea):
         Fills the current selection with values interpolated
         from selection start to selection end.
         """
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         player.set_callback_state(False)
         if not self.selection:
             return
@@ -1407,7 +1404,7 @@ class PatternView(gtk.DrawingArea):
         player.history_commit("interpolate")
         self.selection = tmp_sel
         if player.set_callback_state(True):
-            eventbus = com.get('neil.core.eventbus')
+            eventbus = com.get('aldrin.core.eventbus')
             eventbus.document_loaded()
 
     def cut(self):
@@ -1417,7 +1414,7 @@ class PatternView(gtk.DrawingArea):
         if not self.selection:
             return
         self.copy()
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         player.set_callback_state(False)
         for r,g,t,i in self.selection_range():
             if r>self.plugin.get_pattern_length(self.pattern)-1:
@@ -1426,10 +1423,10 @@ class PatternView(gtk.DrawingArea):
                 continue
             p = self.plugin.get_parameter(g,t,i)
             self.plugin.set_pattern_value(self.pattern,g,t,i,r,p.get_value_none())
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         player.history_commit("remove event")
         if player.set_callback_state(True):
-            eventbus = com.get('neil.core.eventbus')
+            eventbus = com.get('aldrin.core.eventbus')
             eventbus.document_loaded()
 
     def copy(self):
@@ -1452,7 +1449,7 @@ class PatternView(gtk.DrawingArea):
         """
         Deletes the current selection
         """
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         player.set_callback_state(False)
         for r,g,t,i in self.selection_range():
             if r>self.plugin.get_pattern_length(self.pattern)-1:
@@ -1461,10 +1458,10 @@ class PatternView(gtk.DrawingArea):
                 continue
             p = self.plugin.get_parameter(g,t,i)
             self.plugin.set_pattern_value(self.pattern,g,t,i,r,p.get_value_none())
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         player.history_commit("delete events")
         if player.set_callback_state(True):
-            eventbus = com.get('neil.core.eventbus')
+            eventbus = com.get('aldrin.core.eventbus')
             eventbus.document_loaded()
 
     def unpack_clipboard_data(self, d):
@@ -1495,7 +1492,7 @@ class PatternView(gtk.DrawingArea):
         Buzz used to not paste at all if the format wasnt right
         we still try to make some sense out of what we get.
         """
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         player.set_callback_state(False)
         data = get_clipboard_text()
         try:
@@ -1538,7 +1535,7 @@ class PatternView(gtk.DrawingArea):
         except:
             pass
         if player.set_callback_state(True):
-            eventbus = com.get('neil.core.eventbus')
+            eventbus = com.get('aldrin.core.eventbus')
             eventbus.document_loaded()
 
     # upward is True to increase, False to decrease
@@ -1576,8 +1573,6 @@ class PatternView(gtk.DrawingArea):
         if not self.selection:
             self.selection = self.Selection()
         self.grab_focus()
-        player = com.get('neil.core.player')
-        player.spinbox_edit = False
         if event.button == 3:
             self.on_context_menu(event)
         if self.pattern == -1:
@@ -1642,7 +1637,7 @@ class PatternView(gtk.DrawingArea):
         """
         Callback that removes the current pattern.
         """
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         m = self.get_plugin()
         if self.pattern >= 0:
             m.remove_pattern(self.pattern)
@@ -1653,7 +1648,7 @@ class PatternView(gtk.DrawingArea):
         """
         Callback that creates a pattern.
         """
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         name = self.get_new_pattern_name(m)
         result = show_pattern_dialog(self,name,self.patternsize,DLGMODE_NEW)
         if not result:
@@ -1673,7 +1668,7 @@ class PatternView(gtk.DrawingArea):
         Callback that doubles the length of the current pattern while
         keeping notes intact
         """
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         player.set_callback_state(False)
         pattern_index=[]
         pattern_contents=[]
@@ -1687,10 +1682,10 @@ class PatternView(gtk.DrawingArea):
         for r,g,t,i in pattern_index:
             self.plugin.set_pattern_value(self.pattern,g,t,i,r*2,pattern_contents[item])
             item+=1
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         player.history_commit("double length")
         if player.set_callback_state(True):
-            eventbus = com.get('neil.core.eventbus')
+            eventbus = com.get('aldrin.core.eventbus')
             eventbus.document_loaded()
 
     def on_popup_halve(self, *args):
@@ -1698,7 +1693,7 @@ class PatternView(gtk.DrawingArea):
         Callback that halves the length of the current pattern while
         keeping notes intact
         """
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         player.set_callback_state(False)
         if self.plugin.get_pattern_length(self.pattern)==1:
             return
@@ -1707,17 +1702,17 @@ class PatternView(gtk.DrawingArea):
                 continue
             self.plugin.set_pattern_value(self.pattern,g,t,i,r/2,self.plugin.get_pattern_value(self.pattern,g,t,i,r))
         self.plugin.set_pattern_length(self.pattern,self.plugin.get_pattern_length(self.pattern)/2)
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         player.history_commit("halve length")
         if player.set_callback_state(True):
-            eventbus = com.get('neil.core.eventbus')
+            eventbus = com.get('aldrin.core.eventbus')
             eventbus.document_loaded()
 
     def on_popup_create_copy(self, *args):
         """
         Callback that creates a copy of the current pattern.
         """
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         name = self.get_new_pattern_name()
         result = show_pattern_dialog(self,name,self.row_count,DLGMODE_COPY)
         if not result:
@@ -1736,7 +1731,7 @@ class PatternView(gtk.DrawingArea):
         Callback that solos current plugin.
         """
         plugin = self.get_plugin()
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         player.solo(plugin)
 
     def on_popup_properties(self, *args):
@@ -1752,14 +1747,14 @@ class PatternView(gtk.DrawingArea):
             self.plugin.set_pattern_name(self.pattern,name)
         if self.plugin.get_pattern_length(self.pattern) != rc:
             self.plugin.set_pattern_length(self.pattern,rc)
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         player.history_commit("change pattern properties")
 
     def on_popup_add_track(self, *args):
         """
         Callback that adds a track.
         """
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         pluginloader = self.plugin.get_pluginloader()
         self.plugin.set_track_count(min(pluginloader.get_tracks_max(), self.plugin.get_track_count()+1))
         player.history_commit("add pattern track")
@@ -1769,7 +1764,7 @@ class PatternView(gtk.DrawingArea):
         """
         Callback that deletes last track.
         """
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         pluginloader = self.plugin.get_pluginloader()
         self.plugin.set_track_count(max(pluginloader.get_tracks_min() , self.plugin.get_track_count()-1))
         player.history_commit("remove pattern track")
@@ -1829,8 +1824,8 @@ class PatternView(gtk.DrawingArea):
             kv = kv - gtk.gdk.keyval_from_name('KP_0') + \
                  gtk.gdk.keyval_from_name('0')
         k = gtk.gdk.keyval_name(kv)
-        player = com.get('neil.core.player')
-        eventbus = com.get('neil.core.eventbus')
+        player = com.get('aldrin.core.player')
+        eventbus = com.get('aldrin.core.eventbus')
         shiftdown = mask & gtk.gdk.SHIFT_MASK
         ctrldown = mask & gtk.gdk.CONTROL_MASK
         if k == 'less':
@@ -1986,10 +1981,10 @@ class PatternView(gtk.DrawingArea):
         elif k in ('KP_Subtract','minus'):
             player.activate_pattern(-1)
         elif k in ('KP_Multiply', 'dead_acute'):
-            player = com.get('neil.core.player')
+            player = com.get('aldrin.core.player')
             self.set_octave(player.octave+1)
         elif k in ('KP_Divide', 'ssharp'):
-            player = com.get('neil.core.player')
+            player = com.get('aldrin.core.player')
             self.set_octave(player.octave-1)
         elif k == 'Escape':
             self.selection = None
@@ -2021,7 +2016,7 @@ class PatternView(gtk.DrawingArea):
                     on = key_to_note(kv)
                     if on:
                         o, n = on
-                        player = com.get('neil.core.player')
+                        player = com.get('aldrin.core.player')
                         data = (min(player.octave + o, 9) << 4) | (n + 1)
                         if (wp != None):
                             if player.active_waves:
@@ -2103,7 +2098,7 @@ class PatternView(gtk.DrawingArea):
         """
         Plays entered note
         """
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         if playtrack and self.play_notes:
             m = self.get_plugin()
             for index in range(self.parameter_count[self.group]):
@@ -2119,7 +2114,7 @@ class PatternView(gtk.DrawingArea):
         """
         Callback that responds to key release
         """
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         if True or config.get_config().get_pattern_noteoff():
             kv = event.keyval
             k = gtk.gdk.keyval_name(kv)
@@ -2391,7 +2386,7 @@ class PatternView(gtk.DrawingArea):
             self.create_xor_gc()
         gc = self.xor_gc
         # draw play cursor
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         current_position = self.playpos
         seq = player.get_current_sequencer()
         for i in range(seq.get_sequence_track_count()):
@@ -2425,7 +2420,7 @@ class PatternView(gtk.DrawingArea):
         @return: zzub plugin plugin.
         @rtype: zzub.Plugin
         """
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         if player.get_plugin_count() == 0:
             return
         sel = player.active_plugins
@@ -2441,7 +2436,7 @@ class PatternView(gtk.DrawingArea):
         plugin = self.get_plugin()
         if not plugin:
             return
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         for selplugin, i in player.active_patterns:
             if selplugin == plugin:
                 return plugin, i
@@ -2540,7 +2535,7 @@ class PatternView(gtk.DrawingArea):
                         self.levels[n][group][track] = [sum(sub_list) for sub_list in padded_partition(self.levels[source][group][track], multiple, pad_val=0)]
 
     def get_line_pattern(self):
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         master = player.get_plugin(0)
         tpb = master.get_parameter_value(1, 0, 2)
         return {
@@ -2760,7 +2755,7 @@ __all__ = [
 'PatternView',
 ]
 
-__neil__ = dict(
+__aldrin__ = dict(
         classes = [
                 PatternDialog,
                 PatternToolBar,

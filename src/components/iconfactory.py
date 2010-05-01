@@ -1,8 +1,8 @@
 #encoding: latin-1
 
-# Neil
+# Aldrin
 # Modular Sequencer
-# Copyright (C) 2006,2007,2008 The Neil Development Team
+# Copyright (C) 2006,2007,2008 The Aldrin Development Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -20,12 +20,12 @@
 
 if __name__ == '__main__':
 	import os
-	os.environ['NEIL_BASE_PATH'] = '/home/paniq/devel/neil'
-import neil.com as com
+	os.environ['ALDRIN_BASE_PATH'] = '/home/paniq/devel/aldrin'
+import aldrin.com as com
 import gtk
 
 import glob, os
-from neil.utils import filepath, get_root_folder_path, iconpath, imagepath
+from aldrin.utils import filepath, get_root_folder_path, iconpath, imagepath
 
 ICON_SEARCHPATH = [
 	iconpath('16x16'),
@@ -48,8 +48,8 @@ class IconLibrary:
 	unified way.
 	"""
 	
-	__neil__ = dict(
-		id = 'neil.core.icons',
+	__aldrin__ = dict(
+		id = 'aldrin.core.icons',
 		singleton = True,
 	)	
 	
@@ -97,10 +97,10 @@ class IconLibrary:
 		else:
 			key = 0
 		gtk.stock_add((
-			(stockid, label, 0, key, 'neil'),
+			(stockid, label, 0, key, 'aldrin'),
 		))
 
-__neil__ = dict(
+__aldrin__ = dict(
 	classes = [
 		IconLibrary,
 	],
@@ -108,5 +108,5 @@ __neil__ = dict(
 
 if __name__ == '__main__':
 	com.init()
-	icons = com.get('neil.core.icons')
+	icons = com.get('aldrin.core.icons')
 	

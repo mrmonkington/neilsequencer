@@ -1,8 +1,8 @@
 #encoding: latin-1
 
-# Neil
+# Aldrin
 # Modular Sequencer
-# Copyright (C) 2006,2007,2008 The Neil Development Team
+# Copyright (C) 2006,2007,2008 The Aldrin Development Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -25,20 +25,20 @@ Provides dialogs and controls to render the plugin view/router and its associate
 
 if __name__ == '__main__':
     import os
-    os.system('../../bin/neil-combrowser neil.core.routerpanel')
+    os.system('../../bin/aldrin-combrowser aldrin.core.routerpanel')
     raise SystemExit
 
-import neil.com as com
+import aldrin.com as com
 import gtk
 import gobject
 import cairo
 import pangocairo
-from neil.utils import PLUGIN_FLAGS_MASK, ROOT_PLUGIN_FLAGS,\
+from aldrin.utils import PLUGIN_FLAGS_MASK, ROOT_PLUGIN_FLAGS,\
      GENERATOR_PLUGIN_FLAGS, EFFECT_PLUGIN_FLAGS,\
      CONTROLLER_PLUGIN_FLAGS
-from neil.utils import is_effect,is_generator,is_controller,\
+from aldrin.utils import is_effect,is_generator,is_controller,\
      is_root
-from neil.utils import prepstr, filepath, db2linear, linear2db,\
+from aldrin.utils import prepstr, filepath, db2linear, linear2db,\
      is_debug, filenameify, get_item_count, question, error,\
      new_listview, add_scrollbars, get_clipboard_text,\
      set_clipboard_text, gettext, new_stock_image_button,\
@@ -52,11 +52,11 @@ import time
 import random
 import Queue
 import numpy as np
-from neil.preset import PresetCollection, Preset
-import neil.common as common
-from neil.common import MARGIN, MARGIN2, MARGIN3
+from aldrin.preset import PresetCollection, Preset
+import aldrin.common as common
+from aldrin.common import MARGIN, MARGIN2, MARGIN3
 from rack import ParameterView
-from neil.presetbrowser import PresetView
+from aldrin.presetbrowser import PresetView
 from patterns import key_to_note
 
 PLUGINWIDTH = 100
@@ -83,8 +83,8 @@ class AttributesDialog(gtk.Dialog):
     """
     Displays plugin atttributes and allows to edit them.
     """
-    __neil__ = dict(
-            id = 'neil.core.attributesdialog',
+    __aldrin__ = dict(
+            id = 'aldrin.core.attributesdialog',
             singleton = False,
             categories = [
             ]
@@ -197,8 +197,8 @@ class ParameterDialog(gtk.Dialog):
     """
     Displays parameter sliders for a plugin in a new Dialog.
     """
-    __neil__ = dict(
-            id = 'neil.core.parameterdialog',
+    __aldrin__ = dict(
+            id = 'aldrin.core.parameterdialog',
             singleton = False,
             categories = [
             ]
@@ -214,7 +214,7 @@ class ParameterDialog(gtk.Dialog):
         self.vbox.add(self.paramview)
         self.connect('destroy', self.on_destroy)
         self.connect('realize', self.on_realize)
-        eventbus = com.get('neil.core.eventbus')
+        eventbus = com.get('aldrin.core.eventbus')
         eventbus.zzub_delete_plugin += self.on_zzub_delete_plugin
 
     def on_realize(self, widget):
@@ -234,8 +234,8 @@ class ParameterDialogManager:
     """
     Manages the different parameter dialogs.
     """
-    __neil__ = dict(
-            id = 'neil.core.parameterdialog.manager',
+    __aldrin__ = dict(
+            id = 'aldrin.core.parameterdialog.manager',
             singleton = True,
             categories = [
             ]
@@ -260,8 +260,8 @@ class PresetDialogManager:
     """
     Manages the different preset dialogs.
     """
-    __neil__ = dict(
-            id = 'neil.core.presetdialog.manager',
+    __aldrin__ = dict(
+            id = 'aldrin.core.presetdialog.manager',
             singleton = True,
             categories = [
             ]
@@ -296,7 +296,7 @@ class PresetDialog(gtk.Dialog):
         self.set_title(self.presetview.get_title())
         self.vbox.add(self.presetview)
         self.connect('realize', self.on_realize)
-        eventbus = com.get('neil.core.eventbus')
+        eventbus = com.get('aldrin.core.eventbus')
         eventbus.zzub_delete_plugin += self.on_zzub_delete_plugin
 
     def on_zzub_delete_plugin(self, plugin):
@@ -318,25 +318,25 @@ class PresetDialog(gtk.Dialog):
 DRAG_FORMAT_PLUGIN_URI = 0
 
 DRAG_FORMATS = [
-        ('application/x-neil-plugin-uri', 0, DRAG_FORMAT_PLUGIN_URI)
+        ('application/x-aldrin-plugin-uri', 0, DRAG_FORMAT_PLUGIN_URI)
 ]
 
 class RoutePanel(gtk.VBox):
     """
     Contains the view panel and manages parameter dialogs.
     """
-    __neil__ = dict(
-            id = 'neil.core.routerpanel',
+    __aldrin__ = dict(
+            id = 'aldrin.core.routerpanel',
             singleton = True,
             categories = [
-                    'neil.viewpanel',
+                    'aldrin.viewpanel',
                     'view',
             ]
     )
 
     __view__ = dict(
                     label = "Router",
-                    stockid = "neil_router",
+                    stockid = "aldrin_router",
                     shortcut = 'F3',
                     default = True,
                     order = 3,
@@ -347,7 +347,7 @@ class RoutePanel(gtk.VBox):
         Initializer.
         """
         gtk.VBox.__init__(self)
-        self.view = com.get('neil.core.router.view', self)
+        self.view = com.get('aldrin.core.router.view', self)
         self.add(self.view)
 
     def handle_focus(self):
@@ -478,8 +478,8 @@ class RouteView(gtk.DrawingArea):
     """
     Allows to monitor and control plugins and their connections.
     """
-    __neil__ = dict(
-            id = 'neil.core.router.view',
+    __aldrin__ = dict(
+            id = 'aldrin.core.router.view',
             singleton = True,
             categories = [
             ]
@@ -517,12 +517,12 @@ class RouteView(gtk.DrawingArea):
         Initializer.
 
         @param rootwindow: Main window.
-        @type rootwindow: NeilFrame
+        @type rootwindow: AldrinFrame
         """
         gtk.DrawingArea.__init__(self)
         self.panel = parent
         self.routebitmap = None
-        eventbus = com.get('neil.core.eventbus')
+        eventbus = com.get('aldrin.core.eventbus')
         eventbus.zzub_connect += self.on_zzub_redraw_event
         eventbus.zzub_disconnect += self.on_zzub_redraw_event
         eventbus.zzub_plugin_changed += self.on_zzub_plugin_changed
@@ -550,7 +550,7 @@ class RouteView(gtk.DrawingArea):
         self.connect('drag_leave', self.on_drag_leave)
 
     def on_active_plugins_changed(self, *args):
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         common.get_plugin_infos().reset_plugingfx()
 
     def get_plugin_info(self, plugin):
@@ -572,14 +572,14 @@ class RouteView(gtk.DrawingArea):
     def on_drag_drop(self, widget, context, x, y, time):
         #print "on_drag_drop",widget,context,x,y,time
         if context.targets:
-            widget.drag_get_data(context, 'application/x-neil-plugin-uri', time)
+            widget.drag_get_data(context, 'application/x-aldrin-plugin-uri', time)
             return True
         return False
 
     def on_drag_data_received(self, widget, context, x, y, data, info, time):
         if data.format == 8:
             context.finish(True, False, time)
-            player = com.get('neil.core.player')
+            player = com.get('aldrin.core.player')
             player.plugin_origin = self.pixel_to_float((x, y))
             uri = data.data
             conn = None
@@ -653,21 +653,21 @@ class RouteView(gtk.DrawingArea):
         @type event: wx.Event
         """
         mx, my = int(event.x), int(event.y)
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         player.plugin_origin = self.pixel_to_float((mx, my))
         res = self.get_plugin_at((mx, my))
         if res:
             mp, (x, y), area = res
-            menu = com.get('neil.core.contextmenu', 'plugin', mp)
+            menu = com.get('aldrin.core.contextmenu', 'plugin', mp)
         else:
             res = self.get_connection_at((mx, my))
             if res:
                 mp, index = res
-                menu = com.get('neil.core.contextmenu',
+                menu = com.get('aldrin.core.contextmenu',
                                'connection', (mp, index))
             else:
                 point = self.pixel_to_float((mx, my))
-                menu = com.get('neil.core.contextmenu', 'router', point)
+                menu = com.get('aldrin.core.contextmenu', 'router', point)
         menu.popup(self, event)
 
     def float_to_pixel(self, (x, y)):
@@ -713,7 +713,7 @@ class RouteView(gtk.DrawingArea):
         @return: A connection item or None.
         @rtype: zzub.Connection or None
         """
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         rect = self.get_allocation()
         w,h = rect.width, rect.height
         cx,cy = w*0.5, h * 0.5
@@ -746,7 +746,7 @@ class RouteView(gtk.DrawingArea):
         mx, my = x,y
         PW, PH = PLUGINWIDTH / 2, PLUGINHEIGHT / 2
         area = AREA_ANY
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         for mp in reversed(list(player.get_plugin_list())):
             pi = common.get_plugin_infos().get(mp)
             if not pi.songplugin:
@@ -763,7 +763,7 @@ class RouteView(gtk.DrawingArea):
         Event handler for left doubleclicks. If the doubleclick
         hits a plugin, the parameter window is being shown.
         """
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         mx,my = int(event.x), int(event.y)
         res = self.get_plugin_at((mx,my))
         if not res:
@@ -776,7 +776,7 @@ class RouteView(gtk.DrawingArea):
                 if mp.invoke_event(data, 1) != 0:
                     print "Failed to show DSSI GUI?"
             else:
-                com.get('neil.core.parameterdialog.manager').show(mp, self)
+                com.get('aldrin.core.parameterdialog.manager').show(mp, self)
 
     def on_left_down(self, widget, event):
         """
@@ -787,7 +787,7 @@ class RouteView(gtk.DrawingArea):
         @type event: wx.MouseEvent
         """
         self.grab_focus()
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         if (event.button == 3):
             return self.on_context_menu(widget, event)
         if not event.button in (1,2):
@@ -850,7 +850,7 @@ class RouteView(gtk.DrawingArea):
         """
         x,y,state = self.window.get_pointer()
         if self.dragging:
-            player = com.get('neil.core.player')
+            player = com.get('aldrin.core.player')
             ox,oy = self.dragoffset
             mx,my = int(x), int(y)
             size = self.get_allocation()
@@ -877,7 +877,7 @@ class RouteView(gtk.DrawingArea):
         @type event: wx.MouseEvent
         """
         mx,my = int(event.x), int(event.y)
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         if self.dragging:
             self.dragging = False
             self.grab_remove()
@@ -915,7 +915,7 @@ class RouteView(gtk.DrawingArea):
         #if self.rootwindow.get_current_panel() != self.panel:
         #       return True
         if self.window:
-            player = com.get('neil.core.player')
+            player = com.get('aldrin.core.player')
             rect = self.get_allocation()
             w,h = rect.width, rect.height
             cx,cy = w*0.5,h*0.5
@@ -942,7 +942,7 @@ class RouteView(gtk.DrawingArea):
         """
         Draws only the leds into the offscreen buffer.
         """
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         if player.is_loading():
             return
         gc = self.window.new_gc()
@@ -960,7 +960,7 @@ class RouteView(gtk.DrawingArea):
         #font = wx.Font(8, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
         PW, PH = PLUGINWIDTH / 2, PLUGINHEIGHT / 2
 
-        driver = com.get('neil.core.driver.audio')
+        driver = com.get('aldrin.core.driver.audio')
         cpu_scale = driver.get_cpu_load()
         max_cpu_scale = 1.0 / player.get_plugin_count()
         for mp,(rx,ry) in ((mp,get_pixelpos(*mp.get_position())) for mp in player.get_plugin_list()):
@@ -1043,7 +1043,7 @@ class RouteView(gtk.DrawingArea):
         """
         Draws plugins, connections and arrows to an offscreen buffer.
         """
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         if player.is_loading():
             return
         cfg = config.get_config()
@@ -1147,7 +1147,7 @@ class RouteView(gtk.DrawingArea):
                         zzub.zzub_connection_type_event):
                         amp = mp.get_parameter_value(0, index, 0)
                         amp /= 16384.0
-                        amp = amp ** 0.5
+                        amp = amp ** 0.3
                         color = [amp, amp, amp]
                         arrowcolors[zzub.zzub_connection_type_audio][0] = color
                     draw_line_arrow(bmpctx, arrowcolors[mp.get_input_connection_type(index)], int(crx), int(cry), int(rx), int(ry))
@@ -1167,9 +1167,9 @@ class RouteView(gtk.DrawingArea):
         k = gtk.gdk.keyval_name(kv)
         if (mask & gtk.gdk.CONTROL_MASK):
             if k == 'Return':
-                com.get('neil.core.pluginbrowser', self)
+                com.get('aldrin.core.pluginbrowser', self)
                 return
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         if not plugin:
             if player.active_plugins:
                 plugin = player.active_plugins[0]
@@ -1193,7 +1193,7 @@ class RouteView(gtk.DrawingArea):
                 plugin.play_midi_note(n, 0, 127)
 
     def on_key_jazz_release(self, widget, event, plugin):
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         if not plugin:
             if player.active_plugins:
                 plugin = player.active_plugins[0]
@@ -1201,7 +1201,7 @@ class RouteView(gtk.DrawingArea):
                 return
         kv = event.keyval
         if kv<256:
-            player = com.get('neil.core.player')
+            player = com.get('aldrin.core.player')
             octave = player.octave
             note = key_to_note(kv)
             if note in self.chordnotes:
@@ -1220,7 +1220,7 @@ __all__ = [
 'RouteView',
 ]
 
-__neil__ = dict(
+__aldrin__ = dict(
         classes = [
                 ParameterDialog,
                 ParameterDialogManager,

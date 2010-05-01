@@ -1,9 +1,0 @@
-[Neil COM]
-Module=mainwindow
-Name=Main Window
-Description=Provides the application main window.
-Icon=neil
-Authors=The Neil Development Team
-Copyright=Copyright (C) 2006,2007,2008 The Neil Development Team
-Website=http://www.neil.eu
-

@@ -1,8 +1,8 @@
 #encoding: latin-1
 
-# Neil
+# Aldrin
 # Modular Sequencer
-# Copyright (C) 2006,2007,2008 The Neil Development Team
+# Copyright (C) 2006,2007,2008 The Aldrin Development Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -26,20 +26,20 @@ selected, items can choose to append themselves or not.
 """
 
 import gtk
-import neil.common as common
-from neil.com import com
+import aldrin.common as common
+from aldrin.com import com
 import zzub
 import os.path
 
-from neil.utils import is_generator, is_root, is_controller, is_effect, \
+from aldrin.utils import is_generator, is_root, is_controller, is_effect, \
         prepstr, Menu, new_theme_image, gettext
-from neil.utils import PLUGIN_FLAGS_MASK, ROOT_PLUGIN_FLAGS, \
+from aldrin.utils import PLUGIN_FLAGS_MASK, ROOT_PLUGIN_FLAGS, \
         GENERATOR_PLUGIN_FLAGS, EFFECT_PLUGIN_FLAGS, CONTROLLER_PLUGIN_FLAGS
-from neil.utils import iconpath
+from aldrin.utils import iconpath
 
 class ContextMenu(Menu):
-    __neil__ = dict(
-            id = 'neil.core.contextmenu',
+    __aldrin__ = dict(
+            id = 'aldrin.core.contextmenu',
             singleton = False,
             categories = [
             ],
@@ -73,7 +73,7 @@ class ContextMenu(Menu):
         return Menu.popup(self, parent, event)
 
 class PluginContextMenu(gtk.Menu):
-    __neil__ = dict(id='neil.core.popupmenu',
+    __aldrin__ = dict(id='aldrin.core.popupmenu',
                       singleton=True,
                       categories=['contextmenu.handler'])
 
@@ -127,13 +127,13 @@ class PluginContextMenu(gtk.Menu):
                     item, submenu = menu.add_submenu(key)
                     populate_from_tree(submenu, value)
         def create_plugin(item, loader, connection=False):
-            player = com.get('neil.core.player')
+            player = com.get('aldrin.core.player')
             if connection:
                 player.create_plugin(loader, connection=menu.context)
             else:
                 player.plugin_origin = menu.context
                 player.create_plugin(loader)
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         plugins = {}
         tree = {}
         item, add_machine_menu = menu.add_submenu("Add machine")
@@ -193,7 +193,7 @@ class PluginContextMenu(gtk.Menu):
 
     def populate_pluginmenu(self, menu):
         mp = menu.context
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         menu.add_check_item("_Mute", common.get_plugin_infos().get(mp).muted,
                             self.on_popup_mute, mp)
         if is_generator(mp):
@@ -234,7 +234,7 @@ class PluginContextMenu(gtk.Menu):
     def on_popup_rename(self, widget, mp):
         text = gettext(self, "Enter new plugin name:", prepstr(mp.get_name()))
         if text:
-            player = com.get('neil.core.player')
+            player = com.get('aldrin.core.player')
             mp.set_name(text)
             player.history_commit("rename plugin")
 
@@ -245,7 +245,7 @@ class PluginContextMenu(gtk.Menu):
         @param event: Menu event.
         @type event: wx.MenuEvent
         """
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         if player.solo_plugin != mp:
             player.solo(mp)
         else:
@@ -258,14 +258,14 @@ class PluginContextMenu(gtk.Menu):
         @param event: Menu event.
         @type event: wx.MenuEvent
         """
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         player.toggle_mute(mp)
 
     def on_popup_delete(self, widget, mp):
         """
         Event handler for the "Delete" context menu option.
         """
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         player.delete_plugin(mp)
 
     def on_popup_disconnect(self, widget, mp, index):
@@ -278,7 +278,7 @@ class PluginContextMenu(gtk.Menu):
         plugin = mp.get_input_connection_plugin(index)
         conntype = mp.get_input_connection_type(index)
         mp.delete_input(plugin,conntype)
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         player.history_commit("disconnect")
 
     def on_popup_show_attribs(self, widget, mp):
@@ -288,7 +288,7 @@ class PluginContextMenu(gtk.Menu):
         @param event: Menu event.
         @type event: wx.MenuEvent
         """
-        dlg = com.get('neil.core.attributesdialog',mp,self)
+        dlg = com.get('aldrin.core.attributesdialog',mp,self)
         dlg.run()
         dlg.destroy()
 
@@ -300,7 +300,7 @@ class PluginContextMenu(gtk.Menu):
         @param event: Menu event.
         @type event: wx.MenuEvent
         """
-        manager = com.get('neil.core.presetdialog.manager')
+        manager = com.get('aldrin.core.presetdialog.manager')
         manager.show(plugin, widget)
 
     def on_popup_show_params(self, widget, mp):
@@ -310,14 +310,14 @@ class PluginContextMenu(gtk.Menu):
         @param event: Menu event.
         @type event: wx.MenuEvent
         """
-        manager = com.get('neil.core.parameterdialog.manager')
+        manager = com.get('aldrin.core.parameterdialog.manager')
         manager.show(mp, widget)
 
     def on_popup_new_plugin(self, widget, pluginloader, kargs={}):
         """
         Event handler for "new plugin" context menu options.
         """
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         if 'conn' in kargs:
             conn = kargs['conn']
         else:
@@ -332,7 +332,7 @@ class PluginContextMenu(gtk.Menu):
         """
         Event handler for unmute all menu option
         """
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         for mp in reversed(list(player.get_plugin_list())):
             info = common.get_plugin_infos().get(mp)
             info.muted=False
@@ -351,7 +351,7 @@ class PluginContextMenu(gtk.Menu):
         """
         self.autoconnect_target = plugin
 
-__neil__ = dict(
+__aldrin__ = dict(
         classes = [
                 ContextMenu,
                 PluginContextMenu,

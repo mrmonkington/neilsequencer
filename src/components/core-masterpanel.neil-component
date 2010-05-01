@@ -1,9 +1,0 @@
-[Neil COM]
-Module=masterpanel
-Name=Master Panel
-Description=Provides the master panel, containing the master volume sliders and VU.
-Icon=neil
-Authors=The Neil Development Team
-Copyright=Copyright (C) 2006,2007,2008 The Neil Development Team
-Website=http://www.neil.eu
-

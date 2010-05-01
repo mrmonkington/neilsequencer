@@ -1,8 +1,8 @@
 #encoding: latin-1
 
-# Neil
+# Aldrin
 # Modular Sequencer
-# Copyright (C) 2006,2007,2008 The Neil Development Team
+# Copyright (C) 2006,2007,2008 The Aldrin Development Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -26,12 +26,12 @@ import os
 import gtk
 import webbrowser
 
-from neil.utils import prepstr, buffersize_to_latency, filepath, error, add_scrollbars, new_listview
+from aldrin.utils import prepstr, buffersize_to_latency, filepath, error, add_scrollbars, new_listview
 import config
-from neil.common import MARGIN, MARGIN2, MARGIN3
+from aldrin.common import MARGIN, MARGIN2, MARGIN3
 
-from neil.controller import learn_controller
-import neil.com as com
+from aldrin.controller import learn_controller
+import aldrin.com as com
 
 import zzub
 
@@ -43,8 +43,8 @@ class CancelException(Exception):
     Is being thrown when the user hits cancel in a sequence of
     modal UI dialogs.
     """
-    __neil__ = dict(
-	    id = 'neil.exception.cancel',
+    __aldrin__ = dict(
+	    id = 'aldrin.exception.cancel',
 	    exception = True,
 	    categories = [
 	    ]
@@ -55,10 +55,10 @@ class GeneralPanel(gtk.VBox):
     Panel which allows changing of general settings.
     """
 
-    __neil__ = dict(
-	    id = 'neil.core.pref.general',
+    __aldrin__ = dict(
+	    id = 'aldrin.core.pref.general',
 	    categories = [
-		    'neil.prefpanel',
+		    'aldrin.prefpanel',
 	    ]
     )
 
@@ -131,10 +131,10 @@ class DriverPanel(gtk.VBox):
     Panel which allows to see and change audio driver settings.
     """
 
-    __neil__ = dict(
-	    id = 'neil.core.pref.driver',
+    __aldrin__ = dict(
+	    id = 'aldrin.core.pref.driver',
 	    categories = [
-		    'neil.prefpanel',
+		    'aldrin.prefpanel',
 	    ]
     )
 
@@ -168,7 +168,7 @@ class DriverPanel(gtk.VBox):
 	vbox.set_border_width(MARGIN)
 	sizer1.add(vbox)
 	inputname, outputname, samplerate, buffersize = config.get_config().get_audiodriver_config()
-	audiodriver = com.get('neil.core.driver.audio')
+	audiodriver = com.get('aldrin.core.driver.audio')
 	if not outputname:
 	    outputname = audiodriver.get_name(-1)
 	for i in range(audiodriver.get_count()):
@@ -193,19 +193,19 @@ class DriverPanel(gtk.VBox):
 	sr = self.cbsamplerate.get_active()
 	if sr == -1:
 	    error(self, "You did not pick a valid sample rate.")
-	    raise com.exception('neil.exception.cancel')
+	    raise com.exception('aldrin.exception.cancel')
 	sr = samplerates[sr]
 	bs = self.cblatency.get_active()
 	if bs == -1:
 	    error(self, "You did not pick a valid latency.")
-	    raise com.exception('neil.exception.cancel')
+	    raise com.exception('aldrin.exception.cancel')
 	bs = buffersizes[bs]
 	o = self.cboutput.get_active()
 	if o == -1:
 	    error(self, "You did not select a valid output device.")
-	    raise com.exception('neil.exception.cancel')
+	    raise com.exception('aldrin.exception.cancel')
 	iname = ""
-	audiodriver = com.get('neil.core.driver.audio')
+	audiodriver = com.get('aldrin.core.driver.audio')
 	oname = audiodriver.get_name(o)
 	inputname, outputname, samplerate, buffersize = config.get_config().get_audiodriver_config()
 	if (oname != outputname) or (samplerate != sr) or (bs != buffersize):
@@ -216,17 +216,17 @@ class DriverPanel(gtk.VBox):
 		import traceback
 		traceback.print_exc()
 		error(self, "<b><big>There was an error initializing the audio driver.</big></b>\n\nChange settings and try again.")
-		raise com.exception('neil.exception.cancel')
+		raise com.exception('aldrin.exception.cancel')
 
 class ControllerPanel(gtk.VBox):
     """
     Panel which allows to set up midi controller mappings.
     """
 
-    __neil__ = dict(
-	    id = 'neil.core.pref.controller',
+    __aldrin__ = dict(
+	    id = 'aldrin.core.pref.controller',
 	    categories = [
-		    'neil.prefpanel',
+		    'aldrin.prefpanel',
 	    ]
     )
 
@@ -307,10 +307,10 @@ class MidiPanel(gtk.VBox):
     Panel which allows to see and change a list of used MIDI output devices.
     """
 
-    __neil__ = dict(
-	    id = 'neil.core.pref.midi',
+    __aldrin__ = dict(
+	    id = 'aldrin.core.pref.midi',
 	    categories = [
-		    'neil.prefpanel',
+		    'aldrin.prefpanel',
 	    ]
     )
 
@@ -331,7 +331,7 @@ class MidiPanel(gtk.VBox):
 	])
 	self.idevicelist.set_property('headers-visible', False)
 	inputlist = config.get_config().get_mididriver_inputs()
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	for i in range(zzub.Mididriver.get_count(player)):
 	    if zzub.Mididriver.is_input(player,i):
 		name = prepstr(zzub.Mididriver.get_name(player,i))
@@ -356,7 +356,7 @@ class MidiPanel(gtk.VBox):
 	sizer2.add(add_scrollbars(self.odevicelist))
 	self.add(frame1)
 	self.add(frame2)
-	label = gtk.Label("Checked MIDI devices will be used the next time you start Neil.")
+	label = gtk.Label("Checked MIDI devices will be used the next time you start Aldrin.")
 	label.set_alignment(0, 0)
 	self.pack_start(label, expand=False)
 
@@ -380,10 +380,10 @@ class KeyboardPanel(gtk.VBox):
     Panel which allows to see and change the current keyboard configuration.
     """
 
-    __neil__ = dict(
-	    id = 'neil.core.pref.keyboard',
+    __aldrin__ = dict(
+	    id = 'aldrin.core.pref.keyboard',
 	    categories = [
-		    'neil.prefpanel',
+		    'aldrin.prefpanel',
 	    ]
     )
 
@@ -435,8 +435,8 @@ class PreferencesDialog(gtk.Dialog):
     the user to switch between them using a tab control.
     """
 
-    __neil__ = dict(
-	    id = 'neil.core.prefdialog',
+    __aldrin__ = dict(
+	    id = 'aldrin.core.prefdialog',
 	    categories = [
 	    ]
     )
@@ -450,7 +450,7 @@ class PreferencesDialog(gtk.Dialog):
 	self.nb.set_show_tabs(False)
 	self.nb.set_border_width(MARGIN)
 	self.nb.set_show_border(False)
-	self.panels = sorted(com.get_from_category('neil.prefpanel'), cmp_prefpanel)
+	self.panels = sorted(com.get_from_category('aldrin.prefpanel'), cmp_prefpanel)
 	starting_tab_index = 0
 	for i, panel in enumerate(self.panels):
 	    if not hasattr(panel, '__prefpanel__'):
@@ -459,7 +459,7 @@ class PreferencesDialog(gtk.Dialog):
 	    label = cfg.get('label',None)
 	    if not label:
 		continue
-	    if visible_panel == panel.__neil__['id']:
+	    if visible_panel == panel.__aldrin__['id']:
 		starting_tab_index = i
 	    self.nb.append_page(panel, gtk.Label(label))
 	self.tab_list, self.tab_list_store, columns = new_listview([('Name', str),])
@@ -510,7 +510,7 @@ class PreferencesDialog(gtk.Dialog):
 	"""
 	try:
 	    self.apply()
-	except com.exception('neil.exception.cancel'):
+	except com.exception('aldrin.exception.cancel'):
 	    pass
 
     def on_ok(self):
@@ -521,7 +521,7 @@ class PreferencesDialog(gtk.Dialog):
 	try:
 	    self.apply()		
 	    self.destroy()
-	except com.exception('neil.exception.cancel'):
+	except com.exception('aldrin.exception.cancel'):
 	    pass
 
 def show_preferences(parent, *args):
@@ -535,7 +535,7 @@ def show_preferences(parent, *args):
     """
     PreferencesDialog(parent, *args)
 
-__neil__ = dict(
+__aldrin__ = dict(
 	classes = [
 	CancelException,
 	GeneralPanel,

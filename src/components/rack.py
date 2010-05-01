@@ -1,8 +1,8 @@
 #encoding: latin-1
 
-# Neil
+# Aldrin
 # Modular Sequencer
-# Copyright (C) 2006,2007,2008 The Neil Development Team
+# Copyright (C) 2006,2007,2008 The Aldrin Development Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -26,7 +26,7 @@ import gtk
 import gobject
 import cairo
 import pangocairo
-from neil.utils import prepstr, filepath, db2linear, linear2db, is_debug, filenameify, \
+from aldrin.utils import prepstr, filepath, db2linear, linear2db, is_debug, filenameify, \
 	get_item_count, question, error, new_listview, add_scrollbars, get_clipboard_text, set_clipboard_text, \
 	gettext, new_stock_image_button, diff, show_plugin_manual
 import zzub
@@ -35,12 +35,12 @@ import fnmatch
 import ctypes
 import time
 import Queue
-import neil.common as common
-import neil.preset as preset_module
-from neil.common import MARGIN, MARGIN2, MARGIN3, MARGIN0
+import aldrin.common as common
+import aldrin.preset as preset_module
+from aldrin.common import MARGIN, MARGIN2, MARGIN3, MARGIN0
 import cPickle
 import config
-import neil.com as com
+import aldrin.com as com
 
 class ParameterView(gtk.VBox):
     """
@@ -56,8 +56,8 @@ class ParameterView(gtk.VBox):
 	    ('application/x-controller-slider-drop', gtk.TARGET_SAME_APP, DROP_TARGET_CTRL_SLIDER),
     ]
 
-    __neil__ = dict(
-	    id = 'neil.core.parameterview',
+    __aldrin__ = dict(
+	    id = 'aldrin.core.parameterview',
 	    singleton = False,
 	    categories = [
 	    ]
@@ -131,7 +131,7 @@ class ParameterView(gtk.VBox):
 	self.btnrandom.connect('clicked', self.on_button_random)
 	self.btnhelp.connect('clicked', self.on_button_help)
 	self.connect('destroy', self.on_destroy)
-	routeview = com.get('neil.core.routerpanel').view
+	routeview = com.get('aldrin.core.routerpanel').view
 	self.connect('key-press-event', routeview.on_key_jazz, self.plugin)		
 	self.connect('key-release-event', routeview.on_key_jazz_release, self.plugin)
 	self.connect('button-press-event', self.on_left_down)
@@ -145,7 +145,7 @@ class ParameterView(gtk.VBox):
 	toplevelgroup.add(scrollwindow)
 
 	self.add(toplevelgroup)		
-	eventbus = com.get('neil.core.eventbus')
+	eventbus = com.get('aldrin.core.eventbus')
 	eventbus.zzub_parameter_changed += self.on_zzub_parameter_changed
 	self.update_preset_buttons()
 
@@ -189,10 +189,9 @@ class ParameterView(gtk.VBox):
 	    button = gtk.Button('Drag to connect')
 	    button.drag_source_set(gtk.gdk.BUTTON1_MASK | gtk.gdk.BUTTON3_MASK,
 		    self.DROP_TARGETS, gtk.gdk.ACTION_COPY)
-	    button.connect('drag-data-get', self.on_drag_data_get, (g, t, i))
-	    button.connect('drag-data-delete', self.on_drag_data_delete, 
-                           (g, t, i))
-	    button.connect('drag-end', self.on_drag_end, (g, t, i))
+	    button.connect('drag-data-get', self.on_drag_data_get, (g,t,i))
+	    button.connect('drag-data-delete', self.on_drag_data_delete, (g,t,i))
+	    button.connect('drag-end', self.on_drag_end, (g,t,i))
 	    snamegroup.add_widget(namelabel)
 	    namelabel.set_alignment(0, 0.5)
 	    slidergroup = gtk.HBox(False, MARGIN)
@@ -332,7 +331,7 @@ class ParameterView(gtk.VBox):
 	return True
 
     def on_drag_end(self, w, context, (g,t,i)):
-	self.update_namelabel(g, t, i)
+	self.update_namelabel(g,t,i)
 
     def find_event_connection(self, source):
 	for index in xrange(self.plugin.get_input_connection_count()):
@@ -356,7 +355,7 @@ class ParameterView(gtk.VBox):
 	self.update_namelabel(tg,tt,ti)
 
     def on_drag_data_received(self, w, context, x, y, data, info, time, (g,t,i)):
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	try:
 	    if data and data.format == 8:
 		pluginhash, sg,st,si = cPickle.loads(data.data)
@@ -376,7 +375,7 @@ class ParameterView(gtk.VBox):
 	"""
 	Unbinds all midi controllers from the selected parameter.
 	"""
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	player.remove_midimapping(self.plugin, g, t, i)
 	self.update_namelabel(g,t,i)
 	player.history_commit("remove MIDI mapping")
@@ -406,8 +405,8 @@ class ParameterView(gtk.VBox):
 	Handles the learn entry from the context menu. Associates
 	a controller with a plugin parameter.
 	"""
-	import neil.controller as controller
-	player = com.get('neil.core.player')
+	import aldrin.controller as controller
+	player = com.get('aldrin.core.player')
 	res = controller.learn_controller(self)
 	if res:
 	    name, channel, ctrlid = res
@@ -420,8 +419,8 @@ class ParameterView(gtk.VBox):
 	Handles clicks on controller names in the context menu. Associates
 	a controller with a plugin parameter.
 	"""
-	player = com.get('neil.core.player')
-	# FIXME: commented-out for now, because midi controllers crash neil
+	player = com.get('aldrin.core.player')
+	# FIXME: commented-out for now, because midi controllers crash aldrin
 	# after closing and reopening a rack.
 	player.add_midimapping(self.plugin, g, t, i, channel, ctrlid)
 	player.history_commit("add MIDI mapping")
@@ -455,7 +454,7 @@ class ParameterView(gtk.VBox):
     # this fails to add italics to event-connected parameters
     # because get_event_connection_bindings() is broken, for now.
     def update_namelabel(self, g, t, i):
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	nl, s, vl = self.pid2ctrls[(g, t, i)]
 	markup = "<b>%s</b>" % nl._default_name
 	if self.get_event_connection_bindings(g, t, i):
@@ -474,7 +473,7 @@ class ParameterView(gtk.VBox):
 	@param event: event.
 	@type event: wx.Event
 	"""
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	if event.button == 1:
 	    nl,s,vl = self.pid2ctrls[(g,t,i)]
 	    s.grab_focus()
@@ -553,7 +552,7 @@ class ParameterView(gtk.VBox):
 	"""
 	Updates the preset box.
 	"""
-	config = com.get('neil.core.config')
+	config = com.get('aldrin.core.config')
 	self.presets = config.get_plugin_presets(self.pluginloader)
 	s = self.presetbox.child.get_text()
 	self.presetbox.get_model().clear()
@@ -572,7 +571,7 @@ class ParameterView(gtk.VBox):
 			    self.plugin.set_parameter_value(g,t,i,p.get_value_default(),0)
 	else:			
 	    preset.apply(self.plugin)
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	player.history_commit("change preset")
 	#self.update_all_sliders()
 
@@ -580,7 +579,7 @@ class ParameterView(gtk.VBox):
 	"""
 	Handler for the Add preset button
 	"""
-	config = com.get('neil.core.config')
+	config = com.get('aldrin.core.config')
 	name = self.presetbox.child.get_text()
 	presets = [preset for preset in self.presets.presets if prepstr(preset.name) == name]
 	if presets:
@@ -600,7 +599,7 @@ class ParameterView(gtk.VBox):
 	"""
 	Handler for the Remove preset button
 	"""
-	config = com.get('neil.core.config')
+	config = com.get('aldrin.core.config')
 	name = self.presetbox.child.get_text()
 	presets = [preset for preset in self.presets.presets if prepstr(preset.name) == name]
 	if presets:
@@ -709,7 +708,7 @@ class ParameterView(gtk.VBox):
 			self.plugin.set_parameter_value(g,t,i,v,0)
 			s.set_value(v)
 			self.update_valuelabel(g,t,i)
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	player.history_commit("randomize parameters")
 
     def on_button_help(self, event):
@@ -758,7 +757,7 @@ class ParameterView(gtk.VBox):
 		    s.set_value(value)
 		    self.plugin.set_parameter_value(g,t,i,int(s.get_value()),0)
 		    self.update_valuelabel(g,t,i)
-		    player = com.get('neil.core.player')
+		    player = com.get('aldrin.core.player')
 		    player.history_commit("change plugin parameter")
 		except:
 		    import traceback
@@ -771,7 +770,7 @@ class ParameterView(gtk.VBox):
 	"""
 	Handles destroy events.
 	"""
-#		player = com.get('neil.core.player')
+#		player = com.get('aldrin.core.player')
 #		print player.get_midimapping_count()
 #		for i in range(player.get_midimapping_count()):
 #			m =  player.get_midimapping(i)
@@ -800,7 +799,7 @@ class ParameterView(gtk.VBox):
 	v = self.plugin.get_parameter_value(g,t,i)
 	s.set_value(v)
 	self.update_valuelabel(g,t,i)
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	player.history_commit("change plugin parameter")
 
     def update_valuelabel(self, g, t, i):
@@ -877,11 +876,11 @@ class RackPanel(gtk.VBox):
     Displays controls for individual plugins.
     """
 
-    __neil__ = dict(
-	    id = 'neil.core.rackpanel',
+    __aldrin__ = dict(
+	    id = 'aldrin.core.rackpanel',
 	    singleton = True,
 	    categories = [
-		    #'neil.viewpanel',
+		    #'aldrin.viewpanel',
 		    #'view',
 	    ]
     )
@@ -907,7 +906,7 @@ class RackPanel(gtk.VBox):
 	self.rowgroup = rowgroup
 	self.connect('realize', self.on_realize)
 	self.add(self.scrollwindow)
-	eventbus = com.get('neil.core.eventbus')
+	eventbus = com.get('aldrin.core.eventbus')
 	eventbus.zzub_delete_plugin += self.update_all
 
     def handle_focus(self):
@@ -932,7 +931,7 @@ class RackPanel(gtk.VBox):
 	    self.rowgroup.pack_start(view, expand=False)
 	    #~ view.set_size_request(*view.get_best_size())
 
-__neil__ = dict(
+__aldrin__ = dict(
 	classes = [
 		ParameterView,
 		RackPanel,

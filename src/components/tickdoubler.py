@@ -1,8 +1,8 @@
 #encoding: latin-1
 
-# Neil
+# Aldrin
 # Modular Sequencer
-# Copyright (C) 2006,2007,2008 The Neil Development Team
+# Copyright (C) 2006,2007,2008 The Aldrin Development Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -24,17 +24,17 @@ A view that allows browsing available extension interfaces and documentation.
 This module can also be executed standalone.
 """
 
-import neil.com as com
+import aldrin.com as com
 import zzub
 import gtk
 import gobject
 import time
 import os
-from neil.utils import prepstr, new_listview, is_generator, message
+from aldrin.utils import prepstr, new_listview, is_generator, message
 
 class TickDoublerDialog(gtk.Dialog):
-	__neil__ = dict(
-		id = 'neil.tickdoubler.dialog',
+	__aldrin__ = dict(
+		id = 'aldrin.tickdoubler.dialog',
 		singleton = True,
 	)
 	
@@ -110,7 +110,7 @@ class TickDoublerDialog(gtk.Dialog):
 						
 	def on_double(self, widget, multiplier):
 		# multiply pattern positions
-		player = com.get('neil.core.player')
+		player = com.get('aldrin.core.player')
 		player.set_callback_state(False)
 		seq = player.get_current_sequencer()
 		for track in seq.get_track_list():
@@ -131,7 +131,7 @@ class TickDoublerDialog(gtk.Dialog):
 					self.halve_pattern(plugin, id)		
 		player.history_commit("tick resolution resizing")
 		player.set_callback_state(True)
-		eventbus = com.get('neil.core.eventbus')
+		eventbus = com.get('aldrin.core.eventbus')
 		eventbus.document_loaded()	
 		message(self, "Resizing complete")
 	
@@ -140,8 +140,8 @@ class TickDoublerDialog(gtk.Dialog):
 
 
 class TickDoublerMenuItem:
-	__neil__ = dict(
-		id = 'neil.tickdoubler.menuitem',
+	__aldrin__ = dict(
+		id = 'aldrin.tickdoubler.menuitem',
 		singleton = True,
 		categories = [
 			'menuitem.tool'
@@ -157,10 +157,10 @@ class TickDoublerMenuItem:
 		menu.append(item)
 		
 	def on_menuitem_activate(self, widget):
-		browser = com.get('neil.tickdoubler.dialog')
+		browser = com.get('aldrin.tickdoubler.dialog')
 		browser.show_all()
 
-__neil__ = dict(
+__aldrin__ = dict(
 	classes = [
 		TickDoublerDialog,
 		TickDoublerMenuItem,

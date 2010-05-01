@@ -17,6 +17,6 @@ if os.path.isfile(os.path.join(CWD, 'this_is_a_repository')):
 	print "adding " + module_path + " to sys.path"
 	sys.path = [module_path] + sys.path
 
-import neil.main
-neil.main.run(sys.argv)
+import aldrin.main
+aldrin.main.run(sys.argv)
 

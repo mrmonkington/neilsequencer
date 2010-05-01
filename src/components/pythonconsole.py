@@ -1,8 +1,8 @@
 #encoding: latin-1
 
-# Neil
+# Aldrin
 # Modular Sequencer
-# Copyright (C) 2006,2007,2008 The Neil Development Team
+# Copyright (C) 2006,2007,2008 The Aldrin Development Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -30,10 +30,10 @@ gobject.threads_init()
 import os
 import inspect
 
-import neil.com as com
-import neil.utils as utils
+import aldrin.com as com
+import aldrin.utils as utils
 
-import neil.contextlog as contextlog
+import aldrin.contextlog as contextlog
 
 import pango
 import fnmatch
@@ -48,8 +48,8 @@ import time
 import code
 
 class PythonConsoleDialog(gtk.Dialog):
-	__neil__ = dict(
-		id = 'neil.pythonconsole.dialog',
+	__aldrin__ = dict(
+		id = 'aldrin.pythonconsole.dialog',
 		singleton = True,
 	)
 	
@@ -69,7 +69,7 @@ class PythonConsoleDialog(gtk.Dialog):
 		self.locals = {}
 		for handler in com.get_from_category('pythonconsole.locals'):
 			handler.register_locals(self.locals)
-		player = com.get('neil.core.player')
+		player = com.get('aldrin.core.player')
 		self.locals.update(dict(
 			__name__ = "__console__",
 			__doc__ = None,
@@ -95,7 +95,7 @@ class PythonConsoleDialog(gtk.Dialog):
 		buffer = BUFFER_CLASS()
 		
 		view = VIEW_CLASS(buffer)
-		cfg = com.get('neil.core.config')
+		cfg = com.get('aldrin.core.config')
 		# "ProFontWindows 9"
 		view.modify_font(pango.FontDescription(cfg.get_pattern_font('Monospace')))
 		view.set_editable(False)
@@ -136,7 +136,7 @@ class PythonConsoleDialog(gtk.Dialog):
 		item.show()
 		self.toolmenu.append(item)
 		if add_to_config:
-			config = com.get('neil.core.config')
+			config = com.get('aldrin.core.config')
 			config.debug_commands = config.debug_commands + [cmd]
 		
 	def exec_tool(self, menuitem, cmd):
@@ -152,7 +152,7 @@ class PythonConsoleDialog(gtk.Dialog):
 			
 	def list_plugins(self, pattern='*'):
 		uris = []
-		player = com.get('neil.core.player')
+		player = com.get('aldrin.core.player')
 		for pl in player.get_pluginloader_list():
 			uri = pl.get_uri()
 			if fnmatch.fnmatch(uri, pattern):
@@ -160,7 +160,7 @@ class PythonConsoleDialog(gtk.Dialog):
 		return uris
 		
 	def create_plugin(self, pattern='*'):
-		player = com.get('neil.core.player')
+		player = com.get('aldrin.core.player')
 		for uri in self.list_plugins(pattern):
 			pl = player.get_pluginloader_by_name(uri)
 			player.create_plugin(pl)
@@ -203,8 +203,8 @@ class PythonConsoleDialog(gtk.Dialog):
 		return True
 
 class PythonConsoleMenuItem:
-	__neil__ = dict(
-		id = 'neil.pythonconsole.menuitem',
+	__aldrin__ = dict(
+		id = 'aldrin.pythonconsole.menuitem',
 		singleton = True,
 		categories = [
 			'menuitem.tool'
@@ -220,10 +220,10 @@ class PythonConsoleMenuItem:
 		menu.append(item)
 		
 	def on_menuitem_activate(self, widget):
-		browser = com.get('neil.pythonconsole.dialog')
+		browser = com.get('aldrin.pythonconsole.dialog')
 		browser.show_all()
 
-__neil__ = dict(
+__aldrin__ = dict(
 	classes = [
 		PythonConsoleDialog,
 		PythonConsoleMenuItem,
@@ -235,7 +235,7 @@ if __name__ == '__main__': # extension mode
 	contextlog.init()
 	com.load_packages()
 	# running standalone
-	browser = com.get('neil.pythonconsole.dialog', False)
+	browser = com.get('aldrin.pythonconsole.dialog', False)
 	browser.connect('destroy', lambda widget: gtk.main_quit())
 	browser.show_all()
 	gtk.main()

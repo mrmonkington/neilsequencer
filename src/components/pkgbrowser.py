@@ -1,8 +1,8 @@
 #encoding: latin-1
 
-# Neil
+# Aldrin
 # Modular Sequencer
-# Copyright (C) 2006,2007,2008 The Neil Development Team
+# Copyright (C) 2006,2007,2008 The Aldrin Development Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -29,19 +29,19 @@ import gobject
 import os
 import inspect
 
-import neil.com as com
-import neil.utils as utils
+import aldrin.com as com
+import aldrin.utils as utils
 
-import neil.contextlog as contextlog
-from neil.utils import Menu, test_view
+import aldrin.contextlog as contextlog
+from aldrin.utils import Menu, test_view
 
 import pango
 
 MARGIN = 6
 
 class PackageBrowserDialog(gtk.Dialog):
-	__neil__ = dict(
-		id = 'neil.componentbrowser.dialog',
+	__aldrin__ = dict(
+		id = 'aldrin.componentbrowser.dialog',
 		singleton = True,
 	)
 	
@@ -78,7 +78,7 @@ class PackageBrowserDialog(gtk.Dialog):
 		textbuffer.create_tag("u", underline=pango.UNDERLINE_SINGLE)
 		textbuffer.create_tag("b", weight=pango.WEIGHT_BOLD)
 
-		rootnode = self.ifacestore.append(None, ["<b>Neil Components</b>",None])
+		rootnode = self.ifacestore.append(None, ["<b>Aldrin Components</b>",None])
 		packagenode = self.ifacestore.append(rootnode, ["<b>By Packages</b>",None])
 		pkgnodes = {}
 		pkgnodes['(unknown)'] = self.ifacestore.append(packagenode, ["<i>(unknown)</i>", None])
@@ -94,7 +94,7 @@ class PackageBrowserDialog(gtk.Dialog):
 			element = metainfo.get('classobj',None)
 			if not element:
 				return
-			classname = element.__neil__['id']
+			classname = element.__aldrin__['id']
 			ifacenode = self.ifacestore.append(parent, ["<b>component</b> %s" % classname, element])
 			for ename in dir(element):
 				eelement = getattr(element,ename)
@@ -140,7 +140,7 @@ class PackageBrowserDialog(gtk.Dialog):
 			return
 		if event.button == 3:
 			menu = Menu()
-			classname = obj.__neil__['id']
+			classname = obj.__aldrin__['id']
 			menu.add_item("Test '" + classname + "'", self.test_view, classname)
 			menu.popup(self, event)
 			
@@ -301,8 +301,8 @@ class PackageBrowserDialog(gtk.Dialog):
 			insert('\t%s\n' % desc)
 
 class PackageBrowserMenuItem:
-	__neil__ = dict(
-		id = 'neil.componentbrowser.menuitem',
+	__aldrin__ = dict(
+		id = 'aldrin.componentbrowser.menuitem',
 		singleton = True,
 		categories = [
 			'menuitem.tool'
@@ -318,10 +318,10 @@ class PackageBrowserMenuItem:
 		menu.append(item)
 		
 	def on_menuitem_activate(self, widget):
-		browser = com.get('neil.componentbrowser.dialog')
+		browser = com.get('aldrin.componentbrowser.dialog')
 		browser.show_all()
 
-__neil__ = dict(
+__aldrin__ = dict(
 	classes = [
 		PackageBrowserDialog,
 		PackageBrowserMenuItem,

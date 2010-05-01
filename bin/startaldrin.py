@@ -3,8 +3,8 @@
 import os, sys, imp
 
 if sys.platform == 'win32':
-	os.environ['PATH'] = r'PATH=C:\neil\lib;' + os.environ['PATH']
-	os.environ['NEIL_PLUGIN_PATH'] = r'C:\neil\lib\zzub'
+	os.environ['PATH'] = r'PATH=C:\aldrin\lib;' + os.environ['PATH']
+	os.environ['ALDRIN_PLUGIN_PATH'] = r'C:\aldrin\lib\zzub'
 
 if '--debug' in sys.argv:
 	sys.argv.remove('--debug')
@@ -21,5 +21,5 @@ if os.path.isfile(os.path.join(CWD, 'this_is_a_repository')):
 	print "adding " + module_path + " to sys.path"
 	sys.path = [module_path] + sys.path
 
-import neil.main
-neil.main.run(sys.argv)
+import aldrin.main
+aldrin.main.run(sys.argv)

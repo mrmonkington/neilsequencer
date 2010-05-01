@@ -1,8 +1,8 @@
 #encoding: latin-1
 
-# Neil
+# Aldrin
 # Modular Sequencer
-# Copyright (C) 2006,2007,2008 The Neil Development Team
+# Copyright (C) 2006,2007,2008 The Aldrin Development Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -25,28 +25,28 @@ editor and its associated components.
 
 if __name__ == '__main__':
     import os
-    os.system('../../bin/neil-combrowser neil.core.sequencerpanel')
+    os.system('../../bin/aldrin-combrowser aldrin.core.sequencerpanel')
     raise SystemExit
 
 import gtk
 import pango
 import gobject
-from neil.utils import PLUGIN_FLAGS_MASK, ROOT_PLUGIN_FLAGS
-from neil.utils import GENERATOR_PLUGIN_FLAGS, EFFECT_PLUGIN_FLAGS
-from neil.utils import CONTROLLER_PLUGIN_FLAGS
-from neil.utils import prepstr, from_hsb, to_hsb, get_item_count
-from neil.utils import get_clipboard_text, set_clipboard_text, add_scrollbars
-from neil.utils import is_effect, is_generator, is_controller
-from neil.utils import is_root, get_new_pattern_name, filepath
-from neil.utils import Menu
+from aldrin.utils import PLUGIN_FLAGS_MASK, ROOT_PLUGIN_FLAGS
+from aldrin.utils import GENERATOR_PLUGIN_FLAGS, EFFECT_PLUGIN_FLAGS
+from aldrin.utils import CONTROLLER_PLUGIN_FLAGS
+from aldrin.utils import prepstr, from_hsb, to_hsb, get_item_count
+from aldrin.utils import get_clipboard_text, set_clipboard_text, add_scrollbars
+from aldrin.utils import is_effect, is_generator, is_controller
+from aldrin.utils import is_root, get_new_pattern_name, filepath
+from aldrin.utils import Menu
 import random
 import config
-import neil.common as common
+import aldrin.common as common
 MARGIN = common.MARGIN
 MARGIN2 = common.MARGIN2
 MARGIN3 = common.MARGIN3
 MARGIN0 = common.MARGIN0
-import neil.com as com
+import aldrin.com as com
 import zzub
 
 SEQKEYS = '0123456789abcdefghijklmnopqrstuvwxyz'
@@ -159,18 +159,18 @@ class SequencerPanel(gtk.VBox):
 
     Displays all the patterns available for the current track.
     """
-    __neil__ = dict(
-	    id = 'neil.core.sequencerpanel',
+    __aldrin__ = dict(
+	    id = 'aldrin.core.sequencerpanel',
 	    singleton = True,
 	    categories = [
-		    'neil.viewpanel',
+		    'aldrin.viewpanel',
 		    'view',
 	    ]
     )	
 
     __view__ = dict(
 		    label = "Sequencer",
-		    stockid = "neil_sequencer",
+		    stockid = "aldrin_sequencer",
 		    shortcut = 'F4',
 		    order = 4,
     )
@@ -229,15 +229,15 @@ class SequencerPanel(gtk.VBox):
 	self.toolbar.update_all()		
 	self.seqview.connect('size-allocate', self.on_sash_pos_changed)
 	self.seqview.grab_focus()
-	eventbus = com.get('neil.core.eventbus')
+	eventbus = com.get('aldrin.core.eventbus')
 	eventbus.edit_sequence_request += self.edit_sequence_request
 
     def edit_sequence_request(self, track=None, row=None):
-	framepanel = com.get('neil.core.framepanel')
+	framepanel = com.get('aldrin.core.framepanel')
 	framepanel.select_viewpanel(self)				
 	#TODO: add active_tracks option to allow track, row position change
 	#player.active_tracks = [(track, row)]
-	#framepanel = com.get('neil.core.framepanel')
+	#framepanel = com.get('aldrin.core.framepanel')
 	#framepanel.select_viewpanel(self)
 
     def handle_focus(self):
@@ -330,7 +330,7 @@ class SequencerView(gtk.DrawingArea):
 	self.seq_row_size = 30
 
 	self.plugin_info = common.get_plugin_infos()
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	self.playpos = player.get_position()
 	self.row = 0
 	self.track = 0
@@ -354,7 +354,7 @@ class SequencerView(gtk.DrawingArea):
 	self.hscroll.connect('change-value', self.on_hscroll_window)
 	self.vscroll.connect('change-value', self.on_vscroll_window)
 	gobject.timeout_add(100, self.update_position)
-	eventbus = com.get('neil.core.eventbus')
+	eventbus = com.get('aldrin.core.eventbus')
 	eventbus.zzub_sequencer_changed += self.redraw
 	eventbus.zzub_set_sequence_event += self.redraw
 	eventbus.document_loaded += self.redraw
@@ -425,7 +425,7 @@ class SequencerView(gtk.DrawingArea):
 	@param row: Row index.
 	@type row: int
 	"""
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	seq = player.get_current_sequencer()
 	track = max(min(track, seq.get_sequence_track_count() - 1),0)
 	row = max(row, 0)
@@ -466,7 +466,7 @@ class SequencerView(gtk.DrawingArea):
 	self.redraw()
 
     def get_track(self):
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	seq = player.get_current_sequencer()
 	if (self.track != -1) and (self.track < seq.get_sequence_track_count()):
 	    return seq.get_sequence(self.track)
@@ -475,7 +475,7 @@ class SequencerView(gtk.DrawingArea):
     # FIXME why does this fail when master is the only plugin and no patterns exist?
     def create_track(self, plugin):
 	# get sequencer and add the track
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	seq = player.get_current_sequencer()
 	track = seq.create_sequence(plugin, zzub.zzub_sequence_type_pattern)
 	# if it has no existing patterns, make one (even if it has no parameters, it might have incoming connections)
@@ -493,7 +493,7 @@ class SequencerView(gtk.DrawingArea):
 	"""
 	Inserts a space at cursor.
 	"""
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	t = self.get_track()
 	if not t:
 	    return
@@ -508,13 +508,13 @@ class SequencerView(gtk.DrawingArea):
 	"""
 	Deletes pattern at cursor.
 	"""
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	t = player.get_sequence(self.track)
 	t.remove_events(self.row, self.step)
 	player.history_commit("delete sequences")
 
     def selection_range(self):
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	start = (min(self.selection_start[0], self.selection_end[0]), 
 				min(self.selection_start[1], self.selection_end[1]))
 	end = (max(self.selection_start[0], self.selection_end[0]), 
@@ -558,7 +558,7 @@ class SequencerView(gtk.DrawingArea):
 	set_clipboard_text(data)
 
     def on_popup_create_pattern(self, *args):
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	seq = player.get_current_sequencer()
 	try:
 	    start = (min(self.selection_start[0], self.selection_end[0]), 
@@ -582,7 +582,7 @@ class SequencerView(gtk.DrawingArea):
 	    player.history_commit("new pattern")
 
     def on_popup_merge(self, *args):
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	player.set_callback_state(False)	
 	seq = player.get_current_sequencer()
 	try:
@@ -624,7 +624,7 @@ class SequencerView(gtk.DrawingArea):
 			break
 	player.history_commit("merge pattern")
 	player.set_callback_state(True)
-	eventbus = com.get('neil.core.eventbus')
+	eventbus = com.get('aldrin.core.eventbus')
 	eventbus.document_loaded()	
 
     def on_popup_cut(self, *args):
@@ -634,7 +634,7 @@ class SequencerView(gtk.DrawingArea):
     # FIXME it would be nice if pasting moved the cursor forward, so that
     # repeated pasting would work
     def on_popup_paste(self, *args):	
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	player.set_callback_state(False)
 	seq = player.get_current_sequencer()
 	data = get_clipboard_text()
@@ -649,11 +649,11 @@ class SequencerView(gtk.DrawingArea):
 	except ValueError:
 	    pass
 	player.set_callback_state(True)
-	eventbus = com.get('neil.core.eventbus')
+	eventbus = com.get('aldrin.core.eventbus')
 	eventbus.document_loaded()
 
     def on_popup_delete(self, *args):
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	player.set_callback_state(False)
 	seq = player.get_current_sequencer()
 	print self.selection_start
@@ -671,7 +671,7 @@ class SequencerView(gtk.DrawingArea):
 		t.set_event(row, -1)
 	player.history_commit("delete selection")
 	player.set_callback_state(True)
-	eventbus = com.get('neil.core.eventbus')
+	eventbus = com.get('aldrin.core.eventbus')
 	eventbus.document_loaded()
 
     def on_popup_delete_track(self, *args):
@@ -681,7 +681,7 @@ class SequencerView(gtk.DrawingArea):
 	@param event: Menu event.
 	@type event: wx.CommandEvent
 	"""
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	seq = player.get_current_sequencer()
 	t = seq.get_track_list()[self.track]
 	t.destroy()
@@ -712,7 +712,7 @@ class SequencerView(gtk.DrawingArea):
 	@param event: Menu event.
 	@type event: wx.CommandEvent
 	"""
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	seq = player.get_current_sequencer()
 	x, y = int(event.x), int(event.y)
 	track, row = self.pos_to_track_row((x,y))
@@ -758,7 +758,7 @@ class SequencerView(gtk.DrawingArea):
 
     def show_plugin_dialog(self):
 	pmenu = []
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	for plugin in player.get_plugin_list():
 	    pmenu.append(prepstr(plugin.get_name()))
 	dlg = AddSequencerTrackDialog(self, pmenu)
@@ -776,14 +776,14 @@ class SequencerView(gtk.DrawingArea):
 	"""
 	Set loop startpoint
 	"""
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	player.set_loop_start(self.row)
 	if player.get_loop_end() <= self.row:
 	    player.set_loop_end(self.row + self.step)
 	self.redraw()
 
     def set_loop_end(self, *args):
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	pos = self.row# + self.step
 	if player.get_loop_end() != pos:
 	    player.set_loop_end(pos)
@@ -802,7 +802,7 @@ class SequencerView(gtk.DrawingArea):
 	@param event: Key event
 	@type event: wx.KeyEvent
 	"""
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	seq = player.get_current_sequencer()
 	mask = event.state
 	kv = event.keyval		
@@ -978,7 +978,7 @@ class SequencerView(gtk.DrawingArea):
 	@param index: Pattern index.
 	@type index: int
 	"""
-	eventbus = com.get('neil.core.eventbus')
+	eventbus = com.get('aldrin.core.eventbus')
 	eventbus.edit_pattern_request(plugin, index)
 
     def get_pattern_at(self, track, row, includespecial=False):
@@ -1046,7 +1046,7 @@ class SequencerView(gtk.DrawingArea):
 	@type event: wx.MouseEvent
 	"""
 	self.grab_focus()
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	track_count = player.get_sequence_track_count()
 	x, y = int(event.x), int(event.y)
 	track, row = self.pos_to_track_row((x, y))		
@@ -1066,7 +1066,7 @@ class SequencerView(gtk.DrawingArea):
 	elif event.button == 3:
 	    if (x < self.seq_left_margin) and (track < track_count):
 		mp = player.get_sequence(track).get_plugin()
-		menu = com.get('neil.core.contextmenu', 'plugin', mp)
+		menu = com.get('aldrin.core.contextmenu', 'plugin', mp)
 		menu.popup(self, event)
 		return
 	    self.on_context_menu(event)
@@ -1086,7 +1086,7 @@ class SequencerView(gtk.DrawingArea):
 	    if self.selection_start == None:				
 		self.selection_start = (self.track, self.row)
 	    if self.selection_start:
-		player = com.get('neil.core.player')
+		player = com.get('aldrin.core.player')
 		seq = player.get_current_sequencer()
 		select_track = min(seq.get_sequence_track_count() - 1, 
                                    max(select_track, 0))
@@ -1135,7 +1135,7 @@ class SequencerView(gtk.DrawingArea):
 	#TODO: find a better way to find out whether we are visible
 	#if self.rootwindow.get_current_panel() != self.panel:
 	#	return True
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	playpos = player.get_position()
 	if self.playpos != playpos:
 	    if self.panel.toolbar.followsong.get_active():
@@ -1202,7 +1202,7 @@ class SequencerView(gtk.DrawingArea):
 	"""
 	Returns the size in characters of the virtual view area.
 	"""
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
 	seq = player.get_current_sequencer()
 	h = seq.get_sequence_track_count()
 	w = (max(self.row, player.get_song_end(), player.get_loop_end() / 
@@ -1219,7 +1219,7 @@ class SequencerView(gtk.DrawingArea):
 	"""
 	if not self.window:
 	    return
-	player = com.get('neil.core.player')
+	player = com.get('aldrin.core.player')
         gc = self.window.new_gc()
 	colormap = gc.get_colormap()
 	drawable = self.window
@@ -1339,7 +1339,7 @@ class SequencerView(gtk.DrawingArea):
         """
         Draw tracks and pattern boxes.
         """
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         drawable = self.window
         width, height = self.get_client_size()
         x, y = self.seq_left_margin, self.seq_top_margin
@@ -1419,7 +1419,7 @@ class SequencerView(gtk.DrawingArea):
 	    drawable.draw_line(ctx, self.seq_left_margin, y, width, y)
 
     def draw_loop_points(self, ctx, colors):
-        player = com.get('neil.core.player')
+        player = com.get('aldrin.core.player')
         drawable = self.window
         width, height = self.get_client_size()
 	ctx.line_width = 1
@@ -1485,7 +1485,7 @@ __all__ = [
 'SequencerView',
 ]
 
-__neil__ = dict(
+__aldrin__ = dict(
 	classes = [
 		SequencerPanel,
 		SequencerView,
