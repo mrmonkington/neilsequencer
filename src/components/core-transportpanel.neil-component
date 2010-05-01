@@ -1,0 +1,9 @@
+[Neil COM]
+Module=transportpanel
+Name=Transport Panel
+Description=Provides a transport panel to the application.
+Icon=neil
+Authors=The Neil Development Team
+Copyright=Copyright (C) 2006,2007,2008 The Neil Development Team
+Website=http://www.neil.eu
+

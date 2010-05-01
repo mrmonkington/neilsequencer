@@ -1,0 +1,9 @@
+[Neil COM]
+Module=eventbus
+Name=Event Bus
+Description=Provides a global event bus to the application.
+Icon=neil
+Authors=The Neil Development Team
+Copyright=Copyright (C) 2006,2007,2008 The Neil Development Team
+Website=http://www.neil.eu
+
