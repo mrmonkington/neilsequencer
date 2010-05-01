@@ -1,9 +1,0 @@
-[Aldrin COM]
-Module=searchplugins
-Name=Search Plugins
-Description=Provides a search box for plugins.
-Icon=aldrin
-Authors=The Aldrin Development Team
-Copyright=Copyright (C) 2006,2007,2008 The Aldrin Development Team
-Website=http://www.aldrin.eu
-
