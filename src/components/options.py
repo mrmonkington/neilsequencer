@@ -1,8 +1,8 @@
 #encoding: latin-1
 
-# Aldrin
+# Neil
 # Modular Sequencer
-# Copyright (C) 2006,2007,2008 The Aldrin Development Team
+# Copyright (C) 2006,2007,2008 The Neil Development Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -21,14 +21,14 @@
 import optparse, sys
 
 class OptionParser(optparse.OptionParser):
-	__aldrin__ = dict(
-		id = 'aldrin.core.options',
+	__neil__ = dict(
+		id = 'neil.core.options',
 		singleton = True,
 	)
 	
 	def __init__(self):
 		optparse.OptionParser.__init__(self)
-		self.add_option("--profile", metavar="profile", default='', help="Start Aldrin with profiling enabled, save results to <profile>.")
+		self.add_option("--profile", metavar="profile", default='', help="Start Neil with profiling enabled, save results to <profile>.")
 		self._options = dict()
 		self._args = []
 		
@@ -38,7 +38,7 @@ class OptionParser(optparse.OptionParser):
 	def get_options_args(self):
 		return self._options, self._args
 
-__aldrin__ = dict(
+__neil__ = dict(
 	classes = [
 		OptionParser,
 	],

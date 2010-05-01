@@ -1,8 +1,8 @@
 #encoding: latin-1
 
-# Aldrin
+# Neil
 # Modular Sequencer
-# Copyright (C) 2006,2007,2008 The Aldrin Development Team
+# Copyright (C) 2006,2007,2008 The Neil Development Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -20,29 +20,29 @@
 
 if __name__ == '__main__':
     import os
-    os.system('../../bin/aldrin-combrowser aldrin.core.panel.transport')
+    os.system('../../bin/neil-combrowser neil.core.panel.transport')
     raise SystemExit
 
 import gtk
-from aldrin.common import MARGIN, MARGIN2, MARGIN3, MARGIN0
+from neil.common import MARGIN, MARGIN2, MARGIN3, MARGIN0
 import gobject
-from aldrin.utils import new_stock_image_toggle_button, new_stock_image_button, format_time, \
+from neil.utils import new_stock_image_toggle_button, new_stock_image_button, format_time, \
         ticks_to_time, new_theme_image_toggle_button
-import aldrin.audiogui as audiogui
+import neil.audiogui as audiogui
 import time
 import config
-import aldrin.com as com
+import neil.com as com
 import zzub
-import aldrin.common as common
-from aldrin.utils import ObjectHandlerGroup
+import neil.common as common
+from neil.utils import ObjectHandlerGroup
 
 class TransportPanel(gtk.HBox):
     """
     A panel containing the BPM/TPB spin controls.
     """
 
-    __aldrin__ = dict(
-            id = 'aldrin.core.panel.transport',
+    __neil__ = dict(
+            id = 'neil.core.panel.transport',
             singleton = True,
             categories = [
                     'view',
@@ -60,7 +60,7 @@ class TransportPanel(gtk.HBox):
         Initializer.
         """
         gtk.HBox.__init__(self)
-        eventbus = com.get('aldrin.core.eventbus')
+        eventbus = com.get('neil.core.eventbus')
         eventbus.zzub_parameter_changed += self.on_zzub_parameter_changed
         eventbus.zzub_player_state_changed += self.on_zzub_player_state_changed
         eventbus.document_loaded += self.update_all
@@ -152,7 +152,7 @@ class TransportPanel(gtk.HBox):
         self.pack_start(combosizer, expand=False)
         self.pack_end(gtk.HBox())
         self.set_border_width(MARGIN)
-        player = com.get('aldrin.core.player')
+        player = com.get('neil.core.player')
         player.get_plugin(0).set_parameter_value(1, 0, 1, config.get_config().get_default_int('BPM', 126), 1)
         player.get_plugin(0).set_parameter_value(1, 0, 2, config.get_config().get_default_int('TPB', 16), 1)
         player.history_flush_last()
@@ -168,7 +168,7 @@ class TransportPanel(gtk.HBox):
         self.hgroup.connect(self.btnloop, 'clicked', self.on_toggle_loop)
         self.hgroup.connect(self.btnpanic, 'clicked', self.on_toggle_panic)
 
-        accel = com.get('aldrin.core.accelerators')
+        accel = com.get('neil.core.accelerators')
         accel.add_accelerator('F5', self.btnplay, 'clicked')
         accel.add_accelerator('F7', self.btnrecord, 'clicked')
         accel.add_accelerator('F8', self.btnstop, 'clicked')
@@ -177,22 +177,22 @@ class TransportPanel(gtk.HBox):
         self.update_all()
 
     def spinbox_clicked(self, widget, event):
-        player = com.get('aldrin.core.player')
+        player = com.get('neil.core.player')
         player.spinbox_edit = True
 
     def play(self, widget):
-        player = com.get('aldrin.core.player')
+        player = com.get('neil.core.player')
         player.play()
 
     def on_toggle_automation(self, widget):
-        player = com.get('aldrin.core.player')
+        player = com.get('neil.core.player')
         if widget.get_active():
             player.set_automation(1)
         else:
             player.set_automation(0)
 
     def stop(self, widget):
-        player = com.get('aldrin.core.player')
+        player = com.get('neil.core.player')
         player.stop()
 
     def on_toggle_loop(self, widget):
@@ -203,7 +203,7 @@ class TransportPanel(gtk.HBox):
         @param event command event.
         @type event: CommandEvent
         """
-        player = com.get('aldrin.core.player')
+        player = com.get('neil.core.player')
         if widget.get_active():
             player.set_loop_enabled(1)
         else:
@@ -217,14 +217,14 @@ class TransportPanel(gtk.HBox):
         @param event command event.
         @type event: CommandEvent
         """
-        driver = com.get('aldrin.core.driver.audio')
+        driver = com.get('neil.core.driver.audio')
         if widget.get_active():
             driver.enable(0)
         else:
             driver.enable(1)
 
     def update_cpu(self):
-        cpu = com.get('aldrin.core.driver.audio').get_cpu_load()
+        cpu = com.get('neil.core.driver.audio').get_cpu_load()
         #self.cpu.set_fraction(cpu)
         self.cpuvalue.set_label("%i%%" % int((cpu*100) + 0.5))
         return True
@@ -233,7 +233,7 @@ class TransportPanel(gtk.HBox):
         """
         Event handler triggered by a 10fps timer event.
         """
-        player = com.get('aldrin.core.player')
+        player = com.get('neil.core.player')
         p = player.get_position()
         m = player.get_plugin(0)
         bpm = m.get_parameter_value(1, 0, 1)
@@ -252,7 +252,7 @@ class TransportPanel(gtk.HBox):
         return True
 
     def update_btnplay(self):
-        state = com.get('aldrin.core.player').get_state()
+        state = com.get('neil.core.player').get_state()
         token = self.hgroup.autoblock()
         if state == zzub.zzub_player_state_playing:
             self.btnplay.set_active(True)
@@ -270,14 +270,14 @@ class TransportPanel(gtk.HBox):
         called when a parameter changes in zzub. checks whether this parameter
         is related to master bpm or tpb and updates the view.
         """
-        player = com.get('aldrin.core.player')
+        player = com.get('neil.core.player')
         master = player.get_plugin(0)
         bpm = master.get_parameter_value(1, 0, 1)
         if (group,track) == (1,0):
             if param == 1:
                 self.update_bpm()
                 try:
-                    com.get('aldrin.core.wavetablepanel').waveedit.view.view_changed()
+                    com.get('neil.core.wavetablepanel').waveedit.view.view_changed()
                 except AttributeError:
                     pass
 
@@ -291,7 +291,7 @@ class TransportPanel(gtk.HBox):
         @param event: event.
         @type event: wx.Event
         """
-        player = com.get('aldrin.core.player')
+        player = com.get('neil.core.player')
         player.get_plugin(0).set_parameter_value(1, 0, 2, int(self.bpm.get_value()), 1)
         player.history_commit("change BPM")
         config.get_config().set_default_int('BPM', int(self.bpm.get_value()))
@@ -303,21 +303,21 @@ class TransportPanel(gtk.HBox):
         @param event: event.
         @type event: wx.Event
         """
-        player = com.get('aldrin.core.player')
+        player = com.get('neil.core.player')
         player.get_plugin(0).set_parameter_value(1, 0, 2, int(self.tpb.get_value()), 1)
         player.history_commit("change TPB")
         config.get_config().set_default_int('TPB', int(self.tpb.get_value()))
 
     def update_bpm(self):
         block = self.hgroup.autoblock()
-        player = com.get('aldrin.core.player')
+        player = com.get('neil.core.player')
         master = player.get_plugin(0)
         bpm = master.get_parameter_value(1, 0, 1)
         self.bpm.set_value(bpm)
 
     def update_tpb(self):
         block = self.hgroup.autoblock()
-        player = com.get('aldrin.core.player')
+        player = com.get('neil.core.player')
         master = player.get_plugin(0)
         tpb = master.get_parameter_value(1, 0, 2)
         self.tpb.set_value(tpb)
@@ -328,11 +328,11 @@ class TransportPanel(gtk.HBox):
         """
         self.update_bpm()
         self.update_tpb()
-        player = com.get('aldrin.core.player')
+        player = com.get('neil.core.player')
         self.btnloop.set_active(player.get_loop_enabled())
         self.btnrecord.set_active(player.get_automation())
 
-__aldrin__ = dict(
+__neil__ = dict(
         classes = [
                 TransportPanel,
         ],

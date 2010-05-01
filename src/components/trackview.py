@@ -1,8 +1,8 @@
 #encoding: latin-1
 
-# Aldrin
+# Neil
 # Modular Sequencer
-# Copyright (C) 2006,2007,2008 The Aldrin Development Team
+# Copyright (C) 2006,2007,2008 The Neil Development Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -25,26 +25,26 @@ editor and its associated components.
 
 if __name__ == '__main__':
 	import os
-	os.system('../../bin/aldrin-combrowser aldrin.core.trackviewpanel')
+	os.system('../../bin/neil-combrowser neil.core.trackviewpanel')
 	raise SystemExit
 	
 import gtk
 import pango
 import gobject
-from aldrin.utils import PLUGIN_FLAGS_MASK, ROOT_PLUGIN_FLAGS, \
+from neil.utils import PLUGIN_FLAGS_MASK, ROOT_PLUGIN_FLAGS, \
 	GENERATOR_PLUGIN_FLAGS, EFFECT_PLUGIN_FLAGS, CONTROLLER_PLUGIN_FLAGS
-from aldrin.utils import prepstr, from_hsb, to_hsb, get_item_count, \
+from neil.utils import prepstr, from_hsb, to_hsb, get_item_count, \
 	get_clipboard_text, set_clipboard_text, add_scrollbars
-from aldrin.utils import is_effect,is_generator,is_controller,is_root, \
+from neil.utils import is_effect,is_generator,is_controller,is_root, \
 	get_new_pattern_name, filepath, synchronize_list
 import random
 import config
-import aldrin.common as common
+import neil.common as common
 MARGIN = common.MARGIN
 MARGIN2 = common.MARGIN2
 MARGIN3 = common.MARGIN3
 MARGIN0 = common.MARGIN0
-import aldrin.com as com
+import neil.com as com
 
 SEQROWSIZE = 24
 
@@ -52,8 +52,8 @@ class Track(gtk.HBox):
 	"""
 	Track header. Displays controls to mute or solo the track.
 	"""
-	__aldrin__ = dict(
-		id = 'aldrin.core.track',
+	__neil__ = dict(
+		id = 'neil.core.track',
 		categories = [
 		]
 	)	
@@ -69,7 +69,7 @@ class Track(gtk.HBox):
 		hbox.pack_start(self.label, True, True, 5)
 		self.header.pack_start(hbox, True, True)
 		self.header.pack_end(gtk.HSeparator(), False, False)
-		self.view = com.get('aldrin.core.trackview', track, hadjustment)
+		self.view = com.get('neil.core.trackview', track, hadjustment)
 		self.pack_start(self.header, False, False)
 		self.pack_end(self.view, True, True)
 
@@ -120,8 +120,8 @@ class TimelineView(View):
 	"""
 	timeline view. shows a horizontal sequencer timeline.
 	"""
-	__aldrin__ = dict(
-		id = 'aldrin.core.timelineview',
+	__neil__ = dict(
+		id = 'neil.core.timelineview',
 		categories = [
 		]
 	)
@@ -131,7 +131,7 @@ class TimelineView(View):
 		self.set_size_request(-1, 16)
 		
 	def expose(self, widget, *args):
-		player = com.get('aldrin.core.player')
+		player = com.get('neil.core.player')
 		w,h = self.get_client_size()
 		gc = self.window.new_gc()
 		cm = gc.get_colormap()
@@ -185,8 +185,8 @@ class TrackView(View):
 	"""
 	Track view. Displays the content of one track.
 	"""
-	__aldrin__ = dict(
-		id = 'aldrin.core.trackview',
+	__neil__ = dict(
+		id = 'neil.core.trackview',
 		categories = [
 		]
 	)
@@ -262,7 +262,7 @@ class TrackView(View):
 		return bb
 	
 	def expose(self, widget, *args):
-		player = com.get('aldrin.core.player')
+		player = com.get('neil.core.player')
 		w,h = self.get_client_size()
 		gc = self.window.new_gc()
 		cm = gc.get_colormap()
@@ -360,18 +360,18 @@ class TrackViewPanel(gtk.VBox):
 	
 	Displays all the patterns available for the current track.
 	"""
-	__aldrin__ = dict(
-		id = 'aldrin.core.trackviewpanel',
+	__neil__ = dict(
+		id = 'neil.core.trackviewpanel',
 		singleton = True,
 		categories = [
-			'aldrin.viewpanel',
+			'neil.viewpanel',
 			'view',
 		]
 	)	
 	
 	__view__ = dict(
 			label = "Tracks",
-			stockid = "aldrin_sequencer",
+			stockid = "neil_sequencer",
 			shortcut = '<Shift>F4',
 			order = 4,
 	)
@@ -385,7 +385,7 @@ class TrackViewPanel(gtk.VBox):
 		self.hscroll = gtk.HScrollbar()
 		hadjustment = self.hscroll.get_adjustment()
 		hadjustment.set_all(0, 0, 16384, 1, 1024, 2300)
-		self.timeline = com.get('aldrin.core.timelineview', hadjustment)
+		self.timeline = com.get('neil.core.timelineview', hadjustment)
 		self.trackviews = gtk.VBox()
 		
 		vbox = gtk.VBox()
@@ -408,7 +408,7 @@ class TrackViewPanel(gtk.VBox):
 		vbox.pack_end(hbox, False, False)
 
 		self.pack_start(vbox)
-		eventbus = com.get('aldrin.core.eventbus')
+		eventbus = com.get('neil.core.eventbus')
 		eventbus.zzub_sequencer_changed += self.update_tracks
 		eventbus.zzub_set_sequence_tracks += self.update_tracks
 		eventbus.zzub_sequencer_remove_track += self.update_tracks
@@ -423,12 +423,12 @@ class TrackViewPanel(gtk.VBox):
 		hadjustment.page_size = int(((64.0 * w) / 24.0) + 0.5)
 	
 	def update_tracks(self, *args):
-		player = com.get('aldrin.core.player')
+		player = com.get('neil.core.player')
 		tracklist = list(player.get_sequence_list())
 
 		def insert_track(i,track):
 			print "insert",i,track
-			trackview = com.get('aldrin.core.track', track, self.hscroll.get_adjustment())
+			trackview = com.get('neil.core.track', track, self.hscroll.get_adjustment())
 			self.trackviews.pack_start(trackview, False, False)
 			self.trackviews.reorder_child(trackview, i)
 			self.sizegroup.add_widget(trackview.header)
@@ -449,7 +449,7 @@ class TrackViewPanel(gtk.VBox):
 		tracks = [trackview.track for trackview in self.trackviews]
 		synchronize_list(tracks, tracklist, insert_track, del_track, swap_track)
 
-__aldrin__ = dict(
+__neil__ = dict(
 	classes = [
 		TrackViewPanel,
 		Track,

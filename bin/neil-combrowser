@@ -18,22 +18,22 @@ if os.path.isfile(os.path.join(CWD, 'this_is_a_repository')):
 	sys.path = [module_path] + sys.path
 
 def init_combrowser():
-	import aldrin.com as com
+	import neil.com as com
 	import gtk
 	# startup python console
-	browser = com.get('aldrin.pythonconsole.dialog', False)
+	browser = com.get('neil.pythonconsole.dialog', False)
 	browser.connect('destroy', lambda widget: gtk.main_quit())
 	browser.show_all()
 	if len(sys.argv) >= 2:
 		for name in sys.argv[1:]:
-			import aldrin.utils
-			aldrin.utils.test_view(name)
+			import neil.utils
+			neil.utils.test_view(name)
 	else:
 		# startup component browser
-		browser = com.get('aldrin.componentbrowser.dialog', False)
+		browser = com.get('neil.componentbrowser.dialog', False)
 		browser.connect('destroy', lambda widget: gtk.main_quit())
 		browser.show_all()
 
-import aldrin.main
-aldrin.main.run(sys.argv, init_combrowser)
+import neil.main
+neil.main.run(sys.argv, init_combrowser)
 

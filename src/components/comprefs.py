@@ -1,8 +1,8 @@
 #encoding: latin-1
 
-# Aldrin
+# Neil
 # Modular Sequencer
-# Copyright (C) 2006,2007,2008 The Aldrin Development Team
+# Copyright (C) 2006,2007,2008 The Neil Development Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -24,14 +24,14 @@ Provides a preference tab to organize components.
 
 if __name__ == '__main__':
 	import os
-	os.system('../../bin/aldrin-combrowser aldrin.core.pref.components')
+	os.system('../../bin/neil-combrowser neil.core.pref.components')
 	raise SystemExit
 
 import gtk
 import gobject
-import aldrin.com as com
-from aldrin.common import MARGIN, MARGIN2, MARGIN3
-from aldrin.utils import new_listview, add_scrollbars
+import neil.com as com
+from neil.common import MARGIN, MARGIN2, MARGIN3
+from neil.utils import new_listview, add_scrollbars
 
 #OPTIONS = [
 #	'Module',
@@ -47,10 +47,10 @@ class ComponentPanel(gtk.VBox):
 	Panel which allows changing of general settings.
 	"""
 	
-	__aldrin__ = dict(
-		id = 'aldrin.core.pref.components',
+	__neil__ = dict(
+		id = 'neil.core.pref.components',
 		categories = [
-			'aldrin.prefpanel',
+			'neil.prefpanel',
 		]
 	)
 	
@@ -92,7 +92,7 @@ class ComponentPanel(gtk.VBox):
 		"""
 		pass
 
-__aldrin__ = dict(
+__neil__ = dict(
 	classes = [
 		ComponentPanel,
 	],

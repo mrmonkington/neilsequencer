@@ -1,8 +1,8 @@
 #encoding: latin-1
 
-# Aldrin
+# Neil
 # Modular Sequencer
-# Copyright (C) 2006,2007,2008 The Aldrin Development Team
+# Copyright (C) 2006,2007,2008 The Neil Development Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -20,13 +20,13 @@
 
 import zzub
 from zzub import Player
-import aldrin.com as com
+import neil.com as com
 
-import aldrin.common as common
+import neil.common as common
 import gobject
 import os,sys
 import time
-from aldrin.utils import is_generator, is_effect, is_root, is_controller, is_streamer, \
+from neil.utils import is_generator, is_effect, is_root, is_controller, is_streamer, \
         PropertyEventHandler, generate_ui_methods, refresh_gui
 from config import get_plugin_aliases, get_plugin_blacklist
 
@@ -79,9 +79,9 @@ DOCUMENT_UI = dict(
         document_path = dict(vtype=str,doc="path to the current document."),
 )
 
-class AldrinPlayer(Player, PropertyEventHandler):
-    __aldrin__ = dict(
-            id = 'aldrin.core.player',
+class NeilPlayer(Player, PropertyEventHandler):
+    __neil__ = dict(
+            id = 'neil.core.player',
             singleton = True,
             categories = [
                     'pythonconsole.locals',
@@ -161,8 +161,8 @@ class AldrinPlayer(Player, PropertyEventHandler):
                     args.append(argname)
             self.event_id_to_name[val] = (eventname, membername, args)
             #print "'%s', # ( %s )" % (eventname, ','.join(args + ["..."]))
-        config = com.get('aldrin.core.config')
-        pluginpath = os.environ.get('ALDRIN_PLUGIN_PATH',None)
+        config = com.get('neil.core.config')
+        pluginpath = os.environ.get('NEIL_PLUGIN_PATH',None)
         if pluginpath:
             pluginpaths = pluginpath.split(os.pathsep)
 
@@ -198,7 +198,7 @@ class AldrinPlayer(Player, PropertyEventHandler):
         self.playstarttime = time.time()
         self.document_unchanged()
         self.spinbox_edit = False
-        eventbus = com.get('aldrin.core.eventbus')
+        eventbus = com.get('neil.core.eventbus')
         eventbus.zzub_pre_delete_plugin += self.on_pre_delete_plugin
         eventbus.zzub_pre_delete_pattern += self.on_pre_delete_pattern
         self._callback = zzub.zzub_callback_t(self.handle_event)
@@ -378,7 +378,7 @@ class AldrinPlayer(Player, PropertyEventHandler):
         self.__loading = False
         if not res:
             self.document_path = filename
-            eventbus = com.get('aldrin.core.eventbus')
+            eventbus = com.get('neil.core.eventbus')
             eventbus.document_loaded()
         return res
 
@@ -391,7 +391,7 @@ class AldrinPlayer(Player, PropertyEventHandler):
         self.__loading = False
         if not res:
             self.document_path = filename
-            eventbus = com.get('aldrin.core.eventbus')
+            eventbus = com.get('neil.core.eventbus')
             eventbus.document_loaded()
         self.active_plugins = [self.get_plugin(0)]
         return res
@@ -423,11 +423,11 @@ class AldrinPlayer(Player, PropertyEventHandler):
             ucopcount = self.history_get_uncomitted_operations()
             if ucopcount:
                 # you should commit your actions
-                import aldrin.errordlg
+                import neil.errordlg
                 msg = "%i operation(s) left uncommitted." % ucopcount
-                aldrin.errordlg.error(None, "<b>Internal Program Error</b>", msg)
+                neil.errordlg.error(None, "<b>Internal Program Error</b>", msg)
                 self.history_commit("commit leak")
-        player = com.get('aldrin.core.player')
+        player = com.get('neil.core.player')
         t1 = time.time()
         player.handle_events()
         t2 = time.time() - t1
@@ -545,7 +545,7 @@ class AldrinPlayer(Player, PropertyEventHandler):
         @param data: event data.
         @type data: zzub_event_data_t
         """
-        eventbus = com.get('aldrin.core.eventbus')
+        eventbus = com.get('neil.core.eventbus')
         data = data.contents
         # prepare arguments for the specific callback
         eventname,membername,argnames = self.event_id_to_name[data.type]
@@ -606,7 +606,7 @@ class AldrinPlayer(Player, PropertyEventHandler):
             print >> sys.stderr, "lunar plugin collection not found, not supporting lunar."
             return
 
-        config = com.get('aldrin.core.config')
+        config = com.get('neil.core.config')
         userlunarpath = os.path.join(config.get_settings_folder(),'lunar')
         if not os.path.isdir(userlunarpath):
             print "folder %s does not exist, creating..." % userlunarpath
@@ -767,15 +767,15 @@ class AldrinPlayer(Player, PropertyEventHandler):
                 outplug.set_parameter_value(zzub.zzub_parameter_group_connection, index, 1, newpan, False)
         self.history_commit("delete plugin")
 
-generate_ui_methods(AldrinPlayer, DOCUMENT_UI)
+generate_ui_methods(NeilPlayer, DOCUMENT_UI)
 
-__aldrin__ = dict(
+__neil__ = dict(
         classes = [
-                AldrinPlayer,
+                NeilPlayer,
         ],
 )
 
 if __name__ == '__main__':
     com.load_packages()
-    player = com.get('aldrin.core.player')
+    player = com.get('neil.core.player')
     player.octave = 3

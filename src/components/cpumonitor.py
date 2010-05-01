@@ -1,8 +1,8 @@
 #encoding: latin-1
 
-# Aldrin
+# Neil
 # Modular Sequencer
-# Copyright (C) 2006,2007,2008 The Aldrin Development Team
+# Copyright (C) 2006,2007,2008 The Neil Development Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -24,11 +24,11 @@ Provides dialog class for cpu monitor.
 
 import gtk
 import gobject
-from aldrin.utils import prepstr, add_scrollbars
-import aldrin.utils as utils, os, stat
-import aldrin.common as common
-from aldrin.common import MARGIN, MARGIN2, MARGIN3
-import aldrin.com as com
+from neil.utils import prepstr, add_scrollbars
+import neil.utils as utils, os, stat
+import neil.common as common
+from neil.common import MARGIN, MARGIN2, MARGIN3
+import neil.com as com
 
 class CPUMonitorDialog(gtk.Dialog):
 	"""
@@ -36,8 +36,8 @@ class CPUMonitorDialog(gtk.Dialog):
 	CPU usage and individual plugin CPU consumption.
 	"""
 	
-	__aldrin__ = dict(
-		id = 'aldrin.core.cpumonitor',
+	__neil__ = dict(
+		id = 'neil.core.cpumonitor',
 		singleton = True,
 		categories = [
 			'viewdialog',
@@ -94,8 +94,8 @@ class CPUMonitorDialog(gtk.Dialog):
 		"""
 		Called by timer event. Updates CPU usage statistics.
 		"""
-		player = com.get('aldrin.core.player')
-		driver = com.get('aldrin.core.driver.audio')
+		player = com.get('neil.core.player')
+		driver = com.get('neil.core.driver.audio')
 		if self.window and self.window.is_visible():
 			cpu = 0.0
 			cpu_loads = {}
@@ -141,7 +141,7 @@ __all__ = [
 'CPUMonitorDialog',
 ]
 
-__aldrin__ = dict(
+__neil__ = dict(
 	classes = [
 		CPUMonitorDialog,
 	],
