@@ -669,6 +669,7 @@ class NeilPlayer(Player, PropertyEventHandler):
         # create a new default pattern.
         if is_generator(mp) and \
                 (pluginloader.get_parameter_count(1) or pluginloader.get_parameter_count(2)):
+
             pattern = mp.create_pattern(self.sequence_step)
             pattern.set_name('00')
             mp.add_pattern(pattern)
@@ -676,13 +677,16 @@ class NeilPlayer(Player, PropertyEventHandler):
             active_patterns = [(mp, 0)]
             t=self.create_sequence(mp, zzub.zzub_sequence_type_pattern)
             t.set_event(0,16)
-            # don't autoconnect, since this can be controlled quite simpler
-            # though dragging a plugin on the plugin you want to connect it with.
+            if self.autoconnect_target:
+                self.autoconnect_target.add_input(mp, zzub.zzub_connection_type_audio)
 
         # position the plugin at the default location
         mp.set_position(*self.plugin_origin)
 
-        if plugin:
+        ##Following code is only needed for dragging machines from
+        ##search plugins context box onto target effects.
+
+        if plugin and not self.autoconnect_target:
             if not is_generator(mp):
                 # if we have a context plugin, prepend connections
                 inplugs = []
