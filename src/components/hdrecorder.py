@@ -1,8 +1,8 @@
 #encoding: latin-1
 
-# Aldrin
+# Neil
 # Modular Sequencer
-# Copyright (C) 2006,2007,2008 The Aldrin Development Team
+# Copyright (C) 2006,2007,2008 The Neil Development Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -25,12 +25,12 @@ Provides dialog class for hd recorder control.
 
 import gtk
 import gobject
-import aldrin.utils as utils, os, stat
-from aldrin.utils import new_stock_image_toggle_button, ObjectHandlerGroup
-import aldrin.common as common
-import aldrin.com as com
+import neil.utils as utils, os, stat
+from neil.utils import new_stock_image_toggle_button, ObjectHandlerGroup
+import neil.common as common
+import neil.com as com
 import zzub
-from aldrin.common import MARGIN, MARGIN2, MARGIN3
+from neil.common import MARGIN, MARGIN2, MARGIN3
 
 class HDRecorderDialog(gtk.Dialog):
 	"""
@@ -38,8 +38,8 @@ class HDRecorderDialog(gtk.Dialog):
 	the audio output to a wave file.
 	"""
 
-	__aldrin__ = dict(
-		id = 'aldrin.core.hdrecorder',
+	__neil__ = dict(
+		id = 'neil.core.hdrecorder',
 		singleton = True,
 		categories = [
 			'viewdialog',
@@ -91,13 +91,13 @@ class HDRecorderDialog(gtk.Dialog):
 		self.vbox.add(sizer)
 		self.filename = ''
 		gobject.timeout_add(100, self.on_timer)
-		eventbus = com.get('aldrin.core.eventbus')
+		eventbus = com.get('neil.core.eventbus')
 		eventbus.zzub_parameter_changed += self.on_zzub_parameter_changed
 		self.update_label()
 		self.update_rec_button()
 		
 	def on_zzub_parameter_changed(self,plugin,group,track,param,value):
-		player = com.get('aldrin.core.player')
+		player = com.get('neil.core.player')
 		recorder = player.get_stream_recorder()
 		if plugin == recorder:
 			if (group,track,param) == (zzub.zzub_parameter_group_global,0,0):
@@ -107,7 +107,7 @@ class HDRecorderDialog(gtk.Dialog):
 				
 	def update_rec_button(self, value=None):
 		block = self.hgroup.autoblock()
-		player = com.get('aldrin.core.player')
+		player = com.get('neil.core.player')
 		recorder = player.get_stream_recorder()
 		if value == None:
 			value = recorder.get_parameter_value(zzub.zzub_parameter_group_global, 0, 1)
@@ -115,7 +115,7 @@ class HDRecorderDialog(gtk.Dialog):
 		self.chkauto.set_active(not recorder.get_attribute_value(0))
 			
 	def update_label(self):
-		player = com.get('aldrin.core.player')
+		player = com.get('neil.core.player')
 		recorder = player.get_stream_recorder()
 		self.btnsaveas.set_label(recorder.describe_value(zzub.zzub_parameter_group_global, 0, 0))
 		
@@ -127,7 +127,7 @@ class HDRecorderDialog(gtk.Dialog):
 		@param event: Command event.
 		@type event: wx.CommandEvent
 		"""
-		player = com.get('aldrin.core.player')
+		player = com.get('neil.core.player')
 		recorder = player.get_stream_recorder()
 		recorder.set_attribute_value(0, not widget.get_active())
 		player.history_flush()
@@ -138,7 +138,7 @@ class HDRecorderDialog(gtk.Dialog):
 		state of recording.
 		"""
 		if self.window and self.window.is_visible():
-			player = com.get('aldrin.core.player')
+			player = com.get('neil.core.player')
 			master = player.get_plugin(0)		
 			bpm = master.get_parameter_value(1, 0, 1)
 			tpb = master.get_parameter_value(1, 0, 2)
@@ -158,7 +158,7 @@ class HDRecorderDialog(gtk.Dialog):
 		dlg = gtk.FileChooserDialog(title="Save", parent=self, action=gtk.FILE_CHOOSER_ACTION_SAVE,
 			buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_SAVE, gtk.RESPONSE_OK)
 		)
-		player = com.get('aldrin.core.player')
+		player = com.get('neil.core.player')
 		dlg.set_do_overwrite_confirmation(True)
 		ffwav = gtk.FileFilter()
 		ffwav.set_name("PCM Waves (*.wav)")
@@ -179,7 +179,7 @@ class HDRecorderDialog(gtk.Dialog):
 		"""
 		Handler for the "Record" button.
 		"""
-		player = com.get('aldrin.core.player')
+		player = com.get('neil.core.player')
 		recorder = player.get_stream_recorder()
 		recorder.set_parameter_value_direct(zzub.zzub_parameter_group_global, 0, 1, widget.get_active(), False)
 
@@ -187,7 +187,7 @@ __all__ = [
 'HDRecorderDialog',
 ]
 
-__aldrin__ = dict(
+__neil__ = dict(
 	classes = [
 		HDRecorderDialog,
 	],

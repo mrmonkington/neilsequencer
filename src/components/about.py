@@ -1,8 +1,8 @@
 #encoding: latin-1
 
-# Aldrin
+# Neil
 # Modular Sequencer
-# Copyright (C) 2006,2007,2008 The Aldrin Development Team
+# Copyright (C) 2006,2007,2008 The Neil Development Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@ Contains the information displayed in the about box.
 """
 
 import sys
-from aldrin.utils import prepstr
+from neil.utils import prepstr
 import gtk
 
 NAME = "Neil"
@@ -67,7 +67,7 @@ DOCUMENTERS = [
 
 AUTHORS = [prepstr(x) for x in AUTHORS]
 
-from aldrin.utils import filepath, imagepath
+from neil.utils import filepath, imagepath
 
 def about_visit_website(dialog, link, user_data):
     import webbrowser
@@ -86,8 +86,8 @@ class AboutDialog(gtk.AboutDialog):
     A simple about dialog with a text control and an OK button.
     """
 
-    __aldrin__ = dict(
-	    id = "aldrin.core.dialog.about",
+    __neil__ = dict(
+	    id = "neil.core.dialog.about",
     )
 
     def __init__(self, parent):
@@ -111,7 +111,7 @@ class AboutDialog(gtk.AboutDialog):
 	self.run()
 	self.destroy()
 
-__aldrin__ = dict(
+__neil__ = dict(
 	classes = [
 		AboutDialog,
 	]

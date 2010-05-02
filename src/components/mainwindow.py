@@ -1,8 +1,8 @@
 #encoding: latin-1
 
-# Aldrin
+# Neil
 # Modular Sequencer
-# Copyright (C) 2006,2007,2008 The Aldrin Development Team
+# Copyright (C) 2006,2007,2008 The Neil Development Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -20,30 +20,30 @@
 
 import os
 import gtk
-from aldrin.utils import format_time, ticks_to_time, prepstr, linear2db, db2linear, filepath, \
+from neil.utils import format_time, ticks_to_time, prepstr, linear2db, db2linear, filepath, \
         is_debug, question, error, add_scrollbars, file_filter, new_stock_image_toggle_button, \
         new_stock_image_button, message, refresh_gui
 import zzub
 import gobject
 import config
-import aldrin.errordlg as errordlg
+import neil.errordlg as errordlg
 
-import aldrin.common as common
+import neil.common as common
 MARGIN = common.MARGIN
 MARGIN2 = common.MARGIN2
 MARGIN3 = common.MARGIN3
 MARGIN0 = common.MARGIN0
 
-from aldrin.utils import make_submenu_item, make_stock_menu_item, make_stock_tool_item, make_stock_toggle_item, \
+from neil.utils import make_submenu_item, make_stock_menu_item, make_stock_tool_item, make_stock_toggle_item, \
         make_stock_radio_item, make_menu_item, make_check_item, make_radio_item, new_theme_image,  \
         hicoloriconpath, Menu
 
 import preferences
 show_preferences = preferences.show_preferences
 
-from aldrin.utils import CancelException
+from neil.utils import CancelException
 
-import aldrin.com as com
+import neil.com as com
 
 def cmp_view(a,b):
   a_order = (hasattr(a, '__view__') and a.__view__.get('order',0)) or 0
@@ -51,8 +51,8 @@ def cmp_view(a,b):
   return cmp(a_order, b_order)
 
 class FramePanel(gtk.Notebook):
-  __aldrin__ = dict(
-          id = 'aldrin.core.framepanel',
+  __neil__ = dict(
+          id = 'neil.core.framepanel',
           singleton = True,
           categories = [
           ],
@@ -64,9 +64,9 @@ class FramePanel(gtk.Notebook):
     self.set_show_border(True)
     self.set_border_width(1)
     self.set_show_tabs(True)
-    com.get("aldrin.core.icons") # make sure theme icons are loaded
+    com.get("neil.core.icons") # make sure theme icons are loaded
     defaultpanel = None
-    pages = sorted(com.get_from_category('aldrin.viewpanel'), cmp=cmp_view)
+    pages = sorted(com.get_from_category('neil.viewpanel'), cmp=cmp_view)
     for index, panel in enumerate(pages):
       if not hasattr(panel, '__view__'):
         print "panel",panel,"misses attribute __view__"
@@ -103,8 +103,8 @@ class FramePanel(gtk.Notebook):
 
 class Accelerators(gtk.AccelGroup):
 
-  __aldrin__ = dict(
-          id = 'aldrin.core.accelerators',
+  __neil__ = dict(
+          id = 'neil.core.accelerators',
           singleton = True,
           categories = [
           ],
@@ -119,8 +119,8 @@ class Accelerators(gtk.AccelGroup):
                                   gtk.ACCEL_VISIBLE)
 
 class ViewMenu(Menu):
-  __aldrin__ = dict(
-          id = 'aldrin.core.viewmenu',
+  __neil__ = dict(
+          id = 'neil.core.viewmenu',
           singleton = True,
           categories = [
           ],
@@ -133,8 +133,8 @@ class ViewMenu(Menu):
       view.hide_all()
 
   def on_activate_item(self, menuitem, view):
-    if 'aldrin.viewpanel' in view.__aldrin__.get('categories',[]):
-      framepanel = com.get('aldrin.core.framepanel')
+    if 'neil.viewpanel' in view.__neil__.get('categories',[]):
+      framepanel = com.get('neil.core.framepanel')
       framepanel.select_viewpanel(view)
     else:
       view.hide_all()
@@ -145,8 +145,8 @@ class ViewMenu(Menu):
   def __init__(self):
     Menu.__init__(self)
     views = sorted(com.get_from_category('view'), cmp=cmp_view)
-    com.get("aldrin.core.icons") # make sure theme icons are loaded
-    accel = com.get('aldrin.core.accelerators')
+    com.get("neil.core.icons") # make sure theme icons are loaded
+    accel = com.get('neil.core.accelerators')
     for view in views:
       if not hasattr(view, '__view__'):
         print "view",view,"misses attribute __view__"
@@ -184,9 +184,9 @@ class ViewMenu(Menu):
         tempsubmenu.append(item)
       self.append(make_submenu_item(tempsubmenu, "Themes"))
 
-#~class AldrinToolbar(gtk.Toolbar):
-#~ __aldrin__ = dict(
-#~        id = 'aldrin.core.toolbar',
+#~class NeilToolbar(gtk.Toolbar):
+#~ __neil__ = dict(
+#~        id = 'neil.core.toolbar',
 #~        singleton = True,
 #~        categories = [
 #~                'view',
@@ -199,9 +199,9 @@ class ViewMenu(Menu):
 #~                toggle = True,
 #~  )
 
-class AldrinStatusbar(gtk.Statusbar):
-  __aldrin__ = dict(
-          id = 'aldrin.core.statusbar',
+class NeilStatusbar(gtk.Statusbar):
+  __neil__ = dict(
+          id = 'neil.core.statusbar',
           singleton = True,
           categories = [
                   'view',
@@ -218,13 +218,13 @@ class AldrinStatusbar(gtk.Statusbar):
     gtk.Statusbar.__init__(self)
     self.push(0, "Ready to rok again")
 
-class AldrinFrame(gtk.Window):
+class NeilFrame(gtk.Window):
   """
   The application main window class.
   """
 
-  __aldrin__ = dict(
-          id = 'aldrin.core.window.root',
+  __neil__ = dict(
+          id = 'neil.core.window.root',
           singleton = True,
           categories = [
                   'rootwindow',
@@ -273,16 +273,16 @@ class AldrinFrame(gtk.Window):
     vbox = gtk.VBox()
     self.add(vbox)
 
-    self.accelerators = com.get('aldrin.core.accelerators')
+    self.accelerators = com.get('neil.core.accelerators')
     self.add_accel_group(self.accelerators)
 
     # Menu Bar
-    self.aldrinframe_menubar = gtk.MenuBar()
-    vbox.pack_start(self.aldrinframe_menubar, expand=False)
+    self.neilframe_menubar = gtk.MenuBar()
+    vbox.pack_start(self.neilframe_menubar, expand=False)
     self.filemenu = gtk.Menu()
     filemenuitem = make_submenu_item(self.filemenu, "_File")
     filemenuitem.connect('activate', self.update_filemenu)
-    self.aldrinframe_menubar.append(filemenuitem)
+    self.neilframe_menubar.append(filemenuitem)
     self.update_filemenu(None)
 
     self.editmenu = gtk.Menu()
@@ -290,12 +290,12 @@ class AldrinFrame(gtk.Window):
     editmenuitem.connect('activate', self.update_editmenu)
     self.update_editmenu(None)
 
-    self.aldrinframe_menubar.append(editmenuitem)
-    tempmenu = com.get('aldrin.core.viewmenu')
-    self.aldrinframe_menubar.append(make_submenu_item(tempmenu, "_View"))
+    self.neilframe_menubar.append(editmenuitem)
+    tempmenu = com.get('neil.core.viewmenu')
+    self.neilframe_menubar.append(make_submenu_item(tempmenu, "_View"))
     self.toolsmenu = gtk.Menu()
     item = make_submenu_item(self.toolsmenu, "_Tools")
-    self.aldrinframe_menubar.append(item)
+    self.neilframe_menubar.append(item)
     toolitems = com.get_from_category('menuitem.tool', self.toolsmenu)
     if not toolitems:
       item.destroy()
@@ -309,42 +309,42 @@ class AldrinFrame(gtk.Window):
     tempmenu.append(gtk.SeparatorMenuItem())
     # Menu item that launches the about box
     tempmenu.append(make_stock_menu_item(gtk.STOCK_ABOUT, self.on_about))
-    self.aldrinframe_menubar.append(make_submenu_item(tempmenu, "_Help"))
+    self.neilframe_menubar.append(make_submenu_item(tempmenu, "_Help"))
     #~ # Menu Bar end
 
     # Tool Bar
-    #self.aldrinframe_toolbar = com.get('aldrin.core.toolbar')
-    #vbox.pack_start(self.aldrinframe_toolbar, expand=False)
+    #self.neilframe_toolbar = com.get('neil.core.toolbar')
+    #vbox.pack_start(self.neilframe_toolbar, expand=False)
 
-    #self.aldrinframe_toolbar.insert(make_stock_tool_item(gtk.STOCK_NEW, self.new),-1)
-    #self.aldrinframe_toolbar.insert(make_stock_tool_item(gtk.STOCK_OPEN, self.on_open),-1)
-    #self.aldrinframe_toolbar.insert(make_stock_tool_item(gtk.STOCK_SAVE, self.on_save),-1)
+    #self.neilframe_toolbar.insert(make_stock_tool_item(gtk.STOCK_NEW, self.new),-1)
+    #self.neilframe_toolbar.insert(make_stock_tool_item(gtk.STOCK_OPEN, self.on_open),-1)
+    #self.neilframe_toolbar.insert(make_stock_tool_item(gtk.STOCK_SAVE, self.on_save),-1)
     #extrasep = gtk.SeparatorToolItem()
-    #self.aldrinframe_toolbar.insert(extrasep,-1)
-    #if not com.get_from_category('menuitem.toolbar', self.aldrinframe_toolbar):
+    #self.neilframe_toolbar.insert(extrasep,-1)
+    #if not com.get_from_category('menuitem.toolbar', self.neilframe_toolbar):
     #   extrasep.destroy()
 
-    self.mastertoolbar = com.get('aldrin.core.panel.master')
-    self.transport = com.get('aldrin.core.panel.transport')
-    self.framepanel = com.get('aldrin.core.framepanel')
+    self.mastertoolbar = com.get('neil.core.panel.master')
+    self.transport = com.get('neil.core.panel.transport')
+    self.framepanel = com.get('neil.core.framepanel')
 
     hbox = gtk.HBox()
     hbox.add(self.framepanel)
     hbox.pack_end(self.mastertoolbar, expand=False)
     vbox.add(hbox)
 
-    self.aldrinframe_statusbar = com.get('aldrin.core.statusbar')
+    self.neilframe_statusbar = com.get('neil.core.statusbar')
 
     vbox.pack_start(self.transport, expand=False)
-    vbox.pack_end(self.aldrinframe_statusbar, expand=False)
+    vbox.pack_end(self.neilframe_statusbar, expand=False)
 
     self.update_title()
     gtk.window_set_default_icon_list(
-            gtk.gdk.pixbuf_new_from_file(hicoloriconpath("48x48/apps/aldrin.png")),
-            gtk.gdk.pixbuf_new_from_file(hicoloriconpath("32x32/apps/aldrin.png")),
-            gtk.gdk.pixbuf_new_from_file(hicoloriconpath("24x24/apps/aldrin.png")),
-            gtk.gdk.pixbuf_new_from_file(hicoloriconpath("22x22/apps/aldrin.png")),
-            gtk.gdk.pixbuf_new_from_file(hicoloriconpath("16x16/apps/aldrin.png")))
+            gtk.gdk.pixbuf_new_from_file(hicoloriconpath("48x48/apps/neil.png")),
+            gtk.gdk.pixbuf_new_from_file(hicoloriconpath("32x32/apps/neil.png")),
+            gtk.gdk.pixbuf_new_from_file(hicoloriconpath("24x24/apps/neil.png")),
+            gtk.gdk.pixbuf_new_from_file(hicoloriconpath("22x22/apps/neil.png")),
+            gtk.gdk.pixbuf_new_from_file(hicoloriconpath("16x16/apps/neil.png")))
     self.resize(750, 550)
 
     self.connect('key-press-event', self.on_key_down)
@@ -357,11 +357,11 @@ class AldrinFrame(gtk.Window):
     self.show_all()
     self.load_view()
 
-    eventbus = com.get('aldrin.core.eventbus')
+    eventbus = com.get('neil.core.eventbus')
     eventbus.document_path_changed += self.on_document_path_changed
     eventbus.print_mapping()
 
-    options, args = com.get('aldrin.core.options').get_options_args()
+    options, args = com.get('neil.core.options').get_options_args()
     if len(args) > 1:
       self.open_file(args[1])
     for driver in com.get_from_category('driver'):
@@ -373,11 +373,11 @@ class AldrinFrame(gtk.Window):
     """
     Called when an undo item is being called.
     """
-    player = com.get('aldrin.core.player')
+    player = com.get('neil.core.player')
     player.set_callback_state(False)
     player.undo()
     player.set_callback_state(True)
-    eventbus = com.get('aldrin.core.eventbus')
+    eventbus = com.get('neil.core.eventbus')
     eventbus.document_loaded()
     #self.print_history()
 
@@ -385,11 +385,11 @@ class AldrinFrame(gtk.Window):
     """
     Called when an undo item is being called.
     """
-    player = com.get('aldrin.core.player')
+    player = com.get('neil.core.player')
     player.set_callback_state(False)
     player.redo()
     player.set_callback_state(True)
-    eventbus = com.get('aldrin.core.eventbus')
+    eventbus = com.get('neil.core.eventbus')
     eventbus.document_loaded()
     #self.print_history()
 
@@ -397,7 +397,7 @@ class AldrinFrame(gtk.Window):
     """
     Dumps the current undo history to console.
     """
-    player = com.get('aldrin.core.player')
+    player = com.get('neil.core.player')
     pos = player.history_get_position()
     historysize = player.history_get_size()
     if not historysize:
@@ -416,14 +416,14 @@ class AldrinFrame(gtk.Window):
     """
     handler for can-activate-accel signal by Undo menuitem. Checks if undo can be executed.
     """
-    player = com.get('aldrin.core.player')
+    player = com.get('neil.core.player')
     return player.can_undo()
 
   def can_activate_redo(self, *args):
     """
     handler for can-activate-accel signal by Redo menuitem. Checks if redo can be executed.
     """
-    player = com.get('aldrin.core.player')
+    player = com.get('neil.core.player')
     return player.can_redo()
 
   def update_editmenu(self, *args):
@@ -432,12 +432,12 @@ class AldrinFrame(gtk.Window):
     """
     for item in self.editmenu:
       item.destroy()
-    player = com.get('aldrin.core.player')
+    player = com.get('neil.core.player')
 
     pos = player.history_get_position()
     self.print_history()
 
-    accel = com.get('aldrin.core.accelerators')
+    accel = com.get('neil.core.accelerators')
     item = make_menu_item("Undo", "", self.on_undo)
     accel.add_accelerator("<Control>Z", item)
     if player.can_undo():
@@ -534,10 +534,10 @@ class AldrinFrame(gtk.Window):
     """
     cfg = config.get_config()
     cfg.load_window_pos("MainFrameWindow", self)
-    #~cfg.load_window_pos("Toolbar", self.aldrinframe_toolbar)
+    #~cfg.load_window_pos("Toolbar", self.neilframe_toolbar)
     cfg.load_window_pos("MasterToolbar", self.mastertoolbar)
     cfg.load_window_pos("Transport", self.transport)
-    cfg.load_window_pos("StatusBar", self.aldrinframe_statusbar)
+    cfg.load_window_pos("StatusBar", self.neilframe_statusbar)
 
   def save_view(self):
     """
@@ -545,10 +545,10 @@ class AldrinFrame(gtk.Window):
     """
     cfg = config.get_config()
     cfg.save_window_pos("MainFrameWindow", self)
-    #~cfg.save_window_pos("Toolbar", self.aldrinframe_toolbar)
+    #~cfg.save_window_pos("Toolbar", self.neilframe_toolbar)
     cfg.save_window_pos("MasterToolbar", self.mastertoolbar)
     cfg.save_window_pos("Transport", self.transport)
-    cfg.save_window_pos("StatusBar", self.aldrinframe_statusbar)
+    cfg.save_window_pos("StatusBar", self.neilframe_statusbar)
 
   def on_help_contents(self, *args):
     """
@@ -558,11 +558,11 @@ class AldrinFrame(gtk.Window):
     @type event: MenuEvent
     """
     import webbrowser
-    webbrowser.open_new(filepath('../doc/aldrin/html/index.html'))
+    webbrowser.open_new(filepath('../doc/neil/html/index.html'))
 
   def on_help_shortcuts(self, *args):
     import os
-    os.system("evince %s &" % "/usr/local/share/doc/aldrin/shortcuts.pdf")
+    os.system("evince %s &" % "/usr/local/share/doc/neil/shortcuts.pdf")
 
   def on_about(self, *args):
     """
@@ -571,7 +571,7 @@ class AldrinFrame(gtk.Window):
     @param event: menu event.
     @type event: MenuEvent
     """
-    com.get('aldrin.core.dialog.about', self).show()
+    com.get('neil.core.dialog.about', self).show()
 
   def on_preferences(self, *args):
     """
@@ -614,7 +614,7 @@ class AldrinFrame(gtk.Window):
     Updates the title to display the filename of the currently
     loaded document.
     """
-    player = com.get('aldrin.core.player')
+    player = com.get('neil.core.player')
     filename = os.path.basename(player.document_path)
     if not filename:
       filename = 'Unsaved'
@@ -638,11 +638,11 @@ class AldrinFrame(gtk.Window):
     if not os.path.isfile(filename):
       return
     self.clear()
-    player = com.get('aldrin.core.player')
+    player = com.get('neil.core.player')
 
     base,ext = os.path.splitext(filename)
     #f ext.lower() in ('.bmx','.bmw'):
-      #~ progress = ProgressDialog("Aldrin", "Loading BMX Song...")
+      #~ progress = ProgressDialog("Neil", "Loading BMX Song...")
       #~ Yield()
       #player.clear()
       #player.load_bmx(filename)
@@ -650,7 +650,7 @@ class AldrinFrame(gtk.Window):
       #~ Yield()
       #~ progress.Update(100)
     if ext.lower() in ('.ccm'):
-      dlg = gtk.Dialog('Aldrin', parent=self, flags=gtk.DIALOG_MODAL)
+      dlg = gtk.Dialog('Neil', parent=self, flags=gtk.DIALOG_MODAL)
       progBar = gtk.ProgressBar()
       progBar.set_text('Loading CCM Song...')
       progBar.set_size_request(300, 40)
@@ -676,7 +676,7 @@ class AldrinFrame(gtk.Window):
 
   def on_document_path_changed(self, path):
     self.update_title()
-    com.get('aldrin.core.config').add_recent_file_config(path)
+    com.get('neil.core.config').add_recent_file_config(path)
 
   def save_file(self, filename):
     """
@@ -686,7 +686,7 @@ class AldrinFrame(gtk.Window):
     @param filename: Path to song.
     @type filename: str
     """
-    player = com.get('aldrin.core.player')
+    player = com.get('neil.core.player')
     try:
       if not os.path.splitext(filename)[1]:
         filename += self.DEFAULT_EXTENSION
@@ -723,7 +723,7 @@ class AldrinFrame(gtk.Window):
       error(self, "<b><big>Error saving file:</big></b>\n\n%s" % text)
     #~ progress.Update(100)
     #self.update_title()
-    #com.get('aldrin.core.config').add_recent_file_config(filename)
+    #com.get('neil.core.config').add_recent_file_config(filename)
 
   def on_open(self, *args):
     """
@@ -761,7 +761,7 @@ class AldrinFrame(gtk.Window):
     """
     Shows a save file dialog if filename is unknown and saves the file.
     """
-    player = com.get('aldrin.core.player')
+    player = com.get('neil.core.player')
     if not player.document_path:
       self.save_as()
     else:
@@ -771,7 +771,7 @@ class AldrinFrame(gtk.Window):
     """
     Shows a save file dialog and saves the file.
     """
-    player = com.get('aldrin.core.player')
+    player = com.get('neil.core.player')
     self.save_dlg.set_filename(player.document_path)
     response = self.save_dlg.run()
     self.save_dlg.hide()
@@ -798,10 +798,10 @@ class AldrinFrame(gtk.Window):
     Clears the current document.
     """
     common.get_plugin_infos().reset()
-    player = com.get('aldrin.core.player')
+    player = com.get('neil.core.player')
     player.clear()
     player.set_loop_start(0)
-    player.set_loop_end(com.get('aldrin.core.sequencerpanel').view.step)
+    player.set_loop_end(com.get('neil.core.sequencerpanel').view.step)
     player.get_plugin(0).set_parameter_value(1, 0, 1, config.get_config().get_default_int('BPM', 126), 1)
     player.get_plugin(0).set_parameter_value(1, 0, 2, config.get_config().get_default_int('TPB', 4), 1)
     player.history_flush_last()
@@ -813,7 +813,7 @@ class AldrinFrame(gtk.Window):
     @param event: menu event.
     @type event: MenuEvent
     """
-    player = com.get('aldrin.core.player')
+    player = com.get('neil.core.player')
     player.play()
 
   def play_from_cursor(self, *args):
@@ -823,8 +823,8 @@ class AldrinFrame(gtk.Window):
     @param event: menu event.
     @type event: MenuEvent
     """
-    player = com.get('aldrin.core.player')
-    player.set_position(max(com.get('aldrin.core.sequencerpanel').view.row,0))
+    player = com.get('neil.core.player')
+    player.set_position(max(com.get('neil.core.sequencerpanel').view.row,0))
     player.play()
 
   def on_select_theme(self, widget, data):
@@ -848,7 +848,7 @@ class AldrinFrame(gtk.Window):
     @param event: menu event.
     @type event: MenuEvent
     """
-    player = com.get('aldrin.core.player')
+    player = com.get('neil.core.player')
     player.stop()
 
   def save_changes(self):
@@ -856,7 +856,7 @@ class AldrinFrame(gtk.Window):
     Asks whether to save changes or not. Throws a {CancelException} if
     cancelled.
     """
-    player = com.get('aldrin.core.player')
+    player = com.get('neil.core.player')
     if not player.document_changed():
       return
     if player.document_path:
@@ -880,7 +880,7 @@ class AldrinFrame(gtk.Window):
       self.save_changes()
       self.clear()
       self.update_title()
-      com.get('aldrin.core.player').document_unchanged()
+      com.get('neil.core.player').document_unchanged()
     except CancelException:
       pass
 
@@ -888,7 +888,7 @@ class AldrinFrame(gtk.Window):
     """
     Event handler triggered when the window is being destroyed.
     """
-    eventbus = com.get('aldrin.core.eventbus')
+    eventbus = com.get('neil.core.eventbus')
     eventbus.shutdown()
 
   def on_exit(self, *args):
@@ -915,14 +915,14 @@ class AldrinFrame(gtk.Window):
 
 
 
-__aldrin__ = dict(
+__neil__ = dict(
         classes = [
                 FramePanel,
                 ViewMenu,
                 Accelerators,
-                AldrinFrame,
-                AldrinStatusbar,
-                #~AldrinToolbar,
+                NeilFrame,
+                NeilStatusbar,
+                #~NeilToolbar,
         ],
 )
 

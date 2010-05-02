@@ -1,8 +1,8 @@
 #encoding: latin-1
 
-# Aldrin
+# Neil
 # Modular Sequencer
-# Copyright (C) 2006 The Aldrin Development Team
+# Copyright (C) 2006 The Neil Development Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -21,6 +21,6 @@
 Import('env', 'install', 'install_recursive')
 import glob
 
-#install('${ETC_PATH}', 'aldrin.cfg', 0644)
+#install('${ETC_PATH}', 'neil.cfg', 0644)
 env.BuildPathConfig('${ETC_PATH}/path.cfg', ['${ROOTPATH}/options.conf', '${ROOTPATH}/SConstruct'])
 

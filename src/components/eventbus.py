@@ -42,7 +42,7 @@ EVENTS = [
 	
 	# document ui events, translation is done in player.py
 	# these events shall never be called directly from the application,
-	# they are sent as notifications by aldrin.core.player.
+	# they are sent as notifications by neil.core.player.
 	'octave_changed', # (octave, ...) called when player.octave changes.
 	'active_plugins_changed', # ([plugin, ...], ...) called when player.active_plugins changes.
 	'active_patterns_changed', # ([(plugin, index), ...], ...) called when player.active_patterns changes.
@@ -56,7 +56,7 @@ EVENTS = [
 	
 	# libzzub events, translation is done in player.py
 	# note that these events shall never be called from the application
-	# directly, instead they will only be triggered by aldrin.core.player.
+	# directly, instead they will only be triggered by neil.core.player.
 	'zzub_all', # ( data,... )
 	'zzub_connect', # ( from_plugin,to_plugin,type,... )
 	'zzub_custom', # ( id,data,... )
@@ -191,9 +191,9 @@ class EventBus(object):
 			handlerlist = getattr(self, idstr)
 			handlerlist.print_mapping()
 
-class AldrinEventBus(EventBus):
-	__aldrin__ = dict(
-		id = 'aldrin.core.eventbus',
+class NeilEventBus(EventBus):
+	__neil__ = dict(
+		id = 'neil.core.eventbus',
 		singleton = True,
 	)	
 	
@@ -203,9 +203,9 @@ __all__ = [
 'GlobalEventBus',
 ]
 
-__aldrin__ = dict(
+__neil__ = dict(
 	classes = [
-		AldrinEventBus,
+		NeilEventBus,
 	],
 )
 
@@ -219,7 +219,7 @@ if __name__ == '__main__':
 			
 	handler1 = MyHandler()
 	handler2 = MyHandler()
-	eventbus = AldrinEventBus()
+	eventbus = NeilEventBus()
 	eventbus.ping += handler1.on_bang, 50
 	eventbus.ping += handler2.on_bang, 60
 	eventbus.ping += on_bang, 70

@@ -1,8 +1,8 @@
 #encoding: latin-1
 
-# Aldrin
+# Neil
 # Modular Sequencer
-# Copyright (C) 2006,2007,2008 The Aldrin Development Team
+# Copyright (C) 2006,2007,2008 The Neil Development Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -26,8 +26,8 @@ Provides an object which eases access to the applications configuration.
 import gtk
 import os, glob, re
 
-from aldrin.utils import filepath, camelcase_to_unixstyle, etcpath, imagepath, iconpath, sharedpath, filenameify
-import aldrin.preset as preset
+from neil.utils import filepath, camelcase_to_unixstyle, etcpath, imagepath, iconpath, sharedpath, filenameify
+import neil.preset as preset
 import ConfigParser
 import new
 
@@ -103,7 +103,7 @@ CONFIG_OPTIONS = dict(
 # value is a series of keyboard characters associated with each note, in the order 
 # C, C#, D, E# and so on. two octaves are listed, separated by a vertical slash ("|").
 #
-# to make that configuration selectable, see share/aldrin/preferences.py.
+# to make that configuration selectable, see share/neil/preferences.py.
 # there is a dialog class named "KeyboardPanel", containing another KEYMAPS list, 
 # associating the dict codes with readable names.
 KEYMAPS = {
@@ -222,16 +222,16 @@ DEFAULT_THEME = {
     'PT Background' : 0xe0e0e0,
     }
 
-class AldrinConfig(object, ConfigParser.ConfigParser):
+class NeilConfig(object, ConfigParser.ConfigParser):
     """
     Streamlines access to the applications configuration. You should
     set all applications to and retrieve them from the config object.
 
     Do not instantiate this class, use {get_config} instead.
 
-    On Windows, most settings will be saved in ~/aldrin/settings.cfg
+    On Windows, most settings will be saved in ~/neil/settings.cfg
 
-    On Linux, most settings will be saved in ~/.aldrin/settings.cfg
+    On Linux, most settings will be saved in ~/.neil/settings.cfg
     """
     def __init__(self):
 	"""
@@ -373,9 +373,9 @@ class AldrinConfig(object, ConfigParser.ConfigParser):
 	Returns the users settings folder.
 	"""
 	if os.name == 'nt':
-	    settingsfolder = os.path.expanduser('~/aldrin')
+	    settingsfolder = os.path.expanduser('~/neil')
 	elif os.name == 'posix':
-	    settingsfolder = os.path.expanduser('~/.aldrin')
+	    settingsfolder = os.path.expanduser('~/.neil')
 	if not os.path.isdir(settingsfolder):
 	    os.makedirs(settingsfolder)
 	return settingsfolder
@@ -514,9 +514,9 @@ class AldrinConfig(object, ConfigParser.ConfigParser):
 	yields a a tree of plugins, to be used
 	in the machine view for menus. 
 
-	On Posix platforms, ~/.aldrin/index.txt overrides ${PREFIX}/share/aldrin/index.txt.
+	On Posix platforms, ~/.neil/index.txt overrides ${PREFIX}/share/neil/index.txt.
 
-	On Windows, <user folder>/aldrin/index.txt overrides <app folder>/share/aldrin/index.txt.
+	On Windows, <user folder>/neil/index.txt overrides <app folder>/share/neil/index.txt.
 
 	@return: Path to the index file.
 	@rtype: str
@@ -820,15 +820,15 @@ def generate_config_method(section, option, kwargs):
 
     getter.__name__ = 'get_' + funcname
     getter.__doc__ = 'Returns ' + doc
-    setattr(AldrinConfig, 'get_' + funcname, getter)
+    setattr(NeilConfig, 'get_' + funcname, getter)
 
     setter.__name__ = 'set_' + funcname
     setter.__doc__ = 'Sets ' + doc
-    setattr(AldrinConfig, 'set_' + funcname, setter)
+    setattr(NeilConfig, 'set_' + funcname, setter)
 
     # add a property
     prop = property(getter, setter, doc=doc)
-    setattr(AldrinConfig, funcname, prop)
+    setattr(NeilConfig, funcname, prop)
 
 def generate_config_methods():
     # build getters and setters based on the options map
@@ -838,9 +838,9 @@ def generate_config_methods():
 
 generate_config_methods()
 
-class AldrinConfigSingleton(AldrinConfig):
-    __aldrin__ = dict(
-	    id = 'aldrin.core.config',
+class NeilConfigSingleton(NeilConfig):
+    __neil__ = dict(
+	    id = 'neil.core.config',
 	    singleton = True,
     )
 
@@ -848,10 +848,10 @@ def get_config(*args):
     """
     Returns the global object singleton.
 
-    @rtype: {AldrinConfig}.
+    @rtype: {NeilConfig}.
     """
-    import aldrin.com
-    return aldrin.com.get(AldrinConfigSingleton.__aldrin__['id'])
+    import neil.com
+    return neil.com.get(NeilConfigSingleton.__neil__['id'])
 
 def get_plugin_blacklist():
     """
@@ -889,9 +889,9 @@ __all__ = [
 'get_plugin_aliases',
 ]
 
-__aldrin__ = dict(
+__neil__ = dict(
 	classes = [
-		AldrinConfigSingleton,
+		NeilConfigSingleton,
 	],
 )
 

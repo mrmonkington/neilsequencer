@@ -13,21 +13,21 @@ from unittest import TestCase, main
 
 class Test(TestCase):
 	def setUp(self):
-		import aldrin.com as com
+		import neil.com as com
 		com.init()
 		
 	def tearDown(self):
-		import aldrin.com as com
+		import neil.com as com
 		com.clear()
 	
 	def test_pref_dialog(self):
-		import aldrin.com as com
-		p = com.get('aldrin.core.player')
+		import neil.com as com
+		p = com.get('neil.core.player')
 		self.assertTrue(p)
 
 	def test_part2(self):
-		import aldrin.com as com
-		p = com.get('aldrin.core.window.root')
+		import neil.com as com
+		p = com.get('neil.core.window.root')
 		self.assertTrue(p)
 
 if __name__ == '__main__':

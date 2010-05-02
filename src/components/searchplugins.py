@@ -21,29 +21,29 @@
 
 import gtk
 import gobject
-import aldrin.utils as utils, os, stat
-from aldrin.utils import new_stock_image_toggle_button, ObjectHandlerGroup
-from aldrin.utils import is_effect,is_generator,is_controller,\
+import neil.utils as utils, os, stat
+from neil.utils import new_stock_image_toggle_button, ObjectHandlerGroup
+from neil.utils import is_effect,is_generator,is_controller,\
      is_root
-from aldrin.utils import prepstr, filepath, db2linear, linear2db,\
+from neil.utils import prepstr, filepath, db2linear, linear2db,\
      is_debug, filenameify, get_item_count, question, error,\
      new_listview, add_scrollbars, get_clipboard_text,\
      set_clipboard_text, gettext, new_stock_image_button,\
      new_liststore, add_vscrollbar
-import aldrin.common as common
-import aldrin.com as com
+import neil.common as common
+import neil.com as com
 import zzub
 
 DRAG_FORMAT_PLUGIN_URI = 0
 
 DRAG_FORMATS = [
-	('application/x-aldrin-plugin-uri', 0, DRAG_FORMAT_PLUGIN_URI)
+	('application/x-neil-plugin-uri', 0, DRAG_FORMAT_PLUGIN_URI)
 ]
 
 class SearchPluginsDialog(gtk.Window):
 
-    __aldrin__ = dict(
-        id = 'aldrin.core.searchplugins',
+    __neil__ = dict(
+        id = 'neil.core.searchplugins',
         singleton = True,
         categories = [
             'viewdialog',
@@ -64,7 +64,7 @@ class SearchPluginsDialog(gtk.Window):
         self.add(self.vbox)
         self.set_title("Search Plugins")
         self.connect('delete-event', self.hide_on_delete)
-	com.get("aldrin.core.icons") # make sure theme icons are loaded
+	com.get("neil.core.icons") # make sure theme icons are loaded
 	self.searchterms = ['']
 	self.searchbox = gtk.Entry()
 	self.treeview = gtk.TreeView()
@@ -110,7 +110,7 @@ class SearchPluginsDialog(gtk.Window):
 	self.treeview.drag_source_set(gtk.gdk.BUTTON1_MASK | gtk.gdk.BUTTON3_MASK,
 		DRAG_FORMATS, gtk.gdk.ACTION_COPY | gtk.gdk.ACTION_MOVE)
 	self.treeview.connect('drag_data_get', self.on_treeview_drag_data_get)
-	cfg = com.get('aldrin.core.config')
+	cfg = com.get('neil.core.config')
 	self.searchbox.set_text(cfg.pluginlistbrowser_search_term)
 	self.show_generators_button.set_active(cfg.pluginlistbrowser_show_generators)
 	self.show_effects_button.set_active(cfg.pluginlistbrowser_show_effects)
@@ -136,14 +136,14 @@ class SearchPluginsDialog(gtk.Window):
 	return filename
 
     def on_treeview_drag_data_get(self, widget, context, selection_data, info, time):
-	if selection_data.target == 'application/x-aldrin-plugin-uri':
+	if selection_data.target == 'application/x-neil-plugin-uri':
 	    store, it = self.treeview.get_selection().get_selected()
 	    child = store.get(it, 2)[0]
 	    selection_data.set(selection_data.target, 8, child.get_uri())
 
     def on_entry_changed(self, widget):
 	text = self.searchbox.get_text()
-	cfg = com.get('aldrin.core.config')
+	cfg = com.get('neil.core.config')
 	cfg.pluginlistbrowser_search_term = text
 	terms = [word.strip().split(' ') for word in text.lower().strip().split(',')]
 	self.searchterms = terms
@@ -151,7 +151,7 @@ class SearchPluginsDialog(gtk.Window):
 
     def on_checkbox_changed(self, check):
 	active = check.get_active()
-	cfg = com.get('aldrin.core.config')
+	cfg = com.get('neil.core.config')
 	lbl = check.get_label()
 	if lbl == "Generators":
 	    cfg.pluginlistbrowser_show_generators = active
@@ -193,9 +193,9 @@ class SearchPluginsDialog(gtk.Window):
 	return False
 
     def populate(self):
-	player = com.get('aldrin.core.player')
+	player = com.get('neil.core.player')
 	plugins = {}
-	cfg = com.get('aldrin.core.config')
+	cfg = com.get('neil.core.config')
 	for pluginloader in player.get_pluginloader_list():
 	    plugins[pluginloader.get_uri()] = pluginloader
 	theme = gtk.icon_theme_get_default()
@@ -267,7 +267,7 @@ __all__ = [
     'SearchPluginsDialog',
 ]
 
-__aldrin__ = dict(
+__neil__ = dict(
     classes = [
         SearchPluginsDialog,
 	],

@@ -1,8 +1,8 @@
 #encoding: latin-1
 
-# Aldrin
+# Neil
 # Modular Sequencer
-# Copyright (C) 2006 The Aldrin Development Team
+# Copyright (C) 2006 The Neil Development Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -20,6 +20,6 @@
 
 Import('env')
 
-env.SConscript('aldrin/SConscript')
+env.SConscript('neil/SConscript')
 env.SConscript('components/SConscript')
 

@@ -1,8 +1,8 @@
 #encoding: latin-1
 
-# Aldrin
+# Neil
 # Modular Sequencer
-# Copyright (C) 2006,2007,2008 The Aldrin Development Team
+# Copyright (C) 2006,2007,2008 The Neil Development Team
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -20,16 +20,16 @@
 
 if __name__ == '__main__':
     import os
-    os.system('../../bin/aldrin-combrowser aldrin.core.panel.master')
+    os.system('../../bin/neil-combrowser neil.core.panel.master')
     raise SystemExit
 
 import gtk
 import cairo
-from aldrin.common import MARGIN, MARGIN2, MARGIN3, MARGIN0
+from neil.common import MARGIN, MARGIN2, MARGIN3, MARGIN0
 import gobject
-from aldrin.utils import filepath, imagepath
-import aldrin.utils as utils
-import aldrin.com as com
+from neil.utils import filepath, imagepath
+import neil.utils as utils
+import neil.com as com
 import driver
 import zzub
 import sys
@@ -57,7 +57,7 @@ class AmpView(gtk.DrawingArea):
 	"""
 	Event handler triggered by a 25fps timer event.
 	"""
-	player = com.get('aldrin.core.player')
+	player = com.get('neil.core.player')
 	master = player.get_plugin(0)
 	vol = master.get_parameter_value(1, 0, 0)
 	self.amp = min(master.get_last_peak()[self.channel], 1.0)
@@ -96,8 +96,8 @@ class MasterPanel(gtk.VBox):
     A panel containing the master machine controls.
     """
 
-    __aldrin__ = dict(
-	    id = 'aldrin.core.panel.master',
+    __neil__ = dict(
+	    id = 'neil.core.panel.master',
 	    singleton = True,
 	    categories = [
 		    'view',
@@ -114,7 +114,7 @@ class MasterPanel(gtk.VBox):
 	gtk.VBox.__init__(self)
 	self.latency = 0
 	self.ohg = utils.ObjectHandlerGroup()
-	eventbus = com.get('aldrin.core.eventbus')
+	eventbus = com.get('neil.core.eventbus')
 	eventbus.zzub_parameter_changed += self.on_zzub_parameter_changed
 	eventbus.document_loaded += self.update_all
 	self.masterslider = gtk.VScale()
@@ -140,7 +140,7 @@ class MasterPanel(gtk.VBox):
 	self.update_all()
 
     def on_zzub_parameter_changed(self, plugin,group,track,param,value):
-	player = com.get('aldrin.core.player')
+	player = com.get('neil.core.player')
 	if plugin == player.get_plugin(0):
 	    self.update_all()
 
@@ -153,7 +153,7 @@ class MasterPanel(gtk.VBox):
 	"""
 	import time
 	vol = int(min(max(value,0), 16384) + 0.5)
-	player = com.get('aldrin.core.player')
+	player = com.get('neil.core.player')
 	master = player.get_plugin(0)
 	master.set_parameter_value_direct(1, 0, 0, 16384 - vol, 1)
 	#self.masterslider.set_value(vol)
@@ -179,7 +179,7 @@ class MasterPanel(gtk.VBox):
 	Updates all controls.
 	"""
 	block = self.ohg.autoblock()
-	player = com.get('aldrin.core.player')
+	player = com.get('neil.core.player')
 	master = player.get_plugin(0)
 	vol = master.get_parameter_value(1, 0, 0)
 	self.masterslider.set_value(16384 - vol)
@@ -191,9 +191,9 @@ class MasterPanel(gtk.VBox):
 		db = 0.0
 	    text = "%.1f dB" % db
 	self.volumelabel.set_text(text)
-	self.latency = com.get('aldrin.core.driver.audio').get_latency()
+	self.latency = com.get('neil.core.driver.audio').get_latency()
 
-__aldrin__ = dict(
+__neil__ = dict(
 	classes = [
 		MasterPanel,
 	],

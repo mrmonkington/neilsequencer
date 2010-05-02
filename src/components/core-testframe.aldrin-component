@@ -1,9 +1,0 @@
-[Aldrin COM]
-Module=testframe
-Name=Test Frame
-Description=Provides a testing frame to the application.
-Icon=aldrin
-Authors=The Aldrin Development Team
-Copyright=Copyright (C) 2006,2007,2008 The Aldrin Development Team
-Website=http://www.aldrin.eu
-
