@@ -31,7 +31,7 @@ RESID_NAMESPACE_START
 // a discontinuity at FCHI = 0x80.
 // In contrast, the MOS8580 almost perfectly corresponds with the
 // specification of a linear mapping from 30Hz to 12kHz.
-// 
+//
 // The mappings have been measured by feeding the SID with an external
 // signal since the chip itself is incapable of generating waveforms of
 // higher fundamental frequency than 4kHz. It is best to use the bandpass
@@ -134,11 +134,11 @@ Filter::Filter()
 
   // Create mappings from FC to cutoff frequency.
   interpolate(f0_points_6581, f0_points_6581
-	      + sizeof(f0_points_6581)/sizeof(*f0_points_6581) - 1,
-	      PointPlotter<sound_sample>(f0_6581), 1.0);
+              + sizeof(f0_points_6581)/sizeof(*f0_points_6581) - 1,
+              PointPlotter<sound_sample>(f0_6581), 1.0);
   interpolate(f0_points_8580, f0_points_8580
-	      + sizeof(f0_points_8580)/sizeof(*f0_points_8580) - 1,
-	      PointPlotter<sound_sample>(f0_8580), 1.0);
+              + sizeof(f0_points_8580)/sizeof(*f0_points_8580) - 1,
+              PointPlotter<sound_sample>(f0_8580), 1.0);
 
   set_chip_model(MOS6581);
 }

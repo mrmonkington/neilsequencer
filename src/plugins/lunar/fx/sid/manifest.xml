@@ -158,7 +158,7 @@ http://www.ffd2.com/fridge/meow/docs/quickref
                                         description="Pulse Width"
                                         type="word"
                                         minvalue="0"
-                                        maxvalue="2047"
+                                        maxvalue="4095"
                                         defvalue="2048"
                                         novalue="65535"
                                         state="true" />
