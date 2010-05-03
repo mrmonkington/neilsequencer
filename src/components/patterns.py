@@ -1445,10 +1445,10 @@ class PatternView(gtk.DrawingArea):
             return
         data = self.CLIPBOARD_MAGIC
         data += "%01x" % self.selection.mode
-        for r,g,t,i in self.selection_range():
-            if r>self.plugin.get_pattern_length(self.pattern)-1:
+        for r, g, t, i in self.selection_range():
+            if r > self.plugin.get_pattern_length(self.pattern) - 1:
                 break
-            if r<0:
+            if r < 0:
                 continue
             data += "%04x%01x%02x%02x%04x" % (r - self.selection.begin,g,t,i,self.plugin.get_pattern_value(self.pattern,g,t,i,r))
         set_clipboard_text(data)
@@ -2181,7 +2181,7 @@ class PatternView(gtk.DrawingArea):
 
     def pattern_to_pos(self, row, group, track=0, index=0, subindex=0):
         """
-        Converts a pattern position into a (x,y) pixel coordinate.
+        Converts a pattern position into a (x, y) pixel coordinate.
 
         @param row: Pattern row
         @param group: Specific pattern group (Connection, Global or Tracks)
@@ -2189,7 +2189,7 @@ class PatternView(gtk.DrawingArea):
         @param index: Parameter index of the track
         @param subindex: Subindex of the index
         @type row, group, track, index, subindex: int
-        @return: (x,y) pixel coordinate
+        @return: (x, y) pixel coordinate
         @rtype: (int, int)
         """
         x,y = self.pattern_to_charpos(row,group,track,index,subindex)
@@ -2582,7 +2582,30 @@ class PatternView(gtk.DrawingArea):
         drawable.draw_line(gc, x, 0, x, h)
         y = self.row_height - 1
         # Draw a black horizontal separator line
-        drawable.draw_line(gc, 0, y, w, y)
+        drawable.draw_line(gc, PATLEFTMARGIN, y, w, y)
+        # The color of text as specified in config.py
+        text_color = cm.alloc_color(cfg.get_color('PE Text'))
+        gc.set_foreground(text_color)
+        # Display track numbers in the middle of each track column at the to
+        # For each existing track:
+        for track in range(self.group_track_count[TRACK]):
+            # Get x and y positions in the drawable that correspond
+            # to a position that's designated for a particular event in
+            # the pattern, in this case first row, track group,
+            # current track being processed and the index of the first
+            # parameter (0).
+            x, y = self.pattern_to_pos(self.start_row, TRACK, track, 0)
+            # Convert track number to a string that will be drawn with Pango.
+            s = str(track)
+            # Get the width of the track being processed.
+            width = self.track_width[TRACK] * self.column_width
+            # Prepare the text.
+            layout.set_text(s)
+            # Get the size of the string when it will be displayed in pixels.
+            px, py = layout.get_pixel_size()
+            # And draw it so that it falls in the middle of the track column.
+            drawable.draw_layout(gc, x + width / 2 - px / 2, 
+                                 self.row_height / 2 - (py / 2), layout)
 
     def draw_parameter_values(self, ctx, layout):
         """ Draw the parameter values for all tracks, columns and rows."""
@@ -2601,10 +2624,37 @@ class PatternView(gtk.DrawingArea):
             px, py = layout.get_pixel_size()
             drawable.draw_layout(gc, x, y, layout)
             return x + px
-        x = self.
+        # Draw the parameter values
+        #i = self.start_row
+        #y = self.row_height
+        row = self.start_row
+        rows = self.row_count
+        # Number of rows is calculated to be either the first row displayed
+        # subtracted from all rows, or the height of the screen divided
+        # by row height, whichever is smaller.
+        num_rows = min(rows - row, (h - self.row_height) / self.row_height + 1)
+        # out_of_bounds will be set to true if we have gone over the right
+        # edge of the screen, which signifies that we don't have to process
+        # the columns that are further to the right.
+        out_of_bounds = False
+        # Process connection tracks (the tracks that allow you to
+        for t in range(self.group_track_count[CONN]):
+            connectiontype = self.get_plugin().get_input_connection_type(t)
+            if connectiontype == zzub.zzub_connection_type_audio:
+                extent = draw_parameters_range(row, num_rows, CONN, t)
+                out_of_bounds = extent > w
+        if not out_of_bounds:
+            if self.lines[GLOBAL]:
+                extent = draw_parameters_range(row, num_rows, GLOBAL, 0)
+                out_of_bounds = extent > w
+        if not out_of_bounds:
+            for t in range(self.group_track_count[TRACK]):
+                extent = draw_parameters_range(row, num_rows, TRACK, t)
+                if extent > w:
+                    break
 
     def draw(self, ctx):
-        """
+        """s
         Overriding a L{Canvas} method that paints onto an offscreen buffer.
         Draws the pattern view graphics.
         """
@@ -2612,6 +2662,8 @@ class PatternView(gtk.DrawingArea):
         layout.set_font_description(self.fontdesc)
         layout.set_width(-1)
         self.draw_pattern_background(ctx, layout)
+        self.draw_parameter_values(ctx, layout)
+        self.draw_xor()
         # st = time.time()
         # row = None
         # rows = None
@@ -2791,8 +2843,6 @@ class PatternView(gtk.DrawingArea):
         #                 extent = draw_parameters_range(row, num_rows, TRACK, t, resolution=self.resolution)
         #                 if extent > w:
         #                     break
-
-        # self.draw_xor()
         # print "%ims" % ((time.time() - st)*1000)
 
 __all__ = [
