@@ -118,12 +118,10 @@ public:
         }
         if (globals->cutoff) {
             int cutoff = *globals->cutoff;
-            //unsigned char fclo = cutoff & 0x0F;
+            unsigned char fclo = cutoff & 0x0F;
             unsigned char fchi = cutoff >> 4;
+            regs[0x15] = int(fclo/2);
             regs[0x16] = int(fchi);
-            //regs[0x15] = int(fclo);
-            // FC Low is not used..
-            regs[0x15] = 0;
 //          sid_write(0x15, fclo);
 //          sid_write(0x16, fchi);
         }
