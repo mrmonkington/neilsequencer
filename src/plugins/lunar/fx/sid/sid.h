@@ -7,12 +7,14 @@ extern "C" {
 typedef struct _lunar_attributes {
 } lunar_attributes_t;
 typedef struct _lunar_globals {
+	float *chipset;
 	float *cutoff;
 	float *resonance;
 	float *mode;
 	float *volume;
 } lunar_globals_t;
 typedef struct _lunar_global_values {
+	float chipset;
 	float cutoff;
 	float resonance;
 	float mode;

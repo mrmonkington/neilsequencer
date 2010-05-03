@@ -63,7 +63,7 @@ public:
 
     // states:
     voice voices[3];
-    int volume, resonance, mode;
+    int volume, resonance, mode, chipset;
 
     bool flush_regs;
 
@@ -104,16 +104,24 @@ public:
         bool reg18_changed = false; // mode/vol
         bool reg17_changed = false;
 
+        if (globals->chipset) {
+            if (int(*globals->chipset)==0){
+                emu.set_chip_model(MOS6581);
+            }
+            else {
+                emu.set_chip_model(MOS8580);
+            }
+        }
         if (globals->volume) {
             volume = *globals->volume;
             reg18_changed = true;
         }
         if (globals->cutoff) {
             int cutoff = *globals->cutoff;
-            unsigned char fclo = cutoff & 0xFF;
-            unsigned char fchi = cutoff >> 8;
-            regs[0x15] = fclo;
-            regs[0x16] = fchi;
+            unsigned char fclo = cutoff & 0x0F;
+            unsigned char fchi = cutoff >> 4;
+            regs[0x16] = int(fchi);
+            regs[0x15] = int(fclo);
 //          sid_write(0x15, fclo);
 //          sid_write(0x16, fchi);
         }
