@@ -656,7 +656,7 @@ class PatternView(gtk.DrawingArea):
         self.dragging = False
         self.shiftselect = None
         self.clickpos = None
-        self.track_width=[0,0,0]
+        self.track_width = [0, 0, 0]
         self.plugin_info = common.get_plugin_infos()
         self.resolution = 1
         self.factors = None
@@ -2192,8 +2192,8 @@ class PatternView(gtk.DrawingArea):
         @return: (x, y) pixel coordinate
         @rtype: (int, int)
         """
-        x,y = self.pattern_to_charpos(row,group,track,index,subindex)
-        return ((x - self.start_col)*self.column_width) + PATLEFTMARGIN + 4, self.top_margin + ((y - self.start_row) * self.row_height/self.resolution)
+        x, y = self.pattern_to_charpos(row, group, track, index, subindex)
+        return ((x - self.start_col) * self.column_width) + PATLEFTMARGIN + 4, self.top_margin + ((y - self.start_row) * self.row_height)
 
     def charpos_to_pattern(self, position):
         """
@@ -2607,6 +2607,52 @@ class PatternView(gtk.DrawingArea):
             drawable.draw_layout(gc, x + width / 2 - px / 2, 
                                  self.row_height / 2 - (py / 2), layout)
 
+    def draw_bar_marks(self, ctx):
+        "Draw the horizontal bars every each fourth and eighth bar."
+        w, h = self.get_client_size()
+        gc = self.window.new_gc()
+        cm = gc.get_colormap()
+        drawable = self.window
+        def draw_bar(row, group, track, color):
+            """Draw a horizontal bar for a specified row in a 
+            specified group/track."""
+            x, y = self.pattern_to_pos(row, group, track, 0)
+            width = (self.track_width[group] - 1) * self.column_width
+            height = self.row_height
+            #print "Row", row, "group", group, "track", track, "x1", x1, "y1", y1, "x2", x2, "y2", y2
+            gc.set_foreground(color)
+            drawable.draw_rectangle(gc, True, x, y, width, height)
+        darkest = cm.alloc_color('#b0b0b0')
+        lighter = cm.alloc_color('#d0d0d0')
+        lightest = cm.alloc_color('#f0f0f0')
+        def get_color(row):
+            "What color to paint the bar with?"
+            if row % 16 == 0:
+                return darkest
+            if row % 8 == 0:
+                return lighter
+            elif row % 4 == 0:
+                return lightest
+            else:
+                return None
+        num_rows = min(self.row_count - self.start_row, 
+                       (h - self.row_height) / self.row_height + 1)
+        for track in range(self.group_track_count[CONN]):
+            for row in range(num_rows):
+                color = get_color(row)
+                if color != None:
+                    draw_bar(row, CONN, track, color)
+        if self.lines[GLOBAL]:
+            for row in range(num_rows):
+                color = get_color(row)
+                if color != None:
+                    draw_bar(row, GLOBAL, 0, color)
+        for track in range(self.group_track_count[TRACK]):
+            for row in range(num_rows):
+                color = get_color(row)
+                if color != None:
+                    draw_bar(row, TRACK, track, color)
+
     def draw_parameter_values(self, ctx, layout):
         """ Draw the parameter values for all tracks, columns and rows."""
         w, h = self.get_client_size()
@@ -2637,21 +2683,24 @@ class PatternView(gtk.DrawingArea):
         # edge of the screen, which signifies that we don't have to process
         # the columns that are further to the right.
         out_of_bounds = False
-        # Process connection tracks (the tracks that allow you to
-        for t in range(self.group_track_count[CONN]):
-            connectiontype = self.get_plugin().get_input_connection_type(t)
-            if connectiontype == zzub.zzub_connection_type_audio:
-                extent = draw_parameters_range(row, num_rows, CONN, t)
-                out_of_bounds = extent > w
-        if not out_of_bounds:
-            if self.lines[GLOBAL]:
-                extent = draw_parameters_range(row, num_rows, GLOBAL, 0)
-                out_of_bounds = extent > w
-        if not out_of_bounds:
-            for t in range(self.group_track_count[TRACK]):
-                extent = draw_parameters_range(row, num_rows, TRACK, t)
-                if extent > w:
-                    break
+        if self.lines != None:
+            # Draw connection parameters (volume, pan, etc)
+            for t in range(self.group_track_count[CONN]):
+                connectiontype = self.get_plugin().get_input_connection_type(t)
+                if connectiontype == zzub.zzub_connection_type_audio:
+                    extent = draw_parameters_range(row, num_rows, CONN, t)
+                    out_of_bounds = extent > w
+            # Draw global parameters.
+            if not out_of_bounds:
+                if self.lines[GLOBAL]:
+                    extent = draw_parameters_range(row, num_rows, GLOBAL, 0)
+                    out_of_bounds = extent > w
+            # Draw track parameters.
+            if not out_of_bounds:
+                for t in range(self.group_track_count[TRACK]):
+                    extent = draw_parameters_range(row, num_rows, TRACK, t)
+                    if extent > w:
+                        break
 
     def draw(self, ctx):
         """s
@@ -2662,6 +2711,7 @@ class PatternView(gtk.DrawingArea):
         layout.set_font_description(self.fontdesc)
         layout.set_width(-1)
         self.draw_pattern_background(ctx, layout)
+        self.draw_bar_marks(ctx)
         self.draw_parameter_values(ctx, layout)
         self.draw_xor()
         # st = time.time()
@@ -2846,23 +2896,23 @@ class PatternView(gtk.DrawingArea):
         # print "%ims" % ((time.time() - st)*1000)
 
 __all__ = [
-'PatternDialog',
-'show_pattern_dialog',
-'PatternToolBar',
-'PatternPanel',
-'get_str_from_param',
-'get_length_from_param',
-'get_subindexcount_from_param',
-'get_subindexoffsets_from_param',
-'PatternView',
+    'PatternDialog',
+    'show_pattern_dialog',
+    'PatternToolBar',
+    'PatternPanel',
+    'get_str_from_param',
+    'get_length_from_param',
+    'get_subindexcount_from_param',
+    'get_subindexoffsets_from_param',
+    'PatternView',
 ]
 
 __neil__ = dict(
-        classes = [
-                PatternDialog,
-                PatternToolBar,
-                PatternPanel,
-                PatternView,
+    classes = [
+        PatternDialog,
+        PatternToolBar,
+        PatternPanel,
+        PatternView,
         ],
-)
+    )
 
