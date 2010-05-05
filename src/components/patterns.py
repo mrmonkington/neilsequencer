@@ -1126,10 +1126,9 @@ class PatternView(gtk.DrawingArea):
         @param step: Amount the cursor is moved up.
         @type step: int
         """
-        self.draw_cursor_xor()
         self.set_row(self.row - step)
-        self.draw_cursor_xor()
         self.update_statusbar()
+        self.redraw()
 
     def move_down(self, step = 1):
         """
@@ -1138,12 +1137,11 @@ class PatternView(gtk.DrawingArea):
         @param step: Amount the cursor is moved down.
         @type step: int
         """
-        self.draw_cursor_xor()
         #for i in range(step+2):
         #       self.update_line(self.row+i+1)
         self.set_row(self.row + step)
-        self.draw_cursor_xor()
         self.update_statusbar()
+        self.redraw()
 
     def move_track_left(self):
         """
@@ -1247,11 +1245,10 @@ class PatternView(gtk.DrawingArea):
         """
         if self.pattern == -1:
             return
-        self.draw_xor()
         self.move_subindex_left()
         self.show_cursor_left()
-        self.draw_xor()
         self.update_statusbar()
+        self.redraw()
 
     def move_right(self):
         """
@@ -1259,11 +1256,10 @@ class PatternView(gtk.DrawingArea):
         """
         if self.pattern == -1:
             return
-        self.draw_xor()
         self.move_subindex_right()
         self.show_cursor_right()
-        self.draw_xor()
         self.update_statusbar()
+        self.redraw()
 
     def adjust_selection(self):
         """
@@ -1588,7 +1584,6 @@ class PatternView(gtk.DrawingArea):
         if self.pattern == -1:
             return
         if event.button == 1:
-            self.draw_xor()
             x,y = int(event.x), int(event.y)
             row, group, track, index, subindex = self.pos_to_pattern((x,y))
             self.set_row(row)
@@ -1596,7 +1591,6 @@ class PatternView(gtk.DrawingArea):
             self.set_track(track)
             self.set_index(index)
             self.set_subindex(subindex)
-            self.draw_xor()
             self.update_statusbar()
             self.dragging = True
             self.selection.begin = row
@@ -2369,22 +2363,23 @@ class PatternView(gtk.DrawingArea):
         gc.set_background(bbrush)
         self.xor_gc = gc
 
-    def draw_xor(self):
-        self.draw_cursor_xor()
-        self.draw_playpos_xor()
-
     def draw_cursor_xor(self):
         if self.pattern == -1:
             return
         if not self.window:
             return
-        drawable = self.window
-        if not hasattr(self, "xor_gc"):
-            self.create_xor_gc()
-        gc = self.xor_gc
-        cx,cy = self.pattern_to_pos(self.row, self.group, self.track, self.index, self.subindex)
-        if (cx >= (PATLEFTMARGIN+4)) and (cy >= self.top_margin):
-            drawable.draw_rectangle(gc, True,cx,cy,self.column_width,self.row_height)
+        cr = self.window.cairo_create()
+        cx, cy = self.pattern_to_pos(self.row, self.group, self.track, 
+                                     self.index, self.subindex)        
+        if (cx >= (PATLEFTMARGIN + 4)) and (cy >= self.top_margin):
+            # Note that you have to add 0.5 to coordinates for cairo to properly
+            # display lines of width 1.
+            cr.rectangle(cx + 0.5, cy + 0.5, self.column_width, self.row_height)
+            cr.set_source_rgba(1.0, 0.0, 0.0, 1.0)
+            cr.set_line_width(1)
+            cr.stroke_preserve()
+            cr.set_source_rgba(1.0, 0.0, 0.0, 0.4)
+            cr.fill()
 
     def draw_playpos_xor(self):
         if self.pattern == -1:
@@ -2619,7 +2614,6 @@ class PatternView(gtk.DrawingArea):
             x, y = self.pattern_to_pos(row, group, track, 0)
             width = (self.track_width[group] - 1) * self.column_width
             height = self.row_height
-            #print "Row", row, "group", group, "track", track, "x1", x1, "y1", y1, "x2", x2, "y2", y2
             gc.set_foreground(color)
             drawable.draw_rectangle(gc, True, x, y, width, height)
         darkest = cm.alloc_color('#b0b0b0')
@@ -2642,7 +2636,7 @@ class PatternView(gtk.DrawingArea):
                 color = get_color(row)
                 if color != None:
                     draw_bar(row, CONN, track, color)
-        if self.lines[GLOBAL]:
+        if self.lines and self.lines[GLOBAL]:
             for row in range(num_rows):
                 color = get_color(row)
                 if color != None:
@@ -2702,8 +2696,11 @@ class PatternView(gtk.DrawingArea):
                     if extent > w:
                         break
 
+    def draw_selection(self, ctx):
+        pass
+
     def draw(self, ctx):
-        """s
+        """
         Overriding a L{Canvas} method that paints onto an offscreen buffer.
         Draws the pattern view graphics.
         """
@@ -2713,7 +2710,8 @@ class PatternView(gtk.DrawingArea):
         self.draw_pattern_background(ctx, layout)
         self.draw_bar_marks(ctx)
         self.draw_parameter_values(ctx, layout)
-        self.draw_xor()
+        self.draw_cursor_xor()
+        #self.draw_playpos_xor()
         # st = time.time()
         # row = None
         # rows = None
