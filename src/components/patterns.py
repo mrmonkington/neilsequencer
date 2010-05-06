@@ -2697,7 +2697,54 @@ class PatternView(gtk.DrawingArea):
                         break
 
     def draw_selection(self, ctx):
-        pass
+        drawable = self.window
+        gc = drawable.new_gc()
+        cr = self.window.cairo_create()
+        def draw_box(x, y, width, height):
+            cr.rectangle(x + 0.5, y + 0.5, width, height)
+            cr.set_source_rgba(0.0, 1.0, 0.0, 1.0)
+            cr.set_line_width(1)
+            cr.stroke_preserve()
+            cr.set_source_rgba(0.0, 1.0, 0.0, 0.4)
+            cr.fill()
+        if self.selection:
+            x, y1 = self.pattern_to_pos(self.selection.begin,
+                                        self.selection.group, 
+                                        self.selection.track, 
+                                        self.selection.index)
+            x, y2 = self.pattern_to_pos(self.selection.end,
+                                        self.selection.group, 
+                                        self.selection.track, 
+                                        self.selection.index)
+            clip_y = (self.row_height + 
+                      ((self.row_count - self.start_row) * self.row_height))
+            y1 = max(self.row_height, y1)
+            y2 = min(clip_y, y2)
+            if y2 > y1:
+                if self.selection.mode == SEL_COLUMN:
+                    sel_g = self.selection.group
+                    sel_i = self.selection.index
+                    width = self.column_width
+                    x2 = self.parameter_width[sel_g][sel_i] * width
+                    draw_box(x, y1, x2, y2 - y1)
+                elif self.selection.mode == SEL_TRACK:
+                    x2 = ((self.track_width[self.selection.group] - 1) * 
+                          self.column_width)
+                    draw_box(x, y1, x2, y2 - y1)
+                elif self.selection.mode == SEL_GROUP:
+                    track_count = self.group_track_count[self.selection.group]
+                    x2 = ((self.track_width[self.selection.group] * 
+                           track_count - 1) * self.column_width)
+                    draw_box(x, y1, x2, y2 - y1)
+                elif self.selection.mode == SEL_ALL:
+                    x2 = 0
+                    for group in range(3):
+                        track_count = self.group_track_count[group]
+                        if self.track_width[group]:
+                            x2 += ((self.track_width[group] * track_count - 1) *
+                                   self.column_width)
+                            x2 += self.column_width
+                    draw_box(x, y1, x2, y2 - y1)
 
     def draw(self, ctx):
         """
@@ -2710,6 +2757,7 @@ class PatternView(gtk.DrawingArea):
         self.draw_pattern_background(ctx, layout)
         self.draw_bar_marks(ctx)
         self.draw_parameter_values(ctx, layout)
+        self.draw_selection(ctx)
         self.draw_cursor_xor()
         #self.draw_playpos_xor()
         # st = time.time()
