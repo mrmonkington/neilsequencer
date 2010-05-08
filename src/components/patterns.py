@@ -2632,17 +2632,17 @@ class PatternView(gtk.DrawingArea):
         num_rows = min(self.row_count - self.start_row, 
                        (h - self.row_height) / self.row_height + 1)
         for track in range(self.group_track_count[CONN]):
-            for row in range(num_rows):
+            for row in range(self.start_row, num_rows + self.start_row):
                 color = get_color(row)
                 if color != None:
                     draw_bar(row, CONN, track, color)
         if self.lines and self.lines[GLOBAL]:
-            for row in range(num_rows):
+            for row in range(self.start_row, num_rows + self.start_row):
                 color = get_color(row)
                 if color != None:
                     draw_bar(row, GLOBAL, 0, color)
         for track in range(self.group_track_count[TRACK]):
-            for row in range(num_rows):
+            for row in range(self.start_row, num_rows + self.start_row):
                 color = get_color(row)
                 if color != None:
                     draw_bar(row, TRACK, track, color)
@@ -2741,9 +2741,9 @@ class PatternView(gtk.DrawingArea):
                     for group in range(3):
                         track_count = self.group_track_count[group]
                         if self.track_width[group]:
-                            x2 += ((self.track_width[group] * track_count - 1) *
+                            x2 += ((self.track_width[group] * track_count) *
                                    self.column_width)
-                            x2 += self.column_width
+                        x2 -= self.column_width
                     draw_box(x, y1, x2, y2 - y1)
 
     def draw(self, ctx):
