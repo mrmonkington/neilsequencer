@@ -349,7 +349,11 @@ class PluginContextMenu(gtk.Menu):
         """
         Event handler for menu option to set machine as target for default connection
         """
-        self.autoconnect_target = plugin
+        player = com.get('neil.core.player')
+        if player.autoconnect_target==plugin:
+            player.autoconnect_target = None
+        else:
+            player.autoconnect_target = plugin
 
 __neil__ = dict(
         classes = [
