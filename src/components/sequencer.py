@@ -1233,6 +1233,7 @@ class SequencerView(gtk.DrawingArea):
             return
         player = com.get('neil.core.player')
         gc = self.window.new_gc()
+        cr = self.window.cairo_create()
         colormap = gc.get_colormap()
         drawable = self.window
         width, height = self.get_client_size()
@@ -1265,9 +1266,13 @@ class SequencerView(gtk.DrawingArea):
                                                                 self.row))
                     cursor_width = self.seq_row_size
                     cursor_height = self.seq_track_size
-                drawable.draw_rectangle(gc, False, cursor_x + 2,
-                                        cursor_y + 2, cursor_width - 3,
-                                        cursor_height - 3)
+                cr.rectangle(cursor_x + 0.5, cursor_y + 0.5, 
+                             cursor_width, cursor_height)
+                cr.set_source_rgba(1.0, 0.0, 0.0, 1.0)
+                cr.set_line_width(1)
+                cr.stroke_preserve()
+                cr.set_source_rgba(1.0, 0.0, 0.0, 0.3)
+                cr.fill()
         if self.playpos >= self.startseqtime:
             gc.set_foreground(white)
             gc.set_background(white)
