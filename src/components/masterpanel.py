@@ -124,7 +124,8 @@ class MasterPanel(gtk.VBox):
 	self.masterslider.set_increments(500, 500)
 	self.masterslider.set_inverted(True)
 	#self.ohg.connect(self.masterslider, 'scroll-event', self.on_mousewheel)
-	self.ohg.connect(self.masterslider, 'change-value', self.on_scroll_changed)
+	self.ohg.connect(self.masterslider, 'change-value', 
+                         self.on_scroll_changed)
 	self.ampl = AmpView(self, 0)
 	self.ampr = AmpView(self, 1)
 	hbox = gtk.HBox()
@@ -186,7 +187,7 @@ class MasterPanel(gtk.VBox):
 	if vol == 16384:
 	    text = "(muted)"
 	else:
-	    db = (-vol*self.ampl.range / 16384.0)
+	    db = (-vol * self.ampl.range / 16384.0)
 	    if db == 0.0:
 		db = 0.0
 	    text = "%.1f dB" % db

@@ -105,6 +105,7 @@ class SequencerToolBar(gtk.HBox):
                       48, 52, 56, 60, 64]
         self.stepselect.connect('changed', self.on_stepselect)
         self.stepselect.connect('key_release_event', self.on_stepselect)
+        self.stepselect.set_size_request(60, -1)
         self.steplabel.set_mnemonic_widget(self.stepselect)
         # Follow song checkbox.
         self.followsong = gtk.CheckButton("Follow Song Position")
