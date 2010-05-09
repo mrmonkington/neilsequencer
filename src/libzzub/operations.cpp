@@ -1130,7 +1130,8 @@ namespace zzub {
     metaplugin& m = *song.plugins[id];
 
     if (index == -1)
-      m.patterns.push_back(new zzub::pattern(pattern)); else
+      m.patterns.push_back(new zzub::pattern(pattern)); 
+    else
       m.patterns.insert(m.patterns.begin() + index, new zzub::pattern(pattern));
 
     event_data.type = event_type_new_pattern;
@@ -1144,7 +1145,8 @@ namespace zzub {
   }
 
   void op_pattern_insert::finish(zzub::song& song, bool send_events) {
-    if (send_events) song.plugin_invoke_event(0, event_data, true);
+    if (send_events) 
+      song.plugin_invoke_event(0, event_data, true);
   }
 
   // ---------------------------------------------------------------------------
