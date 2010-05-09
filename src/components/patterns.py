@@ -737,16 +737,7 @@ class PatternView(gtk.DrawingArea):
         called when a parameter changes in zzub. checks whether this parameter
         is related to master bpm or tpb and updates the view.
         """
-        # We don't care about the TPB from within the pattern view do we?
-        player = com.get('neil.core.player')
-        master = player.get_plugin(0)
-        tpb = master.get_parameter_value(1, 0, 2)
-        if (group, track) == (1, 0) and param == 2:
-            # find factors
-            self.factors = [n for n in range(1, tpb / 2 + 1) if tpb % n == 0]
-            self.factors.append(tpb)
-            if len(self.factors) > 3:
-                self.resolution = self.factors[-3]
+        pass
 
     def on_pattern_insert_rows(self, plugin, index, row, rows, column_indices, indices):
         self.on_pattern_changed(plugin, index)
@@ -1099,8 +1090,8 @@ class PatternView(gtk.DrawingArea):
 
     def redraw(self,*args):
         if self.window:
-            w,h = self.get_client_size()
-            self.window.invalidate_rect((0,0,w,h), False)
+            w, h = self.get_client_size()
+            self.window.invalidate_rect((0, 0, w, h), False)
 
     def on_active_patterns_changed(self, selpatterns):
         if self.window:
@@ -1327,14 +1318,16 @@ class PatternView(gtk.DrawingArea):
         """
         values = []
         for row, group, track, index in self.selection_range():
-            value = self.plugin.get_pattern_value(self.pattern, group, track, index, row)
+            value = self.plugin.get_pattern_value(self.pattern, group, 
+                                                  track, index, row)
             values.append([row, group, track, index, value])
         rows = [entry[0] for entry in values]
         rows.reverse()
         values = [[row] + entry[1:] for (row, entry) in zip(rows, values)]
         for row, group, track, index, value in values:
             print row, group, track, index, value
-            self.plugin.set_pattern_value(self.pattern, group, track, index, row, value)
+            self.plugin.set_pattern_value(self.pattern, group, track, 
+                                          index, row, value)
         player = com.get('neil.core.player')
         player.history_commit("reverse")
 
@@ -1355,10 +1348,12 @@ class PatternView(gtk.DrawingArea):
             if v != p.get_value_none():
                 if (p.get_type() == 0):
                     if v != zzub.zzub_note_value_off:
-                        v = max(min(mn2bn(bn2mn(v)+offset),p.get_value_max()),p.get_value_min())
+                        v = max(min(mn2bn(bn2mn(v) + offset), 
+                                    p.get_value_max()), p.get_value_min())
                 else:
-                    v = max(min(v+offset,p.get_value_max()),p.get_value_min())
-                self.plugin.set_pattern_value(self.pattern,g,t,i,r,v)
+                    v = max(min(v + offset, p.get_value_max()), 
+                            p.get_value_min())
+                self.plugin.set_pattern_value(self.pattern, g, t, i, r, v)
         tmp_sel = self.selection
         player = com.get('neil.core.player')
         player.history_commit("transpose")
@@ -1542,16 +1537,6 @@ class PatternView(gtk.DrawingArea):
             eventbus = com.get('neil.core.eventbus')
             eventbus.document_loaded()
 
-    # upward is True to increase, False to decrease
-    #~def change_resolution(self, upward=True):
-    #~    if upward:
-    #~        self.resolution = self.factors[max(0, self.factors.index(self.resolution) - 1)]
-    #~    else:
-    #~        self.resolution = self.factors[min(len(self.factors)-1, self.factors.index(self.resolution) + 1)]
-    #~    self.row = self.row / self.resolution * self.resolution
-    #~    self.start_row = self.start_row / self.resolution * self.resolution
-    #~    self.redraw()
-
     def on_mousewheel(self, widget, event):
         """
         Callback that responds to mousewheeling in pattern view.
@@ -1681,7 +1666,7 @@ class PatternView(gtk.DrawingArea):
             pattern_contents.append(self.plugin.get_pattern_value(self.pattern,g,t,i,r))
             param = self.plugin.get_parameter(g,t,i)
             self.plugin.set_pattern_value(self.pattern,g,t,i,r,param.get_value_none())
-        item=0
+        item = 0
         self.plugin.set_pattern_length(self.pattern,self.plugin.get_pattern_length(self.pattern)*2)
         for r,g,t,i in pattern_index:
             self.plugin.set_pattern_value(self.pattern,g,t,i,r*2,pattern_contents[item])
@@ -2378,7 +2363,7 @@ class PatternView(gtk.DrawingArea):
             cr.set_source_rgba(1.0, 0.0, 0.0, 1.0)
             cr.set_line_width(1)
             cr.stroke_preserve()
-            cr.set_source_rgba(1.0, 0.0, 0.0, 0.4)
+            cr.set_source_rgba(1.0, 0.0, 0.0, 0.3)
             cr.fill()
 
     def draw_playpos_xor(self):
@@ -2463,14 +2448,6 @@ class PatternView(gtk.DrawingArea):
                                                     for i in xrange(self.parameter_count[g])])
                     values = [self.plugin.get_pattern_value(self.pattern, g, t, i, row) != self.plugin.get_parameter(g, t, i).get_value_none()
                                                             for i in range(self.parameter_count[g])]
-                    self.levels[1][g][t][row] = any(values)
-                    for n in self.factors[1:]:
-                        source = self.factor_sources[n]
-                        multiple = n / source
-                        level_row = int(row/n)
-                        # sum two values of the previous level
-                        #print n, level_row, 'from', source, level_row*multiple, '..', (level_row+1)*multiple
-                        self.levels[n][g][t][level_row] = sum(self.levels[source][g][t][level_row*multiple:(level_row+1)*multiple])
                     try:
                         self.lines[g][t][row] = s
                     except IndexError:
@@ -2488,8 +2465,6 @@ class PatternView(gtk.DrawingArea):
                     for row in range(self.row_count)]
             col_vals[i] = [self.plugin.get_pattern_value(self.pattern, group, track, i, row) != param.get_value_none()
                     for row in range(self.row_count)]
-
-        self.levels[1][group][track] = [any(r) for r in itertools.izip(*col_vals)]
         for row in range(self.row_count):
             try:
                 self.lines[group][track][row] =  ' '.join([cols[i][row] for i in range(count)])
@@ -2501,43 +2476,16 @@ class PatternView(gtk.DrawingArea):
         """
         Initializes a buffer to handle the current pattern data.
         """
-        #st = time.time()
         self.lines = [None] * 3
-        # generate zoom levels
-        self.levels = {}
-        # find largest factor divisor of factor
-        self.factor_sources = {}
-        for i, factor in enumerate(self.factors):
-            largest_divisor = None
-            for k in range(i):
-                if factor % self.factors[k] == 0:
-                    largest_divisor = self.factors[k]
-            self.factor_sources[factor] = largest_divisor
-
-        for key in self.factors:
-            self.levels[key] = [None] * 3
-        # update level 1
         for group in range(3):
             if self.parameter_count[group] > 0:
                 tc = self.group_track_count[group]
                 self.lines[group] = [None] * tc
-                for key in self.levels.keys():
-                    self.levels[key][group] = [None] * tc
                 for track in range(tc):
                     self.lines[group][track] = [None] * self.row_count
-                    self.levels[1][group][track] = [None] * self.row_count
                     self.update_col(group, track)
             else:
                 self.lines[group] = []
-        # update other levels
-        for n in self.factors[1:]:
-            source = self.factor_sources[n]
-            multiple = n / source
-            for group in range(3):
-                if self.parameter_count[group] > 0:
-                    tc = self.group_track_count[group]
-                    for track in range(tc):
-                        self.levels[n][group][track] = [sum(sub_list) for sub_list in padded_partition(self.levels[source][group][track], multiple, pad_val=0)]
 
     def get_line_pattern(self):
         player = com.get('neil.core.player')
@@ -2549,7 +2497,7 @@ class PatternView(gtk.DrawingArea):
             8: [32, 16, 8, 4],
             6: [24, 12, 6],
             3: [12, 4],
-            }.get(tpb,[16,4])
+            }.get(tpb, [16, 4])
 
     def draw_pattern_background(self, ctx, layout):
         """ Draw the background, lines, borders and row numbers """
@@ -2559,9 +2507,10 @@ class PatternView(gtk.DrawingArea):
         cfg = config.get_config()
         drawable = self.window
         background = cm.alloc_color(cfg.get_color('PE BG'))
-        gc.set_foreground(cm.alloc_color(background))
-        drawable.draw_rectangle(gc, True, 0, 0, w, h)
         pen = cm.alloc_color(cfg.get_color('PE Text'))
+        gc.set_foreground(background)
+        drawable.draw_rectangle(gc, True, 0, 0, w, self.row_height)
+        drawable.draw_rectangle(gc, True, 0, 0, PATLEFTMARGIN, h)
         gc.set_foreground(pen)
         drawable.draw_rectangle(gc, False, 0, 0, w - 1, h - 1)
         x, y = PATLEFTMARGIN, self.row_height
@@ -2697,6 +2646,7 @@ class PatternView(gtk.DrawingArea):
                         break
 
     def draw_selection(self, ctx):
+        """ Draw selection box."""
         drawable = self.window
         gc = drawable.new_gc()
         cr = self.window.cairo_create()
@@ -2705,7 +2655,7 @@ class PatternView(gtk.DrawingArea):
             cr.set_source_rgba(0.0, 1.0, 0.0, 1.0)
             cr.set_line_width(1)
             cr.stroke_preserve()
-            cr.set_source_rgba(0.0, 1.0, 0.0, 0.4)
+            cr.set_source_rgba(0.0, 1.0, 0.0, 0.3)
             cr.fill()
         if self.selection:
             x, y1 = self.pattern_to_pos(self.selection.begin,
@@ -2743,8 +2693,18 @@ class PatternView(gtk.DrawingArea):
                         if self.track_width[group]:
                             x2 += ((self.track_width[group] * track_count) *
                                    self.column_width)
-                        x2 -= self.column_width
+                    x2 -= self.column_width
                     draw_box(x, y1, x2, y2 - y1)
+
+    def draw_background(self, ctx):
+        w, h = self.get_client_size()
+        drawable = self.window
+        gc = drawable.new_gc()
+        cm = gc.get_colormap()
+        cfg = config.get_config()
+        background = cm.alloc_color(cfg.get_color('PE BG'))
+        gc.set_foreground(cm.alloc_color(background))
+        drawable.draw_rectangle(gc, True, 0, 0, w, h)
 
     def draw(self, ctx):
         """
@@ -2754,192 +2714,13 @@ class PatternView(gtk.DrawingArea):
         layout = pango.Layout(self.get_pango_context())
         layout.set_font_description(self.fontdesc)
         layout.set_width(-1)
-        self.draw_pattern_background(ctx, layout)
+        self.draw_background(ctx)
         self.draw_bar_marks(ctx)
         self.draw_parameter_values(ctx, layout)
         self.draw_selection(ctx)
         self.draw_cursor_xor()
-        #self.draw_playpos_xor()
-        # st = time.time()
-        # row = None
-        # rows = None
-        # fulldraw = True
-        # if row == None:
-        #     row = self.start_row
-        # cfg = config.get_config()
-        # w, h = self.get_client_size()
-
-        # PATROWHEIGHT = self.row_height
-        # PATTOPMARGIN = self.top_margin
-        # PATCOLWIDTH = self.column_width
-
-        # gc = self.window.new_gc()
-        # cm = gc.get_colormap()
-        # drawable = self.window
-
-        # bgbrush = cm.alloc_color(cfg.get_color('PE BG'))
-        # hiddenbrush =  cm.alloc_color('#FF0000')
-
-        # fbrush1 = cm.alloc_color(cfg.get_color('PE BG Very Dark'))
-        # fbrush2 = cm.alloc_color(cfg.get_color('PE BG Dark'))
-        # selbrush = cm.alloc_color(cfg.get_color('PE Sel BG'))
-        # pen = cm.alloc_color(cfg.get_color('PE Text'))
-
-        # gc.set_foreground(bgbrush)
-        # gc.set_background(bgbrush)
-        # gc.set_fill(gtk.gdk.SOLID)
-
-        # layout = pango.Layout(self.get_pango_context())
-        # layout.set_font_description(self.fontdesc)
-        # layout.set_width(-1)
-
-        # # clear the view if no current pattern
-        # if self.pattern == -1:
-        #     drawable.draw_rectangle(gc, True, 0, 0, w, h)
-        #     return
-
-        # if not rows:
-        #     rows = self.row_count
-
-        # clipy1 = PATROWHEIGHT + ((row - self.start_row) * self.row_height)
-        # clipy2 = PATROWHEIGHT + ((rows - self.start_row) * self.row_height)
-
-        # start_row, start_group, start_track, start_index, start_subindex = self.charpos_to_pattern((self.start_col, self.start_row))
-
-        
-        # startx = PATLEFTMARGIN + 4
-        # i = row
-        # y = clipy1
-        # gc.set_clip_rectangle(gtk.gdk.Rectangle(startx, 0, w - startx, h))
-        # if self.lines:
-        #     linepattern = self.get_line_pattern()
-        #     lpcount = len(linepattern)
-        #     linecolors = []
-        #     for lpindex, lp in enumerate(linepattern):
-        #         lpf2 = lpindex / float(lpcount-1)
-        #         lpf1 = 1.0 - lpf2
-        #         red = int(fbrush1.red * lpf1 + fbrush2.red * lpf2)
-        #         green = int(fbrush1.green * lpf1 + fbrush2.green * lpf2)
-        #         blue = int(fbrush1.blue * lpf1 + fbrush2.blue * lpf2)
-        #         linecolors.append(cm.alloc_color(red, green, blue))
-        #     tc = self.group_track_count
-
-        #     def draw_parameters_range(row, num_rows, group, track=0, resolution=1):
-        #         """Draw the parameter values for a range of rows"""
-        #         x, y = self.pattern_to_pos(row, group, track, 0)
-        #         s = '\n'.join([self.lines[group][track][i] for i in xrange(row, row + num_rows, resolution)])
-        #         w = PATCOLWIDTH * len(self.lines[group][track][row])
-        #         layout.set_text(s)
-        #         px, py = layout.get_pixel_size()
-        #         drawable.draw_layout(gc, x, y, layout)
-        #         return x + px
-
-        #     def draw_parameters(row, group, track=0):
-        #         """Draw the parameter values"""
-        #         x, y = self.pattern_to_pos(row, group, track, 0)
-        #         s = self.lines[group][track][row]
-        #         w = PATCOLWIDTH * len(s)
-        #         layout.set_text(s)
-        #         px, py = layout.get_pixel_size()
-        #         drawable.draw_layout(gc, x, y + PATROWHEIGHT / 2 - (py / 2), 
-        #                              layout)
-
-        #     # draw track background
-        #     gc.set_foreground(bgbrush)
-        #     gc.set_background(bgbrush)
-        #     for g in CONN, GLOBAL, TRACK:
-        #         if self.track_width[g]:
-        #             for t in range(self.group_track_count[g]):
-        #                 if ((g == start_group) and (t >= start_track)) or (g > start_group):
-        #                     xs, fy = self.pattern_to_pos(row, g, t, 0)
-        #                     width = (self.track_width[g] - 1) * self.column_width
-        #                     drawable.draw_rectangle(gc, True, xs, clipy1, width, clipy1 + num_rows * PATROWHEIGHT)
-        #                     if xs + width > w:
-        #                         break
-        #     b = bgbrush
-        #     while (i < rows) and (y < h):
-        #         do_draw = False
-        #         for lp, lc in zip(reversed(linepattern), reversed(linecolors)):
-        #             if (i % lp) == 0:
-        #                 gc.set_foreground(lc)
-        #                 gc.set_background(lc)
-        #                 b = lc
-        #                 do_draw = True
-        #         for g in CONN, GLOBAL, TRACK:
-        #             if self.track_width[g]:
-        #                 for t in range(self.group_track_count[g]):
-        #                     if ((g == start_group) and (t >= start_track)) or (g > start_group):
-        #                         xs, fy = self.pattern_to_pos(row, g, t, 0)
-        #                         width = (self.track_width[g]-1)*self.column_width
-        #                         if do_draw:
-        #                             gc.set_foreground(b)
-        #                             drawable.draw_rectangle(gc,True,xs,y, width, self.row_height)
-        #                         if self.resolution > 1:
-        #                             # check if a note is hidden, excluding the note displayed
-        #                             hidden = self.levels[self.resolution][g][t][i / self.resolution] -  self.levels[1][g][t][i]
-        #                             if hidden:
-        #                                 gc.set_foreground(hiddenbrush)
-        #                                 drawable.draw_rectangle(gc,True,xs,y+self.row_height/2, width, self.row_height/2)
-        #                         if xs + width > w:
-        #                             break
-        #         i += self.resolution
-        #         y += PATROWHEIGHT
-        #     # draw selection
-        #     if self.selection:
-        #         gc.set_foreground(selbrush)
-        #         gc.set_background(selbrush)
-        #         x,y1 = self.pattern_to_pos(self.selection.begin,
-        #                                    self.selection.group, self.selection.track, self.selection.index)
-        #         x,y2 = self.pattern_to_pos(self.selection.end,
-        #                                    self.selection.group, self.selection.track, self.selection.index)
-        #         y1 = max(clipy1, y1)
-        #         y2 = min(clipy2, y2)
-        #         if y2 > y1:
-        #             if self.selection.mode == SEL_COLUMN:
-        #                 x2 = self.parameter_width[self.selection.group][self.selection.index]*self.column_width
-        #                 drawable.draw_rectangle(gc,True,x,y1,x2,y2-y1)
-        #             elif self.selection.mode == SEL_TRACK:
-        #                 x2 = (self.track_width[self.selection.group]-1)*self.column_width
-        #                 drawable.draw_rectangle(gc,True,x,y1,x2,y2-y1)
-        #             elif self.selection.mode == SEL_GROUP:
-        #                 for t in range(tc[self.selection.group]):
-        #                     x2 = (self.track_width[self.selection.group]-1)*self.column_width
-        #                     drawable.draw_rectangle(gc,True,x,y1,x2,y2-y1)
-        #                     x += self.track_width[self.selection.group] * self.column_width
-        #             elif self.selection.mode == SEL_ALL:
-        #                 for g in range(3):
-        #                     if self.track_width[g]:
-        #                         for t in range(tc[g]):
-        #                             drawable.draw_rectangle(gc,True,x,y1,(self.track_width[g]-1)*self.column_width,y2-y1)
-        #                             x += self.track_width[g] * self.column_width
-        #     # draw the parameter values
-        #     i = row
-        #     y = clipy1
-        #     gc.set_foreground(pen)
-        #     for track in range(self.group_track_count[TRACK]):
-        #         x, y = self.pattern_to_pos(row, TRACK, track, 0)
-        #         s = str(track)
-        #         width = self.track_width[TRACK]*self.column_width
-        #         layout.set_text(s)
-        #         px,py = layout.get_pixel_size()
-        #         drawable.draw_layout(gc, x + width/2 - px/2, PATROWHEIGHT/2 - (py/2), layout)
-        #     num_rows = min(rows - row, (h - clipy1) / PATROWHEIGHT*self.resolution + 1)
-        #     out_of_bounds = False
-        #     for t in range(self.group_track_count[CONN]):
-        #         connectiontype = self.get_plugin().get_input_connection_type(t)
-        #         if connectiontype == zzub.zzub_connection_type_audio:
-        #             extent = draw_parameters_range(row, num_rows, CONN, t, resolution=self.resolution)
-        #             out_of_bounds = extent > w
-        #     if not out_of_bounds:
-        #         if self.lines[GLOBAL]:
-        #             extent = draw_parameters_range(row, num_rows, GLOBAL, 0, resolution=self.resolution)
-        #             out_of_bounds = extent > w
-        #         if not out_of_bounds:
-        #             for t in range(self.group_track_count[TRACK]):
-        #                 extent = draw_parameters_range(row, num_rows, TRACK, t, resolution=self.resolution)
-        #                 if extent > w:
-        #                     break
-        # print "%ims" % ((time.time() - st)*1000)
+        self.draw_pattern_background(ctx, layout)
+        self.draw_playpos_xor()
 
 __all__ = [
     'PatternDialog',
