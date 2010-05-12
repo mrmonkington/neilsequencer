@@ -516,13 +516,13 @@ def gettext(parent, msg, text=''):
                 '',
                 parent and parent.get_toplevel(),
                 gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
-                (gtk.STOCK_OK, gtk.RESPONSE_OK, gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL))
+                (gtk.STOCK_OK, True, gtk.STOCK_CANCEL, False))
         label = gtk.Label()
         label.set_markup(msg)
         label.set_alignment(0,0.5)
         entry = gtk.Entry()
         entry.set_text(text)
-        entry.connect('activate', lambda widget: dialog.response(gtk.RESPONSE_OK))
+        entry.connect('activate', lambda widget: dialog.response(False))
         vbox = gtk.VBox(False, 6)
         vbox.set_border_width(6)
         vbox.pack_start(label)
@@ -531,7 +531,7 @@ def gettext(parent, msg, text=''):
         dialog.show_all()
         response = dialog.run()
         dialog.destroy()
-        if response == gtk.RESPONSE_OK:
+        if response == True:
                 return entry.get_text()
 
 def question(parent, msg, allowcancel = True):
