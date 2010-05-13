@@ -1318,7 +1318,7 @@ class PatternView(gtk.DrawingArea):
         """
         values = []
         for row, group, track, index in self.selection_range():
-            value = self.plugin.get_pattern_value(self.pattern, group, 
+            value = self.plugin.get_pattern_value(self.pattern, group,
                                                   track, index, row)
             values.append([row, group, track, index, value])
         rows = [entry[0] for entry in values]
@@ -1326,7 +1326,7 @@ class PatternView(gtk.DrawingArea):
         values = [[row] + entry[1:] for (row, entry) in zip(rows, values)]
         for row, group, track, index, value in values:
             print row, group, track, index, value
-            self.plugin.set_pattern_value(self.pattern, group, track, 
+            self.plugin.set_pattern_value(self.pattern, group, track,
                                           index, row, value)
         player = com.get('neil.core.player')
         player.history_commit("reverse")
@@ -1348,10 +1348,10 @@ class PatternView(gtk.DrawingArea):
             if v != p.get_value_none():
                 if (p.get_type() == 0):
                     if v != zzub.zzub_note_value_off:
-                        v = max(min(mn2bn(bn2mn(v) + offset), 
+                        v = max(min(mn2bn(bn2mn(v) + offset),
                                     p.get_value_max()), p.get_value_min())
                 else:
-                    v = max(min(v + offset, p.get_value_max()), 
+                    v = max(min(v + offset, p.get_value_max()),
                             p.get_value_min())
                 self.plugin.set_pattern_value(self.pattern, g, t, i, r, v)
         tmp_sel = self.selection
@@ -1940,26 +1940,25 @@ class PatternView(gtk.DrawingArea):
             self.refresh_view()
         elif k == 'Insert' or k == 'KP_Insert':
             indices = []
-            for index in range(self.resolution):
-                for i in xrange(self.plugin.get_parameter_count(self.group,
-                                                                self.track)):
-                    indices += [self.group, self.track, i]
-                self.lines[self.group][self.track].insert(self.row + index, "")
-                self.update_line(self.row + index)
-            del self.lines[self.group][self.track][-self.resolution]
+            #for index in range(self.resolution):
+            for i in xrange(self.plugin.get_parameter_count(self.group,
+                                                            self.track)):
+                indices += [self.group, self.track, i]
+            self.lines[self.group][self.track].insert(self.row + 1, "")
+            self.update_line(self.row + index)
+            del self.lines[self.group][self.track][-1]
             self.plugin.insert_pattern_rows(self.pattern, indices,
                                             len(indices) / 3, self.row, 1)
             player.history_commit("insert row")
         elif k == 'Delete':
-            del self.lines[self.group][self.track][self.row:self.row +\
-                                                   self.resolution]
+            del self.lines[self.group][self.track][self.row]
             indices = []
-            for index in range(self.resolution):
-                self.lines[self.group][self.track].append('')
-                for i in xrange(self.plugin.get_parameter_count(self.group,
-                                                                self.track)):
-                    indices += [self.group, self.track, i]
-                self.update_line(self.row_count-self.resolution+index-1)
+            #for index in range(self.resolution):
+            self.lines[self.group][self.track].append('')
+            for i in xrange(self.plugin.get_parameter_count(self.group,
+                                                            self.track)):
+                indices += [self.group, self.track, i]
+            self.update_line(self.row_count-1)
             self.plugin.remove_pattern_rows(self.pattern, indices,
                                             len(indices) / 3, self.row, 1)
             player.history_commit("remove row")
@@ -2354,8 +2353,8 @@ class PatternView(gtk.DrawingArea):
         if not self.window:
             return
         cr = self.window.cairo_create()
-        cx, cy = self.pattern_to_pos(self.row, self.group, self.track, 
-                                     self.index, self.subindex)        
+        cx, cy = self.pattern_to_pos(self.row, self.group, self.track,
+                                     self.index, self.subindex)
         if (cx >= (PATLEFTMARGIN + 4)) and (cy >= self.top_margin):
             # Note that you have to add 0.5 to coordinates for cairo to properly
             # display lines of width 1.
@@ -2446,8 +2445,8 @@ class PatternView(gtk.DrawingArea):
                     s = ' '.join([get_str_from_param(self.plugin.get_parameter(g, t, i),
                                                      self.plugin.get_pattern_value(self.pattern, g, t, i, row))
                                                     for i in xrange(self.parameter_count[g])])
-                    values = [self.plugin.get_pattern_value(self.pattern, g, t, i, row) != self.plugin.get_parameter(g, t, i).get_value_none()
-                                                            for i in range(self.parameter_count[g])]
+                    #values = [self.plugin.get_pattern_value(self.pattern, g, t, i, row) != self.plugin.get_parameter(g, t, i).get_value_none()
+                    #                                        for i in range(self.parameter_count[g])]
                     try:
                         self.lines[g][t][row] = s
                     except IndexError:
@@ -2548,7 +2547,7 @@ class PatternView(gtk.DrawingArea):
             # Get the size of the string when it will be displayed in pixels.
             px, py = layout.get_pixel_size()
             # And draw it so that it falls in the middle of the track column.
-            drawable.draw_layout(gc, x + width / 2 - px / 2, 
+            drawable.draw_layout(gc, x + width / 2 - px / 2,
                                  self.row_height / 2 - (py / 2), layout)
 
     def draw_bar_marks(self, ctx):
@@ -2558,7 +2557,7 @@ class PatternView(gtk.DrawingArea):
         cm = gc.get_colormap()
         drawable = self.window
         def draw_bar(row, group, track, color):
-            """Draw a horizontal bar for a specified row in a 
+            """Draw a horizontal bar for a specified row in a
             specified group/track."""
             x, y = self.pattern_to_pos(row, group, track, 0)
             width = (self.track_width[group] - 1) * self.column_width
@@ -2578,7 +2577,7 @@ class PatternView(gtk.DrawingArea):
                 return lightest
             else:
                 return None
-        num_rows = min(self.row_count - self.start_row, 
+        num_rows = min(self.row_count - self.start_row,
                        (h - self.row_height) / self.row_height + 1)
         for track in range(self.group_track_count[CONN]):
             for row in range(self.start_row, num_rows + self.start_row):
@@ -2606,7 +2605,7 @@ class PatternView(gtk.DrawingArea):
         def draw_parameters_range(row, num_rows, group, track=0):
             """Draw the parameter values for a range of rows"""
             x, y = self.pattern_to_pos(row, group, track, 0)
-            s = '\n'.join([self.lines[group][track][i] 
+            s = '\n'.join([self.lines[group][track][i]
                            for i in xrange(row, row + num_rows)])
             w = self.column_width * len(self.lines[group][track][row])
             layout.set_text(s)
@@ -2659,14 +2658,14 @@ class PatternView(gtk.DrawingArea):
             cr.fill()
         if self.selection:
             x, y1 = self.pattern_to_pos(self.selection.begin,
-                                        self.selection.group, 
-                                        self.selection.track, 
+                                        self.selection.group,
+                                        self.selection.track,
                                         self.selection.index)
             x, y2 = self.pattern_to_pos(self.selection.end,
-                                        self.selection.group, 
-                                        self.selection.track, 
+                                        self.selection.group,
+                                        self.selection.track,
                                         self.selection.index)
-            clip_y = (self.row_height + 
+            clip_y = (self.row_height +
                       ((self.row_count - self.start_row) * self.row_height))
             y1 = max(self.row_height, y1)
             y2 = min(clip_y, y2)
@@ -2678,12 +2677,12 @@ class PatternView(gtk.DrawingArea):
                     x2 = self.parameter_width[sel_g][sel_i] * width
                     draw_box(x, y1, x2, y2 - y1)
                 elif self.selection.mode == SEL_TRACK:
-                    x2 = ((self.track_width[self.selection.group] - 1) * 
+                    x2 = ((self.track_width[self.selection.group] - 1) *
                           self.column_width)
                     draw_box(x, y1, x2, y2 - y1)
                 elif self.selection.mode == SEL_GROUP:
                     track_count = self.group_track_count[self.selection.group]
-                    x2 = ((self.track_width[self.selection.group] * 
+                    x2 = ((self.track_width[self.selection.group] *
                            track_count - 1) * self.column_width)
                     draw_box(x, y1, x2, y2 - y1)
                 elif self.selection.mode == SEL_ALL:
