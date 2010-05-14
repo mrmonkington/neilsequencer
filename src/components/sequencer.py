@@ -93,8 +93,6 @@ class SequencerToolBar(gtk.HBox):
         """
         Initialization.
         """
-        # begin wxGlade: SequencerFrame.__init__
-        # kwds['style'] = wx.TB_HORIZONTAL|wx.TB_FLAT
         gtk.HBox.__init__(self, False, MARGIN)
         self.seqview = seqview
         self.set_border_width(MARGIN)
@@ -142,14 +140,16 @@ class SequencerToolBar(gtk.HBox):
             self.stepselect.append_text("%i" % i)
         try:
             self.stepselect.set_active(self.steps.index(self.parent.view.step))
-            config.get_config().set_default_int('SequencerStep', self.parent.view.step)
+            config.get_config().set_default_int('SequencerStep', 
+                                                self.parent.view.step)
         except ValueError:
             pass
         self.parent.view.adjust_scrollbars()
 
     def on_stepselect(self, widget, event=False):
         """
-        Handles events sent from the choice box when a step size is being selected.
+        Handles events sent from the choice box when a step size 
+        is being selected.
         """
         try: step = int(widget.get_active_text())
         except:
@@ -278,7 +278,8 @@ class SequencerPanel(gtk.VBox):
         self.seqliststore.append([',', 'Break'])
         track = self.seqview.get_track()
         if track:
-            for pattern, key in zip(track.get_plugin().get_pattern_list(), SEQKEYS):
+            for pattern, key in zip(track.get_plugin().get_pattern_list(), 
+                                    SEQKEYS):
                 self.seqliststore.append([key, pattern.get_name()])
 
     def on_sash_pos_changed(self, widget, *args):
@@ -348,7 +349,8 @@ class SequencerView(gtk.DrawingArea):
         self.track = 0
         self.startseqtime = 0
         self.starttrack = 0
-        self.step = config.get_config().get_default_int('SequencerStep', self.seq_step)
+        self.step = config.get_config().get_default_int('SequencerStep', 
+                                                        self.seq_step)
         self.wmax=0
         player.set_loop_end(self.step)
         self.selection_start = None
@@ -386,11 +388,13 @@ class SequencerView(gtk.DrawingArea):
         if row == -1:
             x = 0
         else:
-            x = int((((float(row) - self.startseqtime)/self.step) * self.seq_row_size) + self.seq_left_margin + 0.5)
+            x = int((((float(row) - self.startseqtime)/self.step) * 
+                     self.seq_row_size) + self.seq_left_margin + 0.5)
         if track == -1:
             y = 0
         else:
-            y = ((track - self.starttrack) * self.seq_track_size) + self.seq_top_margin
+            y = (((track - self.starttrack) * self.seq_track_size) + 
+                 self.seq_top_margin)
         return x, y
 
     def pos_to_track_row(self, (x,y)):
@@ -1154,9 +1158,11 @@ class SequencerView(gtk.DrawingArea):
                 if playpos >= self.get_endrow() or playpos < self.startseqtime:
                     self.startseqtime = playpos
                     self.redraw()
-            self.draw_cursors()
+            #self.draw_cursors()
+            self.draw_playpos()
             self.playpos = playpos
-            self.draw_cursors()
+            self.draw_playpos()
+            #self.redraw()
         return True
 
     def on_vscroll_window(self, widget, scroll, value):
@@ -1273,6 +1279,22 @@ class SequencerView(gtk.DrawingArea):
                 cr.stroke_preserve()
                 cr.set_source_rgba(1.0, 0.0, 0.0, 0.3)
                 cr.fill()
+        if self.playpos >= self.startseqtime:
+            gc.set_foreground(white)
+            gc.set_background(white)
+            gc.set_function(gtk.gdk.XOR)
+            x = self.seq_left_margin + int((float(self.playpos - self.startseqtime) / self.step) * self.seq_row_size)
+            drawable.draw_rectangle(gc, True, x, 1, 2, height - 2)
+
+    def draw_playpos(self):
+        if not self.window:
+            return
+        player = com.get('neil.core.player')
+        gc = self.window.new_gc()
+        colormap = gc.get_colormap()
+        white = colormap.alloc_color('#ffffff')
+        drawable = self.window
+        width, height = self.get_client_size()
         if self.playpos >= self.startseqtime:
             gc.set_foreground(white)
             gc.set_background(white)
