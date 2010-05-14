@@ -170,7 +170,7 @@ class ParameterView(gtk.VBox):
 	    # Try to get the parameter. If we can't, it might be an incoming amp/pan
 	    # parameter (g == 0). Either way we can update the rack.
 	    if (p and (p.get_flags() & zzub.zzub_parameter_flag_state)) or (not p and g == 0):
-		nl,s,vl = self.pid2ctrls[(g,t,i)]
+		nl, s, vl = self.pid2ctrls[(g, t, i)]
 		v = self.plugin.get_parameter_value(g,t,i)
 		s.set_value(v)
 		self.update_valuelabel(g,t,i)
@@ -199,7 +199,7 @@ class ParameterView(gtk.VBox):
 	    slidergroup.pack_start(namelabel, expand=False)	
 	    slidergroup.pack_end(button)
 	    rowgroup.pack_start(slidergroup, expand=False)
-	    self.pid2ctrls[(g,t,i)] = [namelabel,button,None]
+	    self.pid2ctrls[(g, t, i)] = [namelabel, button, None]
 	    button.connect('button-press-event', self.on_context_menu, (g,t,i))
 	    namelabel.add_events(gtk.gdk.ALL_EVENTS_MASK)
 	    namelabel.connect('button-press-event', self.on_context_menu, (g,t,i))
@@ -543,7 +543,7 @@ class ParameterView(gtk.VBox):
 			item.set_sensitive(False)
 			menu.append(item)
 		    menu.append(gtk.SeparatorMenuItem())
-		    menu.append(make_menu_item("_Unbind Parameter from Controller", "", self.on_unbind_event_connection_binding, (g,t,i)))
+		    menu.append(make_menu_item("_Unbind Parameter from Controller", "", self.on_unbind_event_connection_binding, (g, t, i)))
 	    menu.show_all()
 	    menu.attach_to_widget(self, None)
 	    menu.popup(None, None, None, event.button, event.time)
@@ -655,10 +655,10 @@ class ParameterView(gtk.VBox):
 		for i in range(self.pluginloader.get_parameter_count(g)):
 		    p = self.pluginloader.get_parameter(g,i)
 		    if p.get_flags() & zzub.zzub_parameter_flag_state:
-			nl,s,vl = self.pid2ctrls[(g,t,i)]
+			nl, s, vl = self.pid2ctrls[(g,t,i)]
 			v = self.plugin.get_parameter_value(g,t,i)
 			s.set_value(v)
-			self.update_valuelabel(g,t,i)
+			self.update_valuelabel(g, t, i)
 
     def on_button_edit(self, event):
 	"""
@@ -814,9 +814,9 @@ class ParameterView(gtk.VBox):
 	@param i: The parameter index within the track.
 	@type i: int
 	"""
-	nl,s,vl = self.pid2ctrls[(g,t,i)]
+	nl, s, vl = self.pid2ctrls[(g, t, i)]
 	v = self.plugin.get_parameter_value(g,t,i)
-	text = prepstr(self.plugin.describe_value(g,i,v))
+	text = prepstr(self.plugin.describe_value(g, i, v))
 	if not text:
 	    text = "%i" % v
 	vl.set_label(text)
