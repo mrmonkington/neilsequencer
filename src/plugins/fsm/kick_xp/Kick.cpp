@@ -100,7 +100,7 @@ void KickXP::TickTrack(CTrack *pt, tvals *ptval)
     if (ptval->ndelay && ptval->ndelay < 6)
       pt->ThisDTime =
 	pt->EnvPhase +
-	ptval->ndelay * _master_info->samples_per_second / 6;
+	ptval->ndelay * _master_info->samples_per_tick / 6;
     else
       pt->ThisDTime = pt->EnvPhase;
   }
@@ -109,11 +109,11 @@ void KickXP::TickTrack(CTrack *pt, tvals *ptval)
       pt->Retrig = 0;
       if (ptval->ndelay < 6)
 	pt->SamplesToGo =
-	  ptval->ndelay * _master_info->samples_per_second / 6;
+	  ptval->ndelay * _master_info->samples_per_tick / 6;
       else if (ptval->ndelay < 11) {
 	Trigger(pt);
 	pt->SamplesToGo =
-	  (ptval->ndelay - 5) * _master_info->samples_per_second / 6;
+	  (ptval->ndelay - 5) * _master_info->samples_per_tick / 6;
       } else {
 	Trigger(pt);
 	pt->Retrig = pt->SamplesToGo =
