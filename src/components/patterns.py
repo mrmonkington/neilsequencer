@@ -323,12 +323,6 @@ class PatternToolBar(gtk.HBox):
     def on_playnotes_click(self, event):
         self.pattern_view.play_notes = self.playnotes.get_active()
 
-    #~def on_zoom_in(self, event):
-    #~    self.pattern_view.change_resolution(True)
-
-    #~def on_zoom_out(self, event):
-    #~    self.pattern_view.change_resolution(False)
-
     def get_octave_source(self):
         return [(str(i), i) for i in xrange(10)]
 
@@ -658,7 +652,6 @@ class PatternView(gtk.DrawingArea):
         self.clickpos = None
         self.track_width = [0, 0, 0]
         self.plugin_info = common.get_plugin_infos()
-        self.resolution = 1
         self.factors = None
         self.play_notes = True
         self.current_plugin = ""
@@ -1047,7 +1040,7 @@ class PatternView(gtk.DrawingArea):
         row = min(max(r,0), self.row_count - 1)
         if row >= 0:
             w,h = self.get_client_size()
-            endrow = (((h - self.top_margin) / self.row_height * self.resolution) + self.start_row) - self.resolution
+            endrow = (((h - self.top_margin) / self.row_height * 1) + self.start_row) - 1
             if (row < self.start_row):
                 self.start_row = row
                 self.redraw()
@@ -1062,7 +1055,7 @@ class PatternView(gtk.DrawingArea):
         @param r: Row position.
         @type r: int
         """
-        self.row = min(max(r,0), self.row_count - self.resolution)
+        self.row = min(max(r,0), self.row_count - 1)
         self.show_row(self.row)
 
     def set_subindex(self, si):
@@ -1368,17 +1361,17 @@ class PatternView(gtk.DrawingArea):
         player.set_callback_state(False)
         if not self.selection:
             return
-        if self.selection.end == self.selection.begin + self.resolution:
+        if self.selection.end == self.selection.begin + 1:
             return
-        step = self.resolution
+        step = 1
         for r, g, t, i in self.selection_range():
-            if r > self.plugin.get_pattern_length(self.pattern) - self.resolution:
+            if r > self.plugin.get_pattern_length(self.pattern) - 1:
                 break
             if r < 0:
                 continue
             p = self.plugin.get_parameter(g, t, i)
             v1 = self.plugin.get_pattern_value(self.pattern, g, t, i, self.selection.begin)
-            v2 = self.plugin.get_pattern_value(self.pattern, g, t, i, self.selection.end - self.resolution)
+            v2 = self.plugin.get_pattern_value(self.pattern, g, t, i, self.selection.end - 1)
             if (v1 != p.get_value_none()) and (v2 != p.get_value_none()):
                 if (p.get_type() == 0 and (v1 == zzub.zzub_note_value_off or v2 == zzub.zzub_note_value_off)):
                     continue
@@ -1391,7 +1384,7 @@ class PatternView(gtk.DrawingArea):
                 if (r - self.selection.begin) % step != 0:
                     v = p.get_value_none()
                 else:
-                    f = float(r - self.selection.begin) / float(self.selection.end - self.selection.begin - self.resolution)
+                    f = float(r - self.selection.begin) / float(self.selection.end - self.selection.begin - 1)
                     if (p.get_type() == 0):
                         v1 = bn2mn(v1)
                         v2 = bn2mn(v2)
@@ -1549,10 +1542,10 @@ class PatternView(gtk.DrawingArea):
                 self.change_resolution(False)
         else:
             if event.direction == gtk.gdk.SCROLL_UP:
-                self.move_up(self.resolution)
+                self.move_up(1)
                 self.adjust_scrollbars()
             elif event.direction == gtk.gdk.SCROLL_DOWN:
-                self.move_down(self.resolution)
+                self.move_down(1)
                 self.adjust_scrollbars()
 
     def on_button_down(self, widget, event):
@@ -1606,11 +1599,11 @@ class PatternView(gtk.DrawingArea):
                 self.selection.mode = SEL_COLUMN
             self.show_row(row)
             if row < self.clickpos[0]:
-                self.selection.end = self.clickpos[0] + self.resolution
+                self.selection.end = self.clickpos[0] + 1
                 self.selection.begin = row
             else:
                 self.selection.begin=self.clickpos[0]
-                self.selection.end = row + self.resolution
+                self.selection.end = row + 1
             self.adjust_selection()
             self.redraw()
 
@@ -1827,13 +1820,13 @@ class PatternView(gtk.DrawingArea):
                 self.selection = self.Selection()
             if self.shiftselect == None:
                 self.shiftselect = self.row
-            self.move_down(self.resolution)
+            self.move_down(1)
             if self.row < self.shiftselect:
-                self.selection.end = self.shiftselect + self.resolution
+                self.selection.end = self.shiftselect + 1
                 self.selection.begin = self.row
             else:
                 self.selection.begin = self.shiftselect
-                self.selection.end = self.row+self.resolution
+                self.selection.end = self.row+1
             self.adjust_selection()
             self.redraw()
         elif mask & gtk.gdk.SHIFT_MASK and k == 'Up':
@@ -1841,13 +1834,13 @@ class PatternView(gtk.DrawingArea):
                 self.selection = self.Selection()
             if self.shiftselect == None:
                 self.shiftselect = self.row
-            self.move_up(self.resolution)
+            self.move_up(1)
             if self.row < self.shiftselect:
-                self.selection.end = self.shiftselect+self.resolution
+                self.selection.end = self.shiftselect+1
                 self.selection.begin = self.row
             else:
                 self.selection.begin = self.shiftselect
-                self.selection.end = self.row + self.resolution
+                self.selection.end = self.row + 1
             self.adjust_selection()
             self.redraw()
         elif mask & gtk.gdk.SHIFT_MASK and (k == 'Right' or k == 'Left'):
@@ -1856,7 +1849,7 @@ class PatternView(gtk.DrawingArea):
             if self.shiftselect == None:
                 self.shiftselect = self.row
                 self.selection.begin = self.shiftselect
-                self.selection.end = self.row+self.resolution
+                self.selection.end = self.row+1
             self.selection.mode = (self.selection.mode + 1) % 4
             self.adjust_selection()
             self.redraw()
@@ -1873,7 +1866,7 @@ class PatternView(gtk.DrawingArea):
                 self.selection.begin = self.row
                 self.keystartselect = self.row
                 self.selection.end =\
-                    max(self.row+self.resolution, self.selection.end)
+                    max(self.row+1, self.selection.end)
                 self.adjust_selection()
                 self.update_plugin_info()
                 self.redraw()
@@ -1884,12 +1877,12 @@ class PatternView(gtk.DrawingArea):
                     self.selection.begin=self.keystartselect
                 if self.keyendselect:
                     self.selection.end=self.keyendselect
-                if self.selection.end == self.row+self.resolution:
+                if self.selection.end == self.row+1:
                     self.selection.mode = (self.selection.mode + 1) % 4
-                self.selection.end = self.row+self.resolution
-                self.keyendselect=self.row+self.resolution
+                self.selection.end = self.row+1
+                self.keyendselect=self.row+1
                 self.selection.begin =\
-                    max(min(self.selection.end - self.resolution,
+                    max(min(self.selection.end - 1,
                             self.selection.begin), 0)
                 self.adjust_selection()
                 self.redraw()
@@ -1910,10 +1903,10 @@ class PatternView(gtk.DrawingArea):
             self.move_right()
             self.adjust_scrollbars()
         elif k == 'Up' or k == 'KP_Up':
-            self.move_up(self.resolution)
+            self.move_up(1)
             self.adjust_scrollbars()
         elif k == 'Down' or k == 'KP_Down':
-            self.move_down(self.resolution)
+            self.move_down(1)
             self.adjust_scrollbars()
         elif k == 'Page_Up' or k == 'KP_Page_Up':
             self.move_up(16)
@@ -1940,26 +1933,26 @@ class PatternView(gtk.DrawingArea):
             self.refresh_view()
         elif k == 'Insert' or k == 'KP_Insert':
             indices = []
-            for index in range(self.resolution):
+            for index in range(1):
                 for i in xrange(self.plugin.get_parameter_count(self.group,
                                                                 self.track)):
                     indices += [self.group, self.track, i]
                 self.lines[self.group][self.track].insert(self.row + index, "")
                 self.update_line(self.row + index)
-            del self.lines[self.group][self.track][-self.resolution]
+            del self.lines[self.group][self.track][-1]
             self.plugin.insert_pattern_rows(self.pattern, indices,
                                             len(indices) / 3, self.row, 1)
             player.history_commit("insert row")
         elif k == 'Delete':
             del self.lines[self.group][self.track][self.row:self.row +\
-                                                   self.resolution]
+                                                   1]
             indices = []
-            for index in range(self.resolution):
+            for index in range(1):
                 self.lines[self.group][self.track].append('')
                 for i in xrange(self.plugin.get_parameter_count(self.group,
                                                                 self.track)):
                     indices += [self.group, self.track, i]
-                self.update_line(self.row_count-self.resolution+index-1)
+                self.update_line(self.row_count-1+index-1)
             self.plugin.remove_pattern_rows(self.pattern, indices,
                                             len(indices) / 3, self.row, 1)
             player.history_commit("remove row")
@@ -2097,7 +2090,7 @@ class PatternView(gtk.DrawingArea):
                 if v != p.get_value_none():
                     m.set_parameter_value_direct(self.group, self.track,
                                                  index, v, 0)
-        self.move_down(self.resolution)
+        self.move_down(1)
 
     def on_key_up(self, widget, event):
         """
@@ -2231,7 +2224,7 @@ class PatternView(gtk.DrawingArea):
         @rtype: (int, int, int, int, int)
         """
         x, y = position
-        return self.charpos_to_pattern(((x - PATLEFTMARGIN - 4) / self.column_width + self.start_col, (y - self.top_margin) / self.row_height*self.resolution + self.start_row))
+        return self.charpos_to_pattern(((x - PATLEFTMARGIN - 4) / self.column_width + self.start_col, (y - self.top_margin) / self.row_height*1 + self.start_row))
 
     def get_charbounds(self):
         """
@@ -2264,8 +2257,8 @@ class PatternView(gtk.DrawingArea):
         pagesize = adj.get_property('page-size')
         value = int(max(min(value, maxv - pagesize), minv) + 0.5)
         widget.set_value(value)
-        if self.start_row != value / self.resolution * self.resolution:
-            self.start_row = value / self.resolution * self.resolution
+        if self.start_row != value / 1 * 1:
+            self.start_row = value / 1 * 1
         self.redraw()
         return True
 
@@ -2398,7 +2391,7 @@ class PatternView(gtk.DrawingArea):
                         continue
                     if self.pattern == pattern and pos < current_position \
                     and current_position < pos + row_count:
-                        y = self.top_margin + (current_position - pos - self.start_row)*self.row_height/self.resolution
+                        y = self.top_margin + (current_position - pos - self.start_row) * self.row_height
                         w,h = self.get_client_size()
                         drawable.draw_rectangle(gc, True,0, y, w, 2)
                         return
