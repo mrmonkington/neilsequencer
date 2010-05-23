@@ -300,16 +300,17 @@ class PatternToolBar(gtk.HBox):
         self.octavelabel.set_mnemonic_widget(self.octaveselect)
         eventbus.octave_changed += self.octaveselect.update
 
+        self.edit_step_label = gtk.Label("Edit step")
+        self.edit_step_box = gtk.combo_box_new_text()
+        for i in range(12):
+            self.edit_step_box.append_text(str(i + 1))
+        self.edit_step_box.set_active(0)
+        self.edit_step_box.connect('changed', self.edit_step_changed)
+
         self.playnotes = gtk.CheckButton(label="Play _notes")
         self.playnotes.set_active(True)
         self.playnotes.connect('clicked', self.on_playnotes_click)
-        #~self.zoom_in_button = gtk.Button(label="Zoom+")
-        #~self.zoom_out_button = gtk.Button(label="Zoom-")
-        #~self.zoom_in_button.connect('clicked', self.on_zoom_in)
-        #~self.zoom_out_button.connect('clicked', self.on_zoom_out)
-
-        #~self.pack_start(self.zoom_in_button, expand=False)
-        #~self.pack_start(self.zoom_out_button, expand=False)
+ 
         self.pack_start(self.pluginlabel, expand=False)
         self.pack_start(self.pluginselect, expand=False)
         self.pack_start(self.patternlabel, expand=False)
@@ -318,7 +319,13 @@ class PatternToolBar(gtk.HBox):
         self.pack_start(self.waveselect, expand=False)
         self.pack_start(self.octavelabel, expand=False)
         self.pack_start(self.octaveselect, expand=False)
+        self.pack_start(self.edit_step_label, expand=False)
+        self.pack_start(self.edit_step_box, expand=False)
         self.pack_start(self.playnotes, expand=False)
+
+    def edit_step_changed(self, event):
+        step = int(self.edit_step_box.get_active_text())
+        self.pattern_view.edit_step = step
 
     def on_playnotes_click(self, event):
         self.pattern_view.play_notes = self.playnotes.get_active()
@@ -626,6 +633,7 @@ class PatternView(gtk.DrawingArea):
         """
         Initialization.
         """
+        self.edit_step = 1
         self.statuslabels = panel.statuslabels
         self.panel = panel
         self.hscroll = hscroll
@@ -1542,10 +1550,10 @@ class PatternView(gtk.DrawingArea):
                 self.change_resolution(False)
         else:
             if event.direction == gtk.gdk.SCROLL_UP:
-                self.move_up(1)
+                self.move_up(self.edit_step)
                 self.adjust_scrollbars()
             elif event.direction == gtk.gdk.SCROLL_DOWN:
-                self.move_down(1)
+                self.move_down(self.edit_step)
                 self.adjust_scrollbars()
 
     def on_button_down(self, widget, event):
@@ -1820,7 +1828,7 @@ class PatternView(gtk.DrawingArea):
                 self.selection = self.Selection()
             if self.shiftselect == None:
                 self.shiftselect = self.row
-            self.move_down(1)
+            self.move_down(self.edit_step)
             if self.row < self.shiftselect:
                 self.selection.end = self.shiftselect + 1
                 self.selection.begin = self.row
@@ -1834,7 +1842,7 @@ class PatternView(gtk.DrawingArea):
                 self.selection = self.Selection()
             if self.shiftselect == None:
                 self.shiftselect = self.row
-            self.move_up(1)
+            self.move_up(self.edit_step)
             if self.row < self.shiftselect:
                 self.selection.end = self.shiftselect+1
                 self.selection.begin = self.row
@@ -1903,10 +1911,10 @@ class PatternView(gtk.DrawingArea):
             self.move_right()
             self.adjust_scrollbars()
         elif k == 'Up' or k == 'KP_Up':
-            self.move_up(1)
+            self.move_up(self.edit_step)
             self.adjust_scrollbars()
         elif k == 'Down' or k == 'KP_Down':
-            self.move_down(1)
+            self.move_down(self.edit_step)
             self.adjust_scrollbars()
         elif k == 'Page_Up' or k == 'KP_Page_Up':
             self.move_up(16)
@@ -2090,7 +2098,7 @@ class PatternView(gtk.DrawingArea):
                 if v != p.get_value_none():
                     m.set_parameter_value_direct(self.group, self.track,
                                                  index, v, 0)
-        self.move_down(1)
+        self.move_down(self.edit_step)
 
     def on_key_up(self, widget, event):
         """
