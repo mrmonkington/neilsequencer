@@ -3,6 +3,8 @@ Import('pluginenv', 'build_plugin')
 localenv = pluginenv.Clone()
 
 kick_xp_files = ["kick_xp/Kick.cpp"]
+snh_files = ["sample_and_hold/SnH.cpp"]
 
 build_plugin(localenv, "fsm_kick_xp", kick_xp_files)
+build_plugin(localenv, "fsm_snh", snh_files)
 	     
