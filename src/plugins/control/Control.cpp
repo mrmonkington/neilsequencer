@@ -53,10 +53,11 @@ void Control::process_controller_events() {
     float fvalue = float(value[i]) / 0xFFFE;
     float fpower = float(power[i]) / 0xFFFE * 10.0 - 5.0;
     fpower = fpower > 0.0 ? (fpower + 1.0) : 1.0 / (-fpower + 1.0);
+    fvalue = pow(fvalue, fpower);
     float fmin = float(min[i]) / 0xFFFE;
     float fmax = float(max[i]) / 0xFFFE;
     float scale = fmin + fvalue * (fmax - fmin);
-    cval[i] = int(cparams[i]->value_max * pow(scale, fpower));
+    cval[i] = int(cparams[i]->value_max * scale);
   }
 }
 
