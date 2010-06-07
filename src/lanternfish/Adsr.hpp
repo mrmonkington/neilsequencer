@@ -29,8 +29,7 @@ namespace lanternfish {
     void set_power(float power);
     void note_on();
     void note_off();
-    float *out;
-    void process(int n);
+    void process(float *out, int n);
   };
 }
 

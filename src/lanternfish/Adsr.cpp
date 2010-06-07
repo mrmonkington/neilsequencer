@@ -4,37 +4,37 @@
 
 namespace lanternfish {
   Adsr::Adsr() {
+    set_sustain_level(0.5);
     set_attack_time(1024);
     set_decay_time(1024);
-    set_sustain_level(0.5);
     set_release_time(1024);
     set_power(1.0);
     this->current_stage = NONE_STAGE;
-    this->out = new float[256];
-    this->buff_size = 256;
   }
   
   Adsr::~Adsr() {
-    delete[] this->out;
+
   }
   
   void Adsr::set_attack_time(int time) {
-    this->attack_time = time;
-    this->attack_delta = 1.0 / (float)time;
+    attack_time = time;
+    attack_delta = 1.0 / (float)time;
   }
 
   void Adsr::set_decay_time(int time) {
-    this->decay_time = time;
-    this->decay_delta = 1.0 / (float)time;
+    decay_time = time;
+    decay_delta = -(1.0 - sustain_level) / (float)time;
   }
   
   void Adsr::set_sustain_level(float level) {
-    this->sustain_level = level;
+    sustain_level = level;
+    decay_delta = -(1.0 - sustain_level) / (float)decay_time;
+    release_delta = -sustain_level / (float)release_time;
   }
   
   void Adsr::set_release_time(int time) {
-    this->release_time = time;
-    this->release_delta = 1.0 / (float)time;
+    release_time = time;
+    release_delta = -sustain_level / (float)time;
   }
   
   void Adsr::set_power(float power) {
@@ -42,8 +42,7 @@ namespace lanternfish {
   }
   
   void Adsr::note_on() {
-    this->value = 0.0;
-    this->current_stage = ATTACK_STAGE;
+    current_stage = ATTACK_STAGE;
   }
   
   void Adsr::note_off() {
@@ -51,52 +50,38 @@ namespace lanternfish {
     this->current_stage = RELEASE_STAGE;
   }
   
-  void Adsr::process(int n) {
-    if (this->buff_size < n) {
-      delete[] this->out;
-      this->out = new float[n];
-      this->buff_size = n;
-    }
-    float return_value;
+  void Adsr::process(float *out, int n) {
     if (this->current_stage != NONE_STAGE) {
       for (int i = 0; i < n; i++) {
 	switch(this->current_stage) {
 	case ATTACK_STAGE:
-	  return_value = pow(this->value, this->power);
-	  this->value += this->attack_delta;
-	  if (this->value >= 1.0) {
-	    this->value = 0.0;
-	    this->current_stage = DECAY_STAGE;
+	  value += attack_delta;
+	  if (value >= 1.0) {
+	    current_stage = DECAY_STAGE;
 	  }
 	  break;
 	case DECAY_STAGE:
-	  return_value = 
-	    1.0 - pow(this->value, this->power) * (1.0 - this->sustain_level);
-	  this->value += this->decay_delta;
-	  if (this->value >= 1.0) {
-	    this->value = 0.0;
-	    this->current_stage = SUSTAIN_STAGE;
+	  value += decay_delta;
+	  if (value <= sustain_level) {
+	    current_stage = SUSTAIN_STAGE;
 	  }
 	  break;
 	case SUSTAIN_STAGE:
-	  return_value = this->sustain_level;
+	  value = sustain_level;
 	  break;
 	case RELEASE_STAGE:
-	  return_value =
-	    this->sustain_level - 
-	    pow(this->value, this->power) * this->sustain_level;
-	  this->value += this->release_delta;
-	  if (this->value >= 1.0) {
-	    this->value = 0.0;
-	    this->current_stage = NONE_STAGE;
+	  value += release_delta;
+	  if (value <= 0.0) {
+	    current_stage = NONE_STAGE;
+	    value = 0.0;
 	  }
 	  break;
 	}
-	this->out[i] = return_value;
+	out[i] = value;
       }
     } else {
       for (int i = 0; i < n; i++) {
-	this->out[i] = 0.0;
+	out[i] = 0.0;
       }
     }
   }

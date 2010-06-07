@@ -5,7 +5,7 @@ localenv.Append(CPPPATH=["${LANTERNFISH_SRC_PATH}"])
 localenv.Append(LIBS=['lanternfish'])
 localenv.Append(CPPFLAGS=['-O3'])
 
-files = ["Muffin.cpp", "Voice.cpp"]
+files = ["FM303.cpp"]
 
-build_plugin(localenv, "somono_muffin", files)
+build_plugin(localenv, "somono_fm303", files)
 	     

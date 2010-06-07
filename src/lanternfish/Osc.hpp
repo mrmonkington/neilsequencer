@@ -1,22 +1,18 @@
 #ifndef LANTERNFISH_OSC_HPP
 #define LANTERNFISH_OSC_HPP
 
-#include <vector>
-
 namespace lanternfish {
   class Osc {
   private:
     float interpolate(float x0, float x1, float x2, float x3, float phi);
-    float phi;
-    int buff_size;
+    float *table;
+    int table_size;
   public:
     Osc();
     ~Osc();
-    int sampling_rate;
-    float *out;
-    std::vector <float> *table;
-    float *freq;
-    void process(int n);
+    void set_table(float *table, int size);
+    void process(float *phase, float *out, int n);
+    float process(float phase);
   };
 }
 
