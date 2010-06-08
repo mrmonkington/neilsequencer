@@ -73,6 +73,7 @@ namespace lanternfish {
   }
 
   float note_to_freq(int note) {
-    return 440.0 * pow(2.0, (note - 69.0) / 12.0);
+    note = ((note >> 4) * 12) + (note & 0x0f) - 70;
+    return 440.0 * pow(2.0, float(note) / 12.0);
   }
 }
