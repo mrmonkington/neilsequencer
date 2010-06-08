@@ -75,7 +75,7 @@ void FM303::process_events()
     if (tval.note != zzub::note_value_off) {
       if (tval.slide != paramSlide->value_none) {
 	freq.set_value(note_to_freq(tval.note), 
-		       0.33 * _master_info->samples_per_tick);
+		       0.5 * _master_info->samples_per_tick);
       } else {
 	freq.set_value(note_to_freq(tval.note), 16);
 	aenv.note_on();
