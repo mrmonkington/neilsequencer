@@ -16,7 +16,7 @@ namespace lanternfish {
   private:
     int attack_time, decay_time, release_time;
     float attack_delta, decay_delta, release_delta;
-    float sustain_level, power, value;
+    float sustain_level, value, peak_level, coeff;
     EnvelopeStage current_stage;
     int buff_size;
   public:
@@ -24,12 +24,13 @@ namespace lanternfish {
     ~Adsr();
     void set_attack_time(int samples);
     void set_decay_time(int samples);
+    void set_peak_level(float level);
     void set_sustain_level(float level);
     void set_release_time(int samples);
-    void set_power(float power);
     void note_on();
     void note_off();
     void process(float *out, int n);
+    void print_stats();
   };
 }
 

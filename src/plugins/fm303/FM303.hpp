@@ -170,11 +170,11 @@ struct FM303Info : zzub::info {
       .set_word()
       .set_name("EnvMod")
       .set_description("Influence of envelope to FM")
-      .set_value_min(0x0000)
+      .set_value_min(0x0001)
       .set_value_max(0xfffe)
       .set_value_none(0xffff)
       .set_flags(zzub::parameter_flag_state)
-      .set_value_default(0x0000);
+      .set_value_default(0x0001);
     paramAccAmount = &add_global_parameter()
       .set_word()
       .set_name("AccAmount")

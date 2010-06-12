@@ -33,9 +33,9 @@ void FM303::init(zzub::archive* pi)
   phasor_c.set_sampling_rate(_master_info->samples_per_second);
   aenv.set_attack_time(0.002 * _master_info->samples_per_second);
   aenv.set_decay_time(0.5 * _master_info->samples_per_second);
-  aenv.set_sustain_level(0.7);
+  aenv.set_sustain_level(0.2);
   aenv.set_release_time(0.01 * _master_info->samples_per_second);
-  menv.set_attack_time(0.004 * _master_info->samples_per_second);
+  menv.set_attack_time(0.002 * _master_info->samples_per_second);
   menv.set_decay_time(0.3 * _master_info->samples_per_second);
   menv.set_sustain_level(0.0);
   menv.set_release_time(0.01 * _master_info->samples_per_second);
@@ -70,12 +70,13 @@ void FM303::process_events()
   }
   if (gval.env_mod != paramEnvMod->value_none) {
     env_mod = gval.env_mod / float(paramEnvMod->value_max);
+    menv.set_peak_level(env_mod);
   }
   if (tval.note != paramNote->value_none) {
     if (tval.note != zzub::note_value_off) {
       if (tval.slide != paramSlide->value_none) {
 	freq.set_value(note_to_freq(tval.note), 
-		       0.5 * _master_info->samples_per_tick);
+		       0.8 * _master_info->samples_per_tick);
       } else {
 	freq.set_value(note_to_freq(tval.note), 16);
 	aenv.note_on();
@@ -90,6 +91,8 @@ void FM303::process_events()
 
 bool FM303::process_stereo(float **pin, float **pout, int n, int mode) 
 {
+  aenv.print_stats();
+  menv.print_stats();
   aenv.process(s_aenv, n);
   menv.process(s_menv, n);
   mod.process(s_mod, n);
@@ -104,7 +107,6 @@ bool FM303::process_stereo(float **pin, float **pout, int n, int mode)
     s_osc_m[i] = osc_m.process(phase);
     feedback_v = feedback * s_osc_m[i];
   }
-  mul_signals(env_mod, s_menv, n);
   add_signals(s_menv, s_mod, n);
   mul_signals(s_mod, s_osc_m, n);
   add_signals(s_osc_m, s_phasor_c, n);

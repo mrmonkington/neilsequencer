@@ -1,6 +1,12 @@
 #include <cmath>
+#include <cstdio>
 
 #include "Adsr.hpp"
+
+#define LOWER_BOUND 0.00001
+#define LOG_BASE 6.0
+
+#define log_b(b,x) (log(x)/log(b))
 
 namespace lanternfish {
   Adsr::Adsr() {
@@ -8,8 +14,8 @@ namespace lanternfish {
     set_attack_time(1024);
     set_decay_time(1024);
     set_release_time(1024);
-    set_power(1.0);
-    this->current_stage = NONE_STAGE;
+    set_peak_level(1.0);
+    current_stage = NONE_STAGE;
   }
   
   Adsr::~Adsr() {
@@ -17,72 +23,90 @@ namespace lanternfish {
   }
   
   void Adsr::set_attack_time(int time) {
-    attack_time = time;
-    attack_delta = 1.0 / (float)time;
+    if (time > 0)
+      attack_time = time;
+    else
+      attack_time = 1;
   }
 
   void Adsr::set_decay_time(int time) {
-    decay_time = time;
-    decay_delta = -(1.0 - sustain_level) / (float)time;
+    if (time > 0)
+      decay_time = time;
+    else
+      decay_time = 1;
+  }
+
+  void Adsr::set_peak_level(float level) {
+    if (level > LOWER_BOUND)
+      peak_level = level;
+    else
+      peak_level = LOWER_BOUND;
   }
   
   void Adsr::set_sustain_level(float level) {
-    sustain_level = level;
-    decay_delta = -(1.0 - sustain_level) / (float)decay_time;
-    release_delta = -sustain_level / (float)release_time;
+    if (level > LOWER_BOUND)
+      sustain_level = level;
+    else
+      sustain_level = LOWER_BOUND;
   }
   
   void Adsr::set_release_time(int time) {
-    release_time = time;
-    release_delta = -sustain_level / (float)time;
+    if (time > 0)
+      release_time = time;
+    else
+      release_time = 1;
   }
-  
-  void Adsr::set_power(float power) {
-    this->power = power;
-  }
-  
+    
   void Adsr::note_on() {
     current_stage = ATTACK_STAGE;
+    coeff = (log_b(LOG_BASE, peak_level) - log_b(LOG_BASE, value)) / 
+      float(attack_time);
   }
   
   void Adsr::note_off() {
-    this->value = 0.0;
-    this->current_stage = RELEASE_STAGE;
+    current_stage = RELEASE_STAGE;
+    coeff = (log_b(LOG_BASE, LOWER_BOUND) - log_b(LOG_BASE, value)) / 
+      float(release_time);
+  }
+
+  void Adsr::print_stats() {
+    printf("stage = %d\n", current_stage);
+    printf("coeff = %.3f\n", coeff);
   }
   
   void Adsr::process(float *out, int n) {
-    if (this->current_stage != NONE_STAGE) {
-      for (int i = 0; i < n; i++) {
-	switch(this->current_stage) {
-	case ATTACK_STAGE:
-	  value += attack_delta;
-	  if (value >= 1.0) {
-	    current_stage = DECAY_STAGE;
-	  }
-	  break;
-	case DECAY_STAGE:
-	  value += decay_delta;
-	  if (value <= sustain_level) {
-	    current_stage = SUSTAIN_STAGE;
-	  }
-	  break;
-	case SUSTAIN_STAGE:
-	  value = sustain_level;
-	  break;
-	case RELEASE_STAGE:
-	  value += release_delta;
-	  if (value <= 0.0) {
-	    current_stage = NONE_STAGE;
-	    value = 0.0;
-	  }
-	  break;
+    for (int i = 0; i < n; i++) {
+      switch(this->current_stage) {
+      case NONE_STAGE:
+	value = LOWER_BOUND;
+	break;
+      case ATTACK_STAGE:
+	value += coeff * value;
+	if (value >= peak_level) {
+	  current_stage = DECAY_STAGE;
+	  coeff = (log_b(LOG_BASE, sustain_level) - log_b(LOG_BASE, value)) / 
+	    float(decay_time);
 	}
-	out[i] = value;
+	break;
+      case DECAY_STAGE:
+	value += coeff * value;
+	if (value <= sustain_level) {
+	  current_stage = SUSTAIN_STAGE;
+	}
+	break;
+      case SUSTAIN_STAGE:
+	value = sustain_level;
+	break;
+      case RELEASE_STAGE:
+	value += coeff * value;
+	if (value <= LOWER_BOUND) {
+	  current_stage = NONE_STAGE;
+	  value = LOWER_BOUND
+;
+	}
+	break;
       }
-    } else {
-      for (int i = 0; i < n; i++) {
-	out[i] = 0.0;
-      }
+      out[i] = value;
     }
   }
 }
