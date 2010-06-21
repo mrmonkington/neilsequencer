@@ -970,6 +970,8 @@ class PatternView(gtk.DrawingArea):
     def adjust_scrollbars(self):
         w, h = self.get_client_size()
         vw, vh = self.get_virtual_size()
+        vh += 1
+        vw += 1
         pw, ph = int((w - PATLEFTMARGIN) / float(self.column_width) + 0.5),\
                  int((h - self.row_height) / float(self.row_height) + 0.5)
         hrange = vw - pw
