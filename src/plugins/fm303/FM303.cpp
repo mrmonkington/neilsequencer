@@ -19,7 +19,6 @@ FM303::FM303()
   sine = make_sine_table(1024);
   osc_c.set_table(this->sine, 1024);
   osc_m.set_table(this->sine, 1024);
-  freq.set_value(440.0, 1);
 }
 
 FM303::~FM303() 
@@ -33,7 +32,7 @@ void FM303::init(zzub::archive* pi)
   phasor_c.set_sampling_rate(_master_info->samples_per_second);
   aenv.set_attack_time(0.002 * _master_info->samples_per_second);
   aenv.set_decay_time(0.5 * _master_info->samples_per_second);
-  aenv.set_sustain_level(0.2);
+  aenv.set_sustain_level(0.4);
   aenv.set_release_time(0.01 * _master_info->samples_per_second);
   menv.set_attack_time(0.002 * _master_info->samples_per_second);
   menv.set_decay_time(0.3 * _master_info->samples_per_second);
@@ -57,20 +56,23 @@ void FM303::process_events()
     wave = gval.wave;
   }
   if (gval.modulation != paramModulation->value_none) {
-    mod.set_value(2.0 * (gval.modulation / float(paramModulation->value_max)),
+    mod.set_value((gval.modulation / float(paramModulation->value_max)),
 		  _master_info->samples_per_tick);
   }
   if (gval.feedback != paramFeedback->value_none) {
     feedback = 0.33 * (gval.feedback / float(paramFeedback->value_max));
   }
   if (gval.decay != paramDecay->value_none) {
-    menv.set_decay_time((0.03 + 0.47 * 
-			 (gval.decay / float(paramDecay->value_max))) *
-			_master_info->samples_per_second);
+    decay_time = (0.03 + 0.47 * gval.decay / float(paramDecay->value_max)) *
+      _master_info->samples_per_second;
+    menv.set_decay_time(decay_time);
   }
   if (gval.env_mod != paramEnvMod->value_none) {
     env_mod = gval.env_mod / float(paramEnvMod->value_max);
     menv.set_peak_level(env_mod);
+  }
+  if (gval.acc_amount != paramAccAmount->value_none) {
+    acc_amount = gval.acc_amount / float(paramAccAmount->value_max);
   }
   if (tval.note != paramNote->value_none) {
     if (tval.note != zzub::note_value_off) {
@@ -81,6 +83,23 @@ void FM303::process_events()
 	freq.set_value(note_to_freq(tval.note), 16);
 	aenv.note_on();
 	menv.note_on();
+      }
+      if (tval.accent != paramAccent->value_none) {
+	aenv.set_peak_level(0.6 + 0.4 * acc_amount);
+	menv.set_peak_level(env_mod + 0.6 * acc_amount);
+	aenv.set_decay_time(decay_time * (1.0 - 0.5 * acc_amount));
+	menv.set_decay_time(decay_time * (1.0 - 0.5 * acc_amount));
+	aenv.set_attack_time((0.002 + 0.004 * acc_amount) * 
+			     _master_info->samples_per_second);
+	menv.set_attack_time((0.002 + 0.004 * acc_amount) *
+			     _master_info->samples_per_second);
+      } else {
+	aenv.set_peak_level(0.6);
+	menv.set_peak_level(env_mod);
+	aenv.set_decay_time(decay_time);
+	menv.set_decay_time(decay_time);
+	aenv.set_attack_time(0.002 * _master_info->samples_per_second);
+	menv.set_attack_time(0.002 * _master_info->samples_per_second);
       }
     } else {
       aenv.note_off();

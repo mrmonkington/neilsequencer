@@ -49,7 +49,8 @@ private:
     s_osc_c[1024], s_osc_m[1024], s_mod[1024], s_aenv[1024], 
     s_menv[1024], s_feedback[1024];
   int wave;
-  float feedback, feedback_v, env_mod;
+  float feedback, feedback_v, env_mod, acc_amount;
+  int decay_time;
 public:
   FM303();
   virtual ~FM303();

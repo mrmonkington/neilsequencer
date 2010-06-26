@@ -4,7 +4,7 @@
 #include "Adsr.hpp"
 
 #define LOWER_BOUND 0.00001
-#define LOG_BASE 6.0
+#define LOG_BASE 8.0
 
 #define log_b(b,x) (log(x)/log(b))
 
