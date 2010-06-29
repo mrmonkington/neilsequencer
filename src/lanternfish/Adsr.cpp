@@ -4,7 +4,6 @@
 #include "Adsr.hpp"
 
 #define LOWER_BOUND 0.00001
-#define LOG_BASE 8.0
 
 #define log_b(b,x) (log(x)/log(b))
 
@@ -16,6 +15,7 @@ namespace lanternfish {
     set_release_time(1024);
     set_peak_level(1.0);
     current_stage = NONE_STAGE;
+    log_c = 8.0;
   }
   
   Adsr::~Adsr() {
@@ -59,14 +59,18 @@ namespace lanternfish {
     
   void Adsr::note_on() {
     current_stage = ATTACK_STAGE;
-    coeff = (log_b(LOG_BASE, peak_level) - log_b(LOG_BASE, value)) / 
+    coeff = (log_b(log_c, peak_level) - log_b(log_c, value)) / 
       float(attack_time);
   }
   
   void Adsr::note_off() {
     current_stage = RELEASE_STAGE;
-    coeff = (log_b(LOG_BASE, LOWER_BOUND) - log_b(LOG_BASE, value)) / 
+    coeff = (log_b(log_c, LOWER_BOUND) - log_b(log_c, value)) / 
       float(release_time);
+  }
+
+  void Adsr::set_log_c(float log_c) {
+    this->log_c = log_c;
   }
 
   void Adsr::print_stats() {
@@ -84,7 +88,7 @@ namespace lanternfish {
 	value += coeff * value;
 	if (value >= peak_level) {
 	  current_stage = DECAY_STAGE;
-	  coeff = (log_b(LOG_BASE, sustain_level) - log_b(LOG_BASE, value)) / 
+	  coeff = (log_b(log_c, sustain_level) - log_b(log_c, value)) / 
 	    float(decay_time);
 	}
 	break;
@@ -101,8 +105,7 @@ namespace lanternfish {
 	value += coeff * value;
 	if (value <= LOWER_BOUND) {
 	  current_stage = NONE_STAGE;
-	  value = LOWER_BOUND
-;
+	  value = LOWER_BOUND;
 	}
 	break;
       }
