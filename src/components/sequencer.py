@@ -443,7 +443,7 @@ class SequencerView(gtk.DrawingArea):
         """
         player = com.get('neil.core.player')
         seq = player.get_current_sequencer()
-        track = max(min(track, seq.get_sequence_track_count() - 1),0)
+        track = max(min(track, seq.get_sequence_track_count() - 1), 0)
         row = max(row, 0)
         if (track, row) == (self.track, self.row):
             return
@@ -1199,7 +1199,13 @@ class SequencerView(gtk.DrawingArea):
     def adjust_scrollbars(self):
         w, h = self.get_client_size()
         vw, vh = self.get_virtual_size()
-        pw, ph= int((w-self.seq_left_margin)/float(self.seq_row_size)+0.5), int((h-self.seq_top_margin)/float(self.seq_track_size)+0.5)
+        pw, ph = (int((w - self.seq_left_margin) / 
+                     float(self.seq_row_size) + 0.5), 
+                  int((h - self.seq_top_margin) / 
+                      float(self.seq_track_size) + 0.5))
+        print w, h
+        print vw, vh
+        print pw, ph
         hrange = vw - pw
         vrange = vh - ph
         if hrange <= 0:
@@ -1211,7 +1217,10 @@ class SequencerView(gtk.DrawingArea):
         else:
             self.vscroll.show()
         adj = self.hscroll.get_adjustment()
-        adj.set_all(self.startseqtime/self.step, 0, int(vw+(w-self.seq_left_margin)/float(self.seq_row_size)-2), 1, 1, pw)
+        adj.set_all(self.startseqtime / self.step, 0, 
+                    int(vw + (w - self.seq_left_margin) / 
+                        float(self.seq_row_size) - 2), 
+                    1, 1, pw)
         adj = self.vscroll.get_adjustment()
         adj.set_all(self.starttrack, 0, vh, 1, 1, ph)
         #self.redraw()
@@ -1223,8 +1232,8 @@ class SequencerView(gtk.DrawingArea):
         player = com.get('neil.core.player')
         seq = player.get_current_sequencer()
         h = seq.get_sequence_track_count()
-        w = (max(self.row, player.get_song_end(), player.get_loop_end() /
-                 self.step) + 3)
+        w = (max(self.row, player.get_song_end(), player.get_loop_end()) / 
+             self.step + 3)
         return w, h
 
     def draw_cursors(self):
