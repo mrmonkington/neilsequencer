@@ -89,17 +89,11 @@ void FM303::process_events()
 	menv.set_peak_level(env_mod + 0.6 * acc_amount);
 	aenv.set_decay_time(decay_time * (1.0 - 0.5 * acc_amount));
 	menv.set_decay_time(decay_time * (1.0 - 0.5 * acc_amount));
-	aenv.set_attack_time((0.002 + 0.004 * acc_amount) * 
-			     _master_info->samples_per_second);
-	menv.set_attack_time((0.002 + 0.004 * acc_amount) *
-			     _master_info->samples_per_second);
       } else {
 	aenv.set_peak_level(0.6);
 	menv.set_peak_level(env_mod);
 	aenv.set_decay_time(decay_time);
 	menv.set_decay_time(decay_time);
-	aenv.set_attack_time(0.002 * _master_info->samples_per_second);
-	menv.set_attack_time(0.002 * _master_info->samples_per_second);
       }
     } else {
       aenv.note_off();
@@ -110,8 +104,6 @@ void FM303::process_events()
 
 bool FM303::process_stereo(float **pin, float **pout, int n, int mode) 
 {
-  aenv.print_stats();
-  menv.print_stats();
   aenv.process(s_aenv, n);
   menv.process(s_menv, n);
   mod.process(s_mod, n);

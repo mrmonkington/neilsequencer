@@ -19,8 +19,9 @@ namespace lanternfish {
   
   void Lag::set_value(float target, int lag)
   {
-    assert(lag > 0);
-    if (this->counter == 0) {
+    if (lag == 0) {
+      this->value = target;
+    } else {
       this->delta = (target - this->value) / float(lag);
       this->counter = lag;
     }
