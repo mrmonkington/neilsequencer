@@ -509,30 +509,31 @@ def run_function_with_progress(parent, msg, allow_cancel, func, *args):
         return response
 
 def gettext(parent, msg, text=''):
-        """
-        Shows a dialog to get some text.
-        """
-        dialog = gtk.Dialog(
-                '',
-                parent and parent.get_toplevel(),
-                gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
-                (gtk.STOCK_OK, True, gtk.STOCK_CANCEL, False))
-        label = gtk.Label()
-        label.set_markup(msg)
-        label.set_alignment(0,0.5)
-        entry = gtk.Entry()
-        entry.set_text(text)
-        entry.connect('activate', lambda widget: dialog.response(False))
-        vbox = gtk.VBox(False, 6)
-        vbox.set_border_width(6)
-        vbox.pack_start(label)
-        vbox.pack_end(entry, expand=False)
-        dialog.vbox.add(vbox)
-        dialog.show_all()
-        response = dialog.run()
-        dialog.destroy()
-        if response == True:
-                return entry.get_text()
+    """
+    Shows a dialog to get some text.
+    """
+    dialog = gtk.Dialog(
+        '',
+        parent and parent.get_toplevel(),
+        gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
+        (gtk.STOCK_OK, True, gtk.STOCK_CANCEL, False))
+    label = gtk.Label()
+    label.set_markup(msg)
+    label.set_alignment(0, 0.5)
+    entry = gtk.Entry()
+    entry.set_text(text)
+    entry.connect('activate', lambda widget: dialog.response(False))
+    vbox = gtk.VBox(False, 6)
+    vbox.set_border_width(6)
+    vbox.pack_start(label)
+    vbox.pack_end(entry, expand=False)
+    dialog.vbox.add(vbox)
+    dialog.show_all()
+    response = dialog.run()
+    text = entry.get_text()
+    dialog.destroy()
+    if response:
+        return text
 
 def question(parent, msg, allowcancel = True):
         """
