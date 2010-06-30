@@ -45,6 +45,11 @@ void FM303::destroy()
 
 }
 
+void FM303::stop() {
+  aenv.note_off();
+  menv.note_off();
+}
+
 void FM303::set_track_count(int tracks) 
 {
 

@@ -64,9 +64,11 @@ namespace lanternfish {
   }
   
   void Adsr::note_off() {
-    current_stage = RELEASE_STAGE;
-    coeff = (log_b(log_c, LOWER_BOUND) - log_b(log_c, value)) / 
-      float(release_time);
+    if (current_stage != NONE_STAGE) {
+      current_stage = RELEASE_STAGE;
+      coeff = (log_b(log_c, LOWER_BOUND) - log_b(log_c, value)) / 
+	float(release_time);
+    }
   }
 
   void Adsr::set_log_c(float log_c) {
