@@ -1747,10 +1747,13 @@ class PatternView(gtk.DrawingArea):
         Callback that adds a track.
         """
         player = com.get('neil.core.player')
-        pluginloader = self.plugin.get_pluginloader()
-        self.plugin.set_track_count(min(pluginloader.get_tracks_max(), self.plugin.get_track_count()+1))
-        player.history_commit("add pattern track")
-        self.pattern_changed()
+        if self.plugin != None:
+            pluginloader = self.plugin.get_pluginloader()
+            self.plugin.set_track_count(min(pluginloader.get_tracks_max(), self.plugin.get_track_count()+1))
+            player.history_commit("add pattern track")
+            self.pattern_changed()
+        else:
+            error(self, "Please select or add a pattern first!")
 
     def on_popup_delete_track(self, *args):
         """
