@@ -690,7 +690,7 @@ def new_liststore(view, columns):
                 view.set_search_column(0)
         return liststore, columncontrols
 
-def new_image_button(path, tooltip, tooltips_object):
+def new_image_button(path, tooltip, tooltips_object=None):
         """
         Creates a button with a single image.
         """

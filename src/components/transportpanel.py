@@ -26,8 +26,9 @@ if __name__ == '__main__':
 import gtk
 from neil.common import MARGIN, MARGIN2, MARGIN3, MARGIN0
 import gobject
-from neil.utils import new_stock_image_toggle_button, new_stock_image_button, format_time, \
-        ticks_to_time, new_theme_image_toggle_button
+from neil.utils import new_stock_image_toggle_button, new_stock_image_button
+from neil.utils import format_time, ticks_to_time, new_theme_image_toggle_button
+from neil.utils import new_image_button, new_image_toggle_button, imagepath
 import neil.audiogui as audiogui
 import time
 import config
@@ -81,11 +82,21 @@ class TransportPanel(gtk.HBox):
         self.tpb.set_value(16)
         self.tpb.set_increments(1, 2)
         self.tpb.connect('button-press-event', self.spinbox_clicked)
-        self.btnplay = new_stock_image_toggle_button(gtk.STOCK_MEDIA_PLAY, "Play (F5/F6)")
-        self.btnrecord = new_stock_image_toggle_button(gtk.STOCK_MEDIA_RECORD, "Record (F7)")
-        self.btnstop = new_stock_image_button(gtk.STOCK_MEDIA_STOP, "Stop (F8)")
-        self.btnloop = new_theme_image_toggle_button('media-playlist-repeat', "Repeat")
-        self.btnpanic = new_theme_image_toggle_button('stop', "Panic (F12)")
+
+        self.btnplay = new_image_toggle_button(imagepath("playback_play.svg"),
+                                               "Play (F5/F6)")
+        self.btnplay.modify_bg(gtk.STATE_ACTIVE, gtk.gdk.color_parse("green"))
+        self.btnrecord = new_image_toggle_button(imagepath("playback_record.svg"), 
+                                                 "Record (F7)")
+        self.btnrecord.modify_bg(gtk.STATE_ACTIVE, gtk.gdk.color_parse("red"))
+        self.btnstop = new_image_button(imagepath("playback_stop.svg"), 
+                                        "Stop (F8)")
+        self.btnloop = new_image_toggle_button(imagepath("playback_repeat.svg"),
+                                               "Repeat")
+        self.btnloop.modify_bg(gtk.STATE_ACTIVE, gtk.gdk.color_parse("green"))
+        self.btnpanic = new_image_toggle_button(imagepath("playback_panic.svg"),
+                                                "Panic (F12)")
+        self.btnpanic.modify_bg(gtk.STATE_ACTIVE, gtk.gdk.color_parse("red"))
 
         vbox = gtk.VBox(False, 0)
         sg1 = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)

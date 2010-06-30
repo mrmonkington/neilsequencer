@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   version="1.0"
+   width="48"
+   height="48"
+   id="svg7854">
+  <defs
+     id="defs7856">
+    <linearGradient
+       id="linearGradient7277">
+      <stop
+         id="stop7279"
+         style="stop-color:#ffffff;stop-opacity:1"
+         offset="0" />
+      <stop
+         id="stop7285"
+         style="stop-color:#000000;stop-opacity:0.23529412"
+         offset="0.52083331" />
+      <stop
+         id="stop7287"
+         style="stop-color:#000000;stop-opacity:0.23529412"
+         offset="0.80034721" />
+      <stop
+         id="stop7281"
+         style="stop-color:#ffffff;stop-opacity:1"
+         offset="1" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient7305">
+      <stop
+         id="stop7307"
+         style="stop-color:#ffffff;stop-opacity:1"
+         offset="0" />
+      <stop
+         id="stop7313"
+         style="stop-color:#ffffff;stop-opacity:0"
+         offset="0.20971029" />
+      <stop
+         id="stop7329"
+         style="stop-color:#ffffff;stop-opacity:0.81065089"
+         offset="0.34936365" />
+      <stop
+         id="stop7321"
+         style="stop-color:#ffffff;stop-opacity:0"
+         offset="0.42850056" />
+      <stop
+         id="stop7323"
+         style="stop-color:#ffffff;stop-opacity:1"
+         offset="0.52134049" />
+      <stop
+         id="stop7317"
+         style="stop-color:#ffffff;stop-opacity:0"
+         offset="0.55746967" />
+      <stop
+         id="stop7319"
+         style="stop-color:#ffffff;stop-opacity:0.56804734"
+         offset="0.71001518" />
+      <stop
+         id="stop7416"
+         style="stop-color:#ffffff;stop-opacity:0"
+         offset="0.74394959" />
+      <stop
+         id="stop7309"
+         style="stop-color:#ffffff;stop-opacity:0"
+         offset="1" />
+    </linearGradient>
+  </defs>
+  <g
+     id="layer1">
+    <text
+       x="11.590527"
+       y="19.105362"
+       transform="matrix(0.72323327,0.69125965,-0.7122979,0.70187203,0,0)"
+       id="text3730"
+       xml:space="preserve"
+       style="font-size:55.91926956px;font-style:normal;font-weight:bold;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans;-inkscape-font-specification:Andale Mono Bold"><tspan
+         x="11.590527"
+         y="19.105362"
+         id="tspan3732">+</tspan></text>
+  </g>
+</svg>
