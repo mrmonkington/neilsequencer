@@ -745,13 +745,13 @@ class SequencerView(gtk.DrawingArea):
 
         menu = Menu()
         pmenu = Menu()
-        wavemenu = Menu()
+        #wavemenu = Menu()
         for plugin in sorted(list(player.get_plugin_list()), lambda a,b: cmp(a.get_name().lower(),b.get_name().lower())):
             pmenu.add_item(prepstr(plugin.get_name().replace("_","__")), self.on_popup_add_track, plugin)
-        for i in xrange(player.get_wave_count()):
-            w = player.get_wave(i)
-            name = "%02X. %s" % ((i+1), prepstr(w.get_name()))
-            wavemenu.add_item(name, self.on_popup_record_to_wave, i)
+        # for i in xrange(player.get_wave_count()):
+        #     w = player.get_wave(i)
+        #     name = "%02X. %s" % ((i+1), prepstr(w.get_name()))
+        #     wavemenu.add_item(name, self.on_popup_record_to_wave, i)
 
         menu.add_submenu("Add track", pmenu)
         menu.add_item("Delete track", self.on_popup_delete_track)
@@ -759,15 +759,15 @@ class SequencerView(gtk.DrawingArea):
         menu.add_item("Set loop start", self.set_loop_start)
         menu.add_item("Set loop end", self.set_loop_end)
         menu.add_separator()
-        menu.add_submenu("Record to instrument", wavemenu)
-        menu.add_separator()
+        #menu.add_submenu("Record to instrument", wavemenu)
+        #menu.add_separator()
         menu.add_item("Cut", self.on_popup_cut).set_sensitive(sel_sensitive)
         menu.add_item("Copy", self.on_popup_copy).set_sensitive(sel_sensitive)
         menu.add_item("Paste", self.on_popup_paste).set_sensitive(paste_sensitive)
         menu.add_item("Delete", self.on_popup_delete).set_sensitive(sel_sensitive)
         menu.add_separator()
-        menu.add_item("Create pattern from selection", self.on_popup_create_pattern).set_sensitive(sel_sensitive)
-        menu.add_item("Merge selected patterns", self.on_popup_merge).set_sensitive(sel_sensitive)
+        menu.add_item("Create pattern", self.on_popup_create_pattern).set_sensitive(sel_sensitive)
+        menu.add_item("Merge patterns", self.on_popup_merge).set_sensitive(sel_sensitive)
         menu.show_all()
         menu.attach_to_widget(self, None)
         menu.popup(self, event)
