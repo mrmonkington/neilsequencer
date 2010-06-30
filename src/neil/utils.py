@@ -690,12 +690,12 @@ def new_liststore(view, columns):
                 view.set_search_column(0)
         return liststore, columncontrols
 
-def new_image_button(path, tooltip, tooltips_object=None):
+def new_image_button(path, tooltip, width=20, height=20):
         """
         Creates a button with a single image.
         """
         image = gtk.Image()
-        image.set_from_pixbuf(gtk.gdk.pixbuf_new_from_file(path))
+        image.set_from_pixbuf(gtk.gdk.pixbuf_new_from_file_at_size(path, width, height))
         button = gtk.Button()
         button.set_tooltip_text(tooltip)
         button.set_image(image)
@@ -726,17 +726,15 @@ def new_stock_image_toggle_button(stockid, tooltip=None, tooltips_object=None):
                 button.set_tooltip_text(tooltip)
         return button
 
-def new_image_toggle_button(path, tooltip=None, tooltips_object=None):
+def new_image_toggle_button(path, tooltip=None, width=20, height=20):
         """
         Creates a toggle button with a single image.
         """
         image = gtk.Image()
-        image.set_from_pixbuf(gtk.gdk.pixbuf_new_from_file(path))
+        image.set_from_pixbuf(gtk.gdk.pixbuf_new_from_file_at_size(path, width, height))
         button = gtk.ToggleButton()
-        if tooltips_object:
-                tooltips_object.set_tip(button, tooltip)
-        elif tooltip:
-                button.set_tooltip_text(tooltip)
+        if tooltip:
+            button.set_tooltip_text(tooltip)
         button.set_image(image)
         return button
 

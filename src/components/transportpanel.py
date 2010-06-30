@@ -103,7 +103,7 @@ class TransportPanel(gtk.HBox):
         sg2 = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
         def add_row(name):
             c1 = gtk.Label()
-            c1.set_markup("<b>%s</b>" % name)
+            c1.set_markup("<small><b>%s</b></small>" % name)
             c1.set_alignment(1, 0.5)
             c2 = gtk.Label()
             c2.set_alignment(1, 0.5)
@@ -259,7 +259,7 @@ class TransportPanel(gtk.HBox):
         l = format_time(ticks_to_time(le-lb,bpm,tpb))
         for text,control in [(e,self.elapsed),(c,self.current),(l,self.loop)]:
             #~ if text != control.get_text():
-            control.set_markup(text)
+            control.set_markup("<small>%s</small>" % text)
         return True
 
     def update_btnplay(self):

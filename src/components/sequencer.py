@@ -196,6 +196,8 @@ class SequencerPanel(gtk.VBox):
         self.seqliststore = gtk.ListStore(str, str)
         self.seqpatternlist = gtk.TreeView(self.seqliststore)
         self.seqpatternlist.set_rules_hint(True)
+        self.seqpatternlist.connect("button-press-event", self.view_pattern_list_menu)
+        
         tvkey = gtk.TreeViewColumn("Key")
         tvkey.set_resizable(True)
         tvpname = gtk.TreeViewColumn("Pattern Name")
@@ -243,6 +245,25 @@ class SequencerPanel(gtk.VBox):
         self.seqview.grab_focus()
         eventbus = com.get('neil.core.eventbus')
         eventbus.edit_sequence_request += self.edit_sequence_request
+
+    def view_pattern_list_menu(self, treeview, event):
+        if event.button == 3:
+            x = int(event.x)
+            y = int(event.y)
+            path = treeview.get_path_at_pos(x, y)
+            print path
+            menu = gtk.Menu()
+            new = gtk.MenuItem("New pattern")
+            rename = gtk.MenuItem("Rename pattern")
+            delete = gtk.MenuItem("Delete pattern")
+            menu.append(new)
+            menu.append(rename)
+            menu.append(delete)
+            new.show()
+            if path != None:
+                rename.show()
+                delete.show()
+            menu.popup(None, None, None, event.button, event.time)
 
     def edit_sequence_request(self, track=None, row=None):
         framepanel = com.get('neil.core.framepanel')
