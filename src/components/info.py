@@ -29,57 +29,57 @@ from neil.common import MARGIN, MARGIN0, MARGIN2, MARGIN3
 import neil.com as com
 
 LICENSES = [
-	dict(
-			group = 'Creative Commons',
-			title = 'Attribution',
-			url = 'http://creativecommons.org/licenses/by/2.5/',
-		),
-	dict(
-			group = 'Creative Commons',
-			title = 'Attribution-NoDerivs',
-			url = 'http://creativecommons.org/licenses/by-nd/2.5/',
-		),
-	dict(
-			group = 'Creative Commons',
-			title = 'Attribution-NonCommercial-NoDerivs',
-			url = 'http://creativecommons.org/licenses/by-nc-nd/2.5/',
-		),
-	dict(
-			group = 'Creative Commons',
-			title = 'Attribution-NonCommercial',
-			url = 'http://creativecommons.org/licenses/by-nc/2.5/',
-		),
-	dict(
-			group = 'Creative Commons',
-			title = 'Attribution-NonCommercial-ShareAlike',
-			url = 'http://creativecommons.org/licenses/by-nc-sa/2.5/',
-		),
-	dict(
-			group = 'Creative Commons',
-			title = 'Attribution-ShareAlike',
-			url = 'http://creativecommons.org/licenses/by-sa/2.5/',
-		),
-]
+    dict(
+        group = 'Creative Commons',
+        title = 'Attribution',
+        url = 'http://creativecommons.org/licenses/by/2.5/',
+        ),
+    dict(
+        group = 'Creative Commons',
+        title = 'Attribution-NoDerivs',
+        url = 'http://creativecommons.org/licenses/by-nd/2.5/',
+        ),
+    dict(
+        group = 'Creative Commons',
+        title = 'Attribution-NonCommercial-NoDerivs',
+        url = 'http://creativecommons.org/licenses/by-nc-nd/2.5/',
+        ),
+    dict(
+        group = 'Creative Commons',
+        title = 'Attribution-NonCommercial',
+        url = 'http://creativecommons.org/licenses/by-nc/2.5/',
+        ),
+    dict(
+        group = 'Creative Commons',
+        title = 'Attribution-NonCommercial-ShareAlike',
+        url = 'http://creativecommons.org/licenses/by-nc-sa/2.5/',
+        ),
+    dict(
+        group = 'Creative Commons',
+        title = 'Attribution-ShareAlike',
+        url = 'http://creativecommons.org/licenses/by-sa/2.5/',
+        ),
+    ]
 
 class InfoPanel(gtk.VBox):
     """
     Contains the info view.
     """
     __neil__ = dict(
-	    id = 'neil.core.infopanel',
-	    singleton = True,
-	    categories = [
-		    'neil.viewpanel',
-		    'view',
+        id = 'neil.core.infopanel',
+        singleton = True,
+        categories = [
+            'neil.viewpanel',
+            'view',
 	    ]
-    )		
+        )		
 
     __view__ = dict(
-		    label = "Info",
-		    stockid = "neil_info",
-		    shortcut = 'F11',
-		    order = 11,
-    )
+        label = "Info",
+        stockid = "neil_info",
+        shortcut = 'F11',
+        order = 11,
+        )
 
     def __init__(self, *args, **kwds):
 	"""
@@ -125,10 +125,9 @@ class InfoView(gtk.TextView):
 	"""
 	gtk.TextView.__init__(self)
 	self.set_wrap_mode(gtk.WRAP_WORD)
-	self.connect('insert-at-cursor', self.on_edit)
-	self.connect('delete-from-cursor', self.on_edit)
+	self.connect('key-press-event', self.on_edit)
 
-    def on_edit(self, event):
+    def on_edit(self, widget, event):
 	"""
 	Handler for text changes.
 
@@ -150,22 +149,20 @@ class InfoView(gtk.TextView):
 	"""
 	player = com.get('neil.core.player')
 	text = player.get_infotext()
-	#~ if not text:
-	    #~ text = "Composed with Neil.\n\nThe revolution will not be televised."
 	self.get_buffer().set_property('text', text)
 
 
 _all__ = [
-	'InfoPanel',
-	'InfoView',
-]
+    'InfoPanel',
+    'InfoView',
+    ]
 
 __neil__ = dict(
-	classes = [
-		InfoPanel,
-		InfoView,
+    classes = [
+        InfoPanel,
+        InfoView,
 	],
-)
+    )
 
 
 if __name__ == '__main__':

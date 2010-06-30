@@ -1642,7 +1642,7 @@ class PatternView(gtk.DrawingArea):
         """
         player = com.get('neil.core.player')
         name = self.get_new_pattern_name(m)
-        result = show_pattern_dialog(self,name,self.patternsize,DLGMODE_NEW)
+        result = show_pattern_dialog(self, name, self.patternsize, DLGMODE_NEW)
         if not result:
             return
         name, self.patternsize, switch = result

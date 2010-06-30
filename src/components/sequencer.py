@@ -247,23 +247,67 @@ class SequencerPanel(gtk.VBox):
         eventbus.edit_sequence_request += self.edit_sequence_request
 
     def view_pattern_list_menu(self, treeview, event):
+        def on_create(item):
+            from patterns import show_pattern_dialog
+            from patterns import DLGMODE_NEW
+            from neil.utils import get_new_pattern_name
+            result = show_pattern_dialog(treeview, 
+                                         get_new_pattern_name(self.plugin), 
+                                         16, DLGMODE_NEW)
+            if result == None:
+                return
+            else:
+                name, length, switch = result
+                plugin = self.plugin
+                pattern = plugin.create_pattern(length)
+                pattern.set_name(name)
+                plugin.add_pattern(pattern)
+                player = com.get('neil.core.player')
+                player.history_commit("new pattern")
+        def on_rename(item, pattern):
+            from patterns import show_pattern_dialog
+            from patterns import DLGMODE_CHANGE
+            from neil.utils import get_new_pattern_name
+            result = show_pattern_dialog(treeview, 
+                                         self.plugin.get_pattern_name(pattern), 
+                                         self.plugin.get_pattern_length(pattern),
+                                         DLGMODE_CHANGE)
+            if result == None:
+                return
+            else:
+                name, length, switch = result
+                plugin = self.plugin
+                plugin.set_pattern_name(pattern, name)
+                plugin.set_pattern_length(pattern, length)
+                player = com.get('neil.core.player')
+                player.history_commit("change pattern properties")
+        def on_delete(item, pattern):
+            plugin = self.plugin
+            if pattern >= 0:
+                plugin.remove_pattern(pattern)
+                player = com.get('neil.core.player')
+                player.history_commit("remove pattern")
         if event.button == 3:
             x = int(event.x)
             y = int(event.y)
             path = treeview.get_path_at_pos(x, y)
-            print path
             menu = gtk.Menu()
             new = gtk.MenuItem("New pattern")
-            rename = gtk.MenuItem("Rename pattern")
+            rename = gtk.MenuItem("Pattern properties")
             delete = gtk.MenuItem("Delete pattern")
             menu.append(new)
+            new.connect('activate', on_create)
             menu.append(rename)
             menu.append(delete)
-            new.show()
+            if hasattr(self, 'plugin') and self.plugin != None:
+                new.show()
             if path != None:
+                rename.connect('activate', on_rename, path[0][0] - 2)
                 rename.show()
+                delete.connect('activate', on_delete, path[0][0] - 2)
                 delete.show()
-            menu.popup(None, None, None, event.button, event.time)
+            if hasattr(self, 'plugin') and self.plugin != None:
+                menu.popup(None, None, None, event.button, event.time)
 
     def edit_sequence_request(self, track=None, row=None):
         framepanel = com.get('neil.core.framepanel')
@@ -282,7 +326,7 @@ class SequencerPanel(gtk.VBox):
         """
         self.update_list()
         self.toolbar.update_all()
-        for k,v in self.view.plugin_info.iteritems():
+        for k, v in self.view.plugin_info.iteritems():
             v.patterngfx = {}
         self.view.update()
         self.seqview.set_cursor_pos(0,0)
@@ -302,6 +346,7 @@ class SequencerPanel(gtk.VBox):
             for pattern, key in zip(track.get_plugin().get_pattern_list(), 
                                     SEQKEYS):
                 self.seqliststore.append([key, pattern.get_name()])
+            self.plugin = track.get_plugin()
 
     def on_sash_pos_changed(self, widget, *args):
         """
