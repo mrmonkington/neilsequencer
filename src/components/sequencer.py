@@ -196,8 +196,9 @@ class SequencerPanel(gtk.VBox):
         self.seqliststore = gtk.ListStore(str, str)
         self.seqpatternlist = gtk.TreeView(self.seqliststore)
         self.seqpatternlist.set_rules_hint(True)
-        self.seqpatternlist.connect("button-press-event", self.view_pattern_list_menu)
-        
+        self.seqpatternlist.connect("button-press-event", 
+                                    self.view_pattern_list_menu)
+        self.seqpatternlist.connect("row-activated", self.on_visit_pattern)
         tvkey = gtk.TreeViewColumn("Key")
         tvkey.set_resizable(True)
         tvpname = gtk.TreeViewColumn("Pattern Name")
@@ -246,6 +247,14 @@ class SequencerPanel(gtk.VBox):
         eventbus = com.get('neil.core.eventbus')
         eventbus.edit_sequence_request += self.edit_sequence_request
 
+    def on_visit_pattern(self, treeview, treeiter, path):
+        pattern = treeiter[0] - 2
+        if pattern < 0:
+            return
+        else:
+            self.seqview.jump_to_pattern(self.plugin, pattern)
+
+
     def view_pattern_list_menu(self, treeview, event):
         def on_create(item):
             from patterns import show_pattern_dialog
@@ -253,7 +262,7 @@ class SequencerPanel(gtk.VBox):
             from neil.utils import get_new_pattern_name
             result = show_pattern_dialog(treeview, 
                                          get_new_pattern_name(self.plugin), 
-                                         16, DLGMODE_NEW, False)
+                                         self.seqview.step, DLGMODE_NEW, False)
             if result == None:
                 return
             else:
