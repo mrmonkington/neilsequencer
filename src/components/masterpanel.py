@@ -49,7 +49,7 @@ class AmpView(gtk.DrawingArea):
         self.stops = (0.0, 6.0 / self.range, 12.0 / self.range) # red, yellow, green
         self.index = 0
         gtk.DrawingArea.__init__(self)
-        self.set_size_request(15, -1)
+        self.set_size_request(10, -1)
         self.connect("expose_event", self.expose)
         gobject.timeout_add(100, self.on_update)
 
@@ -134,7 +134,7 @@ class MasterPanel(gtk.VBox):
         hbox.pack_start(self.masterslider)
         hbox.pack_start(self.ampr)
         vbox = gtk.VBox()
-        self.volumelabel = gtk.Label("0 db")
+        self.volumelabel = gtk.Label()
         vbox.pack_start(hbox)
         vbox.pack_start(self.volumelabel, expand=False, fill=False)
         self.pack_start(vbox)
@@ -191,7 +191,7 @@ class MasterPanel(gtk.VBox):
             if db == 0.0:
                 db = 0.0
             text = "%.1f dB" % db
-        self.volumelabel.set_text(text)
+        self.volumelabel.set_markup("<small>%s</small>" % text)
         self.latency = com.get('neil.core.driver.audio').get_latency()
 
 __neil__ = dict(
