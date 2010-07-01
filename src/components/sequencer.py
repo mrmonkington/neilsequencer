@@ -253,7 +253,7 @@ class SequencerPanel(gtk.VBox):
             from neil.utils import get_new_pattern_name
             result = show_pattern_dialog(treeview, 
                                          get_new_pattern_name(self.plugin), 
-                                         16, DLGMODE_NEW)
+                                         16, DLGMODE_NEW, False)
             if result == None:
                 return
             else:
@@ -271,7 +271,7 @@ class SequencerPanel(gtk.VBox):
             result = show_pattern_dialog(treeview, 
                                          self.plugin.get_pattern_name(pattern), 
                                          self.plugin.get_pattern_length(pattern),
-                                         DLGMODE_CHANGE)
+                                         DLGMODE_CHANGE, False)
             if result == None:
                 return
             else:

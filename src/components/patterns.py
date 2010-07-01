@@ -117,7 +117,7 @@ DLGMODE_NEW = 0
 DLGMODE_COPY = 1
 DLGMODE_CHANGE = 2
 
-def show_pattern_dialog(parent, name, length, dlgmode):
+def show_pattern_dialog(parent, name, length, dlgmode, letswitch=True):
     """
     Shows the pattern creation/modification dialog.
 
@@ -137,6 +137,8 @@ def show_pattern_dialog(parent, name, length, dlgmode):
     dlg.dlgmode = dlgmode
     if dlgmode == DLGMODE_NEW:
         dlg.set_title("New Pattern")
+        if not letswitch:
+            dlg.chkswitch.set_sensitive(False)
     elif dlgmode == DLGMODE_COPY:
         dlg.set_title("Create copy of pattern")
         dlg.lengthbox.set_sensitive(False)
