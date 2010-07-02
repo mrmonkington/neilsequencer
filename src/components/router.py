@@ -617,10 +617,10 @@ class RouteView(gtk.DrawingArea):
                 'MV Indicator Foreground',
                 'MV Indicator Border',
                 'MV Indicator Warning',
-                'MV ${PLUGIN} Border In',
                 'MV Border',
                 'MV Border',
-                'MV ${PLUGIN} Text',
+                'MV Border',
+                'MV Text',
         ]
         flagids = [
                 (ROOT_PLUGIN_FLAGS, 'Master'),
@@ -629,7 +629,7 @@ class RouteView(gtk.DrawingArea):
                 (CONTROLLER_PLUGIN_FLAGS, 'Controller'),
         ]
         self.flags2brushes = {}
-        for flags,name in flagids:
+        for flags, name in flagids:
             brushes = []
             for name in [x.replace('${PLUGIN}',name) for x in names]:
                 brushes.append(cfg.get_color(name))
@@ -974,11 +974,11 @@ class RouteView(gtk.DrawingArea):
             pi = common.get_plugin_infos().get(mp)
             if not pi:
                 continue
-            brushes = self.flags2brushes.get(mp.get_flags() & 
-                                             PLUGIN_FLAGS_MASK, 
+            brushes = self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK,
                                              self.flags2brushes[GENERATOR_PLUGIN_FLAGS])
             if not pi.plugingfx:
-                pi.plugingfx = gtk.gdk.Pixmap(self.window, PLUGINWIDTH, PLUGINHEIGHT, -1)
+                pi.plugingfx = gtk.gdk.Pixmap(self.window, PLUGINWIDTH, 
+                                              PLUGINHEIGHT, -1)
                 # adjust colour for muted plugins
                 if pi.muted:
                     gc.set_foreground(cm.alloc_color(brushes[self.COLOR_MUTED]))
@@ -989,9 +989,8 @@ class RouteView(gtk.DrawingArea):
                 gc.set_foreground(cm.alloc_color(brushes[self.COLOR_BORDER_OUT]))
                 pi.plugingfx.draw_rectangle(gc, False, 0, 0,
                                             PLUGINWIDTH - 1, PLUGINHEIGHT - 1)
-                #gc.set_foreground(cm.alloc_color(brushes[self.COLOR_BORDER_IN]))
-                #pi.plugingfx.draw_rectangle(gc, False, 1, 1, PLUGINWIDTH-3,PLUGINHEIGHT-3)
-                if player.solo_plugin and player.solo_plugin != mp and is_generator(mp):
+                if (player.solo_plugin and player.solo_plugin != mp 
+                    and is_generator(mp)):
                     title = prepstr('[' + mp.get_name() + ']')
                 elif pi.muted:
                     title = prepstr('(' + mp.get_name() + ')')
@@ -1001,30 +1000,38 @@ class RouteView(gtk.DrawingArea):
                 lw,lh = layout.get_pixel_size()
                 if mp in player.active_plugins:
                     gc.set_foreground(cm.alloc_color(brushes[self.COLOR_BORDER_SELECT]))
-                    pi.plugingfx.draw_rectangle(gc, False, PLUGINWIDTH/2 - lw/2 - 3, PLUGINHEIGHT/2 - lh/2, lw + 6, lh)
+                    pi.plugingfx.draw_rectangle(gc, False, 
+                                                PLUGINWIDTH / 2 - lw / 2 - 3, 
+                                                PLUGINHEIGHT / 2 - lh / 2, 
+                                                lw + 6, lh)
                 gc.set_foreground(cm.alloc_color(brushes[self.COLOR_TEXT]))
-                pi.plugingfx.draw_layout(gc, PLUGINWIDTH/2 - lw/2, PLUGINHEIGHT/2 - lh/2, layout)
-
+                pi.plugingfx.draw_layout(gc, PLUGINWIDTH / 2 - lw / 2, 
+                                         PLUGINHEIGHT / 2 - lh / 2, layout)
             if config.get_config().get_led_draw() == True:
                 maxl, maxr = mp.get_last_peak()
                 amp = min(max(maxl,maxr),1.0)
                 if amp != pi.amp:
                     if amp >= 1:
                         gc.set_foreground(cm.alloc_color(brushes[self.COLOR_LED_WARNING]))
-                        pi.plugingfx.draw_rectangle(gc, True, LEDOFSX+1, LEDOFSY+1, LEDWIDTH-2, LEDHEIGHT-2)
+                        pi.plugingfx.draw_rectangle(gc, True, LEDOFSX + 1, 
+                                                    LEDOFSY + 1, LEDWIDTH - 2, 
+                                                    LEDHEIGHT - 2)
                     else:
                         gc.set_foreground(cm.alloc_color(brushes[self.COLOR_LED_OFF]))
-                        pi.plugingfx.draw_rectangle(gc, True, LEDOFSX, LEDOFSY, LEDWIDTH, LEDHEIGHT)
+                        pi.plugingfx.draw_rectangle(gc, True, LEDOFSX, 
+                                                    LEDOFSY, LEDWIDTH, 
+                                                    LEDHEIGHT)
                         amp = 1.0 - (linear2db(amp, -76.0) / -76.0)
                         height = int((LEDHEIGHT - 4) * amp + 0.5)
                         if (height > 0):
                             gc.set_foreground(cm.alloc_color(brushes[self.COLOR_LED_ON]))
-                            pi.plugingfx.draw_rectangle(gc, True, LEDOFSX+1, LEDOFSY+LEDHEIGHT-height-1, LEDWIDTH-2, height)
-                    #gc.set_foreground(cm.alloc_color(brushes[self.COLOR_LED_BORDER]))
-                    #pi.plugingfx.draw_rectangle(gc, False, LEDOFSX, LEDOFSY, LEDWIDTH-1, LEDHEIGHT-1)
+                            pi.plugingfx.draw_rectangle(gc, True, LEDOFSX + 1,
+                                                        (LEDOFSY + LEDHEIGHT - 
+                                                         height - 1), 
+                                                        LEDWIDTH - 2, height)
                     pi.amp = amp
-
-                relperc = min(1.0, mp.get_last_cpu_load() / max_cpu_scale) * cpu_scale
+                relperc = (min(1.0, mp.get_last_cpu_load() / max_cpu_scale) * 
+                           cpu_scale)
                 if relperc != pi.cpu:
                     pi.cpu = relperc
                     gc.set_foreground(cm.alloc_color(brushes[self.COLOR_CPU_OFF]))
@@ -1035,11 +1042,12 @@ class RouteView(gtk.DrawingArea):
                             gc.set_foreground(cm.alloc_color(brushes[self.COLOR_CPU_WARNING]))
                         else:
                             gc.set_foreground(cm.alloc_color(brushes[self.COLOR_CPU_ON]))
-                        pi.plugingfx.draw_rectangle(gc, True, CPUOFSX+1, CPUOFSY+CPUHEIGHT-height-1, CPUWIDTH-2, height)
-                    #gc.set_foreground(cm.alloc_color(brushes[self.COLOR_LED_BORDER]))
-                    #pi.plugingfx.draw_rectangle(gc, False, CPUOFSX, CPUOFSY, CPUWIDTH-1, CPUHEIGHT-1)
-
-            self.window.draw_drawable(gc, pi.plugingfx, 0, 0, int(rx), int(ry), -1, -1)
+                        pi.plugingfx.draw_rectangle(gc, True, CPUOFSX + 1, 
+                                                    (CPUOFSY + CPUHEIGHT - 
+                                                    height - 1), 
+                                                    CPUWIDTH - 2, height)
+            self.window.draw_drawable(gc, pi.plugingfx, 0, 0, 
+                                      int(rx), int(ry), -1, -1)
 
     def draw(self, ctx):
         """
