@@ -176,7 +176,7 @@ DEFAULT_THEME = {
     ###
     'MV Border': 0x000000,
     'MV Text': 0x000000,
-    'MV Indicator Border': 0xffffff,
+    'MV Indicator Border': 0x000000,
     'MV Indicator Background': 0x000000,
     'MV Indicator Foreground': 0x00ff00,
     'MV Indicator Warning': 0xff0000,

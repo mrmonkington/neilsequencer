@@ -85,7 +85,6 @@ class TransportPanel(gtk.HBox):
 
         self.btnplay = new_image_toggle_button(imagepath("playback_play.svg"),
                                                "Play (F5/F6)")
-        self.btnplay.modify_bg(gtk.STATE_ACTIVE, gtk.gdk.color_parse("green"))
         self.btnrecord = new_image_toggle_button(imagepath("playback_record.svg"), 
                                                  "Record (F7)")
         self.btnrecord.modify_bg(gtk.STATE_ACTIVE, gtk.gdk.color_parse("red"))
@@ -96,8 +95,6 @@ class TransportPanel(gtk.HBox):
         self.btnloop.modify_bg(gtk.STATE_ACTIVE, gtk.gdk.color_parse("green"))
         self.btnpanic = new_image_toggle_button(imagepath("playback_panic.svg"),
                                                 "Panic (F12)")
-        self.btnpanic.modify_bg(gtk.STATE_ACTIVE, gtk.gdk.color_parse("red"))
-
         vbox = gtk.VBox(False, 0)
         sg1 = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
         sg2 = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)

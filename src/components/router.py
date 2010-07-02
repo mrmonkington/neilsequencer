@@ -20,7 +20,8 @@
 # Boston, MA  02110-1301, USA.
 
 """
-Provides dialogs and controls to render the plugin view/router and its associated components.
+Provides dialogs and controls to render the plugin view/router and its 
+associated components.
 """
 
 if __name__ == '__main__':
@@ -61,10 +62,10 @@ from patterns import key_to_note
 
 PLUGINWIDTH = 100
 PLUGINHEIGHT = 25
-LEDWIDTH, LEDHEIGHT = 8, PLUGINHEIGHT - 6 # size of LED
-LEDOFSX, LEDOFSY = 3, 3 # offset of LED
-CPUWIDTH, CPUHEIGHT = 8, PLUGINHEIGHT - 6 # size of LED
-CPUOFSX, CPUOFSY = PLUGINWIDTH - CPUWIDTH - 3, 3 # offset of LED
+LEDWIDTH, LEDHEIGHT = 6, PLUGINHEIGHT - 8 # size of LED
+LEDOFSX, LEDOFSY = 4, 4 # offset of LED
+CPUWIDTH, CPUHEIGHT = 6, PLUGINHEIGHT - 8 # size of LED
+CPUOFSX, CPUOFSY = PLUGINWIDTH - CPUWIDTH - 4, 4 # offset of LED
 
 ARROWRADIUS = 8
 
@@ -953,28 +954,29 @@ class RouteView(gtk.DrawingArea):
         layout = pango.Layout(self.get_pango_context())
         #~ layout.set_font_description(self.fontdesc)
         layout.set_width(-1)
-        w,h = rect.width,rect.height
-        cx,cy = w*0.5,h*0.5
-        def get_pixelpos(x,y):
-            return cx * (1+x), cy * (1+y)
-        #font = wx.Font(8, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
+        w, h = rect.width, rect.height
+        cx, cy = w * 0.5, h * 0.5
+        def get_pixelpos(x, y):
+            return cx * (1 + x), cy * (1 + y)
         PW, PH = PLUGINWIDTH / 2, PLUGINHEIGHT / 2
-
         driver = com.get('neil.core.driver.audio')
         cpu_scale = driver.get_cpu_load()
         max_cpu_scale = 1.0 / player.get_plugin_count()
-        for mp,(rx,ry) in ((mp,get_pixelpos(*mp.get_position())) for mp in player.get_plugin_list()):
+        for mp, (rx, ry) in ((mp, get_pixelpos(*mp.get_position())) 
+                             for mp in player.get_plugin_list()):
             pi = common.get_plugin_infos().get(mp)
             if not pi.songplugin:
                 continue
             if self.dragging and mp in player.active_plugins:
                 pinfo = self.get_plugin_info(mp)
-                rx,ry = get_pixelpos(*pinfo.dragpos)
-            rx,ry = rx - PW, ry - PH
+                rx, ry = get_pixelpos(*pinfo.dragpos)
+            rx, ry = rx - PW, ry - PH
             pi = common.get_plugin_infos().get(mp)
             if not pi:
                 continue
-            brushes = self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK, self.flags2brushes[GENERATOR_PLUGIN_FLAGS])
+            brushes = self.flags2brushes.get(mp.get_flags() & 
+                                             PLUGIN_FLAGS_MASK, 
+                                             self.flags2brushes[GENERATOR_PLUGIN_FLAGS])
             if not pi.plugingfx:
                 pi.plugingfx = gtk.gdk.Pixmap(self.window, PLUGINWIDTH, PLUGINHEIGHT, -1)
                 # adjust colour for muted plugins
@@ -1009,33 +1011,33 @@ class RouteView(gtk.DrawingArea):
                 if amp != pi.amp:
                     if amp >= 1:
                         gc.set_foreground(cm.alloc_color(brushes[self.COLOR_LED_WARNING]))
-                        pi.plugingfx.draw_rectangle(gc, True, LEDOFSX, LEDOFSY, LEDWIDTH-1, LEDHEIGHT-1)
+                        pi.plugingfx.draw_rectangle(gc, True, LEDOFSX+1, LEDOFSY+1, LEDWIDTH-2, LEDHEIGHT-2)
                     else:
                         gc.set_foreground(cm.alloc_color(brushes[self.COLOR_LED_OFF]))
-                        pi.plugingfx.draw_rectangle(gc, True, LEDOFSX, LEDOFSY, LEDWIDTH-1, LEDHEIGHT-1)
-                        amp = 1.0 - (linear2db(amp,-76.0)/-76.0)
-                        height = int((LEDHEIGHT-4)*amp + 0.5)
+                        pi.plugingfx.draw_rectangle(gc, True, LEDOFSX, LEDOFSY, LEDWIDTH, LEDHEIGHT)
+                        amp = 1.0 - (linear2db(amp, -76.0) / -76.0)
+                        height = int((LEDHEIGHT - 4) * amp + 0.5)
                         if (height > 0):
                             gc.set_foreground(cm.alloc_color(brushes[self.COLOR_LED_ON]))
-                            pi.plugingfx.draw_rectangle(gc, True, LEDOFSX+2, LEDOFSY+LEDHEIGHT-height-2, LEDWIDTH-4, height)
-                    gc.set_foreground(cm.alloc_color(brushes[self.COLOR_LED_BORDER]))
-                    pi.plugingfx.draw_rectangle(gc, False, LEDOFSX, LEDOFSY, LEDWIDTH-1, LEDHEIGHT-1)
+                            pi.plugingfx.draw_rectangle(gc, True, LEDOFSX+1, LEDOFSY+LEDHEIGHT-height-1, LEDWIDTH-2, height)
+                    #gc.set_foreground(cm.alloc_color(brushes[self.COLOR_LED_BORDER]))
+                    #pi.plugingfx.draw_rectangle(gc, False, LEDOFSX, LEDOFSY, LEDWIDTH-1, LEDHEIGHT-1)
                     pi.amp = amp
 
                 relperc = min(1.0, mp.get_last_cpu_load() / max_cpu_scale) * cpu_scale
                 if relperc != pi.cpu:
                     pi.cpu = relperc
                     gc.set_foreground(cm.alloc_color(brushes[self.COLOR_CPU_OFF]))
-                    pi.plugingfx.draw_rectangle(gc, True, CPUOFSX, CPUOFSY, CPUWIDTH-1, CPUHEIGHT-1)
-                    height = int((CPUHEIGHT-4)*relperc + 0.5)
+                    pi.plugingfx.draw_rectangle(gc, True, CPUOFSX, CPUOFSY, CPUWIDTH, CPUHEIGHT)
+                    height = int((CPUHEIGHT - 4) * relperc + 0.5)
                     if (height > 0):
                         if relperc >= 0.9:
                             gc.set_foreground(cm.alloc_color(brushes[self.COLOR_CPU_WARNING]))
                         else:
                             gc.set_foreground(cm.alloc_color(brushes[self.COLOR_CPU_ON]))
-                        pi.plugingfx.draw_rectangle(gc, True, CPUOFSX+2, CPUOFSY+CPUHEIGHT-height-2, CPUWIDTH-4, height)
-                    gc.set_foreground(cm.alloc_color(brushes[self.COLOR_LED_BORDER]))
-                    pi.plugingfx.draw_rectangle(gc, False, CPUOFSX, CPUOFSY, CPUWIDTH-1, CPUHEIGHT-1)
+                        pi.plugingfx.draw_rectangle(gc, True, CPUOFSX+1, CPUOFSY+CPUHEIGHT-height-1, CPUWIDTH-2, height)
+                    #gc.set_foreground(cm.alloc_color(brushes[self.COLOR_LED_BORDER]))
+                    #pi.plugingfx.draw_rectangle(gc, False, CPUOFSX, CPUOFSY, CPUWIDTH-1, CPUHEIGHT-1)
 
             self.window.draw_drawable(gc, pi.plugingfx, 0, 0, int(rx), int(ry), -1, -1)
 
