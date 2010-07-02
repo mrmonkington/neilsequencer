@@ -996,8 +996,8 @@ class RouteView(gtk.DrawingArea):
                     title = prepstr('(' + mp.get_name() + ')')
                 else:
                     title = prepstr(mp.get_name())
-                layout.set_text(title)
-                lw,lh = layout.get_pixel_size()
+                layout.set_markup("<small>%s</small>" % title)
+                lw, lh = layout.get_pixel_size()
                 if mp in player.active_plugins:
                     gc.set_foreground(cm.alloc_color(brushes[self.COLOR_BORDER_SELECT]))
                     pi.plugingfx.draw_rectangle(gc, False, 
