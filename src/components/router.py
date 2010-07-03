@@ -1108,8 +1108,8 @@ class RouteView(gtk.DrawingArea):
                       int(cpy + vy * radius))
                 t3 = (int(cpx - vx * radius - vy * radius),
                       int(cpy - vy * radius + vx * radius))
-                return t1,t2,t3
-            def draw_triangle(t1,t2,t3):
+                return t1, t2, t3
+            def draw_triangle(t1, t2, t3):
                 bmpctx.move_to(*t1)
                 bmpctx.line_to(*t2)
                 bmpctx.line_to(*t3)
@@ -1136,14 +1136,14 @@ class RouteView(gtk.DrawingArea):
             bmpctx = self.routebitmap.cairo_create()
             bmpctx.translate(0.5,0.5)
             bmpctx.set_line_width(1)
-            mplist = [(mp,get_pixelpos(*mp.get_position())) for mp in player.get_plugin_list()]
+            mplist = [(mp,get_pixelpos(*mp.get_position())) 
+                      for mp in player.get_plugin_list()]
 
             for mp,(rx,ry) in mplist:
                 if self.dragging and mp in player.active_plugins:
                     pinfo = self.get_plugin_info(mp)
                     rx,ry = get_pixelpos(*pinfo.dragpos)
                 for index in xrange(mp.get_input_connection_count()):
-                    #~ if not (conn.get_input().get_pluginloader().get_flags() & zzub.plugin_flag_no_output):
                     targetmp = mp.get_input_connection_plugin(index)
                     pi = common.get_plugin_infos().get(targetmp)
                     if not pi.songplugin:
@@ -1185,21 +1185,19 @@ class RouteView(gtk.DrawingArea):
                 plugin = player.active_plugins[0]
             else:
                 return
-        #if self.rootwindow.on_key_down(widget, event):
-        #       return
         note = None
         octave = player.octave
         if  k == 'KP_Multiply':
-            octave = min(max(octave+1,0), 9)
+            octave = min(max(octave + 1, 0), 9)
         elif k ==  'KP_Divide':
-            octave = min(max(octave-1,0), 9)
+            octave = min(max(octave - 1, 0), 9)
         elif kv < 256:
             note = key_to_note(kv)
         player.octave = octave
         if note:
             if note not in self.chordnotes:
                 self.chordnotes.append(note)
-                n=((note[0]+octave)<<4|note[1]+1)
+                n = ((note[0] + octave) << 4 | note[1] + 1)
                 plugin.play_midi_note(n, 0, 127)
 
     def on_key_jazz_release(self, widget, event, plugin):
