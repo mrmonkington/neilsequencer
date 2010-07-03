@@ -254,7 +254,6 @@ class SequencerPanel(gtk.VBox):
         else:
             self.seqview.jump_to_pattern(self.plugin, pattern)
 
-
     def view_pattern_list_menu(self, treeview, event):
         def on_create(item):
             from patterns import show_pattern_dialog
@@ -273,6 +272,23 @@ class SequencerPanel(gtk.VBox):
                 plugin.add_pattern(pattern)
                 player = com.get('neil.core.player')
                 player.history_commit("new pattern")
+        def on_clone(item, pattern):
+            from patterns import show_pattern_dialog
+            from patterns import DLGMODE_COPY
+            from neil.utils import get_new_pattern_name
+            result = show_pattern_dialog(treeview, 
+                                         get_new_pattern_name(self.plugin), 
+                                         self.seqview.step, DLGMODE_COPY, False)
+            if result == None:
+                return
+            else:
+                name, patternsize, switch = result
+                m = self.plugin
+                p = m.get_pattern(pattern)
+                p.set_name(name)
+                m.add_pattern(p)
+                player = com.get('neil.core.player')
+                player.history_commit("clone pattern")
         def on_rename(item, pattern):
             from patterns import show_pattern_dialog
             from patterns import DLGMODE_CHANGE
@@ -302,15 +318,19 @@ class SequencerPanel(gtk.VBox):
             path = treeview.get_path_at_pos(x, y)
             menu = gtk.Menu()
             new = gtk.MenuItem("New pattern")
+            clone = gtk.MenuItem("Clone pattern")
             rename = gtk.MenuItem("Pattern properties")
             delete = gtk.MenuItem("Delete pattern")
             menu.append(new)
             new.connect('activate', on_create)
+            menu.append(clone)
             menu.append(rename)
             menu.append(delete)
             if hasattr(self, 'plugin') and self.plugin != None:
                 new.show()
             if path != None:
+                clone.connect('activate', on_clone, path[0][0] - 2)
+                clone.show()
                 rename.connect('activate', on_rename, path[0][0] - 2)
                 rename.show()
                 delete.connect('activate', on_delete, path[0][0] - 2)
@@ -719,9 +739,9 @@ class SequencerView(gtk.DrawingArea):
                         t.set_event(start[1], 0x10 + i)
                         break
         player.history_commit("merge patterns")
-        #player.set_callback_state(True)
-        #eventbus = com.get('neil.core.eventbus')
-        #eventbus.document_loaded()
+        player.set_callback_state(True)
+        eventbus = com.get('neil.core.eventbus')
+        eventbus.document_loaded()
 
     def on_popup_cut(self, *args):
         self.on_popup_copy(*args)
