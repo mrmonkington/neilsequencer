@@ -197,7 +197,7 @@ class SequencerPanel(gtk.VBox):
         self.seqpatternlist = gtk.TreeView(self.seqliststore)
         self.seqpatternlist.set_rules_hint(True)
         self.seqpatternlist.connect("button-press-event", 
-                                    self.view_pattern_list_menu)
+                                    self.on_pattern_list_button)
         self.seqpatternlist.connect("row-activated", self.on_visit_pattern)
         tvkey = gtk.TreeViewColumn("Key")
         tvkey.set_resizable(True)
@@ -254,7 +254,7 @@ class SequencerPanel(gtk.VBox):
         else:
             self.seqview.jump_to_pattern(self.plugin, pattern)
 
-    def view_pattern_list_menu(self, treeview, event):
+    def on_pattern_list_button(self, treeview, event):
         def on_create(item):
             from patterns import show_pattern_dialog
             from patterns import DLGMODE_NEW
@@ -306,6 +306,35 @@ class SequencerPanel(gtk.VBox):
                 plugin.set_pattern_length(pattern, length)
                 player = com.get('neil.core.player')
                 player.history_commit("change pattern properties")
+        def on_clear(item, pattern):
+            plugin = self.plugin
+            if pattern >= 0:
+                rows = range(plugin.get_pattern_length(pattern))
+                inputs = range(plugin.get_input_connection_count())
+                tracks = range(plugin.get_track_count())
+                for row in rows:
+                    for track in inputs:
+                        ps = range(plugin.get_parameter_count(0, track))
+                        for index in ps:
+                            param = plugin.get_parameter(0, track, index)
+                            plugin.set_pattern_value(pattern, 0, track, index,
+                                                     row, 
+                                                     param.get_value_none())
+                    ps = range(plugin.get_parameter_count(1, 0))
+                    for index in ps:
+                        param = plugin.get_parameter(1, 0, index)
+                        plugin.set_pattern_value(pattern, 1, 0, index, row,
+                                                 param.get_value_none())
+                    for track in tracks:
+                        ps = range(plugin.get_parameter_count(2, track))
+                        for index in ps:
+                            param = plugin.get_parameter(2, track, index)
+                            plugin.set_pattern_value(pattern, 2, track, index,
+                                                     row, 
+                                                     param.get_value_none())
+                player = com.get('neil.core.player')
+                player.history_commit("clear pattern")
+
         def on_delete(item, pattern):
             plugin = self.plugin
             if pattern >= 0:
@@ -320,11 +349,13 @@ class SequencerPanel(gtk.VBox):
             new = gtk.MenuItem("New pattern")
             clone = gtk.MenuItem("Clone pattern")
             rename = gtk.MenuItem("Pattern properties")
+            clear = gtk.MenuItem("Clear pattern")
             delete = gtk.MenuItem("Delete pattern")
             menu.append(new)
             new.connect('activate', on_create)
             menu.append(clone)
             menu.append(rename)
+            menu.append(clear)
             menu.append(delete)
             if hasattr(self, 'plugin') and self.plugin != None:
                 new.show()
@@ -333,6 +364,8 @@ class SequencerPanel(gtk.VBox):
                 clone.show()
                 rename.connect('activate', on_rename, path[0][0] - 2)
                 rename.show()
+                clear.connect('activate', on_clear, path[0][0] - 2)
+                clear.show()
                 delete.connect('activate', on_delete, path[0][0] - 2)
                 delete.show()
             if hasattr(self, 'plugin') and self.plugin != None:
