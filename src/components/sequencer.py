@@ -308,33 +308,13 @@ class SequencerPanel(gtk.VBox):
                 player.history_commit("change pattern properties")
         def on_clear(item, pattern):
             plugin = self.plugin
-            if pattern >= 0:
-                rows = range(plugin.get_pattern_length(pattern))
-                inputs = range(plugin.get_input_connection_count())
-                tracks = range(plugin.get_track_count())
-                for row in rows:
-                    for track in inputs:
-                        ps = range(plugin.get_parameter_count(0, track))
-                        for index in ps:
-                            param = plugin.get_parameter(0, track, index)
-                            plugin.set_pattern_value(pattern, 0, track, index,
-                                                     row, 
-                                                     param.get_value_none())
-                    ps = range(plugin.get_parameter_count(1, 0))
-                    for index in ps:
-                        param = plugin.get_parameter(1, 0, index)
-                        plugin.set_pattern_value(pattern, 1, 0, index, row,
-                                                 param.get_value_none())
-                    for track in tracks:
-                        ps = range(plugin.get_parameter_count(2, track))
-                        for index in ps:
-                            param = plugin.get_parameter(2, track, index)
-                            plugin.set_pattern_value(pattern, 2, track, index,
-                                                     row, 
-                                                     param.get_value_none())
-                player = com.get('neil.core.player')
-                player.history_commit("clear pattern")
-
+            length = plugin.get_pattern_length(pattern)
+            name = plugin.get_pattern_name(pattern)
+            new_pattern = plugin.create_pattern(length)
+            new_pattern.set_name(name)
+            plugin.update_pattern(pattern, new_pattern)
+            player = com.get('neil.core.player')
+            player.history_commit("clear pattern")
         def on_delete(item, pattern):
             plugin = self.plugin
             if pattern >= 0:
