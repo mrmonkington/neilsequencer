@@ -74,16 +74,17 @@ class AmpView(gtk.DrawingArea):
         w, h = rect.width, rect.height
         if self.amp >= 1.0:
             ctx.set_source_rgb(1, 0, 0)
-            ctx.rectangle(0, 0, w, h)
+            ctx.rectangle(1, 1, w - 2, h - 2)
             ctx.fill()
         else:
             y = 0
-            ctx.set_source_rgb(0, 1, 0)
+            ctx.set_source_rgb(0, 0, 0)
             ctx.rectangle(0, 0, w, h)
             ctx.fill()
-            bh = int((h * (utils.linear2db(self.amp, limit =- self.range) + self.range)) / self.range)
-            ctx.set_source_rgba(0, 0, 0, 0.8)
-            ctx.rectangle(0, 0, w, h - bh)
+            bh = int((h * (utils.linear2db(self.amp, limit=-self.range) + 
+                           self.range)) / self.range)
+            ctx.set_source_rgb(0, 1, 0)
+            ctx.rectangle(1, h - bh - 1, w - 2, bh)
             ctx.fill()
 
     def expose(self, widget, event):
