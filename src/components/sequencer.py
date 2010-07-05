@@ -1317,9 +1317,9 @@ class SequencerView(gtk.DrawingArea):
                      float(self.seq_row_size) + 0.5), 
                   int((h - self.seq_top_margin) / 
                       float(self.seq_track_size) + 0.5))
-        print w, h
-        print vw, vh
-        print pw, ph
+        #print w, h
+        #print vw, vh
+        #print pw, ph
         hrange = vw - pw
         vrange = vh - ph
         if hrange <= 0:
