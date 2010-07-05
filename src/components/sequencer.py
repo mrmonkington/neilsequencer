@@ -306,6 +306,7 @@ class SequencerPanel(gtk.VBox):
                 plugin.set_pattern_length(pattern, length)
                 player = com.get('neil.core.player')
                 player.history_commit("change pattern properties")
+            self.view.redraw()
         def on_clear(item, pattern):
             plugin = self.plugin
             length = plugin.get_pattern_length(pattern)
