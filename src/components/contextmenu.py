@@ -77,6 +77,75 @@ class PluginContextMenu(gtk.Menu):
                       singleton=True,
                       categories=['contextmenu.handler'])
 
+    plugin_tree = {'@neil/lunar/generator/ArguruSynth2;1' :
+                       ['Synthesizers', 'Subtractive'],
+                   '@krzysztof_foltman/generator/infector;1' :
+                       ['Synthesizers', 'Subtractive'],
+                   'jamesmichaelmcdermott@gmail.com/generator/primifun;1' :
+                       ['Synthesizers', 'Subtractive'],
+                   '@cameron_foale/generator/green_milk;1' :
+                       ['Synthesizers', 'Subtractive'],
+                   '@makk.org/M4wII;1' :
+                       ['Synthesizers', 'Subtractive'],
+                   'jamesmichaelmcdermott@gmail.com/generator/4fm2f;1' :
+                       ['Synthesizers', 'FM'],
+                   '@libneil/somono/generator/fm303;1' :
+                       ['Synthesizers', 'FM'],
+                   'jamesmichaelmcdermott@gmail.com/generator/pluckedstring;1' :
+                       ['Synthesizers', 'Physical Modelling'],
+                   'jamesmichaelmcdermott@gmail.com/generator/dynamite6;1' :
+                       ['Synthesizers', 'Physical Modelling'],
+                   '@mda-vst/epiano;1' :
+                       ['Synthesizers', 'Physical Modelling'],
+                   '@libneil/fsm/generator/kick_xp' :
+                       ['Synthesizers', 'Percussive'],
+                   '@libneil/somono/generator/cloud;1' :
+                       ['Synthesizers', 'Granular'],
+                   '@rift.dk/generator/Matilde+Tracker;1.5' :
+                       ['Samplers'],
+                   '@trac.zeitherrschaft.org/aldrin/lunar/effect/delay;1' :
+                       ['Effects', 'Time based'],
+                   '@trac.zeitherrschaft.org/aldrin/lunar/effect/phaser;1' :
+                       ['Effects', 'Time based'],
+                   '@trac.zeitherrschaft.org/aldrin/lunar/effect/reverb;1' :
+                       ['Effects', 'Time based'],
+                   '@mda/effect/mdaThruZero;1' :
+                       ['Effects', 'Time based'],
+                   '@libneil/somono/effect/chebyshev;1' :
+                       ['Effects', 'Distortion'],
+                   '@libneil/arguru/effect/distortion' :
+                       ['Effects', 'Distortion'],
+                   'graue@oceanbase.org/effect/softsat;1' :
+                       ['Effects', 'Distortion'],
+                   '@mda/effect/mdaBandisto;1' :
+                       ['Effects', 'Distortion'],
+                   '@neil/lunar/effect/bitcrusher;1' :
+                       ['Effects', 'Distortion'],
+                   '@bblunars/effect/mdaDegrade' :
+                       ['Effects', 'Distortion'],
+                   '@bigyo/frequency+shifter;1' :
+                       ['Effects', 'Modulation'],
+                   'jamesmichaelmcdermott@gmail.com/effect/btdsys_ringmod;1' :
+                       ['Effects', 'Modulation'],
+                   'jamesmichaelmcdermott@gmail.com/effect/modulator;1' :
+                       ['Effects', 'Modulation'],
+                   '@libneil/arguru/effect/compressor' :
+                       ['Effects', 'Dynamics'],
+                   '@binarywerks.dk/multi-2;1' :
+                       ['Effects', 'Dynamics'],
+                   '@FireSledge.org/ParamEQ;1' :
+                       ['Effects', 'Filter'],
+                   '@trac.zeitherrschaft.org/aldrin/lunar/effect/philthy;1' :
+                       ['Effects', 'Filter'],
+                   'jamesmichaelmcdermott@gmail.com/effect/dffilter;1' :
+                       ['Effects', 'Filter'],
+                   '@libneil/somono/controller/lfnoise;1' :
+                       ['Control'],
+                   '@neil/lunar/controller/Controller;1' :
+                       ['Control'],
+                   '@trac.zeitherrschaft.org/aldrin/lunar/controller/LunarLFO;1' :
+                       ['Control']}
+
     def populate_contextmenu(self, menu):
         if menu.context_id == 'plugin':
             self.populate_pluginmenu(menu)
@@ -140,33 +209,12 @@ class PluginContextMenu(gtk.Menu):
         for pluginloader in player.get_pluginloader_list():
             plugins[pluginloader.get_uri()] = pluginloader
         for uri, loader in plugins.iteritems():
-            if uri.startswith('@zzub.org/dssidapter/'):
-                continue
-            if uri.startswith('@zzub.org/ladspadapter/'):
-                continue
-            if uri.startswith('@psycle.sourceforge.net/'):
-                continue
-            flags = loader.get_flags()
-            has_input = zzub.zzub_plugin_flag_has_audio_input
-            has_output = zzub.zzub_plugin_flag_has_audio_output
-            has_event = zzub.zzub_plugin_flag_has_event_output
-            if (flags & has_input) and (flags & has_output):
-                type_ = "Effects"
-            elif (flags & has_output) and not (flags & has_input):
-                type_ = "Generators"
-            elif (flags & has_event):
-                type_ = "Controllers"
-            else:
-                type_ = "Other"
-            author = loader.get_author()
-            if len(author) > 20:
-                author = author[:20]
-            name = loader.get_short_name()
-            if len(name) > 20:
-                name = name[:20]
-            path = [type_, author, name]
-            if type_ == "Effects" or not connection:
+            try:
+                path = self.plugin_tree[uri]
+                path = path + [loader.get_name()]
                 tree = add_path(tree, path, loader)
+            except KeyError:
+                pass
         populate_from_tree(add_machine_menu, tree)
 
     def populate_routermenu(self, menu):
