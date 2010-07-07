@@ -1939,10 +1939,11 @@ namespace zzub {
 	    // load song meta information
 	    for (xml_node::iterator m = xmix.begin(); m != xmix.end(); ++m) {
 	      if (!strcmp(m->name(), "meta")) {
-		if (!strcmp(m->attribute("name").value(), "comment") && !m->attribute("src").empty()) {
+		// if (!strcmp(m->attribute("name").value(), "comment") && !m->attribute("src").empty()) {
+		if (!m->attribute("src").empty()) {
 		  if (arch.openFileInArchive(m->attribute("src").value(), &cfi)) {
 		    std::vector<char> infotext;
-		    infotext.resize(cfi.uncompressed_size+1);
+		    infotext.resize(cfi.uncompressed_size + 1);
 		    infotext[cfi.uncompressed_size] = '\0';
 		    arch.read(&infotext[0], cfi.uncompressed_size);
 		    arch.closeFileInArchve();
