@@ -28,39 +28,6 @@ from neil.utils import add_scrollbars
 from neil.common import MARGIN, MARGIN0, MARGIN2, MARGIN3
 import neil.com as com
 
-LICENSES = [
-    dict(
-        group = 'Creative Commons',
-        title = 'Attribution',
-        url = 'http://creativecommons.org/licenses/by/2.5/',
-        ),
-    dict(
-        group = 'Creative Commons',
-        title = 'Attribution-NoDerivs',
-        url = 'http://creativecommons.org/licenses/by-nd/2.5/',
-        ),
-    dict(
-        group = 'Creative Commons',
-        title = 'Attribution-NonCommercial-NoDerivs',
-        url = 'http://creativecommons.org/licenses/by-nc-nd/2.5/',
-        ),
-    dict(
-        group = 'Creative Commons',
-        title = 'Attribution-NonCommercial',
-        url = 'http://creativecommons.org/licenses/by-nc/2.5/',
-        ),
-    dict(
-        group = 'Creative Commons',
-        title = 'Attribution-NonCommercial-ShareAlike',
-        url = 'http://creativecommons.org/licenses/by-nc-sa/2.5/',
-        ),
-    dict(
-        group = 'Creative Commons',
-        title = 'Attribution-ShareAlike',
-        url = 'http://creativecommons.org/licenses/by-sa/2.5/',
-        ),
-    ]
-
 class InfoPanel(gtk.VBox):
     """
     Contains the info view.
@@ -87,19 +54,10 @@ class InfoPanel(gtk.VBox):
 	"""
 	gtk.VBox.__init__(self, False, MARGIN)
 	self.set_border_width(MARGIN)
-	hbox = gtk.HBox(False, MARGIN)
-	hbox.pack_start(gtk.Label('License'), expand=False)
-	self.cblicense = gtk.combo_box_new_text()
-	for license in LICENSES:
-	    if license.get('group',None):
-		text = "%s: %s" % (license['group'],license['title'])
-	    else:
-		text = "%s" % (license['title'])
-	    self.cblicense.append_text(text)
-	hbox.pack_start(self.cblicense, expand=False)
 	self.view = InfoView()
-	self.pack_start(hbox, expand=False)
 	self.pack_start(add_scrollbars(self.view))
+        eventbus = com.get('neil.core.eventbus')
+        eventbus.document_loaded += self.update_all
 
     def handle_focus(self):
 	self.view.grab_focus()
@@ -111,7 +69,7 @@ class InfoPanel(gtk.VBox):
 	"""
 	self.view.reset()
 
-    def update_all(self):		
+    def update_all(self):
 	self.view.update()
 
 class InfoView(gtk.TextView):
@@ -125,9 +83,9 @@ class InfoView(gtk.TextView):
 	"""
 	gtk.TextView.__init__(self)
 	self.set_wrap_mode(gtk.WRAP_WORD)
-	self.connect('key-press-event', self.on_edit)
+	self.get_buffer().connect('changed', self.on_edit)
 
-    def on_edit(self, widget, event):
+    def on_edit(self, buffer_):
 	"""
 	Handler for text changes.
 
@@ -135,7 +93,8 @@ class InfoView(gtk.TextView):
 	@type event: wx.Event
 	"""
 	player = com.get('neil.core.player')
-	player.set_infotext(self.get_buffer().get_property('text'))
+        text = self.get_buffer().get_property('text')
+	player.set_infotext(text)
 
     def reset(self):
 	"""
