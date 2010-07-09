@@ -23,6 +23,13 @@ namespace lanternfish {
     }
   }
 
+  void add_signals(float scalar, float *signal, int n)
+  {
+    for (int i = 0; i < n; i++) {
+      signal[i] += scalar;
+    }
+  }
+
   void mul_signals(float *s1, float *s2, int n) 
   /* Multiply two signals together. */
   {
@@ -75,5 +82,14 @@ namespace lanternfish {
   float note_to_freq(int note) {
     note = ((note >> 4) * 12) + (note & 0x0f) - 70;
     return 440.0 * pow(2.0, float(note) / 12.0);
+  }
+
+  float rms(float *buffer, int n) {
+    float result = 0.0;
+    for (int i = 0; i < n; i++) {
+      float x = buffer[i];
+      result += x * x;
+    }
+    return sqrt(result / float(n));
   }
 }

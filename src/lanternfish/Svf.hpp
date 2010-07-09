@@ -18,13 +18,8 @@ namespace lanternfish {
     void set_bypass(bool on);
     void set_sampling_rate(int rate);
     void set_resonance(float reso);
-    float *out_low;
-    float *out_high;
-    float *out_band;
-    float *out_notch;
-    float *cutoff;
-    float *in;
-    void process(int n);
+    void process(float *out_low, float *out_high, float *out_band,
+		 float *out_notch, float *cutoff, float *in, int n);
   };
 }
 
