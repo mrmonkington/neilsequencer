@@ -139,7 +139,7 @@ class PluginContextMenu(gtk.Menu):
                        ['Effects', 'Filter'],
                    'jamesmichaelmcdermott@gmail.com/effect/dffilter;1' :
                        ['Effects', 'Filter'],
-                   '@libneil/somono/filter' :
+                   '@libneil/somono/effect/filter' :
                        ['Effects', 'Filter'],
                    '@libneil/somono/controller/lfnoise;1' :
                        ['Control'],
