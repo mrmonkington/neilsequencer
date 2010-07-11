@@ -1480,7 +1480,7 @@ class SequencerView(gtk.DrawingArea):
                 ctx.set_foreground(colors['Strong Line'])
                 drawable.draw_line(ctx, x, 0, x, height)
                 ctx.set_foreground(colors['Text'])
-                layout.set_text(str(start))
+                layout.set_markup("<small>%s</small>" % str(start))
                 px, py = layout.get_pixel_size()
                 drawable.draw_layout(ctx, x + 2,
                                      self.seq_track_size / 2 - py / 2, layout)
@@ -1547,8 +1547,13 @@ class SequencerView(gtk.DrawingArea):
                     drawable.draw_rectangle(ctx, False, x + 2, y + 2,
                                             box_size - 4,
                                             self.seq_track_size - 4)
-                    layout.set_text(name)
+                    layout.set_markup("<small>%s</small>" % name)
                     px, py = layout.get_pixel_size()
+                    # A dumb hack to limit the width of the pattern name label.
+                    while px > (box_size - 4):
+                        name = name[:-1]
+                        layout.set_markup("<small>%s</small>" % name)
+                        px, py = layout.get_pixel_size()
                     ctx.set_foreground(colors['Text'])
                     drawable.draw_layout(ctx, x + 4, y + 4, layout)
                 if pattern != None:
@@ -1570,7 +1575,7 @@ class SequencerView(gtk.DrawingArea):
             drawable.draw_rectangle(ctx, False, 0, y, self.seq_left_margin,
                                     self.seq_track_size)
             ctx.set_foreground(colors['Border'])
-            layout.set_text(title)
+            layout.set_markup("%s" % title)
             px, py = layout.get_pixel_size()
             # Draw the label with the track name
             drawable.draw_layout(ctx, self.seq_left_margin - 4 - px,
