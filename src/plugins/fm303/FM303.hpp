@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+#include <zzub/zzub.h>
 #include <zzub/signature.h>
 #include <zzub/plugin.h>
 
@@ -45,9 +46,11 @@ private:
   Adsr aenv, menv;
   Phasor phasor_m, phasor_c;
   Lag freq, mod;
-  float s_freq[1024], s_phasor_m[1024], s_phasor_c[1024], 
-    s_osc_c[1024], s_osc_m[1024], s_mod[1024], s_aenv[1024], 
-    s_menv[1024], s_feedback[1024];
+  float s_freq[zzub_buffer_size], s_phasor_m[zzub_buffer_size], 
+    s_phasor_c[zzub_buffer_size], s_osc_c[zzub_buffer_size], 
+    s_osc_m[zzub_buffer_size], s_mod[zzub_buffer_size], 
+    s_aenv[zzub_buffer_size], s_menv[zzub_buffer_size], 
+    s_feedback[zzub_buffer_size];
   int wave;
   float feedback, feedback_v, env_mod, acc_amount;
   int decay_time;
