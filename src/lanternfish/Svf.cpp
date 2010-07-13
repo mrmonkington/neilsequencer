@@ -2,6 +2,8 @@
 
 #include "Svf.hpp"
 
+#define MIN(x, y) ((x)<(y))?(x):(y)
+
 namespace lanternfish {
   Svf::Svf() 
   {
@@ -33,34 +35,46 @@ namespace lanternfish {
   
   void Svf::set_resonance(float reso) 
   {
-    this->q = sqrt(1.0 - atan(sqrt(reso * 100.0)) * 2.0 / M_PI) * 1.33 - 0.33;
+    this->q = reso;
   }
   
-  void Svf::process(float *out_low, float *out_high, float *out_band,
-	       float *out_notch, float *cutoff, float *in, int n) 
+  void Svf::process(float *out, float *cutoff, float *input, int mode, int n) 
   {
+    for (int i = 0; i < n; i++)
+      out[i] = 0.0;
     if (!this->bypass) {
-      float scale, f;
-      scale = sqrt(q);
       for (int i = 0; i < n; i++) {
-	f = cutoff[i] / this->sps * 2.0;
+	float freq = 2.0 * sin(M_PI * MIN(0.25, cutoff[i] / (sps * 2.0)));
+	float damp = MIN(2.0 * (1.0 - pow(q, 0.25)), 
+			 MIN(2.0, 2.0 / freq  - freq * 0.5));
+	float in = input[i];
 	for (int j = 0; j < 2; j++) {
-	  low = low + f * band;
-	  high = scale * in[i] - low - q * band;
-	  band = f * high + band;
-	  notch = high + low;
+	  notch = in - damp * band;
+	  low = low + freq * band;
+	  high = notch - low;
+	  band = freq * high + band - 0.02 * band * band * band;
+	  switch(mode) {
+	  case 0:
+	    out[i] += 0.5 * low;
+	    break;
+	  case 1:
+	    out[i] += 0.5 * high;
+	    break;
+	  case 2:
+	    out[i] += 0.5 * band;
+	    break;
+	  case 3:
+	    out[i] += 0.5 * notch;
+	    break;
+	  case 4:
+	    out[i] += 0.5 * peak;
+	    break;
+	  }
 	}
-	out_low[i] = low;
-	out_high[i] = high;
-	out_band[i] = band;
-	out_notch[i] = notch;
       }
     } else {
       for (int i = 0; i < n; i++) {
-	out_low[i] = in[i];
-	out_high[i] = in[i];
-	out_band[i] = in[i];
-	out_notch[i] = in[i];
+	out[i] = input[i];
       }
     }
   }

@@ -77,14 +77,6 @@ void Filter::process_events()
 
 bool Filter::process_stereo(float **pin, float **pout, int n, int mode) 
 {
-  float *svf_l_lowpass = new float[n];
-  float *svf_r_lowpass = new float[n];
-  float *svf_l_highpass = new float[n];
-  float *svf_r_highpass = new float[n];
-  float *svf_l_bandpass = new float[n];
-  float *svf_r_bandpass = new float[n];
-  float *svf_l_notch = new float[n];
-  float *svf_r_notch = new float[n];
   float *svf_cutoff = new float[n];
   float *phaser = new float[n];
   float *phaser_freq = new float[n];
@@ -105,32 +97,8 @@ bool Filter::process_stereo(float **pin, float **pout, int n, int mode)
   }
   scale_signal(rms_out, 1.0 - rms_amp, 1.0, n);
   mul_signals(rms_out, svf_cutoff, n);
-  svf_l.process(svf_l_lowpass, svf_l_highpass, svf_l_bandpass, svf_l_notch,
-		svf_cutoff, pin[0], n);
-  svf_r.process(svf_r_lowpass, svf_r_highpass, svf_r_bandpass, svf_r_notch,
-		svf_cutoff, pin[1], n);
-  switch (type) {
-  case 0:
-    signal_copy(svf_l_lowpass, pout[0], n);
-    signal_copy(svf_r_lowpass, pout[1], n);
-    break;
-  case 1:
-    signal_copy(svf_l_highpass, pout[0], n);
-    signal_copy(svf_r_highpass, pout[1], n);
-    break;
-  case 2:
-    signal_copy(svf_l_bandpass, pout[0], n);
-    signal_copy(svf_r_bandpass, pout[1], n);
-    break;
-  }
-  delete[] svf_l_lowpass;
-  delete[] svf_r_lowpass;
-  delete[] svf_l_highpass;
-  delete[] svf_r_highpass;
-  delete[] svf_l_bandpass;
-  delete[] svf_r_bandpass;
-  delete[] svf_l_notch;
-  delete[] svf_r_notch;
+  svf_l.process(pout[0], svf_cutoff, pin[0], type, n);
+  svf_r.process(pout[1], svf_cutoff, pin[1], type, n);
   delete[] svf_cutoff;
   delete[] phaser;
   delete[] phaser_freq;
