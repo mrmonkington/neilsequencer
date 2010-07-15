@@ -33,6 +33,7 @@ private:
   Svf svf_l, svf_r;
   Osc lfo;
   Phasor phase;
+  Lag lag_cutoff, lag_lfo;
   float cutoff, lfo_speed, lfo_amp, rms_amp;
   float *sine_table;
   int type;
