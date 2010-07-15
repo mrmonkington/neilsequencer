@@ -68,42 +68,32 @@ void Filter::process_events()
       pow(gval.lfo_speed / float(paramLfoSpeed->value_max), 8.0) * 5000.0;
   }
   if (gval.lfo_amp != paramLfoAmp->value_none) {
-    lfo_amp = gval.lfo_amp / float(paramLfoAmp->value_max);
+    lfo_amp = (gval.lfo_amp / float(paramLfoAmp->value_max)) * 0.99;
   }
   if (gval.env_mod != paramEnvMod->value_none) {
-    rms_amp = gval.env_mod / float(paramEnvMod->value_max);
+    rms_amp = (gval.env_mod / float(paramEnvMod->value_max)) * 0.99;
   }
 }
 
 bool Filter::process_stereo(float **pin, float **pout, int n, int mode) 
 {
-  float *svf_cutoff = new float[n];
-  float *phaser = new float[n];
-  float *phaser_freq = new float[n];
-  float *lfo_out = new float[n];
-  float *rms_out = new float[n];
   const_signal(phaser_freq, lfo_speed, n);
   phase.process(phaser_freq, phaser, n);
   lfo.process(phaser, lfo_out, n);
-  const_signal(svf_cutoff, cutoff, n);
-  add_signals(1.0, lfo_out, n);
-  mul_signals(0.5, lfo_out, n);
-  scale_signal(lfo_out, 1.0 - lfo_amp, 1.0, n);
-  mul_signals(lfo_out, svf_cutoff, n);
   for (int i = 0; i < n; i++) {
     rms_out[i] = rms(rms_buffer, 16);
     rms_buffer[rms_cursor] = (pin[0][i] + pin[1][i]) * 0.5;
     rms_cursor = (rms_cursor + 1) % 16;
   }
+  const_signal(svf_cutoff, cutoff, n);
+  add_signals(1.0, lfo_out, n);
+  mul_signals(0.5, lfo_out, n);
+  scale_signal(lfo_out, 1.0 - lfo_amp, 1.0, n);
+  mul_signals(lfo_out, svf_cutoff, n);
   scale_signal(rms_out, 1.0 - rms_amp, 1.0, n);
   mul_signals(rms_out, svf_cutoff, n);
   svf_l.process(pout[0], svf_cutoff, pin[0], type, n);
   svf_r.process(pout[1], svf_cutoff, pin[1], type, n);
-  delete[] svf_cutoff;
-  delete[] phaser;
-  delete[] phaser_freq;
-  delete[] lfo_out;
-  delete[] rms_out;
   return true;
 }
 

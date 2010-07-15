@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+#include <zzub/zzub.h>
 #include <zzub/signature.h>
 #include <zzub/plugin.h>
 
@@ -37,6 +38,9 @@ private:
   int type;
   float rms_buffer[16];
   int rms_cursor;
+  float svf_cutoff[zzub_buffer_size], phaser[zzub_buffer_size],
+    phaser_freq[zzub_buffer_size], lfo_out[zzub_buffer_size],
+    rms_out[zzub_buffer_size];
 public:
   Filter();
   virtual ~Filter();
