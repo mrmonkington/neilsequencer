@@ -694,10 +694,10 @@ class NeilFrame(gtk.Window):
         if config.get_config().get_incremental_saving():
           # rename incremental
           path,basename = os.path.split(filename)
-          basename,ext = os.path.splitext(basename)
+          basename, ext = os.path.splitext(basename)
           i = 0
           while True:
-            newpath = os.path.join(path,"%s%s.%03i.bak" % (basename,ext,i))
+            newpath = os.path.join(path,"%s%s.%03i.bak" % (basename, ext, i))
             if not os.path.isfile(newpath):
               break
             i += 1
