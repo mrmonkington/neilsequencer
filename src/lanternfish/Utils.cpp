@@ -92,4 +92,9 @@ namespace lanternfish {
     }
     return sqrt(result / float(n));
   }
+
+  float kill_denormal(float val) {
+    float absx = fabs(val);
+    return (absx > (float)1e-15) ? val : 0.0;
+  }
 }

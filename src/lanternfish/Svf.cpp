@@ -1,8 +1,8 @@
 #include <cmath>
+#include <algorithm>
 
 #include "Svf.hpp"
-
-#define MIN(x, y) ((x)<(y))?(x):(y)
+#include "Utils.hpp"
 
 namespace lanternfish {
   Svf::Svf() 
@@ -44,15 +44,16 @@ namespace lanternfish {
       out[i] = 0.0;
     if (!this->bypass) {
       for (int i = 0; i < n; i++) {
-	float freq = 2.0 * sin(M_PI * MIN(0.25, cutoff[i] / (sps * 2.0)));
-	float damp = MIN(2.0 * (1.0 - pow(q, 0.25)), 
-			 MIN(2.0, 2.0 / freq  - freq * 0.5));
+	float freq = 2.0f * sin(M_PI * 
+				std::min(0.25f, cutoff[i] / (sps * 2.0f)));
+	float damp = std::min(2.0f * (1.0f - (float)sqrt(sqrt(q))), 
+			      std::min(2.0f, 2.0f / freq  - freq * 0.5f));
 	float in = input[i];
 	for (int j = 0; j < 2; j++) {
 	  notch = in - damp * band;
 	  low = low + freq * band;
 	  high = notch - low;
-	  band = freq * high + band - 0.02 * band * band * band;
+	  band = freq * high + band;
 	  switch(mode) {
 	  case 0:
 	    out[i] += 0.5 * low;
@@ -67,7 +68,7 @@ namespace lanternfish {
 	    out[i] += 0.5 * notch;
 	    break;
 	  case 4:
-	    out[i] += 0.5 * peak;
+	    out[i] += 0.5 * (low - high);
 	    break;
 	  }
 	}
