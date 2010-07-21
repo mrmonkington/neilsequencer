@@ -56,6 +56,8 @@ class M3 : public zzub::plugin {
 private:
   uint8_t gval[34];
   Tvals tval;
+  float EnvTime(int v);
+  float LFOFreq(int v);
 public:
   M3();
   virtual ~M3();
@@ -245,15 +247,6 @@ struct M3Info : zzub::info {
       .set_value_none(255)
       .set_flags(zzub::parameter_flag_state)
       .set_value_default(0);
-    paraVolume = &add_global_parameter()
-      .set_byte()
-      .set_name("Volume")
-      .set_description("Volume (Sustain-Level)")
-      .set_value_min(0)
-      .set_value_max(127)
-      .set_value_none(255)
-      .set_flags(zzub::parameter_flag_state)
-      .set_value_default(0x40);
     paraVolume = &add_global_parameter()
       .set_byte()
       .set_name("Volume")
