@@ -1,9 +1,0 @@
-Import('pluginenv', 'build_plugin')
-
-localenv = pluginenv.Clone()
-localenv.Append(CPPFLAGS=['-O3'])
-
-files = ["m3.cpp"]
-
-build_plugin(localenv, "somono_m3", files)
-	     
