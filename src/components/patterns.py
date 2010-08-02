@@ -2629,21 +2629,23 @@ class PatternView(gtk.DrawingArea):
                 return None
         num_rows = min(self.row_count - self.start_row, 
                        (h - self.row_height) / self.row_height + 1)
-        for track in range(self.group_track_count[CONN]):
-            for row in range(self.start_row, num_rows + self.start_row):
-                color = get_color(row)
-                if color != None:
-                    draw_bar(row, CONN, track, color)
+        if self.lines and self.lines[CONN]:
+            for track in range(self.group_track_count[CONN]):
+                for row in range(self.start_row, num_rows + self.start_row):
+                    color = get_color(row)
+                    if color != None:
+                        draw_bar(row, CONN, track, color)
         if self.lines and self.lines[GLOBAL]:
             for row in range(self.start_row, num_rows + self.start_row):
                 color = get_color(row)
                 if color != None:
                     draw_bar(row, GLOBAL, 0, color)
-        for track in range(self.group_track_count[TRACK]):
-            for row in range(self.start_row, num_rows + self.start_row):
-                color = get_color(row)
-                if color != None:
-                    draw_bar(row, TRACK, track, color)
+        if self.lines and self.lines[TRACK]:
+            for track in range(self.group_track_count[TRACK]):
+                for row in range(self.start_row, num_rows + self.start_row):
+                    color = get_color(row)
+                    if color != None:
+                        draw_bar(row, TRACK, track, color)
 
     def draw_parameter_values(self, ctx, layout):
         """ Draw the parameter values for all tracks, columns and rows."""
@@ -2689,10 +2691,11 @@ class PatternView(gtk.DrawingArea):
                     out_of_bounds = extent > w
             # Draw track parameters.
             if not out_of_bounds:
-                for t in range(self.group_track_count[TRACK]):
-                    extent = draw_parameters_range(row, num_rows, TRACK, t)
-                    if extent > w:
-                        break
+                if self.lines[TRACK]:
+                    for t in range(self.group_track_count[TRACK]):
+                        extent = draw_parameters_range(row, num_rows, TRACK, t)
+                        if extent > w:
+                            break
 
     def draw_selection(self, ctx):
         """ Draw selection box."""
