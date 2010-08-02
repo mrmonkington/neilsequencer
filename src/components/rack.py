@@ -78,13 +78,6 @@ class ParameterView(gtk.VBox):
 	pl = self.plugin.get_pluginloader()
 	classname = prepstr(pl.get_name())
 	title = "%s - %s" % (name,classname)
-	# 0.3: DEAD
-	# output channels are always 2
-	#~ oc = self.plugin.get_output_channels()
-	#~ if oc  == 2:
-	    #~ title += " (Stereo Output)"
-	#~ elif oc == 1:
-	    #~ title += " (Mono Output)"
 	self._title = title
 
 	self.presetbox = gtk.combo_box_entry_new_text()
@@ -149,7 +142,7 @@ class ParameterView(gtk.VBox):
 	eventbus.zzub_parameter_changed += self.on_zzub_parameter_changed
 	self.update_preset_buttons()
 
-    def on_zzub_parameter_changed(self, plugin,group,track,param,value):
+    def on_zzub_parameter_changed(self, plugin, group, track, param, value):
 	"""
 	parameter window callback for ui events sent by zzub.
 
@@ -173,7 +166,7 @@ class ParameterView(gtk.VBox):
 		nl, s, vl = self.pid2ctrls[(g, t, i)]
 		v = self.plugin.get_parameter_value(g,t,i)
 		s.set_value(v)
-		self.update_valuelabel(g,t,i)
+		self.update_valuelabel(g, t, i)
 
     def create_sliders(self, rowgroup):
 	plugin = self.plugin
