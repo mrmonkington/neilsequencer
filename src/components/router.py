@@ -443,10 +443,7 @@ class VolumeSlider(gtk.Window):
                                     VOLBARWIDTH - 2, VOLKNOBHEIGHT - 2)
 
         black = cm.alloc_color(gtk.gdk.color_parse("black"))
-        white = cm.alloc_color(gtk.gdk.color_parse("white"))
         gc.set_foreground(black)
-        drawable.draw_rectangle(gc, True, 2, 2, 28, 12)
-        gc.set_foreground(white)
         import pango
         layout = pango.Layout(self.get_pango_context())
         font = pango.FontDescription("sans 8")
