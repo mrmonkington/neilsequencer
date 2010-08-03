@@ -442,6 +442,18 @@ class VolumeSlider(gtk.Window):
             drawable.draw_rectangle(gc, True, 1, pos + 1,
                                     VOLBARWIDTH - 2, VOLKNOBHEIGHT - 2)
 
+        black = cm.alloc_color(gtk.gdk.color_parse("black"))
+        white = cm.alloc_color(gtk.gdk.color_parse("white"))
+        gc.set_foreground(black)
+        drawable.draw_rectangle(gc, True, 2, 2, 28, 12)
+        gc.set_foreground(white)
+        import pango
+        layout = pango.Layout(self.get_pango_context())
+        font = pango.FontDescription("sans 8")
+        layout.set_font_description(font)
+        layout.set_markup("<small>%d%%</small>" % int((1.0 - self.amp) * 100))
+        drawable.draw_layout(gc, 2, 2, layout)
+
     def display(self, (mx, my), mp, index):
         """
         Called by the router view to show the control.
