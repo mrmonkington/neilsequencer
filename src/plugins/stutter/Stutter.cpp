@@ -4,6 +4,8 @@
 
 #include "Stutter.hpp"
 
+#define MAX_SMOOTH 1000
+
 using namespace std;
 
 Stutter::Stutter() {
@@ -50,10 +52,10 @@ void Stutter::process_events() {
 }
 
 float Stutter::envelope(int cursor, int length) {
-  if (cursor < (1000 * smoothing)) {
-    return cursor / (1000.0 * smoothing);
-  } else if (cursor > (length - 1000 * smoothing)) {
-    return (length - cursor) / (1000.0 * smoothing);
+  if (cursor < (MAX_SMOOTH * smoothing)) {
+    return cursor / (MAX_SMOOTH * smoothing);
+  } else if (cursor > (length - MAX_SMOOTH * smoothing)) {
+    return (length - cursor) / (MAX_SMOOTH * smoothing);
   } else {
     return 1.0;
   }
@@ -62,14 +64,27 @@ float Stutter::envelope(int cursor, int length) {
 bool Stutter::process_stereo(float **pin, float **pout, int n, int mode) {
   for (int i = 0; i < n; i++) {
     if (counter == 0) {
-      pout[0][i] = pin[0][i];
-      pout[1][i] = pin[0][i];
+      float env;
+      if (cursor < (MAX_SMOOTH * smoothing)) {
+	env = envelope(cursor, length);
+	cursor += 1;
+      } else {
+	env = 1.0;
+      }
+      pout[0][i] = pin[0][i] * env;
+      pout[1][i] = pin[0][i] * env;
     } else {
       if (record) {
 	buffer[0][cursor] = pin[0][i];
 	buffer[1][cursor] = pin[1][i];
-	pout[0][i] = pin[0][i];
-	pout[1][i] = pin[1][i];
+	float env;
+	if (cursor < MAX_SMOOTH * smoothing) {
+	  env = 1.0;
+	} else {
+	  env = envelope(cursor, length);
+	}
+	pout[0][i] = pin[0][i] * env;
+	pout[1][i] = pin[1][i] * env;
 	cursor += 1;
 	if (cursor >= length) {
 	  cursor = 0;
