@@ -44,6 +44,19 @@ void Stutter::process_events() {
     cursor = 0;
     record = true;
   }
+  if (gval.smoothing != param_smoothing->value_none) {
+    smoothing = gval.smoothing / float(param_smoothing->value_max);
+  }
+}
+
+float Stutter::envelope(int cursor, int length) {
+  if (cursor < (1000 * smoothing)) {
+    return cursor / (1000.0 * smoothing);
+  } else if (cursor > (length - 1000 * smoothing)) {
+    return (length - cursor) / (1000.0 * smoothing);
+  } else {
+    return 1.0;
+  }
 }
 
 bool Stutter::process_stereo(float **pin, float **pout, int n, int mode) {
@@ -63,8 +76,9 @@ bool Stutter::process_stereo(float **pin, float **pout, int n, int mode) {
 	  record = false;
 	}
       } else {
-	pout[0][i] = buffer[0][cursor];
-	pout[1][i] = buffer[1][cursor];
+	float env = envelope(cursor, length);
+	pout[0][i] = buffer[0][cursor] * env;
+	pout[1][i] = buffer[1][cursor] * env;
 	cursor += 1;
 	if (cursor >= length) {
 	  counter -= 1;
@@ -86,7 +100,12 @@ const char *Stutter::describe_value(int param, int value)
   else if (param == 1) {
     sprintf(str, "%d ticks", value);
     return str;
-  } else {
+  }
+  else if (param == 2) {
+    sprintf(str, "%d%%", int((value / 255.0) * 100));
+    return str;
+  }
+  else {
     return 0;
   }
 }

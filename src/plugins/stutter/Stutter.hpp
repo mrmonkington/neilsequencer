@@ -9,10 +9,12 @@
 struct Gvals {
   uint8_t length;
   uint8_t time;
+  uint8_t smoothing;
 } __attribute__((__packed__));
 
 const zzub::parameter *param_length = 0;
 const zzub::parameter *param_time = 0;
+const zzub::parameter *param_smoothing = 0;
 
 const char *zzub_get_signature() { 
   return ZZUB_SIGNATURE; 
@@ -24,7 +26,8 @@ private:
   float *buffer[2];
   bool record;
   int cursor, counter, length;
-  float tick_length;
+  float tick_length, smoothing;
+  float envelope(int cursor, int length);
 public:
   Stutter();
   virtual ~Stutter();
@@ -95,6 +98,15 @@ struct StutterInfo : zzub::info {
       .set_value_none(0xFF)
       .set_state_flag()
       .set_value_default(0x01);
+    param_smoothing = &add_global_parameter()
+      .set_byte()
+      .set_name("Smoothing")
+      .set_description("Smoothing amount")
+      .set_value_min(0x00)
+      .set_value_max(0xfe)
+      .set_value_none(0xff)
+      .set_state_flag()
+      .set_value_default(0x80);
   }
   virtual zzub::plugin* create_plugin() const { return new Stutter(); }
   virtual bool store_info(zzub::archive *data) const { return false; }
