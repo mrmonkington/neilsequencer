@@ -95,7 +95,8 @@ void pluginlib::init_dll() {
 		if (!signature || strcmp(signature,ZZUB_SIGNATURE)) {
 			// let the user know
 			printf("%s: bad signature '%s' (expected '%s'), won't load.\n", fileName.c_str(), signature, ZZUB_SIGNATURE);
-		} else {
+		} 
+		//else {
 			// is there an entry function?
 			if (_func) {
 				this->collection = _func(); // get our collection instance
@@ -109,7 +110,7 @@ void pluginlib::init_dll() {
 				// let the user know
 				printf("%s: entry function missing.\n", fileName.c_str());
 			}
-		}
+			  //}
 	} else {
 		// let the user know
 		printf("%s: signature function missing.\n", fileName.c_str());
