@@ -2164,7 +2164,9 @@ class PatternView(gtk.DrawingArea):
                 self.shiftselect = None
             if self.plugin:
                 parameter = self.plugin.get_parameter(self.group,0, self.index)
-                if parameter.get_description() == "Note" and kv < 256:
+                auto_noteoff = config.get_config().get_pattern_noteoff()
+                if parameter.get_description() == "Note" and kv < 256 \
+                                              and auto_noteoff == True:
                     on = key_to_note(kv)
                     if on:
                         m = self.get_plugin()
