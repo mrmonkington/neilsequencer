@@ -2157,16 +2157,14 @@ class PatternView(gtk.DrawingArea):
         Callback that responds to key release
         """
         player = com.get('neil.core.player')
-        if True or config.get_config().get_pattern_noteoff():
+        if config.get_config().get_pattern_noteoff() == True:
             kv = event.keyval
             k = gtk.gdk.keyval_name(kv)
             if k == 'Shift_L' or k=='Shift_R':
                 self.shiftselect = None
             if self.plugin:
                 parameter = self.plugin.get_parameter(self.group,0, self.index)
-                auto_noteoff = config.get_config().get_pattern_noteoff()
-                if parameter.get_description() == "Note" and kv < 256 \
-                                              and auto_noteoff == True:
+                if parameter.get_description() == "Note" and kv < 256:
                     on = key_to_note(kv)
                     if on:
                         m = self.get_plugin()
