@@ -2130,10 +2130,6 @@ class PatternView(gtk.DrawingArea):
             player.history_commit("enter event")
         else:
             return False
-        #Don't wait for expose event to update parameters on screen - 
-        #push what we have with each keypress
-        layout = pango.Layout(self.get_pango_context())
-        self.draw_parameter_values(self.context, layout)
         return True
 
     def play_note(self, playtrack):
