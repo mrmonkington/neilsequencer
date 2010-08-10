@@ -2126,8 +2126,8 @@ class PatternView(gtk.DrawingArea):
             self.plugin.set_pattern_value(self.pattern, self.group,
                                           self.track, self.index,
                                           self.row, data)
-            player.history_commit("enter event")
             self.play_note(playtrack)
+            player.history_commit("enter event")
         else:
             return False
         #Don't wait for expose event to update parameters on screen - 
