@@ -162,7 +162,7 @@ class SequencerToolBar(gtk.HBox):
         if (step>128):
             self.parent.view.step = 128
         if (step<1):
-		    self.parent.view.step = 1
+            self.parent.view.step = 1
         else:
             self.parent.view.step = step
         self.parent.update_all()
