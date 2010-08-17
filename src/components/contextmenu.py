@@ -213,6 +213,8 @@ class PluginContextMenu(gtk.Menu):
         for uri, loader in plugins.iteritems():
             try:
                 path = self.plugin_tree[uri]
+                if connection and path[0] != "Effects":
+					continue
                 path = path + [loader.get_name()]
                 tree = add_path(tree, path, loader)
             except KeyError:
