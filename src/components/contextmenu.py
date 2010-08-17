@@ -228,16 +228,14 @@ class PluginContextMenu(gtk.Menu):
 
     def populate_connectionmenu(self, menu):
         mp, index = menu.context
-        self.create_add_machine_submenu(menu, connection=True)
-        menu.add_separator()
-        menu.add_item("Disconnect plugins", self.on_popup_disconnect, mp, index)
         conntype = mp.get_input_connection_type(index)
         if conntype == zzub.zzub_connection_type_audio:
-            # Connection connects two audio plug-ins.
-            pass
-        elif conntype == zzub.zzub_connection_type_event:
-            # Connection connects a control plug-in to it's destination.
+            self.create_add_machine_submenu(menu, connection=True)
             menu.add_separator()
+        menu.add_item("Disconnect plugins", self.on_popup_disconnect, mp, index)
+        if conntype == zzub.zzub_connection_type_event:
+            # Connection connects a control plug-in to it's destination.
+            # menu.add_separator()
             mi = mp.get_input_connection_plugin(index).get_pluginloader()
             for i in range(mi.get_parameter_count(3)):
                 param = mi.get_parameter(3, i)
