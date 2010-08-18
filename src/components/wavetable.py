@@ -286,7 +286,7 @@ class WavetablePanel(gtk.VBox):
     def handle_focus(self):
 	self.samplelist.grab_focus()
 	self.samplelist.get_selection().select_path(0)
-
+    
     def on_libpanel_selection_changed(self, widget):
 	"""
 	Called when the current file browser selection changes.
