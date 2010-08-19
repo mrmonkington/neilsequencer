@@ -168,6 +168,7 @@ class SequencerToolBar(gtk.HBox):
         else:
             self.parent.view.step = step
         self.parent.update_all()
+        
 
 class SequencerPanel(gtk.VBox):
     """
@@ -1280,7 +1281,7 @@ class SequencerView(gtk.DrawingArea):
         if self.playpos != playpos:
             if self.panel.toolbar.followsong.get_active():
                 if playpos >= self.get_endrow() or playpos < self.startseqtime:
-                    self.startseqtime = playpos
+                    self.startseqtime = playpos / self.step * self.step
                     self.redraw()
             #self.draw_cursors()
             self.draw_playpos()
