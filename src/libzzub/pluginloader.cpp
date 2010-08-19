@@ -110,7 +110,7 @@ void pluginlib::init_dll() {
 				// let the user know
 				printf("%s: entry function missing.\n", fileName.c_str());
 			}
-			  //}
+		//}
 	} else {
 		// let the user know
 		printf("%s: signature function missing.\n", fileName.c_str());
