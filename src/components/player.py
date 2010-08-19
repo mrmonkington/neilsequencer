@@ -197,7 +197,7 @@ class NeilPlayer(Player, PropertyEventHandler):
         self.enumerate_stream_plugins()
         self.playstarttime = time.time()
         self.document_unchanged()
-        self.spinbox_edit = False
+        #self.spinbox_edit = False
         eventbus = com.get('neil.core.eventbus')
         eventbus.zzub_pre_delete_plugin += self.on_pre_delete_plugin
         eventbus.zzub_pre_delete_pattern += self.on_pre_delete_pattern

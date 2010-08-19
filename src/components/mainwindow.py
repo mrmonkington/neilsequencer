@@ -350,6 +350,8 @@ class NeilFrame(gtk.Window):
     self.connect('key-press-event', self.on_key_down)
     self.connect('destroy', self.on_destroy)
     self.connect('delete-event', self.on_close)
+    
+    self.framepanel.connect('switch-page', self.page_select)
 
     gobject.timeout_add(500, self.update_title)
     self.activated=0
@@ -463,6 +465,11 @@ class NeilFrame(gtk.Window):
     self.editmenu.append(gtk.SeparatorMenuItem())
     self.editmenu.append(make_stock_menu_item(gtk.STOCK_PREFERENCES, self.on_preferences))
     self.editmenu.show_all()
+  
+  def page_select(self, notebook, page, page_num, *args):
+    new_page = notebook.get_nth_page(page_num)
+    print new_page
+    new_page.handle_focus()
 
   def update_filemenu(self, *args):
     """
