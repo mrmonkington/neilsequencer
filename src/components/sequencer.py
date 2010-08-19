@@ -365,7 +365,7 @@ class SequencerPanel(gtk.VBox):
         #framepanel.select_viewpanel(self)
 
     def handle_focus(self):
-        self.view.grab_focus()
+        self.view.needfocus = True
 
     def update_all(self):
         """
@@ -447,7 +447,9 @@ class SequencerView(gtk.DrawingArea):
         self.panel = panel
         self.hscroll = hscroll
         self.vscroll = vscroll
-
+        
+        self.needfocus = True
+        
         # Variables that were previously defined as constants.
         self.seq_track_size = 28
         self.seq_step = 16
@@ -1239,9 +1241,10 @@ class SequencerView(gtk.DrawingArea):
         return rect.width, rect.height
 
     def expose(self, widget, *args):
-        player = com.get('neil.core.player')
-        if not(player.spinbox_edit):
+        #player = com.get('neil.core.player')
+        if (self.needfocus):
             self.grab_focus()
+            self.needfocus = False
         self.adjust_scrollbars()
         self.context = widget.window.new_gc()
         self.draw(self.context)

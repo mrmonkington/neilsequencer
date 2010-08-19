@@ -75,13 +75,13 @@ class TransportPanel(gtk.HBox):
         self.bpm.set_range(16,500)
         self.bpm.set_value(126)
         self.bpm.set_increments(1, 10)
-        self.bpm.connect('button-press-event', self.spinbox_clicked)
+        #self.bpm.connect('button-press-event', self.spinbox_clicked)
         self.tpblabel = gtk.Label("TPB")
         self.tpb = gtk.SpinButton()
         self.tpb.set_range(1,32)
         self.tpb.set_value(16)
         self.tpb.set_increments(1, 2)
-        self.tpb.connect('button-press-event', self.spinbox_clicked)
+        #self.tpb.connect('button-press-event', self.spinbox_clicked)
 
         self.btnplay = new_image_toggle_button(imagepath("playback_play.svg"),
                                                "Play (F5/F6)")
@@ -184,9 +184,9 @@ class TransportPanel(gtk.HBox):
 
         self.update_all()
 
-    def spinbox_clicked(self, widget, event):
-        player = com.get('neil.core.player')
-        player.spinbox_edit = True
+    #def spinbox_clicked(self, widget, event):
+    #    player = com.get('neil.core.player')
+    #    player.spinbox_edit = True
 
     def play(self, widget):
         player = com.get('neil.core.player')

@@ -501,7 +501,7 @@ class PatternPanel(gtk.VBox):
             self.view.show_cursor_right()
         except AttributeError: #no pattern in current machine
             pass
-        self.view.grab_focus()
+        self.view.needfocus = True
 
 from neil.utils import fixbn, bn2mn, mn2bn, note2str, switch2str, byte2str, word2str
 
@@ -638,6 +638,7 @@ class PatternView(gtk.DrawingArea):
         self.edit_step = 1
         self.statuslabels = panel.statuslabels
         self.panel = panel
+        self.needfocus = True
         self.hscroll = hscroll
         self.vscroll = vscroll
         self.statusbar = None
@@ -1128,9 +1129,12 @@ class PatternView(gtk.DrawingArea):
         if self.current_plugin!=self.get_plugin():
             self.pattern_changed()
             self.current_plugin=self.get_plugin()
-        player = com.get('neil.core.player')
-        if not(player.spinbox_edit):
+        #player = com.get('neil.core.player')
+        #if not(player.spinbox_edit):
+        #    self.grab_focus()
+        if (self.needfocus):
             self.grab_focus()
+            self.needfocus = False
         self.draw(self.context)
         return False
 
@@ -1608,8 +1612,8 @@ class PatternView(gtk.DrawingArea):
         if not self.selection:
             self.selection = self.Selection()
         self.grab_focus()
-        player = com.get('neil.core.player')
-        player.spinbox_edit = False
+        #player = com.get('neil.core.player')
+        #player.spinbox_edit = False
         if event.button == 3:
             self.on_context_menu(event)
         if self.pattern == -1:
