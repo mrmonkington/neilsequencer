@@ -742,6 +742,8 @@ class WavetablePanel(gtk.VBox):
         if (event.button == 1) and (event.type == gtk.gdk._2BUTTON_PRESS):
             # double click
             self.on_play_wave(event)
+            #I think this makes much more sense..
+            #self.on_load_sample(widget)
 
     def preview_sample(self, path):
         """
@@ -813,11 +815,12 @@ class WavetablePanel(gtk.VBox):
             self.on_play_wave(event)
         elif k in ('BackSpace', 'Return'):
             # If backspace or return are pressed go to file browser.
-            self.set_current_page(1)
-            if self.filetreeview:
-                self.filetreeview.grab_focus()
-            else:
-                self.libpanel.grab_focus()
+            #self.set_current_page(1)
+            #if self.filetreeview:
+            #    self.filetreeview.grab_focus()
+            #else:
+            #    self.libpanel.grab_focus()
+            self.on_load_sample(widget)
         else:
             return False
         return True
@@ -835,8 +838,11 @@ class WavetablePanel(gtk.VBox):
         kv = event.keyval
         print k, kv
         if k == 'Escape':
-            self.set_current_page(0)
-            self.samplelist.grab_focus()
+            #this doesn't seem to do anything, and set_current_page
+            #doesn't exist!
+            #self.set_current_page(0)
+            self.libpanel.hide()
+            self.samplelist.needfocus = True
         else:
             return False
         return True
