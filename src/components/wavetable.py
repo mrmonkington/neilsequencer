@@ -75,6 +75,7 @@ class WavetablePanel(gtk.VBox):
         self.ohg = ObjectHandlerGroup()
         self.working_directory = ''
         self.files = []
+        self.needfocus = True
         gtk.VBox.__init__(self)
         self.instrpanel = gtk.HPaned()
         self.instrpanel.set_border_width(MARGIN2)
@@ -223,6 +224,8 @@ class WavetablePanel(gtk.VBox):
         self.instrpanel.add1(samplesel)
         self.instrpanel.add2(sampleprops)
         self.instrpanel.set_position(250)
+        
+        self.connect("expose_event", self.expose)
 
         self.ohg.connect(self.samplelist.get_selection(),'changed', self.on_samplelist_select)
         self.ohg.connect(self.samplelist,'button-press-event', self.on_samplelist_dclick)
@@ -283,9 +286,15 @@ class WavetablePanel(gtk.VBox):
         self.envelope.update()
         self.waveedit.update()
 
+    def expose(self, widget, *args):
+        if self.needfocus:
+            self.samplelist.grab_focus()
+            self.needfocus = False
+    
     def handle_focus(self):
         self.samplelist.grab_focus()
         self.samplelist.get_selection().select_path(0)
+        self.needfocus = True
     
     def on_libpanel_selection_changed(self, widget):
         """
