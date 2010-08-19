@@ -109,6 +109,8 @@ class PluginContextMenu(gtk.Menu):
                        ['Effects', 'Time based'],
                    '@trac.zeitherrschaft.org/aldrin/lunar/effect/reverb;1' :
                        ['Effects', 'Time based'],
+                   '@libneil/somono/effect/mverb' :
+                       ['Effects', 'Time based'],
                    '@mda/effect/mdaThruZero;1' :
                        ['Effects', 'Time based'],
                    '@libneil/somono/effect/chebyshev;1' :
