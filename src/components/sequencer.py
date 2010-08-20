@@ -1356,9 +1356,26 @@ class SequencerView(gtk.DrawingArea):
         """
         player = com.get('neil.core.player')
         seq = player.get_current_sequencer()
+        tracklist = seq.get_track_list()
+        total_length = 0
+        for track_index in range(self.starttrack, len(tracklist)):
+            track = tracklist[track_index]
+            m = track.get_plugin()
+            track_length = 0
+            for pos, value in track.get_event_list():
+                if value >= 0x10:
+                    pat = m.get_pattern(value-0x10)
+                    length = pat.get_row_count()
+                elif value == 0x00:
+                    length = self.step
+                elif value == 0x01:
+                    length = self.step
+                track_length += length
+            if track_length > total_length:
+                total_length = track_length
         h = seq.get_sequence_track_count()
-        w = (max(self.row, player.get_song_end(), player.get_loop_end()) / 
-             self.step + 3)
+        w = (max(self.row, player.get_song_end(), player.get_loop_end(), \
+                total_length) / self.step + 3)
         return w, h
 
     def draw_cursors(self):
