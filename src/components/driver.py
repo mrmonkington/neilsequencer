@@ -156,22 +156,32 @@ class AudioDriver:
         # second round: if we didnt find them from the config,
         # pick good alternatives.
         
+        # regardless of what was chosen as input, if output
+        # has an input as well, prefer that one first.
+        # We also prefer the first device since it is usually the
+        # default system device. Unfortunately, the armstrong api
+        # does not provide us a default value.
+        if (output == -1 and input == -1):
+            for i in range(self.driver.get_count()):
+                if (self.driver.is_output(i) and self.driver.is_input(i)):
+                    output = i
+                    input = i
+                    break
         if output == -1:
             for i in range(self.driver.get_count()):
                 if self.driver.is_output(i):
                     output = i
-        
-        # regardless of what was chosen as input, if output
-        # has an input as well, prefer that one first.
-        if self.driver.is_input(output):
-            input = output
-        
+                    break
+                    
         # take output channel if it supports input      
         if input == -1:
             for i in range(self.driver.get_count()):
                 if self.driver.is_input(i):
                     input = i
-            
+                    break
+            if self.driver.is_input(output):
+                input = output
+
         if output == -1:
             raise self.AudioInitException
         print "best input/output pick:"
