@@ -522,7 +522,7 @@ def gettext(parent, msg, text=''):
     label.set_alignment(0, 0.5)
     entry = gtk.Entry()
     entry.set_text(text)
-    entry.connect('activate', lambda widget: dialog.response(False))
+    entry.connect('activate', lambda widget: dialog.response(True))
     vbox = gtk.VBox(False, 6)
     vbox.set_border_width(6)
     vbox.pack_start(label)
