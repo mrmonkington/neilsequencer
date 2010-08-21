@@ -1200,6 +1200,15 @@ class SequencerView(gtk.DrawingArea):
                     self.deselect()
                     self.dragging = True
                     self.grab_add()
+            if event.type == gtk.gdk._2BUTTON_PRESS: # double-click
+                m, index, bp = self.get_pattern_at(self.track, self.row)
+                if index == None:
+                    track = self.get_track()
+                    if track:
+                        self.jump_to_pattern(track.get_plugin())
+                        return
+                    self.jump_to_pattern(m, index)       
+                    
         elif event.button == 3:
             if (x < self.seq_left_margin) and (track < track_count):
                 mp = player.get_sequence(track).get_plugin()
