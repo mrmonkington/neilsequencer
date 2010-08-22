@@ -1396,13 +1396,16 @@ class PatternView(gtk.DrawingArea):
             p = self.plugin.get_parameter(g,t,i)
             v = self.plugin.get_pattern_value(self.pattern,g,t,i,r)
             if v != p.get_value_none():
-                if (p.get_type() == 0):
+                if (p.get_name() == "Note"):
                     if v != zzub.zzub_note_value_off:
                         v = max(min(mn2bn(bn2mn(v) + offset), 
                                     p.get_value_max()), p.get_value_min())
-                else:
-                    v = max(min(v + offset, p.get_value_max()), 
-                            p.get_value_min())
+                # Why would you want to transpose something that's not
+                # a note??:
+                #
+                #else:
+                #    v = max(min(v + offset, p.get_value_max()), 
+                #            p.get_value_min())
                 self.plugin.set_pattern_value(self.pattern, g, t, i, r, v)
         tmp_sel = self.selection
         player = com.get('neil.core.player')
