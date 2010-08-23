@@ -135,6 +135,7 @@ class SequencerToolBar(gtk.HBox):
         """
         Updates the step selection choice box.
         """
+        player = com.get('neil.core.player')
         self.stepselect.get_model().clear()
         for i in self.steps:
             self.stepselect.append_text("%i" % i)
@@ -142,6 +143,7 @@ class SequencerToolBar(gtk.HBox):
             self.stepselect.set_active(self.steps.index(self.parent.view.step))
             config.get_config().set_default_int('SequencerStep', 
                                                 self.parent.view.step)
+            player.sequence_step = self.parent.view.step
         except ValueError:
             pass
         self.parent.view.adjust_scrollbars()
