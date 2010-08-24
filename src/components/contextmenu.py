@@ -111,6 +111,8 @@ class PluginContextMenu(gtk.Menu):
                        ['Effects', 'Time based'],
                    '@libneil/somono/effect/mverb' :
                        ['Effects', 'Time based'],
+                   '@libneil/somono/effect/mdaDubDelay' :
+                       ['Effects', 'Time based'],
                    '@mda/effect/mdaThruZero;1' :
                        ['Effects', 'Time based'],
                    '@libneil/somono/effect/chebyshev;1' :
