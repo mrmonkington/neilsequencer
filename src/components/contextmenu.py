@@ -127,6 +127,8 @@ class PluginContextMenu(gtk.Menu):
                        ['Effects', 'Distortion'],
                    '@bblunars/effect/mdaDegrade' :
                        ['Effects', 'Distortion'],
+                   '@libneil/edsca/effect/Migraine' :
+                       ['Effects', 'Distortion'],
                    '@bigyo/frequency+shifter;1' :
                        ['Effects', 'Modulation'],
                    'jamesmichaelmcdermott@gmail.com/effect/btdsys_ringmod;1' :
