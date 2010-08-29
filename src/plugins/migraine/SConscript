@@ -1,0 +1,8 @@
+Import('pluginenv', 'build_plugin')
+
+localenv = pluginenv.Clone()
+
+files = ["Migraine.cpp"]
+
+build_plugin(localenv, "edsca_migraine", files)
+	     
