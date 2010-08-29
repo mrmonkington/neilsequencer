@@ -152,7 +152,7 @@ struct MigraineInfo : zzub::info {
     paraIngain = &add_global_parameter()
       .set_byte()
       .set_name("Input gain")
-      .set_description("Imput gain")
+      .set_description("Input gain")
       .set_value_min(0x00)
       .set_value_max(0xfe)
       .set_value_none(0xff)
