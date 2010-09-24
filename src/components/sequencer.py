@@ -1607,7 +1607,24 @@ class SequencerView(gtk.DrawingArea):
             elif self.plugin_info[plugin].muted:
                 title = "(%s)" % title
             # Draw a box that states the name of the machine on that track.
-            ctx.set_foreground(colors['Track Foreground'])
+            if self.plugin_info[plugin].muted:
+                if (is_effect(plugin)):
+                    ctx.set_foreground(colors['Effect Bg Mute'])
+                elif (is_generator(plugin)):
+                    ctx.set_foreground(colors['Generator Bg Mute'])
+                elif (is_controller(plugin)):
+                    ctx.set_foreground(colors['Controller Bg Mute'])
+                elif (is_root(plugin)):
+                    ctx.set_foreground(colors['Master Bg Mute'])
+            else:
+                if (is_effect(plugin)):
+                    ctx.set_foreground(colors['Effect Bg'])
+                elif (is_generator(plugin)):
+                    ctx.set_foreground(colors['Generator Bg'])
+                elif (is_controller(plugin)):
+                    ctx.set_foreground(colors['Controller Bg'])
+                elif (is_root(plugin)):
+                    ctx.set_foreground(colors['Master Bg'])
             drawable.draw_rectangle(ctx, True, 0, y, self.seq_left_margin,
                                     self.seq_track_size)
             ctx.set_foreground(colors['Border'])
@@ -1673,6 +1690,14 @@ class SequencerView(gtk.DrawingArea):
             'Track Foreground' : colormap.alloc_color(cfg.get_color('SE Track Foreground')),
             'Loop Line' : colormap.alloc_color(cfg.get_color('SE Loop Line')),
             'End Marker' : colormap.alloc_color(cfg.get_color('SE End Marker')),
+            'Master Bg' : colormap.alloc_color(cfg.get_color('MV Master')),
+            'Effect Bg' : colormap.alloc_color(cfg.get_color('MV Effect')),
+            'Generator Bg' : colormap.alloc_color(cfg.get_color('MV Generator')),
+            'Controller Bg' : colormap.alloc_color(cfg.get_color('MV Controller')),
+            'Master Bg Mute' : colormap.alloc_color(cfg.get_color('MV Master Mute')),
+            'Effect Bg Mute' : colormap.alloc_color(cfg.get_color('MV Effect Mute')),
+            'Generator Bg Mute' : colormap.alloc_color(cfg.get_color('MV Generator Mute')),
+            'Controller Bg Mute' : colormap.alloc_color(cfg.get_color('MV Controller Mute'))
             }
         # Draw the background
         ctx.set_foreground(colors['Background'])
