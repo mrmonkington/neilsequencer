@@ -152,7 +152,15 @@ class PluginContextMenu(gtk.Menu):
                    '@neil/lunar/controller/Controller;1' :
                        ['Control'],
                    '@trac.zeitherrschaft.org/aldrin/lunar/controller/LunarLFO;1' :
-                       ['Control']}
+                       ['Control'],
+                   '@zzub.org/input' :
+                       ['Utility'],
+                   '@zzub.org/output' :
+                       ['Utility'],
+                   '@zzub.org/recorder/file' :
+                       ['Utility'],
+                   '@zzub.org/recorder/wavetable' :
+                       ['Utility']}
 
     def populate_contextmenu(self, menu):
         if menu.context_id == 'plugin':
