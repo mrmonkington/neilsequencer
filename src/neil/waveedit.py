@@ -23,10 +23,12 @@ Provides dialogs, classes and controls to edit samples.
 """
 
 import gtk
+import pango
+import pangocairo
 import os, sys
 from utils import prepstr, db2linear, linear2db, note2str, file_filter
 from utils import read_int, write_int, add_scrollbars, new_image_button,\
-     filepath
+     filepath, add_hscrollbar
 import zzub
 import config
 import common
@@ -44,12 +46,15 @@ NEXT = 1
 
 class WaveEditPanel(gtk.VBox):
     def __init__(self, wavetable):
+        self.zoom_level = 0
 	gtk.VBox.__init__(self, False, MARGIN)
 	self.wavetable = wavetable
 	self.view = WaveEditView(wavetable)
+        self.scrolled_view = add_hscrollbar(self.view)
 	self.set_border_width(MARGIN)
-	self.waveedscrollwin = add_scrollbars(self.view)
-	self.pack_start(self.waveedscrollwin)
+	#self.waveedscrollwin = add_scrollbars(self.view)
+        #self.scrollbar = gtk.HScrollbar()
+	self.pack_start(self.scrolled_view)
 	waveedbuttons = gtk.HBox(False, MARGIN)
 	self.btnzoomin = gtk.Button("Zoom+")
 	self.btnzoomout = gtk.Button("Zoom-")
@@ -72,15 +77,15 @@ class WaveEditPanel(gtk.VBox):
 	"""
 	A callback that handles zooming in on the wave edit view.
 	"""
-	w, h = self.view.get_client_size()
-	self.view.set_size_request(w * 1.5, h)
+        if self.zoom_level < 16:
+            self.zoom_level += 1
 
     def on_zoom_out(self, widget):
 	"""
 	A callback that handles zooming out off the wave edit view.
 	"""
-	w, h = self.view.get_client_size()
-	self.view.set_size_request(w / 1.5, h)
+        if self.zoom_level > 0:
+            self.zoom_level -= 1
 
     def update(self, *args):
 	self.view.update()
@@ -462,7 +467,7 @@ class WaveEditView(gtk.DrawingArea):
 
 	ctx.translate(0.5,0.5)
 	ctx.set_source_rgb(*bgbrush)
-	ctx.rectangle(0,0,w,h)
+	ctx.rectangle(0, 0, w, h)
 	ctx.fill()
 	ctx.set_line_width(1)
 
@@ -478,14 +483,22 @@ class WaveEditView(gtk.DrawingArea):
 	l = 0
 	while True:
 	    tb = int((rb / spb)) * spb
-	    te = int((re / spb)+1) * spb
+	    te = int((re / spb) + 1) * spb
 	    xp = tb
 	    a = 0.2
-	    ctx.set_source_rgba(*(gridpen + (a,)))
+            ctx.set_source_rgba(*(gridpen + (a,)))
 	    while xp < te:
 		x1 = self.sample_to_client(xp, 0.0)[0]
 		ctx.move_to(x1, 0)
 		ctx.line_to(x1, h)
+                ctx.move_to(x1, 0)
+                pango_ctx = pangocairo.CairoContext(ctx)
+                layout = pango_ctx.create_layout()
+                layout.set_width(-1)
+                layout.set_font_description(pango.FontDescription("sans 8"))
+                layout.set_markup("<small>%.3fs</small>" % (xp / float(self.level.get_samples_per_second())))
+                pango_ctx.update_layout(layout)
+                pango_ctx.show_layout(layout)
 		xp += spb
 	    ctx.stroke()
 	    spb *= 0.5
