@@ -46,7 +46,6 @@ NEXT = 1
 
 class WaveEditPanel(gtk.VBox):
     def __init__(self, wavetable):
-        self.zoom_level = 0
 	gtk.VBox.__init__(self, False, MARGIN)
 	self.wavetable = wavetable
 	self.view = WaveEditView(wavetable)
@@ -77,15 +76,17 @@ class WaveEditPanel(gtk.VBox):
 	"""
 	A callback that handles zooming in on the wave edit view.
 	"""
-        if self.zoom_level < 16:
-            self.zoom_level += 1
+        if self.view.zoom_level < 16:
+            self.view.zoom_level += 1
+        self.view.update()
 
     def on_zoom_out(self, widget):
 	"""
 	A callback that handles zooming out off the wave edit view.
 	"""
-        if self.zoom_level > 0:
-            self.zoom_level -= 1
+        if self.view.zoom_level > 0:
+            self.view.zoom_level -= 1
+        self.view.update()
 
     def update(self, *args):
 	self.view.update()
@@ -111,6 +112,7 @@ class WaveEditView(gtk.DrawingArea):
 	"""
 	Initialization.
 	"""
+        self.zoom_level = 0
 	self.wavetable = wavetable
 	self.wave = None
 	self.level = None
@@ -478,65 +480,34 @@ class WaveEditView(gtk.DrawingArea):
 	ctx.set_source_rgb(*gridpen)
 	rb, re = self.range
 	rsize = re - rb
-	spb = (60.0 * float(self.level.get_samples_per_second())) / float(player.get_bpm()) # samples per beat
-	ppb = (float(w) * spb)/ rsize # pixels begin
-	l = 0
-	while True:
-	    tb = int((rb / spb)) * spb
-	    te = int((re / spb) + 1) * spb
-	    xp = tb
-	    a = 0.2
-            ctx.set_source_rgba(*(gridpen + (a,)))
-	    while xp < te:
-		x1 = self.sample_to_client(xp, 0.0)[0]
-		ctx.move_to(x1, 0)
-		ctx.line_to(x1, h)
-                ctx.move_to(x1, 0)
-                pango_ctx = pangocairo.CairoContext(ctx)
-                layout = pango_ctx.create_layout()
-                layout.set_width(-1)
-                layout.set_font_description(pango.FontDescription("sans 8"))
-                layout.set_markup("<small>%.3fs</small>" % (xp / float(self.level.get_samples_per_second())))
-                pango_ctx.update_layout(layout)
-                pango_ctx.show_layout(layout)
-		xp += spb
-	    ctx.stroke()
-	    spb *= 0.5
-	    ppb *= 0.5
-	    l += 1
-	    if (l > 5) or (ppb < 16):
-		break
+        x = 0
+        y = 0
+        ctx.set_source_rgba(*(gridpen))
+        for i in range(8):
+            ctx.move_to(x, 0)
+            ctx.line_to(x, h)
+            ctx.move_to(x + 2, 0)
+            pango_ctx = pangocairo.CairoContext(ctx)
+            layout = pango_ctx.create_layout()
+            layout.set_width(-1)
+            layout.set_font_description(pango.FontDescription("sans 8"))
+            sample_number = i * (rsize / 8)
+            second = sample_number / float(self.level.get_samples_per_second())
+            layout.set_markup("<small>%.3fs</small>" % second)
+            pango_ctx.update_layout(layout)
+            pango_ctx.show_layout(layout)
+            x += (w / 8)
+        for i in range(8):
+            ctx.move_to(0, y)
+            ctx.line_to(w, y)
+            y += (h / 8)
+        ctx.stroke()
 
   	if len(self.ampbuffer) != w:
   	    self.update_digest()
 	    
   	minbuffer, maxbuffer, ampbuffer = \
 	    self.minbuffer, self.maxbuffer, self.ampbuffer
-
-#  	ctx.set_source_rgba(*(brush2 + (0.5,)))
-#  	ctx.move_to(0, h-1)
-#  	for x in xrange(w):
-#  	    a = 1.0 + linear2db(ampbuffer[x],-80.0) / 80.0
-#  	    ctx.line_to(x, h-1-(h*a))
-#  	ctx.line_to(w-1, h-1)
-#  	ctx.fill()
-
-#  	for x in self.peaks:
-#  	    x1 = self.sample_to_client(x, 0.0)[0]
-#  	    ctx.set_source_rgb(*splitbar)
-#  	    if (x1 >= 0) and (x1 <= w):
-#  		ctx.move_to(x1, 0)
-#  		ctx.line_to(x1, h)
-#  		ctx.stroke()
-#  	minp, maxp = self.offpeak, self.onpeak
-#  	ctx.set_source_rgb(*offpeak)
-#  	ctx.move_to(0, h-1-(h*minp))
-#  	ctx.line_to(w-1, h-1-(h*minp))
-#  	ctx.stroke()
-#  	ctx.set_source_rgb(*onpeak)
-#  	ctx.move_to(0, h-1-(h*maxp))
-#  	ctx.line_to(w-1, h-1-(h*maxp))
-#  	ctx.stroke()
 
 	# Draw the waveform.
 	ctx.set_source_rgba(*(brush + (0.5,)))
@@ -556,23 +527,9 @@ class WaveEditView(gtk.DrawingArea):
  	    x1 = self.sample_to_client(begin, 0.0)[0]
  	    x2 = self.sample_to_client(end, 0.0)[0]
  	    if (x2 >= 0) and (x1 <= w):
- 		ctx.set_source_rgba(*selbrush + (0.3,))
- 		ctx.rectangle(x1, 0, x2 - x1, h)
+ 		ctx.rectangle(x1, 0, x2 - x1, h - 1)
+                ctx.set_source_rgba(0.0, 1.0, 0.0, 1.0)
+                ctx.set_line_width(1)
+                ctx.stroke_preserve()
+ 		ctx.set_source_rgba(0.0, 1.0, 0.0, 0.2)
  		ctx.fill()
-
-#  	if self.stretching:
-#  	    x1 = self.sample_to_client(self.stretchbegin, 0.0)[0]
-#  	    x2 = self.sample_to_client(self.stretchend, 0.0)[0]
-#  	    ctx.set_source_rgb(*stretchbrush)
-#  	    if (x1 >= 0) and (x1 <= w):
-#  		ctx.move_to(x1, 0)
-#  		ctx.line_to(x1, h)
-#  		ctx.stroke()
-#  	    if (x2 >= 0) and (x2 <= w):
-#  		ctx.move_to(x2, 0)
-#  		ctx.line_to(x2, h)
-#  		ctx.stroke()
-#  		ctx.rectangle(x2-4, (h/2)-4, 8, 8)
-#  		ctx.stroke()
-
-
