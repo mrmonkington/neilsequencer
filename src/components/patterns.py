@@ -461,11 +461,13 @@ class PatternPanel(gtk.VBox):
         self.statusbar.pack_start(gtk.VSeparator(), expand=False)
 
         self.view = PatternView(self, hscroll, vscroll)
+        self.viewport = gtk.Viewport()
+        self.viewport.add(self.view)
         self.toolbar = PatternToolBar(self.view)
         self.view.statusbar = self.statusbar
         self.pack_start(self.toolbar, expand=False)
         scrollwin = gtk.Table(2,2)
-        scrollwin.attach(self.view, 0, 1, 0, 1, gtk.FILL|gtk.EXPAND, gtk.FILL|gtk.EXPAND)
+        scrollwin.attach(self.viewport, 0, 1, 0, 1, gtk.FILL|gtk.EXPAND, gtk.FILL|gtk.EXPAND)
         scrollwin.attach(vscroll, 1, 2, 0, 1, 0, gtk.FILL)
         scrollwin.attach(hscroll, 0, 1, 1, 2, gtk.FILL, 0)
         self.pack_start(scrollwin)
@@ -2568,7 +2570,7 @@ class PatternView(gtk.DrawingArea):
         drawable.draw_rectangle(gc, True, 0, 0, w, self.row_height)
         drawable.draw_rectangle(gc, True, 0, 0, PATLEFTMARGIN, h)
         gc.set_foreground(pen)
-        drawable.draw_rectangle(gc, False, 0, 0, w - 1, h - 1)
+        #drawable.draw_rectangle(gc, False, 0, 0, w - 1, h - 1)
         x, y = PATLEFTMARGIN, self.row_height
         row = self.start_row
         rows = self.row_count

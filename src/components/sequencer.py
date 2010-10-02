@@ -226,8 +226,10 @@ class SequencerPanel(gtk.VBox):
         hscroll = gtk.HScrollbar()
 
         self.seqview = SequencerView(self, hscroll, vscroll)
+        self.viewport = gtk.Viewport()
+        self.viewport.add(self.seqview)
         scrollwin = gtk.Table(2,2)
-        scrollwin.attach(self.seqview, 0, 1, 0, 1,
+        scrollwin.attach(self.viewport, 0, 1, 0, 1,
                          gtk.FILL | gtk.EXPAND, gtk.FILL | gtk.EXPAND)
         scrollwin.attach(vscroll, 1, 2, 0, 1, 0, gtk.FILL)
         scrollwin.attach(hscroll, 0, 1, 1, 2, gtk.FILL, 0)
@@ -1707,8 +1709,8 @@ class SequencerView(gtk.DrawingArea):
         self.draw_loop_points(ctx, colors)
         self.draw_cursors()
         # Draw the black border
-        ctx.set_foreground(colors['Border'])
-        drawable.draw_rectangle(ctx, False, 0, 0, width - 1, height - 1)
+        #ctx.set_foreground(colors['Border'])
+        #drawable.draw_rectangle(ctx, False, 0, 0, width - 1, height - 1)
 
 __all__ = [
 'PatternNotFoundException',
