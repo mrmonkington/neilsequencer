@@ -49,18 +49,11 @@ class WaveEditPanel(gtk.VBox):
 	gtk.VBox.__init__(self, False, MARGIN)
 	self.wavetable = wavetable
 	self.view = WaveEditView(wavetable)
-        self.scrolled_view = add_hscrollbar(self.view)
+        self.pack_start(self.view)
 	self.set_border_width(MARGIN)
 	#self.waveedscrollwin = add_scrollbars(self.view)
         #self.scrollbar = gtk.HScrollbar()
-	self.pack_start(self.scrolled_view)
 	waveedbuttons = gtk.HBox(False, MARGIN)
-	self.btnzoomin = gtk.Button("Zoom+")
-	self.btnzoomout = gtk.Button("Zoom-")
-	waveedbuttons.pack_start(self.btnzoomin, expand=False)
-	waveedbuttons.pack_start(self.btnzoomout, expand=False)
-	self.btnzoomin.connect('clicked', self.on_zoom_in)
-	self.btnzoomout.connect('clicked', self.on_zoom_out)
 	self.btndelrange = gtk.Button("Delete")
 	waveedbuttons.pack_start(self.btndelrange, expand=False)
 	#self.btnstoresel = gtk.Button("Save Sel/Slices")
@@ -71,22 +64,6 @@ class WaveEditPanel(gtk.VBox):
 	self.btndelrange.connect('clicked', self.on_delete_range)
 	#self.btnstoresel.connect('clicked', self.on_store_range)
 	#self.btnapplyslices.connect('clicked', self.on_apply_slices)
-
-    def on_zoom_in(self, widget):
-	"""
-	A callback that handles zooming in on the wave edit view.
-	"""
-        if self.view.zoom_level < 16:
-            self.view.zoom_level += 1
-        self.view.update()
-
-    def on_zoom_out(self, widget):
-	"""
-	A callback that handles zooming out off the wave edit view.
-	"""
-        if self.view.zoom_level > 0:
-            self.view.zoom_level -= 1
-        self.view.update()
 
     def update(self, *args):
 	self.view.update()
@@ -119,6 +96,8 @@ class WaveEditView(gtk.DrawingArea):
 	self.offpeak = 0.4
 	self.onpeak = 0.9
 	self.dragging = False
+        self.right_dragging = False
+        self.right_drag_start = 0
 	self.stretching = False
 	gtk.DrawingArea.__init__(self)
 	self.add_events(gtk.gdk.ALL_EVENTS_MASK)
@@ -200,8 +179,8 @@ class WaveEditView(gtk.DrawingArea):
 	Callback that responds to mousewheeling in pattern view.
 	"""		
 	mx, my = int(event.x), int(event.y)
-	s,a = self.client_to_sample(mx,my)
-	b,e = self.range
+	s, a = self.client_to_sample(mx,my)
+	b, e = self.range
 	diffl = s - b
 	diffr = e - s
 	if event.direction == gtk.gdk.SCROLL_DOWN:
@@ -278,7 +257,7 @@ class WaveEditView(gtk.DrawingArea):
 	"""
 	mx, my = int(event.x), int(event.y)
 	if (event.button == 1):
-	    s,a = self.client_to_sample(mx,my)
+	    s, a = self.client_to_sample(mx,my)
 	    if (event.state & gtk.gdk.SHIFT_MASK):
 		if self.selection:
 		    begin,end = self.selection
@@ -304,13 +283,17 @@ class WaveEditView(gtk.DrawingArea):
 		self.grab_add()
 		self.redraw()
 	elif (event.button == 2):
-	    s,a = self.client_to_sample(mx,my,True)
+	    s, a = self.client_to_sample(mx,my,True)
 	    if (event.state & gtk.gdk.SHIFT_MASK):
 		self.offpeak = a
 	    else:
 		self.onpeak = a
 	    self.update_peaks()
 	    self.redraw()
+        elif (event.button == 3):
+	    s, a = self.client_to_sample(mx, my)
+            self.right_dragging = True
+            self.right_drag_start = s
 
     def sample_changed(self):
 	self.update_peaks()
@@ -328,7 +311,7 @@ class WaveEditView(gtk.DrawingArea):
 	if self.stretching == True:
 	    self.grab_remove()
 	    self.stretching = False
-	    begin,end = self.selection
+	    begin, end = self.selection
 	    xo,xn = self.stretchbegin, self.stretchend # old pos, new pos
 	    if xo != xn:
 		print "begin=%i, end=%i, xo=%i, xn=%i" % (begin,end,xo,xn)
@@ -350,16 +333,18 @@ class WaveEditView(gtk.DrawingArea):
 	    else:
 		self.set_selection(self.startpos, s)
 	    self.redraw()
+        elif event.button == 3:
+            self.right_dragging = False
 
     def on_motion(self, widget, event):
 	"""
 	Callback that responds to mouse motion over the wave view.
 	"""
-	mx,my = int(event.x), int(event.y)
-	s,a = self.client_to_sample(mx,my)
+	mx, my = int(event.x), int(event.y)
+	s, a = self.client_to_sample(mx, my)
 	if self.stretching == True:
 	    if self.selection:
-		begin,end = self.selection
+		begin, end = self.selection
 		self.stretchend = max(min(s, end),begin)
 		self.redraw()
 	elif self.dragging == True:
@@ -368,6 +353,10 @@ class WaveEditView(gtk.DrawingArea):
 	    else:
 		self.set_selection(self.startpos, s)
 	    self.redraw()
+        elif self.right_dragging == True:
+            begin, end = self.range
+            diff = self.right_drag_start - s
+            self.set_range(begin + diff, end + diff)
 
     def update(self):
 	"""
@@ -387,7 +376,6 @@ class WaveEditView(gtk.DrawingArea):
 	self.redraw()
 
     def update_peaks(self):
-	print "updating peaks..."
 	samplerate = int(self.level.get_samples_per_second())
 	blocksize = min(self.level.get_sample_count(), 44)
 	peaksize = self.level.get_sample_count() / blocksize
@@ -491,7 +479,7 @@ class WaveEditView(gtk.DrawingArea):
             layout = pango_ctx.create_layout()
             layout.set_width(-1)
             layout.set_font_description(pango.FontDescription("sans 8"))
-            sample_number = i * (rsize / 8)
+            sample_number = rb + i * (rsize / 8)
             second = sample_number / float(self.level.get_samples_per_second())
             layout.set_markup("<small>%.3fs</small>" % second)
             pango_ctx.update_layout(layout)
