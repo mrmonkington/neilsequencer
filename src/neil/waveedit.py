@@ -49,7 +49,9 @@ class WaveEditPanel(gtk.VBox):
 	gtk.VBox.__init__(self, False, MARGIN)
 	self.wavetable = wavetable
 	self.view = WaveEditView(wavetable)
-        self.pack_start(self.view)
+        self.viewport = gtk.Viewport()
+        self.viewport.add(self.view)
+        self.pack_start(self.viewport)
 	self.set_border_width(MARGIN)
 	#self.waveedscrollwin = add_scrollbars(self.view)
         #self.scrollbar = gtk.HScrollbar()
