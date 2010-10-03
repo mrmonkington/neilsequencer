@@ -53,17 +53,14 @@ class WaveEditPanel(gtk.VBox):
         self.viewport.add(self.view)
         self.pack_start(self.viewport)
 	self.set_border_width(MARGIN)
-	#self.waveedscrollwin = add_scrollbars(self.view)
-        #self.scrollbar = gtk.HScrollbar()
 	waveedbuttons = gtk.HBox(False, MARGIN)
 	self.btndelrange = gtk.Button("Delete")
+        self.btnlooprange = gtk.Button("Loop")
 	waveedbuttons.pack_start(self.btndelrange, expand=False)
-	#self.btnstoresel = gtk.Button("Save Sel/Slices")
-	#waveedbuttons.pack_start(self.btnstoresel, expand=False)
-	#self.btnapplyslices = gtk.Button("Apply Slices")
-	#waveedbuttons.pack_start(self.btnapplyslices, expand=False)
+        waveedbuttons.pack_start(self.btnlooprange, expand=False)
 	self.pack_end(waveedbuttons, expand=False)
 	self.btndelrange.connect('clicked', self.on_delete_range)
+        self.btnlooprange.connect('clicked', self.on_loop_range)
 	#self.btnstoresel.connect('clicked', self.on_store_range)
 	#self.btnapplyslices.connect('clicked', self.on_apply_slices)
 
@@ -79,6 +76,13 @@ class WaveEditPanel(gtk.VBox):
     def on_delete_range(self, widget):
 	self.view.delete_range()
 	self.wavetable.update_sampleprops()
+
+    def on_loop_range(self, widget):
+	player = com.get('neil.core.player')
+        begin, end = self.view.selection
+        self.view.level.set_loop_start(begin)
+        self.view.level.set_loop_end(end)
+        player.history_commit("set loop range")
 
 class WaveEditView(gtk.DrawingArea):
     """
@@ -447,10 +451,37 @@ class WaveEditView(gtk.DrawingArea):
         begin, end = self.range
         start = 1.0 - (sample_count - begin) / float(sample_count)
         finish = 1.0 - (sample_count - end) / float(sample_count)
-        print start, finish
         ctx.rectangle(10 + (w - 20) * start, h - 20,
                       (w - 20) * finish - (w - 20) * start, 10)
         ctx.fill()
+
+    def draw_loop_points(self, ctx):
+        width, height = self.get_client_size()
+        begin, end = self.range
+        loop_start = self.level.get_loop_start()
+        loop_end = self.level.get_loop_end()
+        ctx.set_source_rgb(0.0, 0.0, 0.0)
+        ctx.set_line_width(1)
+        if loop_start > begin and loop_start < end:
+            scale = (loop_start - begin) / float(end - begin)
+            x = int(width * scale)
+            ctx.move_to(x, 0)
+            ctx.line_to(x + 10, 0)
+            ctx.line_to(x, 10)
+            ctx.line_to(x, 0)
+            ctx.line_to(x, height)
+            ctx.stroke_preserve()
+            ctx.fill()
+        if loop_end > begin and loop_end < end:
+            scale = (loop_end - begin) / float(end - begin)
+            x = int(width * scale)
+            ctx.move_to(x, 0)
+            ctx.line_to(x - 10, 0)
+            ctx.line_to(x, 10)
+            ctx.line_to(x, 0)
+            ctx.line_to(x, height)
+            ctx.stroke_preserve()
+            ctx.fill()
 
     def draw(self, ctx):
 	"""
@@ -538,4 +569,5 @@ class WaveEditView(gtk.DrawingArea):
                 ctx.stroke_preserve()
  		ctx.set_source_rgba(0.0, 1.0, 0.0, 0.2)
  		ctx.fill()
+        self.draw_loop_points(ctx)
         self.draw_zoom_indicator(ctx)
