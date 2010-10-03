@@ -437,6 +437,21 @@ class WaveEditView(gtk.DrawingArea):
 	gtk.DrawingArea.set_sensitive(self, enable)
 	self.redraw()
 
+    def draw_zoom_indicator(self, ctx):
+        w, h = self.get_client_size()
+        ctx.set_source_rgb(0.5, 0.5, 0.5)
+        ctx.set_line_width(1)
+        ctx.rectangle(10, h - 20, w - 20, 10)
+        ctx.stroke()
+        sample_count = self.level.get_sample_count()
+        begin, end = self.range
+        start = 1.0 - (sample_count - begin) / float(sample_count)
+        finish = 1.0 - (sample_count - end) / float(sample_count)
+        print start, finish
+        ctx.rectangle(10 + (w - 20) * start, h - 20,
+                      (w - 20) * finish - (w - 20) * start, 10)
+        ctx.fill()
+
     def draw(self, ctx):
 	"""
 	Overriding a L{Canvas} method that paints onto an offscreen buffer.
@@ -457,7 +472,7 @@ class WaveEditView(gtk.DrawingArea):
 	onpeak = cfg.get_float_color('WE Wakeup Peaks')
 	offpeak = cfg.get_float_color('WE Sleep Peaks')
 
-	ctx.translate(0.5,0.5)
+	ctx.translate(0.5, 0.5)
 	ctx.set_source_rgb(*bgbrush)
 	ctx.rectangle(0, 0, w, h)
 	ctx.fill()
@@ -523,3 +538,4 @@ class WaveEditView(gtk.DrawingArea):
                 ctx.stroke_preserve()
  		ctx.set_source_rgba(0.0, 1.0, 0.0, 0.2)
  		ctx.fill()
+        self.draw_zoom_indicator(ctx)

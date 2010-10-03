@@ -168,7 +168,7 @@ DEFAULT_THEME = {
     'WE Line': 0x6060c0,
     'WE Fill': 0xe0e0ff,
     'WE Peak Fill': 0x6060c0,
-    'WE Grid': 0xe0e0e0,
+    'WE Grid': 0xd0d0d0,
     'WE Selection': 0xff0000,
     'WE Stretch Cue': 0x00ff00,
     'WE Split Bar': 0x800080,
