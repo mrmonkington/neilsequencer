@@ -1942,7 +1942,7 @@ class PatternView(gtk.DrawingArea):
                     self.selection.begin=self.keystartselect
                 if self.keyendselect:
                     self.selection.end=self.keyendselect
-                if self.selection.end == self.row+1:
+                if self.selection.end == self.row + 1:
                     self.selection.mode = (self.selection.mode + 1) % 4
                 self.selection.end = self.row+1
                 self.keyendselect=self.row+1
@@ -2029,10 +2029,10 @@ class PatternView(gtk.DrawingArea):
             player.activate_pattern(-1)
         elif k in ('KP_Multiply', 'dead_acute'):
             player = com.get('neil.core.player')
-            self.set_octave(player.octave+1)
+            self.set_octave(player.octave + 1)
         elif k in ('KP_Divide', 'ssharp'):
             player = com.get('neil.core.player')
-            self.set_octave(player.octave-1)
+            self.set_octave(player.octave - 1)
         elif k == 'Escape':
             self.selection = None
             self.shiftselect = None

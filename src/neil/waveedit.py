@@ -56,6 +56,7 @@ class WaveEditPanel(gtk.VBox):
 	waveedbuttons = gtk.HBox(False, MARGIN)
 	self.btndelrange = gtk.Button("Delete")
         self.btnlooprange = gtk.Button("Loop")
+        self.btnxloop = gtk.Button("XLoop")
 	waveedbuttons.pack_start(self.btndelrange, expand=False)
         waveedbuttons.pack_start(self.btnlooprange, expand=False)
 	self.pack_end(waveedbuttons, expand=False)
@@ -82,7 +83,7 @@ class WaveEditPanel(gtk.VBox):
         begin, end = self.view.selection
         self.view.level.set_loop_start(begin)
         self.view.level.set_loop_end(end)
-        player.history_commit("set loop range")
+        player.history_commit("set loop range")        
 
 class WaveEditView(gtk.DrawingArea):
     """
@@ -458,30 +459,31 @@ class WaveEditView(gtk.DrawingArea):
     def draw_loop_points(self, ctx):
         width, height = self.get_client_size()
         begin, end = self.range
-        loop_start = self.level.get_loop_start()
-        loop_end = self.level.get_loop_end()
-        ctx.set_source_rgb(0.0, 0.0, 0.0)
-        ctx.set_line_width(1)
-        if loop_start > begin and loop_start < end:
-            scale = (loop_start - begin) / float(end - begin)
-            x = int(width * scale)
-            ctx.move_to(x, 0)
-            ctx.line_to(x + 10, 0)
-            ctx.line_to(x, 10)
-            ctx.line_to(x, 0)
-            ctx.line_to(x, height)
-            ctx.stroke_preserve()
-            ctx.fill()
-        if loop_end > begin and loop_end < end:
-            scale = (loop_end - begin) / float(end - begin)
-            x = int(width * scale)
-            ctx.move_to(x, 0)
-            ctx.line_to(x - 10, 0)
-            ctx.line_to(x, 10)
-            ctx.line_to(x, 0)
-            ctx.line_to(x, height)
-            ctx.stroke_preserve()
-            ctx.fill()
+        if self.level.get_wave().get_flags() & zzub.zzub_wave_flag_loop:
+            loop_start = self.level.get_loop_start()
+            loop_end = self.level.get_loop_end()
+            ctx.set_source_rgb(1.0, 0.0, 0.0)
+            ctx.set_line_width(1)
+            if loop_start > begin and loop_start < end:
+                scale = (loop_start - begin) / float(end - begin)
+                x = int(width * scale)
+                ctx.move_to(x, 0)
+                ctx.line_to(x + 10, 0)
+                ctx.line_to(x, 10)
+                ctx.line_to(x, 0)
+                ctx.line_to(x, height)
+                ctx.stroke_preserve()
+                ctx.fill()
+            if loop_end > begin and loop_end < end:
+                scale = (loop_end - begin) / float(end - begin)
+                x = int(width * scale)
+                ctx.move_to(x, 0)
+                ctx.line_to(x - 10, 0)
+                ctx.line_to(x, 10)
+                ctx.line_to(x, 0)
+                ctx.line_to(x, height)
+                ctx.stroke_preserve()
+                ctx.fill()
 
     def draw(self, ctx):
 	"""
