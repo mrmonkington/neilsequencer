@@ -849,6 +849,16 @@ class PatternView(gtk.DrawingArea):
         transform.add_item("Interpolate", self.interpolate_selection).set_sensitive(sel_sensitive)
         transform.add_item("Reverse", self.reverse_selection).set_sensitive(sel_sensitive)
 
+        # Pattern effects menu
+        label, effects_menu = menu.add_submenu("Pattern effects")
+        effects = com.get_from_category('patternfx')
+        print effects
+        for effect in effects:
+            effects_menu.add_item(effect.name, effect.transform, 
+                                  self.plugin, self.pattern, 
+                                  self.selection, self.selection_range()).\
+                                  set_sensitive(sel_sensitive)
+
         # User script menu
         label, scripts_menu = menu.add_submenu("User scripts")
         import sys
@@ -1390,13 +1400,13 @@ class PatternView(gtk.DrawingArea):
         @param offset: The amount that the values is incremented.
         @type offset: int
         """
-        for r,g,t,i in self.selection_range():
-            if r>self.plugin.get_pattern_length(self.pattern)-1:
+        for r, g, t, i in self.selection_range():
+            if r > self.plugin.get_pattern_length(self.pattern) - 1:
                 break
-            if r<0:
+            if r < 0:
                 continue
-            p = self.plugin.get_parameter(g,t,i)
-            v = self.plugin.get_pattern_value(self.pattern,g,t,i,r)
+            p = self.plugin.get_parameter(g, t, i)
+            v = self.plugin.get_pattern_value(self.pattern, g, t, i, r)
             if v != p.get_value_none():
                 if (p.get_name() == "Note"):
                     if v != zzub.zzub_note_value_off:
