@@ -1,66 +1,94 @@
+import gtk
+import random
 import neil.com as com
 from neil.utils import roundint, bn2mn, mn2bn
 
-class Interpolate():
-    name = 'Interpolate'
-
+class SimpleRandom():
     __neil__ = dict(
-        id = 'neil.core.patternfx.interpolate',
+        id = 'neil.core.patternfx.simplerandom',
         categories = [
             'patternfx'
             ]
         )
 
-    def transform(self, widget, plugin, pattern, selection, selection_range):
-        player = com.get('neil.core.player')
-        player.set_callback_state(False)
-        if not selection:
-            return
-        if selection.end == selection.begin + 1:
-            return
-        step = 1
-        for row, group, track, index in selection_range:
-            if row > plugin.get_pattern_length(pattern) - 1:
-                break
-            if row < 0:
-                continue
-            parameter = plugin.get_parameter(group, track, index)
-            v1 = plugin.get_pattern_value(pattern, group, track, index, 
-                                          selection.begin)
-            v2 = plugin.get_pattern_value(pattern, group, track, index, 
-                                          selection.end - 1)
-            if ((v1 != parameter.get_value_none()) and 
-                (v2 != parameter.get_value_none())):
-                if (parameter.get_type() == 0 and 
-                    (v1 == zzub.zzub_note_value_off or 
-                     v2 == zzub.zzub_note_value_off)):
-                    continue
-                if (row - selection.begin) % step != 0:
-                    value = parameter.get_value_none()
-                else:
-                    f = (float(row - selection.begin) / 
-                         float(selection.end - selection.begin - 1))
-                    if (parameter.get_type() == 0):
-                        v1 = bn2mn(v1)
-                        v2 = bn2mn(v2)
-                        value = mn2bn(roundint((v2 - v1) * f + v1))
-                    else:
-                        value = roundint((v2 - v1) * f + v1)
-                plugin.set_pattern_value(pattern, group, track, index,
-                                         row, value)
-        player.history_commit("interpolate")
-        if player.set_callback_state(True):
-            eventbus = com.get('neil.core.eventbus')
-            eventbus.document_loaded()
+    name = "Simple Random"
 
-        
+    def transform(self, data, parameter):
+        for row in range(len(data)):
+            a = parameter.get_value_min()
+            b = parameter.get_value_max()
+            value = random.randint(a, b)
+            data[row] = value
+        return data
+
+class RandomWalk():
+    __neil__ = dict(
+        id = 'neil.core.patternfx.randomwalk',
+        categories = [
+            'patternfx'
+            ]
+        )
+
+    name = "Random Walk"
+
+    def transform(self, data, parameter):
+        dialog = gtk.Dialog(
+            "Random Walk",
+            buttons=(gtk.STOCK_OK, True, gtk.STOCK_CANCEL, False)
+            )
+        grid = gtk.Table(3, 2, True)
+        grid.attach(gtk.Label("Start:"), 0, 1, 0, 1)
+        grid.attach(gtk.Label("Min Step:"), 0, 1, 1, 2)
+        grid.attach(gtk.Label("Max Step:"), 0, 1, 2, 3)
+        start_box = gtk.SpinButton(gtk.Adjustment(
+                parameter.get_value_min(),
+                parameter.get_value_min(),
+                parameter.get_value_max(),
+                1))
+        min_box = gtk.SpinButton(gtk.Adjustment(
+                1,
+                1,
+                parameter.get_value_max(),
+                1))
+        max_box = gtk.SpinButton(gtk.Adjustment(
+                1,
+                1,
+                parameter.get_value_max(),
+                1))
+        grid.attach(start_box, 1, 2, 0, 1)
+        grid.attach(min_box, 1, 2, 1, 2)
+        grid.attach(max_box, 1, 2, 2, 3)
+        dialog.vbox.add(grid)
+        dialog.show_all()
+        response = dialog.run()
+        start = start_box.get_value()
+        min_step = min_box.get_value()
+        max_step = max_box.get_value()
+        dialog.destroy()
+        value = start
+        if response:
+            for row in range(len(data)):
+                data[row] = int(value)
+                if random.randint(0, 1) == 0:
+                    value += random.randint(min_step, max_step)
+                else:
+                    value -= random.randint(min_step, max_step)
+                while (value > parameter.get_value_max() or
+                       value < parameter.get_value_min()):
+                    if value > parameter.get_value_max():
+                        value = 2 * parameter.get_value_max() - value
+                    if value < parameter.get_value_min():
+                        value = 2 * parameter.get_value_min() - value
+        return data
 
 __all__ = [
-    'Interpolate'
-]
+    'SimpleRandom',
+    'RandomWalk',
+    ]
 
 __neil__ = dict(
     classes = [
-        Interpolate
+        SimpleRandom,
+        RandomWalk,
         ]
-)
+    )

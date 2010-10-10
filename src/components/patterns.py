@@ -854,10 +854,8 @@ class PatternView(gtk.DrawingArea):
         effects = com.get_from_category('patternfx')
         print effects
         for effect in effects:
-            effects_menu.add_item(effect.name, effect.transform, 
-                                  self.plugin, self.pattern, 
-                                  self.selection, self.selection_range()).\
-                                  set_sensitive(sel_sensitive)
+            effects_menu.add_item(effect.name, self.on_pattern_effect, effect).\
+                set_sensitive(sel_sensitive) 
 
         # User script menu
         label, scripts_menu = menu.add_submenu("User scripts")
@@ -880,6 +878,29 @@ class PatternView(gtk.DrawingArea):
         menu.show_all()
         menu.attach_to_widget(self, None)
         menu.popup(self, event)
+
+    def on_pattern_effect(self, item, effect):
+        values = {}
+        for row, group, track, index in self.selection_range():
+            value = self.plugin.get_pattern_value(self.pattern, group, 
+                                                  track, index, row)
+            try:
+                values[(group, track, index)] = (values[(group, track, index)] +
+                                                 [(row, value)])
+            except KeyError:
+                values[(group, track, index)] = [(row, value)]
+        for key in values.iterkeys():
+            group = key[0]
+            track = key[1]
+            index = key[2]
+            param = self.plugin.get_parameter(group, track, index)
+            output = effect.transform([value[1] for value in values[key]], 
+                                      param)
+            for (row, value), i in zip(values[key], range(len(output))):
+                self.plugin.set_pattern_value(self.pattern, group, track, index,
+                                              row, output[i])
+            player = com.get('neil.core.player')
+            player.history_commit('pattern effect')
 
     def on_activate_user_script(self, item, method):
         values = {}
