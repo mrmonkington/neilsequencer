@@ -1880,11 +1880,10 @@ namespace zzub {
 		    evpt.x = int(double(pt->attribute("t").as_double()) * 65535.0 + 0.5);
 		    evpt.y = int(double(pt->attribute("v").as_double()) * 65535.0 + 0.5);
 		    evpt.flags = 0;
-									
-		    if (bool(pt->attribute("sustain").as_int())) {
+		    if (pt->attribute("sustain").as_bool()) {
 		      evpt.flags |= zzub::envelope_flag_sustain;
 		    }
-		    if (bool(pt->attribute("loop").as_int())) {
+		    if (pt->attribute("loop").as_bool()) {
 		      evpt.flags |= zzub::envelope_flag_loop;
 		    }
 		    env.points.push_back(evpt);
