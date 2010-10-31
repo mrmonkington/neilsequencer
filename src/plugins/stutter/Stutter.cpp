@@ -72,7 +72,7 @@ bool Stutter::process_stereo(float **pin, float **pout, int n, int mode) {
 	env = 1.0;
       }
       pout[0][i] = pin[0][i] * env;
-      pout[1][i] = pin[0][i] * env;
+      pout[1][i] = pin[1][i] * env;
     } else {
       if (record) {
 	buffer[0][cursor] = pin[0][i];
