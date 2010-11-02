@@ -28,7 +28,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "LinLog.h"
 #include "Bigyo_FrequencyShifter.h"
 
-#pragma optimize ("awy", on) 
+//#include<iostream>
+
+#pragma optimize ("awy", on)
 
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -40,8 +42,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 ***/
 
-const char *zzub_get_signature() { 
-	return ZZUB_SIGNATURE; 
+const char *zzub_get_signature() {
+	return ZZUB_SIGNATURE;
 }
 
 zzub::plugincollection *zzub_get_plugincollection() {
@@ -57,6 +59,9 @@ zzub::plugincollection *zzub_get_plugincollection() {
 const zzub::parameter *paraDirectionL = 0;
 const zzub::parameter *paraDirectionR = 0;
 const zzub::parameter *paraRate = 0;
+const zzub::parameter *paraWet =0;
+const zzub::parameter *paraDry =0;
+const zzub::parameter *paraLfoRate =0;
 
 machine_info::machine_info() {
 	this->flags = zzub::plugin_flag_has_audio_input | zzub::plugin_flag_has_audio_output;
@@ -84,7 +89,7 @@ machine_info::machine_info() {
 		.set_value_max(0x02)
 		.set_value_none(0xFF)
 		.set_value_default(0x00);
-                
+
 
 	paraDirectionR = &add_global_parameter()
 		.set_byte()
@@ -95,6 +100,40 @@ machine_info::machine_info() {
 		.set_value_max(0x02)
 		.set_value_none(0xFF)
 		.set_value_default(0x00);
+
+    paraLfoRate = &add_global_parameter()
+        .set_word()
+        .set_state_flag()
+        .set_name("LFO Rate")
+        .set_description("LFO Rate")
+        .set_value_min(0x0000)
+        .set_value_max(0xFFFE)
+        .set_value_none(0xFFFF)
+        .set_value_default(0x8000);
+
+
+
+
+    paraWet = &add_global_parameter()
+        .set_word()
+        .set_state_flag()
+        .set_name("Wet")
+        .set_description("Wet")
+        .set_value_min(0x0001)
+        .set_value_max(0xFFFE)
+        .set_value_none(0xFFFF)
+        .set_value_default(0xFFFE);
+
+    paraDry = &add_global_parameter()
+        .set_word()
+        .set_state_flag()
+        .set_name("Dry")
+        .set_description("Dry")
+        .set_value_min(0x0001)
+        .set_value_max(0xFFFE)
+        .set_value_none(0xFFFF)
+        .set_value_default(0x0000);
+
 
 	add_attribute()
 		.set_name("Frequency non-linearity")
@@ -114,15 +153,15 @@ machine_info::machine_info() {
 #define miSHORT_NAME "FreqShift"
 #define miMACHINE_AUTHOR "Marcin Dabrowski"
 #define miVERSION "1.12"
-#define miABOUTTXT1 "Marcin Dabrowski\n"  
-#define miABOUTTXT2	"bigyo@wp.pl\n" 
+#define miABOUTTXT1 "Marcin Dabrowski\n"
+#define miABOUTTXT2	"bigyo@wp.pl\n"
 #define miABOUTTXT miMACHINE_NAME" v"miVERSION"\n\nbuild: "__DATE__"\n\n"miABOUTTXT1""miABOUTTXT2
 
 /////////////////////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////////////////////////////////
 freqshifter::freqshifter()
-{	
+{
 	global_values = &gval;
 	attributes = (int *)&aval;
 }
@@ -135,9 +174,9 @@ void freqshifter::init(zzub::archive * const pi) {
 void freqshifter::attributes_changed() {
 	MaxRate = (float) aval.maxfreq ;
 	slope = powf( 0.5f, (float)aval.nonlinearity + 1.0f );
-	float freq = (  rate / (float) paraRate->value_max ) * MaxRate ; 
+	float freq = (  rate / (float) paraRate->value_max ) * MaxRate ;
 	float omega = freq2omega( (float) linlog(freq , 0.0 , MaxRate , slope) ) ;
-	carrier.setOmega( omega ); 
+	carrier.setOmega( omega );
 }
 
 void freqshifter::save(zzub::archive * const po) { }
@@ -145,9 +184,24 @@ void freqshifter::save(zzub::archive * const po) { }
 void freqshifter::process_events() {
 	if (gval.Rate != paraRate->value_none) {
 		rate = gval.Rate;
-		float freq = ( rate / (float) paraRate->value_max ) * MaxRate ; 
+		float freq = ( rate / (float) paraRate->value_max ) * MaxRate ;
 		float omega = freq2omega( (float) linlog(freq , 0.0 , MaxRate , slope) ) ;
-		carrier.setOmega( omega ); 
+		carrier.setOmega( omega );
+
+
+	};
+
+    if (gval.LfoRate != paraLfoRate->value_none){
+        lforate = (float ) gval.LfoRate/65535.0f;
+
+	}
+
+	if (gval.Wet != paraWet->value_none){
+        wet = (float) gval.Wet/65535.0f;
+	};
+
+	if (gval.Dry != paraDry->value_none){
+        dry = (float) gval.Dry/65535.0f;
 	};
 
 	if (gval.DirectionL != paraDirectionL->value_none) {
@@ -168,27 +222,47 @@ bool freqshifter::process_stereo(float** pin, float** pout, int numsamples, int 
 				return true;
 	float* psamples[2] = { pin[0], pin[1] };
 	float* rsamples[2] = { pout[0], pout[1] };
+
+    float dval; // dry value
+    float wval; // wet value
+
 	do
 	{
 		complex<float> c = carrier.process();
 
 		if (dirL)
 		{
-			complex<float> l = hL.process(*psamples[0]++);
-			*rsamples[0]++ = (dirL==1) ? c.re * l.re - c.im * l.im : c.re * l.re + c.im * l.im ;
-		} else {
+
+           dval = (*psamples[0]) *dry;
+
+           complex<float> l = hL.process(*psamples[0]++);
+
+           wval=   (dirL==1) ? (c.re * l.re - c.im * l.im) *wet: (c.re * l.re + c.im * l.im)*wet;
+
+           *rsamples[0]++ = (dval + wval) - (dval * wval) /65535.0f;
+
+
+        } else {
 			psamples[0]++;
 			rsamples[0]++;
 		}
 		if (dirR)
 		{
-			complex<float> r = hR.process(*psamples[1]++);
-			*rsamples[1]++ = (dirR==1) ? c.re * r.re - c.im * r.im : c.re * r.re + c.im * r.im  ;
+			dval = (*psamples[1]) *dry;
+
+            complex<float> r = hR.process(*psamples[1]++);
+
+			wval =   (dirR==1) ? (c.re * r.re - c.im * r.im) *wet: (c.re * r.re + c.im * r.im) *wet;
+
+			*rsamples[1]++ = (dval + wval) - (dval * wval) /65535.0f;
+
 		} else {
 			psamples[1]++;
 			rsamples[1]++;
 		}
 	} while (--numsamples);
+
+
 
 	return true;
 }
@@ -216,7 +290,7 @@ char const *freqshifter::describe_value(int const param, int const value) {
 			n=(int) (1.0f-log10f( v1 - v )) ;
 			if (n<0) n=0;
 			sprintf	(txt,"%.*f Hz", n, 	v	);
-			break;		
+			break;
 
 		case 1: // Dir L
 		case 2: // Dir R
@@ -225,14 +299,30 @@ char const *freqshifter::describe_value(int const param, int const value) {
 				case 1: return("Down");
 				case 2: return("Up");
 			}
-		
+        case 3:// Lfo Rate
+            {
+                sprintf(txt,"%f ", lforate);
+                break;
+            }
+        case 4://  Wet
+            {
+                sprintf(txt,"%f %%", wet);
+                break;
+            }
+
+         case 5:// Dry
+            {
+                sprintf(txt,"%f %%", dry);
+                break;
+            }
+
 		default:
 			sprintf(txt,"%.2f %%",	(float) value / 65534.0f * 100.0f  );
 	}
 	return txt;
 }
 
-#pragma optimize ("", on) 
+#pragma optimize ("", on)
 
 //DLL_EXPORTS
 

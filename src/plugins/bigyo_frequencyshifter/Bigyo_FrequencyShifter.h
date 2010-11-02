@@ -17,12 +17,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 #pragma once
 
-#pragma pack(1)                        
+#pragma pack(1)
 
 struct gvals {
 	unsigned short Rate;
 	unsigned char DirectionL;
 	unsigned char DirectionR;
+	unsigned short LfoRate;
+	unsigned short Wet;
+	unsigned short Dry;
+
 };
 
 struct avals {
@@ -85,11 +89,16 @@ public:
 	inline float freq2rate(float freq) {return  (2.0f * (float) freq/_master_info->samples_per_second);}
 	inline float msec2samples(float msec) {return  (((float) _master_info->samples_per_second) * msec * 0.001f) ;}
 	inline float lin2log(float value,float minlin,float maxlin,float minlog,float maxlog) { return minlog * (float) pow (maxlog/minlog, (value-minlin) / (maxlin-minlin));}
-	
+
 	HilbertPair hL, hR;
 	FastCosSin carrier;
-	
-	int dirL, dirR;
+
+    float lforate;
+
+    float wet;
+	float dry;
+
+    int dirL, dirR;
 
 	float slope;
 	float rate;
