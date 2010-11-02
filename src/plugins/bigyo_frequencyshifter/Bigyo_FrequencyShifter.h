@@ -23,7 +23,6 @@ struct gvals {
 	unsigned short Rate;
 	unsigned char DirectionL;
 	unsigned char DirectionR;
-	unsigned short LfoRate;
 	unsigned short Wet;
 	unsigned short Dry;
 
@@ -92,8 +91,6 @@ public:
 
 	HilbertPair hL, hR;
 	FastCosSin carrier;
-
-    float lforate;
 
     float wet;
 	float dry;
