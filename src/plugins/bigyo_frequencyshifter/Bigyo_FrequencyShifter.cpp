@@ -28,8 +28,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "LinLog.h"
 #include "Bigyo_FrequencyShifter.h"
 
-//#include<iostream>
-
 #pragma optimize ("awy", on)
 
 
@@ -100,19 +98,6 @@ machine_info::machine_info() {
 		.set_value_max(0x02)
 		.set_value_none(0xFF)
 		.set_value_default(0x00);
-
-    paraLfoRate = &add_global_parameter()
-        .set_word()
-        .set_state_flag()
-        .set_name("LFO Rate")
-        .set_description("LFO Rate")
-        .set_value_min(0x0000)
-        .set_value_max(0xFFFE)
-        .set_value_none(0xFFFF)
-        .set_value_default(0x8000);
-
-
-
 
     paraWet = &add_global_parameter()
         .set_word()
@@ -190,11 +175,6 @@ void freqshifter::process_events() {
 
 
 	};
-
-    if (gval.LfoRate != paraLfoRate->value_none){
-        lforate = (float ) gval.LfoRate/65535.0f;
-
-	}
 
 	if (gval.Wet != paraWet->value_none){
         wet = (float) gval.Wet/65535.0f;
@@ -299,18 +279,13 @@ char const *freqshifter::describe_value(int const param, int const value) {
 				case 1: return("Down");
 				case 2: return("Up");
 			}
-        case 3:// Lfo Rate
-            {
-                sprintf(txt,"%f ", lforate);
-                break;
-            }
-        case 4://  Wet
+        case 3: //  Wet
             {
                 sprintf(txt,"%f %%", wet);
                 break;
             }
 
-         case 5:// Dry
+         case 4: // Dry
             {
                 sprintf(txt,"%f %%", dry);
                 break;
