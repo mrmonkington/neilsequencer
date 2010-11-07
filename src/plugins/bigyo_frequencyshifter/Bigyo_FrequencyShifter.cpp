@@ -28,9 +28,6 @@
 #include "LinLog.h"
 #include "Bigyo_FrequencyShifter.h"
 
-#pragma optimize ("awy", on)
-
-
 /////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -57,8 +54,8 @@ zzub::plugincollection *zzub_get_plugincollection() {
 const zzub::parameter *paraDirectionL = 0;
 const zzub::parameter *paraDirectionR = 0;
 const zzub::parameter *paraRate = 0;
-const zzub::parameter *paraWet =0;
-const zzub::parameter *paraDry =0;
+const zzub::parameter *paraWet = 0;
+const zzub::parameter *paraDry = 0;
 const zzub::parameter *paraLfoRate =0;
 
 machine_info::machine_info() {
@@ -69,7 +66,6 @@ machine_info::machine_info() {
   this->short_name = "FreqShift";
   this->author = "Marcin Dabrowski";
   this->uri = "@bigyo/frequency+shifter;1";
-
   paraRate = &add_global_parameter()
     .set_word()
     .set_state_flag()
@@ -79,7 +75,6 @@ machine_info::machine_info() {
     .set_value_max(0xFFFE)
     .set_value_none(0xFFFF)
     .set_value_default(0x0000);
-  
   paraDirectionL = &add_global_parameter()
     .set_byte()
     .set_state_flag()
@@ -89,50 +84,43 @@ machine_info::machine_info() {
     .set_value_max(0x02)
     .set_value_none(0xFF)
     .set_value_default(0x00);
-    
-    
-    paraDirectionR = &add_global_parameter()
-      .set_byte()
-      .set_state_flag()
-      .set_name("Right Direction")
-      .set_description("Right Direction")
-      .set_value_min(0x00)
-      .set_value_max(0x02)
-      .set_value_none(0xFF)
-      .set_value_default(0x00);
-    
-    paraWet = &add_global_parameter()
-      .set_word()
-      .set_state_flag()
-      .set_name("Wet")
-      .set_description("Wet")
-      .set_value_min(0x0001)
-      .set_value_max(0xFFFE)
-      .set_value_none(0xFFFF)
-      .set_value_default(0xFFFE);
-    
-    paraDry = &add_global_parameter()
-      .set_word()
-      .set_state_flag()
-      .set_name("Dry")
-      .set_description("Dry")
-      .set_value_min(0x0001)
-      .set_value_max(0xFFFE)
-      .set_value_none(0xFFFF)
-      .set_value_default(0x0000);
-    
-    
-    add_attribute()
-      .set_name("Frequency non-linearity")
-      .set_value_min(0)
-      .set_value_max(10)
-      .set_value_default(5);
-    
-    add_attribute()
-      .set_name("Max. frequency (Hz)")
-      .set_value_min(20)
-      .set_value_max(20000)
-      .set_value_default(5000);
+  paraDirectionR = &add_global_parameter()
+    .set_byte()
+    .set_state_flag()
+    .set_name("Right Direction")
+    .set_description("Right Direction")
+    .set_value_min(0x00)
+    .set_value_max(0x02)
+    .set_value_none(0xFF)
+    .set_value_default(0x00);
+  paraWet = &add_global_parameter()
+    .set_word()
+    .set_state_flag()
+    .set_name("Wet")
+    .set_description("Wet")
+    .set_value_min(0x0001)
+    .set_value_max(0xFFFE)
+    .set_value_none(0xFFFF)
+    .set_value_default(0xFFFE);
+  paraDry = &add_global_parameter()
+    .set_word()
+    .set_state_flag()
+    .set_name("Dry")
+    .set_description("Dry")
+    .set_value_min(0x0001)
+    .set_value_max(0xFFFE)
+    .set_value_none(0xFFFF)
+    .set_value_default(0x0000);    
+  add_attribute()
+    .set_name("Frequency non-linearity")
+    .set_value_min(0)
+    .set_value_max(10)
+    .set_value_default(5);
+  add_attribute()
+    .set_name("Max. frequency (Hz)")
+    .set_value_min(20)
+    .set_value_max(20000)
+    .set_value_default(5000);
 }
 
 
