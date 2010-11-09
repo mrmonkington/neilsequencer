@@ -27,6 +27,8 @@ struct gvals {
   uint8_t DirectionR;
   uint16_t Wet;
   uint16_t Dry;
+  uint16_t Lfo_Rate;
+  uint16_t Lfo_Amp;
 } __attribute__((__packed__));
 
 struct avals {
@@ -190,7 +192,7 @@ public:
     return minlog * (float)pow(maxlog / minlog,
 			       (value-minlin) / (maxlin-minlin));
   }
-  float sinus(float lrate, float *p);
+  float sinus(float lfo_rate,float lfo_amp, float *p);
 
   HilbertPair hL, hR;
   FastCosSin carrier;
@@ -210,7 +212,9 @@ public:
 
   float slope;
   float rate;
+  float last_rate;
   float MaxRate;
+
 };
 
 struct machine_info : zzub::info {

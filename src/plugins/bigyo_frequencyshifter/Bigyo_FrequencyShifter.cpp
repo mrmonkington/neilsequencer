@@ -58,6 +58,7 @@ const zzub::parameter *paraRate = 0;
 const zzub::parameter *paraWet = 0;
 const zzub::parameter *paraDry = 0;
 const zzub::parameter *paraLfoRate =0;
+const zzub::parameter *paraLfoAmp =0;
 
 machine_info::machine_info() {
   this->flags =
@@ -112,6 +113,24 @@ machine_info::machine_info() {
     .set_value_max(0xFFFE)
     .set_value_none(0xFFFF)
     .set_value_default(0x0000);
+  paraLfoRate = &add_global_parameter()
+    .set_word()
+    .set_state_flag()
+    .set_name("Lfo Rate")
+    .set_description("Lfo Rate")
+    .set_value_min(0x0000)
+    .set_value_max(0xFFFE)
+    .set_value_none(0xFFFF)
+    .set_value_default(0x0000);
+  paraLfoAmp = &add_global_parameter()
+    .set_word()
+    .set_state_flag()
+    .set_name("Lfo Amp")
+    .set_description("Lfo Amp")
+    .set_value_min(0x0000)
+    .set_value_max(0xFFFE)
+    .set_value_none(0xFFFF)
+    .set_value_default(0x0000);
   add_attribute()
     .set_name("Frequency non-linearity")
     .set_value_min(0)
@@ -141,9 +160,9 @@ freqshifter::freqshifter()
 {
   global_values = &gval;
   attributes = (int*)&aval;
-  p =0;
+  p = 0;
   pp = &p;
-  lfo_on = true;
+
 }
 
 freqshifter::~freqshifter()
@@ -172,8 +191,9 @@ void freqshifter::save(zzub::archive *const po)
 
 void freqshifter::process_events()
 {
-  if (gval.Rate != paraRate->value_none && (!lfo_on) ) {
+  if (gval.Rate != paraRate->value_none) {
     rate = gval.Rate;
+    last_rate=rate;
     float freq = (rate / (float) paraRate->value_max) * MaxRate;
     float omega = freq2omega((float)linlog(freq, 0.0, MaxRate, slope));
     carrier.setOmega(omega);
@@ -182,6 +202,7 @@ void freqshifter::process_events()
   if (gval.Wet != paraWet->value_none) {
     wet = (float)gval.Wet / 65535.0f;
   }
+
 
   if (gval.Dry != paraDry->value_none) {
     dry = (float)gval.Dry / 65535.0f;
@@ -194,6 +215,16 @@ void freqshifter::process_events()
   if (gval.DirectionR != paraDirectionR->value_none) {
     dirR = gval.DirectionR;
   }
+
+  if (gval.Lfo_Rate != paraLfoRate->value_none){
+    lfo_rate = (float) gval.Lfo_Rate/64.0f;
+  }
+
+  if (gval.Lfo_Amp != paraLfoRate->value_none){
+    lfo_amp = (float) gval.Lfo_Amp /32768.0f;
+  }
+
+
 }
 
 bool freqshifter::process_stereo(float** pin, float** pout,
@@ -218,17 +249,21 @@ bool freqshifter::process_stereo(float** pin, float** pout,
 
   int count =0;
 
-  if(lfo_on){
-
-  rate = (unsigned short) sinus(0.0001f,pp);
-  float freq = (rate / (float) paraRate->value_max) * MaxRate;
-  float omega = freq2omega((float)linlog(freq, 0.0, MaxRate, slope));
-  carrier.setOmega(omega);
+  if(lfo_rate > 0.0f){
+    lfo_on = true;
+  }else{
+    lfo_on = false;
   }
+
+
+
   do {
     if(lfo_on){
         if(count >= 16){
-            rate = (unsigned short) sinus(0.0001f,pp);
+            rate = last_rate + (unsigned short) sinus(lfo_rate,lfo_amp,pp);
+            if(rate > 65535.0f){
+                rate = 65535.0f;
+            }
             float freq = (rate / (float) paraRate->value_max) * MaxRate;
             float omega = freq2omega((float)linlog(freq, 0.0, MaxRate, slope));
             carrier.setOmega(omega);
@@ -318,6 +353,20 @@ char const *freqshifter::describe_value(int const param, int const value) {
       }
       break;
     }
+  case 5:  //
+    {
+      if(lfo_rate == 0.0f) {
+    sprintf(txt, "Lfo off");
+      } else {
+    sprintf(txt, "%.2f Hz",lfo_rate);
+      }
+      break;
+    }
+  case 6:  //
+    {
+      sprintf(txt, "%f",lfo_amp);
+      break;
+    }
   default:
     sprintf(txt, "%.2f %%", (float)value / 65534.0f * 100.0f);
   }
@@ -326,17 +375,20 @@ char const *freqshifter::describe_value(int const param, int const value) {
 
 
 
-float freqshifter::sinus(float lfo_rate, float *point)
+float freqshifter::sinus(float lfo_rate, float lfo_amp, float *point)
 {
   float out;
+  float amplitude = lfo_amp; // no need for this
 
-  (*point) += lfo_rate;
+  float rate = 4.0f/ ((44100.0f/16.0f)/lfo_rate);// TODO find a way to get samplerate and precalculate?
+  (*point) += rate;
 
-  if((*point) >2.0f)
-    (*point) -= 4.0f;
+  if((*point) > amplitude){
+    (*point) -= amplitude*2.0f; //TODO this fucks up at low values
+  }
 
-  out =  (*point) * (2.0f - std::fabs(*point));
-  out += 1.0f;
+  out =  (*point) * (amplitude - std::fabs(*point));
+  out += amplitude * 0.5f;
   out *= 32764.0f;
 
   return out;
