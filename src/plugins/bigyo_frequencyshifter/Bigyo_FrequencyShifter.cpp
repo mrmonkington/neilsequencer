@@ -228,7 +228,7 @@ bool freqshifter::process_stereo(float** pin, float** pout,
     complex<float> c = carrier.process();
     if (dirL) {
       dval = psamples[0][i];
-      complex<float> l = hL.process(psamples[0][i]);
+      complex<float> l = hL.process(psamples[0][i] + feedL * feedback);
       wval = (dirL == 1) ? 
 	(c.re * l.re - c.im * l.im) : 
 	(c.re * l.re + c.im * l.im);
@@ -237,10 +237,11 @@ bool freqshifter::process_stereo(float** pin, float** pout,
     }
     if (dirR) {
       dval = psamples[1][i];
-      complex<float> r = hR.process(psamples[1][i]);
+      complex<float> r = hR.process(psamples[1][i] + feedR * feedback);
       wval = (dirR == 1) ? 
 	(c.re * r.re - c.im * r.im) : 
 	(c.re * r.re + c.im * r.im);
+      feedR = wval;
       rsamples[1][i] = dval * dry + wval * wet;
     }
   }
