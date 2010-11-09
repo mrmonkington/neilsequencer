@@ -25,6 +25,7 @@ struct gvals {
   uint16_t Rate;
   uint8_t DirectionL;
   uint8_t DirectionR;
+  uint16_t FeedBack;
   uint16_t Wet;
   uint16_t Dry;
 } __attribute__((__packed__));
@@ -194,8 +195,11 @@ public:
   HilbertPair hL, hR;
   FastCosSin carrier;
 
+  float feedback;
   float wet;
   float dry;
+
+  float feedL, feedR;
 
   int dirL, dirR;
   

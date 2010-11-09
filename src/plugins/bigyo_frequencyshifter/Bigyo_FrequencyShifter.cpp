@@ -54,9 +54,10 @@ zzub::plugincollection *zzub_get_plugincollection() {
 const zzub::parameter *paraDirectionL = 0;
 const zzub::parameter *paraDirectionR = 0;
 const zzub::parameter *paraRate = 0;
+const zzub::parameter *paraFeedBack = 0;
 const zzub::parameter *paraWet = 0;
 const zzub::parameter *paraDry = 0;
-const zzub::parameter *paraLfoRate =0;
+const zzub::parameter *paraLfoRate = 0;
 
 machine_info::machine_info() {
   this->flags = 
@@ -93,6 +94,15 @@ machine_info::machine_info() {
     .set_value_max(0x02)
     .set_value_none(0xFF)
     .set_value_default(0x00);
+  paraFeedBack = &add_global_parameter()
+    .set_word()
+    .set_state_flag()
+    .set_name("Feedback")
+    .set_description("Feedback amount")
+    .set_value_min(0x0000)
+    .set_value_max(0xfffe)
+    .set_value_none(0xffff)
+    .set_value_default(0x0000);
   paraWet = &add_global_parameter()
     .set_word()
     .set_state_flag()
@@ -149,7 +159,8 @@ freqshifter::~freqshifter()
 
 void freqshifter::init(zzub::archive *const pi) 
 {
-
+  feedback = 0.0;
+  feedL = feedR = 0.0;
 }
 
 void freqshifter::attributes_changed() 
@@ -174,7 +185,9 @@ void freqshifter::process_events()
     float omega = freq2omega((float)linlog(freq, 0.0, MaxRate, slope));
     carrier.setOmega(omega);
   }
-
+  if (gval.FeedBack != paraFeedBack->value_none) {
+    feedback = gval.FeedBack / float(paraFeedBack->value_max);
+  }
   if (gval.Wet != paraWet->value_none) {
     wet = (float)gval.Wet / 65535.0f;
   }
@@ -211,31 +224,26 @@ bool freqshifter::process_stereo(float** pin, float** pout,
   };
   float dval; // dry value
   float wval; // wet value
-  do {
+  for (int i = 0; i < numsamples; i++) {
     complex<float> c = carrier.process();
     if (dirL) {
-      dval = (*psamples[0]) * dry;
-      complex<float> l = hL.process(*psamples[0]++);
+      dval = psamples[0][i];
+      complex<float> l = hL.process(psamples[0][i]);
       wval = (dirL == 1) ? 
-	(c.re * l.re - c.im * l.im) * wet : 
-	(c.re * l.re + c.im * l.im) * wet;
-      *rsamples[0]++ = (dval + wval) - (dval * wval) / 65535.0f;
-    } else {
-      psamples[0]++;
-      rsamples[0]++;
+	(c.re * l.re - c.im * l.im) : 
+	(c.re * l.re + c.im * l.im);
+      feedL = wval;
+      rsamples[0][i] = dval * dry + wval * wet;
     }
     if (dirR) {
-      dval = (*psamples[1]) * dry;
-      complex<float> r = hR.process(*psamples[1]++);
+      dval = psamples[1][i];
+      complex<float> r = hR.process(psamples[1][i]);
       wval = (dirR == 1) ? 
-	(c.re * r.re - c.im * r.im) * wet : 
-	(c.re * r.re + c.im * r.im) * wet;
-      *rsamples[1]++ = (dval + wval) - (dval * wval) / 65535.0f;
-    } else {
-      psamples[1]++;
-      rsamples[1]++;
+	(c.re * r.re - c.im * r.im) : 
+	(c.re * r.re + c.im * r.im);
+      rsamples[1][i] = dval * dry + wval * wet;
     }
-  } while (--numsamples);
+  }
   return true;
 }
 
@@ -275,7 +283,12 @@ char const *freqshifter::describe_value(int const param, int const value) {
     case 2: 
       return("Up");							      
     }
-  case 3: //  Wet
+  case 3: // Feedback
+    {
+      sprintf(txt, "%.3f", float(value) / 0xfffe);
+      break;
+    }
+  case 4: //  Wet
     {
       if (wet == 0.0f) {
 	sprintf(txt, "-inf dB");
@@ -284,7 +297,7 @@ char const *freqshifter::describe_value(int const param, int const value) {
       }
       break;
     }  
-  case 4: // Dry
+  case 5: // Dry
     {
       if (dry == 0.0f) {
 	sprintf(txt, "-inf dB");
