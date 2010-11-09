@@ -1,16 +1,16 @@
 /*
   Copyright (C) 2007 Marcin Dabrowski
-  
+
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
   License as published by the Free Software Foundation; either
   version 2.1 of the License, or (at your option) any later version.
-  
+
   This library is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   Lesser General Public License for more details.
-  
+
   You should have received a copy of the GNU Lesser General Public
   License along with this library; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -18,6 +18,7 @@
 #define _USE_MATH_DEFINES
 #include <cstdio>
 #include <math.h>
+#include <cmath>
 #include <float.h>
 #include <zzub/signature.h>
 #include <zzub/plugin.h>
@@ -48,20 +49,22 @@ zzub::plugincollection *zzub_get_plugincollection() {
 /***
 
     machine_info
-    
+
 ***/
 
 const zzub::parameter *paraDirectionL = 0;
 const zzub::parameter *paraDirectionR = 0;
 const zzub::parameter *paraRate = 0;
 const zzub::parameter *paraFeedBack = 0;
+const zzub::parameter *paraLfoRate =0;
+const zzub::parameter *paraLfoAmp =0;
 const zzub::parameter *paraWet = 0;
 const zzub::parameter *paraDry = 0;
-const zzub::parameter *paraLfoRate = 0;
+
 
 machine_info::machine_info() {
-  this->flags = 
-    zzub::plugin_flag_has_audio_input | 
+  this->flags =
+    zzub::plugin_flag_has_audio_input |
     zzub::plugin_flag_has_audio_output;
   this->name = "Bigyo FrequencyShifter";
   this->short_name = "FreqShift";
@@ -103,6 +106,24 @@ machine_info::machine_info() {
     .set_value_max(0xfffe)
     .set_value_none(0xffff)
     .set_value_default(0x0000);
+  paraLfoRate = &add_global_parameter()
+    .set_word()
+    .set_state_flag()
+    .set_name("Lfo Rate")
+    .set_description("Lfo Rate")
+    .set_value_min(0x0000)
+    .set_value_max(0xFFFE)
+    .set_value_none(0xFFFF)
+    .set_value_default(0x0000);
+  paraLfoAmp = &add_global_parameter()
+    .set_word()
+    .set_state_flag()
+    .set_name("Lfo Amp")
+    .set_description("Lfo Amp")
+    .set_value_min(0x0000)
+    .set_value_max(0xFFFE)
+    .set_value_none(0xFFFF)
+    .set_value_default(0x0000);
   paraWet = &add_global_parameter()
     .set_word()
     .set_state_flag()
@@ -120,7 +141,7 @@ machine_info::machine_info() {
     .set_value_min(0x0001)
     .set_value_max(0xFFFE)
     .set_value_none(0xFFFF)
-    .set_value_default(0x0000);    
+    .set_value_default(0x0000);
   add_attribute()
     .set_name("Frequency non-linearity")
     .set_value_min(0)
@@ -150,20 +171,22 @@ freqshifter::freqshifter()
 {
   global_values = &gval;
   attributes = (int*)&aval;
+
 }
 
-freqshifter::~freqshifter() 
+freqshifter::~freqshifter()
 {
- 
+
 }
 
-void freqshifter::init(zzub::archive *const pi) 
+void freqshifter::init(zzub::archive *const pi)
 {
   feedback = 0.0;
   feedL = feedR = 0.0;
+  lfo_point = 0.0;
 }
 
-void freqshifter::attributes_changed() 
+void freqshifter::attributes_changed()
 {
   MaxRate = (float)aval.maxfreq;
   slope = powf(0.5f, (float)aval.nonlinearity + 1.0f );
@@ -172,15 +195,16 @@ void freqshifter::attributes_changed()
   carrier.setOmega(omega);
 }
 
-void freqshifter::save(zzub::archive *const po) 
-{ 
+void freqshifter::save(zzub::archive *const po)
+{
 
 }
 
-void freqshifter::process_events() 
+void freqshifter::process_events()
 {
   if (gval.Rate != paraRate->value_none) {
     rate = gval.Rate;
+    last_rate=rate;
     float freq = (rate / (float) paraRate->value_max) * MaxRate;
     float omega = freq2omega((float)linlog(freq, 0.0, MaxRate, slope));
     carrier.setOmega(omega);
@@ -195,18 +219,27 @@ void freqshifter::process_events()
   if (gval.Dry != paraDry->value_none) {
     dry = (float)gval.Dry / 65535.0f;
   }
-  
+
   if (gval.DirectionL != paraDirectionL->value_none) {
     dirL = gval.DirectionL;
   }
-  
+
   if (gval.DirectionR != paraDirectionR->value_none) {
     dirR = gval.DirectionR;
   }
+
+  if (gval.LfoRate != paraLfoRate->value_none){
+    lfo_rate = 0.01 +
+      pow(gval.LfoRate / float(paraLfoRate->value_max), 8.0) * 1000.0;
+  }
+
+  if (gval.LfoAmp != paraLfoRate->value_none){
+    lfo_amp =  (gval.LfoAmp / float(paraLfoAmp->value_max)) * 2.0;
+  }
 }
 
-bool freqshifter::process_stereo(float** pin, float** pout, 
-				 int numsamples, int mode) 
+bool freqshifter::process_stereo(float** pin, float** pout,
+				 int numsamples, int mode)
 {
   if (mode==zzub::process_mode_write)
     return false;
@@ -214,23 +247,42 @@ bool freqshifter::process_stereo(float** pin, float** pout,
     return false;
   if (mode==zzub::process_mode_read) // <thru>
     return true;
-  float *psamples[2] = { 
-    pin[0], 
-    pin[1] 
+  float *psamples[2] = {
+    pin[0],
+    pin[1]
   };
-  float *rsamples[2] = { 
-    pout[0], 
-    pout[1] 
+  float *rsamples[2] = {
+    pout[0],
+    pout[1]
   };
   float dval; // dry value
   float wval; // wet value
+  int count =0;
+  if(lfo_amp > 0.0f ){
+    lfo_on = true;
+  }else{
+    lfo_on = false;
+  }
   for (int i = 0; i < numsamples; i++) {
+    if(lfo_on){
+        if(count >= 3){
+            rate = last_rate - (unsigned short) sinus(lfo_rate,lfo_amp,lfo_point);
+            if(rate < 0.1f){
+                rate = 0.1f;
+            }
+            float freq = (rate / (float) paraRate->value_max) * MaxRate;
+            float omega = freq2omega((float)linlog(freq, 0.0, MaxRate, slope));
+            carrier.setOmega(omega);
+            count=0;
+        }
+    count++;
+    }
     complex<float> c = carrier.process();
     if (dirL) {
       dval = psamples[0][i];
       complex<float> l = hL.process(psamples[0][i] + feedL * feedback);
-      wval = (dirL == 1) ? 
-	(c.re * l.re - c.im * l.im) : 
+      wval = (dirL == 1) ?
+	(c.re * l.re - c.im * l.im) :
 	(c.re * l.re + c.im * l.im);
       feedL = wval;
       rsamples[0][i] = dval * dry + wval * wet;
@@ -238,8 +290,8 @@ bool freqshifter::process_stereo(float** pin, float** pout,
     if (dirR) {
       dval = psamples[1][i];
       complex<float> r = hR.process(psamples[1][i] + feedR * feedback);
-      wval = (dirR == 1) ? 
-	(c.re * r.re - c.im * r.im) : 
+      wval = (dirR == 1) ?
+	(c.re * r.re - c.im * r.im) :
 	(c.re * r.re + c.im * r.im);
       feedR = wval;
       rsamples[1][i] = dval * dry + wval * wet;
@@ -248,7 +300,7 @@ bool freqshifter::process_stereo(float** pin, float** pout,
   return true;
 }
 
-void freqshifter::command(int const i) 
+void freqshifter::command(int const i)
 {
   switch (i) {
   case 0:
@@ -265,31 +317,41 @@ char const *freqshifter::describe_value(int const param, int const value) {
   static char txt[16];
   switch(param) {
   case 0: //  Rate
-    v = (float)linlog(MaxRate * value / paraRate->value_max, 0.0f, 
+    v = (float)linlog(MaxRate * value / paraRate->value_max, 0.0f,
 		      MaxRate, slope);
-    v1 = (float)linlog(MaxRate * (value + 1) / paraRate->value_max, 0.0f, 
+    v1 = (float)linlog(MaxRate * (value + 1) / paraRate->value_max, 0.0f,
 		       MaxRate, slope);
     n = (int)(1.0f - log10f(v1 - v));
-    if (n < 0) 
+    if (n < 0)
       n = 0;
     sprintf(txt, "%.*f Hz", n, v);
     break;
   case 1: // Dir L
   case 2: // Dir R
-    switch(value) {	
-    case 0: 
+    switch(value) {
+    case 0:
       return("Off");
-    case 1: 
+    case 1:
       return("Down");
-    case 2: 
-      return("Up");							      
+    case 2:
+      return("Up");
     }
   case 3: // Feedback
     {
       sprintf(txt, "%.3f", float(value) / 0xfffe);
       break;
     }
-  case 4: //  Wet
+  case 4:  //
+    {
+      sprintf(txt, "%.2f Hz",lfo_rate);
+      break;
+    }
+  case 5:  //
+    {
+      sprintf(txt, "%f",lfo_amp * 0.5f);
+      break;
+    }
+  case 6: //  Wet
     {
       if (wet == 0.0f) {
 	sprintf(txt, "-inf dB");
@@ -297,8 +359,8 @@ char const *freqshifter::describe_value(int const param, int const value) {
 	sprintf(txt, "%.3f dB", 10.0 * log10(wet));
       }
       break;
-    }  
-  case 5: // Dry
+    }
+  case 7: // Dry
     {
       if (dry == 0.0f) {
 	sprintf(txt, "-inf dB");
@@ -306,9 +368,23 @@ char const *freqshifter::describe_value(int const param, int const value) {
 	sprintf(txt, "%.3f dB", 10.0 * log10(dry));
       }
       break;
-    }  
+    }
+
   default:
     sprintf(txt, "%.2f %%", (float)value / 65534.0f * 100.0f);
   }
   return txt;
+}
+
+
+float freqshifter::sinus(float lfo_rate, float lfo_amp, float &point)
+{
+  float rate = 4.0f/((44100.0f/4.0f)/lfo_rate);
+  point += rate;
+  if(point > lfo_amp){
+    point -= lfo_amp*2.0f;
+  }
+  float out =  point * (lfo_amp - std::fabs(point));
+  out += lfo_amp * 0.5f;
+  return out * 32764.0f;
 }

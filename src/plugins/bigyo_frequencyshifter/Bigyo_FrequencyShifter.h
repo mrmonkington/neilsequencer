@@ -1,16 +1,16 @@
 /*
   Copyright (C) 2007 Marcin Dabrowski
-  
+
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
   License as published by the Free Software Foundation; either
   version 2.1 of the License, or (at your option) any later version.
-  
+
   This library is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   Lesser General Public License for more details.
-  
+
   You should have received a copy of the GNU Lesser General Public
   License along with this library; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -26,6 +26,8 @@ struct gvals {
   uint8_t DirectionL;
   uint8_t DirectionR;
   uint16_t FeedBack;
+  uint16_t LfoRate;
+  uint16_t LfoAmp;
   uint16_t Wet;
   uint16_t Dry;
 } __attribute__((__packed__));
@@ -40,204 +42,213 @@ public:
   freqshifter();
   virtual ~freqshifter();
   virtual void process_events();
-  virtual void process_controller_events() 
+  virtual void process_controller_events()
   {
     //
   }
   virtual void init(zzub::archive * pi);
-  virtual bool process_stereo(float** pin, float** pout, 
+  virtual bool process_stereo(float** pin, float** pout,
 			      int numsamples, int mode);
-  virtual bool process_offline(float **pin, float **pout, 
+  virtual bool process_offline(float **pin, float **pout,
 			       int *numsamples, int *channels, int *samplerate)
-  { 
-    return false; 
+  {
+    return false;
   }
   virtual void command(int i);
-  virtual void load(zzub::archive *arc) 
+  virtual void load(zzub::archive *arc)
   {
     //
   }
   virtual void save(zzub::archive * po);
   virtual const char* describe_value(int param, int value);
   virtual void attributes_changed();
-  virtual void destroy() 
-  { 
-    delete this; 
+  virtual void destroy()
+  {
+    delete this;
   }
-  virtual void stop() 
+  virtual void stop()
   {
     //
   }
-  virtual void set_track_count(int i) 
-  { 
-    //
-  }
-  virtual void mute_track(int) 
+  virtual void set_track_count(int i)
   {
     //
   }
-  virtual bool is_track_muted(int) const 
-  { 
-    return false; 
-  }
-  virtual void midi_note(int channel, int note, int velocity) 
+  virtual void mute_track(int)
   {
     //
   }
-  virtual void event(unsigned int) 
+  virtual bool is_track_muted(int) const
+  {
+    return false;
+  }
+  virtual void midi_note(int channel, int note, int velocity)
   {
     //
   }
-  virtual const zzub::envelope_info** get_envelope_infos() 
-  { 
-    return 0; 
-  }
-  virtual bool play_wave(int, int, float) 
-  { 
-    return false; 
-  }
-  virtual void stop_wave() 
+  virtual void event(unsigned int)
   {
     //
   }
-  virtual int get_wave_envelope_play_position(int) 
-  { 
-    return -1; 
+  virtual const zzub::envelope_info** get_envelope_infos()
+  {
+    return 0;
   }
-  virtual const char* describe_param(int) 
-  { 
-    return 0; 
+  virtual bool play_wave(int, int, float)
+  {
+    return false;
   }
-  virtual bool set_instrument(const char*) 
-  { 
-    return false; 
-  }
-  virtual void get_sub_menu(int, zzub::outstream*) 
+  virtual void stop_wave()
   {
     //
   }
-  virtual void add_input(const char*, zzub::connection_type) 
+  virtual int get_wave_envelope_play_position(int)
+  {
+    return -1;
+  }
+  virtual const char* describe_param(int)
+  {
+    return 0;
+  }
+  virtual bool set_instrument(const char*)
+  {
+    return false;
+  }
+  virtual void get_sub_menu(int, zzub::outstream*)
   {
     //
   }
-  virtual void delete_input(const char*, zzub::connection_type) 
+  virtual void add_input(const char*, zzub::connection_type)
   {
     //
   }
-  virtual void rename_input(const char*, const char*) 
+  virtual void delete_input(const char*, zzub::connection_type)
   {
     //
   }
-  virtual void input(float**, int, float) 
+  virtual void rename_input(const char*, const char*)
   {
     //
   }
-  virtual void midi_control_change(int, int, int) 
+  virtual void input(float**, int, float)
   {
     //
   }
-  virtual bool handle_input(int, int, int) 
-  { 
-    return false; 
-  }
-  virtual void process_midi_events(zzub::midi_message* pin, int nummessages) 
+  virtual void midi_control_change(int, int, int)
   {
     //
   }
-  virtual void get_midi_output_names(zzub::outstream *pout) 
+  virtual bool handle_input(int, int, int)
+  {
+    return false;
+  }
+  virtual void process_midi_events(zzub::midi_message* pin, int nummessages)
   {
     //
   }
-  virtual void set_stream_source(const char* resource) 
+  virtual void get_midi_output_names(zzub::outstream *pout)
   {
     //
   }
-  virtual const char* get_stream_source() 
-  { 
-    return 0; 
-  }
-  virtual void play_pattern(int index) 
+  virtual void set_stream_source(const char* resource)
   {
     //
   }
-  virtual void configure(const char *key, const char *value) 
+  virtual const char* get_stream_source()
+  {
+    return 0;
+  }
+  virtual void play_pattern(int index)
+  {
+    //
+  }
+  virtual void configure(const char *key, const char *value)
   {
     //
   }
   avals aval;
   gvals gval;
-  inline float dB2lin(float dB)  
+  inline float dB2lin(float dB)
   {
     return powf(10.0f, dB / 20.0f);
   }
-  inline float lin2dB(float lin) 
+  inline float lin2dB(float lin)
   {
     return 20.0f * log10f(lin);
   }
-  inline float freq2omega(float freq) 
+  inline float freq2omega(float freq)
   {
     return (float) (2.0f * M_PI * freq / _master_info->samples_per_second);
   }
-  inline float freq2rate(float freq) 
+  inline float freq2rate(float freq)
   {
     return (2.0f * (float) freq / _master_info->samples_per_second);
   }
-  inline float msec2samples(float msec) 
+  inline float msec2samples(float msec)
   {
     return  (((float)_master_info->samples_per_second) * msec * 0.001f);
   }
-  inline float lin2log(float value, float minlin, float maxlin, 
-		       float minlog,float maxlog) { 
-    return minlog * (float)pow(maxlog / minlog, 
+  inline float lin2log(float value, float minlin, float maxlin,
+		       float minlog,float maxlog) {
+    return minlog * (float)pow(maxlog / minlog,
 			       (value-minlin) / (maxlin-minlin));
   }
-  
+
+  float sinus(float lfo_rate, float lfo_amp, float &point);
+
   HilbertPair hL, hR;
   FastCosSin carrier;
+
+
 
   float feedback;
   float wet;
   float dry;
 
+  bool lfo_on;
+  float lfo_rate, lfo_amp;
+  float lfo_point;
+
   float feedL, feedR;
 
   int dirL, dirR;
-  
+
   float slope;
   float rate;
+  float last_rate;
   float MaxRate;
 };
 
 struct machine_info : zzub::info {
   machine_info();
-  virtual zzub::plugin* create_plugin() const 
-  { 
-    return new freqshifter(); 
+  virtual zzub::plugin* create_plugin() const
+  {
+    return new freqshifter();
   }
-  virtual bool store_info(zzub::archive *data) const 
-  { 
-    return false; 
+  virtual bool store_info(zzub::archive *data) const
+  {
+    return false;
   }
 } _machine_info;
 
 struct freqshifterplugincollection : zzub::plugincollection {
-  virtual void initialize(zzub::pluginfactory *factory) 
-  { 
-    factory->register_info(&_machine_info); 
+  virtual void initialize(zzub::pluginfactory *factory)
+  {
+    factory->register_info(&_machine_info);
   }
-  virtual const zzub::info *get_info(const char *uri, zzub::archive *data) 
-  { 
-    return 0; 
+  virtual const zzub::info *get_info(const char *uri, zzub::archive *data)
+  {
+    return 0;
   }
-  virtual void destroy() 
-  { 
-    delete this; 
+  virtual void destroy()
+  {
+    delete this;
   }
-  virtual const char *get_uri() 
-  { 
-    return 0; 
+  virtual const char *get_uri()
+  {
+    return 0;
   }
-  virtual void configure(const char *key, const char *value) 
+  virtual void configure(const char *key, const char *value)
   {
     //
   }
