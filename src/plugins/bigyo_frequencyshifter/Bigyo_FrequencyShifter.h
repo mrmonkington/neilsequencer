@@ -194,7 +194,7 @@ public:
 			       (value-minlin) / (maxlin-minlin));
   }
 
-  float sinus(float lfo_rate, float lfo_amp, float &point);
+  float sinus(float &phase);
 
   HilbertPair hL, hR;
   FastCosSin carrier;
@@ -207,7 +207,7 @@ public:
 
   bool lfo_on;
   float lfo_rate, lfo_amp;
-  float lfo_point;
+  float lfo_phase;
 
   float feedL, feedR;
 
@@ -215,7 +215,6 @@ public:
 
   float slope;
   float rate;
-  float last_rate;
   float MaxRate;
 };
 

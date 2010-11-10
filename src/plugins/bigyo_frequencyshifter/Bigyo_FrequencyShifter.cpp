@@ -183,15 +183,15 @@ void freqshifter::init(zzub::archive *const pi)
 {
   feedback = 0.0;
   feedL = feedR = 0.0;
-  lfo_point = 0.0;
+  lfo_phase = 0.0;
 }
 
 void freqshifter::attributes_changed()
 {
   MaxRate = (float)aval.maxfreq;
   slope = powf(0.5f, (float)aval.nonlinearity + 1.0f );
-  float freq = (rate / (float) paraRate->value_max) * MaxRate ;
-  float omega = freq2omega((float) linlog(freq, 0.0, MaxRate, slope));
+  float freq = (rate / (float)paraRate->value_max) * MaxRate ;
+  float omega = freq2omega((float)linlog(freq, 0.0, MaxRate, slope));
   carrier.setOmega(omega);
 }
 
@@ -204,7 +204,6 @@ void freqshifter::process_events()
 {
   if (gval.Rate != paraRate->value_none) {
     rate = gval.Rate;
-    last_rate=rate;
     float freq = (rate / (float) paraRate->value_max) * MaxRate;
     float omega = freq2omega((float)linlog(freq, 0.0, MaxRate, slope));
     carrier.setOmega(omega);
@@ -213,11 +212,11 @@ void freqshifter::process_events()
     feedback = gval.FeedBack / float(paraFeedBack->value_max);
   }
   if (gval.Wet != paraWet->value_none) {
-    wet = (float)gval.Wet / 65535.0f;
+    wet = (float)gval.Wet / paraWet->value_max;
   }
 
   if (gval.Dry != paraDry->value_none) {
-    dry = (float)gval.Dry / 65535.0f;
+    dry = (float)gval.Dry / paraWet->value_max;
   }
 
   if (gval.DirectionL != paraDirectionL->value_none) {
@@ -230,7 +229,7 @@ void freqshifter::process_events()
 
   if (gval.LfoRate != paraLfoRate->value_none){
     lfo_rate = 0.01 +
-      pow(gval.LfoRate / float(paraLfoRate->value_max), 8.0) * 1000.0;
+      pow(gval.LfoRate / float(paraLfoRate->value_max), 4.0) * 1000.0;
   }
 
   if (gval.LfoAmp != paraLfoRate->value_none){
@@ -241,11 +240,11 @@ void freqshifter::process_events()
 bool freqshifter::process_stereo(float** pin, float** pout,
 				 int numsamples, int mode)
 {
-  if (mode==zzub::process_mode_write)
+  if (mode == zzub::process_mode_write)
     return false;
-  if (mode==zzub::process_mode_no_io)
+  if (mode == zzub::process_mode_no_io)
     return false;
-  if (mode==zzub::process_mode_read) // <thru>
+  if (mode == zzub::process_mode_read) // <thru>
     return true;
   float *psamples[2] = {
     pin[0],
@@ -257,26 +256,18 @@ bool freqshifter::process_stereo(float** pin, float** pout,
   };
   float dval; // dry value
   float wval; // wet value
-  int count =0;
-  if(lfo_amp > 0.0f ){
-    lfo_on = true;
-  }else{
-    lfo_on = false;
-  }
   for (int i = 0; i < numsamples; i++) {
-    if(lfo_on){
-        if(count >= 3){
-            rate = last_rate - (unsigned short) sinus(lfo_rate,lfo_amp,lfo_point);
-            if(rate < 0.1f){
-                rate = 0.1f;
-            }
-            float freq = (rate / (float) paraRate->value_max) * MaxRate;
-            float omega = freq2omega((float)linlog(freq, 0.0, MaxRate, slope));
-            carrier.setOmega(omega);
-            count=0;
-        }
-    count++;
+    float frate = (rate / paraRate->value_max) + 
+      sinus(lfo_phase) * lfo_amp * 0.5;
+    if (frate < 0.0) {
+      frate = 0.0;
     }
+    if (frate > 1.0) {
+      frate = 1.0;
+    }
+    float freq = frate * MaxRate;
+    float omega = freq2omega((float)linlog(freq, 0.0, MaxRate, slope));
+    carrier.setOmega(omega);
     complex<float> c = carrier.process();
     if (dirL) {
       dval = psamples[0][i];
@@ -343,12 +334,12 @@ char const *freqshifter::describe_value(int const param, int const value) {
     }
   case 4:  //
     {
-      sprintf(txt, "%.2f Hz",lfo_rate);
+      sprintf(txt, "%.3f Hz", lfo_rate);
       break;
     }
   case 5:  //
     {
-      sprintf(txt, "%f",lfo_amp * 0.5f);
+      sprintf(txt, "%.3f", lfo_amp * 0.5f);
       break;
     }
   case 6: //  Wet
@@ -377,14 +368,12 @@ char const *freqshifter::describe_value(int const param, int const value) {
 }
 
 
-float freqshifter::sinus(float lfo_rate, float lfo_amp, float &point)
+float freqshifter::sinus(float &phase)
 {
-  float rate = 4.0f/((44100.0f/4.0f)/lfo_rate);
-  point += rate;
-  if(point > lfo_amp){
-    point -= lfo_amp*2.0f;
-  }
-  float out =  point * (lfo_amp - std::fabs(point));
-  out += lfo_amp * 0.5f;
-  return out * 32764.0f;
+  float rate = lfo_rate / _master_info->samples_per_second;
+  float result = sin(2.0 * M_PI * phase);
+  phase += rate;
+  while (phase >= 1.0)
+    phase -= 1.0;
+  return result;
 }

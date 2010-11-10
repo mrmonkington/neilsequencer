@@ -21,7 +21,7 @@
 Import('pluginenv', 'build_plugin')
 
 build_plugin(pluginenv, 'bigyo_frequencyshifter', files=[
-		'Bigyo_FrequencyShifter.cpp',
+        'Bigyo_FrequencyShifter.cpp',
 	],
-	helpfiles=[
+             helpfiles=[
 	])
