@@ -998,7 +998,6 @@ class RouteView(gtk.DrawingArea):
                 gc.set_foreground(cm.alloc_color(brushes[self.COLOR_BORDER_OUT]))
                 pi.plugingfx.draw_rectangle(gc, False, 0, 0,
                                             PLUGINWIDTH - 1, PLUGINHEIGHT - 1)
-                pi.plugingfx.draw_rectangle(gc, True, 10, 10, PLUGINWIDTH, PLUGINHEIGHT)
                 if (player.solo_plugin and player.solo_plugin != mp 
                     and is_generator(mp)):
                     title = prepstr('[' + mp.get_name() + ']')
