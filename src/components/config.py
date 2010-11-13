@@ -153,7 +153,7 @@ DEFAULT_THEME = {
     'SE Strong Line' : 0xa0a0a0,
     'SE Weak Line' : 0xe0e0e0,
     'SE Text' : 0x000000,
-    'SE Track Background' : 0xd0d0d0,
+    'SE Track Background' : 0x808080,
     'SE Track Foreground' : 0xf0f0f0,
     'SE Loop Line' : 0x000000,
     'SE End Marker' : 0xff0000,

@@ -1443,12 +1443,6 @@ class SequencerView(gtk.DrawingArea):
                 cr.stroke_preserve()
                 cr.set_source_rgba(1.0, 0.0, 0.0, 0.3)
                 cr.fill()
-        if self.playpos >= self.startseqtime:
-            gc.set_foreground(white)
-            gc.set_background(white)
-            gc.set_function(gtk.gdk.XOR)
-            x = self.seq_left_margin + int((float(self.playpos - self.startseqtime) / self.step) * self.seq_row_size)
-            drawable.draw_rectangle(gc, True, x, 1, 2, height - 2)
 
     def draw_playpos(self):
         if not self.window:
@@ -1463,8 +1457,8 @@ class SequencerView(gtk.DrawingArea):
             gc.set_foreground(white)
             gc.set_background(white)
             gc.set_function(gtk.gdk.XOR)
-            x = self.seq_left_margin + int((float(self.playpos - self.startseqtime) / self.step) * self.seq_row_size)
-            drawable.draw_rectangle(gc, True, x, 1, 2, height - 2)
+            x = self.seq_left_margin + int((float(self.playpos - self.startseqtime) / self.step) * self.seq_row_size) + 1
+            drawable.draw_rectangle(gc, True, x, 1, 1, height - 1)
 
     def update(self):
         """
@@ -1536,7 +1530,7 @@ class SequencerView(gtk.DrawingArea):
                            self.seq_left_margin, height)
         ctx.set_foreground(colors['Track Background'])
         drawable.draw_rectangle(ctx, True, 0, 0,
-                                self.seq_left_margin, height - 1)
+                                self.seq_left_margin, height)
 
     def draw_tracks(self, ctx, colors):
         """
@@ -1641,7 +1635,13 @@ class SequencerView(gtk.DrawingArea):
             y += self.seq_track_size
             # Draw the horizontal lines separating tracks
             ctx.set_foreground(colors['Weak Line'])
-            drawable.draw_line(ctx, self.seq_left_margin, y, width, y)
+            drawable.draw_line(ctx, self.seq_left_margin + 1, y, width - 1, y)
+        cr = self.window.cairo_create()
+        cr.rectangle(self.seq_left_margin, 0, 
+                     5, height)
+        cr.set_source_rgba(0.0, 0.0, 0.0, 0.15)
+        cr.fill()
+
 
     def draw_loop_points(self, ctx, colors):
         player = com.get('neil.core.player')
@@ -1708,6 +1708,7 @@ class SequencerView(gtk.DrawingArea):
         self.draw_tracks(ctx, colors)
         self.draw_loop_points(ctx, colors)
         self.draw_cursors()
+        self.draw_playpos()
         # Draw the black border
         #ctx.set_foreground(colors['Border'])
         #drawable.draw_rectangle(ctx, False, 0, 0, width - 1, height - 1)
