@@ -4,15 +4,19 @@
 #include <zzub/signature.h>
 #include <zzub/plugin.h>
 
+#include <stdint.h>
+
 struct Gvals {
-  unsigned short pregain : 8;
-  unsigned short n : 8;
-  unsigned short postgain : 8;
+  uint8_t pregain;
+  uint8_t n;
+  uint8_t postgain;
+  uint8_t feedback;
 } __attribute__((__packed__));
 
-const zzub::parameter *param_pregain = NULL;
-const zzub::parameter *param_n = NULL;
-const zzub::parameter *param_postgain = NULL;
+const zzub::parameter *param_pregain = 0;
+const zzub::parameter *param_n = 0;
+const zzub::parameter *param_postgain = 0;
+const zzub::parameter *param_feedback = 0;
 
 const char *zzub_get_signature() { 
   return ZZUB_SIGNATURE; 
@@ -21,7 +25,7 @@ const char *zzub_get_signature() {
 class Chebyshev : public zzub::plugin {
 private:
   Gvals gval;
-  float pregain, postgain;
+  float pregain, postgain, feedback, feedL, feedR;
   int pn;
 public:
   Chebyshev();
@@ -80,8 +84,8 @@ struct ChebyshevInfo : zzub::info {
       .set_name("Pre-Gain")
       .set_description("Pre-Gain")
       .set_value_min(0x00)
-      .set_value_max(0xFE)
-      .set_value_none(0xFF)
+      .set_value_max(0xfe)
+      .set_value_none(0xff)
       .set_state_flag()
       .set_value_default(0x80);
     param_n = &add_global_parameter()
@@ -90,7 +94,7 @@ struct ChebyshevInfo : zzub::info {
       .set_description("The free parameter")
       .set_value_min(0x00)
       .set_value_max(0x10)
-      .set_value_none(0xFF)
+      .set_value_none(0xff)
       .set_state_flag()
       .set_value_default(0x00);
     param_postgain = &add_global_parameter()
@@ -98,10 +102,19 @@ struct ChebyshevInfo : zzub::info {
       .set_name("Post-Gain")
       .set_description("Post-Gain")
       .set_value_min(0x00)
-      .set_value_max(0xFE)
-      .set_value_none(0xFF)
+      .set_value_max(0xfe)
+      .set_value_none(0xff)
       .set_state_flag()
       .set_value_default(0x80);
+    param_feedback = &add_global_parameter()
+      .set_byte()
+      .set_name("Feedback")
+      .set_description("Feedback amount")
+      .set_value_min(0x00)
+      .set_value_max(0xfe)
+      .set_value_none(0xff)
+      .set_state_flag()
+      .set_value_default(0x00);
   }
   virtual zzub::plugin* create_plugin() const { return new Chebyshev(); }
   virtual bool store_info(zzub::archive *data) const { return false; }
