@@ -1055,6 +1055,10 @@ class RouteView(gtk.DrawingArea):
                                                     (CPUOFSY + CPUHEIGHT - 
                                                     height - 1), 
                                                     CPUWIDTH - 2, height)
+            cr = self.window.cairo_create()
+            cr.rectangle(rx + 3, ry + 3, PLUGINWIDTH, PLUGINHEIGHT)
+            cr.set_source_rgba(0.0, 0.0, 0.0, 0.2)
+            cr.fill()
             self.window.draw_drawable(gc, pi.plugingfx, 0, 0, 
                                       int(rx), int(ry), -1, -1)
 
