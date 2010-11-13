@@ -692,8 +692,8 @@ class RouteView(gtk.DrawingArea):
         @rtype: (int,int)
         """
         rect = self.get_allocation()
-        w,h = rect.width, rect.height
-        cx,cy = w*0.5, h * 0.5
+        w, h = rect.width, rect.height
+        cx, cy = w*0.5, h * 0.5
         return cx * (1 + x), cy * (1 + y)
 
     def pixel_to_float(self, (x, y)):
@@ -708,8 +708,8 @@ class RouteView(gtk.DrawingArea):
         @rtype: (float, float)
         """
         rect = self.get_allocation()
-        w,h = rect.width, rect.height
-        cx,cy = w*0.5, h * 0.5
+        w, h = rect.width, rect.height
+        cx, cy = w * 0.5, h * 0.5
         return (x / cx) - 1, (y / cy) - 1
 
     def get_connection_at(self, (mx,my)):
@@ -735,7 +735,7 @@ class RouteView(gtk.DrawingArea):
                 crx, cry = get_pixelpos(*mp.get_input_connection_plugin(index).get_position())
                 cpx,cpy = (crx + rx) * 0.5, (cry + ry) * 0.5
                 dx,dy = cpx - mx, cpy - my
-                length = (dx*dx + dy*dy) ** 0.5
+                length = (dx * dx + dy * dy) ** 0.5
                 if length <= 14: # why exactly 14?
                     return mp, index
 
@@ -998,6 +998,7 @@ class RouteView(gtk.DrawingArea):
                 gc.set_foreground(cm.alloc_color(brushes[self.COLOR_BORDER_OUT]))
                 pi.plugingfx.draw_rectangle(gc, False, 0, 0,
                                             PLUGINWIDTH - 1, PLUGINHEIGHT - 1)
+                pi.plugingfx.draw_rectangle(gc, True, 10, 10, PLUGINWIDTH, PLUGINHEIGHT)
                 if (player.solo_plugin and player.solo_plugin != mp 
                     and is_generator(mp)):
                     title = prepstr('[' + mp.get_name() + ']')
