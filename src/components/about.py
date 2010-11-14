@@ -54,7 +54,7 @@ AUTHORS = [
 ]
 
 ARTISTS = [
-    'syntax_the_nerd (the logo)'
+    'syntax_the_nerd (the logo)',
     'famfamfam http://www.famfamfam.com/lab/icons/silk/',
 ]
 
@@ -65,7 +65,7 @@ DOCUMENTERS = [
     'Phed',
 ]
 
-AUTHORS = [prepstr(x) for x in AUTHORS]
+#AUTHORS = [prepstr(x) for x in AUTHORS]
 
 from neil.utils import filepath, imagepath
 

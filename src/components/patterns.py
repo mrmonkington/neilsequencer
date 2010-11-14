@@ -1648,15 +1648,13 @@ class PatternView(gtk.DrawingArea):
         if not self.selection:
             self.selection = self.Selection()
         self.grab_focus()
-        #player = com.get('neil.core.player')
-        #player.spinbox_edit = False
         if event.button == 3:
             self.on_context_menu(event)
         if self.pattern == -1:
             return
         if event.button == 1:
-            x,y = int(event.x), int(event.y)
-            row, group, track, index, subindex = self.pos_to_pattern((x,y))
+            x, y = int(event.x), int(event.y)
+            row, group, track, index, subindex = self.pos_to_pattern((x, y))
             self.set_row(row)
             self.set_group(group)
             self.set_track(track)
@@ -1666,7 +1664,7 @@ class PatternView(gtk.DrawingArea):
             self.dragging = True
             self.selection.begin = row
             self.selection.end = row
-            self.clickpos = self.pos_to_pattern((x,y))
+            self.clickpos = self.pos_to_pattern((x, y))
             self.adjust_selection()
             self.redraw()
 
