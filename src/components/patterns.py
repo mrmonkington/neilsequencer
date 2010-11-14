@@ -1655,18 +1655,25 @@ class PatternView(gtk.DrawingArea):
         if event.button == 1:
             x, y = int(event.x), int(event.y)
             row, group, track, index, subindex = self.pos_to_pattern((x, y))
-            self.set_row(row)
-            self.set_group(group)
-            self.set_track(track)
-            self.set_index(index)
-            self.set_subindex(subindex)
-            self.update_statusbar()
-            self.dragging = True
-            self.selection.begin = row
-            self.selection.end = row
-            self.clickpos = self.pos_to_pattern((x, y))
-            self.adjust_selection()
-            self.redraw()
+            if event.type == gtk.gdk._2BUTTON_PRESS:
+                self.selection.mode = SEL_COLUMN
+                self.selection.begin = 0
+                self.selection.end = self.row_count
+                self.adjust_selection()
+                self.redraw()
+            else:
+                self.set_row(row)
+                self.set_group(group)
+                self.set_track(track)
+                self.set_index(index)
+                self.set_subindex(subindex)
+                self.update_statusbar()
+                self.dragging = True
+                self.selection.begin = row
+                self.selection.end = row
+                self.clickpos = self.pos_to_pattern((x, y))
+                self.adjust_selection()
+                self.redraw()
 
     def on_motion(self, widget, *args):
         """
@@ -1693,7 +1700,7 @@ class PatternView(gtk.DrawingArea):
                 self.selection.end = self.clickpos[0] + 1
                 self.selection.begin = row
             else:
-                self.selection.begin=self.clickpos[0]
+                self.selection.begin = self.clickpos[0]
                 self.selection.end = row + 1
             self.adjust_selection()
             self.redraw()
@@ -1734,7 +1741,7 @@ class PatternView(gtk.DrawingArea):
         m.add_pattern(p)
         player.history_commit("new pattern")
         if switch:
-            player.active_patterns = [(m, m.get_pattern_count()-1)]
+            player.active_patterns = [(m, m.get_pattern_count() - 1)]
 
     def on_popup_double(self, *args):
         """
