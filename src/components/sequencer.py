@@ -31,6 +31,7 @@ if __name__ == '__main__':
 import gtk
 import pango
 import gobject
+import sys
 from neil.utils import PLUGIN_FLAGS_MASK, ROOT_PLUGIN_FLAGS
 from neil.utils import GENERATOR_PLUGIN_FLAGS, EFFECT_PLUGIN_FLAGS
 from neil.utils import CONTROLLER_PLUGIN_FLAGS
@@ -471,7 +472,7 @@ class SequencerView(gtk.DrawingArea):
         self.starttrack = 0
         self.step = config.get_config().get_default_int('SequencerStep', 
                                                         self.seq_step)
-        self.wmax=0
+        self.wmax = 0
         player.set_loop_end(self.step)
         self.selection_start = None
         self.selection_end = None
@@ -844,7 +845,31 @@ class SequencerView(gtk.DrawingArea):
         self.create_track(plugin)
 
     def on_popup_record_to_wave(self, widget, index):
-        print index
+        """
+        Callback that is used to record a looped song section
+        to an instrument slot.
+        """
+        player = com.get('neil.core.player')
+        loader = player.get_pluginloader_by_name('@zzub.org/recorder/wavetable')
+        if not loader:
+            print >> sys.stderr, "Can't find instrument recorder plugin loader."
+            return
+        flags = zzub.zzub_plugin_flag_no_undo | zzub.zzub_plugin_flag_no_save
+        recorder = zzub.Player.create_plugin(player, None, 0, "_IRecorder", loader, flags)
+        if not recorder:
+            print >> sys.stderr, "Can't create instrument recorder plugin instance."
+            return
+        master = player.get_plugin(0)
+        recorder.add_input(master, zzub.zzub_connection_type_audio)
+        player.set_machine_non_song(recorder, True)
+        recorder.set_parameter_value(zzub.zzub_parameter_group_global, 0, 0, index, False)
+        recorder.set_parameter_value(zzub.zzub_parameter_group_global, 0, 1, 1, False)
+        player.set_song_end(player.get_loop_end())
+        player.set_position(player.get_loop_start())
+        player.set_loop_enabled(0)
+        player.play()
+        player.flush(None, None)
+        player.history_flush_last()
 
     def on_context_menu(self, event):
         """
@@ -867,25 +892,23 @@ class SequencerView(gtk.DrawingArea):
             paste_sensitive = True
         else:
             paste_sensitive = False
-
         menu = Menu()
         pmenu = Menu()
-        #wavemenu = Menu()
+        wavemenu = Menu()
         for plugin in sorted(list(player.get_plugin_list()), lambda a,b: cmp(a.get_name().lower(),b.get_name().lower())):
             pmenu.add_item(prepstr(plugin.get_name().replace("_","__")), self.on_popup_add_track, plugin)
-        # for i in xrange(player.get_wave_count()):
-        #     w = player.get_wave(i)
-        #     name = "%02X. %s" % ((i+1), prepstr(w.get_name()))
-        #     wavemenu.add_item(name, self.on_popup_record_to_wave, i)
-
+        for i in xrange(player.get_wave_count()):
+            w = player.get_wave(i)
+            name = "%02X. %s" % ((i + 1), prepstr(w.get_name()))
+            wavemenu.add_item(name, self.on_popup_record_to_wave, i)
         menu.add_submenu("Add track", pmenu)
         menu.add_item("Delete track", self.on_popup_delete_track)
         menu.add_separator()
         menu.add_item("Set loop start", self.set_loop_start)
         menu.add_item("Set loop end", self.set_loop_end)
         menu.add_separator()
-        #menu.add_submenu("Record to instrument", wavemenu)
-        #menu.add_separator()
+        menu.add_submenu("Record loop", wavemenu)
+        menu.add_separator()
         menu.add_item("Cut", self.on_popup_cut).set_sensitive(sel_sensitive)
         menu.add_item("Copy", self.on_popup_copy).set_sensitive(sel_sensitive)
         menu.add_item("Paste", self.on_popup_paste).set_sensitive(paste_sensitive)
