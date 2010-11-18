@@ -1,7 +1,8 @@
 /*
   Copyright (C) 2007 Marcin Dabrowski
 
-  This library is free software; you can redistribute it and/or
+  This library is free software; you can redistribute
+ it and/or
   modify it under the terms of the GNU Lesser General Public
   License as published by the Free Software Foundation; either
   version 2.1 of the License, or (at your option) any later version.
@@ -169,14 +170,18 @@ machine_info::machine_info() {
 
 freqshifter::freqshifter()
 {
+  
+  
   global_values = &gval;
   attributes = (int*)&aval;
-
+  sine_table = new (float [SINE_TABLE_SIZE]);
+  filltable(sine_table);
+  
 }
 
 freqshifter::~freqshifter()
 {
-
+  delete [] sine_table;
 }
 
 void freqshifter::init(zzub::archive *const pi)
@@ -258,7 +263,7 @@ bool freqshifter::process_stereo(float** pin, float** pout,
   float wval; // wet value
   for (int i = 0; i < numsamples; i++) {
     float frate = (rate / paraRate->value_max) + 
-      sinus(lfo_phase) * lfo_amp * 0.5;
+      lsinus(lfo_phase) * lfo_amp * 0.5;
     if (frate < 0.0) {
       frate = 0.0;
     }
@@ -377,3 +382,25 @@ float freqshifter::sinus(float &phase)
     phase -= 1.0;
   return result;
 }
+
+float freqshifter::lsinus(float &phase)
+{
+  
+  float rate = lfo_rate / _master_info->samples_per_second;
+  float result = lut_sin(TWOPI * phase);
+  phase += rate;
+  while (phase > 1.0)
+    phase -= 1.0;
+  return result;
+  
+}
+
+void freqshifter::filltable(float *table)
+{
+  
+  for(int  i = 0; i < SINE_TABLE_SIZE; i++){
+    table[i] = sin( i * TWOPI_OVER_LEN );
+  }
+
+}
+
