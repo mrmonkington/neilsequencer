@@ -564,8 +564,8 @@ class NeilFrame(gtk.Window):
     @param event: menu event.
     @type event: MenuEvent
     """
-    import webbrowser
-    webbrowser.open_new(filepath('../doc/neil/html/index.html'))
+    import os
+    os.system("yelp /usr/local/share/doc/neil/manual &")
 
   def on_help_shortcuts(self, *args):
     import os
