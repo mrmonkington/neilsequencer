@@ -1,6 +1,9 @@
 <page xmlns="http://projectmallard.org/1.0/"
       type="guide"
       id="index">
+<info>
+  <link tpe="guide" xref="sequencer"/>
+</info>
 <title>Neil Modular Tracker Manual</title>
 <p>Neil is a modular tracker for Linux (mostly oriented towards Gnome
   desktop environment).</p>
