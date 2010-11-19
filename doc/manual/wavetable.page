@@ -1,8 +1,8 @@
 <page xmlns="http://projectmallard.org/1.0/"
       type="topic"
-      id="sequencer">
+      id="wavetable">
 <info>
   <link type="guide" xref="index"/>
 </info>
-<title>Sequencer view</title>
+<title>Wavetable view</title>
 </page>
