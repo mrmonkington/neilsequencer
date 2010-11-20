@@ -5,4 +5,11 @@
   <link type="guide" xref="index"/>
 </info>
 <title>Pattern view</title>
+<p>Use this view to enter pattern data. Since Neil is a so-called
+  tracker, you have to enter notes in a certain quite peculiar
+  format. Time in trackers go from top to bottom. Each line in this
+  view is a musical event. Columns are used to enter data which are
+  always integral numbers displayed in hexadecimal. These numbers can
+  be used to set synthesizer parameters, note values and other
+  performance data.</p>
 </page>
