@@ -5,4 +5,7 @@
   <link type="guide" xref="index"/>
 </info>
 <title>Info view</title>
+<p>Use this view to enter information about your song. This will get
+  saved with your song file. Use it to store copyright information,
+  random notes to yourself or the listener etc.</p>
 </page>
