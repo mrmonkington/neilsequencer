@@ -988,14 +988,14 @@ def test_view(classname):
 
 def show_plugin_manual(name):
         helpfilepaths = [
-                filepath('/usr/share/doc/zzub/plugins/' + name + '/manual.pdf'),
-                filepath('/usr/local/share/doc/zzub/plugins/' + name + '/manual.pdf')
-                ]
+            filepath("/usr/share/doc/neil/manual"),
+            filepath("/usr/local/share/doc/neil/manual")
+            ]
         for path in helpfilepaths:
-                print path
-        if os.path.isfile(path):
-                os.system("evince %s &" % path)
-                return True
+            print path
+        if os.path.isfile((path + "/%s.page") % name):
+            os.system("yelp %s?%s &" % (path, name))
+            return True
         return False
 
 class ObjectHandlerGroup:
