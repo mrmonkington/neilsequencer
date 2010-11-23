@@ -993,9 +993,9 @@ def show_plugin_manual(name):
             ]
         for path in helpfilepaths:
             print path
-        if os.path.isfile((path + "/%s.page") % name):
-            os.system("yelp %s?%s &" % (path, name))
-            return True
+            if os.path.isfile((path + "/%s.page") % name):
+                os.system("yelp %s?%s &" % (path, name))
+                return True
         return False
 
 class ObjectHandlerGroup:
