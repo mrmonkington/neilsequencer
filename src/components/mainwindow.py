@@ -302,9 +302,9 @@ class NeilFrame(gtk.Window):
     tempmenu = gtk.Menu()
     tempmenu.append(make_stock_menu_item(gtk.STOCK_HELP, self.on_help_contents))
     # Menu item that launches a pdf reader with a document explaining Neil shortcuts
-    shortcuts_menu_item = gtk.MenuItem("_Shortcuts")
-    shortcuts_menu_item.connect('activate', self.on_help_shortcuts)
-    tempmenu.append(shortcuts_menu_item)
+    #shortcuts_menu_item = gtk.MenuItem("_Shortcuts")
+    #shortcuts_menu_item.connect('activate', self.on_help_shortcuts)
+    #tempmenu.append(shortcuts_menu_item)
     # Separator
     tempmenu.append(gtk.SeparatorMenuItem())
     # Menu item that launches the about box
@@ -566,10 +566,6 @@ class NeilFrame(gtk.Window):
     """
     import os
     os.system("yelp /usr/local/share/doc/neil/manual &")
-
-  def on_help_shortcuts(self, *args):
-    import os
-    os.system("evince %s &" % "/usr/local/share/doc/neil/shortcuts.pdf")
 
   def on_about(self, *args):
     """
