@@ -2,7 +2,10 @@
       type="topic"
       id="matilde_tracker">
 <info>
-  <link type="topic" xref="machines"/>
+  <link type="guide" xref="machines"/>
+  <desc>
+    A sampler with a tracker interface
+  </desc>
 </info>
 <title>Matilde Tracker</title>
 <p>

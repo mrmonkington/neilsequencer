@@ -1,0 +1,48 @@
+<page xmlns="http://projectmallard.org/1.0/"
+      type="topic"
+      id="somono_mdadubdelay">
+<info>
+  <link type="guide" xref="machines"/>
+  <desc>
+    An oldschool delay unit
+  </desc>
+</info>
+<title>mda DubDelay</title>
+<p>Simple delay with feedback saturation and delay time modulation</p>
+<table shade="rows">
+  <tr>
+    <td><p><em>Parameter</em></p></td>
+    <td><p><em>Meaning</em></p></td>
+  </tr>
+  <tr>
+    <td><p>Delay</p></td>
+    <td><p>Delay time (delay is mono for authenticity!)</p></td>
+  </tr>
+  <tr>
+    <td><p>Feedback</p></td>
+    <td><p>Feedback - with soft saturation at maximum left position,
+    hard clipping at maximum right</p></td>
+  </tr>
+  <tr>
+    <td><p>FB Tone</p></td>
+    <td><p>Feedback filtering - low-pass to left, high-pass to
+    right</p></td>
+  </tr>
+  <tr>
+    <td><p>LFO Depth</p></td>
+    <td><p>Delay time modulation (sine wave)</p></td>
+  </tr>
+  <tr>
+    <td><p>LFO Rate</p></td>
+    <td><p>Modulation rate</p></td>
+  </tr>
+  <tr>
+    <td><p>FX Mix</p></td>
+    <td><p>Wet / dry mix</p></td>
+  </tr>
+  <tr>
+    <td><p>Output</p></td>
+    <td><p>Level trim</p></td>
+  </tr>
+</table>
+</page>
