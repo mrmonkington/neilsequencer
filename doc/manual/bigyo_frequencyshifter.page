@@ -1,149 +1,120 @@
 <page xmlns="http://projectmallard.org/1.0/"
       type="topic"
       id="bigyo_frequencyshifter">
-<info>
-  <link type="topic" xref="machines"/>
-</info>
-<title>Bigyo FrequencyShifter</title>
-<p>The Bigyo Frequencyshifter is by the definition given to the original Buzz machine, a Hilbert-transformer based frequency shifter effect. It produces a versatile and distinctive sound, almost like a cross between a flanger, a phaser and a ring modulator. 
-</p>
-<section>
-  <title>Machine Attributes</title>
-  <table shade ="rows">
-    <tr>
-      <td>
-      <p><em>Attribute</em></p>
-      </td>
-      <td>
-      <p><em>Description</em></p>
-      </td>
-    </tr>
-    <tr>
-      <td>
-      <p><em>Frequency non-linearity</em></p>
-      </td>
-      <td>
-      <p><em>This seems to affect the band-width of the effect.</em></p>
-      </td>
-      <td>
-      <p><em>0 - 10</em></p>
-      </td>
-    </tr>
-    <tr>  
-      <td>
-      <p><em>Max Frequency (Hz)</em></p>
-      </td>
-      <td>
-      <p><em>Set the maximum possible value of the frequency parameter.</em></p>
-      </td>
-      <td>
-      <p><em>20 - 20000.</em></p>
-      </td>
-    </tr>
-  </table>
-</section>
-<section>
-  <title>Pattern Editor</title>
-  <table shade="all">
-    <tr>
-      <td>
-      <p><em>Column</em></p>
-      </td>
-      <td>
-      <p><em>Description</em></p>
-      </td>
-      <td>
-      <p><em>Ranges</em></p>
-      </td>
-    </tr>
-    <tr>
-      <td>
-      <p>1</p>
-      </td>
-      <td>
-      <p><em>Frequency of the frequency shifter effect in Hz.</em></p> 
-      </td>
-      <td>
-      <p><em>0000 - FFFE</em></p>
-      </td>
-    </tr>
-    <tr>
-      <td>
-      <p>2</p>
-      </td>
-      <td>
-      <p><em>The direction of the effect for the left channel.</em></p>
-      </td>
-      <td>
-      <p><em>00=(off), 01=(down), 02=(up)</em></p>
-      </td>
-    </tr>  
-    <tr>
-      <td>
-      <p>3</p>
-      </td>
-      <td>
-      <p><em>The direction of the effect for the right channel.</em></p>
-      </td>
-      <td>
-      <p><em>00=(off), 01=(down), 02=(up)</em></p>
-      </td>
-    </tr>
-    <tr>
-      <td>
-      <p>4</p>
-      </td>
-      <td>
-      <p><em>Amount of feedback applied to the effected signal.</em></p>
-      </td>
-      <td>
-      <p><em>0000 - FFFE</em></p>
-      </td>
-    </tr>
-    <tr>
-      <td>
-      <p>5</p>
-      </td>
-      <td>
-      <p><em>Rate of the LFO routed to the frequency parameter.</em></p>
-      </td>
-      <td>
-      <p><em>0000 - FFFE</em></p>
-      </td>
-    </tr>
-    <tr>
-      <td>
-      <p>6</p>
-      </td>
-      <td>
-      <p><em>Amplitude of the LFO routed to the frequency parameter.</em></p>
-      </td>
-      <td>
-      <p><em>0000 - FFFE</em></p>
-      </td>
-    </tr>	
-    <tr>
-      <td>
-      <p>7</p>
-      </td>
-      <td>
-      <p><em>Amount of effected signal in the mix.</em></p>
-      </td>
-      <td>
-      <p><em>0001 - FFFE</em></p>
-      </td>
-    </tr>
-    <tr>
-      <td>
-      <p>8</p>
-      </td>
-      <td>
-      <p><em>Amount of original signal in the mix.</em></p> 
-      </td>
-      <td>
-      <p><em>0001 - FFFE</em></p>
-      </td>
-    </tr>	  
-  </table>
-</section>
+  <info>
+    <desc>Hilbert transform based frequency shifter</desc>
+    <link type="guide" xref="machines"/>
+  </info>
+  <title>Bigyo FrequencyShifter</title>
+  <p>The Bigyo Frequencyshifter is a Hilbert-transformer based frequency
+    shifter effect. It produces a versatile and distinctive sound, almost
+    like a cross between a flanger, a phaser and a ring modulator.
+  </p>
+  <section>
+    <title>Attributes</title>
+    <table shade ="rows">
+      <tr>
+	<td>
+	  <p><em>Attribute</em></p>
+	</td>
+	<td>
+	  <p><em>Description</em></p>
+	</td>
+      </tr>
+      <tr>
+	<td>
+	  <p>Frequency non-linearity</p>
+	</td>
+	<td>
+	  <p>Frequency slope parameter</p>
+	</td>
+      </tr>
+      <tr>  
+	<td>
+	  <p>Max Frequency (Hz)</p>
+	</td>
+	<td>
+	  <p>Set the maximum possible value of the frequency
+	    parameter</p> 
+	</td>
+      </tr>
+    </table>
+  </section>
+  <section>
+    <title>Parameters</title>
+    <table shade="rows">
+      <tr>
+	<td>
+	  <p><em>Column</em></p>
+	</td>
+	<td>
+	  <p><em>Description</em></p>
+	</td>
+      </tr>
+      <tr>
+	<td>
+	  <p>Frequency</p>
+	</td>
+	<td>
+	  <p>How many Hz to shift up or down</p> 
+	</td>
+      </tr>
+      <tr>
+	<td>
+	  <p>Left Direction</p>
+	</td>
+	<td>
+	  <p>The direction of the shift for the left channel</p>
+	</td>
+      </tr>  
+      <tr>
+	<td>
+	  <p>Right direction</p>
+	</td>
+	<td>
+	  <p>The direction of the shift for the right channel</p>
+	</td>
+      </tr>
+      <tr>
+	<td>
+	  <p>Feedback</p>
+	</td>
+	<td>
+	  <p>How much of a previously processed sample to mix back in</p>
+	</td>
+      </tr>
+      <tr>
+	<td>
+	  <p>Lfo Rate</p>
+	</td>
+	<td>
+	  <p>Frequency LFO rate</p>
+	</td>
+      </tr>
+      <tr>
+	<td>
+	  <p>Lfo Amp</p>
+	</td>
+	<td>
+	  <p>Frequency LFO depth</p>
+	</td>
+      </tr>	
+      <tr>
+	<td>
+	  <p>Wet</p>
+	</td>
+	<td>
+	  <p>Amount of wet signal in the mix</p>
+	</td>
+      </tr>
+      <tr>
+	<td>
+	  <p>Dry</p>
+	</td>
+	<td>
+	  <p>Amount of dry signal in the mix</p> 
+	</td>
+      </tr>	  
+    </table>
+  </section>
 </page>
