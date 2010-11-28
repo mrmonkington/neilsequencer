@@ -81,14 +81,60 @@ class RandomWalk():
                         value = 2 * parameter.get_value_min() - value
         return data
 
+class LinearTransform():
+    __neil__ = dict(
+        id = 'neil.core.patternfx.linear',
+        categories = [
+            'patternfx'
+            ]
+        )
+
+    name = "Linear Transform"
+
+    def transform(self, data, parameter):
+        dialog = gtk.Dialog(
+            "Linear Transform",
+            buttons=(gtk.STOCK_OK, True, gtk.STOCK_CANCEL, False)
+            )
+        grid = gtk.Table(2, 2, True)
+        grid.attach(gtk.Label("Add"), 0, 1, 0, 1)
+        grid.attach(gtk.Label("Mul:"), 0, 1, 1, 2)
+        add = gtk.Entry()
+        mul = gtk.Entry()
+        add.set_size_request(10, -1)
+        mul.set_size_request(10, -1)
+        add.set_text("0")
+        mul.set_text("1.0")
+        grid.attach(add, 1, 2, 0, 1)
+        grid.attach(mul, 1, 2, 1, 2)
+        dialog.vbox.add(grid)
+        dialog.show_all()
+        response = dialog.run()
+        try:
+            add = int(add.get_text())
+            mul = float(mul.get_text())
+        except(ValueError):
+            return data
+        dialog.destroy()
+        if response:
+            for row in range(len(data)):
+                if data[row] != parameter.get_value_none():
+                    data[row] = int(data[row] * mul + add)
+                    data[row] = min(data[row], parameter.get_value_max())
+                    data[row] = max(data[row], parameter.get_value_min())
+        return data
+
+
 __all__ = [
     'SimpleRandom',
     'RandomWalk',
+    'LinearTransform',
     ]
 
 __neil__ = dict(
     classes = [
         SimpleRandom,
         RandomWalk,
+        LinearTransform,
         ]
     )

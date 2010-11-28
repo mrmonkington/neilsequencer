@@ -4,4 +4,3 @@ import glob
 Import('env', 'install', 'install_recursive')
 
 install('${DOC_PATH}/manual', glob.glob('manual/*.page'))
-install('${DOC_PATH}', 'shortcuts.pdf')
