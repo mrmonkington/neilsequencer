@@ -2,6 +2,7 @@
       type="topic"
       id="sequencer">
 <info>
+  <desc>Song structure editor</desc>
   <link type="guide" xref="index"/>
 </info>
 <title>Sequencer view</title>

@@ -2,6 +2,7 @@
       type="topic"
       id="pattern">
 <info>
+  <desc>Musical event data editor</desc>
   <link type="guide" xref="index"/>
 </info>
 <title>Pattern view</title>

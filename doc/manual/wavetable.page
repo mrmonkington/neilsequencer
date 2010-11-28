@@ -2,6 +2,7 @@
       type="topic"
       id="wavetable">
 <info>
+  <desc>Wave data editor</desc>
   <link type="guide" xref="index"/>
 </info>
 <title>Wavetable view</title>

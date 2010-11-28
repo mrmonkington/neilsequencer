@@ -2,6 +2,7 @@
       type="topic"
       id="info">
 <info>
+  <desc>Allows you to enter textual information about the song</desc>
   <link type="guide" xref="index"/>
 </info>
 <title>Info view</title>
