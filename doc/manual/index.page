@@ -2,6 +2,34 @@
       type="guide"
       id="index">
 <title>Neil Modular Tracker Manual</title>
-<p>Neil is a modular tracker for Linux (mostly oriented towards Gnome
-  desktop environment).</p>
+<p>Neil is a modular tracker for Linux.</p>
+<section>
+  <title>Shortcuts</title>
+  <table>
+    <tr>
+      <td><p><em>Shortcut</em></p></td>
+      <td><p><em>Action</em></p></td>
+    </tr>
+    <tr>
+      <td><p><key>F2</key></p></td>
+      <td><p>Switch to router view</p></td>
+    </tr>
+    <tr>
+      <td><p><key>F3</key></p></td>
+      <td><p>Switch to router view</p></td>
+    </tr>
+    <tr>
+      <td><p><key>F4</key></p></td>
+      <td><p>Switch to sequencer view</p></td>
+    </tr>
+    <tr>
+      <td><p><key>F9</key></p></td>
+      <td><p>Switch to wavetable view</p></td>
+    </tr>
+    <tr>
+      <td><p><key>F11</key></p></td>
+      <td><p>Switch to info view</p></td>
+    </tr>
+  </table>
+</section>
 </page>
