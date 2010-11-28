@@ -986,17 +986,21 @@ def test_view(classname):
         elif isinstance(obj, gtk.Widget) and not obj.get_parent():
                 dlg = com.get('neil.test.dialog', embed=obj, destroy_on_close=False)
 
-def show_plugin_manual(name):
-        helpfilepaths = [
-            filepath("/usr/share/doc/neil/manual"),
-            filepath("/usr/local/share/doc/neil/manual")
-            ]
-        for path in helpfilepaths:
-            print path
+def show_manual(name=None):
+    helpfilepaths = [
+        filepath("/usr/share/doc/neil/manual"),
+        filepath("/usr/local/share/doc/neil/manual")
+        ]
+    for path in helpfilepaths:
+        if name:
             if os.path.isfile((path + "/%s.page") % name):
                 os.system("yelp %s?%s &" % (path, name))
                 return True
-        return False
+        else:
+            if os.path.isdir(path):
+                os.system("yelp %s" % path)
+                return True
+    return False
 
 class ObjectHandlerGroup:
         """

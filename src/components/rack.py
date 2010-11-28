@@ -28,7 +28,7 @@ import cairo
 import pangocairo
 from neil.utils import prepstr, filepath, db2linear, linear2db, is_debug, filenameify, \
 	get_item_count, question, error, new_listview, add_scrollbars, get_clipboard_text, set_clipboard_text, \
-	gettext, new_stock_image_button, diff, show_plugin_manual
+	gettext, new_stock_image_button, diff, show_manual
 import zzub
 import sys,os
 import fnmatch
@@ -726,7 +726,7 @@ class ParameterView(gtk.VBox):
 	# 	import webbrowser
 	# 	webbrowser.open_new(path)
 	# 	return
-	if not show_plugin_manual(name):
+	if not show_manual(name):
 	    info=gtk.MessageDialog(self.get_toplevel(),flags=0, type=gtk.MESSAGE_INFO, buttons=gtk.BUTTONS_OK, message_format="Sorry, there's no help for this plugin yet")
 	    info.run()
 	    info.destroy()

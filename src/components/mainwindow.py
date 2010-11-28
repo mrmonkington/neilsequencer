@@ -22,7 +22,7 @@ import os
 import gtk
 from neil.utils import format_time, ticks_to_time, prepstr, linear2db, db2linear, filepath, \
         is_debug, question, error, add_scrollbars, file_filter, new_stock_image_toggle_button, \
-        new_stock_image_button, message, refresh_gui
+        new_stock_image_button, message, refresh_gui, show_manual
 import zzub
 import gobject
 import config
@@ -565,7 +565,7 @@ class NeilFrame(gtk.Window):
     @type event: MenuEvent
     """
     import os
-    os.system("yelp /usr/local/share/doc/neil/manual &")
+    show_manual()
 
   def on_about(self, *args):
     """
