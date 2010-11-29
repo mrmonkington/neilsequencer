@@ -998,7 +998,7 @@ def show_manual(name=None):
                 return True
         else:
             if os.path.isdir(path):
-                os.system("yelp %s" % path)
+                os.system("yelp %s &" % path)
                 return True
     return False
 
