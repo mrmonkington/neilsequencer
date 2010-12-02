@@ -7,6 +7,9 @@
 #include <zzub/signature.h>
 #include <zzub/plugin.h>
 
+const int RMS_WINDOW = 64;
+const float RMS_WINDOW_INV = 1.0f / RMS_WINDOW;
+
 struct Gvals {
   uint8_t type;
   uint16_t cutoff;
@@ -37,11 +40,12 @@ private:
   float cutoff, lfo_speed, lfo_amp, rms_amp;
   float *sine_table;
   int type;
-  float rms_buffer[16];
+  float rms_buffer[RMS_WINDOW];
   int rms_cursor;
   float svf_cutoff[zzub_buffer_size], phaser[zzub_buffer_size],
     phaser_freq[zzub_buffer_size], lfo_out[zzub_buffer_size],
     rms_out[zzub_buffer_size];
+  float squared_sum;
 public:
   Filter();
   virtual ~Filter();

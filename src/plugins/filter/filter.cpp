@@ -16,9 +16,10 @@ Filter::Filter()
   global_values = &gval;
   track_values = 0;
   attributes = 0;
-  for (int i = 0; i < 16; i++) {
+  for (int i = 0; i < RMS_WINDOW; i++) {
     rms_buffer[i] = 0.0;
   }
+  squared_sum = 0.0;
   rms_cursor = 0;
 }
 
@@ -84,9 +85,13 @@ bool Filter::process_stereo(float **pin, float **pout, int n, int mode)
   lfo.process(phaser, lfo_out, n);
   lag_cutoff.process(svf_cutoff, n);
   for (int i = 0; i < n; i++) {
-    rms_out[i] = rms(rms_buffer, 16);
     rms_buffer[rms_cursor] = (pin[0][i] + pin[1][i]) * 0.5;
-    rms_cursor = (rms_cursor + 1) % 16;
+    float newest = rms_buffer[rms_cursor];
+    float oldest = rms_buffer[(rms_cursor + 1) % RMS_WINDOW];
+    squared_sum -= oldest * oldest;
+    squared_sum += newest * newest;
+    rms_out[i] = sqrt(squared_sum * RMS_WINDOW_INV);
+    rms_cursor = (rms_cursor + 1) % RMS_WINDOW;
   }
   add_signals(1.0, lfo_out, n);
   mul_signals(0.5, lfo_out, n);

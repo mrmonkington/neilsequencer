@@ -17,9 +17,9 @@ Chebyshev::~Chebyshev() {
 }
 
 void Chebyshev::init(zzub::archive* pi) {
-  pregain = 1.0;
+  pregain = 1.0f;
   pn = 1;
-  postgain = 1.0;
+  postgain = 1.0f;
   feedL = 0.0f;
   feedR = 0.0f;
 }
