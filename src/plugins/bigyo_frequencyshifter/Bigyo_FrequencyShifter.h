@@ -21,6 +21,11 @@
 
 #include <stdint.h>
 
+const float TWOPI = 6.283185307179586;
+const int SINE_TABLE_SIZE = 4096;
+const int SINE_TABLE_BITMASK = SINE_TABLE_SIZE -1;
+const float TWOPI_OVER_LEN =  TWOPI / SINE_TABLE_SIZE;
+
 struct gvals {
   uint16_t Rate;
   uint8_t DirectionL;
@@ -39,6 +44,8 @@ struct avals {
 
 class freqshifter : public zzub::plugin {
 public:
+  float* sine_table;
+
   freqshifter();
   virtual ~freqshifter();
   virtual void process_events();
@@ -193,8 +200,14 @@ public:
     return minlog * (float)pow(maxlog / minlog,
 			       (value-minlin) / (maxlin-minlin));
   }
+  inline float lut_sin(float phase)
+  {
+    return sine_table[(int)(phase *  651.8986469f ) & SINE_TABLE_BITMASK];
+  }
 
   float sinus(float &phase);
+  float lsinus(float &phase);
+  void filltable(float* table);
 
   HilbertPair hL, hR;
   FastCosSin carrier;
