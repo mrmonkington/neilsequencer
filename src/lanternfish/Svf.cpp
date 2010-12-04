@@ -44,8 +44,11 @@ namespace lanternfish {
       out[i] = 0.0;
     if (!this->bypass) {
       for (int i = 0; i < n; i++) {
-	float freq = 2.0f * sin(M_PI * 
-				std::min(0.25f, cutoff[i] / (sps * 2.0f)));
+	// float freq = 2.0f * sin(M_PI * std::min(0.25f, cutoff[i] / (sps * 2.0f)));
+	// Optimized to (replaced sin(x) with an appropriate Taylor polynomial):
+	float x;
+	x = M_PI * std::min(0.25f, cutoff[i] / (sps * 2.0f)) - 0.125 * M_PI;
+	float freq = 2.0f * (0.3826834325f + 0.9238795325f * x - 0.1913417162f * x * x);
 	float damp = std::min(2.0f * (1.0f - (float)sqrt(sqrt(q))), 
 			      std::min(2.0f, 2.0f / freq  - freq * 0.5f));
 	float in = input[i];
