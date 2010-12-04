@@ -13,7 +13,6 @@ namespace lanternfish {
   float note_to_freq(int note);
   float *make_sine_table(int size);
   float rms(float *buffer, int n);
-  float kill_denormal(float &val);
 }
 
 #endif // LANTERNFISH_UTILS_HPP

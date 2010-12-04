@@ -11,6 +11,7 @@ namespace lanternfish {
     float q;
     bool bypass;
     int buff_size;
+    void kill_denormal(float &val);
   public:
     Svf();
     ~Svf();
