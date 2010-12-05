@@ -1,0 +1,10 @@
+<page xmlns="http://projectmallard.org/1.0/"
+      type="topic"
+      id="plugin_api">
+  <info>
+    <desc>Information about machine API</desc>
+    <link type="guide" xref="development"/>
+  </info>
+  <title>Plug-In API</title>
+  
+</page>
