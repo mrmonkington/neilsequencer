@@ -915,7 +915,7 @@ class SequencerView(gtk.DrawingArea):
         for i in xrange(player.get_wave_count()):
             w = player.get_wave(i)
             name = "%02X. %s" % ((i + 1), prepstr(w.get_name()))
-            wavemenu.add_item(name, self.on_popup_record_to_wave, i)
+            wavemenu.add_item(name, self.on_popup_record_to_wave, i + 1)
         menu.add_submenu("Add track", pmenu)
         menu.add_item("Delete track", self.on_popup_delete_track)
         menu.add_separator()
