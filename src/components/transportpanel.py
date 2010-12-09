@@ -99,10 +99,13 @@ class TransportPanel(gtk.HBox):
         sg1 = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
         sg2 = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
         def add_row(name):
+            import pango
             c1 = gtk.Label()
-            c1.set_markup("<small><b>%s</b></small>" % name)
+            c1.modify_font(pango.FontDescription("Monospace 6"))
+            c1.set_markup("<b>%s</b>" % name)
             c1.set_alignment(1, 0.5)
             c2 = gtk.Label()
+            c2.modify_font(pango.FontDescription("Monospace 6"))
             c2.set_alignment(1, 0.5)
             hbox = gtk.HBox(False, MARGIN)
             hbox.pack_start(c1, expand=False)
@@ -256,7 +259,7 @@ class TransportPanel(gtk.HBox):
         l = format_time(ticks_to_time(le-lb,bpm,tpb))
         for text,control in [(e,self.elapsed),(c,self.current),(l,self.loop)]:
             #~ if text != control.get_text():
-            control.set_markup("<small>%s</small>" % text)
+            control.set_markup("%s" % text)
         return True
 
     def update_btnplay(self):
