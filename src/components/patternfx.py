@@ -124,11 +124,56 @@ class LinearTransform():
                     data[row] = max(data[row], parameter.get_value_min())
         return data
 
+class Expression():
+    __neil__ = dict(
+        id = 'neil.core.patternfx.expression',
+        categories = [
+            'patternfx'
+            ]
+        )
+
+    name = "Expression"
+
+    def transform(self, data, parameter):
+        dialog = gtk.Dialog(
+            "Expression",
+            buttons=(gtk.STOCK_OK, True, gtk.STOCK_CANCEL, False)
+            )
+        text = gtk.TextView()
+        dialog.vbox.add(text)
+        dialog.show_all()
+        response = dialog.run()
+        expr = text.get_buffer().get_property('text')
+        dialog.destroy()
+        if response:
+            try:
+                for i in range(len(data)):
+                    from random import *
+                    from math import *
+                    x = data[i]
+                    a = parameter.get_value_min()
+                    b = parameter.get_value_max()
+                    z = parameter.get_value_none()
+                    n = len(data)
+                    exec expr
+                    data[i] = int(y)
+            except Exception:
+                error_box = gtk.Dialog(
+                    "Expression Error",
+                    buttons=(gtk.STOCK_OK, True)
+                    )
+                error_box.vbox.add(gtk.Label("There was some problem with your expression"))
+                error_box.show_all()
+                error_box.run()
+                error_box.detroy()
+        return data
+
 
 __all__ = [
     'SimpleRandom',
     'RandomWalk',
     'LinearTransform',
+    'Expression',
     ]
 
 __neil__ = dict(
@@ -136,5 +181,6 @@ __neil__ = dict(
         SimpleRandom,
         RandomWalk,
         LinearTransform,
+        Expression,
         ]
     )
