@@ -626,13 +626,9 @@ Export(
 	'install_root',
 	'install_plugin_help',
 	'install_python_extension',
-
-	'gcc','cl',
-
+	'gcc',
 	'posix','win32','mac',
-
 	'env',
-
 	'vs_projects',
 )
 
