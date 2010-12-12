@@ -1,4 +1,4 @@
-Import('env', 'posix', 'win32', 'install_lib', 'cl', 'vs_projects')
+Import('env', 'install_lib')
 import glob
 
 #######################################
@@ -10,22 +10,10 @@ import glob
 localenv = env.Clone()
 
 files = [
-	'RtAudio.cpp',
-]
+    'RtAudio.cpp',
+    ]
 
-if win32:
-	localenv.Append(CCFLAGS=[
-		'-D__WINDOWS_ASIO__',
-		'-D__WINDOWS_DS__',
-		'-D__WINDOWS_SILENT__',
-	])
-	files += [
-		'include/asio.cpp',
-		'include/asiodrivers.cpp',
-		'include/asiolist.cpp',
-		'include/iasiothiscallresolver.cpp',
-	]
-	
+
 localenv.Append(CCFLAGS=['-Isrc/rtaudio/include'])
 
 if localenv['COREAUDIO'] == True: localenv.Append(CCFLAGS=['-D__MACOSX_CORE__'])
@@ -33,21 +21,6 @@ if localenv['ALSA'] == True: localenv.Append(CCFLAGS=['-D__LINUX_ALSA__'])
 if localenv['JACK'] == True: localenv.Append(CCFLAGS=['-D__UNIX_JACK__'])
 if localenv['OSS'] == True: localenv.Append(CCFLAGS=['-D__LINUX_OSS__'])
 
-#	localenv.Append(CCFLAGS=[
-#		'-D__LINUX_ALSA__',
-#		'-D__LINUX_JACK__',
-#		'-D__LINUX_OSS__',
-#	])
-
 rtaudio_static = localenv.StaticLibrary('${LIB_BUILD_PATH}/rtaudio_static', files)
 
 Export('rtaudio_static')
-
-if hasattr(localenv, 'MSVSProject'):
-	localenv.MSVSProject(target = 'rtaudio' + localenv['MSVSPROJECTSUFFIX'],
-		srcs = glob.glob('*.cpp'),
-		incs = glob.glob('*.h'),
-		buildtarget = rtaudio_static[0],   # len(libzzub)==3, but we need only 1
-		variant = 'Debug',
-		auto_build_solution=0)
-	vs_projects+=['src/rtaudio/rtaudio' + localenv.subst('$MSVSPROJECTSUFFIX') ] 

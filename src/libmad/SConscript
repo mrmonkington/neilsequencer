@@ -1,4 +1,4 @@
-Import('env', 'posix', 'win32', 'install_lib', 'cl', 'vs_projects')
+Import('env', 'install_lib')
 import glob
 
 #######################################
@@ -10,29 +10,22 @@ import glob
 localenv = env.Clone()
 
 files = [
-	'bit.c',
-	'decoder.c',
-	'fixed.c',
-	'frame.c',
-	'huffman.c',
-	'layer12.c',
-	'layer3.c',
-	#~ 'minimad.c',
-	'stream.c',
-	'synth.c',
-	'timer.c',
-	'version.c',
-]
+    'bit.c',
+    'decoder.c',
+    'fixed.c',
+    'frame.c',
+    'huffman.c',
+    'layer12.c',
+    'layer3.c',
+    'stream.c',
+    'synth.c',
+    'timer.c',
+    'version.c',
+    ]
 
-if cl:
-	localenv.Append(CCFLAGS=[
-		'-Dinline=__inline',
-		'-DFPM_INTEL', # this needs to be changed for other platforms
-	])
-else:
-	localenv.Append(CCFLAGS=[
-		'-DHAVE_CONFIG_H',
-		'-DFPM_INTEL', # this needs to be changed for other platforms
+localenv.Append(CCFLAGS=[
+        '-DHAVE_CONFIG_H',
+        '-DFPM_INTEL', # this needs to be changed for other platforms
 	])
 
 libmad_static = localenv.StaticLibrary('${LIB_BUILD_PATH}/libmad_static', files)

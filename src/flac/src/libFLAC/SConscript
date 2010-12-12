@@ -18,7 +18,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-Import('env', 'posix', 'win32', 'install_lib', 'install', 'cl', 'vs_projects')
+Import('env', 'install_lib', 'install')
 
 localenv = env.Clone()
 
