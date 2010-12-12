@@ -75,19 +75,6 @@ files += [
 	'${MINIZIP_SRC_PATH}/unzip.c',
 	'${MINIZIP_SRC_PATH}/zip.c',
 ]
-if win32:
-    # build from our private zlib
-    localenv.Append(CPPPATH=["${ROOTPATH}/src/zlib"])
-    env.SConscript("${ROOTPATH}/src/zlib/SConscript")
-    # no deprecation warnings
-    localenv.Append(CCFLAGS=[
-	    '-D_CRT_SECURE_NO_DEPRECATE',
-    ])
-
-if mac:
-    localenv.Append(CCFLAGS = [ 
-	    '-fno-common',
-    ])
 
 localenv.Append(LIBS=[
 	'FLAC',
