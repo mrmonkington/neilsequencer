@@ -144,31 +144,7 @@ if posix:
 	env['LIB_RT'] = 'rt'
 	env['LIB_COMPAT'] = ''
 
-if win32:
-    env.Append(CCFLAGS=[
-	    '-D_WIN32',
-	    '-DWIN32',
-	    '-DSTRICT',
-	    '-D_WINDOWS',
-	    '-D_WIN32_WINNT=0x0500',
-	    '-D_CRT_SECURE_NO_WARNINGS',
-    ])
-    if env['DEBUG'] == False:
-	env.Append(CCFLAGS=['-DNDEBUG' ])
-    else:
-	env.Append(CCFLAGS=['-DDEBUG', '-D_DEBUG' ])
-
-    env.Append(LIBS=[
-	    'kernel32',
-	    'user32',
-	    'comdlg32' # for recorder::GetSaveFileName
-    ])
-    env['LIB_DL'] = ''
-    env['LIB_RT'] = ''
-    env['LIB_COMPAT'] = ''
-
 gcc = env['CC'] == 'gcc'
-cl = env['CC'] == 'cl'
 
 if gcc:
     #env['CXXFLAGS'] += ['--no-rtti']
@@ -205,21 +181,6 @@ if gcc:
 		'-mfpmath=sse',
 		'-msse',
 	])
-
-if cl:
-    env.Append(CCFLAGS=[
-	    '-nologo',
-	    '-EHsc',
-	    '-W3',
-
-    ])
-    env.Append(LINKFLAGS=[
-	    '-DEBUG',
-    ])
-    if env['DEBUG'] == False:
-	env.Append(CCFLAGS=['-MT', '-O2' ])
-    else:
-	env.Append(CCFLAGS=['-MTd', '-Zi' ])
 
 ######################################
 # 64-bit fixes
@@ -340,8 +301,6 @@ env['BIN_BUILD_PATH'] = '${ROOTPATH}/bin'
 ######################################
 
 env.Append(CPPPATH=['${ROOTPATH}/include'])
-if win32:
-    env.Append(CPPPATH=['${ROOTPATH}/include/win32'])
 
 ######################################
 #
