@@ -35,6 +35,11 @@
 	  working.</p></td>
     </tr>
     <tr>
+      <td><p><em>p</em></p></td>
+      <td><p>"Phase" value. This ranges from 0 to 1 over the course of
+      the selection.</p></td>
+    </tr>
+    <tr>
       <td><p><em>n</em></p></td>
       <td><p>Number of rows in the selection.</p></td>
     </tr>
@@ -100,7 +105,7 @@ y = randint(a, b - 1)
 	to <em>b</em>.
       </p>
       <code>
-y = a + (sin(2.0 * pi * (i / float(n))) + 1.0) * 0.5 * (b - a)
+y = a + (sin(2.0 * pi * p) + 1.0) * 0.5 * (b - a)
       </code>
     </section>
   </section>
