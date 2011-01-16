@@ -28,7 +28,7 @@ import pangocairo
 import os, sys
 from utils import prepstr, db2linear, linear2db, note2str, file_filter
 from utils import read_int, write_int, add_scrollbars, new_image_button,\
-     filepath, add_hscrollbar
+     filepath, add_hscrollbar, error
 import zzub
 import config
 import common
@@ -56,14 +56,11 @@ class WaveEditPanel(gtk.VBox):
 	waveedbuttons = gtk.HBox(False, MARGIN)
 	self.btndelrange = gtk.Button("Delete")
         self.btnlooprange = gtk.Button("Loop")
-        self.btnxloop = gtk.Button("XLoop")
 	waveedbuttons.pack_start(self.btndelrange, expand=False)
         waveedbuttons.pack_start(self.btnlooprange, expand=False)
 	self.pack_end(waveedbuttons, expand=False)
 	self.btndelrange.connect('clicked', self.on_delete_range)
         self.btnlooprange.connect('clicked', self.on_loop_range)
-	#self.btnstoresel.connect('clicked', self.on_store_range)
-	#self.btnapplyslices.connect('clicked', self.on_apply_slices)
 
     def update(self, *args):
 	self.view.update()
@@ -83,8 +80,8 @@ class WaveEditPanel(gtk.VBox):
         begin, end = self.view.selection
         self.view.level.set_loop_start(begin)
         self.view.level.set_loop_end(end)
-        player.history_commit("set loop range")        
-
+        player.history_commit("set loop range")
+        
 class WaveEditView(gtk.DrawingArea):
     """
     Envelope viewer.

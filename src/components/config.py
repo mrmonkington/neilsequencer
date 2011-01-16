@@ -72,7 +72,6 @@ CONFIG_OPTIONS = dict(
 	SamplePreviewVolume = dict(default=-12.0,doc="the volume with which samples shall be previewed."),
 	Theme = dict(func='active_theme',default=None,vtype=str,onget=lambda v:v or None,doc="the name of the currently active theme."),
 	KeymapLanguage = dict(default='en',onset=lambda s:s.lower(),onget=lambda s:s.lower(),doc="the current keymap language."),
-	AudioEditorCommand = dict(func='audioeditor_command', default='audacity', doc="the audio editor command."),
 	IncrementalSaving = dict(default=True, doc="the incremental saving option."),
 	PatternFontName = dict(func='pattern_font',default='Monospace 8',doc="the font used in the pattern editor."),
 	LedDraw = dict(default=True,doc="the led draw option."),
@@ -315,15 +314,6 @@ class NeilConfig(object, ConfigParser.ConfigParser):
 	path = os.path.join(iconpath(name + '.svg'))
 	if not os.path.isfile(path):
 	    return ""
-	return path
-
-    def get_freesound_samples_folder(self):
-	"""
-	Returns the samples folder designated for samples downloaded from freesound.
-	"""
-	path = os.path.join(self.get_settings_folder(), "samples", "freesound")
-	if not os.path.isdir(path):
-	    os.makedirs(path)
 	return path
 
     def get_settings_folder(self):
