@@ -101,6 +101,8 @@ class PluginContextMenu(gtk.Menu):
                        ['Synthesizers', 'Percussive'],
                    '@libneil/somono/generator/cloud;1' :
                        ['Synthesizers', 'Granular'],
+                   'jamesmichaelmcdermott@gmail.com/generator/DTMF_1;1' :
+                       ['Synthesizers', 'Other'],
                    '@rift.dk/generator/Matilde+Tracker;1.5' :
                        ['Samplers'],
                    '@trac.zeitherrschaft.org/aldrin/lunar/effect/delay;1' :
@@ -147,6 +149,10 @@ class PluginContextMenu(gtk.Menu):
                        ['Effects', 'Filter'],
                    '@libneil/somono/effect/filter' :
                        ['Effects', 'Filter'],
+                   'jamesmichaelmcdermott@gmail.com/effect/sprayman;1' :
+                       ['Effects', 'Sampling'],
+                   '@libneil/somono/effect/stutter;1' :
+                       ['Effects', 'Sampling'],
                    '@libneil/somono/controller/lfnoise;1' :
                        ['Control'],
                    '@neil/lunar/controller/Controller;1' :

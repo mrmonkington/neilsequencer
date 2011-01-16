@@ -596,6 +596,7 @@ class NeilConfig(object, ConfigParser.ConfigParser):
 	name = filenameify(pluginloader.get_name())
 	#presetpath = os.path.join(sharedpath('presets'))
 	presetpath = os.path.join(self.get_settings_folder(),'presets')
+        print presetpath
 	presetfilepaths = [
 		os.path.join(presetpath, uri + '.prs'),
 		os.path.join(presetpath, name + '.prs'),
