@@ -57,13 +57,16 @@ class WaveEditPanel(gtk.VBox):
 	self.btndelrange = gtk.Button("Delete")
         self.btnlooprange = gtk.Button("Loop")
         self.btnxfaderange = gtk.Button("XFade")
+        self.btnnormalize = gtk.Button("Normalize")
 	waveedbuttons.pack_start(self.btndelrange, expand=False)
         waveedbuttons.pack_start(self.btnlooprange, expand=False)
         waveedbuttons.pack_start(self.btnxfaderange, expand=False)
+        waveedbuttons.pack_start(self.btnnormalize, expand=False)
 	self.pack_end(waveedbuttons, expand=False)
 	self.btndelrange.connect('clicked', self.on_delete_range)
         self.btnlooprange.connect('clicked', self.on_loop_range)
         self.btnxfaderange.connect('clicked', self.on_xfade_range)
+        self.btnnormalize.connect('clicked', self.on_normalize)
 
     def update(self, *args):
 	self.view.update()
@@ -87,6 +90,11 @@ class WaveEditPanel(gtk.VBox):
         
     def on_xfade_range(self, widget):
         player = com.get('neil.core.player')
+
+    def on_normalize(self, widget):
+        player = com.get('neil.core.player')
+        self.view.level.normalize()
+        self.update()
         
 class WaveEditView(gtk.DrawingArea):
     """
