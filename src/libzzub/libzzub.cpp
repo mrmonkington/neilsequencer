@@ -2437,6 +2437,46 @@ extern "C"
     return zzub_wave_save_sample_range(wave, level, datastream, 0, w.get_sample_count(level));
   }
 
+  void zzub_wavelevel_normalize(zzub_wavelevel_t* level) {
+    wave_info_ex &w = *level->_player->back.wavetable.waves[level->wave];
+    wave_level_ex &l = level->_player->back.wavetable.waves[level->wave]->levels[level->level];
+    unsigned char *samples = (unsigned char *)l.samples;
+    int channels = w.get_stereo() ? 2 : 1;
+    int bps = l.get_bytes_per_sample();
+    int bitsps = bps * 8;
+    wave_buffer_type format = (wave_buffer_type)l.format;
+    float scaler = 1.0 / (1 << (bitsps - 1));
+    // Find the peak in the samples buffer.
+    int isample = 0;
+    int max_sample = 0;
+    float normalizer = 1.0;
+    for (int j = 0; j < 2; j++) {
+      for (int channel = 0; channel < channels; channel++) {
+	for (int i = 0; i < l.sample_count; i++) {
+	  int offset = (i * channels + channel) * bps;
+	  switch (bps) {
+	  case 1: 
+	    isample = *(char *)&samples[offset]; 
+	    *(char *)&samples[offset] = isample * normalizer;
+	    break;
+	  case 2: 
+	    isample = *(short *)&samples[offset]; 
+	    *(short *)&samples[offset] = isample * normalizer;
+	    break;
+	  case 4: 
+	    isample = *(int *)&samples[offset];
+	    *(int *)&samples[offset] = isample * normalizer;
+	    break;
+	  }
+	  if (isample > abs(max_sample)) {
+	    max_sample = abs(isample);
+	  }
+	}
+	normalizer = (0.5 * pow(2.0, bitsps)) / float(max_sample);
+      }
+    }
+  }
+
   void zzub_wavelevel_get_samples_digest(zzub_wavelevel_t* level, int channel, int start, int end, float *mindigest, float *maxdigest, float *ampdigest, int digestsize) {
 
     operation_copy_flags flags;
