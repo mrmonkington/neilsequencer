@@ -1541,25 +1541,6 @@ extern "C"
   int zzub_plugin_get_mixbuffer(zzub_plugin_t *plugin, float *leftbuffer, float *rightbuffer, int *size, long long *samplepos) {
     assert(false);
     return -1;
-    /*if (plugin >= player->front.plugins.size() || player->front.plugins[plugin] == 0) return -1;
-
-      metaplugin& m = *player->front.plugins[plugin];
-
-      if (!size)
-      return -1;
-      if (size) {
-      //if (samplepos)
-      //	*samplepos = machine->sampleswritten;
-      if (leftbuffer && rightbuffer && ((*size) <= m.last_work_buffersize)) {
-      memcpy(leftbuffer, &m.work_buffer[0].front(), sizeof(float)*(*size));
-      memcpy(rightbuffer, &m.work_buffer[1].front(), sizeof(float)*(*size));
-      } else {
-      //*size = m.last_work_buffersize;
-      *size = player->_plugins_load_snapshot.work_buffersize;
-      }
-      return 0;
-      }
-      return -1;*/
   }
 
   void zzub_plugin_play_midi_note(zzub_plugin_t *plugin, int note, int prevNote, int velocity) {
@@ -2141,72 +2122,58 @@ extern "C"
   }
 
   const char* zzub_wave_get_name(zzub_wave_t* wave) {
-
     operation_copy_flags flags;
     flags.copy_wavetable = true;
     wave->_player->merge_backbuffer_flags(flags);
-
     return wave->_player->back.wavetable.waves[wave->wave]->name.c_str();
   }
 
   void zzub_wave_set_name(zzub_wave_t* wave, const char* name) {
-
     wave->_player->wave_set_name(wave->wave, name);
   }
 
   const char* zzub_wave_get_path(zzub_wave_t* wave) {
-
     operation_copy_flags flags;
     flags.copy_wavetable = true;
     wave->_player->merge_backbuffer_flags(flags);
-
     return wave->_player->back.wavetable.waves[wave->wave]->fileName.c_str();
   }
 
   void zzub_wave_set_path(zzub_wave_t* wave, const char* path) {
-
     wave->_player->wave_set_path(wave->wave, path);
   }
 
   int zzub_wave_get_flags(zzub_wave_t* wave) {
-
     operation_copy_flags flags;
     flags.copy_wavetable = true;
     wave->_player->merge_backbuffer_flags(flags);
-
     return wave->_player->back.wavetable.waves[wave->wave]->flags;
   }
 
   void zzub_wave_set_flags(zzub_wave_t* wave, int flags) {
-
     wave->_player->wave_set_flags(wave->wave, flags);
   }
 
   float zzub_wave_get_volume(zzub_wave_t* wave) {
-
     operation_copy_flags flags;
     flags.copy_wavetable = true;
     wave->_player->merge_backbuffer_flags(flags);
-
     return wave->_player->back.wavetable.waves[wave->wave]->volume;
   }
 
   void zzub_wave_set_volume(zzub_wave_t* wave, float volume) {
-
     wave->_player->wave_set_volume(wave->wave, volume);
   }
 
   int zzub_wave_load_sample(zzub_wave_t* wave, int level, int offset, 
 			    int clear, const char* path, 
 			    zzub_input_t* datastream) {
-
     bool result = true;
     int loaded_samples = wave->_player->wave_load_sample(wave->wave, level, offset, clear != 0, path, datastream);
     return loaded_samples;
   }
 
   void zzub_wavelevel_remove_sample_range(zzub_wavelevel_t* level, int start, int end) {
-
     level->_player->wave_remove_samples(level->wave, level->level, start, end - start + 1);
   }
 
@@ -2315,67 +2282,53 @@ extern "C"
   }
 
   int zzub_wavelevel_get_root_note(zzub_wavelevel_t* level) {
-
     operation_copy_flags flags;
     flags.copy_wavetable = true;
     level->_player->merge_backbuffer_flags(flags);
-
     return level->_player->back.wavetable.waves[level->wave]->levels[level->level].root_note;
   }
 
   void zzub_wavelevel_set_root_note(zzub_wavelevel_t* level, int note) {
-
     level->_player->wave_set_root_note(level->wave, level->level, note);
   }
 
   int zzub_wavelevel_get_samples_per_second(zzub_wavelevel_t* level) {
-
     operation_copy_flags flags;
     flags.copy_wavetable = true;
     level->_player->merge_backbuffer_flags(flags);
-
     return level->_player->back.wavetable.waves[level->wave]->levels[level->level].samples_per_second;
   }
 
   void zzub_wavelevel_set_samples_per_second(zzub_wavelevel_t* level, int sps) {
-
     level->_player->wave_set_samples_per_second(level->wave, level->level, sps);
   }
 
   int zzub_wavelevel_get_loop_start(zzub_wavelevel_t* level) {
-
     operation_copy_flags flags;
     flags.copy_wavetable = true;
     level->_player->merge_backbuffer_flags(flags);
-
     return level->_player->back.wavetable.waves[level->wave]->levels[level->level].loop_start;
   }
 
   void zzub_wavelevel_set_loop_start(zzub_wavelevel_t* level, int pos) {
-
     level->_player->wave_set_loop_begin(level->wave, level->level, pos);
   }
 
   int zzub_wavelevel_get_loop_end(zzub_wavelevel_t* level) {
-
     operation_copy_flags flags;
     flags.copy_wavetable = true;
     level->_player->merge_backbuffer_flags(flags);
-
     return level->_player->back.wavetable.waves[level->wave]->levels[level->level].loop_end;
   }
 
   void zzub_wavelevel_set_loop_end(zzub_wavelevel_t* level, int pos) {
-
     level->_player->wave_set_loop_end(level->wave, level->level, pos);
   }
 
   int zzub_wavelevel_get_format(zzub_wavelevel_t* level) {
-
     operation_copy_flags flags;
     flags.copy_wavetable = true;
     level->_player->merge_backbuffer_flags(flags);
-
     return level->_player->back.wavetable.waves[level->wave]->levels[level->level].format;
   }
 

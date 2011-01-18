@@ -1742,9 +1742,7 @@ namespace zzub {
       operation_copy_flags flags;
       flags.copy_wavetable = true;
       merge_backbuffer_flags(flags);
-
       op_wavetable_remove_sampledata* redo = new op_wavetable_remove_sampledata(wave, level, target_offset, sample_count);
-
       op_wavetable_insert_sampledata* undo = new op_wavetable_insert_sampledata(wave, level, target_offset);
       wave_info_ex& w = *back.wavetable.waves[wave];
       int channels = w.get_stereo() ? 2 : 1;
@@ -1757,7 +1755,6 @@ namespace zzub {
       undo->samples_channels = channels;
       undo->samples_format = format;
       undo->samples_length = sample_count;
-
       prepare_operation_redo(redo);
       prepare_operation_undo(undo);
     }
