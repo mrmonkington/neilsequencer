@@ -87,8 +87,6 @@ class WaveEditPanel(gtk.VBox):
         
     def on_xfade_range(self, widget):
         player = com.get('neil.core.player')
-        begin, end = self.view.selection
-        print self.view.wave
         
 class WaveEditView(gtk.DrawingArea):
     """
