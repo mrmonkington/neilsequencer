@@ -2449,10 +2449,10 @@ extern "C"
     // Find the peak in the samples buffer.
     int isample1 = 0;
     int isample2 = 0;
-    float fade1 = 0.0;
-    float fade2 = 1.0;
     float dfade = 1.0 / (end - start);
     for (int channel = 0; channel < channels; channel++) {
+      float fade1 = 0.0;
+      float fade2 = 1.0;
       for (int i = start; i < end; i++) {
 	int offset1 = ((i - end + start) * channels + channel) * bps;
 	int offset2 = (i * channels + channel) * bps;
