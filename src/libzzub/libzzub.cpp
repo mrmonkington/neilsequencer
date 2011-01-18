@@ -2437,6 +2437,52 @@ extern "C"
     return zzub_wave_save_sample_range(wave, level, datastream, 0, w.get_sample_count(level));
   }
 
+  void zzub_wavelevel_xfade(zzub_wavelevel_t* level, int start, int end) {
+    assert((end - start) < start);
+    wave_info_ex &w = *level->_player->back.wavetable.waves[level->wave];
+    wave_level_ex &l = level->_player->back.wavetable.waves[level->wave]->levels[level->level];
+    unsigned char *samples = (unsigned char *)l.samples;
+    int channels = w.get_stereo() ? 2 : 1;
+    int bps = l.get_bytes_per_sample();
+    int bitsps = bps * 8;
+    wave_buffer_type format = (wave_buffer_type)l.format;
+    // Find the peak in the samples buffer.
+    int isample1 = 0;
+    int isample2 = 0;
+    float fade1 = 0.0;
+    float fade2 = 1.0;
+    float dfade = 1.0 / (end - start);
+    for (int channel = 0; channel < channels; channel++) {
+      for (int i = start; i < end; i++) {
+	int offset1 = ((i - end + start) * channels + channel) * bps;
+	int offset2 = (i * channels + channel) * bps;
+	switch (bps) {
+	case 1: 
+	  isample1 = *(char *)&samples[offset1];
+	  isample2 = *(char *)&samples[offset2]; 
+	  *(char *)&samples[offset2] = isample1 * fade1 + isample2 * fade2;
+	  break;
+	case 2: 
+	  isample1 = *(short *)&samples[offset1]; 
+	  isample2 = *(short *)&samples[offset2];
+	  *(short *)&samples[offset2] = isample1 * fade1 + isample2 * fade2;
+	  break;
+	case 4: 
+	  isample1 = *(int *)&samples[offset1];
+	  isample2 = *(int *)&samples[offset2];
+	  *(int *)&samples[offset2] = isample1 * fade1 + isample2 * fade2;
+	  break;
+	}
+	fade1 += dfade;
+	fade2 -= dfade;
+      }
+    }
+    l.loop_start = start;
+    l.loop_end = end;
+    w.flags = w.flags | zzub_wave_flag_loop;
+  }
+
+
   void zzub_wavelevel_normalize(zzub_wavelevel_t* level) {
     wave_info_ex &w = *level->_player->back.wavetable.waves[level->wave];
     wave_level_ex &l = level->_player->back.wavetable.waves[level->wave]->levels[level->level];
