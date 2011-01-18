@@ -28,7 +28,7 @@ import pangocairo
 import os, sys
 from utils import prepstr, db2linear, linear2db, note2str, file_filter
 from utils import read_int, write_int, add_scrollbars, new_image_button,\
-     filepath, add_hscrollbar, error
+     filepath, add_hscrollbar, error, message
 import zzub
 import config
 import common
@@ -90,6 +90,13 @@ class WaveEditPanel(gtk.VBox):
         
     def on_xfade_range(self, widget):
         player = com.get('neil.core.player')
+        begin, end = self.view.selection
+        if (end - begin) < begin:
+            self.view.level.xfade(begin, end)
+            self.update()
+            self.wavetable.update_sampleprops()
+        else:
+            message(self, "Not enough data at the start of selection.")
 
     def on_normalize(self, widget):
         player = com.get('neil.core.player')
