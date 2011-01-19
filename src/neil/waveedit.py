@@ -90,6 +90,9 @@ class WaveEditPanel(gtk.VBox):
         
     def on_xfade_range(self, widget):
         player = com.get('neil.core.player')
+        if self.view.selection == None:
+            message(self, "Select a region of the wave first.")
+            return
         begin, end = self.view.selection
         if (end - begin) < begin:
             self.view.level.xfade(begin, end)
