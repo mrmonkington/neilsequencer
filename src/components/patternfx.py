@@ -154,8 +154,8 @@ class Expression():
                     a = parameter.get_value_min()
                     b = parameter.get_value_max()
                     z = parameter.get_value_none()
-                    p = i / float(n)
                     n = len(data)
+                    p = i / float(n)
                     exec expr
                     data[i] = int(y)
             except Exception:
