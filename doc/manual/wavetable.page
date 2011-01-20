@@ -2,8 +2,46 @@
       type="topic"
       id="wavetable">
 <info>
-  <desc>Wave data editor</desc>
+  <desc>Wave Data Editor</desc>
   <link type="guide" xref="index"/>
 </info>
-<title>Wavetable view</title>
+<title>Wavetable View</title>
+<p>
+  You can use the wavetable view to load, export and edit samples. You
+  can also edit the envelopes that are used by Matilde Tracker and can
+  be used by any other machine when the author thinks that is
+  convenient. 
+</p>
+<section>
+  <title>Wave Editor</title>
+  <p>
+    After the sample is loaded you can navigade the wave editor view
+    with the mouse. Use the middle mouse button to zoom in and out. Note
+    the indicator at the buttom indicating the section of the wave that
+    is currently displayed. Press the right mouse button and sroll
+    around to move around in the waveform. You can use the left mouse
+    button to make selections. Start a selection by clicking with the
+    left mouse button and dragging. If you want to adjust the selection
+    just click with the left button on either left or right side of the
+    selection and drag. You can apply certain actions to
+    selections. Those are explained bellow along other commands that
+    operate with the waves and that can be launched with the buttons at
+    the bottom of the wave editor.
+  </p>
+  <section>
+    <title>Delete Button</title>
+  </section>
+  <section>
+    <title>Loop Button</title>
+  </section>
+  <section>
+    <title>XFade Button</title>
+  </section>
+  <section>
+    <title>Normalize Button</title>
+  </section>
+</section>
+<section>
+  <title>Envelope Editor</title>
+</section>
 </page>
