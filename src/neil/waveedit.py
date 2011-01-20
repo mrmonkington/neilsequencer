@@ -163,10 +163,10 @@ class WaveEditView(gtk.DrawingArea):
 	    w, h = self.get_client_size()
 	    self.window.invalidate_rect((0, 0, w, h), False)
 
-    def update_digest(self):
+    def update_digest(self, channel=0):
 	w, h = self.get_client_size()
 	self.minbuffer, self.maxbuffer, self.ampbuffer = \
-	    self.level.get_samples_digest(0, self.range[0], self.range[1],  w)
+	    self.level.get_samples_digest(channel, self.range[0], self.range[1],  w)
 
     def fix_range(self):
 	begin,end = self.range
@@ -562,23 +562,25 @@ class WaveEditView(gtk.DrawingArea):
             y += (h / 8)
         ctx.stroke()
 
-  	if len(self.ampbuffer) != w:
-  	    self.update_digest()
-	    
-  	minbuffer, maxbuffer, ampbuffer = \
-	    self.minbuffer, self.maxbuffer, self.ampbuffer
-
-	# Draw the waveform.
-	ctx.set_source_rgba(*(brush + (0.5,)))
- 	hm = h / 2
-  	ctx.move_to(0, hm)
-  	for x in xrange(w):
-  	    ctx.line_to(x, hm - h * maxbuffer[x] * 0.5)
-  	for x in xrange(w):
-  	    ctx.line_to(w - x, hm - h * minbuffer[w - x - 1] * 0.5)
-  	ctx.fill_preserve()
-  	ctx.set_source_rgb(*pen)
-  	ctx.stroke()
+        channels = 1
+        if self.wave.get_flags() & zzub.zzub_wave_flag_stereo:
+            channels = 2
+            
+        for channel in range(channels):
+            self.update_digest(channel)
+            minbuffer, maxbuffer, ampbuffer = \
+                self.minbuffer, self.maxbuffer, self.ampbuffer
+            # Draw the waveform.
+            ctx.set_source_rgba(*(brush + (0.5,)))
+            hm = (h / (2 * channels)) * (1 + channel * 2)
+            ctx.move_to(0, hm)
+            for x in xrange(0, w, 2):
+                ctx.line_to(x, hm - (h / channels) * maxbuffer[x] * 0.5)
+            for x in xrange(0, w, 2):
+                ctx.line_to(w - x, hm - (h / channels) * minbuffer[w - x - 1] * 0.5)
+            ctx.fill_preserve()
+            ctx.set_source_rgb(*pen)
+            ctx.stroke()
 
 	# Draw the selection rectangle.
  	if self.selection:
