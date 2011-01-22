@@ -1603,42 +1603,49 @@ class SequencerView(gtk.DrawingArea):
                             length -= position + length - event_list[index + 1][0]
                     except IndexError:
                         pass
-                elif value == 0x00:
-                    name, length = 'x', self.step
-                elif value == 0x01:
-                    name, length = '<', self.step
-                else:
-                    name, length = '???', self.step
-                end = position + length
-                width_in_bars = (width / self.seq_row_size) * self.step
-                if ((end >= self.startseqtime) and
-                    (position < self.startseqtime + width_in_bars)):
-                    box_size = max(int(((self.seq_row_size * length) /
-                                        self.step) + 0.5), 4)
+                    end = position + length
+                    width_in_bars = (width / self.seq_row_size) * self.step
+                    if ((end >= self.startseqtime) and
+                        (position < self.startseqtime + width_in_bars)):
+                        box_size = max(int(((self.seq_row_size * length) /
+                                            self.step) + 0.5), 4)
+                        x = (self.seq_left_margin +
+                             ((position - self.startseqtime) * self.seq_row_size) /
+                             self.step)
+                        pattern_color = self.get_random_color(plugin.get_name() +
+                                                              name)
+                        ctx.set_foreground(ctx.get_colormap().alloc_color(pattern_color))
+                        drawable.draw_rectangle(ctx, True, x + 2, y + 2,
+                                                box_size - 4,
+                                                self.seq_track_size - 4)
+                        ctx.set_foreground(colors['Border'])
+                        drawable.draw_rectangle(ctx, False, x + 2, y + 2,
+                                                box_size - 4,
+                                                self.seq_track_size - 4)
+                        layout.set_markup("<small>%s</small>" % name)
+                        px, py = layout.get_pixel_size()
+                        # A dumb hack to limit the width of the pattern name label.
+                        while px > (box_size - 4):
+                            name = name[:-1]
+                            layout.set_markup("<small>%s</small>" % name)
+                            px, py = layout.get_pixel_size()
+                        ctx.set_foreground(colors['Text'])
+                        drawable.draw_layout(ctx, x + 4, y + 4, layout)
+                        if pattern != None:
+                            pattern.destroy()
+                elif value == 0x00 or value == 0x01:
                     x = (self.seq_left_margin +
                          ((position - self.startseqtime) * self.seq_row_size) /
                          self.step)
-                    pattern_color = self.get_random_color(plugin.get_name() +
-                                                          name)
-                    ctx.set_foreground(ctx.get_colormap().alloc_color(pattern_color))
-                    drawable.draw_rectangle(ctx, True, x + 2, y + 2,
-                                            box_size - 4,
-                                            self.seq_track_size - 4)
-                    ctx.set_foreground(colors['Border'])
-                    drawable.draw_rectangle(ctx, False, x + 2, y + 2,
-                                            box_size - 4,
-                                            self.seq_track_size - 4)
-                    layout.set_markup("<small>%s</small>" % name)
-                    px, py = layout.get_pixel_size()
-                    # A dumb hack to limit the width of the pattern name label.
-                    while px > (box_size - 4):
-                        name = name[:-1]
-                        layout.set_markup("<small>%s</small>" % name)
-                        px, py = layout.get_pixel_size()
-                    ctx.set_foreground(colors['Text'])
-                    drawable.draw_layout(ctx, x + 4, y + 4, layout)
-                if pattern != None:
-                    pattern.destroy()
+                    if value == 0x00:
+                        ctx.set_foreground(ctx.get_colormap().alloc_color('#ff0000'))
+                    else:
+                        ctx.set_foreground(ctx.get_colormap().alloc_color('#00ff00'))
+                    ctx.line_width = 3
+                    drawable.draw_line(ctx, x, y + 2, x, y + self.seq_track_size - 1)
+                    ctx.line_width = 1
+                else:
+                    print "Weird pattern id value: ", value
             # Draw the track name boxes.
             name = plugin.get_name()
             title = prepstr(name)
