@@ -30,6 +30,7 @@ if __name__ == '__main__':
 
 import gtk
 import pango
+import cairo
 import gobject
 import sys
 from neil.utils import PLUGIN_FLAGS_MASK, ROOT_PLUGIN_FLAGS
