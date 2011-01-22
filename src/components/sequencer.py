@@ -1589,12 +1589,20 @@ class SequencerView(gtk.DrawingArea):
             plugin = track.get_plugin()
             plugin_info = self.plugin_info.get(plugin)
             # Draw the pattern boxes
-            for position, value in track.get_event_list():
+            event_list = list(track.get_event_list())
+            for (position, value), index in zip(event_list, range(len(event_list))):
                 pattern = None
                 if value >= 0x10:
                     pattern = plugin.get_pattern(value - 0x10)
                     name = prepstr(pattern.get_name())
                     length = pattern.get_row_count()
+                    # Handle the case where the pattern overlaps with the next one.
+                    # This is done by shortening the current pattern so they display nice.
+                    try:
+                        if position + length > event_list[index + 1][0]:
+                            length -= position + length - event_list[index + 1][0]
+                    except IndexError:
+                        pass
                 elif value == 0x00:
                     name, length = 'x', self.step
                 elif value == 0x01:
