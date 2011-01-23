@@ -113,7 +113,7 @@ class SequencerToolBar(gtk.HBox):
         # Display all the components.
         self.pack_start(self.steplabel, expand=False)
         self.pack_start(self.stepselect, expand=False)
-        self.pack_start(self.followsong)
+        self.pack_start(self.followsong, expand=False)
 
     def increase_step(self):
         if self.parent.view.step < 64:
