@@ -34,7 +34,7 @@ void IFFT(float *fftBuffer, long fftFrameSize, long sign)
 	*p2 = temp;
       }
   }
-  for (k = 0, le = 2; k < log(fftFrameSize)/log(2.); k++) {
+  for (k = 0, le = 2; (1 << k) < fftFrameSize; k++)  {
     le <<= 1;
     le2 = le>>1;
     ur = 1.0;
