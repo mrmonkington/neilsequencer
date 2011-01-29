@@ -111,7 +111,7 @@ namespace zzub {
 
   song::song() {
     state = player_state_muted;
-
+    seqstep = 16;
     song_begin = 0;
     song_end = 16;
     song_loop_begin = 0;

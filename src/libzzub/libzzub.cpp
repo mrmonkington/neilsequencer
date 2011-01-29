@@ -607,6 +607,14 @@ extern "C"
     player->front.song_comment = text;
   }
 
+  void zzub_player_set_seqstep(zzub_player_t *player, int step) {
+    player->front.seqstep = step;
+  }
+
+  int zzub_player_get_seqstep(zzub_player_t *player) {
+    return player->front.seqstep;
+  }
+
   float zzub_player_get_bpm(zzub_player_t *player) {
     return (float)zzub_plugin_get_parameter_value(zzub_player_get_plugin_by_id(player, 0), 1, 0, 1);
   }

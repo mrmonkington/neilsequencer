@@ -1024,6 +1024,7 @@ namespace zzub {
       item.set_name("transport");
       item.append_attribute("bpm") = double(player->front.plugin_get_parameter(0, 1, 0, 1));
       item.append_attribute("tpb") = double(player->front.plugin_get_parameter(0, 1, 0, 2));
+      item.append_attribute("seqstep") = player->front.seqstep;
       item.append_attribute("loopstart") = double(player->front.song_loop_begin) * tpbfac;
       item.append_attribute("loopend") = double(player->front.song_loop_end) * tpbfac;
       item.append_attribute("start") = double(player->front.song_begin) * tpbfac;
@@ -1907,6 +1908,7 @@ namespace zzub {
     double tpbfac = double(player.front.plugin_get_parameter(0, 1, 0, 2));	
 	
     //sequencer &seq = player.song_sequencer;
+    player.front.seqstep = int(item.attribute("seqstep").as_int());
     player.front.song_loop_begin = int(double(item.attribute("loopstart").as_double()) * tpbfac + 0.5);
     player.front.song_loop_end = int(double(item.attribute("loopend").as_double()) * tpbfac + 0.5);
     player.front.song_begin = int(double(item.attribute("start").as_double()) * tpbfac + 0.5);
