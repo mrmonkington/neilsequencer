@@ -371,17 +371,6 @@ class NeilPlayer(Player, PropertyEventHandler):
                 sel.remove((selplugin,index))
         self.active_patterns = sel
 
-    def load_bmx(self, filename):
-        self.clear()
-        self.__loading = True
-        res = zzub.Player.load_bmx(self, filename)
-        self.__loading = False
-        if not res:
-            self.document_path = filename
-            eventbus = com.get('neil.core.eventbus')
-            eventbus.document_loaded()
-        return res
-
     def load_ccm(self, filename):
         self.clear()
         self.__loading = True

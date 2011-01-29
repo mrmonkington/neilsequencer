@@ -155,8 +155,6 @@ class SequencerToolBar(gtk.HBox):
         Handles events sent from the choice box when a step size 
         is being selected.
         """
-        #player = com.get('neil.core.player')
-        #player.spinbox_edit = True
         try: step = int(widget.get_active_text())
         except:
             self.parent.view_step = 1
@@ -172,7 +170,8 @@ class SequencerToolBar(gtk.HBox):
         else:
             self.parent.view.step = step
         self.parent.update_all()
-        
+        player = com.get('neil.core.player')
+        player.set_seqstep(step)
 
 class SequencerPanel(gtk.VBox):
     """

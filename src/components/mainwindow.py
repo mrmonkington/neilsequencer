@@ -642,16 +642,7 @@ class NeilFrame(gtk.Window):
       return
     self.clear()
     player = com.get('neil.core.player')
-
     base,ext = os.path.splitext(filename)
-    #f ext.lower() in ('.bmx','.bmw'):
-      #~ progress = ProgressDialog("Neil", "Loading BMX Song...")
-      #~ Yield()
-      #player.clear()
-      #player.load_bmx(filename)
-      #player.document_unchanged()
-      #~ Yield()
-      #~ progress.Update(100)
     if ext.lower() in ('.ccm'):
       dlg = gtk.Dialog('Neil', parent=self, flags=gtk.DIALOG_MODAL)
       progBar = gtk.ProgressBar()
@@ -669,8 +660,14 @@ class NeilFrame(gtk.Window):
       refresh_gui()
       gobject.timeout_add(50, progress_callback)
       player.load_ccm(filename)
-      #player.document_unchanged()
       done = True
+      # The following loads sequencer step size.
+      try:
+          seq = com.get('neil.core.sequencerpanel')
+          index = seq.toolbar.steps.index(player.get_seqstep())
+          seq.toolbar.stepselect.set_active(index)
+      except ValueError:
+          seq.toolbar.stepselect.set_active(5)
       refresh_gui()
       dlg.destroy()
     else:
