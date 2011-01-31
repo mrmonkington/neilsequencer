@@ -804,8 +804,8 @@ zzub_wavelevel_get_loop_end = dlsym(libzzub, "zzub_wavelevel_get_loop_end", c_in
 zzub_wavelevel_set_loop_end = dlsym(libzzub, "zzub_wavelevel_set_loop_end", None, ("wavelevel", POINTER(zzub_wavelevel_t)), ("pos",c_int))
 zzub_wavelevel_get_format = dlsym(libzzub, "zzub_wavelevel_get_format", c_int, ("wavelevel", POINTER(zzub_wavelevel_t)))
 zzub_wavelevel_remove_sample_range = dlsym(libzzub, "zzub_wavelevel_remove_sample_range", None, ("wavelevel", POINTER(zzub_wavelevel_t)), ("start",c_int), ("end",c_int))
+zzub_wavelevel_xfade = dlsym(libzzub, "zzub_wavelevel_xfade", None, ("wavelevel", POINTER(zzub_wavelevel_t)), ("start",c_int), ("end",c_int))
 zzub_wavelevel_normalize = dlsym(libzzub, "zzub_wavelevel_normalize", None, ("wavelevel", POINTER(zzub_wavelevel_t)))
-zzub_wavelevel_xfade = dlsym(libzzub, "zzub_wavelevel_xfade", None, ("wavelevel", POINTER(zzub_wavelevel_t)), ("start", c_int), ("end", c_int))
 zzub_wavelevel_get_samples_digest = dlsym(libzzub, "zzub_wavelevel_get_samples_digest", None, ("wavelevel", POINTER(zzub_wavelevel_t)), ("channel",c_int), ("start",c_int), ("end",c_int), ("mindigest",POINTER(c_float)), ("maxdigest",POINTER(c_float)), ("ampdigest",POINTER(c_float)), ("digestsize",c_int))
 zzub_envelope_get_attack = dlsym(libzzub, "zzub_envelope_get_attack", c_ushort, ("envelope", POINTER(zzub_envelope_t)))
 zzub_envelope_get_decay = dlsym(libzzub, "zzub_envelope_get_decay", c_ushort, ("envelope", POINTER(zzub_envelope_t)))
@@ -902,10 +902,10 @@ zzub_player_get_automation = dlsym(libzzub, "zzub_player_get_automation", c_int,
 zzub_player_set_automation = dlsym(libzzub, "zzub_player_set_automation", None, ("player", POINTER(zzub_player_t)), ("enable",c_int))
 zzub_player_get_midi_transport = dlsym(libzzub, "zzub_player_get_midi_transport", c_int, ("player", POINTER(zzub_player_t)))
 zzub_player_set_midi_transport = dlsym(libzzub, "zzub_player_set_midi_transport", None, ("player", POINTER(zzub_player_t)), ("enable",c_int))
+zzub_player_set_seqstep = dlsym(libzzub, "zzub_player_set_seqstep", None, ("player", POINTER(zzub_player_t)), ("step",c_int))
+zzub_player_get_seqstep = dlsym(libzzub, "zzub_player_get_seqstep", c_int, ("player", POINTER(zzub_player_t)))
 zzub_player_get_infotext = dlsym(libzzub, "zzub_player_get_infotext", c_char_p, ("player", POINTER(zzub_player_t)))
 zzub_player_set_infotext = dlsym(libzzub, "zzub_player_set_infotext", None, ("player", POINTER(zzub_player_t)), ("text",c_char_p))
-zzub_player_set_seqstep = dlsym(libzzub, "zzub_player_set_seqstep", None, ("player", POINTER(zzub_player_t)), ("step", c_int))
-zzub_player_get_seqstep = dlsym(libzzub, "zzub_player_get_seqstep", c_int, ("player", POINTER(zzub_player_t)))
 zzub_player_set_midi_plugin = dlsym(libzzub, "zzub_player_set_midi_plugin", None, ("player", POINTER(zzub_player_t)), ("plugin",POINTER(zzub_plugin_t)))
 zzub_player_get_midi_plugin = dlsym(libzzub, "zzub_player_get_midi_plugin", POINTER(zzub_plugin_t), ("player", POINTER(zzub_player_t)))
 zzub_player_get_new_plugin_name = dlsym(libzzub, "zzub_player_get_new_plugin_name", None, ("player", POINTER(zzub_player_t)), ("uri",c_char_p), ("name",c_char_p), ("maxLen",c_int))
@@ -2247,13 +2247,15 @@ class Wavelevel(object):
 	
 	def remove_sample_range(self, start, end):
 		assert self._as_parameter_
-		zzub_wavelevel_remove_sample_range(self, start, end)
-        
-        def normalize(self):
-            zzub_wavelevel_normalize(self)
-
-        def xfade(self, start, end):
-            zzub_wavelevel_xfade(self, start, end)
+		zzub_wavelevel_remove_sample_range(self,start,end)
+	
+	def xfade(self, start, end):
+		assert self._as_parameter_
+		zzub_wavelevel_xfade(self,start,end)
+	
+	def normalize(self):
+		assert self._as_parameter_
+		zzub_wavelevel_normalize(self)
 	
 	def get_samples_digest(self, channel, start, end, digestsize):
 		assert self._as_parameter_
@@ -2844,6 +2846,14 @@ class Player(object):
 		assert self._as_parameter_
 		zzub_player_set_midi_transport(self,enable)
 	
+	def set_seqstep(self, step):
+		assert self._as_parameter_
+		zzub_player_set_seqstep(self,step)
+	
+	def get_seqstep(self):
+		assert self._as_parameter_
+		return zzub_player_get_seqstep(self)
+	
 	def get_infotext(self):
 		assert self._as_parameter_
 		return zzub_player_get_infotext(self)
@@ -2851,14 +2861,6 @@ class Player(object):
 	def set_infotext(self, text):
 		assert self._as_parameter_
 		zzub_player_set_infotext(self,text)
-
-        def get_seqstep(self):
-            assert self._as_parameter_
-            return zzub_player_get_seqstep(self)
-        
-        def set_seqstep(self, step):
-            assert self._as_parameter_
-            zzub_player_set_seqstep(self, step)
 	
 	def set_midi_plugin(self, plugin):
 		"""Sets the plugin to receive MIDI data if the plugin's internal MIDI
