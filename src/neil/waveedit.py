@@ -574,9 +574,9 @@ class WaveEditView(gtk.DrawingArea):
             ctx.set_source_rgba(*(brush + (0.5,)))
             hm = (h / (2 * channels)) * (1 + channel * 2)
             ctx.move_to(0, hm)
-            for x in xrange(0, w, 2):
+            for x in xrange(0, w):
                 ctx.line_to(x, hm - (h / channels) * maxbuffer[x] * 0.5)
-            for x in xrange(0, w, 2):
+            for x in xrange(0, w):
                 ctx.line_to(w - x, hm - (h / channels) * minbuffer[w - x - 1] * 0.5)
             ctx.fill_preserve()
             ctx.set_source_rgb(*pen)
