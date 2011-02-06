@@ -42,6 +42,7 @@ private:
   Grain *grains[MAX_GRAINS];
   float dist[DIST_SIZE];
   std::vector <float> wave;
+  int old_index;
 public:
   ACloud(unsigned int sampling_rate, zzub::host *host);
   ~ACloud();
@@ -62,7 +63,7 @@ public:
   void set_pan_devi(float pan_devi);
   void set_density(float density);
   void set_grains(int grains);
-  void process(float *out_l, float *out_r, int n);
+  void process(float *out_l, float *out_r, int n, int wave_index);
 };
 
 #endif // SOMONO_PLUGINS_CLOUD_ACLOUD_HPP

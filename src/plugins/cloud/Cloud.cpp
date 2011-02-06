@@ -4,10 +4,6 @@
 
 #include "Cloud.hpp"
 
-bool Cloud::random_event(float prob) {
-  return (float)rand() / (float)RAND_MAX < prob;
-}
-
 Cloud::Cloud() {
   global_values = &gval;
   attributes = NULL;
@@ -19,19 +15,20 @@ Cloud::~Cloud() {
 }
 
 void Cloud::init(zzub::archive* pi) {
-  this->srate = _master_info->samples_per_second;
-  this->phase = 0.0;
-  this->the_cloud = new ACloud(_master_info->samples_per_second, _host);  
+  srate = _master_info->samples_per_second;
+  phase = 0.0;
+  the_cloud = new ACloud(_master_info->samples_per_second, _host);  
+  wave = 0;
 }
 
 void Cloud::destroy() {
-  delete this->the_cloud;
+  delete the_cloud;
   delete this;
 }
 
 void Cloud::process_events() {
   if (gval.wave != paramWave->value_none) {
-    this->the_cloud->set_wave((int)gval.wave);
+    wave = (int)gval.wave;
   }
   if (gval.offset_mean != paramOffsetMean->value_none) {
     this->the_cloud->set_offset_mean((float)gval.offset_mean / (float)0xFFFE);
@@ -84,7 +81,7 @@ void Cloud::process_events() {
 }
 
 bool Cloud::process_stereo(float **pin, float **pout, int n, int mode) {
-  this->the_cloud->process(pout[0], pout[1], n);
+  the_cloud->process(pout[0], pout[1], n, wave);
 }
 
 const char *Cloud::describe_value(int param, int value) {

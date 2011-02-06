@@ -24,23 +24,23 @@ struct Gvals {
   unsigned short grains : 8;
 } __attribute__((__packed__));
 
-const zzub::parameter *paramWave = NULL;
-const zzub::parameter *paramOffsetMean = NULL;
-const zzub::parameter *paramOffsetDevi = NULL;
-const zzub::parameter *paramAmpMean = NULL;
-const zzub::parameter *paramAmpDevi = NULL;
-const zzub::parameter *paramLengthMean = NULL;
-const zzub::parameter *paramLengthDevi = NULL;
-const zzub::parameter *paramSustainMean = NULL;
-const zzub::parameter *paramSustainDevi = NULL;
-const zzub::parameter *paramSkewMean = NULL;
-const zzub::parameter *paramSkewDevi = NULL;
-const zzub::parameter *paramRateMean = NULL;
-const zzub::parameter *paramRateDevi = NULL;
-const zzub::parameter *paramPanMean = NULL;
-const zzub::parameter *paramPanDevi = NULL;
-const zzub::parameter *paramDensity = NULL;
-const zzub::parameter *paramGrains = NULL;
+const zzub::parameter *paramWave = 0;
+const zzub::parameter *paramOffsetMean = 0;
+const zzub::parameter *paramOffsetDevi = 0;
+const zzub::parameter *paramAmpMean = 0;
+const zzub::parameter *paramAmpDevi = 0;
+const zzub::parameter *paramLengthMean = 0;
+const zzub::parameter *paramLengthDevi = 0;
+const zzub::parameter *paramSustainMean = 0;
+const zzub::parameter *paramSustainDevi = 0;
+const zzub::parameter *paramSkewMean = 0;
+const zzub::parameter *paramSkewDevi = 0;
+const zzub::parameter *paramRateMean = 0;
+const zzub::parameter *paramRateDevi = 0;
+const zzub::parameter *paramPanMean = 0;
+const zzub::parameter *paramPanDevi = 0;
+const zzub::parameter *paramDensity = 0;
+const zzub::parameter *paramGrains = 0;
 
 const char *zzub_get_signature() { 
   return ZZUB_SIGNATURE; 
@@ -49,11 +49,10 @@ const char *zzub_get_signature() {
 class Cloud : public zzub::plugin {
 private:
   Gvals gval;
-  int srate;
+  int srate, wave;
   float phase;
   ACloud *the_cloud;
 public:
-  static bool random_event(float prob);
   Cloud();
   virtual ~Cloud();
   virtual void init(zzub::archive* pi);

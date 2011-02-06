@@ -6,7 +6,12 @@
 #include "Utils.hpp"
 
 bool ACloud::random_event(float probability) {
-  return ((float)rand() / (float)RAND_MAX) <= probability;
+  /*
+    Simulate a random event. Returns true if an event
+    with the specified probability occured and false
+    otherwise.
+  */
+  return ((float)rand() / (float)RAND_MAX) < probability;
 }
 
 float ACloud::random_value(float min, float max) {
@@ -18,51 +23,51 @@ float ACloud::random_value(float min, float max) {
 }
 
 float ACloud::calculate_offset() {
-  float devi = this->offset_devi / 2.0;
-  float mini = std::max(this->offset_mean - devi, 0.0f);
-  float maxi = std::min(this->offset_mean + devi, 1.0f);
+  float devi = offset_devi / 2.0;
+  float mini = std::max(offset_mean - devi, 0.0f);
+  float maxi = std::min(offset_mean + devi, 1.0f);
   return random_value(mini, maxi);
 }
 
 float ACloud::calculate_amp() {
-  float devi = this->amp_devi / 2.0;
-  float mini = std::max(this->amp_mean - devi, 0.0f);
-  float maxi = std::min(this->amp_mean + devi, 1.0f);
+  float devi = amp_devi / 2.0;
+  float mini = std::max(amp_mean - devi, 0.0f);
+  float maxi = std::min(amp_mean + devi, 1.0f);
   return random_value(mini, maxi);
 }
 
 float ACloud::calculate_length() {
-  float devi = (this->length_devi * MAX_LENGTH) / 2.0;
-  float mini = std::max(this->length_mean - devi, MIN_LENGTH);
-  float maxi = std::min(this->length_mean + devi, MAX_LENGTH);
+  float devi = (length_devi * MAX_LENGTH) / 2.0;
+  float mini = std::max(length_mean - devi, MIN_LENGTH);
+  float maxi = std::min(length_mean + devi, MAX_LENGTH);
   return random_value(mini, maxi);  
 }
 
 float ACloud::calculate_sustain() {
-  float devi = this->sustain_devi / 2.0;
-  float mini = std::max(this->sustain_mean - devi, 0.0f);
-  float maxi = std::min(this->sustain_mean + devi, 1.0f);
+  float devi = sustain_devi / 2.0;
+  float mini = std::max(sustain_mean - devi, 0.0f);
+  float maxi = std::min(sustain_mean + devi, 1.0f);
   return random_value(mini, maxi);
 }
 
 float ACloud::calculate_skew() {
-  float devi = this->skew_devi / 2.0;
-  float mini = std::max(this->skew_mean - devi, 0.0f);
-  float maxi = std::min(this->skew_mean + devi, 1.0f);
+  float devi = skew_devi / 2.0;
+  float mini = std::max(skew_mean - devi, 0.0f);
+  float maxi = std::min(skew_mean + devi, 1.0f);
   return random_value(mini, maxi);
 }
 
 float ACloud::calculate_rate() {
-  float devi = (this->rate_devi * (MAX_RATE - MIN_RATE)) / 2.0;
-  float mini = std::max(this->rate_mean - devi, MIN_RATE);
-  float maxi = std::min(this->rate_mean + devi, MAX_RATE);
+  float devi = (rate_devi * (MAX_RATE - MIN_RATE)) / 2.0;
+  float mini = std::max(rate_mean - devi, MIN_RATE);
+  float maxi = std::min(rate_mean + devi, MAX_RATE);
   return random_value(mini, maxi);
 }
 
 float ACloud::calculate_pan() {
-  float devi = (this->pan_devi * (MAX_PAN - MIN_PAN)) / 2.0;
-  float mini = std::max(this->pan_mean - devi, MIN_PAN);
-  float maxi = std::min(this->pan_mean + devi, MAX_PAN);
+  float devi = (pan_devi * (MAX_PAN - MIN_PAN)) / 2.0;
+  float mini = std::max(pan_mean - devi, MIN_PAN);
+  float maxi = std::min(pan_mean + devi, MAX_PAN);
   return random_value(mini, maxi);
 }
 
@@ -82,30 +87,34 @@ ACloud::ACloud(unsigned int sampling_rate, zzub::host *host) {
   this->host = host;
   // Create grains
   for (int i = 0; i < MAX_GRAINS; i++) {
-    this->grains[i] = new Grain(sampling_rate, host);
-    this->grains[i]->samples = &this->wave;
+    grains[i] = new Grain(sampling_rate, host);
+    grains[i]->samples = &wave;
   }
+  old_index = 0;
 }
 
 ACloud::~ACloud() {
   for (int i = 0; i < MAX_GRAINS; i++) {
-    delete this->grains[i];
+    delete grains[i];
   }
 }
 
 void ACloud::set_wave(int wave_index) {
-  this->wave.clear();
-  const zzub::wave_level *wave_level;
-  wave_level = this->host->get_wave_level(wave_index, 0);
-  if (wave_level) {
-    int channels = this->host->get_wave(wave_index)->flags & 
-      zzub::wave_flag_stereo ? 2 : 1;
-    float *samples = 
-      lanternfish::load_to_float_mono(wave_level->samples, 2, channels, wave_level->sample_count);
-    for (int i = 0; i < wave_level->sample_count; i++) {
-      this->wave.push_back(samples[i]);
+  if (wave_index != old_index) {
+    wave.clear();
+    const zzub::wave_level *wave_level;
+    wave_level = host->get_wave_level(wave_index, 0);
+    if (wave_level) {
+      int channels = host->get_wave(wave_index)->flags & 
+	zzub::wave_flag_stereo ? 2 : 1;
+      float *samples = 
+	lanternfish::load_to_float_mono(wave_level->samples, 2, channels, wave_level->sample_count);
+      for (int i = 0; i < wave_level->sample_count; i++) {
+	this->wave.push_back(samples[i]);
+      }
+      delete[] samples;
     }
-    delete[] samples;
+    old_index = wave_index;
   }
 }
 
@@ -173,7 +182,8 @@ void ACloud::set_grains(int grains) {
   this->ngrains = grains;
 }
 
-void ACloud::process(float *out_l, float *out_r, int n) {
+void ACloud::process(float *out_l, float *out_r, int n, int wave_index) {
+  set_wave(wave_index);
   // Clear the output buffers.
   for (int i = 0; i < n; i++) {
     out_l[i] = out_r[i] = 0.0;
