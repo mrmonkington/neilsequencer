@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <algorithm>
 #include <cmath>
+#include <stdint.h>
 #include "ACloud.hpp"
 #include "Utils.hpp"
 
@@ -100,6 +101,11 @@ ACloud::~ACloud() {
 }
 
 void ACloud::set_wave(int wave_index) {
+  /*
+    Loads a wave from the wavetable with a specified index.
+    This is done by converting the wave in to a float buffer.
+    Only the first channel is taken if the wave is in stereo.
+  */
   if (wave_index != old_index) {
     wave.clear();
     const zzub::wave_level *wave_level;
@@ -107,12 +113,27 @@ void ACloud::set_wave(int wave_index) {
     if (wave_level) {
       int channels = host->get_wave(wave_index)->flags & 
 	zzub::wave_flag_stereo ? 2 : 1;
-      float *samples = 
-	lanternfish::load_to_float_mono(wave_level->samples, 2, channels, wave_level->sample_count);
-      for (int i = 0; i < wave_level->sample_count; i++) {
-	this->wave.push_back(samples[i]);
+      int nsamples = std::min(wave_level->sample_count,
+			      int(sampling_rate * 30.0));
+      for (int i = 0; i < nsamples; i++) {
+	float sample;
+	char *samples = (char *)wave_level->samples;
+	switch(wave_level->format) {
+	case zzub::wave_buffer_type_si16:
+	  sample = ((int16_t *)samples)[i * channels] / 32768.0;
+	  break;
+	case zzub::wave_buffer_type_si24:
+	  sample = (((int32_t *)samples)[i * channels] & 0xffffff00) / 8388608.0;
+	  break;
+	case zzub::wave_buffer_type_si32:
+	  sample = ((int32_t *)samples)[i * channels] / 2147483648.0;
+	  break;
+	case zzub::wave_buffer_type_f32:
+	  sample = ((float *)samples)[i * channels];
+	  break;
+	}
+	wave.push_back(sample);
       }
-      delete[] samples;
     }
     old_index = wave_index;
   }
