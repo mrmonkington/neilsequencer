@@ -205,11 +205,19 @@ void ACloud::set_grains(int grains) {
 
 void ACloud::process(float *out_l, float *out_r, int n, int wave_index) {
   set_wave(wave_index);
-  // Clear the output buffers.
+  /* 
+     Clear the output buffers. This is needed
+     since we will be mixing in new data instead
+     of replacing it.
+  */
   for (int i = 0; i < n; i++) {
     out_l[i] = out_r[i] = 0.0;
   }
-  // Scan the grains and see if some are free for triggering
+  /* 
+     Scan the grains and see if some are free for 
+     triggering. If they are and a random event is
+     satisfied then trigger that grain.
+  */
   for (int i = 0; i < this->ngrains; i++) {
     if (this->grains[i]->is_free()) {
       if (random_event(this->density)) {
@@ -224,6 +232,10 @@ void ACloud::process(float *out_l, float *out_r, int n, int wave_index) {
 			   sustain, release, rate, pan);
       }
     }
+    /* 
+       Each grain will mix in it's contribution to the
+       final audio buffer.
+    */
     grains[i]->process(out_l, out_r, n);
   }
 }

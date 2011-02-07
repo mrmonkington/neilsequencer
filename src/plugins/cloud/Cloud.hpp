@@ -1,27 +1,30 @@
 #ifndef SOMONO_PLUGINS_CLOUD_CLOUD_HPP
 #define SOMONO_PLUGINS_CLOUD_CLOUD_HPP
+
 #include <zzub/signature.h>
 #include <zzub/plugin.h>
+#include <stdint.h>
+
 #include "ACloud.hpp"
 
 struct Gvals {
-  unsigned short wave : 8;
-  unsigned int offset_mean : 16;
-  unsigned int offset_devi : 16;
-  unsigned int amp_mean : 16;
-  unsigned int amp_devi : 16;
-  unsigned int length_mean : 16;
-  unsigned int length_devi : 16;
-  unsigned int sustain_mean : 16;
-  unsigned int sustain_devi : 16;
-  unsigned int skew_mean : 16;
-  unsigned int skew_devi : 16;
-  unsigned int rate_mean : 16;
-  unsigned int rate_devi : 16;
-  unsigned int pan_mean : 16;
-  unsigned int pan_devi : 16;
-  unsigned int density : 16;
-  unsigned short grains : 8;
+  uint8_t wave;
+  uint8_t offset_mean;
+  uint8_t offset_devi;
+  uint8_t amp_mean;
+  uint8_t amp_devi;
+  uint8_t length_mean;
+  uint8_t length_devi;
+  uint8_t sustain_mean;
+  uint8_t sustain_devi;
+  uint8_t skew_mean;
+  uint8_t skew_devi;
+  uint8_t rate_mean;
+  uint8_t rate_devi;
+  uint8_t pan_mean;
+  uint8_t pan_devi;
+  uint8_t density;
+  uint8_t grains;
 } __attribute__((__packed__));
 
 const zzub::parameter *paramWave = 0;
@@ -74,7 +77,7 @@ public:
   virtual void mute_track(int) {}
   virtual bool is_track_muted(int) const { return false; }
   virtual void midi_note(int, int, int) {}
-  virtual void event(unsigned int) {}
+  virtual void event(unsigned int);
   virtual const zzub::envelope_info** get_envelope_infos() { return 0; }
   virtual bool play_wave(int, int, float) { return false; }
   virtual void stop_wave() {}
@@ -116,140 +119,140 @@ struct CloudInfo : zzub::info {
       .set_flags(zzub::parameter_flag_state)
       .set_value_default(0x01);
     paramOffsetMean = &add_global_parameter()
-      .set_word()
+      .set_byte()
       .set_name("Offset Mean")
       .set_description("The mean value for the offset in to the wave")
-      .set_value_min(0x0000)
-      .set_value_max(0xFFFE)
-      .set_value_none(0xFFFF)
+      .set_value_min(0x00)
+      .set_value_max(0xFE)
+      .set_value_none(0xFF)
       .set_flags(zzub::parameter_flag_state)
-      .set_value_default(0x0000);
+      .set_value_default(0x00);
     paramOffsetDevi = &add_global_parameter()
-      .set_word()
+      .set_byte()
       .set_name("Offset Devi")
       .set_description("The deviation amount for the offset in to the wave")
-      .set_value_min(0x0000)
-      .set_value_max(0xFFFE)
-      .set_value_none(0xFFFF)
+      .set_value_min(0x00)
+      .set_value_max(0xFE)
+      .set_value_none(0xFF)
       .set_flags(zzub::parameter_flag_state)
-      .set_value_default(0x0000);
+      .set_value_default(0x00);
     paramAmpMean = &add_global_parameter()
-      .set_word()
+      .set_byte()
       .set_name("Amp Mean")
       .set_description("The mean value for the amplitude of a grain")
-      .set_value_min(0x0000)
-      .set_value_max(0xFFFE)
-      .set_value_none(0xFFFF)
+      .set_value_min(0x00)
+      .set_value_max(0xFE)
+      .set_value_none(0xFF)
       .set_flags(zzub::parameter_flag_state)
-      .set_value_default(0x8000);
+      .set_value_default(0x80);
     paramAmpDevi = &add_global_parameter()
-      .set_word()
+      .set_byte()
       .set_name("Amp Devi")
       .set_description("The deviation amount for the amplitude of a grain")
-      .set_value_min(0x0000)
-      .set_value_max(0xFFFE)
-      .set_value_none(0xFFFF)
+      .set_value_min(0x00)
+      .set_value_max(0xFE)
+      .set_value_none(0xFF)
       .set_flags(zzub::parameter_flag_state)
-      .set_value_default(0x0000);
+      .set_value_default(0x00);
     paramLengthMean = &add_global_parameter()
-      .set_word()
+      .set_byte()
       .set_name("Length Mean")
       .set_description("The mean value for the length of a grain")
-      .set_value_min(0x0000)
-      .set_value_max(0xFFFE)
-      .set_value_none(0xFFFF)
+      .set_value_min(0x00)
+      .set_value_max(0xFE)
+      .set_value_none(0xFF)
       .set_flags(zzub::parameter_flag_state)
-      .set_value_default(0x0800);
+      .set_value_default(0x08);
     paramLengthDevi = &add_global_parameter()
-      .set_word()
+      .set_byte()
       .set_name("Length Devi")
       .set_description("The deviation amount for the length of a grain")
-      .set_value_min(0x0000)
-      .set_value_max(0xFFFE)
-      .set_value_none(0xFFFF)
+      .set_value_min(0x00)
+      .set_value_max(0xFE)
+      .set_value_none(0xFF)
       .set_flags(zzub::parameter_flag_state)
-      .set_value_default(0x0000);
+      .set_value_default(0x00);
     paramSustainMean = &add_global_parameter()
-      .set_word()
+      .set_byte()
       .set_name("Sustain Mean")
       .set_description("The mean value for the sustain length of a grain")
-      .set_value_min(0x0000)
-      .set_value_max(0xFFFE)
-      .set_value_none(0xFFFF)
+      .set_value_min(0x00)
+      .set_value_max(0xFE)
+      .set_value_none(0xFF)
       .set_flags(zzub::parameter_flag_state)
-      .set_value_default(0x8000);
+      .set_value_default(0x80);
     paramSustainDevi = &add_global_parameter()
-      .set_word()
+      .set_byte()
       .set_name("Sustain Devi")
       .set_description("The deviation amount for the sustain length of a grain")
-      .set_value_min(0x0000)
-      .set_value_max(0xFFFE)
-      .set_value_none(0xFFFF)
+      .set_value_min(0x00)
+      .set_value_max(0xFE)
+      .set_value_none(0xFF)
       .set_flags(zzub::parameter_flag_state)
-      .set_value_default(0x0000);
+      .set_value_default(0x00);
     paramSkewMean = &add_global_parameter()
-      .set_word()
+      .set_byte()
       .set_name("Skew Mean")
       .set_description("The mean value for the envelope skew of a grain")
-      .set_value_min(0x0000)
-      .set_value_max(0xFFFE)
-      .set_value_none(0xFFFF)
+      .set_value_min(0x00)
+      .set_value_max(0xFE)
+      .set_value_none(0xFF)
       .set_flags(zzub::parameter_flag_state)
-      .set_value_default(0x8000);
+      .set_value_default(0x80);
     paramSkewDevi = &add_global_parameter()
-      .set_word()
+      .set_byte()
       .set_name("Skew Devi")
       .set_description("The deviation amount for the envelope skew of a grain")
-      .set_value_min(0x0000)
-      .set_value_max(0xFFFE)
-      .set_value_none(0xFFFF)
+      .set_value_min(0x00)
+      .set_value_max(0xFE)
+      .set_value_none(0xFF)
       .set_flags(zzub::parameter_flag_state)
-      .set_value_default(0x0000);
+      .set_value_default(0x00);
     paramRateMean = &add_global_parameter()
-      .set_word()
+      .set_byte()
       .set_name("Rate Mean")
       .set_description("The mean value for the playback rate of a grain")
-      .set_value_min(0x0000)
-      .set_value_max(0xFFFE)
-      .set_value_none(0xFFFF)
+      .set_value_min(0x00)
+      .set_value_max(0xFE)
+      .set_value_none(0xFF)
       .set_flags(zzub::parameter_flag_state)
-      .set_value_default(0x8000);
+      .set_value_default(0x80);
     paramRateDevi = &add_global_parameter()
-      .set_word()
+      .set_byte()
       .set_name("Rate Devi")
       .set_description("The deviation amount for the playback rate of a grain")
-      .set_value_min(0x0000)
-      .set_value_max(0xFFFE)
-      .set_value_none(0xFFFF)
+      .set_value_min(0x00)
+      .set_value_max(0xFE)
+      .set_value_none(0xFF)
       .set_flags(zzub::parameter_flag_state)
-      .set_value_default(0x0000);
+      .set_value_default(0x00);
     paramPanMean = &add_global_parameter()
-      .set_word()
+      .set_byte()
       .set_name("Pan Mean")
       .set_description("The mean value for the panorama position of a grain")
-      .set_value_min(0x0000)
-      .set_value_max(0xFFFE)
-      .set_value_none(0xFFFF)
+      .set_value_min(0x00)
+      .set_value_max(0xFE)
+      .set_value_none(0xFF)
       .set_flags(zzub::parameter_flag_state)
-      .set_value_default(0x8000);
+      .set_value_default(0x80);
     paramPanDevi = &add_global_parameter()
-      .set_word()
+      .set_byte()
       .set_name("Pan Devi")
       .set_description("The deviation amount for the panorama position of a grain")
-      .set_value_min(0x0000)
-      .set_value_max(0xFFFE)
-      .set_value_none(0xFFFF)
+      .set_value_min(0x00)
+      .set_value_max(0xFE)
+      .set_value_none(0xFF)
       .set_flags(zzub::parameter_flag_state)
-      .set_value_default(0x0000);
+      .set_value_default(0x00);
     paramDensity = &add_global_parameter()
-      .set_word()
+      .set_byte()
       .set_name("Density")
       .set_description("Probability for the free grain to trigger")
-      .set_value_min(0x0000)
-      .set_value_max(0xFFFE)
-      .set_value_none(0xFFFF)
+      .set_value_min(0x00)
+      .set_value_max(0xFE)
+      .set_value_none(0xFF)
       .set_flags(zzub::parameter_flag_state)
-      .set_value_default(0x00FF);
+      .set_value_default(0x0F);
     paramGrains = &add_global_parameter()
       .set_byte()
       .set_name("Grains")
