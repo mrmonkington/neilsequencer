@@ -35,8 +35,8 @@ void Grain::trigger(float length, float offset, float amp, float attack,
     int sustain_samples = sampling_rate * (sustain * (length / 1000.0));
     int release_samples = sampling_rate * (release * (length / 1000.0));
     pan = (pan + 1.0) * 0.5;
-    amp_l = sqrt(pan);
-    amp_r = sqrt(1.0 - pan);
+    amp_l = sqrt(1.0 - pan);
+    amp_r = sqrt(pan);
     env->set_attack_length(attack_samples);
     env->set_sustain_length(sustain_samples);
     env->set_release_length(release_samples);
