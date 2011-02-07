@@ -79,7 +79,7 @@ class TransportPanel(gtk.HBox):
         self.tpblabel = gtk.Label("TPB")
         self.tpb = gtk.SpinButton()
         self.tpb.set_range(1,32)
-        self.tpb.set_value(16)
+        self.tpb.set_value(4)
         self.tpb.set_increments(1, 2)
         #self.tpb.connect('button-press-event', self.spinbox_clicked)
 
