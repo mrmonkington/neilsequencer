@@ -28,7 +28,7 @@ import cairo
 import pangocairo
 from neil.utils import prepstr, filepath, db2linear, linear2db, is_debug, filenameify, \
 	get_item_count, question, error, new_listview, add_scrollbars, get_clipboard_text, set_clipboard_text, \
-	gettext, new_stock_image_button, diff, show_manual
+	gettext, new_stock_image_button, diff, show_machine_manual
 import zzub
 import sys,os
 import fnmatch
@@ -712,21 +712,8 @@ class ParameterView(gtk.VBox):
 	@param event: Command event.
 	@type event: wx.CommandEvent
 	"""
-	# uri = filenameify(self.pluginloader.get_uri())
 	name = filenameify(self.pluginloader.get_name())
-	# print name
-	# helpfilepaths = [
-	# 	filepath('/usr/local/share/doc/zzub/plugins/' + uri + '/index.html'),
-	# 	filepath('/usr/local/share/doc/zzub/plugins/' + name + '/index.html'),
-	# ]
-	# print helpfilepaths
-	# for path in helpfilepaths:
-	#     print "searching for '%s'..." % path
-	#     if os.path.isfile(path):
-	# 	import webbrowser
-	# 	webbrowser.open_new(path)
-	# 	return
-	if not show_manual(name):
+	if not show_machine_manual(name):
 	    info=gtk.MessageDialog(self.get_toplevel(),flags=0, type=gtk.MESSAGE_INFO, buttons=gtk.BUTTONS_OK, message_format="Sorry, there's no help for this plugin yet")
 	    info.run()
 	    info.destroy()

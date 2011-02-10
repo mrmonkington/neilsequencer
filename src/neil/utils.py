@@ -134,6 +134,14 @@ def sharedpath(path):
         from pathconfig import path_cfg
         return path_cfg.get_path('share', path)
 
+def docpath(path):
+    """
+    Translates a path relative to the doc directory in to an absolute
+    path.
+    """
+    from pathconfig import path_cfg
+    return path_cfg.get_path('doc', path)
+
 def filepath(path):
         """
         Translates a path relative to a base dir into an absolute
@@ -986,21 +994,25 @@ def test_view(classname):
         elif isinstance(obj, gtk.Widget) and not obj.get_parent():
                 dlg = com.get('neil.test.dialog', embed=obj, destroy_on_close=False)
 
-def show_manual(name=None):
-    helpfilepaths = [
-        filepath("/usr/share/doc/neil/manual"),
-        filepath("/usr/local/share/doc/neil/manual")
-        ]
-    for path in helpfilepaths:
-        if name:
-            if os.path.isfile((path + "/%s.page") % name):
-                os.system("yelp %s?%s &" % (path, name))
-                return True
-        else:
-            if os.path.isdir(path):
-                os.system("yelp %s &" % path)
-                return True
-    return False
+def show_manual():
+    """
+    Invoke yelp program with the Neil manual.
+    """
+    path = docpath("manual")
+    os.system("yelp %s &" % path)
+
+def show_machine_manual(name):
+    """
+    Invoke yelp program to display the manual of a specific machine.
+    Parameter name is the long name of the machine in all lower caps
+    and with spaces replaced by underscores.
+    """
+    path = docpath("manual")
+    if os.path.isfile((path + "/%s.page") % name):
+        os.system("yelp %s?%s &" % (path, name))
+        return True
+    else:
+        return False
 
 class ObjectHandlerGroup:
         """
