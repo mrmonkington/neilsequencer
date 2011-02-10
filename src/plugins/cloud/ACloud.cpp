@@ -114,7 +114,7 @@ void ACloud::set_wave(int wave_index) {
       int channels = host->get_wave(wave_index)->flags & 
 	zzub::wave_flag_stereo ? 2 : 1;
       int nsamples = std::min(wave_level->sample_count,
-			      int(sampling_rate * 30.0));
+			      int(sampling_rate * 10.0));
       for (int i = 0; i < nsamples; i++) {
 	float sample;
 	char *samples = (char *)wave_level->samples;
