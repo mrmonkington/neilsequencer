@@ -1,0 +1,280 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>DT Block Fx</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000">
+
+<p align="center"><big><big>DT Block Fx - Buzz effect plugin</big></big></p>
+
+<p align="center">by <em>Darrell Tam</em></p>
+
+<hr noshade>
+
+<p align="left"><strong>Description</strong></p>
+
+<p align="left">DT Block Fx performs FFT block based effects. Example uses are:
+<li>equalization
+<li>brick-wall (sharp roll off) filtering
+<li>noise reduction (or increase)
+<li>sound smearing/loop click removal
+<li>non-harmonic frequency shifting (without aliasing)
+<li>new filtering effects such as "electrosparkle" and "liquid"
+
+<p align="left"><strong>Short theory</strong></p>
+
+<p>This effect works differently to most others - instead of filtering or distorting
+sample data directly it does its thing directly on the frequency spectrum.
+
+<p>How does it do it?
+<ol>
+<li>The input sample data is cut into overlapping blocks
+<li>Each block is transformed to a frequency spectrum using the Fast-Fourier-Transform
+<li>An effect is applied to the spectrum
+<li>The frequency spectrum is inverse transformed back to sample data
+</ol>
+
+<p align="left"><strong>Installation</strong></p>
+<P><i>Buzz installation</i>
+<p>Copy dt_blockfx.dll, dt_blockfx.prs
+to your <i>&lt;buzz root&gt;</i>\Gear\Effects directory.
+<p>Copy fftw_2.1.3_float.dll to <i>&lt;buzz root&gt;</i>.
+<p>The default <i>&lt;buzz root&gt;</i> is <font face="courier" size=-1>c:\Program Files\Jeskola\Buzz</font>
+
+<p><i>FruityLoops installation</i>
+<p>The <i>dt_blockfx_allglobal.dll</i> version is included for use with FruityLoops and
+the <i>Buzz Effect Adapter</i>. It differs from <i>dt_blockfx.dll</i> in that it has the
+equivalent of 4 sets of track params implemented as global params. If you load
+<i>dt_blockfx.dll</i> into FruityLoops there will only be one set of track params
+availble.
+
+<p>To use with FruityLoops, copy 
+dt_blockfx_allglobal.dll, dt_blockfx_allglobal.prs to your
+<i>&lt;fruity loops root&gt;</i>\Plugins\Fruity\Effects\Buzz Effect Adapter</I> directory.
+<p>Copy fftw_2.1.3_float.dll to <i>&lt;fruity loops root&gt;</i>.
+
+<p>The default <i>&lt;fruity loops root&gt;</i> is <i>C:\Program Files\FruityLoops3.5</I>.
+
+<p align="left"><strong>Usage</strong></p>
+
+<p align="left"><i>Global Parameters</i></p>
+
+<table border="0" cellpadding="6" cellspacing="0">
+  <tr>
+    <td valign="top" nowrap><font color="#004080">Block Synchronization</font></td>
+    <td>Only available in the pattern editor. Forces synchronization of the
+block with the start of tick for use with block sizes of 512 or longer. 
+<p>
+Set to <b>1</b> if you want an audio block to be aligned exactly
+with the current tick. If the paramaters aren't changed then this can generally be
+left unset.
+
+<p>If not set then effects will not be in precisely time with your music. For block sizes
+longer than a tick (e.g 125 beat/min, 4 ticks/beat, the tick length in samples is 5292) then
+paramaters from some ticks will be ignored unless this is set. 
+<p>
+If need be you can set to <b>1</b> on every tick at the expense of CPU.
+
+</td>
+  </tr>
+
+  <tr>
+    <td valign="top" nowrap><font color="#004080">Parameter Interpolation Mode</font></td>
+    <td>Only available in the pattern editor. Generally only useful for block sizes of 4096
+or shorter.
+<p>The following values are valid:
+
+<p><b>0</b>: Normal interpolation of parameters - overlap, freqA, freqB, etc are calculated
+using values from the current tick, next tick and the playing sample position.
+
+<p><b>1</b>: No interpolation - parameters are fixed for the duration of each tick.
+
+<p><b>2</b>: Continue previous - Parameter interpolation is continued from the
+previous tick (i.e. overlap, freqA, freqB, etc are calculated using values from the previous
+tick, the current tick and the playing sample position).
+
+</td>
+  </tr>
+
+
+  <tr>
+    <td valign="top" nowrap><font color="#004080">MixBack</font></td>
+    <td>Percentage mix back of original sound. If you want <i>DT Block Fx</i> to be off but
+keep the fixed delay, set this to 100% to save CPU.</td>
+  </tr>
+  <tr>
+    <td valign="top" nowrap><font color="#004080">OutAmp</font></td>
+    <td>Output Amplification - reduce if your sound clicks or increase if
+you like hard clip distortion.</td>
+  </tr>
+  <tr>
+    <td valign="top" nowrap><font color="#004080">TickDelay</font></td>
+    <td>Number of ticks for which the audio is delayed. Since audio is
+processed in blocks, then the delay must be longer than the required block length.</td>
+  </tr>
+  <tr>
+    <td valign="top" nowrap><font color="#004080">BlockLen</font></td>
+    <td>Maximum block length to use. If the specified <i>TickDelay</i>
+is sufficient then the requested <i>BlockLen</i> will be used, otherwise the largest
+possible block length will be used.
+<p>Longer block lengths result in a smoother sound and give a higher frequency
+resolution but need more delay and more CPU. Short block lengths can add a
+liquid or sparkling quality to the sound.
+</td>
+  </tr>
+  <tr>
+    <td valign="top" nowrap><font color="#004080">Overlap</font></td>
+    <td>Percentage overlap of blocks to use. Larger overlap results in a smooth
+transit	ions between blocks but more CPU.</td>
+  </tr>
+</table>
+
+
+  <p align="left"><i>Track Parameters</i></p>
+
+<table border="0" cellpadding="6" cellspacing="0">
+  <tr>
+    <td valign="top" nowrap><font color="#004080">FreqA</font></td>
+    <td>
+	Start frequency for effect
+    </td>
+  </tr>
+  <tr>
+    <td valign="top" nowrap><font color="#004080">FreqB</font></td>
+    <td>
+	End frequency for effect - if the end frequency is less
+than the start frequency then the frequency range is excluded for effect
+    </td>
+  </tr>
+  <tr>
+    <td valign="top" nowrap><font color="#004080">Amp</font></td>
+    <td>
+	Relative amplitude of processed spectrum segment. Note that the
+overall output power is fixed using the <i>OutAmp</i> parameter. Raising
+the <i>Amp</i> of the segment effectively decreases the <i>Amp</i> of 
+frequencies outside of the segment.
+
+        
+    </td>
+  </tr>
+  <tr>
+    <td valign="top" nowrap><font color="#004080">Effect</font></td>
+    <td>
+	Effect to run on frequency segment. Refer to the table below.
+    </td>
+  </tr>
+  <tr>
+    <td valign="top" nowrap><font color="#004080">Value</font></td>
+    <td>
+	Effect amount. Refer to the table below.
+    </td>
+  </tr>
+
+
+</table>
+
+  <p align="left"><i>Effects</i></p>
+
+<table border="0" cellpadding="6" cellspacing="0">
+  <tr>
+    <td valign="top" nowrap><font color="#004080">Contrast</font></td>
+    <td>
+	<p>This effect changes the <i>contrast</i> or dynamic range of
+frequencies present in the sound.
+
+<p>Increasing contrast (<i>Value</i> &gt; 0.5) results in the reduction of noise
+and softer frequency components. When applied heavily all but the loudest frequencies
+remain and the envelope is removed. Useful for reducing distortion and un-muddying sound.
+
+<p>Decreasing contrast (<i>Value</i> &lt; 0.5) results in the increase of lower level
+frequency components. This tends to flatten the frequency spectrum and increase
+noise. Useful for adding "body" to samples.
+         
+    </td>
+  </tr>
+
+  <tr>
+    <td valign="top" nowrap><font color="#004080">Smear</font></td>
+    <td>
+	<p>This effect randomizes the phase of the spectrum data which results in
+the reduction of the sound envelope.</p>
+<p>The <i>Value</i> parameter controls how much randomization: 0 for none and 1 for 100%</p>
+<p>Sound smearing can be used to remove loop clicks and give sustain to any sound. It
+is similar to a super-soft reverb with large <i>BlockLen</i>.
+    </td>
+  </tr>
+
+  <tr>
+    <td valign="top" nowrap><font color="#004080">Clip</font></td>
+    <td>
+	<p>Clip causes frequency components greater than a particular level 
+(set using <i>Value</i>) to be clipped to that level.</p>
+	<p>This is another way of reducing the dynamic range of frequency
+components but it differs from <i>Contrast</i> in that the lower level
+components are not increased.
+    </td>
+  </tr>
+  <tr>
+    <td valign="top" nowrap><font color="#004080">Weed</font></td>
+    <td>
+	<p>Weed removes frequency components above (<i>Value</i> &lt; 0.5)
+	or below (<i>Value</i> &gt; 0.5) a particular level.
+	<p>Removing components below a particular level increases the
+dynamic range of frequency components by leaving only the louder components.
+This can be used to remove noise from the spectrum or if applied strongly, leave
+only the loud components.
+<p>Removing components above a particular level means that only the
+softer components remain. This means that background and lower level
+harmonics of a sound are increased.
+    </td>
+  </tr>
+
+  <tr>
+    <td valign="top" nowrap><font color="#004080">ShiftAdd</font></td>
+    <td>
+<p>ShiftAdd shifts the spectrum segment by the <i>Value</i> specified (0.5 corresponds
+to no shift).
+The shift is non-harmonic meaning that it will not generally
+sound musical on tuned sounds.
+ShiftAdd mixes the original spectrum with the shifted segment.
+    </td>
+  </tr>
+
+  <tr>
+    <td valign="top" nowrap><font color="#004080">ShiftReplace</font></td>
+    <td>
+	<p>The notes for ShiftAdd apply except ShiftReplace replaces
+the original spectrum with the shifted data.
+    </td>
+  </tr>
+
+</table>
+
+<p align="left"><strong>Source</strong></p>
+Full source code is included.
+
+Feel free to modify and experiment with the source code. If you create
+interesting effects, please send them to me.
+
+The <i>Fastest-Fourier-Transform-in-the-West</i> is used to perform frequency
+transforms. I have not included the source - download this from www.fftw.org but you
+don't need it to recompile <i>DT Block Fx</i>. Thanks to the guys that made FFTW.
+
+<p align="left"><strong>Contact Information</strong></p>
+
+<table border="0" cellpadding="6" cellspacing="0">
+  <tr>
+    <td>Author</td>
+    <td>Darrell Tam</td>
+  </tr>
+  <tr>
+    <td>Email</td>
+    <td><a href="mailto:ymtam2@tpg.com.au">ymtam2@tpg.com.au</a></td>
+  </tr>
+</table>
+
+<p align="left">&nbsp;</p>
+</body>
+</html>
