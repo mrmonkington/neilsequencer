@@ -754,8 +754,9 @@ class Enum(zzubIDLObject):
 			print >> f, 'enum ' + self.c_name + ' {'
 		else:
 			print >> f, "enum {"
-		for item in self.items:
+		for item in self.items[:-1]:
 			item.write_c_header(self, f)
+                self.items[-1].write_c_header(self, f, last=True)
 		print >> f, "};"
 		print >> f
 
@@ -798,13 +799,16 @@ class EnumItem(zzubIDLObject):
 			valstr = str(self.value)
 		return valstr
 			
-	def write_c_header(self, parent,f):
+	def write_c_header(self, parent, f, last=False):
 		self.write_c_doc(f)
 		valstr = self.get_valstr()
+                postfix = ','
+                if last:
+                    postfix = ''
 		if valstr:
-			print >> f, "\t" + self.c_name + ' = ' + valstr + ','
+			print >> f, "\t" + self.c_name + ' = ' + valstr + postfix
 		else:
-			print >> f, "\t" + self.c_name + ','
+			print >> f, "\t" + self.c_name + postfix
 			
 	def write_py_ctypes(self, parent, f, lastval):
 		self.write_py_doc(f)
