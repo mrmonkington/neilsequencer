@@ -1,19 +1,19 @@
 /*
-Copyright (C) 2003-2007 Anders Ervik <calvin@countzero.no>
-
-This library is free software; you can redistribute it and/or
-modify it under the terms of the GNU Lesser General Public
-License as published by the Free Software Foundation; either
-version 2.1 of the License, or (at your option) any later version.
-
-This library is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public
-License along with this library; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+  Copyright (C) 2003-2007 Anders Ervik <calvin@countzero.no>
+  
+  This library is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public
+  License as published by the Free Software Foundation; either
+  version 2.1 of the License, or (at your option) any later version.
+  
+  This library is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Lesser General Public License for more details.
+  
+  You should have received a copy of the GNU Lesser General Public
+  License along with this library; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #pragma once
@@ -84,25 +84,25 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 struct zzub_flatapi_player;
 
 namespace zzub {
-	struct metaplugin_proxy;
-	struct info;
-	struct pattern;
-	struct event_connection_binding;
-	struct wave_proxy;
-	struct wavelevel_proxy;
-	struct sequence_proxy;
-	struct parameter;
-	struct attribute;
-	struct envelope_entry;
-	struct midimapping;
-	struct recorder;
-	struct pluginlib;
-	struct mem_archive;
-	struct audiodriver;
-	struct mididriver;
-	struct instream;
-	struct outstream;
-};
+  struct metaplugin_proxy;
+  struct info;
+  struct pattern;
+  struct event_connection_binding;
+  struct wave_proxy;
+  struct wavelevel_proxy;
+  struct sequence_proxy;
+  struct parameter;
+  struct attribute;
+  struct envelope_entry;
+  struct midimapping;
+  struct recorder;
+  struct pluginlib;
+  struct mem_archive;
+  struct audiodriver;
+  struct mididriver;
+  struct instream;
+  struct outstream;
+}
 
 // internal types
 typedef zzub_flatapi_player zzub_player_t;

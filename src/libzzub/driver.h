@@ -39,7 +39,7 @@ namespace zzub {
     enum {
       // increase this if you get problems
       MAX_FRAMESIZE = 16384,
-      MAX_CHANNELS = 64,
+      MAX_CHANNELS = 64
     };
 
     audioworker *worker;
@@ -114,5 +114,4 @@ namespace zzub {
     virtual void samplerate_changed() {}
 
   };
-
-};
+}
