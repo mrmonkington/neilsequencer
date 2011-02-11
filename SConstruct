@@ -151,6 +151,8 @@ if gcc:
     if env['DEBUG'] == False:
 	env.Append(CCFLAGS=[
                 '-Wall',
+		'-pedantic',
+		'-Wfatal-errors',
 		'-O1', # O2 O3 break infector and a few others
 		'-fomit-frame-pointer',
 		'-funroll-loops',

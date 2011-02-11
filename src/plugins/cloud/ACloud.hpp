@@ -4,19 +4,19 @@
 #include "Grain.hpp"
 #include <zzub/plugin.h>
 
+#define MAX_GRAINS 64
+#define MAX_WORD 0xFFFE
+#define MIN_LENGTH 10.0f
+#define MAX_LENGTH 1000.0f
+#define MAX_BYTE 0xFE
+#define MIN_RATE -4.0f
+#define MAX_RATE 4.0f
+#define MIN_PAN -1.0f
+#define MAX_PAN 1.0f
+#define DIST_SIZE 1024
+
 class ACloud {
 private:
-  // Constants
-  static const int MAX_GRAINS = 64;
-  static const float MAX_WORD = 0xFFFE;
-  static const float MIN_LENGTH = 10.0;
-  static const float MAX_LENGTH = 1000.0;
-  static const float MAX_BYTE = 0xFE;
-  static const float MIN_RATE = -4.0;
-  static const float MAX_RATE = 4.0;
-  static const float MIN_PAN = -1.0;
-  static const float MAX_PAN = 1.0;
-  static const int DIST_SIZE = 1024;
   // Private variables
   unsigned int sampling_rate;
   float offset_mean, offset_devi;
