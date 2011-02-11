@@ -1,0 +1,9 @@
+Import('pluginenv', 'build_plugin')
+
+localenv = pluginenv.Clone()
+localenv.Append(CPPFLAGS=['-O3'])
+
+files = ["dt_blockfx.cpp"]
+
+build_plugin(localenv, "dt_blockfx", files)
+	     
