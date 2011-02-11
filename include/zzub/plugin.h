@@ -37,7 +37,7 @@ namespace zzub {
     // will never pass a buffer that is larger than
     // zzub::buffer_size * sizeof(float) * 2 to any of the
     // plugins process methods.
-    buffer_size = zzub_buffer_size,
+    buffer_size = zzub_buffer_size
   };
 
   // Possible event types sent by the host. A plugin can register to
@@ -92,7 +92,7 @@ namespace zzub {
     event_type_delete_wave = zzub_event_type_delete_wave,
 
     // catch all event
-    event_type_all = zzub_event_type_all,
+    event_type_all = zzub_event_type_all
   };
 
   // Possible types for plugin parameters. These attributes can
@@ -119,14 +119,14 @@ namespace zzub {
     // Indicates that the parameter is a word, which can
     // take any random value between 0 and 65535. This parameter
     // has a size of 2 bytes.
-    parameter_type_word	= zzub_parameter_type_word,
+    parameter_type_word	= zzub_parameter_type_word
   };
 
   enum wave_buffer_type {
     wave_buffer_type_si16 = zzub_wave_buffer_type_si16, // signed int 16bit
     wave_buffer_type_f32 = zzub_wave_buffer_type_f32, // float 32bit
     wave_buffer_type_si32 = zzub_wave_buffer_type_si32, // signed int 32bit
-    wave_buffer_type_si24 = zzub_wave_buffer_type_si24, // signed int 24bit
+    wave_buffer_type_si24 = zzub_wave_buffer_type_si24 // signed int 24bit
   };
 
   enum note_value {
@@ -142,21 +142,21 @@ namespace zzub {
     // predefined values for switches
     switch_value_none = zzub_switch_value_none,
     switch_value_off = zzub_switch_value_off,
-    switch_value_on = zzub_switch_value_on,
+    switch_value_on = zzub_switch_value_on
   };
 
   enum wavetable_index_value {
     // predefined values for wavetable indices
     wavetable_index_value_none = zzub_wavetable_index_value_none,
     wavetable_index_value_min = zzub_wavetable_index_value_min,
-    wavetable_index_value_max = zzub_wavetable_index_value_max,
+    wavetable_index_value_max = zzub_wavetable_index_value_max
   };
 
   enum parameter_flag {
     // parameter flags
     parameter_flag_wavetable_index = zzub_parameter_flag_wavetable_index,
     parameter_flag_state = zzub_parameter_flag_state,
-    parameter_flag_event_on_edit = zzub_parameter_flag_event_on_edit,
+    parameter_flag_event_on_edit = zzub_parameter_flag_event_on_edit
   };
 
   enum plugin_flag {
@@ -174,13 +174,13 @@ namespace zzub {
     plugin_flag_offline = zzub_plugin_flag_offline, 
     plugin_flag_stream = zzub_plugin_flag_stream,
     plugin_flag_has_midi_input = zzub_plugin_flag_has_midi_input,
-    plugin_flag_has_midi_output = zzub_plugin_flag_has_midi_output,
+    plugin_flag_has_midi_output = zzub_plugin_flag_has_midi_output
   };
 
   enum state_flag {
     // player state flags
     state_flag_playing	= zzub_state_flag_playing,
-    state_flag_recording = zzub_state_flag_recording,
+    state_flag_recording = zzub_state_flag_recording
   };
 
   enum wave_flag {
@@ -188,12 +188,12 @@ namespace zzub {
     wave_flag_extended = zzub_wave_flag_extended,
     wave_flag_stereo = zzub_wave_flag_stereo,
     wave_flag_pingpong = zzub_wave_flag_pingpong,
-    wave_flag_envelope = zzub_wave_flag_envelope,
+    wave_flag_envelope = zzub_wave_flag_envelope
   };
 
   enum envelope_flag {
     envelope_flag_sustain = zzub_envelope_flag_sustain,
-    envelope_flag_loop = zzub_envelope_flag_loop,
+    envelope_flag_loop = zzub_envelope_flag_loop
   };
 
   enum process_mode {
@@ -201,13 +201,13 @@ namespace zzub {
     process_mode_no_io = zzub_process_mode_no_io,
     process_mode_read = zzub_process_mode_read,
     process_mode_write = zzub_process_mode_write,
-    process_mode_read_write = zzub_process_mode_read_write,
+    process_mode_read_write = zzub_process_mode_read_write
   };
 
   enum connection_type {
     connection_type_audio = zzub_connection_type_audio,
     connection_type_event = zzub_connection_type_event,
-    connection_type_midi = zzub_connection_type_midi,
+    connection_type_midi = zzub_connection_type_midi
   };
 
   struct parameter {
