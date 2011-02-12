@@ -640,7 +640,6 @@ env.Signature(target='include/zzub/signature.h',source='options.conf')
 env.SConscript('${LANTERNFISH_SRC_PATH}/SConscript')
 env.SConscript('${LIBZZUB_SRC_PATH}/SConscript')
 env.SConscript('${PLUGINS_SRC_PATH}/SConscript')
-env.SConscript('${CCMPLAYER_SRC_PATH}/SConscript')
 env.SConscript('${BMPCCM_SRC_PATH}/SConscript')
 env.SConscript('${PYZZUB_SRC_PATH}/SConscript')
 

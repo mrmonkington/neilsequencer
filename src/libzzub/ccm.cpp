@@ -23,7 +23,7 @@
 #include <sstream>
 #include "../minizip/unzip.h"
 #include "../minizip/zip.h"
-#include "FLAC/all.h"
+#include <FLAC/all.h>
 
 #include "ccm.h"
 #include "bmxreader.h"
@@ -34,6 +34,8 @@
 #else
 #define CCM_MAX_PATH 32768
 #endif
+
+#define CHUNK_OF_SAMPLES 2048
 
 using namespace pugi;
 
@@ -1143,32 +1145,25 @@ namespace zzub {
   }
 
   void decodeFLAC(zzub::instream* reader, zzub::player& player, int wave, int level) {
-
-    FLAC__StreamDecoder* stream=FLAC__stream_decoder_new();
-    FLAC__stream_decoder_set_read_callback(stream, flac_stream_decoder_read_callback);
-    FLAC__stream_decoder_set_write_callback(stream, flac_stream_decoder_write_callback);
-    FLAC__stream_decoder_set_metadata_callback(stream, flac_stream_decoder_metadata_callback);
-    FLAC__stream_decoder_set_error_callback(stream, flac_stream_decoder_error_callback);
-
+    FLAC__StreamDecoder* decoder = FLAC__stream_decoder_new();
+    FLAC__stream_decoder_set_metadata_ignore_all(decoder);
     DecoderInfo decoder_info;
     decoder_info.reader = reader;
-    FLAC__stream_decoder_set_client_data(stream, &decoder_info);
-
-    // we're not intersted in meitadeita
-    FLAC__stream_decoder_set_metadata_ignore_all(stream);
-
-    FLAC__stream_decoder_init(stream);
-    //    FLAC__stream_decoder_process_single(stream);
-    FLAC__stream_decoder_process_until_end_of_stream(stream);
-    
-    FLAC__stream_decoder_finish(stream);
-    
-
-    //    FLAC__ChannelAssignment channel_assignment=FLAC__stream_decoder_get_channel_assignment(stream);
-    int channels = FLAC__stream_decoder_get_channels(stream);
-    unsigned int bps = FLAC__stream_decoder_get_bits_per_sample(stream);
-    unsigned int sample_rate = FLAC__stream_decoder_get_sample_rate(stream);
-
+    FLAC__stream_decoder_init_stream(decoder, 
+				     flac_stream_decoder_read_callback,
+				     NULL,
+				     NULL,
+				     NULL,
+				     NULL,
+				     flac_stream_decoder_write_callback,
+				     flac_stream_decoder_metadata_callback,
+				     flac_stream_decoder_error_callback,
+				     &decoder_info);
+    FLAC__stream_decoder_process_until_end_of_stream(decoder);
+    FLAC__stream_decoder_finish(decoder);
+    int channels = FLAC__stream_decoder_get_channels(decoder);
+    unsigned int bps = FLAC__stream_decoder_get_bits_per_sample(decoder);
+    unsigned int sample_rate = FLAC__stream_decoder_get_sample_rate(decoder);
     // allocate a level based on the stats retreived from the decoder stream
     zzub::wave_buffer_type waveFormat;
     switch (bps) {
@@ -1184,14 +1179,11 @@ namespace zzub {
     default:
       throw "not a supported bitsize";
     }
-
     player.wave_allocate_level(wave, level, decoder_info.totalSamples, channels, waveFormat);
     //bool result = info.allocate_level(level, decoder_info.totalSamples, waveFormat, channels==2);
     //assert(result); // lr: you don't want to let this one go unnoticed. either bail out or give visual cues.
-
     wave_info_ex& w = *player.back.wavetable.waves[wave];
     wave_level_ex& l = w.levels[level];
-
     char* targetBuf = (char*)l.samples;
     for (size_t i = 0; i < decoder_info.buffers.size(); i++) {
       DecodedFrame frame = decoder_info.buffers[i];
@@ -1199,38 +1191,35 @@ namespace zzub {
       targetBuf += frame.bytes;
       delete[] (char*)frame.buffer; // discard buffer
     }
-
     // clean up
-    FLAC__stream_decoder_delete(stream);
-
+    FLAC__stream_decoder_delete(decoder);
   }
 
   bool encodeFLAC(zzub::outstream* writer, wave_info_ex& info, int level) {
-
-    int channels=info.get_stereo()?2:1;
+    int channels = info.get_stereo() ? 2 : 1;
     // flac is not going to encode anything that's not
     // having a standard samplerate, and since that
     // doesn't matter anyway, pick the default one.
-    int sample_rate=44100; //info.getSamplesPerSec(level);
-    int bps=info.get_bits_per_sample(level);
-    int num_samples=info.get_sample_count(level);
+    int sample_rate = 44100; //info.getSamplesPerSec(level);
+    int bps = info.get_bits_per_sample(level);
+    int num_samples = info.get_sample_count(level);
 
 
-    FLAC__StreamEncoder *stream=FLAC__stream_encoder_new(); 
+    FLAC__StreamEncoder *stream = FLAC__stream_encoder_new(); 
 
     FLAC__stream_encoder_set_channels(stream, channels);
     FLAC__stream_encoder_set_bits_per_sample(stream, bps);
     FLAC__stream_encoder_set_sample_rate(stream, sample_rate);
     FLAC__stream_encoder_set_total_samples_estimate(stream, num_samples);
-    FLAC__stream_encoder_set_write_callback(stream, flac_stream_encoder_write_callback);
-    FLAC__stream_encoder_set_metadata_callback(stream, flac_stream_encoder_metadata_callback);
-    FLAC__stream_encoder_set_client_data(stream, writer);
-
-    int result = FLAC__stream_encoder_init(stream);
+    int result = 
+      FLAC__stream_encoder_init_stream(stream,
+				       flac_stream_encoder_write_callback,
+				       NULL,
+				       NULL,
+				       flac_stream_encoder_metadata_callback,
+				       writer);
     // if this fails, we want it to crash hard - or else will cause dataloss
     assert(result == FLAC__STREAM_ENCODER_OK);
-
-#define CHUNK_OF_SAMPLES 2048
     
     FLAC__int32 buffer[FLAC__MAX_CHANNELS][CHUNK_OF_SAMPLES]; 
     FLAC__int32* input_[FLAC__MAX_CHANNELS];

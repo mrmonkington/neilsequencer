@@ -57,18 +57,7 @@ files = [
 	'thread_id.cpp',
 ]
 
-# we build from our private flac,
-# since some are using 1.1.3, and that
-# one breaks a few things.
-localenv.Append(CPPPATH=[
-	"${ROOTPATH}/src/flac/include"
-])
-localenv.Append(CCFLAGS=[
-	'-DFLAC__NO_DLL',
-])
-env.SConscript("${ROOTPATH}/src/flac/src/libFLAC/SConscript")
-
-# minizip, zlib and flac dependencies
+# minizip and zlib dependencies
 files += [
 	'${MINIZIP_SRC_PATH}/ioapi.c',
 	'${MINIZIP_SRC_PATH}/mztools.c',
