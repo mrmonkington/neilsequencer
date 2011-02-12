@@ -175,8 +175,8 @@ float dsp_slope(float *b, int ns, float start, float step) {
 }
 
 void dsp_amp(float *b, int numsamples, float s) {
-  while (numsamples--) {
-    *b++ = *b * s;
+  for (int i = 0; i < numsamples; i++) {
+    b[i] *= s;
   }
 }
 	
@@ -197,8 +197,8 @@ void dsp_mul(float *i, float *o, int numsamples) {
 }
 
 void dsp_powmap(float *b, int numsamples, float c, float base, float offset, float factor) {
-  while (numsamples--) {
-    *b++ = c * pow(base, offset + (*b * factor));
+  for (int i = 0; i < numsamples; i++) {
+    b[i] = c * pow(base, offset + (b[i] * factor));
   }
 }
 

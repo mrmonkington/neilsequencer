@@ -437,7 +437,7 @@ namespace zzub {
   enum sequence_type {
     sequence_type_pattern = zzub_sequence_type_pattern,
     sequence_type_wave = zzub_sequence_type_wave,
-    sequence_type_automation = zzub_sequence_type_automation,
+    sequence_type_automation = zzub_sequence_type_automation
   };
     
   struct sequence_pattern_event {

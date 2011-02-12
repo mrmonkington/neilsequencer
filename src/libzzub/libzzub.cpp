@@ -22,7 +22,7 @@
 #include <algorithm>
 #include <cctype>
 #include <sstream>
-#include <iomanip>s
+#include <iomanip>
 #include <sndfile.h>
 
 #include "common.h"

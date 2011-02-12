@@ -1,19 +1,19 @@
 /*
-Copyright (C) 2003-2007 Anders Ervik <calvin@countzero.no>
+  Copyright (C) 2003-2007 Anders Ervik <calvin@countzero.no>
 
-This library is free software; you can redistribute it and/or
-modify it under the terms of the GNU Lesser General Public
-License as published by the Free Software Foundation; either
-version 2.1 of the License, or (at your option) any later version.
+  This library is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public
+  License as published by the Free Software Foundation; either
+  version 2.1 of the License, or (at your option) any later version.
 
-This library is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-Lesser General Public License for more details.
+  This library is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Lesser General Public License for more details.
 
-You should have received a copy of the GNU Lesser General Public
-License along with this library; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+  You should have received a copy of the GNU Lesser General Public
+  License along with this library; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #pragma once
@@ -67,19 +67,17 @@ void Copy24(void* srcbuf, void* targetbuf, size_t numSamples, size_t srcstep=1, 
 void CopyS32(void* srcbuf, void* targetbuf, size_t numSamples, size_t srcstep=1, size_t dststep=1, size_t srcoffset=0, size_t dstoffset=0);
 void CopyF32(void* srcbuf, void* targetbuf, size_t numSamples, size_t srcstep=1, size_t dststep=1, size_t srcoffset=0, size_t dstoffset=0);
 
-#pragma pack(push, 1)
 struct S24 {
-	union {
-		struct {
-			char c3[3];
-		};
-		struct {
-			short s;
-			char c;
-		};
-	};
-};
-#pragma pack(pop)
+  union {
+    struct {
+      char c3[3];
+    };
+    struct {
+      short s;
+      char c;
+    };
+  };
+} __attribute__((__packed__));
 
 // auto select based on waveformat
 void CopySamples(void *srcbuf, void *targetbuf, size_t numSamples, int srcWaveFormat, int dstWaveFormat, size_t srcstep=1, size_t dststep=1, size_t srcoffset=0, size_t dstoffset=0);
@@ -96,32 +94,32 @@ inline void ConvertSample(const S24 &src, float &dst) { assert(0); }
 
 inline void ConvertSample(const int &src, short &dst) { dst = (short)(src / (1<<16)); }
 inline void ConvertSample(const int &src, S24 &dst) { 
-	dst.c3[0] = (src & 0x0000ff00) >> 8;
-	dst.c3[1] = (src & 0x00ff0000) >> 16;
-	dst.c3[2] = (src & 0xff000000) >> 24;
+  dst.c3[0] = (src & 0x0000ff00) >> 8;
+  dst.c3[1] = (src & 0x00ff0000) >> 16;
+  dst.c3[2] = (src & 0xff000000) >> 24;
 }
 inline void ConvertSample(const int &src, int &dst) { dst = src; }
 inline void ConvertSample(const int &src, float &dst) { dst = (float)src / 2147483648.0f; }
 
 inline void ConvertSample(const float &src, short &dst) { dst = (short)(std::max(std::min(src,1.0f),-1.0f) * 32767.0f); }
 inline void ConvertSample(const float &src, S24 &dst) { 	
-	int i = (int)(src * 0x007fffff);
-	dst.c3[0] = (i & 0x000000ff);
-	dst.c3[1] = (i & 0x0000ff00) >> 8;
-	dst.c3[2] = (i & 0x00ff0000) >> 16;
+  int i = (int)(src * 0x007fffff);
+  dst.c3[0] = (i & 0x000000ff);
+  dst.c3[1] = (i & 0x0000ff00) >> 8;
+  dst.c3[2] = (i & 0x00ff0000) >> 16;
 }
 inline void ConvertSample(const float &src, int &dst) { dst = (int)(std::max(std::min(src,1.0f),-1.0f) * 2147483648.0f); }
 inline void ConvertSample(const float &src, float &dst) { dst = src; }
 
 template <typename srctype, typename dsttype>
 inline void CopySamplesT(const srctype *src, dsttype *dst, size_t numSamples, size_t srcstep=1, size_t dststep=1, size_t srcoffset=0, size_t dstoffset=0) {
-	src += srcoffset;
-	dst += dstoffset;
-	while (numSamples--) {
-		ConvertSample(*src, *dst);
-		src += srcstep;
-		dst += dststep;
-	}
+  src += srcoffset;
+  dst += dstoffset;
+  while (numSamples--) {
+    ConvertSample(*src, *dst);
+    src += srcstep;
+    dst += dststep;
+  }
 }
 
 // this is a wrapper for quick GCC support, since GCC's transform() doesnt accept regular tolower

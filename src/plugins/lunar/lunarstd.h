@@ -20,7 +20,7 @@
 
 namespace zzub {
   struct host;
-};
+}
 
 struct _lunar_voice {
   zzub::host *cb;
