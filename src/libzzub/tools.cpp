@@ -288,14 +288,14 @@ void CopyF32(void* srcbuf, void* targetbuf, size_t numSamples, size_t srcstep, s
 typedef void (*CopySamplesPtr)(void *, void *, size_t, size_t, size_t, size_t, size_t);
 
 CopySamplesPtr CopySamplesMatrix[4][4] = {
-	// si16 -> si16, f32, si32, si24
-	Copy16, Copy16ToF32, Copy16ToS32, Copy16To24,
-	// f32 -> si16, f32, si32, si24
-	CopyF32To16, CopyF32, CopyF32ToS32, CopyF32To24,
-	// si32 -> si16, f32, si32, si24
-	CopyS32To16, CopyS32ToF32, CopyS32, CopyS32To24,
-	// si24 -> si16, f32, si32, si24
-	Copy24To16, Copy24ToF32, Copy24ToS32, Copy24,
+  // si16 -> si16, f32, si32, si24
+  {Copy16, Copy16ToF32, Copy16ToS32, Copy16To24},
+  // f32 -> si16, f32, si32, si24
+  {CopyF32To16, CopyF32, CopyF32ToS32, CopyF32To24},
+  // si32 -> si16, f32, si32, si24
+  {CopyS32To16, CopyS32ToF32, CopyS32, CopyS32To24},
+  // si24 -> si16, f32, si32, si24
+  {Copy24To16, Copy24ToF32, Copy24ToS32, Copy24},
 };
 
 // auto select based on waveformat

@@ -60,7 +60,7 @@ void process_midi(PtTimestamp timestamp, void *userData) {
 	}
 
 
-	while (result = Pm_Dequeue(driver->sendQueue, &msg)) {
+	while ((result = Pm_Dequeue(driver->sendQueue, &msg))) {
 		driver->outMessages.push_back(msg);
 	}
 

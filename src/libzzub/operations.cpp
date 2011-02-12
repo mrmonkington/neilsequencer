@@ -166,11 +166,15 @@ namespace zzub {
   bool op_plugin_create::prepare(zzub::song& song) {
 
     zzub::plugin* instance = loader->create_plugin();
-    if (instance == 0) return false;
+    if (instance == 0) { 
+      return false;
+    }
 
     assert(id != -1);
 
-    if (song.plugins.size() <= id) song.plugins.resize(id + 1);
+    if (song.plugins.size() <= (size_t)id) {
+      song.plugins.resize(id + 1);
+    }
 
     assert(song.plugins[id] == 0);
     song.plugins[id] = new metaplugin();
@@ -362,7 +366,7 @@ namespace zzub {
     song.plugins[id] = 0;
 
     // clear events targeted for this plugin:
-    int read_pos = song.user_event_queue_read;
+    size_t read_pos = song.user_event_queue_read;
     while (read_pos != song.user_event_queue_write) {
       event_message& ev = song.user_event_queue[read_pos];
       if (ev.plugin_id == id) ev.event = 0;
@@ -392,7 +396,7 @@ namespace zzub {
     if (send_events) song.plugin_invoke_event(0, event_data, true);
 
     plugin->plugin->destroy();
-    int ptn = plugin->patterns.size();
+    // int ptn = plugin->patterns.size();
     delete plugin->callbacks;
     delete plugin->proxy;
     delete plugin;
@@ -472,6 +476,8 @@ namespace zzub {
     plugin_descriptor from_plugin = song.plugins[from_id]->descriptor;
     assert(to_plugin != graph_traits<plugin_map>::null_vertex());
     assert(from_plugin != graph_traits<plugin_map>::null_vertex());
+    _unused(to_plugin);
+    _unused(from_plugin);
 
     // check for duplicate connection
     if (song.plugin_get_input_connection_index(to_id, from_id, type) != -1) {
@@ -491,7 +497,7 @@ namespace zzub {
     bool from_has_audio = from_flags & plugin_flag_has_audio_output;
     bool to_has_midi = to_flags & plugin_flag_has_midi_input;
     bool from_has_midi = from_flags & plugin_flag_has_midi_output;
-    bool to_has_event = to_flags & plugin_flag_has_event_input;
+    //bool to_has_event = to_flags & plugin_flag_has_event_input;
     bool from_has_event = from_flags & plugin_flag_has_event_output;
 
     if (type == connection_type_audio && !(to_has_audio && from_has_audio)) {
@@ -616,6 +622,8 @@ namespace zzub {
     plugin_descriptor from_plugin = from_mpl.descriptor;
     assert(to_plugin != graph_traits<plugin_map>::null_vertex());
     assert(from_plugin != graph_traits<plugin_map>::null_vertex());
+    _unused(to_plugin);
+    _unused(from_plugin);
 
     // invoke pre-event so hacked plugins can lock the player
     event_data.type = event_type_pre_disconnect;
@@ -1077,6 +1085,7 @@ namespace zzub {
 
     const zzub::parameter* param = song.plugin_get_parameter_info(id, group, track, column);
     assert((value >= param->value_min && value <= param->value_max) || value == param->value_none  || (param->type == zzub::parameter_type_note && value == zzub::note_value_off));
+    _unused(param);
 
     song.plugins[id]->patterns[index]->groups[group][track][column][row] = value;
 
@@ -1240,6 +1249,7 @@ namespace zzub {
 
     plugin_descriptor plugin = m.descriptor;
     assert(plugin != graph_traits<plugin_map>::null_vertex());
+    _unused(plugin);
 
     std::vector<zzub::pattern*>& patterns = m.patterns;
 
@@ -1365,7 +1375,7 @@ namespace zzub {
 
     zzub::pattern& p = *m.patterns[index];
 
-    for (int i = 0; i < columns.size() / 3; i++) {
+    for (size_t i = 0; i < columns.size() / 3; i++) {
       int group = columns[i * 3 + 0];
       int track = columns[i * 3 + 1];
       int column = columns[i * 3 + 2];
@@ -1432,7 +1442,7 @@ namespace zzub {
 
     zzub::pattern& p = *m.patterns[index];
 
-    for (int i = 0; i < columns.size() / 3; i++) {
+    for (size_t i = 0; i < columns.size() / 3; i++) {
       int group = columns[i * 3 + 0];
       int track = columns[i * 3 + 1];
       int column = columns[i * 3 + 2];
@@ -1981,7 +1991,8 @@ namespace zzub {
   }
 
   op_wavetable_insert_sampledata::~op_wavetable_insert_sampledata() {
-    delete[] samples;
+    // Don't know if this is right?
+    delete[] (int *)samples;
   }
 
 
@@ -2002,6 +2013,7 @@ namespace zzub {
 	
     bool allocw = w.allocate_level(level, newsamples, (wave_buffer_type)format, channels == 2 ? true : false);
     assert(allocw);
+    _unused(allocw);
 
     void* dst = w.get_sample_ptr(level);
     CopySamples(copybuffer, dst, pos, format, format, channels, channels, 0, 0);
@@ -2023,7 +2035,21 @@ namespace zzub {
 
     }
 
-    delete[] copybuffer;
+    // Don't know if this is right?
+    switch (format) {
+    case 0:
+      delete[] (int16_t *)copybuffer;
+      break;
+    case 1:
+      delete[] (float *)copybuffer;
+      break;
+    case 2:
+      delete[] (int32_t *)copybuffer;
+      break;
+    case 3:
+      delete[] (S24 *)copybuffer;
+      break;
+    }
 
     event_data.type = event_type_wave_allocated;
     event_data.allocate_wavelevel.wavelevel = song.wavetable.waves[wave]->levels[level].proxy;
@@ -2087,7 +2113,21 @@ namespace zzub {
       CopySamples(copybuffer, dst, pos, format, format, channels, channels, 1, 1);
       CopySamples(copybuffer, dst, numsamples - (pos + samples), format, format, channels, channels, (pos + samples) * channels + 1, pos * channels + 1);
     }
-    delete[] copybuffer;
+    // Don't know if this is right?
+    switch (format) {
+    case 0:
+      delete[] (int16_t *)copybuffer;
+      break;
+    case 1:
+      delete[] (float *)copybuffer;
+      break;
+    case 2:
+      delete[] (int32_t *)copybuffer;
+      break;
+    case 3:
+      delete[] (S24 *)copybuffer;
+      break;
+    }
 
     event_data.type = event_type_wave_allocated;
     event_data.allocate_wavelevel.wavelevel = song.wavetable.waves[wave]->levels[level].proxy;

@@ -606,7 +606,7 @@ namespace zzub {
       item.append_attribute("index") = track;
 	
     //zzub::patterntrack& t = *p.getPatternTrack(group, track);
-    for (size_t i = 0; i < p.rows; ++i) {
+    for (int i = 0; i < p.rows; ++i) {
       for (size_t j = 0; j < p.groups[group][track].size(); ++j) {
 	const zzub::parameter *param = player.plugin_get_parameter_info(plugin, group, track, j);
 	assert(param != 0);
@@ -733,7 +733,7 @@ namespace zzub {
     xml_node item = parent.append_child(node_element);
     item.set_name("sequences");
 
-    for (int i = 0; i != player.sequencer_tracks.size(); i++) {
+    for (unsigned int i = 0; i != player.sequencer_tracks.size(); i++) {
       if (player.sequencer_tracks[i].plugin_id == plugin) {
 	saveSequence(item, tpbfac, player, i);
       }
@@ -1098,8 +1098,10 @@ namespace zzub {
 
     if (info->reader->position() >= info->reader->size()-1) return FLAC__STREAM_DECODER_READ_STATUS_END_OF_STREAM;
 
-    int bytesRead = info->reader->read(buffer, *bytes);
-    if (bytesRead!=*bytes) *bytes = bytesRead;
+    unsigned int bytesRead = info->reader->read(buffer, *bytes);
+    if (bytesRead != *bytes) { 
+      *bytes = bytesRead;
+    }
     return FLAC__STREAM_DECODER_READ_STATUS_CONTINUE;
   }
 
@@ -1162,7 +1164,7 @@ namespace zzub {
     FLAC__stream_decoder_finish(decoder);
     int channels = FLAC__stream_decoder_get_channels(decoder);
     unsigned int bps = FLAC__stream_decoder_get_bits_per_sample(decoder);
-    unsigned int sample_rate = FLAC__stream_decoder_get_sample_rate(decoder);
+    //unsigned int sample_rate = FLAC__stream_decoder_get_sample_rate(decoder);
     // allocate a level based on the stats retreived from the decoder stream
     zzub::wave_buffer_type waveFormat;
     switch (bps) {
@@ -1219,11 +1221,11 @@ namespace zzub {
 				       writer);
     // if this fails, we want it to crash hard - or else will cause dataloss
     assert(result == FLAC__STREAM_ENCODER_OK);
-    
+    _unused(result);
     FLAC__int32 buffer[FLAC__MAX_CHANNELS][CHUNK_OF_SAMPLES]; 
     FLAC__int32* input_[FLAC__MAX_CHANNELS];
  
-    for(int i = 0; i < FLAC__MAX_CHANNELS; i++)
+    for(unsigned int i = 0; i < FLAC__MAX_CHANNELS; i++)
       input_[i] = &(buffer[i][0]);
  
     bool done=false;
@@ -1503,7 +1505,7 @@ namespace zzub {
 		  if (!strcmp(j->name(), "bindings")) {
 		    for (xml_node::iterator k = j->begin(); k != j->end(); ++k) {
 		      if (!strcmp(k->name(), "binding")) {
-			event_connection_binding binding;
+			//event_connection_binding binding;
 			long source_param_index = long(k->attribute("source_param_index").as_int());
 			long target_group_index = long(k->attribute("target_group_index").as_int());
 			long target_track_index = long(k->attribute("target_track_index").as_int());
@@ -1540,7 +1542,7 @@ namespace zzub {
 						
 	      // test if the parameter names correspond with index position
 	      int plugin = c->target;
-	      long index = long(paraminfo.attribute("index").as_int());
+	      unsigned long index = long(paraminfo.attribute("index").as_int());
 	      const parameter* param = player.back.plugin_get_parameter_info(plugin, 1, 0, index);
 	      std::string name = paraminfo.attribute("name").value();
 	      const zzub::info* info = player.back.plugins[plugin]->info;
@@ -1572,7 +1574,7 @@ namespace zzub {
 		if ((bool)paraminfo.attribute("state") == true) {
 		  // test if the parameter names correspond with index position
 		  int plugin = c->target;
-		  long index = long(paraminfo.attribute("index").as_int());
+		  unsigned long index = long(paraminfo.attribute("index").as_int());
 		  const parameter* param = player.back.plugin_get_parameter_info(plugin, 2, t, index);
 		  std::string name = paraminfo.attribute("name").value();
 		  const zzub::info* info = player.back.plugins[plugin]->info;
@@ -1644,7 +1646,7 @@ namespace zzub {
 		  assert(!paraminfo.empty());
 								
 		  long idx = long(paraminfo.attribute("index").as_int());
-		  long value;
+		  long value = 0;
 		  xml_attribute v = k->attribute("v");
 		  if (!v.empty()) {
 		    value = long(v.as_int());
@@ -1722,7 +1724,7 @@ namespace zzub {
 					
 	    std::string target = i->attribute("target").value();
 					
-	    int group;
+	    int group = 0;
 	    int track = 0;
 	    int index = 0;
 	    if (target == "amp") {
@@ -1765,11 +1767,13 @@ namespace zzub {
     }
 
     // re-order the sequence tracks according to ccm
-    int index = 0;
+    size_t index = 0;
     for (;;) {
-      if (index >= seq_order.size()) break;
+      if (index >= seq_order.size()) {
+	break;
+      }
       vector<int>::iterator tt = seq_order.begin() + index;
-      if (*tt > index) {
+      if ((size_t)*tt > index) {
 	int t = *tt;
 	seq_order.erase(tt);
 	seq_order.insert(seq_order.begin() + t, t);

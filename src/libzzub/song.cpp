@@ -163,7 +163,7 @@ namespace zzub {
   }
 
   int song::plugin_get_track_count(int plugin_id, int group) {
-    const zzub::info* loader = plugins[plugin_id]->info;
+    //const zzub::info* loader = plugins[plugin_id]->info;
     switch (group) {
     case 0:
       return plugin_get_input_connection_count(plugin_id);
@@ -242,6 +242,7 @@ namespace zzub {
 	
     for (int i = 0; i < attributes; ++i) {
       attribute& a = new_info->add_attribute();
+      _unused(a);
     }
 
     // copy incoming params because they wont be valid after loading ends
@@ -348,7 +349,7 @@ namespace zzub {
 
   int song::plugin_get_output_connection_index(int to_id, int from_id, connection_type type) {
     plugin_descriptor to_plugin = plugins[to_id]->descriptor;
-    plugin_descriptor from_plugin = plugins[from_id]->descriptor;
+    //plugin_descriptor from_plugin = plugins[from_id]->descriptor;
     in_edge_iterator out, out_end;
     boost::tie(out, out_end) = in_edges(to_plugin, graph);
     for (in_edge_iterator i = out; i != out_end; ++i) {
@@ -420,7 +421,7 @@ namespace zzub {
       deque<plugin_descriptor> inputs;
       inputs.push_back(*i);
 
-      metaplugin& m = *plugins[tg[*i].id];
+      //metaplugin& m = *plugins[tg[*i].id];
 
       // find plugins that send sound into this root, in topological order.
       // topological_sort_kahn will remove edges from the temp graph.
@@ -756,18 +757,21 @@ namespace zzub {
   }
 
   int song::sequencer_get_event_at(int track, unsigned long timestamp) {
-    int event_count = (int)sequencer_tracks[track].events.size();
-    int song_index = 0;
+    size_t event_count = (size_t)sequencer_tracks[track].events.size();
+    size_t song_index = 0;
     while (event_count > 0 && song_index < event_count
 	   && sequencer_tracks[track].events[song_index].time < (int)timestamp) 
       {
 	song_index++;
       }
 
-    if (song_index >= event_count || sequencer_tracks[track].events[song_index].time != timestamp) return -1;
+    if (song_index >= event_count || (size_t)sequencer_tracks[track].events[song_index].time != timestamp) {
+      return -1;
+    }
 
-    if (sequencer_tracks[track].events[song_index].time == timestamp)
+    if ((size_t)sequencer_tracks[track].events[song_index].time == timestamp) {
       return sequencer_tracks[track].events[song_index].pattern_event.value;
+    }
 
     return -1;
   }
@@ -776,6 +780,10 @@ namespace zzub {
     state = newstate;
     switch (state) {
     case player_state_playing:
+      break;
+    case player_state_muted:
+      break;
+    case player_state_released:
       break;
     case player_state_stopped:
       for (int i = 0; i < get_plugin_count(); i++)
@@ -807,7 +815,7 @@ namespace zzub {
     }
 
     metaplugin& to_mpl = *plugins[to_id];
-    metaplugin& from_mpl = *plugins[from_id];
+    //metaplugin& from_mpl = *plugins[from_id];
 
     for (size_t i = 0; i < to_mpl.patterns.size(); i++) {
       add_pattern_connection_track(*to_mpl.patterns[i], c.conn->connection_parameters);
@@ -833,6 +841,7 @@ namespace zzub {
     plugin_descriptor from_plugin = from_mpl.descriptor;
     assert(to_plugin != graph_traits<plugin_map>::null_vertex());
     assert(from_plugin != graph_traits<plugin_map>::null_vertex());
+    _unused(from_plugin);
 
     // remove connection tracks in patterns
     int track = plugin_get_input_connection_index(to_id, from_id, type);

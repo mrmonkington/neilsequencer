@@ -327,7 +327,7 @@ namespace zzub {
     size_t size = get_sample_count(level);
     size_t channels = get_stereo()?2:1;
     int format = get_wave_format(level);
-    int samplerate = 44100; //get_level(level)->samples_per_second;
+    // int samplerate = 44100; //get_level(level)->samples_per_second;
 	
 	
     int newsize = (int)size - (int)numSamples + (int)newSize;

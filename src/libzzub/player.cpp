@@ -74,6 +74,7 @@ namespace zzub {
   static sf_count_t instream_write (const void *ptr, sf_count_t count, void *user_data) {
     zzub::instream* strm = (zzub::instream*)user_data ;
     assert(false);
+    _unused(strm);
     return 0;
   }
 
@@ -510,7 +511,7 @@ namespace zzub {
       swap_lock.unlock();
     }
     // update cpu_load per plugin
-    for (int i = 0; i < front.plugins.size(); i++) {
+    for (unsigned int i = 0; i < front.plugins.size(); i++) {
       if (front.plugins[i] == 0) continue;
       metaplugin& m = *front.plugins[i];
       double load;		
@@ -834,7 +835,7 @@ namespace zzub {
   void player::plugin_remove_pattern(int id, int pattern) {
     op_pattern_remove* redo = new op_pattern_remove(id, pattern);
     merge_backbuffer_flags(redo->copy_flags);
-    plugin_descriptor plugin = back.plugins[id]->descriptor;
+    //plugin_descriptor plugin = back.plugins[id]->descriptor;
     begin_plugin_operation(id);
     // remove all sequence events for this pattern in an undoable manner
     std::vector<std::pair<int, int> > remove_events;
@@ -998,8 +999,8 @@ namespace zzub {
     op_plugin_disconnect* redo = new op_plugin_disconnect(from_id, to_id, type);
     merge_backbuffer_flags(redo->copy_flags);
 
-    plugin_descriptor from_plugin = back.plugins[from_id]->descriptor;
-    plugin_descriptor to_plugin = back.plugins[to_id]->descriptor;
+    //plugin_descriptor from_plugin = back.plugins[from_id]->descriptor;
+    //plugin_descriptor to_plugin = back.plugins[to_id]->descriptor;
 
     begin_plugin_operation(to_id);
     begin_plugin_operation(from_id);
@@ -1554,7 +1555,7 @@ namespace zzub {
     int channels = w.get_stereo() ? 2 : 1;
     wave_buffer_type format = w.get_wave_format(level);
     int bytes_per_sample = sizeFromWaveFormat(format) * channels;
-    int num_samples = w.get_sample_count(level);
+    //int num_samples = w.get_sample_count(level);
     char* buffer = new char[bytes_per_sample * sample_count];
     memcpy(buffer, w.get_sample_ptr(level, target_offset), bytes_per_sample * sample_count);
     undo->samples = buffer;
