@@ -350,7 +350,7 @@ namespace zzub:
 		"Get name of specified audio device"
 		def get_name(int index, out string[max_len] name, int max_len=1024): no_python int
 
-		def get_supported_samplerates(int index, out int[maxrates] result, int maxrates): int
+		def get_supported_samplerates(int index, out int[maxrates] result, uint maxrates): int
 		def get_supported_output_channels(int index): int
 		def get_supported_input_channels(int index): int
 
@@ -601,7 +601,7 @@ namespace zzub:
 		def get_midi_output_device_count(): int
 		def get_midi_output_device(int index): string
 
-		def get_envelope_count(): int
+		def get_envelope_count(): uint
 		def get_envelope_flags(int index): int
 		def get_envelope_name(int index): string
 
@@ -728,7 +728,7 @@ namespace zzub:
 		def add_input(Plugin from_plugin, int type): int
 
 		"Disconnect two plugins"
-		def delete_input(Plugin from_plugin, int type)
+		def delete_input(Plugin from_plugin, int type)
 		#/*@}*/
 		#/** @name Plugin statistics 
 		#	Retreiving statistics is not exact unless the graph is locked.
@@ -832,7 +832,7 @@ namespace zzub:
 		def get_point_count(): int
 		def get_point(int index, out ushort x, out ushort y, out byte flags)
 		iterator get_point_list: for get_point in get_point_count
-		def set_point(int index, ushort x, ushort y, byte flags)
+		def set_point(uint index, ushort x, ushort y, byte flags)
 		def insert_point(int index)
 		def delete_point(int index)
 	
@@ -841,7 +841,7 @@ namespace zzub:
 		def get_index(): int
 		def load_sample(int level, int offset, int clear, string path, Input datastream): int
 		def save_sample(int level, Output datastream): int
-		def save_sample_range(int level, Output datastream, int start, int end): int
+		def save_sample_range(uint level, Output datastream, int start, int end): int
 		def clear(): int
 		def get_name(): string
 		def set_name(string name)
@@ -852,7 +852,7 @@ namespace zzub:
 		def get_volume(): float
 		def set_volume(float volume)
 		def get_envelope_count(): int
-		def set_envelope_count(int count)
+		def set_envelope_count(uint count)
 		def get_envelope(int index): Envelope
 		def set_envelope(int index, Envelope env)
 		def get_level_count(): int
@@ -1076,7 +1076,7 @@ namespace zzub:
 		def history_get_position(): int
 
 		"Returns the description of an operation in the undo buffer."
-		def history_get_description(int position): string	
+		def history_get_description(int position): string	
 		#/*@}*/
 		#/** @name Event connection binding methods"
 		#/*@{*/

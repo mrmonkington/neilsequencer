@@ -127,3 +127,4 @@ typedef zzub::outstream zzub_output_t;
 #include "player.h"
 #include "connections.h"
 
+#define _unused(x) ((void)x)

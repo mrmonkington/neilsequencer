@@ -40,8 +40,8 @@ struct zzub_flatapi_player : zzub::player {
   void *callbackTag;
 	
   std::vector<zzub_event_data_t> event_queue;
-  int read_event_queue;
-  int write_event_queue;
+  unsigned int read_event_queue;
+  unsigned int write_event_queue;
 	
   zzub_event_data_t *pop_event() {
     if (read_event_queue == write_event_queue)
@@ -928,7 +928,7 @@ extern "C"
     return midiouts.names[index].c_str();
   }
 
-  int zzub_plugin_get_envelope_count(zzub_plugin_t *plugin) {
+  unsigned int zzub_plugin_get_envelope_count(zzub_plugin_t *plugin) {
 
     operation_copy_flags flags;
     flags.copy_plugins = true;
@@ -1105,7 +1105,7 @@ extern "C"
   void zzub_plugin_set_pattern_value(zzub_plugin_t *plugin, int pattern, int group, int track, int column, int row, int value) {
     const zzub_parameter_t* param = zzub_plugin_get_parameter(plugin, group, track, column);
     assert((value >= param->value_min && value <= param->value_max) || value == param->value_none || (param->type == zzub::parameter_type_note && value == zzub::note_value_off));
-
+    _unused(param);
 
     plugin->_player->plugin_set_pattern_value(plugin->id, pattern, group, track, column, row, value);
   }
@@ -2006,9 +2006,11 @@ extern "C"
     return device && device->in_channels>0;
   }
 
-  int zzub_audiodriver_get_supported_samplerates(zzub_audiodriver_t* driver, int index, int* result, int maxrates) {
+  int zzub_audiodriver_get_supported_samplerates(zzub_audiodriver_t* driver, int index, int* result, unsigned int maxrates) {
     audiodevice* device = driver->getDeviceInfo(index);
-    if (maxrates > device->rates.size()) maxrates = device->rates.size();
+    if (maxrates > device->rates.size()) {
+      maxrates = device->rates.size();
+    }
     std::copy(device->rates.begin(), device->rates.begin() + maxrates, result);
     return device->rates.size();
   }
@@ -2101,7 +2103,6 @@ extern "C"
   int zzub_wave_load_sample(zzub_wave_t* wave, int level, int offset, 
 			    int clear, const char* path, 
 			    zzub_input_t* datastream) {
-    bool result = true;
     int loaded_samples = wave->_player->wave_load_sample(wave->wave, level, offset, clear != 0, path, datastream);
     return loaded_samples;
   }
@@ -2159,7 +2160,7 @@ extern "C"
     return wave->_player->back.wavetable.waves[wave->wave]->envelopes.size();
   }
 
-  void zzub_wave_set_envelope_count(zzub_wave_t* wave, int count) {
+  void zzub_wave_set_envelope_count(zzub_wave_t* wave, unsigned int count) {
 
     operation_copy_flags flags;
     flags.copy_wavetable = true;
@@ -2167,7 +2168,7 @@ extern "C"
 
     vector<envelope_entry> envelopes = wave->_player->back.wavetable.waves[wave->wave]->envelopes;
     if (count >= envelopes.size()) {
-      for (int i = envelopes.size(); i < count; i++) {
+      for (unsigned int i = envelopes.size(); i < count; i++) {
 	envelopes.push_back(envelope_entry());
       }
     } else
@@ -2281,7 +2282,7 @@ extern "C"
   }
 
   static sf_count_t outstream_read (void *ptr, sf_count_t count, void *user_data){
-    zzub::outstream* strm = (zzub::outstream*)user_data ;
+    //zzub::outstream* strm = (zzub::outstream*)user_data ;
     assert(false);
     return 0;
   }
@@ -2296,18 +2297,20 @@ extern "C"
     return strm->position();
   }
 
-  int zzub_wave_save_sample_range(zzub_wave_t* wave, int level, zzub_output_t* datastream, int start, int end) {
+  int zzub_wave_save_sample_range(zzub_wave_t* wave, unsigned int level, zzub_output_t* datastream, int start, int end) {
     operation_copy_flags flags;
     flags.copy_wavetable = true;
     wave->_player->merge_backbuffer_flags(flags);
 
     wave_info_ex& w = *wave->_player->back.wavetable.waves[wave->wave];
-    if (level < 0 || level >= w.levels.size()) return -1;
+    if (level < 0 || level >= w.levels.size()) {
+      return -1;
+    }
 
     wave_level_ex& l = w.levels[level];
 
     int channels = (w.flags & wave_flag_stereo) ?2:1;
-    int result = -1;
+    //int result = -1;
     SF_INFO sfinfo;
     memset(&sfinfo, 0, sizeof(sfinfo));
     sfinfo.samplerate = l.samples_per_second;
@@ -2366,8 +2369,8 @@ extern "C"
     unsigned char *samples = (unsigned char *)l.samples;
     int channels = w.get_stereo() ? 2 : 1;
     int bps = l.get_bytes_per_sample();
-    int bitsps = bps * 8;
-    wave_buffer_type format = (wave_buffer_type)l.format;
+    //int bitsps = bps * 8;
+    //wave_buffer_type format = (wave_buffer_type)l.format;
     // Find the peak in the samples buffer.
     int isample1 = 0;
     int isample2 = 0;
@@ -2412,8 +2415,8 @@ extern "C"
     int channels = w.get_stereo() ? 2 : 1;
     int bps = l.get_bytes_per_sample();
     int bitsps = bps * 8;
-    wave_buffer_type format = (wave_buffer_type)l.format;
-    float scaler = 1.0 / (1 << (bitsps - 1));
+    //wave_buffer_type format = (wave_buffer_type)l.format;
+    //float scaler = 1.0 / (1 << (bitsps - 1));
     // Find the peak in the samples buffer.
     int isample = 0;
     int max_sample = 0;
@@ -2459,7 +2462,7 @@ extern "C"
     int bps = l.get_bytes_per_sample();
     wave_buffer_type format = (wave_buffer_type)l.format;
     float scaler = 1.0f / (1<<(bitsps-1));
-    int samplecount = l.sample_count;
+    //int samplecount = l.sample_count;
     int samplerange = end - start;
     assert((start >= 0) && (start < samplecount));
     assert((end > start) && (end <= samplecount));
@@ -2486,6 +2489,10 @@ extern "C"
 	      break; // TODO
 	    case 4: 
 	      switch (format) {
+	      case wave_buffer_type_si16:
+		break;
+	      case wave_buffer_type_si24:
+		break;
 	      case wave_buffer_type_si32:
 		isample = *(int*)&samples[offset];
 		break;
@@ -2708,13 +2715,13 @@ extern "C"
       *flags = pt->flags;
   }
 
-  void zzub_envelope_set_point(zzub_envelope_t *env, int index, unsigned short x, unsigned short y, char flags) {
+  void zzub_envelope_set_point(zzub_envelope_t *env, unsigned int index, unsigned short x, unsigned short y, char flags) {
     envelope_point *pt = &env->points[index];
     if (index == 0)
       {
 	pt->x = 0;
       }
-    else if (index == (env->points.size()-1))
+    else if (index == (env->points.size() - 1))
       {
 	pt->x = 65535;
       }

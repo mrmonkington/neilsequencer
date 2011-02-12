@@ -85,7 +85,11 @@ namespace zzub {
 
     int read(void* v, int size) {
       int pos = position();
-      fread(v, size, 1, f);
+      size_t result;
+      result = fread(v, size, 1, f);
+      if (result != (unsigned int)size) {
+	fputs("Reading error", stderr);
+      }
       return position() - pos;
     }
 
@@ -114,8 +118,8 @@ namespace zzub {
   };
 
   struct mem_outstream : zzub::outstream {
-    int pos;
     std::vector<char> &buffer;
+    int pos;
 	
     mem_outstream(std::vector<char> &b) : buffer(b), pos(0) {}
 

@@ -79,7 +79,7 @@ namespace zzub {
   struct metaplugin_proxy {
     metaplugin_proxy(player* _playr, int _id):_player(_playr),id(_id){}
     player* _player;
-    int id;
+    unsigned int id;
   };
 
   struct metaplugin {
@@ -191,7 +191,7 @@ namespace zzub {
     vector<metaplugin*> plugins;
     vector<plugin_descriptor> work_order;
     vector<event_message> user_event_queue;
-    int user_event_queue_read, user_event_queue_write;
+    unsigned int user_event_queue_read, user_event_queue_write;
     int enable_event_queue;
     vector<midimapping> midi_mappings;
     vector<sequencer_track> sequencer_tracks;
