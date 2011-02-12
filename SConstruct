@@ -57,7 +57,7 @@ opts = Variables( 'options.conf', ARGUMENTS )
 opts.Add("PREFIX", 'Set the install "prefix" ( /path/to/PREFIX )', "/usr/local")
 opts.Add("LIBDIR", 'Set the install "libdir", will be concatenated to PREFIX', "/lib") 
 opts.Add("DESTDIR", 'Set the root directory to install into ( /path/to/DESTDIR )', "")
-opts.Add("USE_SIGNATURE", 'Use signature to bond plugins and host (strongly recommended)', False, None, bool_converter)
+opts.Add("USE_SIGNATURE", 'Use signature to bond plugins and host (strongly recommended)', True, None, bool_converter)
 opts.Add("SNDFILE", 'Support loading of waves via libsndfile', True, None, bool_converter)
 opts.Add("DEBUG", "Compile everything in debug mode if true", False, None, bool_converter)
 opts.Add("ZZUB_MODULE", "Compile module loading plugin (experimental)", False, None, bool_converter)
@@ -66,7 +66,7 @@ opts.Add("REVISION", 'Revision number (will be set automatically)', '0')
 opts.Add("SIGNATURE", 'Host signature (will be set automatically)', '')
 opts.Add("CONFIGURED", 'Version for which the build is configured (will be set automatically)', '')
 opts.Add("TOOLS", 'Compiler suite to use', 'default', None, tools_converter)
-opts.Add("LUNAR", 'Support Lunar plugins', posix or mac, None, bool_converter)
+opts.Add("LUNAR", 'Support Lunar plugins', posix, None, bool_converter)
 opts.Add("LLVMGCCPATH", 'Path to llvm-gcc', '')
 opts.Add("JACK", 'Support Jack Audio Connection Kit', False, None, bool_converter)
 opts.Add("AUDIOENGINE", 'Support Portaudio', "rtaudio", None, audioengine_converter)
@@ -117,22 +117,21 @@ env.Append(LIBPATH=['${ROOTPATH}/lib'])
 
 SetOption('num_jobs', env['JOBS'].replace('-j', '')) 
 
-if posix:
-    env.Append(CCFLAGS=[
-	    '-DPOSIX',
-    ])
-    env.Append(LINKFLAGS=[
-	    '--rpath%s' % str(env.Dir('${PREFIX}${LIBDIR}')),
-    ])
-    if os.uname()[0] == 'FreeBSD':
-	env.Append(CCFLAGS=[ '-I/usr/local/include' ])
-	env.Append(LINKFLAGS=[ '-L/usr/local/lib' ])
-	env['LIB_DL'] = env['LIB_RT'] = ''
-	env['LIB_COMPAT'] = 'compat'
-    else:
-	env['LIB_DL'] = 'dl'
-	env['LIB_RT'] = 'rt'
-	env['LIB_COMPAT'] = ''
+env.Append(CCFLAGS=[
+        '-DPOSIX',
+        ])
+env.Append(LINKFLAGS=[
+        '--rpath%s' % str(env.Dir('${PREFIX}${LIBDIR}')),
+        ])
+if os.uname()[0] == 'FreeBSD':
+    env.Append(CCFLAGS=[ '-I/usr/local/include' ])
+    env.Append(LINKFLAGS=[ '-L/usr/local/lib' ])
+    env['LIB_DL'] = env['LIB_RT'] = ''
+    env['LIB_COMPAT'] = 'compat'
+else:
+    env['LIB_DL'] = 'dl'
+    env['LIB_RT'] = 'rt'
+    env['LIB_COMPAT'] = ''
 
 gcc = env['CC'] == 'gcc'
 
@@ -182,16 +181,16 @@ import platform
 
 if x86_64:
     picLibBuilder = Builder(action = Action('$ARCOM'),
-						    emitter = '$LIBEMITTER',
-						    prefix = '$LIBPREFIX',
-						    suffix = '$LIBSUFFIX',
-						    src_suffix = '$OBJSUFFIX',
-						    src_builder = 'SharedObject')
+                            emitter = '$LIBEMITTER',
+                            prefix = '$LIBPREFIX',
+                            suffix = '$LIBSUFFIX',
+                            src_suffix = '$OBJSUFFIX',
+                            src_builder = 'SharedObject')
     env['BUILDERS']['StaticLibrary'] = picLibBuilder
     env['BUILDERS']['Library'] = picLibBuilder
     env.Append(CCFLAGS=[
 	    '-D__X86_64__'
-    ])
+            ])
 
 ######################################
 #
@@ -355,51 +354,48 @@ if (not is_cleaning()) and ('configure' in COMMAND_LINE_TARGETS):
 		    'CheckCPUFlag' : check_cpu_flag,
 	    }
     )
-    if not win32:
-	if not conf.CheckCHeader('zlib.h'):
-	    print "Error: no zlib development files seem to be installed."
-	    print "zlib libraries and headers are required for building."
-	    Exit(1)
-	if not conf.CheckCHeader('sndfile.h'):
-	    print "Error: no libsndfile development files seem to be installed."
-	    print "libsndfile libraries and headers are required for building."
-	    Exit(1)
-	if not conf.CheckCHeader('samplerate.h'):
-	    print "Error: no libsamplerate (libsrc) development files seem to be installed."
-	    print "libsamplerate (libsrc) libraries and headers are required for building."
-	    Exit(1)
-	if not conf.CheckCHeader('fftw3.h'):
-	    print "Error: no libfftw3 development files seem to be installed."
-	    print "libfftw3 libraries and headers are required for building."
-	    Exit(1)
-	boostgraphheaders = [
-		'boost/graph/adjacency_list.hpp',
-		'boost/graph/visitors.hpp',
-		'boost/graph/depth_first_search.hpp',
+    if not conf.CheckCHeader('zlib.h'):
+        print "Error: no zlib development files seem to be installed."
+        print "zlib libraries and headers are required for building."
+        Exit(1)
+    if not conf.CheckCHeader('sndfile.h'):
+        print "Error: no libsndfile development files seem to be installed."
+        print "libsndfile libraries and headers are required for building."
+        Exit(1)
+    if not conf.CheckCHeader('samplerate.h'):
+        print "Error: no libsamplerate (libsrc) development files seem to be installed."
+        print "libsamplerate (libsrc) libraries and headers are required for building."
+        Exit(1)
+    if not conf.CheckCHeader('fftw3.h'):
+        print "Error: no libfftw3 development files seem to be installed."
+        print "libfftw3 libraries and headers are required for building."
+        Exit(1)
+    boostgraphheaders = [
+        'boost/graph/adjacency_list.hpp',
+        'boost/graph/visitors.hpp',
+        'boost/graph/depth_first_search.hpp',
 	]
-	for header in boostgraphheaders:
-	    if not conf.CheckCXXHeader(header):
-		print "Error: no libboost-graph development files seem to be installed."
-		print "libboost-graph libraries and headers are required for building."
-		Exit(1)
-	if conf.CheckCHeader('CoreAudio/CoreAudio.h'):
-	    env['COREAUDIO'] = True
-	if conf.CheckCHeader('alsa/asoundlib.h'):
-	    env['ALSA'] = True
-	if conf.CheckCHeader('jack/jack.h'):
-	    env['JACK'] = True
-	if conf.CheckCHeader('sys/soundcard.h'):
-	    env['OSS'] = True
-	if conf.CheckCHeader('ladspa.h'):
-	    env['LADSPA'] = True
-	if conf.CheckCHeader('dssi.h') and conf.CheckCHeader('lo/lo.h'):
-	    env['DSSI'] = True
-	else:
-	    env['DSSI'] = False
-	if not sum([env['COREAUDIO'],env['ALSA'],env['JACK'],env['OSS']]):
-	    print "Error: no sound library development files seem to be installed."
-	    print "Libraries and headers for either ALSA, OSS, JACK or CoreAudio are required for building."
-	    Exit(1)
+    for header in boostgraphheaders:
+        if not conf.CheckCXXHeader(header):
+            print "Error: no libboost-graph development files seem to be installed."
+            print "libboost-graph libraries and headers are required for building."
+            Exit(1)
+    if conf.CheckCHeader('alsa/asoundlib.h'):
+        env['ALSA'] = True
+    if conf.CheckCHeader('jack/jack.h'):
+        env['JACK'] = True
+    if conf.CheckCHeader('sys/soundcard.h'):
+        env['OSS'] = True
+    if conf.CheckCHeader('ladspa.h'):
+        env['LADSPA'] = True
+    if conf.CheckCHeader('dssi.h') and conf.CheckCHeader('lo/lo.h'):
+        env['DSSI'] = True
+    else:
+        env['DSSI'] = False
+    if not sum([env['ALSA'], env['JACK'], env['OSS']]):
+        print "Error: no sound library development files seem to be installed."
+        print "Libraries and headers for either ALSA, OSS, JACK or CoreAudio are required for building."
+        Exit(1)
 
     if conf.CheckCPUFlag('sse'):
 	env['SSE'] = True
@@ -599,8 +595,6 @@ env.Depends(output, '${ROOTPATH}/tools/zidl')
 # SConscripts
 #
 #######################################
-
-vs_projects=[]
 
 Export(
 	'install_lib',

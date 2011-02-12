@@ -18,7 +18,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-Import('env', 'posix', 'install_lib', 'install')
+Import('env', 'install_lib', 'install')
 import glob
 
 #######################################
@@ -73,15 +73,14 @@ localenv.Append(LIBS=[
 localenv.Append(CCFLAGS=['-D_LIB','-D_LIBZZUB'])
 
 # neccessities
-if posix:	
-    localenv.Append(CCFLAGS=[
-	    '-Wno-deprecated',
-    ])
-    localenv.Append(LIBS=[
-	    'pthread',
-	    localenv['LIB_DL'],
-	    localenv['LIB_COMPAT'],
-    ])
+localenv.Append(CCFLAGS=[
+        '-Wno-deprecated',
+        ])
+localenv.Append(LIBS=[
+        'pthread',
+        localenv['LIB_DL'],
+        localenv['LIB_COMPAT'],
+        ])
 
 if localenv['USE_SIGNATURE'] == True:
     localenv.Append(CCFLAGS=[
@@ -103,79 +102,70 @@ localenv.Append(CPPPATH=[
 	'${PORTMIDI_SRC_PATH}/porttime'
 ])
 
-if posix:
-    # porttime and portmidi
-    files += [
-		    '${PORTMIDI_SRC_PATH}/porttime/porttime.c',
-		    '${PORTMIDI_SRC_PATH}/pm_common/pmutil.c',
-		    '${PORTMIDI_SRC_PATH}/pm_common/portmidi.c',
+# porttime and portmidi
+files += [
+    '${PORTMIDI_SRC_PATH}/porttime/porttime.c',
+    '${PORTMIDI_SRC_PATH}/pm_common/pmutil.c',
+    '${PORTMIDI_SRC_PATH}/pm_common/portmidi.c',
+    '${PORTMIDI_SRC_PATH}/porttime/ptlinux.c',
+    '${PORTMIDI_SRC_PATH}/pm_linux/pmlinux.c',
     ]
-
-    files += [
-        '${PORTMIDI_SRC_PATH}/porttime/ptlinux.c',
-        '${PORTMIDI_SRC_PATH}/pm_linux/pmlinux.c',
-	]
-    localenv.Append(CCFLAGS=[
-            '-DPM_CHECK_ERRORS',
-            '-DNEWBUFFER'
-            ])
-    if localenv["ALSA"] == True:
-        files += [ '${PORTMIDI_SRC_PATH}/pm_linux/pmlinuxalsa.c' ]
-        localenv.Append(LIBS=[ 'asound', ])
-        localenv.Append(CCFLAGS=[ '-DPMALSA', ])
+localenv.Append(CCFLAGS=[
+        '-DPM_CHECK_ERRORS',
+        '-DNEWBUFFER'
+        ])
+if localenv["ALSA"] == True:
+    files += [ '${PORTMIDI_SRC_PATH}/pm_linux/pmlinuxalsa.c' ]
+    localenv.Append(LIBS=[ 'asound', ])
+    localenv.Append(CCFLAGS=[ '-DPMALSA', ])
 
 
 #######################################
 # rtaudio
 #######################################
 
-if localenv['AUDIOENGINE'] == 'rtaudio':
-    files += [
-	    'driver_rtaudio.cpp',
+files += [
+    'driver_rtaudio.cpp',
     ]
 
-    localenv.Append(CCFLAGS=[
-	    '-DUSE_RTAUDIO',
-    ])
+localenv.Append(CCFLAGS=[
+        '-DUSE_RTAUDIO',
+        ])
 
-    localenv.SConscript('../rtaudio/SConscript')
-    localenv.Append(LIBS=[
-	    'rtaudio_static',
-    ])
-    localenv.Append(CPPPATH=[
-	    '../rtaudio',
-    ])
-    if localenv['ALSA'] == True:
-	localenv.Append(CCFLAGS=['-D__LINUX_ALSA__'])
-	localenv.Append(LIBS=['asound'])
-    if localenv['JACK'] == True:
-	localenv.Append(CCFLAGS=['-D__UNIX_JACK__'])
-	localenv.Append(LIBS=[ 'jack', localenv['LIB_RT'] ])
-    if localenv['OSS'] == True:
-	localenv.Append(CCFLAGS=['-D__LINUX_OSS__'])
+localenv.SConscript('../rtaudio/SConscript')
+localenv.Append(LIBS=[
+        'rtaudio_static',
+        ])
+localenv.Append(CPPPATH=[
+        '../rtaudio',
+        ])
+if localenv['ALSA'] == True:
+    localenv.Append(CCFLAGS=['-D__LINUX_ALSA__'])
+    localenv.Append(LIBS=['asound'])
+if localenv['JACK'] == True:
+    localenv.Append(CCFLAGS=['-D__UNIX_JACK__'])
+    localenv.Append(LIBS=[ 'jack', localenv['LIB_RT'] ])
+if localenv['OSS'] == True:
+    localenv.Append(CCFLAGS=['-D__LINUX_OSS__'])
 
-    if posix:
-	localenv.Append(LIBS=[
-		'pthread',
-		'm',
-	])
+localenv.Append(LIBS=[
+        'pthread',
+        'm',
+        ])
 
 #######################################
 # targets
 #######################################
 
 shlibsuffix = localenv['SHLIBSUFFIX']
-
-if posix:
-    localenv['SHLIBSUFFIX'] += '.' + env['LIBZZUB_VERSION']
+localenv['SHLIBSUFFIX'] += '.' + env['LIBZZUB_VERSION']
 libzzub = localenv.SharedLibrary('${LIB_BUILD_PATH}/zzub',files)
 installed_libzzub = install_lib(libzzub)
-if posix:
-    vcomps = env['LIBZZUB_VERSION'].split('.')
-    for i in range(len(vcomps)):
-	v = '.'.join(vcomps[:i])
-	if v:
-	    v = '.'+v
-	symlinkcmd = 'cd $TARGET.dir && rm -f $TARGET.name && ln -s $SOURCE.name $TARGET.name'
-	localenv.Command('${LIB_BUILD_PATH}/libzzub'+shlibsuffix+v, libzzub, symlinkcmd)
-	localenv.Command('${DESTDIR}${PREFIX}${LIBDIR}/libzzub'+shlibsuffix+v, installed_libzzub, symlinkcmd)
+vcomps = env['LIBZZUB_VERSION'].split('.')
+for i in range(len(vcomps)):
+    v = '.'.join(vcomps[:i])
+    if v:
+        v = '.'+v
+    symlinkcmd = 'cd $TARGET.dir && rm -f $TARGET.name && ln -s $SOURCE.name $TARGET.name'
+    localenv.Command('${LIB_BUILD_PATH}/libzzub'+shlibsuffix+v, libzzub, symlinkcmd)
+    localenv.Command('${DESTDIR}${PREFIX}${LIBDIR}/libzzub'+shlibsuffix+v, installed_libzzub, symlinkcmd)

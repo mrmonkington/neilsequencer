@@ -17,37 +17,19 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#if defined(_WIN32)
-#define NOMINMAX
-#include <windows.h>
-#endif
 #include <string>
 #include <vector>
 #include <algorithm>
 #include <cctype>
 #include <sstream>
 #include <iomanip>
-#if defined(USE_LIBMAD)
-#include <mad.h>
-#endif
-#if defined(USE_SNDFILE)
 #include <sndfile.h>
-#endif
-
 
 #include "common.h"
-
 #include "ccm.h"
-
 #include "zzub/zzub.h"
 
-#if defined(USE_RTAUDIO)
 #include "driver_rtaudio.h"
-#endif
-
-#if defined(USE_PORTAUDIO)
-#include "driver_portaudio.h"
-#endif
 
 #include "driver_silent.h"
 
@@ -1963,24 +1945,14 @@ extern "C"
 
   /** \brief Create an audio driver that uses the PortAudio API. */
   zzub_audiodriver_t* zzub_audiodriver_create_portaudio(zzub_player_t* player) {
-#if defined(USE_PORTAUDIO)
-    audiodriver_portaudio* driver = new audiodriver_portaudio();
-    driver->initialize(player);
-    return driver;
-#else
     return 0;
-#endif
   }
 
   /** \brief Create an audio driver that uses the RtAudio API. */
   zzub_audiodriver_t* zzub_audiodriver_create_rtaudio(zzub_player_t* player) {
-#if defined(USE_RTAUDIO)
     audiodriver_rtaudio* driver = new audiodriver_rtaudio();
     driver->initialize(player);
     return driver;
-#else
-    return 0;
-#endif
   }
 
   /** \brief Create a silent, non-processing audio driver that has one device with the specified properties. */
@@ -2340,9 +2312,6 @@ extern "C"
     return level->_player->back.wavetable.waves[level->wave]->levels[level->level].format;
   }
 
-
-#if defined(USE_SNDFILE)
-
   static sf_count_t outstream_filelen (void *user_data) {
     zzub::outstream* strm = (zzub::outstream*)user_data ;
     int pos = strm->position();
@@ -2374,11 +2343,7 @@ extern "C"
     return strm->position();
   }
 
-#endif
-
   int zzub_wave_save_sample_range(zzub_wave_t* wave, int level, zzub_output_t* datastream, int start, int end) {
-#if defined(USE_SNDFILE)
-
     operation_copy_flags flags;
     flags.copy_wavetable = true;
     wave->_player->merge_backbuffer_flags(flags);
@@ -2429,10 +2394,6 @@ extern "C"
     sf_write_raw(sf, sample_ptr, (end - start) * channels * bytes_per_sample);
     sf_close(sf); // so close it
     return 0;
-#else
-    fprintf(stderr,"zzub_wave_save_sample not implemented.\n");
-    return -1;
-#endif
   }
 
   int zzub_wave_save_sample(zzub_wave_t* wave, int level, zzub_output_t* datastream) {
