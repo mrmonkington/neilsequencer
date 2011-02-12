@@ -449,7 +449,6 @@ if (not is_cleaning()) and ('configure' in COMMAND_LINE_TARGETS):
     print "Finished configuration."
     print
     print "=== Using ===".center(50)
-    print "CoreAudio:".rjust(30),yesno[env['COREAUDIO'] == True]
     print "JACK:".rjust(30),yesno[env['JACK'] == True]
     print "ALSA:".rjust(30),yesno[env['ALSA'] == True]
     print "OSS:".rjust(30),yesno[env['OSS'] == True]
