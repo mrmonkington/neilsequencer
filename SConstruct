@@ -454,7 +454,6 @@ if (not is_cleaning()) and ('configure' in COMMAND_LINE_TARGETS):
     print "OSS:".rjust(30),yesno[env['OSS'] == True]
     print "Use SSE CPU Extension:".rjust(30),yesno[env['SSE'] == True]
     print "Use SSE2 CPU Extension:".rjust(30),yesno[env['SSE2'] == True]
-    print "Use Timestretching:".rjust(30),yesno[env['RUBBERBAND'] == True]
     print
     print "=== Components ===".center(50)
     print "Lunar DSP Host:".rjust(30),yesno[env['LUNAR'] == True]
