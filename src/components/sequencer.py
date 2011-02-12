@@ -713,7 +713,8 @@ class SequencerView(gtk.DrawingArea):
             p.set_name(name)
             m.add_pattern(p)
             for i in xrange(m.get_pattern_count()):
-                if m.get_pattern(i).get_name() == name:
+                pattern = m.get_pattern(i)
+                if pattern.get_name() == name:
                     t.set_event(start[1], 0x10+i)
                     break
             player.history_commit("new pattern")
@@ -1058,6 +1059,7 @@ class SequencerView(gtk.DrawingArea):
             self.set_cursor_pos(self.track, self.row - self.step)
             self.adjust_scrollbars()
         elif k == 'Right' or k == 'KP_Right':
+            pass
             self.set_cursor_pos(self.track, self.row + self.step)
             self.adjust_scrollbars()
         elif k == 'Up' or k == 'KP_Up':
@@ -1415,8 +1417,9 @@ class SequencerView(gtk.DrawingArea):
             track_length = 0
             for pos, value in track.get_event_list():
                 if value >= 0x10:
-                    pat = m.get_pattern(value-0x10)
+                    pat = m.get_pattern(value - 0x10)
                     length = pat.get_row_count()
+                    pat.destroy()
                 elif value == 0x00:
                     length = self.step
                 elif value == 0x01:
@@ -1631,8 +1634,8 @@ class SequencerView(gtk.DrawingArea):
                             px, py = layout.get_pixel_size()
                         ctx.set_foreground(colors['Text'])
                         drawable.draw_layout(ctx, x + 4, y + 4, layout)
-                        if pattern != None:
-                            pattern.destroy()
+                    if pattern != None:
+                        pattern.destroy()
                 elif value == 0x00 or value == 0x01:
                     x = (self.seq_left_margin +
                          ((position - self.startseqtime) * self.seq_row_size) /
