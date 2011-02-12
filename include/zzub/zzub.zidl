@@ -904,17 +904,6 @@ namespace zzub:
 		"plugin directories and optional blacklists are set up."
 		def initialize(int samplesPerSecond): int
 
-		"Loads a BMX from memory or file."
-		" "
-		"Load warnings and error messages are placed in the messages string."
-		def load_bmx(Input datastream, out string[maxLen] messages, int maxLen, int flags, float x, float y): int
-
-		"Saves a BMX to memory or file."
-		" "
-		"plugins is an array of ints containing the plugin ids to save in the song. If plugins is NULL,"
-		"everything in the running graph is saved. Optionally without waves, when save_waves is zero."
-		def save_bmx(Plugin[num_plugins] plugins, int num_plugins, int save_waves, Output datastream): int
-
 		"Load a project in CCM file format from disk."
 		def load_ccm(string fileName): int
 

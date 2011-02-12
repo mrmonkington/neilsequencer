@@ -4,8 +4,6 @@
 #include <cctype>
 #include <ctime>
 #include <iostream>
-#include "bmxreader.h"
-#include "bmxwriter.h"
 #include "timer.h"
 #include "dummy.h"
 #include "archive.h"

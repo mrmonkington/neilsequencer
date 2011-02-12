@@ -22,7 +22,7 @@
 #include <algorithm>
 #include <cctype>
 #include <sstream>
-#include <iomanip>
+#include <iomanip>s
 #include <sndfile.h>
 
 #include "common.h"
@@ -75,8 +75,6 @@ struct zzub_flatapi_player : zzub::player {
 
 };
 
-#include "bmxreader.h"
-#include "bmxwriter.h"
 #include "recorder.h"
 #include "archive.h"
 #include "tools.h"
@@ -247,51 +245,6 @@ extern "C"
   zzub_pluginloader_t *zzub_player_get_pluginloader_by_name(zzub_player_t *player, const char* name) {
     if (!name) return 0;
     return player->plugin_get_info(name);
-  }
-
-  const int bmx_flag_ignore_patterns = 1;
-  const int bmx_flag_ignore_sequences = 2;
-  const int bmx_flag_ignore_waves = 4;
-
-  int zzub_player_load_bmx(zzub_player_t *player, zzub_input_t* datastream, char* messages, int maxLen, int flags, float x, float y) {
-    BuzzReader f(datastream);
-
-    if (flags & bmx_flag_ignore_patterns) f.ignorePatterns = true;
-    if (flags & bmx_flag_ignore_sequences) f.ignoreSequences = true;
-    if (flags & bmx_flag_ignore_waves) f.ignoreWaves = true;
-    f.offsetX = x;
-    f.offsetY = y;
-
-    bool result = f.readPlayer(player);
-		
-    if (maxLen > 0) {
-      string messageText = f.lastError + f.lastWarning;
-      strncpy(messages, messageText.c_str(), maxLen - 1);
-    }
-    if (!result) {
-      cerr << "Errors:" << endl << f.lastError << endl << endl;
-      cerr << "Warnings:" << endl << f.lastWarning << endl;
-
-      return -1;
-    }
-
-    return 0;
-  }
-
-  int zzub_player_save_bmx(zzub_player_t *player, const zzub_plugin_t** _plugins, int num_plugins, int save_waves, zzub_output_t* datastream) {
-
-    // incoming plugins are plugin_id's. bmxwriter takes plugin_descriptors, so lets remap
-    std::vector<zzub::plugin_descriptor> plugins(num_plugins);
-    for (int i = 0; i < num_plugins; i++) {
-      const zzub_plugin_t* plugin = _plugins[i];
-      metaplugin& m = *player->front.plugins[plugin->id];
-      plugins[i] = m.descriptor;
-    }
-    BuzzWriter f(datastream);
-    if (!f.writePlayer(player, plugins, save_waves?true:false)) {
-      return -1;
-    }
-    return 0;
   }
 
   int zzub_player_load_ccm(zzub_player_t *player, const char* fileName) {

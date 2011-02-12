@@ -23,8 +23,6 @@
 #include <cctype>
 #include <ctime>
 #include <sstream>
-#include "bmxreader.h"
-#include "bmxwriter.h"
 #include "timer.h"
 #include "dummy.h"
 #include "archive.h"

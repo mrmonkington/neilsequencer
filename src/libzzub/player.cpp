@@ -22,25 +22,16 @@
 #include <cctype>
 #include <ctime>
 #include <sstream>
-#include "bmxreader.h"
-#include "bmxwriter.h"
 #include "dummy.h"
 #include "archive.h"
 #include "tools.h"
 
-#if defined(USE_LIBMAD)
-#include <mad.h>
-#endif
-#if defined(USE_SNDFILE)
 #include <sndfile.h>
-#endif
 
 #include "import.h"
 
-#if defined(POSIX)
 #include <dirent.h>
 #include <sys/stat.h>
-#endif
 
 #include "sseoptimization.h"
 

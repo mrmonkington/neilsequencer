@@ -26,7 +26,6 @@
 #include <FLAC/all.h>
 
 #include "ccm.h"
-#include "bmxreader.h"
 #include "archive.h"
 
 #if defined(_MAX_PATH)

@@ -30,8 +30,6 @@ import glob
 localenv = env.Clone()
 
 files = [
-	'bmxreader.cpp',
-	'bmxwriter.cpp',
 	'compress.cpp',
 	'decompress.cpp',
 	'dummy.cpp',
