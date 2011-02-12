@@ -18,7 +18,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-Import('pluginenv', 'build_plugin', 'install', 'mac', 'install_lib', 'win32', 'env')
+Import('pluginenv', 'build_plugin', 'install', 'install_lib', 'env')
 
 import os
 
@@ -31,8 +31,6 @@ if pluginenv["LUNAR"] == True:
 	lunarstdfiles = [
 		'lunarstd.cpp',
 	]
-	if win32:
-		lunarstdfiles.append('lunarstd.def')
 	lunarstd = lunarstdenv.SharedLibrary('${LIB_BUILD_PATH}/lunarstd', lunarstdfiles)[0]
 	install_lib(lunarstd)
 
@@ -62,13 +60,7 @@ if pluginenv["LUNAR"] == True:
 		'-DSHLIBSUFFIX="\\"%s\\""' % pluginenv['SHLIBSUFFIX'],
 		'-DUSE_LUNAR',
 	])
-	
-	if mac:
-		# XXX: is this neccessary?
-		pluginenv.Append(CCFLAGS=[
-			'-D__STDC_LIMIT_MACROS',
-		])
-	
+		
 	install('${DESTDIR}${PREFIX}/include/lunar', [
 		'include/lunar/fx.hpp',
 		'include/lunar/fx.h',

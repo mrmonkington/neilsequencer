@@ -25,8 +25,6 @@ import os, glob, sys, time, platform
 import distutils.sysconfig
 
 posix = os.name == 'posix'
-win32 = os.name == 'nt'
-mac = (os.name == 'mac') or (sys.platform == 'darwin')
 linux = sys.platform == 'linux2'
 x86_64 = platform.machine() == 'x86_64'
 
@@ -59,21 +57,17 @@ opts = Variables( 'options.conf', ARGUMENTS )
 opts.Add("PREFIX", 'Set the install "prefix" ( /path/to/PREFIX )', "/usr/local")
 opts.Add("LIBDIR", 'Set the install "libdir", will be concatenated to PREFIX', "/lib") 
 opts.Add("DESTDIR", 'Set the root directory to install into ( /path/to/DESTDIR )', "")
-opts.Add("ASIO", 'Support ASIO', win32 == True, None, bool_converter)
-opts.Add("USE_SIGNATURE", 'Use signature to bond plugins and host (strongly recommended)', True, None, bool_converter)
+opts.Add("USE_SIGNATURE", 'Use signature to bond plugins and host (strongly recommended)', False, None, bool_converter)
 opts.Add("SNDFILE", 'Support loading of waves via libsndfile', True, None, bool_converter)
 opts.Add("DEBUG", "Compile everything in debug mode if true", False, None, bool_converter)
-opts.Add("BUZZ2ZZUB", "Compile buzz2zzub", win32 == True, None, bool_converter)
 opts.Add("ZZUB_MODULE", "Compile module loading plugin (experimental)", False, None, bool_converter)
 opts.Add("ZZUB_STREAM", "Compile stream plugins", True, None, bool_converter)
-opts.Add("BMPCCM", "Compile bmp-ccm plugin", False, None, bool_converter)
 opts.Add("REVISION", 'Revision number (will be set automatically)', '0')
 opts.Add("SIGNATURE", 'Host signature (will be set automatically)', '')
 opts.Add("CONFIGURED", 'Version for which the build is configured (will be set automatically)', '')
 opts.Add("TOOLS", 'Compiler suite to use', 'default', None, tools_converter)
 opts.Add("LUNAR", 'Support Lunar plugins', posix or mac, None, bool_converter)
 opts.Add("LLVMGCCPATH", 'Path to llvm-gcc', '')
-opts.Add("COREAUDIO", 'Support CoreAudio', False, None, bool_converter)
 opts.Add("JACK", 'Support Jack Audio Connection Kit', False, None, bool_converter)
 opts.Add("AUDIOENGINE", 'Support Portaudio', "rtaudio", None, audioengine_converter)
 opts.Add("OSS", 'Support OSS', False, None, bool_converter)
@@ -81,14 +75,10 @@ opts.Add("ALSA", 'Support ALSA', False, None, bool_converter)
 opts.Add("LUNARTARGET", 'Target for Lunar (llvm,gcc)', 'gcc')
 opts.Add("SSE", "Support SSE instructions", False, None, bool_converter)
 opts.Add("SSE2", "Support SSE2 instructions", False, None, bool_converter)
-opts.Add("MP3", "Support loading of MP3 samples", linux, None, bool_converter)
 opts.Add("LADSPA", "Support LADSPA plugins", False, None, bool_converter)
-opts.Add("RUBBERBAND", "Support timestretching with librubberband", False, None, bool_converter)
 opts.Add("DSSI", "Support DSSI plugins", False, None, bool_converter)
 opts.Add("JOBS", "Number of threads to compile with", '2') 
 opts.Add("PYZZUB", "Support pyzzub", True, None, bool_converter)
-opts.Add(EnumVariable('MSVS_VERSION', 'MS Visual C++ version', None,
-                      allowed_values=('7.1', '8.0', '9.0')))
 
 env = Environment(ENV = os.environ, options = opts)
 
@@ -268,7 +258,7 @@ def install_root(source):
 
 def install_lib(source):
     result = install(libpath, source)
-    if posix and (not mac) and (not env['DESTDIR']):
+    if posix and (not env['DESTDIR']):
 	env.AddPostAction(result, env.LdConfig(libpath))
     return result
 def install_python_extension(name,files):
@@ -280,15 +270,10 @@ def install_plugin(source):
 def install_plugin_help(name, files):
     return install("${DESTDIR}${PREFIX}/share/doc/zzub/plugins/"+name, files, 0644)
 
-env['DSPLIB_SRC_PATH'] = '${ROOTPATH}/src/dsplib'
-env['ASIOSDK_SRC_PATH'] = '${ROOTPATH}/src/ASIOSDK2'
 env['PORTMIDI_SRC_PATH'] = '${ROOTPATH}/src/portmidi'
 env['LIBZZUB_SRC_PATH'] = '${ROOTPATH}/src/libzzub'
 env['MINIZIP_SRC_PATH'] = '${ROOTPATH}/src/minizip'
 env['PLUGINS_SRC_PATH'] = '${ROOTPATH}/src/plugins'
-env['RUBBERBAND_SRC_PATH'] = '${ROOTPATH}/src/rubberband'
-env['CCMPLAYER_SRC_PATH'] = '${ROOTPATH}/src/ccmplayer'
-env['BMPCCM_SRC_PATH'] = '${ROOTPATH}/src/bmp-ccm'
 env['LUNAR_SCRIPT_PATH'] = '${ROOTPATH}/share/zzub/lunar'
 env['PYZZUB_SRC_PATH'] = '${ROOTPATH}/src/pyzzub'
 env['LANTERNFISH_SRC_PATH'] = '${ROOTPATH}/src/lanternfish'
@@ -311,11 +296,8 @@ env.Append(CPPPATH=['${ROOTPATH}/include'])
 ######################################
 
 USE_SNDFILE = env['SNDFILE']
-USE_ASIO = env['ASIO']
 
 def check_has_executable(conf, name):
-    if win32:
-	name += '.exe'
     conf.Message("Checking for %s in PATH... " % name)
     for path in os.environ['PATH'].split(os.pathsep):
 	fullpath = os.path.join(path,name)
@@ -629,9 +611,8 @@ Export(
 	'install_plugin_help',
 	'install_python_extension',
 	'gcc',
-	'posix','win32','mac',
+	'posix',
 	'env',
-	'vs_projects',
 )
 
 # generate signature
@@ -640,7 +621,6 @@ env.Signature(target='include/zzub/signature.h',source='options.conf')
 env.SConscript('${LANTERNFISH_SRC_PATH}/SConscript')
 env.SConscript('${LIBZZUB_SRC_PATH}/SConscript')
 env.SConscript('${PLUGINS_SRC_PATH}/SConscript')
-env.SConscript('${BMPCCM_SRC_PATH}/SConscript')
 env.SConscript('${PYZZUB_SRC_PATH}/SConscript')
 
 #######################################
@@ -648,13 +628,6 @@ env.SConscript('${PYZZUB_SRC_PATH}/SConscript')
 # Rest
 #
 #######################################
-
-if hasattr(env, 'MSVSSolution'):
-    env.MSVSSolution(
-	    target='zzub' + env['MSVSSOLUTIONSUFFIX'],
-	    projects=vs_projects,
-	    variant=[]
-    )
 
 # install zzub plugin and type headers
 install(includepath+'/zzub', 'include/zzub/plugin.h')

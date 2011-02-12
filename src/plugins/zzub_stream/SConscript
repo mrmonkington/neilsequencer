@@ -18,12 +18,12 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-Import('pluginenv', 'build_plugin', 'win32', 'posix')
+Import('pluginenv', 'build_plugin')
 
 if pluginenv['ZZUB_STREAM']:
 	# make sure libmad.lib is in 
-	pluginenv.Append(LIBS = [ "libmad_static", "sndfile" ] );
-	pluginenv.Append(CPPPATH = [ "../../libmad", "resampler" ] );
+	pluginenv.Append(LIBS = [ "libmad", "sndfile" ] );
+	pluginenv.Append(CPPPATH = [ "resampler" ] );
 
 	build_plugin(pluginenv, 'zzub_stream', files=[
 			'main.cpp',

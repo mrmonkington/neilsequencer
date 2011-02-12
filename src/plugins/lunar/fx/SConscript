@@ -18,7 +18,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-Import('env','install','liblunarpath','win32')
+Import('env','install','liblunarpath')
 import glob, os
 
 #######################################
@@ -165,8 +165,6 @@ for name in os.listdir(basepath):
 						elif env['LUNARTARGET'] == 'gcc':
 							mpath += modenv['SHLIBSUFFIX']
 							sources = []
-							if win32:
-									sources.append('fx.def')
 							for s in m.getElementsByTagName('source'):
 								slang = s.getAttribute("language")
 								spath = os.path.join(fullpath,str(s.getAttribute("ref")))

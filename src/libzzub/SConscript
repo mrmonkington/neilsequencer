@@ -18,7 +18,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-Import('env', 'posix', 'win32', 'mac', 'install_lib', 'install', 'vs_projects')
+Import('env', 'posix', 'install_lib', 'install')
 import glob
 
 #######################################
@@ -82,10 +82,6 @@ if posix:
 	    localenv['LIB_DL'],
 	    localenv['LIB_COMPAT'],
     ])
-elif win32:
-    localenv.Append(LIBS=[
-	    'oleaut32'
-    ])
 
 if localenv['USE_SIGNATURE'] == True:
     localenv.Append(CCFLAGS=[
@@ -99,26 +95,6 @@ if localenv['SNDFILE']:
     ])
     localenv.Append(CCFLAGS=[
 	    '-DUSE_SNDFILE',
-    ])
-
-if localenv['RUBBERBAND']:
-    localenv.SConscript('../rubberband/SConscript')
-    localenv.Append(LIBS=[
-	    'rubberband_static',
-	    'fftw3',
-	    'samplerate',
-	    'fftw3f',
-    ])
-    localenv.Append(CPPPATH=[
-	    '../rubberband',
-    ])
-    localenv.Append(CCFLAGS=[
-	    '-DUSE_RUBBERBAND',
-    ])
-
-if localenv['BUZZ2ZZUB'] == True:
-    localenv.Append(CCFLAGS=[
-	    '-DBUZZ2ZZUB',
     ])
 
 # portmidi support
@@ -135,158 +111,18 @@ if posix:
 		    '${PORTMIDI_SRC_PATH}/pm_common/portmidi.c',
     ]
 
-    if localenv['COREAUDIO'] == True:
-	files += [
-		'${PORTMIDI_SRC_PATH}/pm_mac/pmmac.c', 
-		'${PORTMIDI_SRC_PATH}/pm_mac/pmmacosxcm.c',
-		'${PORTMIDI_SRC_PATH}/porttime/ptmacosx_cf.c',
-	]
-	localenv.Append(LINKFLAGS=[
-		'-framework', 'CoreMIDI',
-		'-framework', 'CoreFoundation',
-		'-framework', 'CoreAudio'
-	])
-	localenv.Append(CCFLAGS=[
-		'-DPM_CHECK_ERRORS',
-		'-DNEWBUFFER'
-	])
-    else:
-	files += [
-		'${PORTMIDI_SRC_PATH}/porttime/ptlinux.c',
-		'${PORTMIDI_SRC_PATH}/pm_linux/pmlinux.c',
-	]
-	localenv.Append(CCFLAGS=[
-		'-DPM_CHECK_ERRORS',
-		'-DNEWBUFFER'
-	])
-	if localenv["ALSA"] == True:
-	    files += [ '${PORTMIDI_SRC_PATH}/pm_linux/pmlinuxalsa.c' ]
-	    localenv.Append(LIBS=[ 'asound', ])
-	    localenv.Append(CCFLAGS=[ '-DPMALSA', ])
-
-elif win32:
-    if cl:
-	localenv.Append(LIBS=[
-		'portmidi',			
-		'porttime',
-	])
-    else:
-	# porttime and portmidi
-	localenv.Prepend(CPPPATH = [
-		'${PORTMIDI_SRC_PATH}/pm_common',
-		'${PORTMIDI_SRC_PATH}/porttime'
-	])
-	localenv.Append(CPPDEFINES = {
-		'NEWBUFFER': None
-	})
-	files += [
-			'${PORTMIDI_SRC_PATH}/porttime/porttime.c',
-			'${PORTMIDI_SRC_PATH}/porttime/ptwinmm.c',
-			'${PORTMIDI_SRC_PATH}/pm_common/pmutil.c',
-			'${PORTMIDI_SRC_PATH}/pm_common/portmidi.c',
-			'${PORTMIDI_SRC_PATH}/pm_win/pmwin.c',
-			'${PORTMIDI_SRC_PATH}/pm_win/pmwinmm.c',
-	]
-	localenv.AppendUnique(LIBS=[
-		'winmm'
-	])
-
-
-#######################################
-# portaudio
-#######################################
-
-if localenv['AUDIOENGINE'] == 'portaudio':
-
     files += [
-	    'driver_portaudio.cpp',
-    ]
-
+        '${PORTMIDI_SRC_PATH}/porttime/ptlinux.c',
+        '${PORTMIDI_SRC_PATH}/pm_linux/pmlinux.c',
+	]
     localenv.Append(CCFLAGS=[
-	    '-DUSE_PORTAUDIO',
-    ])
-    localenv['PORTAUDIO_SRC_PATH'] = '../portaudio'
-    # add portaudio dependencies
-    localenv.Append(CCFLAGS=[
-	    '-DPA_LITTLE_ENDIAN', # set this to make sure amd64 is happy
-    ])
-
-    files += [
-	    '${PORTAUDIO_SRC_PATH}/src/common/pa_allocation.c',
-	    '${PORTAUDIO_SRC_PATH}/src/common/pa_converters.c',
-	    '${PORTAUDIO_SRC_PATH}/src/common/pa_cpuload.c',
-	    '${PORTAUDIO_SRC_PATH}/src/common/pa_debugprint.c',
-	    '${PORTAUDIO_SRC_PATH}/src/common/pa_dither.c',
-	    '${PORTAUDIO_SRC_PATH}/src/common/pa_front.c',
-	    '${PORTAUDIO_SRC_PATH}/src/common/pa_process.c',
-	    '${PORTAUDIO_SRC_PATH}/src/common/pa_skeleton.c',
-	    '${PORTAUDIO_SRC_PATH}/src/common/pa_stream.c',
-	    '${PORTAUDIO_SRC_PATH}/src/common/pa_trace.c',
-	    '${PORTAUDIO_SRC_PATH}/src/common/pa_ringbuffer.c',
-    ]
-
-    if posix:
-	files += [
-		'${PORTAUDIO_SRC_PATH}/src/os/unix/pa_unix_hostapis.c',
-		'${PORTAUDIO_SRC_PATH}/src/os/unix/pa_unix_util.c',
-		'${PORTAUDIO_SRC_PATH}/src/hostapi/alsa/pa_linux_alsa.c',
-		'${PORTAUDIO_SRC_PATH}/src/hostapi/oss/pa_unix_oss.c',
-		'${PORTAUDIO_SRC_PATH}/src/hostapi/jack/pa_jack.c',
-	]
-	localenv.Append(LIBS=[
-		'asound',
-		'pthread',
-		'rt',
-		'm',
-		'jack',
-	])
-	localenv.Append(CPPPATH=[
-		'${PORTAUDIO_SRC_PATH}/include',
-		'${PORTAUDIO_SRC_PATH}/src/common',
-		'${PORTAUDIO_SRC_PATH}/src/os/unix',
-	])
-	localenv.Append(CCFLAGS=[
-		'-DPA_USE_ALSA',
-		'-DPA_USE_JACK',
-		'-DPA_USE_OSS',
-		'-DHAVE_LINUX_SOUNDCARD_H',
-	])
-
-    elif win32:
-	files += [
-		'${PORTAUDIO_SRC_PATH}/src/os/win/pa_win_hostapis.c',
-		'${PORTAUDIO_SRC_PATH}/src/os/win/pa_win_util.c',
-		#'${PORTAUDIO_SRC_PATH}/src/os/win/pa_x86_plain_converters.c',
-		'${PORTAUDIO_SRC_PATH}/src/hostapi/wmme/pa_win_wmme.c',
-	]
-	localenv.Append(CPPPATH=[
-		'${PORTAUDIO_SRC_PATH}/include',
-		'${PORTAUDIO_SRC_PATH}/src/common',
-	])
-	localenv.Append(CCFLAGS=[
-		'-DPA_NO_DS',
-	])
-
-	files += [
-		'${PORTAUDIO_SRC_PATH}/src/hostapi/asio/iasiothiscallresolver.cpp',
-		'${PORTAUDIO_SRC_PATH}/src/hostapi/asio/pa_asio.cpp',
-		'${ASIOSDK_SRC_PATH}/common/asio.cpp',
-		'${ASIOSDK_SRC_PATH}/host/asiodrivers.cpp',
-		'${ASIOSDK_SRC_PATH}/host/pc/asiolist.cpp',
-	]
-
-	localenv.Append(CPPPATH=[
-		'${ASIOSDK_SRC_PATH}/common',
-		'${ASIOSDK_SRC_PATH}/host',
-		'${ASIOSDK_SRC_PATH}/host/pc',
-	])
-
-	localenv.Append(LIBS=[
-		'advapi32',
-		'ole32',
-		'winmm',
-	])
-
+            '-DPM_CHECK_ERRORS',
+            '-DNEWBUFFER'
+            ])
+    if localenv["ALSA"] == True:
+        files += [ '${PORTMIDI_SRC_PATH}/pm_linux/pmlinuxalsa.c' ]
+        localenv.Append(LIBS=[ 'asound', ])
+        localenv.Append(CCFLAGS=[ '-DPMALSA', ])
 
 
 #######################################
@@ -309,33 +145,6 @@ if localenv['AUDIOENGINE'] == 'rtaudio':
     localenv.Append(CPPPATH=[
 	    '../rtaudio',
     ])
-
-    if env['MP3'] == True:
-	localenv.SConscript('../libmad/SConscript')
-	localenv.Append(LIBS=[
-		'libmad_static',
-	])
-	localenv.Append(CPPPATH=[
-		'../libmad',
-	])
-	localenv.Append(CCFLAGS=[
-		'-DUSE_LIBMAD',
-	])
-
-    if win32:
-	localenv.Append(CCFLAGS=[
-		'-D__WINDOWS_ASIO__',
-		'-D__WINDOWS_DS__',
-		'-D__WINDOWS_SILENT__',
-	])
-	localenv.Append(LIBS=[
-		'advapi32',
-		'ole32',
-		'dsound',
-	])
-
-    if localenv['COREAUDIO'] == True:
-	localenv.Append(CCFLAGS=['-D__MACOSX_CORE__'])
     if localenv['ALSA'] == True:
 	localenv.Append(CCFLAGS=['-D__LINUX_ALSA__'])
 	localenv.Append(LIBS=['asound'])
@@ -355,21 +164,6 @@ if localenv['AUDIOENGINE'] == 'rtaudio':
 # targets
 #######################################
 
-if win32:
-    libzzub_static = localenv.Library('${LIB_BUILD_PATH}/zzub_static',files)
-
-if hasattr(localenv, 'MSVSProject'):
-    localenv.MSVSProject(target = 'libzzub_static' + localenv['MSVSPROJECTSUFFIX'],
-	    srcs = glob.glob('*.cpp'),
-	    incs = glob.glob('*.h'),
-	    buildtarget = libzzub_static,
-	    variant = 'Debug',
-	    auto_build_solution=0)
-    vs_projects+=['src/libzzub/libzzub_static' + localenv.subst('$MSVSPROJECTSUFFIX') ]
-
-if win32:
-    files.append('libzzub.def')
-
 shlibsuffix = localenv['SHLIBSUFFIX']
 
 if posix:
@@ -385,12 +179,3 @@ if posix:
 	symlinkcmd = 'cd $TARGET.dir && rm -f $TARGET.name && ln -s $SOURCE.name $TARGET.name'
 	localenv.Command('${LIB_BUILD_PATH}/libzzub'+shlibsuffix+v, libzzub, symlinkcmd)
 	localenv.Command('${DESTDIR}${PREFIX}${LIBDIR}/libzzub'+shlibsuffix+v, installed_libzzub, symlinkcmd)
-
-if hasattr(localenv, 'MSVSProject'):
-    localenv.MSVSProject(target = 'libzzub' + localenv['MSVSPROJECTSUFFIX'],
-	    srcs = glob.glob('*.cpp'),
-	    incs = glob.glob('*.h'),
-	    buildtarget = libzzub[0],   # len(libzzub)==3, but we need only 1
-	    variant = 'Debug',
-	    auto_build_solution=0)
-    vs_projects+=['src/libzzub/libzzub' + localenv.subst('$MSVSPROJECTSUFFIX') ]
