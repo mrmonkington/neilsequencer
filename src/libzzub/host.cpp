@@ -34,12 +34,12 @@ namespace zzub {
     _plugin = plug;
 
     aux_buffer.resize(2);
-    for (int c = 0; c < aux_buffer.size(); ++c) {
+    for (unsigned int c = 0; c < aux_buffer.size(); ++c) {
       aux_buffer[c].resize(zzub::buffer_size * sizeof(float) * 4);
     }
 
     feedback_buffer.resize(2);
-    for (int c = 0; c < feedback_buffer.size(); ++c) {
+    for (unsigned int c = 0; c < feedback_buffer.size(); ++c) {
       feedback_buffer[c].resize(zzub::buffer_size * sizeof(float) * 2);
     }
   }
@@ -87,7 +87,7 @@ namespace zzub {
   }
 
   void host::clear_auxiliary_buffer() { 
-    for (int c = 0; c < aux_buffer.size(); ++c) {
+    for (unsigned int c = 0; c < aux_buffer.size(); ++c) {
       std::fill(aux_buffer[c].begin(), aux_buffer[c].end(), 0.0f);
     }
   }
@@ -433,7 +433,7 @@ namespace zzub {
     handlers.erase(i);
 
     // clear events in queue using this handler
-    int read_pos = plugin_player->user_event_queue_read;
+    unsigned int read_pos = plugin_player->user_event_queue_read;
     while (read_pos != plugin_player->user_event_queue_write) {
       event_message& ev = plugin_player->user_event_queue[read_pos];
       if (ev.event == handler) ev.event = 0;

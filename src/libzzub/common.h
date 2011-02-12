@@ -17,9 +17,6 @@
 */
 
 #pragma once
-#if !defined(__GNUC__)
-#pragma warning (disable:4786)	// Disable VC6 long name warning for some STL objects
-#endif
 
 #include <errno.h> 
 #include <pthread.h>
