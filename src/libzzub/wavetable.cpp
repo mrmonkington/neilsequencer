@@ -19,9 +19,6 @@
 #include <algorithm>
 #include "common.h"
 #include "tools.h"
-#if defined(USE_RUBBERBAND)
-#include "rubberband/RubberBandStretcher.h"
-#endif
 
 namespace zzub {
 
@@ -349,93 +346,7 @@ namespace zzub {
       create_wave_range(level, fromSample+numSamples, lastrangesize, &lastrange);
 
     reallocate_level(level, newsize);
-
-#if defined(USE_RUBBERBAND)
-    {
-      using namespace RubberBand;
-      double ratio = (double)newSize / (double)numSamples;
-      RubberBandStretcher::Options options = RubberBandStretcher::OptionProcessOffline 
-	| RubberBandStretcher::OptionTransientsCrisp 
-	//~ | RubberBandStretcher::OptionTransientsSmooth 
-	| RubberBandStretcher::OptionPhaseAdaptive
-	| RubberBandStretcher::OptionThreadingAuto 
-	| RubberBandStretcher::OptionWindowStandard;
-      if ((fromSample == 0) && (numSamples == size)) {
-	options |= RubberBandStretcher::OptionStretchElastic;
-      } else {
-	options |= RubberBandStretcher::OptionStretchPrecise;
-      }
-      RubberBand::RubberBandStretcher stretcher(samplerate, channels, options, ratio);
-      stretcher.setExpectedInputDuration(numSamples);
-      stretcher.setMaxProcessSize(1024);
-		
-      const int BLOCKSIZE = 1024;
-		
-      float audio[2][BLOCKSIZE];		
-      float *buf[] = { &audio[0][0], &audio[1][0] };
-		
-      int toprocess = (int)numSamples;
-      int processed = 0;
-		
-      // first, study
-      while (toprocess > 0) {
-	int blocksize = std::min(toprocess, BLOCKSIZE);
-	for (int i = 0; i < channels; ++i) {
-	  CopySamples(oldrange, &audio[i][0], blocksize, format, zzub::wave_buffer_type_f32, channels, 1, processed*channels+i, 0);
-	}
-	std::cout << "studying " << blocksize << " blocks at @" << processed << " (" << channels << " channels, final = " << (toprocess == blocksize) << ")" << std::endl;
-	stretcher.study(buf, blocksize, toprocess == blocksize);
-	toprocess -= blocksize;
-	processed += blocksize;
-      }
-		
-      toprocess = (int)numSamples;
-      processed = 0;
-      int written = 0;
-      int startpos = (int)fromSample;
-		
-      void *targetptr = get_sample_ptr(level);
-		
-      while (true)
-	{
-	  if (stretcher.available() == -1) {
-	    std::cout << "stretch is done." << std::endl;
-	    break;
-	  }
-	  if (stretcher.getSamplesRequired())
-	    {
-	      int blocksize = std::min(toprocess, std::min((int)stretcher.getSamplesRequired(), BLOCKSIZE));
-	      for (int i = 0; i < channels; ++i) {
-		CopySamples(oldrange, &audio[i][0], blocksize, format, zzub::wave_buffer_type_f32, channels, 1, processed*channels+i, 0);
-	      }
-	      std::cout << "processing " << blocksize << " blocks at @" << processed << " (" << channels << " channels, final = " << (toprocess == blocksize) << ")" << std::endl;
-	      stretcher.process(buf, blocksize, toprocess == blocksize);
-	      toprocess -= blocksize;
-	      processed += blocksize;				
-	    }
-	  while (stretcher.available() > 0)
-	    {
-	      int blocksize = std::min(stretcher.available(), BLOCKSIZE);
-	      std::cout << "retrieving " << blocksize << " blocks at @" << written << " (" << channels << " channels, final = " << (stretcher.available() == blocksize) << ")" << std::endl;
-	      stretcher.retrieve(buf, blocksize);
-	      for (int i = 0; i < channels; ++i) {
-		CopySamples(&audio[i][0], targetptr, blocksize, zzub::wave_buffer_type_f32, format, 1, channels, 0, startpos*channels+i);
-	      }
-	      written += blocksize;
-	      startpos += blocksize;
-	    }
-	}
-
-      std::cout << "old selection size is " << numSamples << " samples, new size is " << newSize << " samples." << std::endl;
-      std::cout << "processed " << processed << " samples, retrieved " << written << " samples." << std::endl;
-      std::cout << "old wave size was " << size << ", new size is " << newsize << std::endl;
-		
-    }
-#else
-    {
-      insert_wave_at(level, fromSample, oldrange, channels, format, newSize);
-    }	
-#endif
+    insert_wave_at(level, fromSample, oldrange, channels, format, newSize);
 
     //~ delete[] (char*)oldrange;
     if (lastrangesize)

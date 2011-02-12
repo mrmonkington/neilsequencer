@@ -137,11 +137,8 @@ std::string& trim( std::string& s );
 std::string trim( const std::string& s );
 
 // cross platform functions
-#if defined(_WIN32)
-	typedef HMODULE xp_modulehandle;
-#elif defined(POSIX)
-	typedef void *xp_modulehandle;
-#endif
+typedef void *xp_modulehandle;
+
 xp_modulehandle xp_dlopen(const char* path);
 void* xp_dlsym(xp_modulehandle handle, const char* symbol);
 void xp_dlclose(xp_modulehandle handle);

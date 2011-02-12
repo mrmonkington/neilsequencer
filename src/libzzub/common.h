@@ -21,19 +21,6 @@
 #pragma warning (disable:4786)	// Disable VC6 long name warning for some STL objects
 #endif
 
-#if defined(_WIN32)
-
-#if defined(_DEBUG)
-#define CRTDBG_MAP_ALLOC
-#include <stdlib.h>
-#include <crtdbg.h>
-#endif
-
-#define NOMINMAX
-#include <windows.h>
-
-#elif defined(POSIX) // 
-
 #include <errno.h> 
 #include <pthread.h>
 #include <unistd.h> 
@@ -44,8 +31,6 @@
 #endif
 
 #define strcmpi strcasecmp
-
-#endif
 
 #define _USE_MATH_DEFINES
 #include <cmath>

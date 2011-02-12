@@ -362,32 +362,7 @@ namespace zzub {
       if (index == 0) {
 	char szFile[260];       // buffer for file name
 	strcpy(szFile, waveFilePath.c_str());
-
-#if defined(_WIN32)
-	OPENFILENAME ofn;
-	ZeroMemory(&ofn, sizeof(ofn));
-	ofn.lStructSize = sizeof(ofn);
-	ofn.lpstrFile = szFile;
-	ofn.nMaxFile = sizeof(szFile);
-	ofn.lpstrFilter = "Waveforms (*.wav)\0*.wav\0All files\0*.*\0\0";
-	ofn.lpstrDefExt="wav";
-	ofn.nFilterIndex = 1;
-	ofn.lpstrFileTitle = NULL;
-	ofn.nMaxFileTitle = 0;
-	ofn.lpstrInitialDir = NULL;
-	ofn.Flags = OFN_NOCHANGEDIR |OFN_OVERWRITEPROMPT|OFN_EXTENSIONDIFFERENT|OFN_NOREADONLYRETURN;
-
-	if (::GetSaveFileName(&ofn)==TRUE) {
-	  waveFilePath = ofn.lpstrFile;
-
-	  // send a parameter change event for the wave parameter, guis may want to update something
-	  _host->control_change(_host->get_metaplugin(), 1, 0, 0, 0, false, true);
-
-	}
-#else
 	printf("GetSaveFileName not implemented!");
-#endif
-
       }
     }
     virtual void set_track_count(int count) {}

@@ -28,12 +28,10 @@
 #include "archive.h"
 #include "tools.h"
 
-#if defined(POSIX)
 #include <dirent.h>
 #include <sys/stat.h>
 
 #define strcmpi strcasecmp
-#endif
 
 #include "sseoptimization.h"
 

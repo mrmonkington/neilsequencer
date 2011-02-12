@@ -17,14 +17,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 #include <cstdio>
 #include <string>
-
-#if defined(POSIX)
 #include <dlfcn.h>
-#endif
-
-#if defined(__GNUC__)
-// it seems these defines are also missing from the gnu headers
-#endif
 
 #include "common.h"
 #include "tools.h"
@@ -113,29 +106,7 @@ void __cdecl SEH_To_Cpp(unsigned int u, EXCEPTION_POINTERS *exp) {
 #endif
 
 void handleError(std::string errorTitle) {
-#if defined(_WIN32)
-	LPVOID lpMsgBuf;
-	if (!FormatMessage(
-		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-		NULL,
-		GetLastError(),
-		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
-		(LPTSTR) &lpMsgBuf,
-		0,
-		NULL )) {
-		// error during error handling
-		return;
-	}
-
-	// Display the string.
-	MessageBox(NULL, (LPCTSTR)lpMsgBuf, errorTitle.c_str(), MB_OK | MB_ICONINFORMATION);
-
-	// Free the buffer.
-	LocalFree(lpMsgBuf);
-#else
-	printf("%s: There was an error", errorTitle.c_str());
-#endif
-
+  printf("%s: There was an error", errorTitle.c_str());
 }
 
 
@@ -417,38 +388,19 @@ bool validateParameter(int value, const zzub::parameter* p) {
 
 xp_modulehandle xp_dlopen(const char* path)
 {
-#if defined(_WIN32)
-	return LoadLibrary(path);
-#elif defined(POSIX)
-	return dlopen(path, RTLD_LAZY | RTLD_LOCAL);
-#endif
+  return dlopen(path, RTLD_LAZY | RTLD_LOCAL);
 }
 
 void* xp_dlsym(xp_modulehandle handle, const char* symbol)
 {
-#if defined(_WIN32)
-	return (void*)GetProcAddress((HINSTANCE)handle, symbol);
-#elif defined(POSIX)
-	return dlsym(handle, symbol);
-#endif
+  return dlsym(handle, symbol);
 }
 	
 void xp_dlclose(xp_modulehandle handle)
 {
-#if defined(_WIN32)
-	FreeLibrary((HINSTANCE)handle);
-#elif defined(POSIX)
-	dlclose(handle);
-#endif
+  dlclose(handle);
 }
 
 const char *xp_dlerror() {
-#if defined(_WIN32)
-	LPVOID* lpMsgBuf;
-	FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-		NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR) &lpMsgBuf, 0, NULL );
-	return (LPCTSTR)lpMsgBuf;
-#elif defined(POSIX)
-	return dlerror();
-#endif
+  return dlerror();
 }
