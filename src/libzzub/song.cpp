@@ -1042,7 +1042,7 @@ namespace zzub {
 			
 	int& song_index = sequencer_indices[i];
 
-	while (song_index >= 0 && (song_index >= seqtrack.events.size() || seqtrack.events[song_index].time > song_position)) {
+	while (song_index >= 0 && (song_index >= (int)seqtrack.events.size() || seqtrack.events[song_index].time > song_position)) {
 	  song_index--;
 	}
 
@@ -1184,7 +1184,7 @@ namespace zzub {
       if (seqtrack.events.size() > 0 && (size_t)index < seqtrack.events.size()) {
 	const sequence_event& e = seqtrack.events[index];
 
-	if (size_t(e.pattern_event.value - 0x10) == pattern_index) {
+	if (int(e.pattern_event.value - 0x10) == pattern_index) {
 	  zzub::pattern& p = *m.patterns[e.pattern_event.value - 0x10];
 	  int row = song_position - e.time;
 	  if (row >= 0 && row < p.rows) {
@@ -1353,7 +1353,7 @@ namespace zzub {
 	int lowest_time = std::numeric_limits<int>::max();
 	int lowest_track = -1;
 	int found_track = -1;
-	size_t lowest_index;
+	size_t lowest_index = 0;
 
 	vector<bool> found_tracks(m.tracks);
 	for (size_t i = 0; i < found_tracks.size(); i++)
@@ -1423,8 +1423,8 @@ namespace zzub {
   void mixer::midi_event(unsigned short status, unsigned char data1, unsigned char data2) {
     int channel = status&0xF;
     int command = (status & 0xf0) >> 4;
-    int midi_value;
-    float max_value;
+    int midi_value = 0;
+    float max_value = 0.0;
 
     switch (command) {
     case 8:

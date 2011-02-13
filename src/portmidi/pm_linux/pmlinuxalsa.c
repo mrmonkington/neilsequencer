@@ -245,8 +245,8 @@ static PmError alsa_out_close(PmInternal *midi)
     alsa_descriptor_type desc = (alsa_descriptor_type) midi->descriptor;
     if (!desc) return pmBadPtr;
 
-    if (pm_hosterror = snd_seq_disconnect_to(seq, desc->this_port, 
-                                             desc->client, desc->port)) {
+    if ((pm_hosterror = snd_seq_disconnect_to(seq, desc->this_port, 
+					      desc->client, desc->port))) {
         // if there's an error, try to delete the port anyway, but don't
         // change the pm_hosterror value so we retain the first error
         snd_seq_delete_port(seq, desc->this_port);
@@ -335,8 +335,8 @@ static PmError alsa_in_close(PmInternal *midi)
 {
     alsa_descriptor_type desc = (alsa_descriptor_type) midi->descriptor;
     if (!desc) return pmBadPtr;
-    if (pm_hosterror = snd_seq_disconnect_from(seq, desc->this_port, 
-                                               desc->client, desc->port)) {
+    if ((pm_hosterror = snd_seq_disconnect_from(seq, desc->this_port, 
+						desc->client, desc->port))) {
         snd_seq_delete_port(seq, desc->this_port); /* try to close port */
     } else {
         pm_hosterror = snd_seq_delete_port(seq, desc->this_port);

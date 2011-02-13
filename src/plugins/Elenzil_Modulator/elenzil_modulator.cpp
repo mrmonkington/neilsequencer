@@ -613,7 +613,7 @@ bool modulator::process_stereo(float **pin, float **pout, int numsamples, int mo
 }
 
 const char * modulator::describe_value(int param, int value) {
-	static char txt[16];
+	static char txt[25] = 0;
 	char	tmp[9];
 	int		val;
 

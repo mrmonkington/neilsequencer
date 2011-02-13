@@ -47,7 +47,10 @@ static void prompt_and_exit(void)
 {
     char line[STRING_MAX];
     printf("type ENTER...");
-    fgets(line, STRING_MAX, stdin);
+    char* result = fgets(line, STRING_MAX, stdin);
+    if (result == NULL) {
+      perror("Eror while reading string from stream");
+    }
     /* this will clean up open ports: */
     exit(-1);
 }
@@ -1085,7 +1088,7 @@ void pm_read_short(PmInternal *midi, PmEvent *event)
 /*
  * returns how many bytes processed
  */
-unsigned int pm_read_bytes(PmInternal *midi, unsigned char *data, 
+unsigned int pm_read_bytes(PmInternal *midi, const unsigned char *data, 
                     int len, PmTimestamp timestamp)
 {
     unsigned int i = 0; /* index into data */

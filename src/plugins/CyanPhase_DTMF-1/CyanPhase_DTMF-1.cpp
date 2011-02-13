@@ -13,8 +13,6 @@
 #include <math.h>
 #include <float.h>
 
-#pragma optimize ("awy", on)
-
 typedef unsigned char byte;
 double const PI = 3.14159265358979323846;
 float const pi2 = 2 * PI;
