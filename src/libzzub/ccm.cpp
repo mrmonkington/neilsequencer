@@ -1056,7 +1056,7 @@ namespace zzub {
   }
 
 
-  static FLAC__StreamEncoderWriteStatus flac_stream_encoder_write_callback(const FLAC__StreamEncoder *encoder, const FLAC__byte buffer[], unsigned bytes, unsigned samples, unsigned current_frame, void *client_data) {
+  static FLAC__StreamEncoderWriteStatus flac_stream_encoder_write_callback(const FLAC__StreamEncoder *encoder, const FLAC__byte buffer[], size_t bytes, unsigned samples, unsigned current_frame, void *client_data) {
     zzub::outstream* writer=(zzub::outstream*)client_data;
 
     writer->write((void*)buffer, sizeof(FLAC__byte)*bytes);
@@ -1075,7 +1075,7 @@ namespace zzub {
 
   struct DecodedFrame {
     void* buffer;
-    unsigned int bytes;
+    size_t bytes;
   };
 
   struct DecoderInfo {
@@ -1084,7 +1084,7 @@ namespace zzub {
       totalSamples=0;
     }
     std::vector<DecodedFrame> buffers;
-    unsigned int totalSamples;
+    size_t totalSamples;
     zzub::instream* reader;
 
   };
@@ -1093,7 +1093,7 @@ namespace zzub {
   // buffer can hold. The callback may choose to supply less data and modify the byte count
   // but must be careful not to overflow the buffer. The callback then returns a status code
   // chosen from FLAC__StreamDecoderReadStatus.
-  static FLAC__StreamDecoderReadStatus flac_stream_decoder_read_callback(const FLAC__StreamDecoder *decoder, FLAC__byte buffer[], unsigned *bytes, void *client_data) {
+  static FLAC__StreamDecoderReadStatus flac_stream_decoder_read_callback(const FLAC__StreamDecoder *decoder, FLAC__byte buffer[], size_t *bytes, void *client_data) {
     DecoderInfo* info = (DecoderInfo*)client_data;
 
     if (info->reader->position() >= info->reader->size()-1) return FLAC__STREAM_DECODER_READ_STATUS_END_OF_STREAM;
