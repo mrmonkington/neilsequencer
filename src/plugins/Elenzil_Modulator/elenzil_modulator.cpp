@@ -37,7 +37,7 @@
   www.elenzil.com
 
 
-  */
+*/
 
 
 #include <zzub/signature.h>
@@ -56,18 +56,18 @@ double const PI = 3.14159265358979323846;
 class modulator;
 class CTrack
 {
-	public:
-	double	Speed;
-	int		Unit;
-	int		Wave;
-	int		WavePow;
-	int		Floor;
-	double	Spread;
-	double	Slur;
-	double	Gain;
-	bool	Reset;
+public:
+  double	Speed;
+  int		Unit;
+  int		Wave;
+  int		WavePow;
+  int		Floor;
+  double	Spread;
+  double	Slur;
+  double	Gain;
+  bool	Reset;
 
-	double	GetFrequency();
+  double	GetFrequency();
 };
 
 
@@ -109,15 +109,15 @@ const zzub::parameter *paraReset = 0;
 class tvals
 {
 public:
-	word	speed;
-	byte	unit;
-	byte	wave;
-	byte	wavepow;
-	byte	floor;
-	word	spread;
-	byte	slur;
-	byte	gain;
-	byte	reset;
+  word	speed;
+  byte	unit;
+  byte	wave;
+  byte	wavepow;
+  byte	floor;
+  word	spread;
+  byte	slur;
+  byte	gain;
+  byte	reset;
 };
 
 
@@ -165,29 +165,29 @@ public:
   
 private:
 
-	void	InitTrack(int const i);
-	void	ResetTrack(int const i);
+  void	InitTrack(int const i);
+  void	ResetTrack(int const i);
 
-	void	TickTrack(CTrack *pt, tvals *ptval);
-	int		MSToSamples(double const ms);
-
-private:
-	int		IdleCount;	// in samples
-	bool	IdleMode;
-	int		pos;
-	int		pos2;
-
-	long	m_Tick;
-	double	m_Second;
-	double	m_PrevF1;
-	double	m_PrevF2;
+  void	TickTrack(CTrack *pt, tvals *ptval);
+  int		MSToSamples(double const ms);
 
 private:
-	int numTracks;
-	CTrack Tracks[MAX_TAPS];
+  int		IdleCount;	// in samples
+  bool	IdleMode;
+  int		pos;
+  int		pos2;
+
+  long	m_Tick;
+  double	m_Second;
+  double	m_PrevF1;
+  double	m_PrevF2;
+
+private:
+  int numTracks;
+  CTrack Tracks[MAX_TAPS];
 
 public:
-	tvals tval[MAX_TAPS];
+  tvals tval[MAX_TAPS];
 
 };
 
@@ -223,28 +223,28 @@ inline	double	CTrack::GetFrequency()
 
 
 char*	CommaPrint(char* txt, int const value)
+{
+  char	tmp[32];
+  int		i, inum;
+  int		j, k;
+  sprintf(tmp, "%d", value);
+  inum	=	strlen(tmp);
+  j		=	inum	% 3;
+  k		=	0;
+  for (i = 0; i < inum; i++)
+    {
+      txt[k++] = tmp[i];
+      j--;
+      if (j == 0 && i < inum - 1)
 	{
-	char	tmp[32];
-	int		i, inum;
-	int		j, k;
-	sprintf(tmp, "%d", value);
-	inum	=	strlen(tmp);
-	j		=	inum	% 3;
-	k		=	0;
-	for (i = 0; i < inum; i++)
-		{
-		txt[k++] = tmp[i];
-		j--;
-		if (j == 0 && i < inum - 1)
-			{
-			txt[k++] = ',';
-			j = 3;
-			}
-		}
-	txt[k] = 0;
-
-	return txt;
+	  txt[k++] = ',';
+	  j = 3;
 	}
+    }
+  txt[k] = 0;
+
+  return txt;
+}
 
 
 
@@ -252,38 +252,38 @@ char*	CommaPrint(char* txt, int const value)
 
 int modulator::MSToSamples(double const ms)
 {
-	return (int)(pz->_master_info->samples_per_second * ms * (1.0 / 1000.0));
+  return (int)(pz->_master_info->samples_per_second * ms * (1.0 / 1000.0));
 }
 
 
 void modulator::TickTrack(CTrack *pt, tvals *ptval)
 {
-	if (ptval->speed	!=	paraSpeed	->value_none)
-		pt->Speed		=	(double)ptval -> speed;
+  if (ptval->speed	!=	paraSpeed	->value_none)
+    pt->Speed		=	(double)ptval -> speed;
 
-	if (ptval->unit		!=	paraUnit	->value_none)
-		pt->Unit		=			ptval -> unit;
+  if (ptval->unit		!=	paraUnit	->value_none)
+    pt->Unit		=			ptval -> unit;
 
-	if (ptval->wave		!=	paraWave	->value_none)
-		pt->Wave		=			ptval -> wave;
+  if (ptval->wave		!=	paraWave	->value_none)
+    pt->Wave		=			ptval -> wave;
 
-	if (ptval->wavepow	!=	paraWavePow	->value_none)
-		pt->WavePow		=			ptval -> wavepow;
+  if (ptval->wavepow	!=	paraWavePow	->value_none)
+    pt->WavePow		=			ptval -> wavepow;
 
-	if (ptval->floor	!=	paraFloor	->value_none)
-		pt->Floor		=			ptval -> floor;
+  if (ptval->floor	!=	paraFloor	->value_none)
+    pt->Floor		=			ptval -> floor;
 
-	if (ptval->spread	!=	paraSpread	->value_none)
-		pt->Spread		=	(double)ptval -> spread	/ (double)paraSpread->value_max * 2.0 - 1.0;
+  if (ptval->spread	!=	paraSpread	->value_none)
+    pt->Spread		=	(double)ptval -> spread	/ (double)paraSpread->value_max * 2.0 - 1.0;
 
-	if (ptval->slur		!=	paraSlur	->value_none)
-		pt->Slur		=	(double)ptval -> slur	/ (double)paraSlur->value_max;
+  if (ptval->slur		!=	paraSlur	->value_none)
+    pt->Slur		=	(double)ptval -> slur	/ (double)paraSlur->value_max;
 
-	if (ptval->gain		!=	paraGain	->value_none)
-		pt->Gain		=	(double)ptval -> gain	/ (double)paraGain->value_default;
+  if (ptval->gain		!=	paraGain	->value_none)
+    pt->Gain		=	(double)ptval -> gain	/ (double)paraGain->value_default;
 
-	if (ptval->reset	!=	paraReset	->value_none)
-		pt->Reset		=	(bool)	ptval -> reset;
+  if (ptval->reset	!=	paraReset	->value_none)
+    pt->Reset		=	(bool)	ptval -> reset;
 }
 
 
@@ -299,39 +299,39 @@ modulator::~modulator() {
 }
 
 void modulator::process_events() {
-	m_Tick++;
+  m_Tick++;
 
-	for (int c = 0; c < numTracks; c++)
-		TickTrack(Tracks + c, tval+c);
+  for (int c = 0; c < numTracks; c++)
+    TickTrack(Tracks + c, tval+c);
 
 }
 
 void modulator::init(zzub::archive *arc) {
-	numTracks = 1;
+  numTracks = 1;
 
-	for (int c = 0; c < MAX_TAPS; c++)
-	{
-		Tracks[c].Speed		= 1000.0;
-		Tracks[c].Unit		= UNIT_MHZ;
-		Tracks[c].Wave		= WAVE_SIN;
-		Tracks[c].WavePow	= 1;
-		Tracks[c].Floor		= 0;
-		Tracks[c].Spread	= 1.0;
-		Tracks[c].Slur		= 0.94;
-		Tracks[c].Gain		= 1.0;
-		Tracks[c].Reset		= false;
-	}
+  for (int c = 0; c < MAX_TAPS; c++)
+    {
+      Tracks[c].Speed		= 1000.0;
+      Tracks[c].Unit		= UNIT_MHZ;
+      Tracks[c].Wave		= WAVE_SIN;
+      Tracks[c].WavePow	= 1;
+      Tracks[c].Floor		= 0;
+      Tracks[c].Spread	= 1.0;
+      Tracks[c].Slur		= 0.94;
+      Tracks[c].Gain		= 1.0;
+      Tracks[c].Reset		= false;
+    }
 
-	IdleMode	=	true;
-	IdleCount	=	0;
-	pos			=	0;
-	pos2		=	0;
+  IdleMode	=	true;
+  IdleCount	=	0;
+  pos			=	0;
+  pos2		=	0;
 	
-	m_Tick		=	0;
-	m_Second	=	0.0;
+  m_Tick		=	0;
+  m_Second	=	0.0;
 
-	m_PrevF1	=	1.0;
-	m_PrevF2	=	1.0;
+  m_PrevF1	=	1.0;
+  m_PrevF2	=	1.0;
 
 
 }
@@ -342,270 +342,270 @@ bool modulator::process_stereo(float **pin, float **pout, int numsamples, int mo
   if (mode == zzub::process_mode_read) // _thru_
     return true;
 
-	int	i, inum;
-	int	j;
-	int	p, pnum;
+  int	i, inum;
+  int	j;
+  int	p, pnum;
 
-	inum	=	numsamples;
-	j		=	0;
+  inum	=	numsamples;
+  j		=	0;
 
-	int		op;
-	op		=	pos;
-	pos		+=	pz->_master_info ->	tick_position - pos2;
-	pos2	=	pz->_master_info ->	tick_position;
+  int		op;
+  op		=	pos;
+  pos		+=	pz->_master_info ->	tick_position - pos2;
+  pos2	=	pz->_master_info ->	tick_position;
 
-	double	f1;
-	double	f2;
-	double	SecondsPerSample;
-	double	floor;
-	double	one_minus_floor;
-	double	Spread;
-	double	Slur, OneMinusSlur;
-	double	Gain;
+  double	f1;
+  double	f2;
+  double	SecondsPerSample;
+  double	floor;
+  double	one_minus_floor;
+  double	Spread;
+  double	Slur, OneMinusSlur;
+  double	Gain;
 
-	floor				=	(double)(Tracks[0].Floor) / (double)paraFloor->value_max;
-	one_minus_floor		=	1.0 - floor;
+  floor				=	(double)(Tracks[0].Floor) / (double)paraFloor->value_max;
+  one_minus_floor		=	1.0 - floor;
 
-	SecondsPerSample	=	1.0 / (double)pz->_master_info -> samples_per_second;
-	SecondsPerSample	*=	Tracks[0].GetFrequency();
+  SecondsPerSample	=	1.0 / (double)pz->_master_info -> samples_per_second;
+  SecondsPerSample	*=	Tracks[0].GetFrequency();
 
-	Spread				=	Tracks[0].Spread;
+  Spread				=	Tracks[0].Spread;
 
-	pnum				=	Tracks[0].WavePow;
+  pnum				=	Tracks[0].WavePow;
 
-	Slur				=	Tracks[0].Slur;
-	OneMinusSlur		=	1.0 - Slur;
+  Slur				=	Tracks[0].Slur;
+  OneMinusSlur		=	1.0 - Slur;
 
-	Gain				=	Tracks[0].Gain;
+  Gain				=	Tracks[0].Gain;
 
-	if (Tracks[0].Reset)
-		{
-		m_Second		=	0;
-		Tracks[0].Reset	=	false;
-		}
+  if (Tracks[0].Reset)
+    {
+      m_Second		=	0;
+      Tracks[0].Reset	=	false;
+    }
 
 
-	switch (Tracks[0].Wave)
-		{
-		default:
-		case	WAVE_SIN:
-			Spread			*=	PI * 0.5;
-			for (i = 0; i < inum; i++)
-				{
-				f1			=	sin(m_Second * PI * 2.0 - Spread) * 0.5 + 0.5;
-				f2			=	sin(m_Second * PI * 2.0 + Spread) * 0.5 + 0.5;
-				m_Second	+=	SecondsPerSample;
-				// This prevents the math from overflowing.
-				if (m_Second > 1.0)
-					m_Second -= 1.0;
+  switch (Tracks[0].Wave)
+    {
+    default:
+    case	WAVE_SIN:
+      Spread			*=	PI * 0.5;
+      for (i = 0; i < inum; i++)
+	{
+	  f1			=	sin(m_Second * PI * 2.0 - Spread) * 0.5 + 0.5;
+	  f2			=	sin(m_Second * PI * 2.0 + Spread) * 0.5 + 0.5;
+	  m_Second	+=	SecondsPerSample;
+	  // This prevents the math from overflowing.
+	  if (m_Second > 1.0)
+	    m_Second -= 1.0;
 
-				for (p = 1; p < pnum; p++)
-					{
-					f1		*=	f1;
-					f2		*=	f2;
-					}
+	  for (p = 1; p < pnum; p++)
+	    {
+	      f1		*=	f1;
+	      f2		*=	f2;
+	    }
 
-				f1			=	f1 * one_minus_floor + floor;
-				f2			=	f2 * one_minus_floor + floor;
+	  f1			=	f1 * one_minus_floor + floor;
+	  f2			=	f2 * one_minus_floor + floor;
 
-				f1			*=	Gain;
-				f2			*=	Gain;
+	  f1			*=	Gain;
+	  f2			*=	Gain;
 
-				f1			=	OneMinusSlur * f1 + Slur * m_PrevF1;
-				f2			=	OneMinusSlur * f2 + Slur * m_PrevF2;
-				m_PrevF1	=	f1;
-				m_PrevF2	=	f2;
+	  f1			=	OneMinusSlur * f1 + Slur * m_PrevF1;
+	  f2			=	OneMinusSlur * f2 + Slur * m_PrevF2;
+	  m_PrevF1	=	f1;
+	  m_PrevF2	=	f2;
 
-				pout[0][j]		=	pin[0][i] * (float)f1;
-				pout[1][j]		=	pin[1][i] * (float)f2;
-				j++;
-				}
-			break;
+	  pout[0][j]		=	pin[0][i] * (float)f1;
+	  pout[1][j]		=	pin[1][i] * (float)f2;
+	  j++;
+	}
+      break;
 
-		case	WAVE_SQUARE:
-			Spread			*=	0.25;
-			for (i = 0; i < inum; i++)
-				{
-				f1			=	m_Second - Spread + 0.25;
-				if (f1 < 0.0)
-					f1 += 1.0;
-				else if (f1 > 1.0)
-					f1 -= 1.0;
-				f2			=	m_Second + Spread + 0.25;
-				if (f2 < 0.0)
-					f2 += 1.0;
-				else if (f2 > 1.0)
-					f2 -= 1.0;
-				if (f1 < 0.5)
-					f1	=	0.0;
-				else
-					f1	=	1.0;
-				if (f2 < 0.5)
-					f2	=	0.0;
-				else
-					f2	=	1.0;
+    case	WAVE_SQUARE:
+      Spread			*=	0.25;
+      for (i = 0; i < inum; i++)
+	{
+	  f1			=	m_Second - Spread + 0.25;
+	  if (f1 < 0.0)
+	    f1 += 1.0;
+	  else if (f1 > 1.0)
+	    f1 -= 1.0;
+	  f2			=	m_Second + Spread + 0.25;
+	  if (f2 < 0.0)
+	    f2 += 1.0;
+	  else if (f2 > 1.0)
+	    f2 -= 1.0;
+	  if (f1 < 0.5)
+	    f1	=	0.0;
+	  else
+	    f1	=	1.0;
+	  if (f2 < 0.5)
+	    f2	=	0.0;
+	  else
+	    f2	=	1.0;
 
-				m_Second	+=	SecondsPerSample;
-				// This prevents the math from overflowing.
-				if (m_Second > 1.0)
-					m_Second -= 1.0;
+	  m_Second	+=	SecondsPerSample;
+	  // This prevents the math from overflowing.
+	  if (m_Second > 1.0)
+	    m_Second -= 1.0;
 
-				f1			=	f1 * one_minus_floor + floor;
-				f2			=	f2 * one_minus_floor + floor;
+	  f1			=	f1 * one_minus_floor + floor;
+	  f2			=	f2 * one_minus_floor + floor;
 
-				f1			*=	Gain;
-				f2			*=	Gain;
+	  f1			*=	Gain;
+	  f2			*=	Gain;
 
-				f1			=	OneMinusSlur * f1 + Slur * m_PrevF1;
-				f2			=	OneMinusSlur * f2 + Slur * m_PrevF2;
-				m_PrevF1	=	f1;
-				m_PrevF2	=	f2;
+	  f1			=	OneMinusSlur * f1 + Slur * m_PrevF1;
+	  f2			=	OneMinusSlur * f2 + Slur * m_PrevF2;
+	  m_PrevF1	=	f1;
+	  m_PrevF2	=	f2;
 
-				pout[0][j]		=	pin[0][i] * (float)f1;
-				pout[1][j]		=	pin[1][i] * (float)f2;
-				j++;
-				}
-			break;
+	  pout[0][j]		=	pin[0][i] * (float)f1;
+	  pout[1][j]		=	pin[1][i] * (float)f2;
+	  j++;
+	}
+      break;
 
-		case	WAVE_TRIANGLE:
-			Spread			*=	0.25;
-			for (i = 0; i < inum; i++)
-				{
-				f1			=	m_Second - Spread + 0.25;
-				if (f1 < 0.0)
-					f1 += 1.0;
-				else if (f1 > 1.0)
-					f1 -= 1.0;
-				f2			=	m_Second + Spread + 0.25;
-				if (f2 < 0.0)
-					f2 += 1.0;
-				else if (f2 > 1.0)
-					f2 -= 1.0;
+    case	WAVE_TRIANGLE:
+      Spread			*=	0.25;
+      for (i = 0; i < inum; i++)
+	{
+	  f1			=	m_Second - Spread + 0.25;
+	  if (f1 < 0.0)
+	    f1 += 1.0;
+	  else if (f1 > 1.0)
+	    f1 -= 1.0;
+	  f2			=	m_Second + Spread + 0.25;
+	  if (f2 < 0.0)
+	    f2 += 1.0;
+	  else if (f2 > 1.0)
+	    f2 -= 1.0;
 
-				f1	*=	2.0;
-				f2	*=	2.0;
+	  f1	*=	2.0;
+	  f2	*=	2.0;
 
-				if (f1 > 1.0)
-					f1	=	2.0 - f1;
-				if (f2 > 1.0)
-					f2	=	2.0 - f2;
+	  if (f1 > 1.0)
+	    f1	=	2.0 - f1;
+	  if (f2 > 1.0)
+	    f2	=	2.0 - f2;
 
-				m_Second	+=	SecondsPerSample;
-				// This prevents the math from overflowing.
-				if (m_Second > 1.0)
-					m_Second -= 1.0;
+	  m_Second	+=	SecondsPerSample;
+	  // This prevents the math from overflowing.
+	  if (m_Second > 1.0)
+	    m_Second -= 1.0;
 
-				for (p = 1; p < pnum; p++)
-					{
-					f1		*=	f1;
-					f2		*=	f2;
-					}
+	  for (p = 1; p < pnum; p++)
+	    {
+	      f1		*=	f1;
+	      f2		*=	f2;
+	    }
 
-				f1			=	f1 * one_minus_floor + floor;
-				f2			=	f2 * one_minus_floor + floor;
+	  f1			=	f1 * one_minus_floor + floor;
+	  f2			=	f2 * one_minus_floor + floor;
 
-				f1			*=	Gain;
-				f2			*=	Gain;
+	  f1			*=	Gain;
+	  f2			*=	Gain;
 
-				f1			=	OneMinusSlur * f1 + Slur * m_PrevF1;
-				f2			=	OneMinusSlur * f2 + Slur * m_PrevF2;
-				m_PrevF1	=	f1;
-				m_PrevF2	=	f2;
+	  f1			=	OneMinusSlur * f1 + Slur * m_PrevF1;
+	  f2			=	OneMinusSlur * f2 + Slur * m_PrevF2;
+	  m_PrevF1	=	f1;
+	  m_PrevF2	=	f2;
 
-				pout[0][j]		=	pin[0][i] * (float)f1;
-				pout[1][j]		=	pin[1][i] * (float)f2;
-				j++;
-				}
-			break;
+	  pout[0][j]		=	pin[0][i] * (float)f1;
+	  pout[1][j]		=	pin[1][i] * (float)f2;
+	  j++;
+	}
+      break;
 
-		case	WAVE_SAW:
-			Spread			*=	0.25;
-			for (i = 0; i < inum; i++)
-				{
-				f1			=	m_Second - Spread + 0.25;
-				if (f1 < 0.0)
-					f1 += 1.0;
-				else if (f1 > 1.0)
-					f1 -= 1.0;
-				f2			=	m_Second + Spread + 0.25;
-				if (f2 < 0.0)
-					f2 += 1.0;
-				else if (f2 > 1.0)
-					f2 -= 1.0;
+    case	WAVE_SAW:
+      Spread			*=	0.25;
+      for (i = 0; i < inum; i++)
+	{
+	  f1			=	m_Second - Spread + 0.25;
+	  if (f1 < 0.0)
+	    f1 += 1.0;
+	  else if (f1 > 1.0)
+	    f1 -= 1.0;
+	  f2			=	m_Second + Spread + 0.25;
+	  if (f2 < 0.0)
+	    f2 += 1.0;
+	  else if (f2 > 1.0)
+	    f2 -= 1.0;
 
-				m_Second	+=	SecondsPerSample;
-				// This prevents the math from overflowing.
-				if (m_Second > 1.0)
-					m_Second -= 1.0;
+	  m_Second	+=	SecondsPerSample;
+	  // This prevents the math from overflowing.
+	  if (m_Second > 1.0)
+	    m_Second -= 1.0;
 
-				for (p = 1; p < pnum; p++)
-					{
-					f1		*=	f1;
-					f2		*=	f2;
-					}
+	  for (p = 1; p < pnum; p++)
+	    {
+	      f1		*=	f1;
+	      f2		*=	f2;
+	    }
 
-				f1			=	f1 * one_minus_floor + floor;
-				f2			=	f2 * one_minus_floor + floor;
+	  f1			=	f1 * one_minus_floor + floor;
+	  f2			=	f2 * one_minus_floor + floor;
 
-				f1			*=	Gain;
-				f2			*=	Gain;
+	  f1			*=	Gain;
+	  f2			*=	Gain;
 
-				f1			=	OneMinusSlur * f1 + Slur * m_PrevF1;
-				f2			=	OneMinusSlur * f2 + Slur * m_PrevF2;
-				m_PrevF1	=	f1;
-				m_PrevF2	=	f2;
+	  f1			=	OneMinusSlur * f1 + Slur * m_PrevF1;
+	  f2			=	OneMinusSlur * f2 + Slur * m_PrevF2;
+	  m_PrevF1	=	f1;
+	  m_PrevF2	=	f2;
 
-				pout[0][j]		=	pin[0][i] * (float)f1;
-				pout[1][j]		=	pin[1][i] * (float)f2;
-				j++;
-				}
-			break;
-		case	WAVE_INVSAW:
-			Spread			*=	0.25;
-			for (i = 0; i < inum; i++)
-				{
-				f1			=	m_Second - Spread + 0.25;
-				if (f1 < 0.0)
-					f1 += 1.0;
-				else if (f1 > 1.0)
-					f1 -= 1.0;
-				f2			=	m_Second + Spread + 0.25;
-				if (f2 < 0.0)
-					f2 += 1.0;
-				else if (f2 > 1.0)
-					f2 -= 1.0;
+	  pout[0][j]		=	pin[0][i] * (float)f1;
+	  pout[1][j]		=	pin[1][i] * (float)f2;
+	  j++;
+	}
+      break;
+    case	WAVE_INVSAW:
+      Spread			*=	0.25;
+      for (i = 0; i < inum; i++)
+	{
+	  f1			=	m_Second - Spread + 0.25;
+	  if (f1 < 0.0)
+	    f1 += 1.0;
+	  else if (f1 > 1.0)
+	    f1 -= 1.0;
+	  f2			=	m_Second + Spread + 0.25;
+	  if (f2 < 0.0)
+	    f2 += 1.0;
+	  else if (f2 > 1.0)
+	    f2 -= 1.0;
 
-				f1	=	1.0 - f1;
-				f2	=	1.0 - f2;
+	  f1	=	1.0 - f1;
+	  f2	=	1.0 - f2;
 
-				m_Second	+=	SecondsPerSample;
-				// This prevents the math from overflowing.
-				if (m_Second > 1.0)
-					m_Second -= 1.0;
+	  m_Second	+=	SecondsPerSample;
+	  // This prevents the math from overflowing.
+	  if (m_Second > 1.0)
+	    m_Second -= 1.0;
 
-				for (p = 1; p < pnum; p++)
-					{
-					f1		*=	f1;
-					f2		*=	f2;
-					}
+	  for (p = 1; p < pnum; p++)
+	    {
+	      f1		*=	f1;
+	      f2		*=	f2;
+	    }
 
-				f1			=	f1 * one_minus_floor + floor;
-				f2			=	f2 * one_minus_floor + floor;
+	  f1			=	f1 * one_minus_floor + floor;
+	  f2			=	f2 * one_minus_floor + floor;
 
-				f1			*=	Gain;
-				f2			*=	Gain;
+	  f1			*=	Gain;
+	  f2			*=	Gain;
 
-				f1			=	OneMinusSlur * f1 + Slur * m_PrevF1;
-				f2			=	OneMinusSlur * f2 + Slur * m_PrevF2;
-				m_PrevF1	=	f1;
-				m_PrevF2	=	f2;
+	  f1			=	OneMinusSlur * f1 + Slur * m_PrevF1;
+	  f2			=	OneMinusSlur * f2 + Slur * m_PrevF2;
+	  m_PrevF1	=	f1;
+	  m_PrevF2	=	f2;
 
-				pout[0][j]		=	pin[0][i] * (float)f1;
-				pout[1][j]		=	pin[1][i] * (float)f2;
-				j++;
-				}
-			break;
-		}
+	  pout[0][j]		=	pin[0][i] * (float)f1;
+	  pout[1][j]		=	pin[1][i] * (float)f2;
+	  j++;
+	}
+      break;
+    }
 
 
 
@@ -613,88 +613,87 @@ bool modulator::process_stereo(float **pin, float **pout, int numsamples, int mo
 }
 
 const char * modulator::describe_value(int param, int value) {
-	static char txt[25] = 0;
-	char	tmp[9];
-	int		val;
+  static char txt[25] = "";
+  char	tmp[9];
+  int		val;
 
-	val	=	value;
-
-	switch(param)
+  val	=	value;
+  switch(param)
+    {
+    case 0:		// freq
+      switch(Tracks[0].Unit)
 	{
-	case 0:		// freq
-		switch(Tracks[0].Unit)
-			{
-			default:
-			case	UNIT_MS:
-			case	UNIT_MHZ:
-				CommaPrint(txt, val);
-				sprintf(tmp, " (%.4x)", val);
-				strcat(txt, tmp);
-				break;
-			}
-		break;
-	case 1:		// unit
-		switch(val)
-			{
-			case 0: return "mHz (00)";
-			case 1: return "ms (01)";
-			case 2: return "tick (02)";
-			case 3: return "tick/256 (03)";
-			}
-		break;
-	case 2:		// wave
-	  const char*	s;
-		switch(val)
-			{
-			case WAVE_SIN		: s = "sin"			; break;
-			case WAVE_SQUARE	: s = "square"		; break;
-			case WAVE_TRIANGLE	: s = "triangle"	; break;
-			case WAVE_SAW		: s = "saw"			; break;
-			case WAVE_INVSAW	: s = "inv. saw"	; break;
-			case WAVE_CRAZY		: s = "crazy"		; break;
-			}
-			sprintf(txt, "%s (%.2x)", s, val);
-		break;
-	case 3:		// wave power
-		sprintf(txt, "^%d", val);
-		break;
-	case 4:		// floor
-		sprintf(txt, "%d%c (%.2x)", val * 100 / paraFloor->value_max, '%', val);
-		break;
-	case 5:		// spread
-		sprintf(txt, "%.3f (%.4x)", (double)val / (double)paraSpread->value_max * 2.0 - 1.0, val);
-		break;
-	case 6:		// slur
-		sprintf(txt, "%.3f (%.2x)", (double)val / (double)paraSlur->value_max, val);
-		break;
-	case 7:		// gain
-		sprintf(txt, "%.2f (%.2x)", (double)val / (double)paraGain->value_default, val);
-		break;
-	case 8:		// reset
-		sprintf(txt, "1 = reset oscillation");
-		break;
 	default:
-		return NULL;
+	case	UNIT_MS:
+	case	UNIT_MHZ:
+	  CommaPrint(txt, val);
+	  sprintf(tmp, " (%.4x)", val);
+	  strcat(txt, tmp);
+	  break;
 	}
+      break;
+    case 1:		// unit
+      switch(val)
+	{
+	case 0: return "mHz (00)";
+	case 1: return "ms (01)";
+	case 2: return "tick (02)";
+	case 3: return "tick/256 (03)";
+	}
+      break;
+    case 2:		// wave
+      const char*	s;
+      switch(val)
+	{
+	case WAVE_SIN		: s = "sin"			; break;
+	case WAVE_SQUARE	: s = "square"		; break;
+	case WAVE_TRIANGLE	: s = "triangle"	; break;
+	case WAVE_SAW		: s = "saw"			; break;
+	case WAVE_INVSAW	: s = "inv. saw"	; break;
+	case WAVE_CRAZY		: s = "crazy"		; break;
+	}
+      sprintf(txt, "%s (%.2x)", s, val);
+      break;
+    case 3:		// wave power
+      sprintf(txt, "^%d", val);
+      break;
+    case 4:		// floor
+      sprintf(txt, "%d%c (%.2x)", val * 100 / paraFloor->value_max, '%', val);
+      break;
+    case 5:		// spread
+      sprintf(txt, "%.3f (%.4x)", (double)val / (double)paraSpread->value_max * 2.0 - 1.0, val);
+      break;
+    case 6:		// slur
+      sprintf(txt, "%.3f (%.2x)", (double)val / (double)paraSlur->value_max, val);
+      break;
+    case 7:		// gain
+      sprintf(txt, "%.2f (%.2x)", (double)val / (double)paraGain->value_default, val);
+      break;
+    case 8:		// reset
+      sprintf(txt, "1 = reset oscillation");
+      break;
+    default:
+      return NULL;
+    }
 
-	return txt;
+  return txt;
 
 }
 
 
 void modulator::set_track_count(int n) {
-	if (numTracks < n)
-	{
-		for (int c = numTracks; c < n; c++)
-			InitTrack(c);
-	}
-	else if (n < numTracks)
-	{
-		for (int c = n; c < numTracks; c++)
-			ResetTrack(c);
+  if (numTracks < n)
+    {
+      for (int c = numTracks; c < n; c++)
+	InitTrack(c);
+    }
+  else if (n < numTracks)
+    {
+      for (int c = n; c < numTracks; c++)
+	ResetTrack(c);
 	
-	}
-	numTracks = n;
+    }
+  numTracks = n;
 }
 
 void modulator::InitTrack(int const i)
@@ -714,8 +713,8 @@ void modulator::destroy() {
 }
 
 void modulator::attributes_changed() {
-	for (int c = 0; c < numTracks; c++)
-		InitTrack(c);
+  for (int c = 0; c < numTracks; c++)
+    InitTrack(c);
 
 }
 
