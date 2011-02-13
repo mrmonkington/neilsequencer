@@ -1075,7 +1075,7 @@ namespace zzub {
 
   struct DecodedFrame {
     void* buffer;
-    size_t bytes;
+    unsigned int bytes;
   };
 
   struct DecoderInfo {
