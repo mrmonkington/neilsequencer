@@ -141,7 +141,10 @@ if gcc:
 	env.Append(CCFLAGS=[
                 '-Wall',
 		'-Wfatal-errors',
-		'-O1', # O2 O3 break infector and a few others
+		#'-O1',  O2 O3 break infector and a few others
+                '-O2',
+                '-fno-strict-aliasing',
+                '-ffast-math',
 		'-fomit-frame-pointer',
 		'-funroll-loops',
 		'-DNDEBUG',
