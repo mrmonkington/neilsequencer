@@ -1084,7 +1084,7 @@ namespace zzub {
       totalSamples=0;
     }
     std::vector<DecodedFrame> buffers;
-    size_t totalSamples;
+    unsigned int totalSamples;
     zzub::instream* reader;
 
   };
