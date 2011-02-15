@@ -651,6 +651,9 @@ const char * modulator::describe_value(int param, int value) {
 	case WAVE_SAW		: s = "saw"			; break;
 	case WAVE_INVSAW	: s = "inv. saw"	; break;
 	case WAVE_CRAZY		: s = "crazy"		; break;
+	default:
+	  s = "???";
+	  break;
 	}
       sprintf(txt, "%s (%.2x)", s, val);
       break;

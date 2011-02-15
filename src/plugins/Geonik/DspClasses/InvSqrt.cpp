@@ -28,30 +28,36 @@ static unsigned char aInvSqrt[kTableSize];
 
 union flint {
     unsigned long    i;
-    float            f; };
+    float            f;
+};
 
 
-void DspFastInvSqrtInit() {
+void DspFastInvSqrtInit()
+{
 
     register long f;
     register unsigned char *h;
 
-	h = aInvSqrt;
-	for (f = 0, h = aInvSqrt; f < kTableSize; f++) {
-	    union flint fi, fo;
-		fi.i = ((kExpBias-1) << kExpPos) | (f << kLoopupPos);
-		fo.f = (float)(1.0 / sqrt(fi.f));
-		*h++ = (char)(((fo.i + (1<<(kSeedPos-2))) >> kSeedPos) & 0x000000FF); }
-	aInvSqrt[kTableSize / 2] = 0xFF; }
+    h = aInvSqrt;
+    for (f = 0, h = aInvSqrt; f < kTableSize; f++) {
+        union flint fi, fo;
+        fi.i = ((kExpBias-1) << kExpPos) | (f << kLoopupPos);
+        fo.f = (float)(1.0 / sqrt(fi.f));
+        *h++ = (char)(((fo.i + (1<<(kSeedPos-2))) >> kSeedPos) & 0x000000FF);
+    }
+    aInvSqrt[kTableSize / 2] = 0xFF;
+}
 
 
-double DspFastInvSqrt(float const x) {
+double DspFastInvSqrt(float const x)
+{
 
-	register unsigned long a = *(unsigned long *)(&x);
+    register unsigned long a = *(unsigned long *)(&x);
 
-	a = mSetExp(((3*kExpBias-1) - mGetExp(a)) >> 1) | mSetMantissaSeed(aInvSqrt[mGetMantissa(a)]);
+    a = mSetExp(((3*kExpBias-1) - mGetExp(a)) >> 1) | mSetMantissaSeed(aInvSqrt[mGetMantissa(a)]);
 
-	register double	r = *(float *)(&a);
-	r *= 1.5 - 0.5 * r * r * x;
-	r *= 1.5 - 0.5 * r * r * x;
-	return r; }
+    register double	r = *(float *)(&a);
+    r *= 1.5 - 0.5 * r * r * x;
+    r *= 1.5 - 0.5 * r * r * x;
+    return r;
+}

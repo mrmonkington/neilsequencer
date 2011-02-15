@@ -19,34 +19,40 @@
 
 static int aSqrt[kTableSize];
 
-void DspFastSqrtInit() {
+void DspFastSqrtInit()
+{
 
-	int           i;
+    int           i;
     double        f;
     unsigned int *fi = (unsigned int *)&f + kMostSigOffset;
-    
+
     for (i = 0; i < kTableSize/2; i++) {
-		f = 0;
-		*fi = (i << kMantissaShifts) | (kExpBias << kExpShifts);
-		f = sqrt(f);
-		aSqrt[i] = *fi & kMantissaMask;
+        f = 0;
+        *fi = (i << kMantissaShifts) | (kExpBias << kExpShifts);
+        f = sqrt(f);
+        aSqrt[i] = *fi & kMantissaMask;
 
-		f = 0;
-		*fi = (i << kMantissaShifts) | ((kExpBias + 1) << kExpShifts);
-		f = sqrt(f);
-		aSqrt[i + kTableSize/2] = *fi & kMantissaMask; } }
+        f = 0;
+        *fi = (i << kMantissaShifts) | ((kExpBias + 1) << kExpShifts);
+        f = sqrt(f);
+        aSqrt[i + kTableSize/2] = *fi & kMantissaMask;
+    }
+}
 
 
-double DspFastSqrt(const double f) {
+double DspFastSqrt(const double f)
+{
 
-	unsigned int  e;
-	unsigned int  i = *((unsigned int *)&f + kMostSigOffset);
+    unsigned int  e;
+    unsigned int  i = *((unsigned int *)&f + kMostSigOffset);
 
-	e = (i >> kExpShifts) - kExpBias;
-	i &= kMantissaMask;
-	if (e & 1) i |= kExpLsb;
-	e >>= 1;
-	i = (aSqrt[i >> kMantissaShifts]) | ((e + kExpBias) << kExpShifts);
-	double r; *((unsigned int *)&r + kMostSigOffset) = i;
-	return r; }
+    e = (i >> kExpShifts) - kExpBias;
+    i &= kMantissaMask;
+    if (e & 1) i |= kExpLsb;
+    e >>= 1;
+    i = (aSqrt[i >> kMantissaShifts]) | ((e + kExpBias) << kExpShifts);
+    double r;
+    *((unsigned int *)&r + kMostSigOffset) = i;
+    return r;
+}
 

@@ -24,48 +24,83 @@ extern int dspcSampleRate;
 
 //	Useful inline functions
 
-inline int DspFastD2I(double n) {
-	double const d2i = (1.5 * (1 << 26) * (1 << 26));
-	double n_ = n + d2i;
-	return *(int *)&n_; }
+inline int DspFastD2I(double n)
+{
+    double const d2i = (1.5 * (1 << 26) * (1 << 26));
+    double n_ = n + d2i;
+    return *(int *)&n_;
+}
 
 
-inline double DspFastRand() {
-	static long stat = 0x16BA2118;
-	stat = stat * 1103515245 + 12345;
-	return (double)stat * (1.0 / 0x80000000); }
+inline double DspFastRand()
+{
+    static long stat = 0x16BA2118;
+    stat = stat * 1103515245 + 12345;
+    return (double)stat * (1.0 / 0x80000000);
+}
 
 
-inline double DspFastRand(double a)			{ return a * DspFastRand(); }
+inline double DspFastRand(double a)
+{
+    return a * DspFastRand();
+}
 
 
-inline double DspDbToAmplitude(double db)	{ return pow(10,db*(1/20.0)); }
+inline double DspDbToAmplitude(double db)
+{
+    return pow(10,db*(1/20.0));
+}
 
-inline double DspAmplitudeToDb(double a)	{ return 20*log10(a); }
+inline double DspAmplitudeToDb(double a)
+{
+    return 20*log10(a);
+}
 
 
-inline double DspCalcLogStep(double const from, double const to, double const invtime) { return pow(to / from, invtime); }
+inline double DspCalcLogStep(double const from, double const to, double const invtime)
+{
+    return pow(to / from, invtime);
+}
 
-inline double DspCalcLinStep(double const from, double const to, double const invtime) { return (to-from) * invtime; }
+inline double DspCalcLinStep(double const from, double const to, double const invtime)
+{
+    return (to-from) * invtime;
+}
 
 
-template <class T> inline void	DspSwap  (T &a, T &b)		{ T t = a; a = b; b = t; }
-template <class T> inline void	DspClamp (T &x, T a, T b)	{ x = (x<a ? a : x>b ? b : x); }
-template <class T> inline T		DspMinMax(T x, T a, T b)	{ return (x<a ? a : x>b ? b : x); }
+template <class T> inline void	DspSwap  (T &a, T &b)
+{
+    T t = a;
+    a = b;
+    b = t;
+}
+template <class T> inline void	DspClamp (T &x, T a, T b)
+{
+    x = (x<a ? a : x>b ? b : x);
+}
+template <class T> inline T		DspMinMax(T x, T a, T b)
+{
+    return (x<a ? a : x>b ? b : x);
+}
 
 
 //	Performance counting
 
-#pragma warning(disable:4035)
 inline unsigned long DspCpuCounter() {}
 /* 	__asm { */
 /* 		_emit 0x0f		; rdtsc */
 /* 		_emit 0x31 } } */
-#pragma warning(default:4035)
 
-struct PerfSession { unsigned long perf;
-	PerfSession()			{ perf = DspCpuCounter(); }
-	unsigned long Elapsed()	{ return DspCpuCounter() - perf; } };
+
+struct PerfSession {
+    unsigned long perf;
+    PerfSession()			{
+        perf = DspCpuCounter();
+    }
+    unsigned long Elapsed()	{
+        return DspCpuCounter() - perf;
+    }
+};
 
 
 //	Declarations of functions in DspClasses.cpp

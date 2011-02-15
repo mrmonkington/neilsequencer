@@ -12,6 +12,10 @@
 
 //	Return the Pentium clock counter
 
-__int64 DspGetCpuTickCount() {
+__int64 DspGetCpuTickCount()
+{
 
-	LARGE_INTEGER d; QueryPerformanceCounter(&d); return d.QuadPart; }
+    LARGE_INTEGER d;
+    QueryPerformanceCounter(&d);
+    return d.QuadPart;
+}

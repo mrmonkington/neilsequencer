@@ -16,57 +16,66 @@
 
 struct CDelay {
 
-	float	*pBuffer;
-	int		 iLength;
-	int		 iMaxLength;
-	int		 iPos;
+    float	*pBuffer;
+    int		 iLength;
+    int		 iMaxLength;
+    int		 iPos;
 
-	CDelay() {
-		pBuffer = NULL;
-		iLength = 0; }
+    CDelay() {
+        pBuffer = NULL;
+        iLength = 0;
+    }
 
-	~CDelay() {
-		Free(); }
+    ~CDelay() {
+        Free();
+    }
 
-	virtual void Alloc(int const maxlen) {			// Init(): Allocate delay line
-		if(pBuffer)
-			assert(maxlen <= iMaxLength);
-		else
-			pBuffer	= new float[maxlen];
-		iLength		= maxlen;
-		iMaxLength	= maxlen;
-		iPos		= 0; }							//  Warning, no more Clear()
+    virtual void Alloc(int const maxlen) {			// Init(): Allocate delay line
+        if(pBuffer)
+            assert(maxlen <= iMaxLength);
+        else
+            pBuffer	= new float[maxlen];
+        iLength		= maxlen;
+        iMaxLength	= maxlen;
+        iPos		= 0;
+    }							//  Warning, no more Clear()
 
-	virtual void Free() {
-		iLength = iPos = 0;
-		if(pBuffer) delete[] pBuffer;
-		pBuffer = NULL; }
+    virtual void Free() {
+        iLength = iPos = 0;
+        if(pBuffer) delete[] pBuffer;
+        pBuffer = NULL;
+    }
 
-	virtual void Clear() {							// Clear(): Zero buffer contents
-		memset(pBuffer,0,iLength*sizeof(float)); }
+    virtual void Clear() {							// Clear(): Zero buffer contents
+        memset(pBuffer,0,iLength*sizeof(float));
+    }
 
-	virtual void SetDelay(int const len) {			// Delay length in samples
-		iLength = len;
-		if(iLength > iMaxLength) iLength = iMaxLength;
-		if(iLength < 2) iLength = 2;
-		if(iPos >= iLength) iPos = 0; }
+    virtual void SetDelay(int const len) {			// Delay length in samples
+        iLength = len;
+        if(iLength > iMaxLength) iLength = iMaxLength;
+        if(iLength < 2) iLength = 2;
+        if(iPos >= iLength) iPos = 0;
+    }
 
-	virtual void SetFrequency(double const freq) {	// Set self-frequency of delay line
-		SetDelay((int)(((double)dspcSampleRate / freq) - 0.5)); }
+    virtual void SetFrequency(double const freq) {	// Set self-frequency of delay line
+        SetDelay((int)(((double)dspcSampleRate / freq) - 0.5));
+    }
 
-	virtual void ScaleBuffer(double const s) {
-		int ns = iLength;
-		float *pb = pBuffer;
-		do {
-			*pb++ *= (float)s;
-		} while(--ns); }
+    virtual void ScaleBuffer(double const s) {
+        int ns = iLength;
+        float *pb = pBuffer;
+        do {
+            *pb++ *= (float)s;
+        } while(--ns);
+    }
 
-	virtual double Work(double const fNew) {		// Work(): Very slow
-		double fTemp = pBuffer[iPos];
-		pBuffer[iPos++] = (float)fNew;
-		if(iPos >= iLength) iPos = 0;
-		return fTemp; }
- };
+    virtual double Work(double const fNew) {		// Work(): Very slow
+        double fTemp = pBuffer[iPos];
+        pBuffer[iPos++] = (float)fNew;
+        if(iPos >= iLength) iPos = 0;
+        return fTemp;
+    }
+};
 
 
 /*	CLiDelay
@@ -75,31 +84,36 @@ struct CDelay {
  */
 
 struct CLiDelay : public CDelay {
-	double	fAlpha;
-	double	fAlpha_1m;
+    double	fAlpha;
+    double	fAlpha_1m;
 
-	CLiDelay() : CDelay() { }
-	
-	void SetDelay(int const len) {					// SetDelay(): Integer length
-		CDelay::SetDelay(len);
-		fAlpha		= 0.0;
-		fAlpha_1m	= 1.0; }
+    CLiDelay() : CDelay() { }
 
-	void SetDelay(double const len) {				// SetDelay(): Fractional length
-		int const i = DspFastD2I(ceil(len));
-		CDelay::SetDelay(i-1);
-		fAlpha		= i - len;
-		fAlpha_1m	= 1.0 - fAlpha; }
+    void SetDelay(int const len) {					// SetDelay(): Integer length
+        CDelay::SetDelay(len);
+        fAlpha		= 0.0;
+        fAlpha_1m	= 1.0;
+    }
 
-	void SetFrequency(double const freq) {			// Set self-frequency of delay line
-		SetDelay((double)dspcSampleRate / freq); }
+    void SetDelay(double const len) {				// SetDelay(): Fractional length
+        int const i = DspFastD2I(ceil(len));
+        CDelay::SetDelay(i-1);
+        fAlpha		= i - len;
+        fAlpha_1m	= 1.0 - fAlpha;
+    }
 
-	double Work(double const fNew) {				// Work(): Slow, untested
-		double fTemp = pBuffer[iPos] * fAlpha_1m;
-		pBuffer[iPos++] = (float)fNew;
-		if(iPos >= iLength) iPos = 0;
-		fTemp += pBuffer[iPos] * fAlpha;
-		return fTemp; } };
+    void SetFrequency(double const freq) {			// Set self-frequency of delay line
+        SetDelay((double)dspcSampleRate / freq);
+    }
+
+    double Work(double const fNew) {				// Work(): Slow, untested
+        double fTemp = pBuffer[iPos] * fAlpha_1m;
+        pBuffer[iPos++] = (float)fNew;
+        if(iPos >= iLength) iPos = 0;
+        fTemp += pBuffer[iPos] * fAlpha;
+        return fTemp;
+    }
+};
 
 
 /*	CCircBuffer
@@ -108,45 +122,56 @@ struct CLiDelay : public CDelay {
  */
 
 struct CCircBuffer {
-	float	*pBuffer;
-	int		 iLength;
-	int		 iPos;
+    float	*pBuffer;
+    int		 iLength;
+    int		 iPos;
 
-	CCircBuffer() {
-		pBuffer = NULL;
-		iLength = 0; }
+    CCircBuffer() {
+        pBuffer = NULL;
+        iLength = 0;
+    }
 
-	~CCircBuffer() {
-		Free(); }
+    ~CCircBuffer() {
+        Free();
+    }
 
-	void Alloc(int const len) {				// Alloc(): Allocate buffer
-		assert(!pBuffer);
-		pBuffer	= new float[len];
-		iLength		= len;
-		iPos		= 0; }
+    void Alloc(int const len) {				// Alloc(): Allocate buffer
+        assert(!pBuffer);
+        pBuffer	= new float[len];
+        iLength		= len;
+        iPos		= 0;
+    }
 
-	void Clear() {							// Clear(): Zero buffer contents
-		memset(pBuffer,0,iLength*sizeof(float)); }
+    void Clear() {							// Clear(): Zero buffer contents
+        memset(pBuffer,0,iLength*sizeof(float));
+    }
 
-	void Free() {
-		iLength = iPos = 0;
-		if(pBuffer) delete[] pBuffer;
-		pBuffer = NULL; }
+    void Free() {
+        iLength = iPos = 0;
+        if(pBuffer) delete[] pBuffer;
+        pBuffer = NULL;
+    }
 
-	void AddData(float *s, int ns) {		// New contents for the buffer
-	//	assert(ns <= iLength);
-		int	c = min(ns,iLength - iPos);	ns -= c;
-		float *b = pBuffer + iPos; iPos += c;
-		while(c--) *b++ = *s++;
-		if(ns > 0) {
-			iPos = ns;
-			b = pBuffer;
-			while(ns--) *b++ = *s++; } }
+    void AddData(float *s, int ns) {		// New contents for the buffer
+        //	assert(ns <= iLength);
+        int	c = min(ns,iLength - iPos);
+        ns -= c;
+        float *b = pBuffer + iPos;
+        iPos += c;
+        while(c--) *b++ = *s++;
+        if(ns > 0) {
+            iPos = ns;
+            b = pBuffer;
+            while(ns--) *b++ = *s++;
+        }
+    }
 
-	void IterateAll(void *f(const int c, const float s)) {
-		float *b = pBuffer + iPos;
-                int c;
-		for(c = 0; c < iLength - iPos; c++) f(c,*b++);
-		for(b = pBuffer; c < iLength; c++) f(c,*b++); } };
+    void IterateAll(void *f(const int c, const float s)) {
+        float *b = pBuffer + iPos;
+        int c;
+        for(c = 0; c < iLength - iPos; c++) f(c,*b++);
+        for(b = pBuffer; c < iLength; c++) f(c,*b++);
+    }
+};
 
 #endif

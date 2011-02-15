@@ -225,7 +225,7 @@ static void DoWork(float *pin, float *pout, sprayman *psprayman, int c)
 	      pGran->Phase++;
 	      if (pGran->Phase>=3)
 		{
-		  int EnvLength=GRANULE_SIZE*256/(depAttack+depSustain+depRelease)+DELAY_MAX;
+		  //int EnvLength=GRANULE_SIZE*256/(depAttack+depSustain+depRelease)+DELAY_MAX;
 		  float Left=float((1-psprayman->Pan/240.0)*(1-psprayman->Spread/100.0));
 		  float Right=float(1-(psprayman->Pan/240.0)*(1-psprayman->Spread/100.0));
 		  pGran->Pan=Left+(Right-Left)*(rand()&255)/256.0f;
@@ -254,7 +254,7 @@ static void DoWork(float *pin, float *pout, sprayman *psprayman, int c)
 		}
 	      //pGran->Offset=200;
 	    }
-	  int nPos=psprayman->Pos;
+	  //int nPos=psprayman->Pos;
 	  int dep=256;
 	  float *pEnv=NULL;
 

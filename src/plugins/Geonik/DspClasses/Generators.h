@@ -11,43 +11,47 @@
 
 struct MagicCircle {
 
-	double	fFactor;
-	double	fX;
-	double	fY;
+    double	fFactor;
+    double	fX;
+    double	fY;
 
-	void SetFrequency(double freq) {
+    void SetFrequency(double freq) {
 
-		fFactor = 2.0*sin(kPi*freq/dspcSampleRate); }
+        fFactor = 2.0*sin(kPi*freq/dspcSampleRate);
+    }
 
-	void Reset(double amp=1.0, double y=0.0) {
+    void Reset(double amp=1.0, double y=0.0) {
 
-		fX = amp;
-		fY = y; }
+        fX = amp;
+        fY = y;
+    }
 
-	void WorkSamples(float *pout, int ns) {
+    void WorkSamples(float *pout, int ns) {
 
-		double const e = fFactor;
-		double		 x = fX;
-		double		 y = fY;
-		do {
-			x += e*y;
-			y -= e*x;
-			*pout++ = (float)y; }
-		while(--ns);
-		fX = x;
-		fY = y; }
+        double const e = fFactor;
+        double		 x = fX;
+        double		 y = fY;
+        do {
+            x += e*y;
+            y -= e*x;
+            *pout++ = (float)y;
+        } while(--ns);
+        fX = x;
+        fY = y;
+    }
 
-	void WorkSamplesAdd(float *pout, int ns) {
+    void WorkSamplesAdd(float *pout, int ns) {
 
-		double const e = fFactor;
-		double		 x = fX;
-		double		 y = fY;
-		do {
-			x += e*y;
-			y -= e*x;
-			*pout++ += (float)y; }
-		while(--ns);
-		fX = x;
-		fY = y; }
- };
+        double const e = fFactor;
+        double		 x = fX;
+        double		 y = fY;
+        do {
+            x += e*y;
+            y -= e*x;
+            *pout++ += (float)y;
+        } while(--ns);
+        fX = x;
+        fY = y;
+    }
+};
 
