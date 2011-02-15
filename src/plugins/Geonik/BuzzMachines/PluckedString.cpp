@@ -264,7 +264,7 @@ char const *geonik_pluckedstring::describe_value(int const ParamNum, int const V
         sprintf(TxtBuffer, "%.1f%%", (double)Value * (100.0 / 128.0));
         break;
     case mpvDamper:
-        sprintf(TxtBuffer, "%.5f%", 1.0 - ((double)Value/256.0)*((double)Value/256.0));
+        sprintf(TxtBuffer, "%.5f%%", 1.0 - ((double)Value/256.0)*((double)Value/256.0));
         break;
     default:
         return NULL;
@@ -434,7 +434,7 @@ void CTrack::Tick(int ThisTrack)
         if(tp.Slide == zzub::switch_value_on) LastTrack->NoteOn(tp.Note,true);
         else {
             double m = MaxAmp^20;
-            int t;
+            int t = 0;
             for(int c=0; c < __max(pMachine->numTracks,pMachine->Attr.MaxDyn); c++) {
                 if(c <  pMachine->numTracks && c != ThisTrack) continue;
                 if(c >= pMachine->numDynTracks) {

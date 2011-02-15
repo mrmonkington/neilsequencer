@@ -83,26 +83,6 @@ template <class T> inline T		DspMinMax(T x, T a, T b)
     return (x<a ? a : x>b ? b : x);
 }
 
-
-//	Performance counting
-
-inline unsigned long DspCpuCounter() {}
-/* 	__asm { */
-/* 		_emit 0x0f		; rdtsc */
-/* 		_emit 0x31 } } */
-
-
-struct PerfSession {
-    unsigned long perf;
-    PerfSession()			{
-        perf = DspCpuCounter();
-    }
-    unsigned long Elapsed()	{
-        return DspCpuCounter() - perf;
-    }
-};
-
-
 //	Declarations of functions in DspClasses.cpp
 
 void		 DspAdd(float *pout, float *pin, int const ns);

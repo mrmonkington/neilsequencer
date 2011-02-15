@@ -211,7 +211,7 @@ void ringmod::add_input(const char *macname, zzub::connection_type type)
 //Returns the index of the input, or -1 if not found.
 int ringmod::find_input(const char *macname)
 {
-	for (int i=0; i<Inputs.size(); i++)
+	for (unsigned int i=0; i<Inputs.size(); i++)
 	{
 		if (strcmp(Inputs[i].MacName, macname) == 0) return i;
 	}
@@ -305,7 +305,6 @@ bool ringmod::process_stereo(float **pin, float **pout, int numsamples, const in
 	}
 
 	InitBuffer = true; //initialise it next time
-	bool HadSilentInput = SilentInput; //store result for this pass
 	SilentInput = false; //assumption for next pass
 	CurrentInput = 0; //set counter to first input
 	dsp_zero(drybuffer[0], numsamples); //clear the buffer
@@ -325,7 +324,7 @@ void ringmod::command(const int i)
 		"©2002 Ed Powley (BTDSys)\n\n"
 		"Comments/suggestions/bug reports to e@btd2001.freeserve.co.uk\n\n");
 	sprintf(txt,"%s%zi inputs", txt, Inputs.size());
-	for (int j=0; j<Inputs.size(); j++)
+	for (unsigned int j=0; j<Inputs.size(); j++)
 		sprintf(txt, "%s\n%i: %s", txt, j, Inputs[j].MacName);
 	sprintf(txt, "%s\n", txt);
 	_host->message(txt);

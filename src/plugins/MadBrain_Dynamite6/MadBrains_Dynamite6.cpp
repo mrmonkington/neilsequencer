@@ -14,7 +14,6 @@
 #include <zzub/signature.h>
 #include <zzub/plugin.h>
 //#include "../dsplib/dsplib.h"
-#pragma optimize ("a", on)
 
 #define MAX_CHANNELS 32
 
@@ -409,8 +408,7 @@ bool dynamite6::process_stereo(float **pin, float **pout, int numsamples, int mo
 
 bool dynamite6::Work(float *psamples, int numsamples, int const)
 {
-	int i,j,k;
-	float sum;
+	int i,j;
 	int flag=0;
 	int active[MAX_CHANNELS];
 
@@ -589,6 +587,7 @@ const char * dynamite6::describe_value(int const param, int const value)
 		sprintf(txt,"Bug!"); 
 		break;
 	}
+	return 0;
 }
 
 void dynamite6::stop()
@@ -865,7 +864,6 @@ inline float channel::generate()
 void _pipe::tick()
 {
 	int i,old;
-	char txt[128];
 
 	if (pv.length != 0)
 	{

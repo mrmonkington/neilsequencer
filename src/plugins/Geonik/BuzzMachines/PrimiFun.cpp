@@ -344,9 +344,6 @@ void CTrack::Stop()
     cAdsr.Stop();
 }
 
-
-#pragma optimize ("a", on)
-
 void CTrack::Work(float *pb, int numSamples)
 {
 

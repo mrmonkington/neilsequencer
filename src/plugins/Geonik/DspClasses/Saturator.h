@@ -3,8 +3,6 @@
  *		Saturator
  */
 
-#pragma warning (disable:4305)
-
 static float dspcSatTable[] = {
     -1.,-0.999608,-0.999199,-0.998772,-0.998327,-0.997862,-0.997378,-0.996873,
     -0.996347,-0.995797,-0.995225,-0.994627,-0.994005,-0.993355,-0.992678,-0.991972,
@@ -41,8 +39,6 @@ static float dspcSatTable[] = {
     0.998772,0.999199,0.999608,1.,1.
 };
 
-#pragma warning (default:4305)
-
 #ifndef dspcSat_OutputAmp
 #define dspcSat_OutputAmp 32767.
 #endif
@@ -52,8 +48,6 @@ static float dspcSatTable[] = {
 #endif
 
 struct CSaturator {
-
-#pragma optimize ("a", on)
 
     double Work(double s) {
         s *= (127.0/(dspcSat_InputAmp));
@@ -118,8 +112,6 @@ struct CSaturator {
         } while(--numsamples);
         //_control87(oldctrlword, _MCW_RC);
     }
-
-#pragma optimize ("a", off)
 
 };
 
