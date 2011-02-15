@@ -224,7 +224,7 @@ public:
 				.set_name("Filter Mode")
 				.set_value_min(0)
 				.set_value_max(2)
-				.set_value_default(1);
+				.set_value_default(2);
 
 
 			CMatildeTrackerMachine::m_attrPitchEnvelopeDepth = &add_attribute()
