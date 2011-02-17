@@ -1,0 +1,25 @@
+Import('env', 'install_lib')
+import glob
+
+#######################################
+#
+# RtAudio audio driver classes
+#
+#######################################
+
+localenv = env.Clone()
+
+files = [
+    'RtAudio.cpp',
+    ]
+
+
+localenv.Append(CCFLAGS=['-Isrc/rtaudio/include'])
+
+if localenv['ALSA'] == True: localenv.Append(CCFLAGS=['-D__LINUX_ALSA__'])
+if localenv['JACK'] == True: localenv.Append(CCFLAGS=['-D__UNIX_JACK__'])
+if localenv['OSS'] == True: localenv.Append(CCFLAGS=['-D__LINUX_OSS__'])
+
+rtaudio_static = localenv.StaticLibrary('${LIB_BUILD_PATH}/rtaudio_static', files)
+
+Export('rtaudio_static')

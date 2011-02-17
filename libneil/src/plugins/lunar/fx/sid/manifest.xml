@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="utf-8"?>
+<zzub>
+        <plugin
+                uri="@zzub.org/lunar/sid;1"
+                name="Lunar SID"
+                shortname="SID"
+                type="generator"
+                mintracks="1"
+                maxtracks="3"
+                description="SID emulator"
+                author="Andyw"
+                email="">
+                <parameters>
+                        <valuenamegroup>
+                                <valuenames id="modenames">
+                                        <alias value="0" name="LP" />
+                                        <alias value="1" name="BP" />
+                                        <alias value="2" name="HP" />
+                                        <alias value="3" name="Disable voice 3" />
+                                </valuenames>
+                                <valuenames id="wavenames">
+                                        <alias value="0" name="Triangle" />
+                                        <alias value="1" name="Saw" />
+                                        <alias value="2" name="Square" />
+                                        <alias value="3" name="Noise" />
+                                </valuenames>
+                                <valuenames id="switchnames">
+                                        <alias value="0" name="Off"/>
+                                        <alias value="1" name="On"/>
+                                </valuenames>
+                                <valuenames id="chipnames">
+                                        <alias value="0" name="MOS6581"/>
+                                        <alias value="1" name="MOS8580"/>
+                                </valuenames>
+                                <valuenames id="attacknames">
+                                        <alias value="0" name="2 ms"/>
+                                        <alias value="1" name="8 ms"/>
+                                        <alias value="2" name="16 ms"/>
+                                        <alias value="3" name="24 ms"/>
+                                        <alias value="4" name="38 ms"/>
+                                        <alias value="5" name="56 ms"/>
+                                        <alias value="6" name="68 ms"/>
+                                        <alias value="7" name="80 ms"/>
+                                        <alias value="8" name="100 ms"/>
+                                        <alias value="9" name="240 ms"/>
+                                        <alias value="10" name="500 ms"/>
+                                        <alias value="11" name="800 ms"/>
+                                        <alias value="12" name="1 s"/>
+                                        <alias value="13" name="3 s"/>
+                                        <alias value="14" name="5 s"/>
+                                        <alias value="15" name="8 s"/>
+                                </valuenames>
+                                <valuenames id="decayreleasenames">
+                                        <alias value="0" name="6 ms"/>
+                                        <alias value="1" name="24 ms"/>
+                                        <alias value="2" name="48 ms"/>
+                                        <alias value="3" name="72 ms"/>
+                                        <alias value="4" name="114 ms"/>
+                                        <alias value="5" name="168 ms"/>
+                                        <alias value="6" name="204 ms"/>
+                                        <alias value="7" name="240 ms"/>
+                                        <alias value="8" name="300 ms"/>
+                                        <alias value="9" name="750 ms"/>
+                                        <alias value="10" name="1.5 s"/>
+                                        <alias value="11" name="2.4 s"/>
+                                        <alias value="12" name="3 s"/>
+                                        <alias value="13" name="9 s"/>
+                                        <alias value="14" name="15 s"/>
+                                        <alias value="15" name="24 s"/>
+                                </valuenames>
+                        </valuenamegroup>
+                        <global>
+
+<!--
+nice ref:
+http://www.ffd2.com/fridge/meow/docs/quickref
+-->
+
+                                <parameter
+                                        id="chipset"
+                                        name="Chipset"
+                                        description="Chipset 0=6581 1=8580"
+                                        type="switch"
+                                        defvalue="0"
+                                        valuenames="chipnames"
+                                        state="true" />
+
+                                <parameter
+                                        id="cutoff"
+                                        name="Cutoff"
+                                        description="Filter Cutoff"
+                                        type="word"
+                                        minvalue="0"
+                                        maxvalue="2047"
+                                        novalue="65535"
+                                        defvalue="1024"
+                                        state="true" />
+                                <parameter
+                                        id="resonance"
+                                        name="Resonance"
+                                        description="Filter Resonance"
+                                        type="byte"
+                                        minvalue="0"
+                                        maxvalue="15"
+                                        defvalue="2"
+                                        novalue="255"
+                                        state="true" />
+                                <parameter
+                                        id="mode"
+                                        name="Filter Mode"
+                                        description="Filter Mode"
+                                        type="byte"
+                                        minvalue="0"
+                                        maxvalue="3"
+                                        defvalue="2"
+                                        novalue="255"
+                                        valuenames="modenames"
+                                        state="true" />
+                                <parameter
+                                        id="volume"
+                                        name="Volume"
+                                        description="Volume"
+                                        type="byte"
+                                        minvalue="0"
+                                        maxvalue="15"
+                                        defvalue="15"
+                                        novalue="255"
+                                        state="true" />
+                        </global>
+                        <track>
+                                <parameter
+                                   id="note"
+                                   type="midinote"/>
+
+                                <parameter
+                                        id="effect"
+                                        name="Effect"
+                                        description="Effect (01/02 = pitch up/down)"
+                                        type="byte"
+                                        minvalue="1"
+                                        maxvalue="255"
+                                        defvalue="0"
+                                        novalue="0" />
+
+                                <parameter
+                                        id="effectvalue"
+                                        name="Value"
+                                        description="Effect Value"
+                                        type="byte"
+                                        minvalue="1"
+                                        maxvalue="255"
+                                        defvalue="0"
+                                        novalue="0" />
+
+                                <parameter
+                                        id="pw"
+                                        name="Pulse Width"
+                                        description="Pulse Width"
+                                        type="word"
+                                        minvalue="0"
+                                        maxvalue="4095"
+                                        defvalue="2048"
+                                        novalue="65535"
+                                        state="true" />
+                                <parameter
+                                        id="wave"
+                                        name="Waveform"
+                                        description="Waveform"
+                                        type="byte"
+                                        minvalue="0"
+                                        maxvalue="3"
+                                        defvalue="2"
+                                        novalue="255"
+                                        valuenames="wavenames"
+                                        state="true" />
+
+                                <parameter
+                                        id="filtervoice"
+                                        name="Filter Enable"
+                                        description="Enable filter"
+                                        type="switch"
+                                        defvalue="0"
+                                        valuenames="switchnames"
+                                        state="true" />
+                                <parameter
+                                        id="ringmod"
+                                        name="Ringmod"
+                                        description="Ringmod with voice 3"
+                                        type="switch"
+                                        defvalue="0"
+                                        valuenames="switchnames"
+                                        state="true" />
+                                <parameter
+                                        id="sync"
+                                        name="Sync"
+                                        description="Sync with voice 3"
+                                        type="switch"
+                                        defvalue="0"
+                                        valuenames="switchnames"
+                                        state="true" />
+
+                                <parameter
+                                        id="attack"
+                                        name="Attack"
+                                        description="Attack"
+                                        type="byte"
+                                        minvalue="0"
+                                        maxvalue="15"
+                                        defvalue="2"
+                                        novalue="255"
+                                        valuenames="attacknames"
+                                        state="true" />
+
+                                <parameter
+                                        id="decay"
+                                        name="Decay"
+                                        description="Decay"
+                                        type="byte"
+                                        minvalue="0"
+                                        maxvalue="15"
+                                        defvalue="2"
+                                        novalue="255"
+                                        valuenames="decayreleasenames"
+                                        state="true" />
+
+
+                                <parameter
+                                        id="sustain"
+                                        name="Sustain"
+                                        description="Sustain"
+                                        type="byte"
+                                        minvalue="0"
+                                        maxvalue="15"
+                                        defvalue="10"
+                                        novalue="255"
+                                        state="true" />
+
+                                <parameter
+                                        id="release"
+                                        name="Release"
+                                        description="Release"
+                                        type="byte"
+                                        minvalue="0"
+                                        maxvalue="15"
+                                        defvalue="5"
+                                        novalue="255"
+                                        valuenames="decayreleasenames"
+                                        state="true" />
+                        </track>
+                </parameters>
+                <files>
+                        <file ref="sid.cpp"/>
+                        <file ref="sid.h"/>
+                        <file ref="sidemu.cc"/>
+                        <file ref="sidemu.h"/>
+                </files>
+                <modules>
+                        <module id="sid">
+                                <source language="c++" ref="sid.cpp" fxdef="sid.h"/>
+                                <source language="c++" ref="sidemu.cc" />
+                                <source language="c++" ref="envelope.cc" />
+                                <source language="c++" ref="extfilt.cc" />
+                                <source language="c++" ref="filter.cc" />
+                                <source language="c++" ref="pot.cc" />
+                                <!--source language="c++" ref="version.cc" fxdef="sid.h"/-->
+                                <source language="c++" ref="voice.cc" />
+                                <source language="c++" ref="wave.cc" />
+
+                                <source language="c++" ref="wave6581__ST.cc" />
+                                <source language="c++" ref="wave6581_P_T.cc" />
+                                <source language="c++" ref="wave6581_PS_.cc" />
+                                <source language="c++" ref="wave6581_PST.cc" />
+                                <source language="c++" ref="wave8580__ST.cc" />
+                                <source language="c++" ref="wave8580_P_T.cc" />
+                                <source language="c++" ref="wave8580_PS_.cc" />
+                                <source language="c++" ref="wave8580_PST.cc" />
+                        </module>
+                </modules>
+        </plugin>
+</zzub>

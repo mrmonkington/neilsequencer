@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<zzub>
+  <plugin
+     uri="@mda/effect/mdaThruZero;1"
+     name="Lunar mdaThruZero"
+     shortname="mdaThruZero"
+     type="effect"
+     description="A chorus/flanger type effect."
+     author="SoMono"
+     email="unaudio@gmail.com">
+    <parameters>
+      <global>
+	<parameter
+	   id="fParam1"
+	   name="Rate (sec)"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0.6"
+	   precision="0.01"
+	   state="true"/>
+	<parameter
+	   id="fParam2"
+	   name="Depth (ms)"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0.6"
+	   precision="0.01"
+	   state="true"/>
+	<parameter
+	   id="fParam3"
+	   name="Mix (%)"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0.35"
+	   precision="0.01"
+	   state="true"/>
+	<parameter
+	   id="fParam5"
+	   name="DepthMod"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0.75"
+	   precision="0.01"
+	   state="true"/>
+	<parameter
+	   id="fParam4"
+	   name="Feedback"
+	   type="float"
+	   minvalue="0"
+	   maxvalue="1"
+	   defvalue="0.70"
+	   precision="0.01"
+	   state="true"/>
+      </global>
+      <track>
+      </track>
+    </parameters>
+    <attributes>
+    </attributes>
+    <files>
+      <file ref="mdaThruZero.cpp"/>
+      <file ref="mdaThruZero.hpp"/>
+    </files>
+    <modules>
+      <module id="mdaThruZero">
+	<source language="c++" ref="mdaThruZero.cpp" fxdef="mdaThruZero.hpp"/>
+      </module>
+    </modules>
+  </plugin>
+</zzub>

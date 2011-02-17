@@ -1,0 +1,8 @@
+Import('pluginenv', 'build_plugin')
+
+localenv = pluginenv.Clone()
+
+files = ["mdaDubDelay.cpp"]
+
+build_plugin(localenv, "somono_mda_dub_delay", files)
+	     

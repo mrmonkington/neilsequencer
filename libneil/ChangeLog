@@ -1,0 +1,108 @@
+libzzub 0.2.5
+=============
+
+libzzub 0.2.4
+=============
+
+libzzub 0.2.3
+=============
+
+=== Bugs fixed
+
+#305: lunar synths don't stop with F8
+
+=== Enhancements
+
+#XXX: input recording
+
+libzzub 0.2.2
+=============
+
+=== Bugs fixed
+
+#XXX: Unable to save stereo samples to CCM
+
+#XXX: Unable to save midi controller bindings
+
+=== Enhancements
+
+#302: support for loading mp3 samples
+
+#299: support for loading flac samples
+
+
+libzzub 0.2.1
+=============
+
+=== Bugs fixed
+
+#294: denormalization performance issues
+
+	some plugins, such as Lunar Filter, seem to still generate denormalization
+	issues. Knark uses up to 100% CPU after half of playing time.
+	
+	libzzub supports now SSE optimization.
+	
+#295: cpu performance not correct
+
+	currently, cpu performance seems to be hardcasted to 1%.
+	
+=== Enhancements
+
+#297: add gcc backend to lunar
+
+
+	LLVM/LLVM-GCC are too bleeding edge at the moment, users have trouble installing.
+
+	therefore, add a statically, GCC compiled backend that precompiles lunar
+	code to native shared objects.
+	
+#296: remove LADSPA/DSSI support
+
+	LADSPA/DSSI were just implemented as a proof of concept and to have a few machines
+	to test in the beginning. they can not be shipped with ccm files and thus break
+	the ccm specification.
+
+
+libzzub 0.2
+===========
+
+=== Enhancements
+
+#282: new "logarithmic" attribute for lunar
+
+	new bool attribute "logarithmic" for lunar parameters. parameters with this flag 
+	will be interpolated across the natural logarithmic instead of a linear interpolation.
+
+#284: new set of lunar plugins
+
+	new set of lunar plugins:
+
+		* delay
+		* panning
+		* filter
+		* kick
+		* reverb
+		* synth (now with svf and adsr envelope)
+
+#285: llvm backend for lunar
+
+	lunar stores regular source as well as llvm 1.9 bytecode with each ccm
+	
+#286: rename zzub_metaplugin_ to zzub_plugin_
+
+	since there is no "plugin" handle exposed, use "plugin" instead of 
+	"metaplugin" in c interface.
+	
+=== Bugs fixed
+
+#287: ccm corrupts if waves have wrong samplerate
+
+	if waves saved with a samplerate other than 44100, flac fails. 
+	
+#290: loops not properly synched
+
+	when a loop begin is set and the current position is in front of the loop, 
+	the position is not being adjusted.
+	the song stops on loop end, not on song end.
+

@@ -1,0 +1,8 @@
+Import('pluginenv', 'build_plugin')
+
+localenv = pluginenv.Clone()
+
+files = ["LFNoise.cpp"]
+
+build_plugin(localenv, "somono_lfnoise", files, helpfiles=['manual.pdf'])
+	     

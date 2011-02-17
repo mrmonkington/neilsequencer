@@ -1,0 +1,22 @@
+# These are unstable/unusable:
+@zzub.org/buzz2zzub/Argüelles+KFlanger
+@zzub.org/buzz2zzub/Argüelles+KFlanger+(Stereo)
+@zzub.org/buzz2zzub/Jeskola+Raverb
+@zzub.org/buzz2zzub/Jeskola+Raverb+(Stereo)
+@zzub.org/buzz2zzub/Zephods+SuperFM
+@zzub.org/buzz2zzub/Argüelles+KGainer
+@zzub.org/buzz2zzub/Argüelles+KGainer+(Stereo)
+@zzub.org/buzz2zzub/Argüelles+kEcho
+@zzub.org/buzz2zzub/Argüelles+kEcho+(Stereo)
+@zzub.org/buzz2zzub/Argüelles+KDist
+@zzub.org/buzz2zzub/Argüelles+KDist+(Stereo)
+
+# Crashes on startup:
+@zzub.org/buzz2zzub/CyanPhase+DX+Effect+Adapter
+
+# The mono versions of these need a patch to run, so their stereo-wrapped counterparts are unusable:
+@zzub.org/buzz2zzub/Geonik's+2p+Filter+(Stereo)
+@zzub.org/buzz2zzub/Geonik's+Expression+2+(Stereo)
+
+# Makes no sound and does nothing useful in libzzub anyway
+@zzub.org/buzz2zzub/Track+Organizer

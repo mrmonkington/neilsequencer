@@ -1,0 +1,37 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libmodfile", "libmodfile.vcproj", "{92B924AD-94F7-45B2-851D-8012AB07E431}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "modextract", "modextract\modextract.vcproj", "{E2C1367F-CBA4-41F0-AA2E-3DD51445560D}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "moddir", "moddir\moddir.vcproj", "{379D5EAE-429F-4A5F-9E30-A3D0E5222A8D}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{92B924AD-94F7-45B2-851D-8012AB07E431}.Debug.ActiveCfg = Debug|Win32
+		{92B924AD-94F7-45B2-851D-8012AB07E431}.Debug.Build.0 = Debug|Win32
+		{92B924AD-94F7-45B2-851D-8012AB07E431}.Release.ActiveCfg = Release|Win32
+		{92B924AD-94F7-45B2-851D-8012AB07E431}.Release.Build.0 = Release|Win32
+		{E2C1367F-CBA4-41F0-AA2E-3DD51445560D}.Debug.ActiveCfg = Debug|Win32
+		{E2C1367F-CBA4-41F0-AA2E-3DD51445560D}.Debug.Build.0 = Debug|Win32
+		{E2C1367F-CBA4-41F0-AA2E-3DD51445560D}.Release.ActiveCfg = Release|Win32
+		{E2C1367F-CBA4-41F0-AA2E-3DD51445560D}.Release.Build.0 = Release|Win32
+		{379D5EAE-429F-4A5F-9E30-A3D0E5222A8D}.Debug.ActiveCfg = Debug|Win32
+		{379D5EAE-429F-4A5F-9E30-A3D0E5222A8D}.Debug.Build.0 = Debug|Win32
+		{379D5EAE-429F-4A5F-9E30-A3D0E5222A8D}.Release.ActiveCfg = Release|Win32
+		{379D5EAE-429F-4A5F-9E30-A3D0E5222A8D}.Release.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal

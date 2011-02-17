@@ -1,0 +1,184 @@
+<HTML>
+
+<head>
+<TITLE>jmmcd Note Pool</TITLE>
+
+
+<style type="text/css">
+
+BODY  {
+	font-size : 9pt;
+	line-height: 11pt; 
+	color : #00CC00;
+	font-family : lucida console, monospace;
+	background : url(square.png) fixed;
+	background-color : #000000;
+	overflow : none;
+}
+
+P  {
+}
+
+P.List {
+	text-indent : -3.6ex;
+	margin-left : 10ex;
+	margin-bottom : 0;
+	margin-top : 0
+}
+P.SubList {
+	text-indent : -3.6ex;
+	margin-left : 15ex;
+	margin-bottom : 0;
+	margin-top : 0
+}
+
+H1  {
+	font-size : 9pt;
+	font-weight : bold;
+}
+
+H2  {
+	font-size : 9pt;
+	font-weight : bold;
+}
+
+H3  {
+	font-size : 9pt;
+	font-weight : bold;
+}
+
+A  {
+	color : #00FF00;
+	text-decoration : underline;
+}
+
+A:Visited  {
+	color : #00CC00;
+}
+
+A:Active  {
+	color : #FF0000;
+}
+
+A:Hover  {
+	color : #FF0000;
+}
+</style>
+</HEAD>
+
+<P CLASS=List>&not;&not;
+name
+<br>
+jmmcd Note Pool (copyright &copy James McDermott 2004-2008)
+<P>
+
+jamesmichaelmcdermott at
+gmail; <a href="http://www.skynet.ie/~jmmcd">home page</a>.
+
+<P CLASS=List>&not;&not;
+purpose
+<br>
+sending note-on messages to generators based on crude probabilistic algorithms.
+<P>
+
+<P CLASS=List>&not;&not;
+installation
+<br>
+should be installed automatically by the Armstrong build script
+<P>
+
+<P CLASS=List>&not;&not;
+global parameters
+<br>
+<P CLASS=SubList>&not;&not;
+prob([C-B]): the *relative* probability that each pitch will be chosen, when the machine is choosing a pitch for you.
+<P CLASS=SubList>&not;&not;
+prob(Off): the note-off message is treated just like any other note.
+
+<P>
+<P CLASS=List>&not;&not;
+track parameters
+<br>
+<P CLASS=SubList>&not;&not;
+note: the note sent to each assigned generator.
+<P CLASS=SubList>&not;&not;
+volume: the value sent to the volume parameter of each assigned generator.
+<P CLASS=SubList>&not;&not;
+probability: the probability that a note will be played this tick.
+<P CLASS=SubList>&not;&not;
+centre note: determines the octave in which the notes will be played.
+<P CLASS=SubList>&not;&not;
+octave deviation: determines the amount of randomisation applied to the octave.
+<P CLASS=SubList>&not;&not;
+volume deviation: determines the amount of randomisation applied to the volume.
+<P CLASS=SubList>&not;&not;
+dot-prob: the probability that a note will be played on an empty tick.
+<P CLASS=SubList>&not;&not;
+target track: the generator track to which notes will be sent.
+<P CLASS=SubList>&not;&not;
+on/off: set to on to allow improvisation.
+
+
+<P>
+<P CLASS=List>&not;&not;
+attributes
+<br>
+none
+
+<P>
+<P CLASS=List>&not;&not;
+usage hints
+<br>
+there are a few ways of using this machine. the laziest (and my
+personal favourite) is to set the note probabilities to correspond to
+the key i'm working in, turn the dot-prob to a suitable value, and let
+it play while i work on something else.
+<br><br> if you prefer, you can specify most of your patterns exactly,
+and allow the machine to improvise only a couple of notes here and
+there. if you know, for example, that you need a note on tick 20, but
+don't want to decide what one, set the probability (not the dot-prob)
+to 100% on that note.
+<br><br>
+or you can do something in between.
+<P>
+
+<P CLASS=List>&not;&not;
+known bugs
+<br>
+i don't know anything about midi. does this machine work with midi?
+should it work differently?
+<br><br> it should be possible to record the notes and volume values
+sent in the generator's tracks. this *was* working (it should work
+automatically, without help from the programmer) but it's not now. any
+ideas?
+<br><br>
+any suggestions or comments are welcome.
+
+<P>
+<P CLASS=List>&not;&not;
+source code
+<br>
+the source code for this machine is included for educational and
+collaborative purposes under the GPL. feel free to work with it.
+<br><br>
+
+<P>
+<P CLASS=List>&not;&not;
+thanks
+<br>
+thanks to oskari, cyanphase, btdsys, and all the devs for making buzz
+what it is. thanks to btdsys, 7900, usr, and kodream for answering
+peer questions. thanks to everyone who has released source code. but
+mostly, especially, many thanks to btdsys for the peer library: it's
+the best thing that ever happened to buzz.
+
+<br><br>
+thanks to all the authors of Aldrin and Armstrong also.
+
+<br><br>
+
+if you like this machine, and want to thank me for making it, please
+go and thank other more important developers first. when you're
+finished, if there is still gratitude in you, you can send me a cd of
+your music, or a postcard, or an email
+(jamesmichaelmcdermott@gmail.com).

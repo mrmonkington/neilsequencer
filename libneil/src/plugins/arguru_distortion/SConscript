@@ -1,0 +1,8 @@
+Import('pluginenv', 'build_plugin')
+
+localenv = pluginenv.Clone()
+
+files = ["Distortion.cpp"]
+
+build_plugin(localenv, "arguru_distortion", files)
+	     

@@ -1,0 +1,8 @@
+Import('pluginenv', 'build_plugin')
+
+localenv = pluginenv.Clone()
+
+files = ["Chebyshev.cpp"]
+
+build_plugin(localenv, "somono_chebyshev", files, helpfiles=['manual.pdf'])
+	     

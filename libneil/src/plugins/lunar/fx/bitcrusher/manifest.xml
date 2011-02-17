@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<zzub>
+  <plugin
+     uri="@neil/lunar/effect/bitcrusher;1"
+     name="Lunar Bitcrusher"
+     shortname="Bitcrusher"
+     type="effect"
+     description="A bitcrusher/downsampler effect."
+     author="SoMono"
+     email="unaudio@gmail.com">
+     <parameters>
+       <global>
+	 <parameter
+	    id="crush"
+	    name="Crush (bits)"
+	    description="Amount of bitcrushing applied"
+	    type="byte"
+	    minvalue="1"
+	    maxvalue="16"
+	    defvalue="16"
+	    state="true"/>
+	 <parameter
+	    id="downsample"
+	    name="Downsample (times)"
+	    description="How many times to reduce the sampling rate"
+	    type="byte"
+	    minvalue="1"
+	    maxvalue="128"
+	    defvalue="1"
+	    state="true"/>
+       </global>
+     </parameters>
+     <files>
+       <file ref="bitcrusher.cpp"/>
+       <file ref="bitcrusher.h"/>
+     </files>
+     <modules>
+       <module id="bitcrusher">
+	 <source language="c++" ref="bitcrusher.cpp" fxdef="bitcrusher.h"/>
+       </module>
+     </modules>
+  </plugin>
+</zzub>

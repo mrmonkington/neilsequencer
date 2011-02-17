@@ -1,0 +1,8 @@
+Import('pluginenv', 'build_plugin')
+
+localenv = pluginenv.Clone()
+
+files = ["Stutter.cpp"]
+
+build_plugin(localenv, "somono_stutter", files)
+	     

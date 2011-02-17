@@ -1,0 +1,40 @@
+
+Armstrong (formerly known as libzzub)
+http://code.google.com/p/armstrong/
+
+== Developers ==
+
+The following people are or have been contributing to Armstrong:
+
+ * Anders Ervik <calvin at countzero+no> (Armstrong/Buzé)
+ * Leonard Ritter <contact At leonard-ritter+com> (Armstrong/Aldrin Linux)
+ * Pieter Holtzhausen <13682857 at sun+ac+za> (Armstrong/Aldrin)
+ * James Stone <jamesmstone at gmail> (Aldrin/Armstrong)
+ * James McDermott <jamesmichaelmcdermott at gmail> (Armstrong/Aldrin)
+
+== Contributors ==
+
+Thanks to the following for bug reports, fixes, patches, and ports:
+
+ * bucket_brigade
+ * guix
+ * gimmeapill
+
+== Plugin Developers ==
+
+Thanks to all developers who shared their code:
+
+ * Carsten Sørensen (Matilde Tracker)
+ * Joachim Michaelis <jm at binarywerks+dk> (Multi-2 Plugin)
+ * Aaron Oxford <aaron at hardwarehookups.com + au> (Frequency UnKnown O-Delay Plugin)
+ * Laurent De Soras <laurent.de.soras at club-internet+fr> (FireSledge ParamEQ)
+ * Leonard Ritter <contact at leonard-ritter+com> (dssidapter, ladspadapter, conversions)
+ * Greg Raue <graue at oceanbase+org> (Graue SoftSat)
+ * Krzysztof Foltman <wdev at foltman+com> (FSM machines)
+ * George Nicolaidis (Geonik machines)
+ * BTDSys (Ringmod)
+ * Madbrain (Dynamite6 and 4fm2f)
+ * Intoxicat (ACloud)
+ * Elenzil (Modulator)
+ * Makk and Whitenoise (M4)
+ * Cyanphase (DTMF-1)

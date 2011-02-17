@@ -1,0 +1,13 @@
+Import('env', 'posix', 'install_lib')
+
+import glob
+
+localenv = env.Clone()
+localenv.Append(CPPFLAGS=['-O3'])
+
+files = ["Svf.cpp", "Adsr.cpp", "Lfo.cpp", "GrainEnv.cpp", "Osc.cpp",
+         "Utils.cpp", "Phasor.cpp", "Lag.cpp"]
+
+lanternfish_static = localenv.StaticLibrary('${LIB_BUILD_PATH}/lanternfish', files)
+
+Export('lanternfish_static')

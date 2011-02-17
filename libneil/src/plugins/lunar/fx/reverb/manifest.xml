@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<zzub>
+	<plugin
+		uri="@trac.zeitherrschaft.org/aldrin/lunar/effect/reverb;1"
+		name="Lunar Verb"
+		shortname="Reverb"
+		type="effect"
+		description="A reverb effect."
+		author="Leonard Ritter"
+		email="contact at leonard-ritter+com">
+		<parameters>
+			<global>
+				<parameter
+					id="roomsize"
+					name="Room Size"
+					description="Size of room"
+					type="float"
+					minvalue="0"
+					maxvalue="1"
+					defvalue="0.5"
+					precision="0.01"
+					state="true"/>
+				<parameter
+					id="damp"
+					name="Dampness"
+					description="Dampness of room"
+					type="float"
+					minvalue="0"
+					maxvalue="1"
+					defvalue="0.5"
+					precision="0.01"
+					state="true"/>
+				<parameter
+					id="wet"
+					name="Wet Signal"
+					description="Volume of reverb"
+					type="float"
+					minvalue="-48"
+					maxvalue="12"
+					defvalue="-18"
+					precision="0.01"
+					state="true"/>
+				<parameter
+					id="dry"
+					name="Dry Signal"
+					description="Volume of original signal"
+					type="float"
+					minvalue="-48"
+					maxvalue="12"
+					defvalue="-6"
+					precision="0.01"
+					state="true"/>
+				<parameter
+					id="width"
+					name="Stereo Width"
+					description="Stereo separation"
+					type="float"
+					minvalue="0"
+					maxvalue="1"
+					defvalue="1"
+					precision="0.01"
+					state="true"/>
+				<parameter
+					id="freeze"
+					name="Freeze"
+					description="Freeze reverb"
+					type="switch"
+					defvalue="0"
+					state="true"/>
+			</global>
+			<track>
+			</track>
+		</parameters>
+		<files>
+			<file ref="reverb.cpp"/>
+			<file ref="reverb.h"/>
+			<file ref="allpass.cpp"/>
+			<file ref="allpass.h"/>
+			<file ref="comb.cpp"/>
+			<file ref="comb.h"/>
+			<file ref="revmodel.cpp"/>
+			<file ref="revmodel.h"/>
+		</files>
+		<modules>
+			<module id="reverb">
+				<source language="c++" ref="reverb.cpp" fxdef="reverb.h"/>
+			</module>
+		</modules>
+	</plugin>
+</zzub>

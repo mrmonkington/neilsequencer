@@ -1,0 +1,37 @@
+\starttext
+\setupbodyfont[sansserif, 10pt]
+\setuppagenumbering [location=]
+
+\title{SoMono LFNoise}
+
+\SetTableToWidth{\textwidth}
+
+LFNoise is a controller machine that is inspired by the SuperCollider
+UGen off the same name. It generates a new random value once every
+number of rows the number being specified by an appropriate parameter
+of the machine. The value this machine outputs is one that is
+interpolated between two adjacent random values by a chosen
+interpolation method. There are three methods of interpolation
+implemented: None, Linear and Cubic. None simply outputs a random
+value when it is generated. Linear attempts to draw a straight line
+between two adjacent values. Cubic draws a smooth curve and uses four
+points for interpolation. You can also specify how the ouput of this
+machine is scaled through Min and Max parameters. Suppose the output
+after interpolation is $x$, the machine outputs $Min + x \times (Max -
+Min)$. You can use LFNoise to create random fluctuations in parameter
+values of other machines thus adding life and a random element to
+your sounds. Just connect it to whatever you want to slowly change in
+an unpredicted way over time.
+
+\starttable[|l|l|l|l|p50|]
+  \HL
+  \NC \bf Parameter \NC \bf Min \NC \bf Max \NC \bf Units \NC \bf Meaning \NC \AR
+  \HL
+  \NC Rate \NC 1 \NC 128 \NC Rows \NC A new random value will be generate every this value rows. \NC \AR
+  \NC Type \NC - \NC - \NC - \NC Choose an interpolation method from None, Linear or Cubic. \NC \AR
+  \NC Min \NC 0.0 \NC 1.0 \NC Float \NC Minimum value the output can reach. \NC \AR
+  \NC Max \NC 0.0 \NC 1.0 \NC Float \NC Maximum value the output can reach. \NC \AR
+  \HL
+\stoptable
+
+\stoptext
