@@ -87,10 +87,10 @@ namespace fsm {
       //MakeSincLowpass(filter,FILT_LEN,2*(qf/m_levels[nLastTable].m_nSize)/lev.m_fMaxScanRate);
       //KaiserWindow(filter,FILT_LEN,4.3);
       
-      float *pIn = m_levels[nLastTable].m_pData;
+      //float *pIn = m_levels[nLastTable].m_pData;
       float *pOut = m_levels[m_nLevels].m_pData = new float[nCount + 4];
       int nSize1 = m_levels[nLastTable].m_nSize - 1;
-      int scale = (nSize1 + 1) / nCount;
+      //int scale = (nSize1 + 1) / nCount;
       
       int nFirstSample = int(fCrispFactor * nSize * (m_levels[nLastTable].m_fMaxScanRate / lev.m_fMaxScanRate));
       for (int i = 0; i < nSize; i++)

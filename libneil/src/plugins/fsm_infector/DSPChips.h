@@ -20,10 +20,10 @@ public:
 };
 
 class CInertia {
-protected:
-  float m_fAI;
 public:
   float m_fAccum;
+protected:
+  float m_fAI;
 public:
   CInertia() : m_fAccum(0.0), m_fAI(1.0) {
 
@@ -244,8 +244,8 @@ class CBiquad {
   }
   void SetParametricEQ(double fc, double q, double v, double esr, float gain=1.0f)
   {
-		PreNewFilter();
-    float sq = (float)sqrt(2.0*(double)v);
+    PreNewFilter();
+    //float sq = (float)sqrt(2.0*(double)v);
     float omega = float(TWOPI_F*fc/esr);
     float k = (float) tan((double)omega*0.5);
     float kk = k*k;
@@ -386,7 +386,8 @@ public:
 		// static const double PI=4*atan(1.0);
 		double sinFi, cosFi, sinFi2, cosFi2;
 		double sinNFi, cosNFi, sinNFi2, cosNFi2;
-		double fi=m_dPhase, nfi=m_fHarms*fi;
+		double fi=m_dPhase;
+		//double nfi=m_fHarms*fi;
 		sinFi=sin(fi);cosFi=cos(fi);
 		sinNFi=sin(m_fHarms*fi);cosNFi=cos(m_fHarms*fi);
 		double INVn=2.0/m_fHarms, val;
@@ -766,19 +767,19 @@ inline void LfoRateDesc(char *buf, unsigned char lforate)
 
 inline void LfoRateDescBFX(char *buf, unsigned char lforate)
 {
-	if (lforate<240)
+  if (lforate<240)
     sprintf(buf, "%5.3f Hz", (double)LFOPAR2TIME_CHIPS(lforate));
   else
-	{
-		int nTicks=GetNoOfTicks(lforate-240);
-    if (nTicks&1)
-			sprintf(buf, "%d/4 beats", nTicks);
-		else
-    if (nTicks&2)
-			sprintf(buf, "%d/2 beats", nTicks/2);
-		else
-			sprintf(buf, "%d beats", nTicks/4);
-	}
+    {
+      int nTicks=GetNoOfTicks(lforate-240);
+      if (nTicks&1)
+	sprintf(buf, "%d/4 beats", nTicks);
+      else
+	if (nTicks&2)
+	  sprintf(buf, "%d/2 beats", nTicks/2);
+	else
+	  sprintf(buf, "%d beats", nTicks/4);
+    }
 }
 
 inline float LfoRateToDeltaPhase(unsigned char lforate, int TicksPerSec, float SamplesPerSec)
@@ -813,8 +814,8 @@ inline int DelayLenToSamplesBuzzFX(int DelayUnit, int DelayLen, int SamplesPerTi
 class CUglyLimiter
 {
 public:
-  float m_fAccum;
   float m_fFactor;
+  float m_fAccum;
   float m_fAttackCoeff, m_fReleaseCoeff;
 
   CUglyLimiter(): m_fFactor(1.0f), m_fAccum(0.0f), m_fAttackCoeff(0.99f), m_fReleaseCoeff(1.01f) {}

@@ -674,14 +674,12 @@ namespace fsm {
       process_eventsTrack(&Tracks[c], &tval[c]);
   }
 
-#pragma optimize ("a", on) 
-
 #define DO_CLIP(x) ((Distort((x*0.5), theAtanTable, 8192)*2))
   //#define DO_CLIP(x) (x)
 
   static bool DoWorkChannel(float *pout, fsm_infector *pmi, int c, CChannel *chn)
   {
-    bool istracked=(chn->pTrack!=0);
+    //bool istracked=(chn->pTrack!=0);
     CTrack *trk=chn->pTrack?chn->pTrack:&pmi->Tracks[MAX_TRACKS+1];
     //  bool istracked=false;
     //  CTrack *trk=&pmi->Tracks[MAX_TRACKS+1];
@@ -746,13 +744,13 @@ namespace fsm {
   
     //	float vel=(chn==pmi->Channels)?chn->Velocity*1.41f:0; // XXXKF
     float vel=chn->Velocity*1.41f;
-    int nTime=chn->AmpEnv.GetTimeLeft();
+    //int nTime=chn->AmpEnv.GetTimeLeft();
 
     float *theAtanTable=atanTables[pmi->aval.cliptable];
 
     // bool bKey=GetKeyState(VK_SHIFT)<0; //XXXKF
     CADSREnvelope *pEnv=&chn->AmpEnv;
-    int *pTime=&pEnv->m_nTime;
+    //int *pTime=&pEnv->m_nTime;
     {
       int nTab=sizeof(tablesA)/4;
       int nTab2=sizeof(tablesC)/4;
@@ -774,7 +772,7 @@ namespace fsm {
       // int nPWM1Depth=int(60000.0*32000*pmi->gvalAct.vPWMRangeA/240/* /(nPWM1Period*240)*/);
       // int nPWM2Depth=int(60000.0*32000*pmi->gvalAct.vPWMRangeB/240/* /(nPWM2Period*240)*/);
       int nPWM1,nPWM2;
-      int &nPhase=chn->Phase1, &nPhase2=chn->Phase2;
+      //int &nPhase=chn->Phase1, &nPhase2=chn->Phase2;
       float fOscMix=pmi->gvalAct.vOscMix/240.0f;
       float fSubOsc=pmi->gvalAct.vSubOscVol/240.0f;
 
@@ -1147,8 +1145,6 @@ namespace fsm {
     for (int i=0; i<MAX_CHANNELS; i++)
       Channels[i].ClearFX();
   }
-
-#pragma optimize ("", on)
 
 } // namespace fsm
 

@@ -5,7 +5,6 @@
 #include <math.h>
 #include <float.h>
 #include <zzub/plugin.h>
-#pragma optimize ("a", on)
 #include "DSPChips.h"
 
 #include "infector.h"
