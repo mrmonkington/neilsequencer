@@ -95,7 +95,7 @@ void	EqBand::set_parameters (Type type, float freq, float gain, float q)
 	using namespace std;
 
 	float				a [3] = { 1, 1, 1 };
-	float				b [3];
+	float				b [3] = { 0, 0, 0 };
 
 	// For the shelves, high Q produces a peak in the passband and a notch
 	// in the stopband.
