@@ -1,0 +1,162 @@
+<page xmlns="http://projectmallard.org/1.0/"
+      type="topic"
+      id="somono_cloud">
+<info>
+  <link type="guide" xref="machines"/>
+  <desc>
+    A simple yet powerful granular synthesizer
+  </desc>
+</info>
+<title>SoMono Cloud</title>
+<p>
+  Cloud is a grain synthesis based synthesizer. It takes a wave file and
+  plays back short parts of it with varying parameters that are chosen
+  at random from a given range. Each such short part is called a
+  grain. You can select it's length, starting offset into the wave file,
+  envelope parameters, rate, etc. You can specify the probability for
+  playback during each processing cycle (currently 256 samples).
+</p>
+<p>
+  When loading stereo files Cloud will only load the first channel. If
+  the wave file is longer than 10 seconds only the first 10 seconds
+  will be used. The first limitation is an implementation choice that
+  results in a simpler program while the second one is because the
+  wave data needs to be loaded in to computer memory. They should not
+  interfere to much with the usual use cases of granular synthesizers.
+</p>
+<table shade="rows">
+  <tr>
+    <td><p><em>Parameter</em></p></td>
+    <td><p><em>Meaning</em></p></td>
+  </tr>
+  <tr>
+    <td><p>Wave</p></td>
+    <td><p>
+      This allows you to pick a loaded wave file from a wave slot by name. 
+    </p></td>
+  </tr>
+  <tr>
+    <td><p>Offset Mean</p></td>
+    <td><p>
+      The mean offset into the wave file. This is the percentage by
+      which the playback is skipped in to the wave file. For example setting
+      this to 50% will start the playback from the middle of the file for
+      each new grain.
+    </p></td>
+  </tr>
+  <tr>
+    <td><p>Offset Devi</p></td>
+    <td><p>
+      This and other devi (deviation) parameters let you adjust how
+      much will the actual value deviate randomly from the mean value that
+      you set using the mean parameters. For example if offset mean value
+      ranges from 0% to 100% then setting Offset Devi parameter to say 0.1
+      and setting Offset Mean to say 50% then the actual value will be from
+      the interval (40%, 60%) picked at random. This works the same way for
+      all the other parameters.
+    </p></td>
+  </tr>
+  <tr>
+    <td><p>Amp Mean</p></td>
+    <td><p>
+      Each grains output is multiplied by the value specified by this
+      parameter thus scaling the volume down if it is set to something less
+      than 1. You use it to either avoid clipping when alot of grains are
+      playing at the same time or with the devi parameter to allow grains of
+      different volumes.
+    </p></td>
+  </tr>
+  <tr>
+    <td><p>Amp Devi</p></td>
+    <td><p>
+      Deviation value for the amp parameter. 
+    </p></td>
+  </tr>
+  <tr>
+    <td><p>Length Mean</p></td>
+    <td><p>
+      The length for which each grain will be playing in miliseconds. 
+    </p></td>
+  </tr>
+  <tr>
+    <td><p>Length Devi</p></td>
+    <td><p>
+      Deviation value for the length parameter. 
+    </p></td>
+  </tr>
+  <tr>
+    <td><p>Sustain Mean</p></td>
+    <td><p>
+      This value stands for the percentage of time (which was
+      specified with the length parameter) that wil be spent in the sustain
+      stage.
+    </p></td>
+  </tr>
+  <tr>
+    <td><p>Sustain Devi</p></td>
+    <td><p>
+      Deviation value for the sustain parameter. 
+    </p></td>
+  </tr>
+  <tr>
+    <td><p>Skew Mean</p></td>
+    <td><p>
+      Skew in this case means the amount of playback time that will be
+      spent in the attack stage. If skew is set to 50% than it means that
+      both attack and decay stages will be given equal time. If it is set to
+      20% it means that attack will be given 20% of the time that is left
+      after accounting for sustain and release will be given the remaining
+      80% thus attack will be shorter than release. You get the picture.
+    </p></td>
+  </tr>
+  <tr>
+    <td><p>Skew Devi</p></td>
+    <td><p>
+      Deviation value for the skew parameter. 
+    </p></td>
+  </tr>
+  <tr>
+    <td><p>Rate Mean</p></td>
+    <td><p>
+      Playback rate for each grain. Value 0.0 means that each grain plays
+      at the original rate, 1.0 means that the it is played twice as fast,
+      -1.0 that it is played twice as slow etc.
+    </p></td>
+  </tr>
+  <tr>
+    <td><p>Rate Devi</p></td>
+    <td><p>
+      Deviation value for the rate parameter. 
+    </p></td>
+  </tr>
+  <tr>
+    <td><p>Pan Mean</p></td>
+    <td><p>
+      The panorama position of the grain. Here -1.0 means panning hard
+      left and 1.0 means panning hard right, the other values cover the rest
+      of the panorama spectrum.
+    </p></td>
+  </tr>
+  <tr>
+    <td><p>Pan Devi</p></td>
+    <td><p>
+      Deviation value for the pan parameter. 
+    </p></td>
+  </tr>
+  <tr>
+    <td><p>Density</p></td>
+    <td><p>
+      Probability that a grain will be triggered for playback at each
+      given processing cycle. The bigger this value the more grains playing
+      at the same time.
+    </p></td>
+  </tr>
+  <tr>
+    <td><p>Grains</p></td>
+    <td><p>
+      The maximum number of grains that can be playing that the same
+      time.
+    </p></td>
+  </tr>
+</table>
+</page>

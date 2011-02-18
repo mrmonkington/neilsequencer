@@ -1,0 +1,350 @@
+Neil 0.13 (Mars)
+==================
+
+Enhancements:
+
+Reworked python user interface into a component system.
+Undo/Redo
+Searchable plugin list browser
+Pattern zooming
+Improved DSSI support
+
+Neil 0.12 (Luna)
+==================
+
+Enhancements:
+
+Play MIDI input on selected machine
+Record chords using midi or keyjazz (create tracks to hold extra notes first)
+Green Milk synth added
+FSM Infector synth added
+Added home and end for sequencer
+Simple rack view implemented
+Slider increments handling arrow keys and slider body mouse clicks.
+Multiple columns for preset dropdown.
+Menu accelerators for new, open, save.
+AZERTY keyboard compatibility
+Scrollbars added to sequencer
+Use midi keyboard for step-entry in pattern editor
+A tool to manage and import/export presets
+ability to create new pattern from sequencer view
+
+#163 use < > keys to change sample in pattern editor
+#287 Volume cannot be bound to MIDI controls
+#292 need way to select which machine midi affects
+#322 Main volume meter lags to follow output
+#330 Selection with mouse or shift-arrow keys in pattern editor
+#335 Autoconnect generators, autocreate pattern (shift to override)
+#353 move preferences dialog to edit tab
+#375 Numpad entry implemented
+#377 Parameter slider responds to arrow keys and mouse clicks on surface.
+#378 Cursor movement speed increase.
+#380 Key jazz in parameter window
+
+Bugs fixed:
+
+Fix for status bar change on cursor movement
+Slider single step increment equal to 1
+Parameters display correctly on blackbox and other window managers
+#260 cpu monitor window woes
+#315 Sequence editor causes SIGSEGV if there is no machine added.
+#328 MIDI controls binding not working correctly for LUNAR plugins
+#342 'unmute all machines' - machine view
+#350 Parameter windows not resizable
+#351 Buzz songs import not working
+#354 Python traceback when reading malformed wav file
+#362 feisty: pyzzub is installed for python 2.4, not 2.5
+#365 Scrollbar doesn't work with Fluxbox
+#367 MIDI control doesn't work correctly with generators
+#369 Error opening demo song (paniq-knark.ccm)
+#371 in pattern edit: font size doesn't match cursor/grid size
+#382 Selections inbetween machines are incompatible, can cause a crash.
+#383 MIDI input does not work
+#389 Muting effects after soloing does not work
+#390 Pattern editor does not show values of recorded parameters
+#392 Fixed interpolation.
+#403 scrollbars in pattern editor are dodgy
+#405 Signal analysis in router needs converted from wx -> Gtk
+
+Neil 0.11 (Terra)
+===================
+
+Enhancements:
+
+#334: port neil from wxpython to pygtk
+#332: MIDI Learn function
+#188: Rearrange toolbar position
+#340: Ctrl-D in sequence view
+#90: Display current directory in sample browser
+
+Bugs fixed:
+
+#333: Parameter windows disappear with non-standard window manager
+#336: Right click + Unbind All does not work as expected
+#339: Crash in sequence view
+#343: lunar synths don't stop with F8
+#344: Crash when copy-pasting
+
+
+Neil 0.10.1 (Venus)
+=====================
+
+Enhancements:
+
+XXX: --profile option.
+
+Bugs fixed:
+
+XXX: CPU spikes when in sequencer or pattern editor.
+
+
+Neil 0.10 (Venus)
+===================
+
+Enhancements:
+
+#290: Pattern editor needs scrollbar
+#312: Multiple MIDI inputs
+#313: improvements for cpu montior
+#317: remove splash screen
+#318: horizontal sequence view
+#319: new set of icons
+#320: freesound integration
+#323: optimize painting
+#327: support for loading of mp3 and flac samples
+
+Bugs fixed:
+
+#281: wavetable display/preview problem
+#300: numeric input broken
+#324: MIDI bindings not saved with .ccm files
+#325: MIDI controls order not correct
+#269: CPU monitor not working
+
+Neil 0.9 (Mercury)
+====================
+
+Enhancements:
+
+#304: overdrive warnings
+#89: Sensible defaults for envelope
+#158: use stock icons for toolbar
+#241: input plugin
+#245: add plugins between connections
+#246: deleting plugin will reestablish remaining connection
+#288: Dvorak Keyboard Layout
+#289: new effect "lunar filter"
+#294: improvements to lunar synth
+#295: new plugin "lunar kick"
+#297: new effect "lunar pan"
+#298: new function "loop fit" for samples
+#301: mute plugin with single-click, not double-click
+#302: show only "new plugin" menu when right-clicking router
+#305: colored pattern blocks in sequencer
+#307: router: insert plugin command
+#308: open parameter window after creating effect
+#309: vu meter for individual plugins
+
+Bugs fixed:
+
+#293: ctypes->param double click issue
+#296: ccm corrupts if waves have wrong samplerate
+#303: remove missing tracks in recent files menu
+
+Neil 0.8 (Raccoon)
+====================
+
+Enhancements:
+
+#117: new default fileformat (ccm)
+#243: lunar: support for dsp scripting
+#67: ">>" button in wavetable
+#146: Horizontal scrolling in sequence view
+#202: distinction between "end of song" and "end of loop"
+#205: envelope menu: reset, load, save
+#220: Custom index
+#244: sequencer view allows adding patterns by numpad
+#256: clicking on the activity led mutes plugin
+#257: graphic flickers when adjusting connection volume
+
+Bugs fixed:
+
+#177: paste is broken
+#215: Wavetable list in pattern sequencer is not updated when new samples are added in the wavetable view.
+#211: when selecting plugin commands, player is locked
+#223: Slider values don't update while sliding
+#250: Neil forgets the last used path for loading songs
+#263: Machine in double-click menu are sorted wrong
+#268: Doesn't ask to save before opening a new document
+#276: problem adding tracks in sequencer
+#279: Display order of bound midi controllers not accurate in the
+#280: Reopening a .zxm creates a new Master
+#282: file appears not saving when extension missing
+
+Neil 0.7 (Vulture)
+====================
+
+Enhancements:
+
+#239: integrate portmidi into svn
+#272: separate the good from the ugly plugins
+#275: Separate volume control for sample preview volume
+#54: midi support
+#55: info page (f10)
+#80: help
+#135: "edit..." button in parameter windows & preset edit windows
+#235: automation
+#236: preview samples with -12dB
+#237: add m4wii synth
+#242: extension system
+
+Bugs fixed:
+
+#165: amd64 patches
+
+Neil 0.6 (Raven)
+==================
+
+Enhancements:
+
+#232: incremental save
+#97: display activity of machines in router
+#136: preset selection combobox in parameter window
+#234: view and edit machine attributes
+#58: midi input + output panel
+#59: cpu monitor
+#62: themes
+#74: ADSR button for wavetable
+#96: ask before deleting machines
+#132: "help" button in parameter windows
+#133: "copy" button in parameter windows
+#134: "random" button in parameter windows
+#201: Pattern editor keyboard shortcut for switching between samples
+#216: add Makk M4 to plugin tree
+#233: slider movement is automated by pattern values
+
+Bugs fixed:
+
+#182: hitting dot in pattern editor does not clear line but insert "off" note
+#192: Wavetable: browsing
+#208: Playcursor should be visible in pattern editor as well
+#213: exception when using keys in samplebrowser
+#219: Entering notes feels sluggishly - hard to describe
+#190: Double-Click "Add Machine" Menu
+#217: Preferences dialog unnecessarily small
+#221: notes aren't played when entering them in the pattern editor if you haven't played the song before
+#222: Cycling through step size in the pattern sequencer
+#229: Sequence editor key combos missing
+
+
+Neil 0.5 (Rat)
+================
+
+Enhancements:
+
+#57: wavetable preferences
+#156: Copy/paste in sequencer view
+#159: Machine parameter view sliders fatter and keyboard input
+#179: ctrl+1 - ctrl+8 in pattern editor
+#181: ability to rename machine
+#187: doubleclicking a plugin sends event
+#56: free wave output device (f12)
+#61: being able to show/hide toolbars through "view" menu
+#95: ladspadapter: handle logarithmic values
+#104: keyboard map panel in preferences
+#167: middle button + left button to connect machines missing
+#186: support for dssi synths
+#206: add firesledge param eq to plugin tree
+#209: custom plugin commands in context menu and submenus
+
+Bugs fixed:
+
+#176: picking the base octave is broken
+#180: new envelopes are not being saved with bmx file
+#198: Matilde -> Multi -> Master + sound playing = python crashes.
+#173: Scrollbar for parameter view
+#174: Enable/Disable looping button working
+#175: wavetable sample list is sorted case sensitive
+#178: transpose function also transposes "off"
+#185: It's possible to add multiple Master machines
+#192: Wavetable: browsing
+#189: Pattern sequencer layout
+#190: Double-Click "Add Machine" Menu
+#191: Creating machine connections with mouse only
+#194: Machine getting stuck to the mouse pointer
+#197: Mute All button (F12) non-functional
+#199: Window position isn't remembered correctly
+#200: Keyboard focus when entering the wavetable
+#203: Pattern editor font
+#204: Mouse wheel direction reversed on sliders
+
+Neil 0.4 (Harvestman)
+=======================
+
+Enhancements:
+
+#60: hard disk recorder
+#66: changing steps in sequencer
+#130: extended machine list in machines view
+#149: Port Joachim Multi-2 and Frequency Unknown O-Delay
+#169: Implement machine mute and solo in router view
+#171: layout improvements to parameter view, sequencer toolbar and pattern toolbar
+#172: keymap can be changed in settings.cfg/registry
+
+Bugs fixed:
+
+#126: Does not release ASIO driver properly
+#162: Pattern editor returns to 0,0 on insert, delete, paste, add/remove track
+#168: Generators accept connexions from Effects or from Master
+#170: A sequence of machine creation crashes Neil
+#160: Each machine should keep track of cursor position in its pattern view
+#164: Parameters for deleted machines appearing for new machines
+#166: wavtable preview playback playing whitenoise (windows)
+
+
+Neil 0.3 (Carrion Beetle)
+===========================
+
+Enhancements:
+
+#111: merge mdk features into plugin.h
+#112: joachim multi-2
+#129: additional status bar in pattern editor
+#131: second status bar in sequencer view
+#141: F6 shortcut
+#145: Horizontal scrolling in pattern view
+#154: merge zzub::plugin2 into zzub::plugin
+#157: remove hidden folders in wavetable loader fileview
+#161: move .neil config file to ~/.neil/settings.cfg
+
+Bugs fixed:
+
+#140: New file action has some side effects in pattern/sequencer
+#142: moving left in the first sequencer column creates exceptions
+#143: Clicking sliders in param view doesn't update param description
+#144: Numeric keypad not working to select pattern in sequencer view
+#147: File saving/loading with buzz machines is not working
+#151: Pattern view toolbar overlaps main toolbar.
+#152: Switching to pattern view doesn't automatically select latest created pattern
+#155: Pattern view of master does not include connection tracks
+
+Neil 0.2 (Blowfly)
+====================
+
+NEW: close pattern dialog when hitting return.
+NEW: ability to add new tracks to sequencer view.
+NEW: selection for sequencer view.
+NEW: context menu in sequencer view.
+NEW: dsplib removed for linux.
+NEW: application info and menu icons for gnome/kde.
+FIX: pattern view fails with global parameters.
+FIX: circular loop of effects is allowed and makes mute crash.
+FIX: mute can't find libzzub if LD_LIBRARY_PATH isn't set.
+FIX: when pasting in matilde, off turns into E-9.
+FIX: test.bmx loads dummy machines when saved and loaded.
+FIX: win32: mouse is not being captured when dragging in envelope editor.
+FIX: if LD_LIBRARY_PATH is set, mute can't start.
+FIX: The samplename text in the Wavetable is not updated after wave is loaded.
+FIX: Master machine can be deleted.
+FIX: margins in wavetable for win32.
+FIX: win32: mixer toolbar too narrow.

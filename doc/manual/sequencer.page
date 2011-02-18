@@ -1,0 +1,134 @@
+<page xmlns="http://projectmallard.org/1.0/"
+      type="topic"
+      id="sequencer">
+<info>
+  <desc>Song structure editor</desc>
+  <link type="guide" xref="index"/>
+</info>
+<title>Sequencer view</title>
+<section>
+  <title>Shortcuts</title>
+  <table>
+    <tr>
+      <td><p><em>Shortcut</em></p></td>
+      <td><p><em>Action</em></p></td>
+    </tr>
+    <tr>
+      <td><p><keyseq><key>Shift</key><key>Plus</key></keyseq></p></td>
+      <td><p>Increase the resolution</p></td>
+    </tr>
+    <tr>
+      <td><p><keyseq><key>Shift</key><key>Minus</key></keyseq></p></td>
+      <td><p>Decrease the resolution</p></td>
+    </tr>
+    <tr>
+      <td><p><keyseq><key>Ctrl</key><key>Enter</key></keyseq></p></td>
+      <td><p>Add a new track</p></td>
+    </tr>
+    <tr>
+      <td><p><keyseq><key>Ctrl</key><key>Delete</key></keyseq></p></td>
+      <td><p>Delete a track</p></td>
+    </tr>
+    <tr>
+      <td><p><keyseq><key>Ctrl</key><key>b</key></keyseq></p></td>
+      <td><p>Set the loop start point to where the cursor is</p></td>
+    </tr>
+    <tr>
+      <td><p><keyseq><key>Ctrl</key><key>e</key></keyseq></p></td>
+      <td><p>Set the loop end point to where the cursor is</p></td>
+    </tr>
+    <tr>
+      <td><p><keyseq><key>Ctrl</key><key>l</key></keyseq></p></td>
+      <td><p>Solo the track on which the cursor is</p></td>
+    </tr>
+    <tr>
+      <td><p><keyseq><key>Ctrl</key><key>i</key></keyseq></p></td>
+      <td><p>Shift the whole song to the right</p></td>
+    </tr>
+    <tr>
+      <td><p><keyseq><key>Ctrl</key><key>d</key></keyseq></p></td>
+      <td><p>Shift the whole song to the left</p></td>
+    </tr>
+    <tr>
+      <td><p><keyseq><key>Ctrl</key><key>c</key></keyseq></p></td>
+      <td><p>Copy selection to clipboard</p></td>
+    </tr>
+    <tr>
+      <td><p><keyseq><key>Ctrl</key><key>x</key></keyseq></p></td>
+      <td><p>Cut selection to clipboard</p></td>
+    </tr>
+    <tr>
+      <td><p><keyseq><key>Ctrl</key><key>v</key></keyseq></p></td>
+      <td><p>Paste data from clipboard</p></td>
+    </tr>
+    <tr>
+      <td><p><keyseq><key>Ctrl</key><key>Up</key></keyseq></p></td>
+      <td><p>Move the track up one position</p></td>
+    </tr>
+    <tr>
+      <td><p><keyseq><key>Ctrl</key><key>Down</key></keyseq></p></td>
+      <td><p>Move the track down one position</p></td>
+    </tr>
+    <tr>
+      <td><p><keyseq><key>Ctrl</key><key>Left</key></keyseq></p></td>
+      <td><p>Move the cursor 16 steps to the left</p></td>
+    </tr>
+    <tr>
+      <td><p><keyseq><key>Ctrl</key><key>Right</key></keyseq></p></td>
+      <td><p>Move the cursor 16 steps to the right</p></td>
+    </tr>
+    <tr>
+      <td><p><key>Left</key></p></td>
+      <td><p>Move the cursor to the left</p></td>
+    </tr>
+    <tr>
+      <td><p><key>Right</key></p></td>
+      <td><p>Move the cursor to the right</p></td>
+    </tr>
+    <tr>
+      <td><p><key>Up</key></p></td>
+      <td><p>Move the cursor up</p></td>
+    </tr>
+    <tr>
+      <td><p><key>Up</key></p></td>
+      <td><p>Move the cursor down</p></td>
+    </tr>
+    <tr>
+      <td><p><key>Space</key></p></td>
+      <td><p>Insert the pattern that is selected in the pattern selector</p></td>
+    </tr>
+    <tr>
+      <td><p><key>Page Up</key></p></td>
+      <td><p>Move up in the pattern selector</p></td>
+    </tr>
+    <tr>
+      <td><p><key>Page Down</key></p></td>
+      <td><p>Move down in the pattern selector</p></td>
+    </tr>
+    <tr>
+      <td><p><key>Delete</key></p></td>
+      <td><p>Delete at cursor</p></td>
+    </tr>
+    <tr>
+      <td><p><key>Insert</key></p></td>
+      <td><p>Insert at cursor</p></td>
+    </tr>
+    <tr>
+      <td><p><key>Period</key></p></td>
+      <td><p>Remove pattern at cursor from the sequence</p></td>
+    </tr>
+    <tr>
+      <td><p><key>Home</key></p></td>
+      <td><p>Go to song start</p></td>
+    </tr>
+    <tr>
+      <td><p><key>End</key></p></td>
+      <td><p>Go to song end</p></td>
+    </tr>
+    <tr>
+      <td><p><key>Enter</key></p></td>
+      <td><p>Open the pattern view with the pattern at cursor</p></td>
+    </tr>
+  </table>
+</section>
+</page>

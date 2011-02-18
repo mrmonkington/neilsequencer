@@ -1,0 +1,120 @@
+<page xmlns="http://projectmallard.org/1.0/"
+      type="topic"
+      id="bigyo_frequencyshifter">
+  <info>
+    <desc>Hilbert transform based frequency shifter</desc>
+    <link type="guide" xref="machines"/>
+  </info>
+  <title>Bigyo FrequencyShifter</title>
+  <p>The Bigyo Frequencyshifter is a Hilbert-transformer based frequency
+    shifter effect. It produces a versatile and distinctive sound, almost
+    like a cross between a flanger, a phaser and a ring modulator.
+  </p>
+  <section>
+    <title>Attributes</title>
+    <table shade ="rows">
+      <tr>
+	<td>
+	  <p><em>Attribute</em></p>
+	</td>
+	<td>
+	  <p><em>Description</em></p>
+	</td>
+      </tr>
+      <tr>
+	<td>
+	  <p>Frequency non-linearity</p>
+	</td>
+	<td>
+	  <p>Frequency slope parameter</p>
+	</td>
+      </tr>
+      <tr>  
+	<td>
+	  <p>Max Frequency (Hz)</p>
+	</td>
+	<td>
+	  <p>Set the maximum possible value of the frequency
+	    parameter</p> 
+	</td>
+      </tr>
+    </table>
+  </section>
+  <section>
+    <title>Parameters</title>
+    <table shade="rows">
+      <tr>
+	<td>
+	  <p><em>Column</em></p>
+	</td>
+	<td>
+	  <p><em>Description</em></p>
+	</td>
+      </tr>
+      <tr>
+	<td>
+	  <p>Frequency</p>
+	</td>
+	<td>
+	  <p>How many Hz to shift up or down</p> 
+	</td>
+      </tr>
+      <tr>
+	<td>
+	  <p>Left Direction</p>
+	</td>
+	<td>
+	  <p>The direction of the shift for the left channel</p>
+	</td>
+      </tr>  
+      <tr>
+	<td>
+	  <p>Right direction</p>
+	</td>
+	<td>
+	  <p>The direction of the shift for the right channel</p>
+	</td>
+      </tr>
+      <tr>
+	<td>
+	  <p>Feedback</p>
+	</td>
+	<td>
+	  <p>How much of a previously processed sample to mix back in</p>
+	</td>
+      </tr>
+      <tr>
+	<td>
+	  <p>Lfo Rate</p>
+	</td>
+	<td>
+	  <p>Frequency LFO rate</p>
+	</td>
+      </tr>
+      <tr>
+	<td>
+	  <p>Lfo Amp</p>
+	</td>
+	<td>
+	  <p>Frequency LFO depth</p>
+	</td>
+      </tr>	
+      <tr>
+	<td>
+	  <p>Wet</p>
+	</td>
+	<td>
+	  <p>Amount of wet signal in the mix</p>
+	</td>
+      </tr>
+      <tr>
+	<td>
+	  <p>Dry</p>
+	</td>
+	<td>
+	  <p>Amount of dry signal in the mix</p> 
+	</td>
+      </tr>	  
+    </table>
+  </section>
+</page>

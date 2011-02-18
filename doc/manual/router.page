@@ -1,0 +1,9 @@
+<page xmlns="http://projectmallard.org/1.0/"
+      type="topic"
+      id="router">
+<info>
+  <desc>Allows you to connect machines to each other</desc>
+  <link type="guide" xref="index"/>
+</info>
+<title>Router view</title>
+</page>

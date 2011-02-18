@@ -1,0 +1,123 @@
+<page xmlns="http://projectmallard.org/1.0/"
+      type="topic"
+      id="pattern">
+<info>
+  <desc>Musical event data editor</desc>
+  <link type="guide" xref="index"/>
+</info>
+<title>Pattern view</title>
+<p>Use this view to enter pattern data. Since Neil is a so-called
+  tracker, you have to enter notes in a certain quite peculiar
+  format. Time in trackers go from top to bottom. Each line in this
+  view is a musical event. Columns are used to enter data which are
+  always integral numbers displayed in hexadecimal. These numbers can
+  be used to set synthesizer parameters, note values and other
+  performance data.</p>
+<p>
+</p>
+<section>
+  <title>Shortcuts</title>
+  <table>
+    <tr>
+      <td><p><em>Shortcut</em></p></td>
+      <td><p><em>Action</em></p></td>
+    </tr>
+    <tr>
+      <td>
+	<p><keyseq><key>Ctrl</key><key>Shift</key><key>Enter</key></keyseq></p>
+      </td>
+      <td>
+	<p>Create a copy of the currently open pattern.</p>
+      </td>
+    </tr>
+    <tr>
+      <td>
+	<p><keyseq><key>Ctrl</key><key>Enter</key></keyseq></p>
+      </td>
+      <td>
+	<p>Create a new pattern</p>
+      </td>
+    </tr>
+    <tr>
+      <td>
+	<p><keyseq><key>Ctrl</key><key>Backspace</key></keyseq></p>
+      </td>
+      <td>
+	<p>Display pattern properties</p>
+      </td>
+    </tr>
+    <tr>
+      <td>
+	<p><keyseq><key>Ctrl</key><key>Delete</key></keyseq></p>
+      </td>
+      <td>
+	<p>Delete current pattern</p>
+      </td>
+    </tr>
+    <tr>
+      <td>
+	<p><keyseq><key>Shift</key><key>Plus</key></keyseq></p>
+      </td>
+      <td>
+	<p>Transpose the note at cursor by +1</p>
+      </td>
+    </tr>
+    <tr>
+      <td>
+	<p><keyseq><key>Shift</key><key>Minus</key></keyseq></p>
+      </td>
+      <td>
+	<p>Transpose the note at cursor by -1</p>
+      </td>
+    </tr>
+    <tr>
+      <td>
+	<p><keyseq><key>Ctrl</key><key>c</key></keyseq></p>
+      </td>
+      <td>
+	<p>Copy selection to clipboard</p>
+      </td>
+    </tr>
+    <tr>
+      <td>
+	<p><keyseq><key>Ctrl</key><key>x</key></keyseq></p>
+      </td>
+      <td>
+	<p>Cut selection to clipboard</p>
+      </td>
+    </tr>
+    <tr>
+      <td>
+	<p><keyseq><key>Ctrl</key><key>v</key></keyseq></p>
+      </td>
+      <td>
+	<p>Paste from clipboard</p>
+      </td>
+    </tr>
+    <tr>
+      <td>
+	<p><keyseq><key>Ctrl</key><key>i</key></keyseq></p>
+      </td>
+      <td>
+	<p>Interpolate selection</p>
+      </td>
+    </tr>
+    <tr>
+      <td>
+	<p><keyseq><key>Ctrl</key><key>Plus</key></keyseq></p>
+      </td>
+      <td>
+	<p>Add a track</p>
+      </td>
+    </tr>
+    <tr>
+      <td>
+	<p><keyseq><key>Ctrl</key><key>Minus</key></keyseq></p>
+      </td>
+      <td>
+	<p>Delete last track</p>
+      </td>
+    </tr>
+  </table>
+</section>
+</page>

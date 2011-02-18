@@ -1,0 +1,6 @@
+#encoding: latin-1
+
+import glob
+Import('env', 'install', 'install_recursive')
+
+install('${DOC_PATH}/manual', glob.glob('manual/*.page'))

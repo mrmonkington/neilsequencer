@@ -1,0 +1,112 @@
+<page xmlns="http://projectmallard.org/1.0/"
+      type="topic"
+      id="expression">
+  <info>
+    <desc>Enter a chunk of python code to mangle pattern data</desc>
+    <link type="guide" xref="patternfx"/>
+  </info>
+  <title>Expression</title>
+  <p>
+    This pattern effect contains a text editor box that you can use to
+    enter python statements. This can be used in various ways. Both
+    generating data values and transforming existing data is
+    possible. There are some special values that you can use in your
+    expression. Those are explained in the table below.
+  </p>
+  <table shade="rows" title="test">
+    <tr>
+      <td><p><em>x</em></p></td>
+      <td><p>The value in the pattern cell that is currently being
+      acted on.</p></td>
+    </tr>
+    <tr>
+      <td><p><em>a</em></p></td>
+      <td><p>Lower bound for the machine parameter on which the
+	  expression is supposed to work on.</p></td>
+    </tr>
+    <tr>
+      <td><p><em>b</em></p></td>
+      <td><p>Upper bound for the machine parameter on which the
+	  expression is supposed to work on.</p></td>
+    </tr>
+    <tr>
+      <td><p><em>i</em></p></td>
+      <td><p>Index of the row on which the expression is currently
+	  working.</p></td>
+    </tr>
+    <tr>
+      <td><p><em>p</em></p></td>
+      <td><p>"Phase" value. This ranges from 0 to 1 over the course of
+      the selection.</p></td>
+    </tr>
+    <tr>
+      <td><p><em>n</em></p></td>
+      <td><p>Number of rows in the selection.</p></td>
+    </tr>
+    <tr>
+      <td><p><em>z</em></p></td>
+      <td><p>Value that is used to show that this cell is
+	  empty.</p></td>
+    </tr>
+    <tr>
+      <td><p><em>y</em></p></td>
+      <td><p>This variable should be set to what you want current cell
+      to contain.</p></td>
+    </tr>
+  </table>
+  <section>
+    <title>Examples</title>
+    <p>
+      The following example expressions can be entered in the expression
+      box in the Expression dialog and executed with the appropriate
+      results.
+    </p>
+    <section>
+      <title>Constant</title>
+      <p>
+	Simply sets every cell in the selection to the value 42. You
+	will want to make sure that the constant falls
+	between <em>a</em> and <em>b</em>.
+      </p>
+      <code>
+y = 42
+      </code>
+    </section>
+    <section>
+      <title>Sparse Constant</title>
+      <p>
+	Set every 4th cell to the value 42. This example uses the
+	special variable <em>i</em> to find out which row the
+	expression is being applied to.
+      </p>
+      <code>
+if i % 4 == 0:
+    y = 42
+else:
+    y = z
+      </code>
+    </section>
+    <section>
+      <title>Random Values</title>
+      <p>
+	Set every cell with a random value ranging from <em>a</em>
+	to <em>b</em>. This demonstrates that you can use all the
+	functions from <em>math</em> and <em>random</em> Python
+	modules.
+      </p>
+      <code>
+y = randint(a, b - 1)
+      </code>
+    </section>
+    <section>
+      <title>LFO</title>
+      <p>
+	This creates a single sine LFO cycle ranging from <em>a</em>
+	to <em>b</em>.
+      </p>
+      <code>
+y = a + (sin(2.0 * pi * p) + 1.0) * 0.5 * (b - a)
+      </code>
+    </section>
+  </section>
+</page>

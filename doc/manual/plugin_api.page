@@ -1,0 +1,80 @@
+<page xmlns="http://projectmallard.org/1.0/"
+      type="topic"
+      id="plugin_api">
+  <info>
+    <desc>Information about machine API</desc>
+    <link type="guide" xref="development"/>
+  </info>
+  <title>Plug-In API</title>
+  <code mime="text/x-c++src"><![CDATA[
+struct plugin {
+  virtual ~plugin() { }
+  virtual void destroy() { delete this; }
+  virtual void init(zzub::archive *arc) {}
+  virtual void process_events() {}
+  virtual void process_midi_events(midi_message* pin, int nummessages) {}
+  virtual void process_controller_events() {}
+  virtual bool process_stereo(float **pin, float **pout, 
+                              int numsamples, int mode) { return false; }
+  virtual bool process_offline(float **pin, float **pout, 
+                              int *numsamples, int *channels, 
+                              int *samplerate) { return false; }
+  virtual void stop() {}
+  virtual void load(zzub::archive *arc) {}
+  virtual void save(zzub::archive *arc) {}
+  virtual void attributes_changed() {}
+  virtual void command(int index) {}
+  virtual void set_track_count(int count) {}
+  virtual void mute_track(int index) {}
+  virtual bool is_track_muted(int index) const { return false; }
+  virtual void midi_note(int channel, int value, int velocity)  {}
+  virtual void event(unsigned int data)  {}
+  virtual const char * describe_value(int param, int value) { return 0; }
+  virtual const zzub::envelope_info ** get_envelope_infos() { return 0; }
+  virtual bool play_wave(int wave, int note, float volume, 
+                         int offset, int length) { return false; }
+  virtual void stop_wave() {}
+  virtual int get_wave_envelope_play_position(int env) { return -1; }
+  virtual const char* describe_param(int param) { return 0; }
+  virtual bool set_instrument(const char *name) { return false; }
+  virtual void get_sub_menu(int index, zzub::outstream *os) {}
+  virtual void add_input(const char *name, zzub::connection_type type) {}
+  virtual void delete_input(const char *name, zzub::connection_type type) {}
+  virtual void rename_input(const char *oldname, const char *newname) {}
+  virtual void input(float **samples, int size, float amp) {}
+  virtual void midi_control_change(int ctrl, int channel, int value) {}
+  virtual bool handle_input(int index, int amp, int pan) { return false; }
+  virtual void get_midi_output_names(outstream *pout) {}
+  virtual void set_stream_source(const char* resource) {}
+  virtual const char* get_stream_source() { return 0; }
+  virtual void play_sequence_event(zzub_sequence_t* seq, 
+                                   const sequence_event& ev, int offset) {}	
+  virtual void configure(const char *key, const char *value) {}
+  plugin() {
+    global_values = 0;
+    track_values = 0;
+    controller_values = 0;
+    attributes = 0;
+    _master_info = 0;
+    _host = 0;
+  }
+  void *global_values;
+  void *track_values;
+  void *controller_values;
+  int *attributes;
+  master_info *_master_info;
+  host *_host;
+};]]>
+  </code>
+  <section>
+    <title>Method explanations</title>
+    <terms>
+      <title>plugin class methods</title>
+      <item>
+	<title><code><em>void</em> process_events()</code></title>
+	<p>Has no arguments. Called once every tick. Used to gather
+	machine parameter values if they got changed that tick.</p>
+      </item>
+    </terms>
+  </section>
+</page>

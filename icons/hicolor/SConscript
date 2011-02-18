@@ -1,0 +1,30 @@
+#encoding: latin-1
+
+# Neil
+# Modular Sequencer
+# Copyright (C) 2006 The Neil Development Team
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+Import('env', 'install', 'install_recursive', 'win32')
+import glob
+
+install('${ICONS_HICOLOR_PATH}/16x16/apps', '16x16/apps/neil.png')
+install('${ICONS_HICOLOR_PATH}/22x22/apps', '22x22/apps/neil.png')
+install('${ICONS_HICOLOR_PATH}/24x24/apps', '24x24/apps/neil.png')
+install('${ICONS_HICOLOR_PATH}/32x32/apps', '32x32/apps/neil.png')
+install('${ICONS_HICOLOR_PATH}/48x48/apps', '48x48/apps/neil.png')
+install('${ICONS_HICOLOR_PATH}/scalable/apps', 'scalable/apps/neil.svg')
+

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   version="1.0"
+   width="16"
+   height="16"
+   id="svg2">
+  <defs
+     id="defs4" />
+  <g
+     id="layer1">
+    <path
+       d="M 14.950819 7.0491805 A 7.9672132 7.9672132 0 1 1  -0.98360682,7.0491805 A 7.9672132 7.9672132 0 1 1  14.950819 7.0491805 z"
+       transform="matrix(1.0041152,0,0,1.0041152,0.9876546,0.9218109)"
+       style="opacity:1;color:#000000;fill:#2e5b03;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       id="path2180" />
+    <path
+       d="M 14.950819 7.0491805 A 7.9672132 7.9672132 0 1 1  -0.98360682,7.0491805 A 7.9672132 7.9672132 0 1 1  14.950819 7.0491805 z"
+       transform="matrix(0.8786008,0,0,0.8786008,1.8641977,1.8065845)"
+       style="opacity:1;color:#000000;fill:#8ae234;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1.14285719px;stroke-linecap:butt;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       id="path2182" />
+    <path
+       d="M 14.950819 7.0491805 A 7.9672132 7.9672132 0 1 1  -0.98360682,7.0491805 A 7.9672132 7.9672132 0 1 1  14.950819 7.0491805 z"
+       transform="matrix(0.7530864,0,0,0.7530864,1.7407412,2.6913579)"
+       style="opacity:1;color:#000000;fill:#2e5b03;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1.33333337px;stroke-linecap:butt;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       id="path2184" />
+    <path
+       d="M 3.5,10.5 L 3.5,5.5 C 3.5,8.0097695 6.0215736,10.5 10.55217,10.5"
+       style="opacity:1;color:#000000;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#8ae234;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       id="path3327" />
+  </g>
+</svg>
