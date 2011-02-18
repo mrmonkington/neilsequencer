@@ -142,7 +142,7 @@ struct dssidapter : plugin, event_handler
 
      virtual void process_events();
 	
-     virtual const char * describe_value(const int param, const int value);
+     virtual const char * describe_value(const unsigned int param, const int value);
 
      virtual void set_track_count(int ntracks);
 

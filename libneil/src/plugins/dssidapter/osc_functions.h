@@ -107,7 +107,7 @@ osc_midi_handler(struct dssidapter *instance, lo_arg **argv)
 int
 osc_control_handler(struct dssidapter *instance, lo_arg **argv)
 {
-     int port = argv[0]->i;
+     unsigned int port = argv[0]->i;
      LADSPA_Data value = argv[1]->f;
 
      if (port < 0 || port >= instance->desc->LADSPA_Plugin->PortCount) {
@@ -153,7 +153,7 @@ void schedule_program_change(struct dssidapter *instance, unsigned long bank, un
           if (instance->pluginPrograms[i].Bank == bank &&
               instance->pluginPrograms[i].Program == program) {
                if (verbose) {
-                    printf("%s: OSC: %s setting bank %d, program %d, name %s\n",
+                    printf("%s: OSC: %s setting bank %lu, program %lu, name %s\n",
                            myName,
                            instance->myinfo->m_name.c_str(),
                            bank, program,
@@ -166,7 +166,7 @@ void schedule_program_change(struct dssidapter *instance, unsigned long bank, un
      }
 
      if (!found) {
-          printf("%s: OSC: %s UI requested unknown program: bank %d, program %d: sending to plugin anyway (plugin should ignore it)\n",
+          printf("%s: OSC: %s UI requested unknown program: bank %lu, program %lu: sending to plugin anyway (plugin should ignore it)\n",
                  myName, 
                  instance->myinfo->m_name.c_str(),
                  bank, program);
@@ -214,7 +214,7 @@ osc_configure_handler(struct dssidapter *instance, lo_arg **argv)
           if (verbose) printf("not saving key <%s>\n", key);
           return 0;
      }
-     int i;
+     unsigned int i;
      for (i = 0; i < instance->arc_key_count; i++) {
           if (!strcmp(key, instance->arc_key[i])) {
                if (verbose) printf("in configure handler, found key <%s>, saving value <%s>\n", key, value);
@@ -240,7 +240,7 @@ osc_update_handler(struct dssidapter *instance, lo_arg **argv, lo_address source
 
      const char *url = (char *)&argv[0]->s;
      const char *path;
-     unsigned int i;
+     //unsigned int i;
      char *host, *port;
      const char *chost, *cport;
 
@@ -291,7 +291,7 @@ osc_update_handler(struct dssidapter *instance, lo_arg **argv, lo_address source
      //     lo_send(instance->uiTarget, instance->ui_osc_configure_path, "ss",
      //     	DSSI_PROJECT_DIRECTORY_KEY, projectDirectory);
      // }
-     for (int i = 0; i < instance->arc_key_count; i++) {
+     for (unsigned int i = 0; i < instance->arc_key_count; i++) {
           if (verbose) printf("in update_handler: lo_send to configure_path: key <%s> value <%s>\n", instance->arc_key[i], instance->arc_value[i]);
           lo_send(instance->uiTarget, instance->ui_osc_configure_path, "ss",
                   instance->arc_key[i], instance->arc_value[i]);
@@ -309,7 +309,7 @@ osc_update_handler(struct dssidapter *instance, lo_arg **argv, lo_address source
      }
      ///XXXX
      /* Send control ports */
-     for (int i = 0; i < instance->desc->LADSPA_Plugin->PortCount; i++) {
+     for (unsigned int i = 0; i < instance->desc->LADSPA_Plugin->PortCount; i++) {
 
 	  int port_idx = instance->myinfo->portIdx2ControlInIdx[i];
 	  if (port_idx != -1) {
@@ -371,7 +371,7 @@ int osc_debug_handler(const char *path, const char *types, lo_arg **argv,
 int osc_message_handler(const char *path, const char *types, lo_arg **argv,
                         int argc, void *data, void *user_data)
 {
-     int i;
+	//int i;
      struct dssidapter *instance = (struct dssidapter *) user_data;
      const char *method;
      unsigned int flen = 0;

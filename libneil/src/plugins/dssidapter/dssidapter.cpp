@@ -114,7 +114,7 @@ void enumerate_dssiplugin
 	       .set_value_max(16)
 	       .set_value_default(0);
 
-	  for (int port = 0; port < desc->LADSPA_Plugin->PortCount; port++)
+	  for (unsigned int port = 0; port < desc->LADSPA_Plugin->PortCount; port++)
 	  {
 	       std::string name = desc->LADSPA_Plugin->PortNames[port];
 	       LADSPA_PortDescriptor pd = desc->LADSPA_Plugin->PortDescriptors[port];
@@ -166,7 +166,7 @@ void enumerate_dssiplugin
 			      i->flags & zzub::plugin_flag_has_audio_output);
 	  if (verbose) {
 	       printf("plugin %s portIdx2ControlInIdx:", i->name.c_str());
-	       for (int port = 0; port < desc->LADSPA_Plugin->PortCount; port++)
+	       for (unsigned int port = 0; port < desc->LADSPA_Plugin->PortCount; port++)
 		    printf("%d ", i->portIdx2ControlInIdx[port]);
 	       printf("\n");
 	  }
@@ -307,7 +307,7 @@ bool dssidapter::invoke(zzub_event_data_t& data)
 			      if (!S_ISDIR(statinfo.st_mode))
 			      {
 				   std::string fullname=namelist[n]->d_name;					
-				   int dpos=(int)fullname.find_last_of('_');
+				   unsigned int dpos=(int)fullname.find_last_of('_');
 				   if (dpos != std::string::npos) {
 					if (verbose) printf("using %s\n", fullfilepath.c_str());
 					guipath = fullfilepath;
@@ -412,7 +412,7 @@ void dssidapter::init(archive *arc)
 
      if (desc->configure) {
 	  char *message;
-	  for (int i = 0; i < arc_key_count; i++) {
+	  for (unsigned int i = 0; i < arc_key_count; i++) {
 	       if (verbose) printf("calling configure(): key <%s> value <%s>\n", arc_key[i], arc_value[i]);
 	       message = desc->configure(handle, arc_key[i], arc_value[i]);
 	  }
@@ -425,7 +425,7 @@ void dssidapter::init(archive *arc)
 
      //
      if (desc->select_program && pluginProgramCount > 0 && !arc) {
-	  if (verbose) printf("in init, selecting program %d\n", arc_program_idx);
+	  if (verbose) printf("in init, selecting program %lu\n", arc_program_idx);
 	  /* select program at index read from the save file (or 0 if none) */
 	  unsigned long bank = pluginPrograms[arc_program_idx].Bank;
 	  pendingBankMSB = bank / 128;
@@ -462,16 +462,16 @@ void dssidapter::read_from_archive(archive *arc) {
      // schedule_program_change(this, bank, program);
 
      pi->read(&arc_program_idx, sizeof(unsigned long));
-     if (verbose) printf("loading: arc_program_idx = %d\n", arc_program_idx);
+     if (verbose) printf("loading: arc_program_idx = %lu\n", arc_program_idx);
      pi->read(&arc_key_count, sizeof(unsigned long));
-     if (verbose) printf("loading: arc_key_count = %d\n", arc_key_count);
+     if (verbose) printf("loading: arc_key_count = %lu\n", arc_key_count);
      pi->read(&arc_key_size, sizeof(unsigned long));
-     if (verbose) printf("loading: arc_key_size = %d\n", arc_key_size);
+     if (verbose) printf("loading: arc_key_size = %lu\n", arc_key_size);
      pi->read(arc_key_str, sizeof(char) * arc_key_size);
      arc_key_str[arc_key_size] = '\0';
      if (verbose) printf("loading: arc_key_str <%s>\n", arc_key_str);
      int idx = 0;
-     for (int i = 0; i < arc_key_count; i++) {
+     for (unsigned int i = 0; i < arc_key_count; i++) {
 	  sscanf(&arc_key_str[idx], "%s\n", arc_key[i]);
 	  idx += strlen(arc_key[i]) + 1;
 	  sscanf(&arc_key_str[idx], "%s\n", arc_value[i]);
@@ -499,7 +499,7 @@ void dssidapter::process_events()
 	  {
 	       data_values[index] = convert_ladspa_value(*i, value, _master_info->samples_per_second);
 	       printf("dssidapter: process_events(): data_values[%d] = %f, zzub value = %d\n", index, data_values[index], value);
-	       for (int j = 0; j < myinfo->portIdx2ControlInIdx.size(); j++) {
+	       for (unsigned int j = 0; j < myinfo->portIdx2ControlInIdx.size(); j++) {
 		    if (myinfo->portIdx2ControlInIdx[j] == index) {
 			 if (uiTarget && ui_osc_control_path) {
 			      lo_send(uiTarget, ui_osc_control_path, "if", j, data_values[index]);
@@ -538,7 +538,7 @@ void dssidapter::process_events()
      }
 }
 	
-const char * dssidapter::describe_value(const int param, const int value)
+const char * dssidapter::describe_value(const unsigned int param, const int value)
 { 
      static char text[256];
      if (param < myinfo->m_metaparams.size()) {
@@ -572,7 +572,7 @@ void dssidapter::stop() {
 
 void dssidapter::schedule_note_off(int t) {
      // ts.note is the note playing on track t
-     tvals &tv = trackvals[t];
+     //tvals &tv = trackvals[t];
      tstate &ts = trackstates[t];
      snd_seq_event_t &ev = events[eventcount];
      memset(&ev, 0, sizeof(snd_seq_event_t));
@@ -621,7 +621,7 @@ bool dssidapter::process_stereo(float **pin, float **pout, int numsamples, int c
 	       // should save those
 	       // control-in values as the
 	       // current values.
-	       if (verbose) printf("process_stereo: calling select_program(): currentBank = %d, currentProgram = %d\n", currentBank, currentProgram);
+	       if (verbose) printf("process_stereo: calling select_program(): currentBank = %lu, currentProgram = %lu\n", currentBank, currentProgram);
 	       desc->select_program(handle, currentBank, currentProgram);
 	  }
      }
@@ -729,10 +729,10 @@ void dssidapter::save(zzub::archive *arc) {
      if (verbose) printf("dssidapter: in save()!\n");
      zzub::outstream *po = arc->get_outstream("");
      po->write(&arc_program_idx, sizeof(unsigned long));
-     if (verbose) printf("wrote arc_program_idx = %d\n", arc_program_idx);
+     if (verbose) printf("wrote arc_program_idx = %lu\n", arc_program_idx);
      po->write(&arc_key_count, sizeof(unsigned long));
      int idx = 0;
-     for (int i = 0; i < arc_key_count; i++) {
+     for (unsigned int i = 0; i < arc_key_count; i++) {
 	  if (verbose) printf("saving key <%s> value <%s>\n", arc_key[i], arc_value[i]);
 	  // each sprintf() call overwrites the terminating '\0' of the previous,
 	  // so we end up with a '\n'-separated, '\0'-terminated string.
@@ -740,7 +740,7 @@ void dssidapter::save(zzub::archive *arc) {
 	  idx += sprintf(&arc_key_str[idx], "%s\n", arc_value[i]);
      }
      arc_key_size = idx;
-     if (verbose) printf("total size = %d, str <%s>\n", arc_key_size, arc_key_str);
+     if (verbose) printf("total size = %lu, str <%s>\n", arc_key_size, arc_key_str);
      po->write(&arc_key_size, sizeof(unsigned long));
      po->write(&arc_key_str, sizeof(char) * arc_key_size);
 
@@ -794,7 +794,7 @@ void dssidapter::set_parameter_value_dssi(int port, float value) {
 	int val = 0;
     std::vector<dssi_param>::const_iterator i;
     int index = 0;
-    int offset = 0;
+    //int offset = 0;
     for (i = myinfo->m_metaparams.begin(); i != myinfo->m_metaparams.end(); ++i)
     {
      	if (index == myinfo->portIdx2ControlInIdx[port]) 
@@ -840,7 +840,7 @@ struct dssiplugincollection : zzub::plugincollection {
      virtual void initialize(zzub::pluginfactory *factory) {
 	  if (verbose) printf("initializing dssidapter...\n");
 	  DSSIPluginSearch(enumerate_dssiplugin);
-	  for (int i=0; i < infos.size(); ++i)
+	  for (unsigned int i = 0; i < infos.size(); ++i)
 	  {
 	       factory->register_info(infos[i]);
 	  }	
