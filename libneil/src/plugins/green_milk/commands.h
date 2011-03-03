@@ -28,8 +28,7 @@ public:
       RestartFilterEnvelope = 0x02,
       RestartBothEnvelopes = 0x03,
       SetAmpEnvelopeValue = 0x04,
-      SetFilterEnvelopeValue = 0x05,
-		
+      SetFilterEnvelopeValue = 0x05,		
       RandomiseUnisonPhase = 0x10,
       SynchroniseUnisonPhase = 0x11,
       RandomiseUnisonLFOPhase = 0x12,
