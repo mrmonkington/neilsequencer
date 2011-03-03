@@ -54,6 +54,6 @@ public:
       SetLFO2Wave = 0x44,
       SetLFO2Phase = 0x45,
       SetLFO2Frequency = 0x46
-    };
+  };
   static const char *describeCommand(unsigned char cmd);
 };
