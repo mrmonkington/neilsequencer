@@ -134,7 +134,7 @@ public:
   virtual ~note_pool();
   virtual void process_events();
   virtual void init(zzub::archive *);
-  virtual bool process_stereo(float **pin, float **pout, int numsamples, int mode) {}
+  virtual bool process_stereo(float **pin, float **pout, int numsamples, int mode) { return false; }
   virtual bool process_offline(float **pin, float **pout, int *numsamples, int *channels, int *samplerate) { return false; }
   virtual void command(int i);
   virtual void load(zzub::archive *arc) {}
@@ -248,7 +248,7 @@ int note_pool::midi_to_buzz(int midi_note) {
 
 char * pitch_to_string(int pitch) {
   static char txt[10];
-  char letter;
+  char letter = '?';
   int sharp = 1;
   switch (pitch) {
   case c:
@@ -402,7 +402,7 @@ void note_pool::process_controller_events() {
 
 // i'm using the words pitch and note interchangeably here
 int note_pool::note_pick(int centre, int oct_dev) {
-  int pitch, octave;
+  int pitch = 0, octave;
   float r = rand() / (float) RAND_MAX;
   float bin = 0.0f;
   int sigma = 0; // sum of relative probabilities
