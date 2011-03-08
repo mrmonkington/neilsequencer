@@ -1,7 +1,11 @@
 #ifndef LUNAR_DELAY_HPP
 #define LUNAR_DELAY_HPP
 
+#define MAX_DELAY_LENGTH 192000 // in samples
+
 #include <stdint.h>
+#include <cmath>
+#include <cstring>
 
 #include <zzub/signature.h>
 #include <zzub/plugin.h>
@@ -17,25 +21,66 @@ struct Gvals {
   uint16_t dry;
 } __attribute__((__packed__));
 
-const zzub::parameter *l_delay_ticks = 0;
-const zzub::parameter *r_delay_ticks = 0;
-const zzub::parameter *filter_mode = 0;
-const zzub::parameter *cutoff = 0;
-const zzub::parameter *resonance = 0;
-const zzub::parameter *fb = 0;
-const zzub::parameter *wet = 0;
-const zzub::parameter *dry = 0;
+const zzub::parameter *para_l_delay_ticks = 0;
+const zzub::parameter *para_r_delay_ticks = 0;
+const zzub::parameter *para_filter_mode = 0;
+const zzub::parameter *para_cutoff = 0;
+const zzub::parameter *para_resonance = 0;
+const zzub::parameter *para_fb = 0;
+const zzub::parameter *para_wet = 0;
+const zzub::parameter *para_dry = 0;
 
 const char *zzub_get_signature() { 
   return ZZUB_SIGNATURE; 
 }
 
+class Svf {
+private:
+  float fs;
+  float fc;
+  float res;
+  float drive;
+  float freq;
+  float damp;
+  float v[5];
+public:
+  Svf();
+  void reset();
+  void setup(float fs, float fc, float res, float drive);
+  float sample(float sample, int mode);
+};
+
 class LunarDelay : public zzub::plugin {
 private:
   Gvals gval;
+  struct ringbuffer_t {
+    float buffer[MAX_DELAY_LENGTH]; // ringbuffer
+    float *eob; // end of buffer
+    float *pos; // buffer position
+  };
+  ringbuffer_t rb[2];
+  float ldelay_ticks, rdelay_ticks;
+  float ldelay;
+  float rdelay;
+  float wet;
+  float dry;
+  float fb;
+  int mode, filter_mode;
+  float cutoff, resonance;
+  Svf filters[2];
+  inline float dbtoamp(float db, float limit) {
+    if (db <= limit)
+      return 0.0f;
+    return pow(10.0f, db / 20.0f);
+  }
+  float squash(float x);
+  void rb_init(ringbuffer_t *rb);
+  void rb_setup(ringbuffer_t *rb, int size);
+  void rb_mix(ringbuffer_t *rb, Svf *filter, float *out, int n);
+  void update_buffer();
 public:
   LunarDelay();
-  virtual ~LunarDelay();
+  virtual ~LunarDelay() {}
   virtual void init(zzub::archive* pi);
   virtual void process_events();
   virtual bool process_stereo(float **pin, float **pout, 
@@ -45,7 +90,7 @@ public:
 			       int *samplerate) { return false; }
   virtual const char * describe_value(int param, int value); 
   virtual void process_controller_events() {}
-  virtual void destroy();
+  virtual void destroy() {}
   virtual void stop() {}
   virtual void load(zzub::archive *arc) {}
   virtual void save(zzub::archive*) {}
@@ -85,7 +130,7 @@ struct LunarDelayInfo : zzub::info {
     this->short_name = "Delay";
     this->author = "SoMono";
     this->uri = "@libneil/somono/effect/LunarDelay";
-    l_delay_ticks = &add_global_parameter()
+    para_l_delay_ticks = &add_global_parameter()
       .set_word()
       .set_name("Delay L")
       .set_description("Left channel delay in ticks")
@@ -94,7 +139,7 @@ struct LunarDelayInfo : zzub::info {
       .set_value_none(0xffff)
       .set_value_default(11)
       .set_state_flag();
-    r_delay_ticks = &add_global_parameter()
+    para_r_delay_ticks = &add_global_parameter()
       .set_word()
       .set_name("Delay R")
       .set_description("Right channel delay in ticks")
@@ -103,7 +148,7 @@ struct LunarDelayInfo : zzub::info {
       .set_value_none(0xffff)
       .set_value_default(11)
       .set_state_flag();
-    filter_mode = &add_global_parameter()
+    para_filter_mode = &add_global_parameter()
       .set_byte()
       .set_name("Filter Mode")
       .set_description("Choose between low-pass, high-pass and band-pass modes")
@@ -112,7 +157,7 @@ struct LunarDelayInfo : zzub::info {
       .set_value_none(0xff)
       .set_value_default(0)
       .set_state_flag();
-    cutoff = &add_global_parameter()
+    para_cutoff = &add_global_parameter()
       .set_word()
       .set_name("Cutoff")
       .set_description("Filter cutoff frequency")
@@ -121,7 +166,7 @@ struct LunarDelayInfo : zzub::info {
       .set_value_none(0xffff)
       .set_value_default(0xfffe)
       .set_state_flag();
-    resonance = &add_global_parameter()
+    para_resonance = &add_global_parameter()
       .set_word()
       .set_name("Resonance")
       .set_description("Filter resonance")
@@ -130,7 +175,7 @@ struct LunarDelayInfo : zzub::info {
       .set_value_none(0xffff)
       .set_value_default(0x0000)
       .set_state_flag();
-    fb = &add_global_parameter()
+    para_fb = &add_global_parameter()
       .set_word()
       .set_name("Feedback")
       .set_description("Gain of feedback signal")
@@ -139,7 +184,7 @@ struct LunarDelayInfo : zzub::info {
       .set_value_none(0xffff)
       .set_value_default(4000)
       .set_state_flag();
-    wet = &add_global_parameter()
+    para_wet = &add_global_parameter()
       .set_word()
       .set_name("Wet Gain")
       .set_description("Gain of delayed signal")
@@ -148,7 +193,7 @@ struct LunarDelayInfo : zzub::info {
       .set_value_none(0xffff)
       .set_value_default(4800)
       .set_state_flag();
-    dry = &add_global_parameter()
+    para_dry = &add_global_parameter()
       .set_word()
       .set_name("Dry Gain")
       .set_description("Gain of dry signal")

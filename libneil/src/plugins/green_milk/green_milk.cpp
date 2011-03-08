@@ -31,8 +31,8 @@
 #include "fast_pow.h"
 #include "commands.h"
 
-static bool initialised;	// used to say whether the wavetables are set up
-static bool initialising;	// used to say whether the wavetables are BEING set up
+//static bool initialised;	// used to say whether the wavetables are set up
+//static bool initialising;	// used to say whether the wavetables are BEING set up
 
 // sample sets
 float * green_milk::ppfSaw[SAMPLE_SETS];
