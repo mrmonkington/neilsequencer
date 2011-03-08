@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cstdio>
 
 #include "Delay.hpp"
 
@@ -133,7 +134,7 @@ void LunarDelay::process_events() {
     wet = dbtoamp(val, -48.0f);
   }
   if (gval.dry != 0xffff) {
-    float val = -48.0 + (gval.wet / (float)para_dry->value_max) * 60.0;
+    float val = -48.0 + (gval.dry / (float)para_dry->value_max) * 60.0;
     dry = dbtoamp(val, -48.0f);
   }
   if (gval.fb != 0xffff) {
@@ -160,5 +161,47 @@ bool LunarDelay::process_stereo(float **pin, float **pout, int n, int mode) {
 }
 
 const char *LunarDelay::describe_value(int param, int value) {
-  return 0;
+  static char txt[20];
+  switch(param) {
+  case 0:
+    sprintf(txt, "%.2f ticks", ldelay_ticks);
+    break;
+  case 1:
+    sprintf(txt, "%.2f ticks", rdelay_ticks);
+    break;
+  case 2:
+    switch(filter_mode) {
+    case 0:
+      sprintf(txt, "Low");
+      break;
+    case 1:
+      sprintf(txt, "High");
+      break;
+    case 2:
+      sprintf(txt, "Band");
+      break;
+    default:
+      sprintf(txt, "???");
+      break;
+    }
+    break;
+  case 3:
+    sprintf(txt, "%d Hz", (int)cutoff);
+    break;
+  case 4:
+    sprintf(txt, "%.2f", resonance);
+    break;
+  case 5:
+    sprintf(txt, "%.2f", 10.0 * log10(fb));
+    break;
+  case 6:
+    sprintf(txt, "%.2f", 10.0 * log10(wet));
+    break;
+  case 7:
+    sprintf(txt, "%.2f", 10.0 * log10(dry));
+    break;
+  default:
+    return 0;
+  }
+  return txt;
 }

@@ -129,7 +129,7 @@ struct LunarDelayInfo : zzub::info {
     this->name = "Lunar Delay";
     this->short_name = "Delay";
     this->author = "SoMono";
-    this->uri = "@libneil/somono/effect/LunarDelay";
+    this->uri = "@trac.zeitherrschaft.org/aldrin/lunar/effect/delay;1";
     para_l_delay_ticks = &add_global_parameter()
       .set_word()
       .set_name("Delay L")
@@ -161,10 +161,10 @@ struct LunarDelayInfo : zzub::info {
       .set_word()
       .set_name("Cutoff")
       .set_description("Filter cutoff frequency")
-      .set_value_min(0x0000)
-      .set_value_max(0xfffe)
+      .set_value_min(20)
+      .set_value_max(20000)
       .set_value_none(0xffff)
-      .set_value_default(0xfffe)
+      .set_value_default(10000)
       .set_state_flag();
     para_resonance = &add_global_parameter()
       .set_word()
@@ -200,7 +200,7 @@ struct LunarDelayInfo : zzub::info {
       .set_value_min(0)
       .set_value_max(6000)
       .set_value_none(0xffff)
-      .set_value_default(0x4800)
+      .set_value_default(4800)
       .set_state_flag();
   }
   virtual zzub::plugin* create_plugin() const { return new LunarDelay(); }
