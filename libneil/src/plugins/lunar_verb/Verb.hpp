@@ -1,7 +1,5 @@
-#ifndef LUNAR_DELAY_HPP
-#define LUNAR_DELAY_HPP
-
-#define MAX_DELAY_LENGTH 192000 // in samples
+#ifndef LUNAR_VERB_HPP
+#define LUNAR_VERB_HPP
 
 #include <stdint.h>
 #include <cmath>
@@ -11,76 +9,31 @@
 #include <zzub/plugin.h>
 
 struct Gvals {
-  uint16_t l_delay_ticks;
-  uint16_t r_delay_ticks;
-  uint8_t filter_mode;
-  uint16_t cutoff;
-  uint16_t resonance;
-  uint16_t fb;
+  uint16_t roomsize;
+  uint16_t damp;
   uint16_t wet;
   uint16_t dry;
+  uint16_t width;
+  uint8_t freeze;
 } __attribute__((__packed__));
 
-const zzub::parameter *para_l_delay_ticks = 0;
-const zzub::parameter *para_r_delay_ticks = 0;
-const zzub::parameter *para_filter_mode = 0;
-const zzub::parameter *para_cutoff = 0;
-const zzub::parameter *para_resonance = 0;
-const zzub::parameter *para_fb = 0;
+const zzub::parameter *para_roomsize = 0;
+const zzub::parameter *para_damp = 0;
 const zzub::parameter *para_wet = 0;
 const zzub::parameter *para_dry = 0;
+const zzub::parameter *para_width = 0;
+const zzub::parameter *para_freeze = 0;
 
 const char *zzub_get_signature() { 
   return ZZUB_SIGNATURE; 
 }
 
-class Svf {
-private:
-  float fs;
-  float fc;
-  float res;
-  float drive;
-  float freq;
-  float damp;
-  float v[5];
-public:
-  Svf();
-  void reset();
-  void setup(float fs, float fc, float res, float drive);
-  float sample(float sample, int mode);
-};
-
-class LunarDelay : public zzub::plugin {
+class LunarVerb : public zzub::plugin {
 private:
   Gvals gval;
-  struct ringbuffer_t {
-    float buffer[MAX_DELAY_LENGTH]; // ringbuffer
-    float *eob; // end of buffer
-    float *pos; // buffer position
-  };
-  ringbuffer_t rb[2];
-  float ldelay_ticks, rdelay_ticks;
-  float ldelay;
-  float rdelay;
-  float wet;
-  float dry;
-  float fb;
-  int mode, filter_mode;
-  float cutoff, resonance;
-  Svf filters[2];
-  inline float dbtoamp(float db, float limit) {
-    if (db <= limit)
-      return 0.0f;
-    return pow(10.0f, db / 20.0f);
-  }
-  float squash(float x);
-  void rb_init(ringbuffer_t *rb);
-  void rb_setup(ringbuffer_t *rb, int size);
-  void rb_mix(ringbuffer_t *rb, Svf *filter, float *out, int n);
-  void update_buffer();
 public:
-  LunarDelay();
-  virtual ~LunarDelay() {}
+  LunarVerb();
+  virtual ~LunarVerb() {}
   virtual void init(zzub::archive* pi);
   virtual void process_events();
   virtual bool process_stereo(float **pin, float **pout, 
@@ -122,92 +75,71 @@ public:
   virtual void configure(const char *key, const char *value) {}
 };
 
-struct LunarDelayInfo : zzub::info {
-  LunarDelayInfo() {
+struct LunarVerbInfo : zzub::info {
+  LunarVerbInfo() {
     this->flags = 
       zzub::plugin_flag_has_audio_input | zzub::plugin_flag_has_audio_output;
-    this->name = "Lunar Delay";
-    this->short_name = "Delay";
+    this->name = "Lunar Verb";
+    this->short_name = "Verb";
     this->author = "SoMono";
-    this->uri = "@trac.zeitherrschaft.org/aldrin/lunar/effect/delay;1";
-    para_l_delay_ticks = &add_global_parameter()
+    this->uri = "@libneil/somono/effects/verb";
+    para_roomsize = &add_global_parameter()
       .set_word()
-      .set_name("Delay L")
-      .set_description("Left channel delay in ticks")
+      .set_name("Room Size")
+      .set_description("Size of room")
       .set_value_min(0)
-      .set_value_max(127)
+      .set_value_max(100)
       .set_value_none(0xffff)
-      .set_value_default(11)
+      .set_value_default(50)
       .set_state_flag();
-    para_r_delay_ticks = &add_global_parameter()
+    para_damp = &add_global_parameter()
       .set_word()
-      .set_name("Delay R")
-      .set_description("Right channel delay in ticks")
+      .set_name("Dampness")
+      .set_description("Dampness of room")
       .set_value_min(0)
-      .set_value_max(127)
+      .set_value_max(100)
       .set_value_none(0xffff)
-      .set_value_default(11)
-      .set_state_flag();
-    para_filter_mode = &add_global_parameter()
-      .set_byte()
-      .set_name("Filter Mode")
-      .set_description("Choose between low-pass, high-pass and band-pass modes")
-      .set_value_min(0)
-      .set_value_max(2)
-      .set_value_none(0xff)
-      .set_value_default(0)
-      .set_state_flag();
-    para_cutoff = &add_global_parameter()
-      .set_word()
-      .set_name("Cutoff")
-      .set_description("Filter cutoff frequency")
-      .set_value_min(20)
-      .set_value_max(20000)
-      .set_value_none(0xffff)
-      .set_value_default(10000)
-      .set_state_flag();
-    para_resonance = &add_global_parameter()
-      .set_word()
-      .set_name("Resonance")
-      .set_description("Filter resonance")
-      .set_value_min(0x0000)
-      .set_value_max(0xfffe)
-      .set_value_none(0xffff)
-      .set_value_default(0x0000)
-      .set_state_flag();
-    para_fb = &add_global_parameter()
-      .set_word()
-      .set_name("Feedback")
-      .set_description("Gain of feedback signal")
-      .set_value_min(0)
-      .set_value_max(6000)
-      .set_value_none(0xffff)
-      .set_value_default(4000)
+      .set_value_default(50)
       .set_state_flag();
     para_wet = &add_global_parameter()
-      .set_word()
-      .set_name("Wet Gain")
-      .set_description("Gain of delayed signal")
+      .set_byte()
+      .set_name("Wet Signal")
+      .set_description("Volume of reverb")
       .set_value_min(0)
       .set_value_max(6000)
       .set_value_none(0xffff)
-      .set_value_default(4800)
+      .set_value_default(3000)
       .set_state_flag();
     para_dry = &add_global_parameter()
       .set_word()
-      .set_name("Dry Gain")
-      .set_description("Gain of dry signal")
+      .set_name("Dry Signal")
+      .set_description("Volume of original signal")
       .set_value_min(0)
       .set_value_max(6000)
       .set_value_none(0xffff)
-      .set_value_default(4800)
+      .set_value_default(4200)
+      .set_state_flag();
+    para_width = &add_global_parameter()
+      .set_word()
+      .set_name("Stereo Width")
+      .set_description("Stereo separation")
+      .set_value_min(0)
+      .set_value_max(100)
+      .set_value_none(0xffff)
+      .set_value_default(100)
+      .set_state_flag();
+    para_freeze = &add_global_parameter()
+      .set_switch()
+      .set_name("Freeze")
+      .set_description("Freeze reverb")
+      .set_value_default(0)
       .set_state_flag();
   }
-  virtual zzub::plugin* create_plugin() const { return new LunarDelay(); }
+  virtual zzub::plugin* create_plugin() const { return new LunarVerb(); }
   virtual bool store_info(zzub::archive *data) const { return false; }
 } MachineInfo;
 
-struct LunarDelay_PluginCollection : zzub::plugincollection {
+struct LunarVerb_PluginCollection : zzub::plugincollection {
   virtual void initialize(zzub::pluginfactory *factory) {
     factory->register_info(&MachineInfo);
   }
@@ -226,7 +158,7 @@ struct LunarDelay_PluginCollection : zzub::plugincollection {
 };
 
 zzub::plugincollection *zzub_get_plugincollection() {
-  return new LunarDelay_PluginCollection();
+  return new LunarVerb_PluginCollection();
 }
 
-#endif // LUNAR_DELAY_HPP
+#endif // LUNAR_VERB_HPP
