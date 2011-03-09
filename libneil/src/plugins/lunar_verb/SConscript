@@ -1,0 +1,8 @@
+#Import('pluginenv', 'build_plugin')
+
+#localenv = pluginenv.Clone()
+
+#files = ["Verb.cpp"]
+
+#build_plugin(localenv, "somono_lunar_verb", files)
+	     
