@@ -4,5 +4,5 @@ localenv = pluginenv.Clone()
 
 files = ["Delay.cpp"]
 
-build_plugin(localenv, "somono_lunar_delay", files)
+build_plugin(localenv, "lunar_delay", files)
 	     
