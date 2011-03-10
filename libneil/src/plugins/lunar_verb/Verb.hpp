@@ -8,6 +8,13 @@
 #include <zzub/signature.h>
 #include <zzub/plugin.h>
 
+namespace freeverb {
+#include "revmodel.h"
+#include "revmodel.cpp"
+#include "comb.cpp"
+#include "allpass.cpp"	
+}
+
 struct Gvals {
   uint16_t roomsize;
   uint16_t damp;
@@ -28,9 +35,14 @@ const char *zzub_get_signature() {
   return ZZUB_SIGNATURE; 
 }
 
-class LunarVerb : public zzub::plugin {
+class LunarVerb : public zzub::plugin, public freeverb::revmodel {
 private:
   Gvals gval;
+  inline float dbtoamp(float db, float limit) {
+    if (db <= limit)
+      return 0.0f;
+    return pow(10.0f, db / 20.0f);
+  }
 public:
   LunarVerb();
   virtual ~LunarVerb() {}
