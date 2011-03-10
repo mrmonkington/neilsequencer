@@ -94,7 +94,7 @@ struct LunarVerbInfo : zzub::info {
     this->name = "Lunar Verb";
     this->short_name = "Verb";
     this->author = "SoMono";
-    this->uri = "@libneil/somono/effects/verb";
+    this->uri = "@trac.zeitherrschaft.org/aldrin/lunar/effect/reverb;1";
     para_roomsize = &add_global_parameter()
       .set_word()
       .set_name("Room Size")
@@ -114,7 +114,7 @@ struct LunarVerbInfo : zzub::info {
       .set_value_default(50)
       .set_state_flag();
     para_wet = &add_global_parameter()
-      .set_byte()
+      .set_word()
       .set_name("Wet Signal")
       .set_description("Volume of reverb")
       .set_value_min(0)

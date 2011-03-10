@@ -21,6 +21,7 @@ void LunarVerb::process_events() {
     setdamp(gval.damp / (float)para_damp->value_max);
   }
   if (gval.wet != 0xffff) {
+    printf("%d\n", gval.wet);
     setwet(dbtoamp(-48.0f + (gval.wet / 6000.0f) * 60.0f, -48.0f));
   }
   if (gval.dry != 0xffff) {
