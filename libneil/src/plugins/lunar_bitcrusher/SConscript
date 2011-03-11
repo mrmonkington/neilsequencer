@@ -1,0 +1,8 @@
+Import('pluginenv', 'build_plugin')
+
+localenv = pluginenv.Clone()
+
+files = ["BitCrusher.cpp"]
+
+build_plugin(localenv, "lunar_bitcrusher", files)
+	     
