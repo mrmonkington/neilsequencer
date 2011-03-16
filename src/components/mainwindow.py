@@ -305,6 +305,9 @@ class NeilFrame(gtk.Window):
     #shortcuts_menu_item = gtk.MenuItem("_Shortcuts")
     #shortcuts_menu_item.connect('activate', self.on_help_shortcuts)
     #tempmenu.append(shortcuts_menu_item)
+    irc_menu_item = gtk.MenuItem("Ask on _IRC")
+    irc_menu_item.connect('activate', self.on_irc)
+    tempmenu.append(irc_menu_item)
     # Separator
     tempmenu.append(gtk.SeparatorMenuItem())
     # Menu item that launches the about box
@@ -566,6 +569,10 @@ class NeilFrame(gtk.Window):
     """
     import os
     show_manual()
+
+  def on_irc(self, *args):
+      import webbrowser
+      webbrowser.open("http://webchat.freenode.net/?channels=neil-tracker&uio=d4")
 
   def on_about(self, *args):
     """
