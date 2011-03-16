@@ -90,6 +90,21 @@ struct LunarControllerInfo : zzub::info {
     this->min_tracks = 1;
     this->max_tracks = 8;
     this->uri = "@libneil/somono/controller/control";
+    static char names[8][20];
+    static char descr[8][40];
+    for (int i = 0; i < 8; i++) {
+      sprintf(names[i], "Out%d", i);
+      sprintf(descr[i], "Output value %d", i);
+      para_output[i] = &add_controller_parameter()
+	.set_word()
+	.set_name(names[i])
+	.set_description(descr[i])
+	.set_value_min(0x0000)
+	.set_value_max(0xFFFE)
+	.set_value_none(0xFFFF)
+	.set_value_default(0x0000)
+	.set_state_flag();
+    }
     para_value = &add_track_parameter()
       .set_word()
       .set_name("Value")
@@ -126,13 +141,6 @@ struct LunarControllerInfo : zzub::info {
       .set_value_none(0xffff)
       .set_value_default(1000)
       .set_state_flag();
-    static char names[8][20];
-    for (int i = 0; i < 8; i++) {
-      sprintf(names[i], "Out%d", i);
-      para_output[i] = &add_controller_parameter()
-	.set_name(names[i])
-	.set_state_flag();
-    }
   }
   virtual zzub::plugin* create_plugin() const { return new LunarController(); }
   virtual bool store_info(zzub::archive *data) const { return false; }

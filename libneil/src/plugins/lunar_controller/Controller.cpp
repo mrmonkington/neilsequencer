@@ -49,9 +49,8 @@ void LunarController::process_controller_events() {
     float fmax = max[i] * 0.001f;
     float scale = fmin + fvalue * (fmax - fmin);
     cval[i] = int(para_output[i]->value_min + 
-		  (para_output[i]->value_max - para_output[i]->value_max) * 
+		  (para_output[i]->value_max - para_output[i]->value_min) * 
 		  scale);
-    printf("%d\n", cval[i]);
   }
 }
 
