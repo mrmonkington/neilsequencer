@@ -30,8 +30,12 @@ const char *zzub_get_signature() {
 
 class LunarController : public zzub::plugin {
 private:
-  Tvals tval;
+  Tvals tval[8];
   uint16_t cval[8];
+  uint16_t value[8];
+  uint16_t power[8];
+  uint16_t min[8];
+  uint16_t max[8];
 public:
   LunarController();
   virtual ~LunarController() {}
@@ -126,7 +130,8 @@ struct LunarControllerInfo : zzub::info {
     for (int i = 0; i < 8; i++) {
       sprintf(names[i], "Out%d", i);
       para_output[i] = &add_controller_parameter()
-	.set_name(names[i]);
+	.set_name(names[i])
+	.set_state_flag();
     }
   }
   virtual zzub::plugin* create_plugin() const { return new LunarController(); }
