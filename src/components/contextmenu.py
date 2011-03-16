@@ -77,9 +77,7 @@ class PluginContextMenu(gtk.Menu):
                       singleton=True,
                       categories=['contextmenu.handler'])
 
-    plugin_tree = {'@neil/lunar/generator/ArguruSynth2;1' :
-                       ['Synthesizers', 'Subtractive'],
-                   '@krzysztof_foltman/generator/infector;1' :
+    plugin_tree = {'@krzysztof_foltman/generator/infector;1' :
                        ['Synthesizers', 'Subtractive'],
                    'jamesmichaelmcdermott@gmail.com/generator/primifun;1' :
                        ['Synthesizers', 'Subtractive'],

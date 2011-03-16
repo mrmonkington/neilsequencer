@@ -89,7 +89,7 @@ struct LunarControllerInfo : zzub::info {
     this->author = "SoMono";
     this->min_tracks = 1;
     this->max_tracks = 8;
-    this->uri = "@libneil/somono/controller/control";
+    this->uri = "@neil/lunar/controller/Controller;1";
     static char names[8][20];
     static char descr[8][40];
     for (int i = 0; i < 8; i++) {
