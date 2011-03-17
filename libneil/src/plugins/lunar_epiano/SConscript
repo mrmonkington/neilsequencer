@@ -1,0 +1,8 @@
+Import('pluginenv', 'build_plugin')
+
+localenv = pluginenv.Clone()
+
+files = ["Epiano.cpp"]
+
+build_plugin(localenv, "lunar_epiano", files)
+	     
