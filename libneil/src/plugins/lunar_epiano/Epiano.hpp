@@ -159,10 +159,10 @@ struct LunarEpianoInfo : zzub::info {
       zzub::plugin_flag_has_audio_output;
     this->min_tracks = 1;
     this->max_tracks = 32;
-    this->name = "Lunar Epiano";
-    this->short_name = "Epiano";
+    this->name = "Lunar ePiano";
+    this->short_name = "ePiano";
     this->author = "SoMono";
-    this->uri = "@mda-vst/epiano";
+    this->uri = "@mda-vst/epiano;1";
     para_envdecay = &add_global_parameter()
       .set_word()
       .set_name("Env. Decay")
