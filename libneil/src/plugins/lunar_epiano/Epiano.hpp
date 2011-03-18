@@ -7,6 +7,8 @@
 #include <zzub/signature.h>
 #include <zzub/plugin.h>
 
+#include "mdaEPianoData.h"
+
 #define NPARAMS 12 //number of parameters
 #define NPROGS 8 //number of programs
 #define NOUTS 2 //number of outputs
@@ -14,6 +16,8 @@
 #define SUSTAIN 128
 #define SILENCE 0.0001f  //voice choking
 #define WAVELEN 422414   //wave data bytes
+#define EVENTBUFFER 120
+#define EVENTS_DONE 99999999
 
 struct VOICE  //voice state
 {
