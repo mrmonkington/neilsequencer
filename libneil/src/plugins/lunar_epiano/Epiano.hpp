@@ -7,6 +7,43 @@
 #include <zzub/signature.h>
 #include <zzub/plugin.h>
 
+#define NPARAMS 12 //number of parameters
+#define NPROGS 8 //number of programs
+#define NOUTS 2 //number of outputs
+#define NVOICES 32 //max polyphony
+#define SUSTAIN 128
+#define SILENCE 0.0001f  //voice choking
+#define WAVELEN 422414   //wave data bytes
+
+struct VOICE  //voice state
+{
+  long  delta;  //sample playback
+  long  frac;
+  long  pos;
+  long  end;
+  long  loop;
+  
+  float env;  //envelope
+  float dec;
+
+  float f0;   //first-order LPF
+  float f1;
+  float ff;
+
+  float outl;
+  float outr;
+  long  note; //remember what note triggered this
+};
+
+struct KGRP  //keygroup
+{
+  long  root;  //MIDI root note
+  long  high;  //highest note
+  long  pos;
+  long  end;
+  long  loop;
+};
+
 struct Gvals {
   uint16_t envdecay;
   uint16_t envrelease;
@@ -51,6 +88,19 @@ class LunarEpiano : public zzub::plugin {
 private:
   Gvals gval;
   Tvals tval[32];
+  float param[NPARAMS];
+  float Fs, iFs;
+  long notes[EVENTBUFFER + 8];
+  KGRP  kgrp[34];
+  VOICE voice[NVOICES];
+  long  poly;
+  short *waves;
+  float width;
+  long  size, sustain;
+  float lfo0, lfo1, dlfo, lmod, rmod;
+  float treb, tfrq, tl, tr;
+  float tune, fine, random, stretch, overdrive;
+  float muff, muffvel, sizevel, velsens, volume, modwhl;
 public:
   LunarEpiano();
   virtual ~LunarEpiano();
