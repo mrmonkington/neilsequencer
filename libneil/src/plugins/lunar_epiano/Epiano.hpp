@@ -105,6 +105,10 @@ private:
   float treb, tfrq, tl, tr;
   float tune, fine, random, stretch, overdrive;
   float muff, muffvel, sizevel, velsens, volume, modwhl;
+  unsigned int track_count;
+  void update();
+  void noteOn(long note, long velocity, long vl);
+  void check_parameter(int p, int i, bool& changed);
 public:
   LunarEpiano();
   virtual ~LunarEpiano();

@@ -8,6 +8,7 @@ LunarEpiano::LunarEpiano()
   global_values = &gval;
   track_values = &tval;
   attributes = 0;
+  track_count = 1;
 }
 
 LunarEpiano::~LunarEpiano() 
@@ -100,6 +101,108 @@ void LunarEpiano::init(zzub::archive* pi)
   dlfo = 6.283f * iFs * (float)exp(6.22f * param[5] - 2.61f); //lfo rate 
 }
 
+void LunarEpiano::update()
+{
+  size = (long)(12.0f * param[2] - 6.0f);  
+  treb = 4.0f * param[3] * param[3] - 1.0f; //treble gain
+  if (param[3] > 0.5f) {
+    tfrq = 14000.0f; 
+  } else { 
+    tfrq = 5000.0f;
+  }
+  tfrq = 1.0f - (float)exp(-iFs * tfrq);
+  rmod = lmod = param[4] + param[4] - 1.0f; //lfo depth
+  if (param[4] < 0.5f) {
+    rmod = -rmod;
+  }  
+  dlfo = 6.283f * iFs * (float)exp(6.22f * param[5] - 2.61f); //lfo rate
+  velsens = 1.0f + param[6] + param[6];
+  if (param[6] < 0.25f) {
+    velsens -= 0.75f - 3.0f * param[6];
+  }
+  width = 0.03f * param[7];
+  poly = 1 + (long)(31.9f * param[8]);
+  fine = param[9] - 0.5f;
+  random = 0.077f * param[10] * param[10];
+  stretch = 0.0f; //0.000434f * (param[11] - 0.5f); parameter re-used for overdrive!
+  overdrive = 1.8f * param[11];
+}
+
+void LunarEpiano::noteOn(long note, long velocity, long vl)
+{
+  float l = 99.0f;
+  long  v, k, s; 
+  if (velocity > 0) {
+    voice[vl].f0 = voice[vl].f1 = 0.0f;	// since we're not doing polyphony, this is the remainder of the voice-picking code
+    k = (note - 60) * (note - 60);
+    l = fine + random * ((float)(k % 13) - 6.5f);  //random & fine tune
+    if (note > 60) { 
+      l += stretch * (float)k; //stretch
+    }
+    s = size;
+    if (velocity > 40) { 
+      s += (long)(sizevel * (float)(velocity - 40));  
+    }
+    k = 0;
+    while (note > (kgrp[k].high + s)) {
+      k += 3;  //find keygroup
+    }
+    l += (float)(note - kgrp[k].root); //pitch
+    l = 32000.0f * iFs * (float)exp(0.05776226505 * l);
+    voice[vl].delta = (long)(65536.0f * l);
+    voice[vl].frac = 0;
+    if (velocity > 48) {
+      k++; //mid velocity sample
+    }
+    if (velocity > 80) {
+      k++; //high velocity sample
+    }
+    voice[vl].pos = kgrp[k].pos;
+    voice[vl].end = kgrp[k].end - 1;
+    voice[vl].loop = kgrp[k].loop;
+    voice[vl].env = (3.0f + 2.0f * velsens) * (float)pow(0.0078f * velocity, velsens); //velocity
+    if (note > 60) {
+      voice[vl].env *= (float)exp(0.01f * (float)(60 - note)); //new! high notes quieter
+    }
+    l = 50.0f + param[4] * param[4] * muff + muffvel * (float)(velocity - 64); //muffle
+    if (l < (55.0f + 0.4f * (float)note)) {
+      l = 55.0f + 0.4f * (float)note;
+    }
+    if (l > 210.0f) {
+      l = 210.0f;
+    }
+    voice[vl].ff = l * l * iFs;
+    voice[vl].note = note; //note->pan
+    if (note <  12) { 
+      note = 12;
+    }
+    if (note > 108) {
+      note = 108;
+    }
+    l = volume;
+    voice[vl].outr = l + l * width * (float)(note - 60);
+    voice[vl].outl = l + l - voice[vl].outr;
+    if (note < 44) {
+      note = 44; //limit max decay length
+    }
+    voice[vl].dec = (float)exp(-iFs * exp(-1.0 + 0.03 * (double)note - 2.0f * param[0]));
+  } else {   
+    if (sustain == 0) {
+      voice[vl].dec = (float)exp(-iFs * exp(6.0 + 0.01 * (double)note - 5.0 * param[1]));
+    } else { 
+      voice[vl].note = SUSTAIN; 
+    }
+  }
+} 
+
+void LunarEpiano::check_parameter(int p, int i, bool& changed) 
+{
+  if (i != 0xffff) {
+    param[p] = i * 0.001f;
+    changed = true;
+  }
+}
+
 void LunarEpiano::destroy() 
 {
 
@@ -111,22 +214,132 @@ void LunarEpiano::stop() {
 
 void LunarEpiano::set_track_count(int tracks) 
 {
-
+  track_count = tracks;
 }
 
 void LunarEpiano::process_events() 
 {
- 
+  bool needs_update = false;
+  check_parameter(0, gval.envdecay, needs_update);
+  check_parameter(1, gval.envrelease, needs_update);
+  check_parameter(2, gval.hardness, needs_update);
+  check_parameter(3, gval.trebleboost, needs_update);
+  check_parameter(4, gval.modulation, needs_update);
+  check_parameter(5, gval.lforate, needs_update);
+  check_parameter(6, gval.velsense, needs_update);
+  check_parameter(7, gval.stereowidth, needs_update);
+  check_parameter(8, gval.poly, needs_update);
+  check_parameter(9, gval.finetune, needs_update);
+  check_parameter(10, gval.randomtune, needs_update);
+  check_parameter(11, gval.overdrive, needs_update);
+  if (needs_update) {
+    update();
+  }
+  int event = 0;
+  for (int i = 0; i < track_count; i++) {
+    long velocity = 127;
+    if (tval[i].volume != 0xff) {
+      velocity = tval[i].volume;
+    }
+    if (tval[i].note != zzub::note_value_none) {
+      int note = 12 * (tval[i].note >> 4) + (tval[i].note & 0xf) - 1;
+      notes[event++] = 1;
+      if (tval[i].note == zzub::note_value_off) {
+	notes[event++] = voice[i].note;
+	notes[event++] = 0;
+      } else {
+	notes[event++] = note;
+	notes[event++] = velocity;
+      }
+      notes[event++] = i;
+    }				
+  }
+  notes[event] = EVENTS_DONE;
 }
 
 bool LunarEpiano::process_stereo(float **pin, float **pout, int n, int mode) 
-{
+{ 
+  float* out0 = pout[0];
+  float* out1 = pout[1];
+  long event = 0, frame = 0, frames, v;
+  float x, l, r, od = overdrive;
+  long i;
+  while (frame < n) {
+    frames = notes[event++];
+    if (frames > n) {
+      frames = n;
+    }
+    frames -= frame;
+    frame += frames;		
+    while (--frames >= 0) {
+      VOICE *V = voice;
+      l = r = 0.0f;		
+      for (v = 0; v < track_count; v++) {
+	if (V->note == 0) {
+	  V++;
+	  continue;
+	}
+	V->frac += V->delta;  //integer-based linear interpolation
+	V->pos += V->frac >> 16;
+	V->frac &= 0xFFFF;
+	if (V->pos > V->end) {
+	  V->pos -= V->loop;
+	}
+	i = waves[V->pos] + ((V->frac * (waves[V->pos + 1] - waves[V->pos])) >> 16);
+	x = V->env * (float)i / 32768.0f;				
+	V->env = V->env * V->dec;  //envelope
+	if (x > 0.0f) { 
+	  x -= od * x * x;
+	  if (x < -V->env) {
+	    x = -V->env; 
+	  }
+	}			
+	l += V->outl * x;
+	r += V->outr * x;
+	V++;
+      }
+      tl += tfrq * (l - tl);  //treble boost
+      tr += tfrq * (r - tr);
+      r  += treb * (r - tr);
+      l  += treb * (l - tl);			
+      lfo0 += dlfo * lfo1;  //LFO for tremolo and autopan
+      lfo1 -= dlfo * lfo0;
+      l += l * lmod * lfo1;
+      r += r * rmod * lfo1;  //worth making all these local variables?    
+      *out0++ = l;
+      *out1++ = r;
+    }
+    if (frame < n) {
+      if (track_count == 0 && param[4] > 0.5f) { 
+	lfo0 = -0.7071f;  
+	lfo1 = 0.7071f; 
+      } //reset LFO phase - good idea?
+      long note = notes[event++];
+      long vel  = notes[event++];
+      long voice = notes[event++];
+      noteOn(note, vel, voice);
+    }
+  }
+  if (fabs(tl) < 1.0e-10) {
+    tl = 0.0f; //anti-denormal
+  }
+  if (fabs(tr) < 1.0e-10) {
+    tr = 0.0f;
+  }	
+  for (v = 0; v < track_count; v++) {
+    if (voice[v].env < SILENCE) {
+      voice[v].note = 0;
+    }
+  }
+  notes[0] = EVENTS_DONE;  //mark events buffer as done
   return true;
 }
 
 const char *LunarEpiano::describe_value(int param, int value) 
 {
-  return 0;
+  static char txt[20];
+  sprintf(txt, "%.2f", value * 0.001f);
+  return txt;
 }
 
 
