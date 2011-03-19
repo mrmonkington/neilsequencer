@@ -144,7 +144,66 @@ void LunarBandisto::process_events() {
   fo2 = (float)(1.0 - fi2);
 }
 
-bool LunarBandisto::process_stereo(float **pin, float **pout, int n, int mode) {
+bool LunarBandisto::process_stereo(float **pin, float **pout, int sampleFrames, int mode) {
+  float *in1 = pin[0];
+  float *in2 = pin[1];
+  float *out1 = pout[0];
+  float *out2 = pout[1];
+  float a, b, c, d, g, l = fb3, m, h, s, sl = slev;	
+  float f1i = fi1, f1o = fo1, f2i = fi2, f2o = fo2, b1 = fb1, b2 = fb2;
+  float g1, d1 = driv1, t1 = trim1;
+  float g2, d2 = driv2, t2 = trim2;
+  float g3, d3 = driv3, t3 = trim3;
+  int v = valve;
+  --in1;	
+  --in2;	
+  --out1;
+  --out2;
+  while(--sampleFrames >= 0) {
+    a = *++in1;		
+    b = *++in2; //process from here...	
+    s = (a - b) * sl; //keep stereo component for later
+    a += (float)(b + 0.00002); //dope filter at low level
+    b2 = (f2i * a) + (f2o * b2); //crossovers
+    b1 = (f1i * b2) + (f1o * b1); 
+    l = (f1i * b1) + (f1o * l);
+    m = b2 - l; 
+    h = a - b2;
+
+    g = (l > 0) ? l : -l;
+    g = (float)(1.0 / (1.0 + d1 * g)); //distort
+    g1 = g;
+
+    g = (m > 0) ? m : -m;
+    g = (float)(1.0 / (1.0 + d2 * g));
+    g2 = g;
+
+    g = (h > 0) ? h : -h;
+    g = (float)(1.0 / (1.0 + d3 * g));
+    g3 = g;
+
+    if (v) { 
+      if (l > 0) { 
+	g1 = 1.0; 
+      }
+      if (m > 0) {
+	g2 = 1.0; 
+      }
+      if (h > 0) {
+	g3 = 1.0; 
+      }
+    }
+
+    a = (l * g1 * t1) + (m * g2 * t2) + (h * g3 * t3);
+    c = a + s; // output
+    d = a - s;
+    
+    *++out1 = c;
+    *++out2 = d;
+  }
+  fb1 = b1;
+  fb2 = b2;
+  fb3 = l;
   return true;
 }
 
