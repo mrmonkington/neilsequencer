@@ -98,7 +98,7 @@ struct LunarBandistoInfo : zzub::info {
     this->name = "Lunar Bandisto";
     this->short_name = "Bandisto";
     this->author = "SoMono";
-    this->uri = "@libneil/somono/bandisto";
+    this->uri = "@mda/effect/mdaBandisto;1";
     para_listen = &add_global_parameter()
       .set_byte()
       .set_name("Listen:")
