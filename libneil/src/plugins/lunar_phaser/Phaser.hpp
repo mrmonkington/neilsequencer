@@ -8,6 +8,71 @@
 #include <zzub/signature.h>
 #include <zzub/plugin.h>
 
+#define WAVESIZE 4096
+#define WAVEMASK 4095
+#define STAGES 65
+
+inline float get_interpolated_sample(float *samples, float phase, int mask)
+{
+  int pos = (int)floor(phase);
+  float frac = phase - (float) pos;
+  float out = samples[pos & mask];
+  pos++;
+  return out + frac * (samples[pos & mask] - out);
+}
+
+inline float float_mask(float phase, int mask)
+{
+  int pos = (int)floor(phase);
+  float frac = phase - (float) pos;
+  return (float) (pos & mask) + frac;
+}
+
+struct phaser_state {
+  float zm0, zm1, zm2, zm3, zm4, zm5, zm6;
+  float zm[STAGES];
+  float lfo_phase;
+  float swirl;
+  float init_feedback, feedback, drywet, n_drywet, a;
+  int stages;
+
+  phaser_state() {
+    reset();
+    lfo_phase = 0;
+  }
+	
+  void reset() {
+    for (int i = 0; i <= STAGES; i++)
+      zm[i] = 0.0f;
+  }
+	
+  inline void set_delay(float value)
+  {
+    if (value < 0.0f)
+      value = 0.0f;
+    if (value > 1.0f)
+      value = 1.0f;
+    a = (1.0f - value) / (1.0f + value);
+  }
+	
+  inline float tick(float in)
+  {
+    float y;
+    float out = in + zm[0] * feedback;
+    for (int i = stages; i > 0; i--) {
+      y = zm[i] - out*a;
+      zm[i] = y * a + out;
+      out = y;
+    }
+    zm[0] = y;
+    //  feedback damping to prevent spiking
+    if (abs(zm[0]) > 5) {
+      feedback = 0.95*feedback;
+    }
+    return n_drywet * in + y * drywet;
+  }
+};
+
 struct Gvals {
   uint8_t drywet;
   uint8_t feedback;
@@ -33,6 +98,12 @@ const char *zzub_get_signature() {
 class LunarPhaser : public zzub::plugin {
 private:
   Gvals gval;
+  float wavetable[WAVESIZE];
+  float lfo_min;
+  float lfo_max;
+  float lfo_increment;
+  phaser_state phaser_left, phaser_right;
+  void process(float *buffer, int size, phaser_state *phaser);
 public:
   LunarPhaser();
   virtual ~LunarPhaser() {}
@@ -104,16 +175,16 @@ struct LunarPhaserInfo : zzub::info {
     para_lfo_min = &add_global_parameter()
       .set_word()
       .set_name("LFO Min")
-      .set_value_min(10)
-      .set_value_max(20000)
+      .set_value_min(0)
+      .set_value_max(0xfffe)
       .set_value_none(0xffff)
       .set_value_default(800)
       .set_state_flag();    
     para_lfo_max = &add_global_parameter()
       .set_word()
       .set_name("LFO Max")
-      .set_value_min(10)
-      .set_value_max(20000)
+      .set_value_min(0)
+      .set_value_max(0xfffe)
       .set_value_none(0xffff)
       .set_value_default(3200)
       .set_state_flag();    
