@@ -155,7 +155,7 @@ struct LunarPhaserInfo : zzub::info {
     this->name = "Lunar Phaser";
     this->short_name = "Phaser";
     this->author = "SoMono";
-    this->uri = "@trac.zeitherrschaft.org/aldrin/lunar/effect/phaser";
+    this->uri = "@trac.zeitherrschaft.org/aldrin/lunar/effect/phaser;1";
     para_drywet = &add_global_parameter()
       .set_byte()
       .set_name("Dry/Wet")
@@ -178,7 +178,7 @@ struct LunarPhaserInfo : zzub::info {
       .set_value_min(0)
       .set_value_max(0xfffe)
       .set_value_none(0xffff)
-      .set_value_default(800)
+      .set_value_default(10000)
       .set_state_flag();    
     para_lfo_max = &add_global_parameter()
       .set_word()
@@ -186,7 +186,7 @@ struct LunarPhaserInfo : zzub::info {
       .set_value_min(0)
       .set_value_max(0xfffe)
       .set_value_none(0xffff)
-      .set_value_default(3200)
+      .set_value_default(30000)
       .set_state_flag();    
     para_lfo_rate = &add_global_parameter()
       .set_word()
@@ -194,7 +194,7 @@ struct LunarPhaserInfo : zzub::info {
       .set_value_min(0)
       .set_value_max(0xfffe)
       .set_value_none(0xffff)
-      .set_value_default(100)
+      .set_value_default(5000)
       .set_state_flag();
     para_lfo_phase = &add_global_parameter()
       .set_byte()
