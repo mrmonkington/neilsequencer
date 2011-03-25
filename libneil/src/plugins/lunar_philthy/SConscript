@@ -1,0 +1,8 @@
+Import('pluginenv', 'build_plugin')
+
+localenv = pluginenv.Clone()
+
+files = ["Philthy.cpp"]
+
+build_plugin(localenv, "lunar_philthy", files)
+	     
