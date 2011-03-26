@@ -1,11 +1,12 @@
+#include <algorithm>
 
-#include <lunar/fx.hpp>
-#if !defined(M_PI)
+#ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
 
 const double PI = M_PI;
-#define TWOPI_F (2.0f*3.141592665f)
+
+#define TWOPI_F (2.0f * 3.141592665f)
 
 class CBiquad
 {
@@ -451,7 +452,7 @@ public:
         float sep=float(0.05+0.6*Resonance/240.0);
         m_filter.rbjLPF(cf,fQ,SampleFrequency,0.3f/pow((float)(fQ/2.50f), (float)0.05));
         m_filter2.rbjLPF(cf*(1-sep),fQ,SampleFrequency);
-        m_filter3.rbjLPF(min(cf*(1+sep),21000.0f),fQ,SampleFrequency);
+        m_filter3.rbjLPF(std::min(cf*(1+sep),21000.0f),fQ,SampleFrequency);
     }
 
     void CalcCoeffs3() // 6L HiSquelch
@@ -466,7 +467,7 @@ public:
         // float ScaleResonance=1.0;
         float fQ=(float)(0.71+10*Resonance*ScaleResonance/240.0);
 
-        m_filter.rbjLPF(cf,fQ,SampleFrequency,0.6f/pow((float)max(fQ,(float)1.0f), (float)1.7));
+        m_filter.rbjLPF(cf,fQ,SampleFrequency,0.6f/pow((float)std::max(fQ,(float)1.0f), (float)1.7));
         m_filter2.rbjLPF(cf,fQ,SampleFrequency);
         m_filter3.rbjLPF(cf,fQ,SampleFrequency);
     }
@@ -500,7 +501,7 @@ public:
         // float ScaleResonance=1.0;
         float fQ=(float)(0.71+5*Resonance*ScaleResonance/240.0);
 
-        m_filter.rbjLPF(cf,fQ,SampleFrequency,0.3f/max((float)sqrt(fQ)*fQ,(float)1.0));
+        m_filter.rbjLPF(cf,fQ,SampleFrequency,0.3f/std::max((float)sqrt(fQ)*fQ,(float)1.0));
         m_filter2.rbjLPF(cf,fQ,SampleFrequency);
         m_filter3.SetParametricEQ(cf/2,3*(fQ-0.7)+1,8*(fQ-0.7)+1,SampleFrequency);
     }
@@ -517,8 +518,8 @@ public:
         // float ScaleResonance=1.0;
         float fQ=(float)(0.71+5*Resonance*ScaleResonance/240.0);
 
-        m_filter.rbjLPF(cf/1.41,fQ,SampleFrequency,0.6f/max((float)sqrt(fQ)*fQ,(float)1.0));
-        m_filter2.rbjLPF(min(cf*1.41,22000.0),fQ,SampleFrequency);
+        m_filter.rbjLPF(cf/1.41,fQ,SampleFrequency,0.6f/std::max((float)sqrt(fQ)*fQ,(float)1.0));
+        m_filter2.rbjLPF(std::min(cf*1.41,22000.0),fQ,SampleFrequency);
         m_filter3.SetParametricEQ(cf,16/fQ,fQ*4.0f,SampleFrequency);
     }
 
@@ -534,7 +535,7 @@ public:
         // float ScaleResonance=1.0;
         float fQ=(float)(0.71+5*Resonance*ScaleResonance/240.0);
 
-        m_filter.rbjLPF(cf,fQ,SampleFrequency,0.8f/max((float)fQ,(float)1.0f));
+        m_filter.rbjLPF(cf,fQ,SampleFrequency,0.8f/std::max((float)fQ,(float)1.0f));
         m_filter2.rbjLPF(cf,fQ,SampleFrequency);
         m_filter3.rbjBRF(cf,fQ,SampleFrequency);
     }
@@ -549,7 +550,7 @@ public:
         if (cf<33) cf=(float)(33.0);
         float fQ=(float)(1.0+4*(240-Resonance)/240.0);
 
-        m_filter.rbjLPF(cf,1.007,SampleFrequency,float(0.8f/max((float)sqrt(fQ),(float)1.0)));
+        m_filter.rbjLPF(cf,1.007,SampleFrequency,float(0.8f/std::max((float)sqrt(fQ),(float)1.0)));
         m_filter2.rbjBRF(cf*0.707,fQ/2,SampleFrequency);
         m_filter3.rbjBRF(cf,fQ/2,SampleFrequency);
     }
@@ -566,7 +567,7 @@ public:
         // float ScaleResonance=1.0;
         float fQ=(float)(0.71+6*Resonance*ScaleResonance/240.0);
 
-        m_filter.rbjLPF(cf,2*fQ,SampleFrequency,float(0.3f/max((float)sqrt(fQ),(float)1.0)));
+        m_filter.rbjLPF(cf,2*fQ,SampleFrequency,float(0.3f/std::max((float)sqrt(fQ),(float)1.0)));
         m_filter2.SetParametricEQ(cf/2,3*(fQ-0.7)+1,3*(fQ-0.7)+1,SampleFrequency);
         m_filter3.SetParametricEQ(cf/4,3*(fQ-0.7)+1,3*(fQ-0.7)+1,SampleFrequency);
     }
@@ -583,7 +584,7 @@ public:
         // float ScaleResonance=1.0;
         float fQ=(float)(0.71+6*Resonance*ScaleResonance/240.0);
 
-        m_filter.rbjLPF(cf,2*fQ,SampleFrequency,float(0.15f/max((float)sqrt(fQ),(float)1.0)));
+        m_filter.rbjLPF(cf,2*fQ,SampleFrequency,float(0.15f/std::max((float)sqrt(fQ),(float)1.0)));
         m_filter2.SetParametricEQ(cf*3/4,2*(fQ-0.7)+1,3*(fQ-0.7)+1,SampleFrequency);
         m_filter3.SetParametricEQ(cf/2,2*(fQ-0.7)+1,3*(fQ-0.7)+1,SampleFrequency);
     }
@@ -602,9 +603,9 @@ public:
         // float ScaleResonance=1.0;
         float fQ=(float)(0.71+6*120*ScaleResonance/240.0);
 
-        float sc1=(float)pow(min(0.89,0.33+0.2*CurCutoff/240.0),1-Resonance/240.0+0.5);
-        float sc2=(float)pow(min(0.9,0.14+0.1*CurCutoff/240.0),1-Resonance/240.0+0.5);
-        m_filter.rbjLPF(cf,2*fQ,SampleFrequency,0.2f/max((float)sqrt(fQ),(float)1.0));
+        float sc1=(float)pow(std::min(0.89,0.33+0.2*CurCutoff/240.0),1-Resonance/240.0+0.5);
+        float sc2=(float)pow(std::min(0.9,0.14+0.1*CurCutoff/240.0),1-Resonance/240.0+0.5);
+        m_filter.rbjLPF(cf,2*fQ,SampleFrequency,0.2f/std::max((float)sqrt(fQ),(float)1.0));
         m_filter2.SetParametricEQ(cf*sc1,2*(fQ-0.7)+1,3*(fQ-0.7)+1,SampleFrequency);
         m_filter3.SetParametricEQ(cf*sc2,2*(fQ-0.7)+1,3*(fQ-0.7)+1,SampleFrequency);
     }
@@ -625,7 +626,7 @@ public:
         float spacing=(float)pow((float)(1.3f+3*(240-Resonance)/240.0),(float)(1-cf/20000.0f));
         m_filter.rbjBRF(cf,q,SampleFrequency);
         m_filter2.rbjBRF(cf/spacing,q,SampleFrequency);
-        m_filter3.rbjBRF(min(21000.0f,cf*spacing),q,SampleFrequency);
+        m_filter3.rbjBRF(std::min(21000.0f,cf*spacing),q,SampleFrequency);
     }
 
     void CalcCoeffs13()
@@ -644,7 +645,7 @@ public:
         float spacing=(float)pow((float)(1.3f+3*(240-Resonance)/240.0),(float)(1-cf/20000.0f));
         m_filter.rbjHPF(cf,q,SampleFrequency,0.71/(pow(q,(float)0.7)));
         m_filter2.rbjHPF(cf/spacing,q,SampleFrequency);
-        m_filter3.rbjHPF(min(21000.0f,cf*spacing),q,SampleFrequency);
+        m_filter3.rbjHPF(std::min(21000.0f,cf*spacing),q,SampleFrequency);
     }
 
     void CalcCoeffs14()
@@ -662,7 +663,7 @@ public:
         //float q=3.6f;
         m_filter.rbjBPF(cf,q,SampleFrequency,pow(q,(float)0.7)/1.7f);
         m_filter2.rbjBPF(cf*0.9,q,SampleFrequency);
-        m_filter3.rbjBPF(min(21000.0,cf*1.01),q,SampleFrequency);
+        m_filter3.rbjBPF(std::min(21000.0,cf*1.01),q,SampleFrequency);
     }
 
     void CalcCoeffs15()

@@ -84,7 +84,7 @@ struct LunarPhilthyInfo : zzub::info {
     this->name = "Lunar Philthy";
     this->short_name = "Philthy";
     this->author = "SoMono";
-    this->uri = "@trac.zeitherrschaft.org/aldrin/lunar/effect/philthy";
+    this->uri = "@trac.zeitherrschaft.org/aldrin/lunar/effect/philthy;1";
     para_filter_type = &add_global_parameter()
       .set_byte()
       .set_name("Type")

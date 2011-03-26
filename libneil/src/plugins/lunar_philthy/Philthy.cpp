@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cstdio>
+#include <string>
 
 #include "Philthy.hpp"
 
@@ -53,28 +54,61 @@ bool LunarPhilthy::process_stereo(float **pin, float **pout, int n, int mode) {
 
 const char *LunarPhilthy::describe_value(int param, int value) {
   static char txt[20];
-  char types[16][30] = {
-    "6L Multipeak",
-    "6L Separated",
-    "6L HiSquelch"
-    "4L Skull D",
-    "4L TwinPeaks",
-    "4L Killah",
-    "4L Phlatt",
-    "2L Phlatt",
-    "2L FrontFlt",
-    "2L LaserOne",
-    "2L FMish",
-    "Notchez",
-    "6H Relaxed",
-    "6B Plain",
-    "6X BatGuy",
-    "6X Vocal1",
-    "6X Vocal2"
-  };
   switch (param) {
   case 0:
-    sprintf(txt, "%s", types[value]);
+    switch (value) {
+    case 0:
+      sprintf(txt, "6L Multipeak");
+      break;
+    case 1:
+      sprintf(txt, "6L Separated");
+      break;
+    case 2:
+      sprintf(txt, "6L HiSquelch");
+      break;
+    case 3:
+      sprintf(txt, "4L Skull D");
+      break;
+    case 4:
+      sprintf(txt, "4L TwinPeaks");
+      break;
+    case 5:
+      sprintf(txt, "4L Killah");
+      break;
+    case 6:
+      sprintf(txt, "4L Phlatt");
+      break;
+    case 7:
+      sprintf(txt, "2L Phlatt");
+      break;
+    case 8:
+      sprintf(txt, "2L FrontFlt");
+      break;
+    case 9:
+      sprintf(txt, "2L LaserOne");
+      break;
+    case 10:
+      sprintf(txt, "2L FMish");
+      break;
+    case 11:
+      sprintf(txt, "Notchez");
+      break;
+    case 12:
+      sprintf(txt, "6H Relaxed");
+      break;
+    case 13:
+      sprintf(txt, "6B Plain");
+      break;
+    case 14:
+      sprintf(txt, "6X BatGuy");
+      break;
+    case 15:
+      sprintf(txt, "6X Vocal1");
+      break;
+    case 16:
+      sprintf(txt, "6X Vocal2");
+      break;
+    }
     break;
   default:
     return 0;
