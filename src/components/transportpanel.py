@@ -180,9 +180,9 @@ class TransportPanel(gtk.HBox):
         self.hgroup.connect(self.btnpanic, 'clicked', self.on_toggle_panic)
 
         accel = com.get('neil.core.accelerators')
-        accel.add_accelerator('F5', self.btnplay, 'clicked')
+        #accel.add_accelerator('F5', self.btnplay, 'clicked')
         accel.add_accelerator('F7', self.btnrecord, 'clicked')
-        accel.add_accelerator('F8', self.btnstop, 'clicked')
+        #accel.add_accelerator('F8', self.btnstop, 'clicked')
         accel.add_accelerator('F12', self.btnpanic, 'clicked')
 
         self.update_all()

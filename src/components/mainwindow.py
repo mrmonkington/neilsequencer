@@ -600,15 +600,21 @@ class NeilFrame(gtk.Window):
     show_preferences(self)
 
   def on_key_down(self, widget, event):
-    """
-    Event handler for key events.
-    """
-    k = gtk.gdk.keyval_name(event.keyval)
-    if k == 'F6':
-      self.play_from_cursor(event)
-    else:
-      return False
-    return True
+      """
+      Event handler for key events.
+      """
+      k = gtk.gdk.keyval_name(event.keyval)
+      player = com.get('neil.core.player')
+      driver = com.get('neil.core.driver.audio')
+      if k == 'F6':
+          self.play_from_cursor(event)
+      elif k == 'F5':
+          player.play()
+      elif k == 'F8':
+          player.stop()
+      else:
+          return False
+      return True
 
   def on_activate_page(self, widget, unused, page_num):
     self.select_page(page_num)
