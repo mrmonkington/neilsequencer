@@ -165,7 +165,7 @@ class TransportPanel(gtk.HBox):
         self.set_border_width(MARGIN)
         player = com.get('neil.core.player')
         player.get_plugin(0).set_parameter_value(1, 0, 1, config.get_config().get_default_int('BPM', 126), 1)
-        player.get_plugin(0).set_parameter_value(1, 0, 2, config.get_config().get_default_int('TPB', 16), 1)
+        player.get_plugin(0).set_parameter_value(1, 0, 2, config.get_config().get_default_int('TPB', 4), 1)
         player.history_flush_last()
         self.hgroup = ObjectHandlerGroup()
         self.hgroup.connect(self.bpm, 'value-changed', self.on_bpm)
