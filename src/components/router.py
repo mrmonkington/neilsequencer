@@ -777,8 +777,9 @@ class RouteView(gtk.DrawingArea):
         mx,my = int(event.x), int(event.y)
         res = self.get_plugin_at((mx,my))
         if not res:
+            com.get('neil.core.searchplugins').show_all()
             return
-        mp,(x,y),area = res
+        mp, (x, y), area = res
         if area == AREA_ANY:
             if mp.get_pluginloader().get_loader_name().startswith("@zzub.org/dssidapter"):
                 data = zzub.zzub_event_data_t()
