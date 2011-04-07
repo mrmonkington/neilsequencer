@@ -313,6 +313,10 @@ class NeilFrame(gtk.Window):
     tempmenu.append(bugreport_menu_item)
     # Separator
     tempmenu.append(gtk.SeparatorMenuItem())
+    donate_menu_item = gtk.MenuItem("_Donate")
+    donate_menu_item.connect('activate', self.on_donate)
+    tempmenu.append(donate_menu_item)
+    tempmenu.append(gtk.SeparatorMenuItem())
     # Menu item that launches the about box
     tempmenu.append(make_stock_menu_item(gtk.STOCK_ABOUT, self.on_about))
     self.neilframe_menubar.append(make_submenu_item(tempmenu, "_Help"))
@@ -580,6 +584,10 @@ class NeilFrame(gtk.Window):
   def on_bug_report(self, *args):
       import webbrowser
       webbrowser.open("https://bitbucket.org/bucket_brigade/neil/issues/new")
+
+  def on_donate(self, *args):
+      import webbrowser
+      webbrowser.open("https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=TCNUSE2A74ZSG&lc=LT&item_name=Neil%20Modular%20Tracker&currency_code=EUR&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted")
 
   def on_about(self, *args):
     """
