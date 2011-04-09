@@ -1,11 +1,12 @@
 includes =\
-"""#include <zzub/signature.h>
+"""\n#include <zzub/signature.h>
 #include <zzub/plugin.h>
 #include <stdint.h>"""
 
 class_definition=\
 """class %%%NAME%%% : public zzub::plugin {
 private:
+%%%PARAMS%%%
 public:
   %%%NAME%%%();
   virtual ~%%%NAME%%%();
@@ -61,8 +62,7 @@ machine_info =\
     this->short_name = "%%%NAME%%%";
     this->author = "%%%AUTHOR%%%";
     this->uri = "%%%URI%%%";
-    %%%PARAMETERS%%%
-  }
+%%%PARAMETERS%%%  }
   virtual zzub::plugin* create_plugin() const { return new %%%NAME%%%(); }
   virtual bool store_info(zzub::archive *data) const { return false; }
 } MachineInfo;"""
@@ -71,7 +71,7 @@ implementation =\
 """#include "%%%NAME%%%.hpp"
 
 %%%NAME%%%::%%%NAME%%%() {
-  global_values = 0;
+%%%PARAMS%%%
   attributes = 0;
   track_values = 0;
 }
@@ -120,6 +120,8 @@ class Machine:
             self.flags = 'zzub::plugin_flag_has_event_output'
         self.min_tracks = min_tracks
         self.max_tracks = max_tracks
+        self.param_declarations = ""
+        self.gvals_struct = ""
         self.parameter_setup = ""
 
     def header_file_id(self):
@@ -128,12 +130,22 @@ class Machine:
 
     def preprocessor(self, body):
         id = self.header_file_id()
-        output = "#ifndef %s\n#define %s\n%s\n%s\n#endif // %s" %\
+        output = "#ifndef %s\n#define %s\n%s\n%s\n\n#endif // %s" %\
             (id, id, includes, body, id)
         return output
 
     def make_header(self):
-        body = (class_definition.replace('%%%NAME%%%', self.name) + '\n\n' +
+        gvals = ''
+        param_declarations = ''
+        if self.gvals_struct != '':
+            gvals = "\nstruct Gvals {\n%s} __attribute__((__packed__));\n\n" %\
+                self.gvals_struct
+            param_declarations += '  Gvals gval;'
+        body = ('\n' + self.param_declarations +
+                gvals +
+                class_definition.\
+                    replace('%%%NAME%%%', self.name).\
+                    replace('%%%PARAMS%%%', param_declarations) + '\n\n' +
                 machine_info.\
                     replace('%%%NAME%%%', self.name).\
                     replace('%%%LONG_NAME%%%', self.long_name).\
@@ -146,7 +158,12 @@ class Machine:
         return self.preprocessor(body)
 
     def make_implementation(self):
-        body = implementation.replace('%%%NAME%%%', self.name)
+        param_declarations = ''
+        if self.gvals_struct != '':
+            param_declarations += '  global_values = &gval;'
+        body = implementation.\
+            replace('%%%NAME%%%', self.name).\
+            replace('%%%PARAMS%%%', param_declarations)
         return body
 
     def make_sconscript(self):
@@ -158,16 +175,22 @@ class Machine:
     def add_global_parameter(self, id_, type_, name, description, min_, max_, none, default, state):
         para_name = 'para_' + id_
         description =\
-            "%s = &add_global_parameter()\n" % para_name +\
-            "  .set_%s()\n" % type_ +\
-            "  .set_name(\"%s\")\n" % name +\
-            "  .set_description(\"%s\")\n" % description +\
-            "  .set_value_min(%s)\n" % min_ +\
-            "  .set_value_max(%s)\n" % max_ +\
-            "  .set_value_none(%s)\n" % none +\
-            "  .set_value_default(%s)\n" % default
-        if state == "yes":
-            description += '  .set_state_flag();\n'
+            "    %s = &add_global_parameter()\n" % para_name +\
+            "      .set_%s()\n" % type_ +\
+            "      .set_name(\"%s\")\n" % name +\
+            "      .set_description(\"%s\")\n" % description +\
+            "      .set_value_min(%s)\n" % min_ +\
+            "      .set_value_max(%s)\n" % max_ +\
+            "      .set_value_none(%s)\n" % none +\
+            "      .set_value_default(%s)\n" % default
+        if state == 'yes':
+            description += '      .set_state_flag();\n'
+        if type_ == 'word':
+            self.gvals_struct += "  uint16_t %s;\n" % id_
+        else:
+            self.gvals_struct += "  uint8_t %s;\n" % id_
+        self.param_declarations +=\
+            "const zzub::parameter *para_%s = 0;\n" % id_
         self.parameter_setup += description
 
 if __name__ == '__main__':
