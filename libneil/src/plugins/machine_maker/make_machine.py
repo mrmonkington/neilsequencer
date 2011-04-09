@@ -196,8 +196,12 @@ class Machine:
 if __name__ == '__main__':
     import sys
     import ConfigParser
-    config_file = sys.argv[1]
-    output_dir = sys.argv[2]
+    try:
+        config_file = sys.argv[1]
+        output_dir = sys.argv[2]
+    except IndexError:
+        print "Usage: python make_machine.py machine.cfg directory"
+        sys.exit()
     config = ConfigParser.RawConfigParser()
     config.read(config_file)
     try:
