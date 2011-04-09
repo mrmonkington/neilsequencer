@@ -194,6 +194,7 @@ class Machine:
         self.parameter_setup += description
 
 if __name__ == '__main__':
+    import os
     import sys
     import ConfigParser
     try:
@@ -201,6 +202,9 @@ if __name__ == '__main__':
         output_dir = sys.argv[2]
     except IndexError:
         print "Usage: python make_machine.py machine.cfg directory"
+        sys.exit()
+    if not os.path.isdir(output_dir):
+        print "Specified directory does not exist!"
         sys.exit()
     config = ConfigParser.RawConfigParser()
     config.read(config_file)
