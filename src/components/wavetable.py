@@ -37,7 +37,7 @@ from neil.utils import prepstr, db2linear, linear2db, note2str, filepath,\
 import neil.utils as utils
 import zzub
 import config
-from neil.envelope import EnvelopeView, ADSRPanel
+from neil.envelope import EnvelopeView
 from neil.waveedit import WaveEditPanel
 import popen2
 import neil.common as common
@@ -140,7 +140,6 @@ class WavetablePanel(gtk.VBox):
         #self.append_page(self.libpanel, gtk.Label("Library"))
         #self.set_current_page(0)
         self.pack_start(self.instrpanel, expand=True)
-        self.adsrpanel = ADSRPanel(self)
         self.samplelist, self.samplestore, columns = new_listview([
                 ('#', str),
                 ('Name', str),
@@ -157,7 +156,6 @@ class WavetablePanel(gtk.VBox):
         self.btnplay = new_stock_image_button(gtk.STOCK_MEDIA_PLAY, "Preview Sample")
         self.btnrename = new_stock_image_button(gtk.STOCK_BOLD, "Rename Instrument")
         self.btnclear = new_stock_image_button(gtk.STOCK_REMOVE, "Remove Instrument")
-        self.btnadsr = new_image_toggle_button(imagepath("adsr.png"), "Create ADSR Envelope")
         #self.btnfitloop = new_image_button(imagepath("fitloop.png"), "Fit Loop", self.tooltips)
         #self.btnstrloop = new_image_button(imagepath("fitloop.png"), "Stretch Loop", self.tooltips)
         self.samplename = gtk.Label("")
@@ -205,7 +203,6 @@ class WavetablePanel(gtk.VBox):
         #loopprops.pack_start(self.btnfitloop, expand=False)
         #loopprops.pack_start(self.btnstrloop, expand=False)
         envprops = gtk.HBox(False, MARGIN)
-        envprops.pack_start(self.btnadsr, expand=False)
         #envprops.pack_start(self.cbmachine, expand=False)
         #envprops.pack_start(self.cbenvelope, expand=False)
         envprops.pack_start(self.chkenable, expand=False)
@@ -215,7 +212,6 @@ class WavetablePanel(gtk.VBox):
         envsection = gtk.VBox(False, MARGIN)
         envsection.set_border_width(MARGIN)
         envsection.pack_start(envprops, expand=False)
-        envsection.pack_start(self.adsrpanel, expand=False)
         self.envscrollwin = add_scrollbars(self.envelope)
         envsection.pack_start(self.envscrollwin)
         nbsampleprops.append_page(self.waveedit, gtk.Label("Sample Editor"))
@@ -237,7 +233,6 @@ class WavetablePanel(gtk.VBox):
         self.ohg.connect(self.btnstop,'clicked', self.on_stop_wave)
         self.ohg.connect(self.btnclear,'clicked', self.on_clear)
         self.ohg.connect(self.btnrename,'clicked', self.on_rename_instrument)
-        self.ohg.connect(self.btnadsr,'clicked', self.on_show_adsr)
         #self.ohg.connect(self.btnfitloop,'clicked', self.on_fit_loop)
         #self.ohg.connect(self.btnstrloop,'clicked', self.on_stretch_loop)
         self.ohg.connect(self.chkloop,'clicked', self.on_check_loop)
@@ -311,16 +306,6 @@ class WavetablePanel(gtk.VBox):
                 self.preview_sample(self.previewpath)
         else:
             self.libpanel.set_preview_widget_active(False)
-
-    def on_show_adsr(self, widget):
-        """
-        Called when the ADSR button is clicked. Shows the ADSR Dialog.
-        """
-        if widget.get_active():
-            self.adsrpanel.show_all()
-            self.adsrpanel.update_envelope()
-        else:
-            self.adsrpanel.hide_all()
 
     def on_size(self, event):
         """
@@ -899,7 +884,6 @@ class WavetablePanel(gtk.VBox):
         #self.cbmachine.set_sensitive(iswave)
         #self.cbenvelope.set_sensitive(iswave)
         self.chkenable.set_sensitive(iswave)
-        self.btnadsr.set_sensitive(iswave)
         #self.btnfitloop.set_sensitive(iswave)
         #self.btnstrloop.set_sensitive(iswave)
         self.btnclear.set_sensitive(iswave)
@@ -909,11 +893,6 @@ class WavetablePanel(gtk.VBox):
         self.btnstop.set_sensitive(iswave)
         self.envelope.set_sensitive(iswave)
         self.waveedit.set_sensitive(iswave)
-        if self.btnadsr.get_active():
-            self.adsrpanel.show_all()
-        else:
-            self.adsrpanel.hide_all()
-        self.adsrpanel.update()
         if not iswave:
             return
         level = w.get_level(0)
