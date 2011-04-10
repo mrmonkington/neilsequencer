@@ -512,6 +512,7 @@ class WaveEditView(gtk.DrawingArea):
 	Draws the envelope view graphics.
 	"""
 	w, h = self.get_client_size()
+        h = h - 40
 	cfg = config.get_config()
 
 	bgbrush = cfg.get_float_color('WE BG')
