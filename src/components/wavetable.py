@@ -915,17 +915,20 @@ class WavetablePanel(gtk.VBox):
         self.edsamplerate.set_text(str(level.get_samples_per_second()))         
         self.chkpingpong.set_active(ispingpong)
         self.chkpingpong.set_sensitive(isloop)
-        if w.get_envelope_count():
+        if w.get_envelope_count() != 0:
             env = w.get_envelope(0)
             self.chkenable.set_active(env.is_enabled())
             self.envelope.set_sensitive(env.is_enabled())
-            if env.is_enabled():
-                self.envscrollwin.show_all()
-            else:
-                self.envscrollwin.hide_all()
         else:
+            self.chkenable.set_active(False)
             self.envelope.set_sensitive(False)
-            self.envscrollwin.hide_all()
+            #if env.is_enabled():
+            #    self.envscrollwin.show_all()
+            #else:
+            #    self.envscrollwin.hide_all()
+        #else:
+        #    self.envelope.set_sensitive(False)
+        #    self.envscrollwin.hide_all()
 
     def on_samplelist_select(self, selection):
         """
