@@ -512,7 +512,6 @@ class WaveEditView(gtk.DrawingArea):
 	Draws the envelope view graphics.
 	"""
 	w, h = self.get_client_size()
-        h = h - 40
 	cfg = config.get_config()
 
 	bgbrush = cfg.get_float_color('WE BG')
@@ -576,9 +575,9 @@ class WaveEditView(gtk.DrawingArea):
             hm = (h / (2 * channels)) * (1 + channel * 2)
             ctx.move_to(0, hm)
             for x in xrange(0, w):
-                ctx.line_to(x, hm - (h / channels) * maxbuffer[x] * 0.5)
+                ctx.line_to(x, hm - (h / channels) * maxbuffer[x] * 0.4)
             for x in xrange(0, w):
-                ctx.line_to(w - x, hm - (h / channels) * minbuffer[w - x - 1] * 0.5)
+                ctx.line_to(w - x, hm - (h / channels) * minbuffer[w - x - 1] * 0.4)
             ctx.fill_preserve()
             ctx.set_source_rgb(*pen)
             ctx.stroke()
