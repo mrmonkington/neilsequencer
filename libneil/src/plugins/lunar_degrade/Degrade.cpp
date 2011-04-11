@@ -153,7 +153,7 @@ const char *Degrade::describe_value(int param, int value) {
     sprintf(txt, "%.2f bits", 4.0 + 12.0 * fParam2);
     break;
   case 2:
-    sprintf(txt, "%d S/S&&H", _master_info->samples_per_second / tn);
+    sprintf(txt, "%d S/S&H", _master_info->samples_per_second / tn);
     break;
   case 3:
     sprintf(txt, "%.2f Hz", pow(10.0f, 2.30104f + 2.f * fParam4));
