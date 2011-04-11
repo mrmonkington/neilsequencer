@@ -21,8 +21,6 @@ struct Gvals {
   uint8_t level;
 } __attribute__((__packed__));
 
-
-
 const char *zzub_get_signature() { 
   return ZZUB_SIGNATURE; 
 }
@@ -30,6 +28,16 @@ const char *zzub_get_signature() {
 class Degrade : public zzub::plugin {
 private:
   Gvals gval;
+  float fParam1;
+  float fParam2;
+  float fParam3;
+  float fParam4;
+  float fParam5;
+  float fParam6;
+  float fi2, fo2, clp, lin, lin2, g1, g2, g3, mode;
+  float buf0, buf1, buf2, buf3, buf4, buf5, buf6, buf7, buf8, buf9;
+  int tn, tcount;
+  float filterFreq(float hz);
 public:
   Degrade();
   virtual ~Degrade() {}
@@ -83,7 +91,7 @@ struct DegradeInfo : zzub::info {
     this->name = "Lunar Degrade";
     this->short_name = "Degrade";
     this->author = "SoMono";
-    this->uri = "@libneil/somono/effect/degrade";
+    this->uri = "@bblunars/effect/mdaDegrade";
     para_clip = &add_global_parameter()
       .set_byte()
       .set_name("Headroom")
