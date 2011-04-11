@@ -1,0 +1,7 @@
+Import('pluginenv', 'build_plugin')
+
+localenv = pluginenv.Clone()
+
+files = ["Degrade.cpp"]
+
+build_plugin(localenv, "somono_degrade", files)
