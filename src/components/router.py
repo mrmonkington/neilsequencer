@@ -1205,6 +1205,9 @@ class RouteView(gtk.DrawingArea):
             octave = min(max(octave + 1, 0), 9)
         elif k ==  'KP_Divide':
             octave = min(max(octave - 1, 0), 9)
+        elif k == 'Delete':
+            for plugin in player.active_plugins:
+                player.delete_plugin(plugin)
         elif kv < 256:
             note = key_to_note(kv)
         player.octave = octave
