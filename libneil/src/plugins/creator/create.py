@@ -103,10 +103,10 @@ files = ["%%%NAME%%%.cpp"]
 build_plugin(localenv, "%%%LIB_NAME%%%", files)"""
 
 class Machine:
-    def __init__(self, author, name, uri, mtype, min_tracks, max_tracks):
+    def __init__(self, author, name, longname, uri, mtype, min_tracks, max_tracks):
         self.author = author
         self.name = name
-        self.long_name = author + ' ' + name
+        self.long_name = longname
         self.lib_name = author.lower() + '_' + name.lower()
         self.uri = uri
         self.mtype = mtype
@@ -228,6 +228,7 @@ if __name__ == '__main__':
         machine.add_global_parameter(param,
                                      config.get(param, 'type'),
                                      config.get(param, 'name'),
+                                     config.get(param, 'longname'),
                                      config.get(param, 'description'),
                                      config.get(param, 'min'),
                                      config.get(param, 'max'),
