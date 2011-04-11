@@ -9,7 +9,7 @@ private:
 %%%PARAMS%%%
 public:
   %%%NAME%%%();
-  virtual ~%%%NAME%%%();
+  virtual ~%%%NAME%%%() {}
   virtual void init(zzub::archive* pi);
   virtual void process_events();
   virtual bool process_stereo(float **pin, float **pout, 
@@ -19,7 +19,7 @@ public:
 			       int *samplerate) { return false; }
   virtual const char * describe_value(int param, int value); 
   virtual void process_controller_events() {}
-  virtual void destroy();
+  virtual void destroy() {}
   virtual void stop() {}
   virtual void load(zzub::archive *arc) {}
   virtual void save(zzub::archive*) {}
@@ -29,7 +29,7 @@ public:
   virtual void mute_track(int) {}
   virtual bool is_track_muted(int) const { return false; }
   virtual void midi_note(int, int, int) {}
-  virtual void event(unsigned int);
+  virtual void event(unsigned int) {}
   virtual const zzub::envelope_info** get_envelope_infos() { return 0; }
   virtual bool play_wave(int, int, float) { return false; }
   virtual void stop_wave() {}
@@ -93,6 +93,42 @@ const char *%%%NAME%%%::describe_value(int param, int value) {
 }
 """
 
+signature =\
+"""
+
+const char *zzub_get_signature() { 
+  return ZZUB_SIGNATURE; 
+}
+
+"""
+
+collection =\
+"""
+
+struct %%%NAME%%%_PluginCollection : zzub::plugincollection {
+  virtual void initialize(zzub::pluginfactory *factory) {
+    factory->register_info(&MachineInfo);
+  }
+  virtual const zzub::info *get_info(const char *uri, zzub::archive *data) { 
+    return 0; 
+  }
+  virtual void destroy() { 
+    delete this; 
+  }
+  virtual const char *get_uri() { 
+    return 0;
+  }
+  virtual void configure(const char *key, const char *value) {
+
+  }
+};
+
+zzub::plugincollection *zzub_get_plugincollection() {
+  return new %%%NAME%%%_PluginCollection();
+}
+
+"""
+
 sconscript =\
 """Import('pluginenv', 'build_plugin')
 
@@ -143,6 +179,7 @@ class Machine:
             param_declarations += '  Gvals gval;'
         body = ('\n' + self.param_declarations +
                 gvals +
+                signature +
                 class_definition.\
                     replace('%%%NAME%%%', self.name).\
                     replace('%%%PARAMS%%%', param_declarations) + '\n\n' +
@@ -154,7 +191,9 @@ class Machine:
                     replace('%%%FLAGS%%%', self.flags).\
                     replace('%%%MIN_TRACKS%%%', str(self.min_tracks)).\
                     replace('%%%MAX_TRACKS%%%', str(self.max_tracks)).\
-                    replace('%%%PARAMETERS%%%', self.parameter_setup))
+                    replace('%%%PARAMETERS%%%', self.parameter_setup) +
+                collection.\
+                    replace('%%%NAME%%%', self.name))
         return self.preprocessor(body)
 
     def make_implementation(self):
@@ -220,6 +259,7 @@ if __name__ == '__main__':
         global_params = []
     machine = Machine(config.get('General', 'author'),
                       config.get('General', 'name'),
+                      config.get('General', 'longname'),
                       config.get('General', 'uri'),
                       config.get('General', 'type'),
                       min_tracks,
@@ -228,7 +268,6 @@ if __name__ == '__main__':
         machine.add_global_parameter(param,
                                      config.get(param, 'type'),
                                      config.get(param, 'name'),
-                                     config.get(param, 'longname'),
                                      config.get(param, 'description'),
                                      config.get(param, 'min'),
                                      config.get(param, 'max'),
