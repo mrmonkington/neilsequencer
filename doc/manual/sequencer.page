@@ -43,11 +43,11 @@
     </tr>
     <tr>
       <td><p><keyseq><key>Ctrl</key><key>i</key></keyseq></p></td>
-      <td><p>Shift the whole song to the right</p></td>
+      <td><p>Right-shift patterns on all tracks, starting at cursor</p></td>
     </tr>
     <tr>
       <td><p><keyseq><key>Ctrl</key><key>d</key></keyseq></p></td>
-      <td><p>Shift the whole song to the left</p></td>
+      <td><p>Left-shift patterns on all tracks, starting at cursor</p></td>
     </tr>
     <tr>
       <td><p><keyseq><key>Ctrl</key><key>c</key></keyseq></p></td>
@@ -90,7 +90,7 @@
       <td><p>Move the cursor up</p></td>
     </tr>
     <tr>
-      <td><p><key>Up</key></p></td>
+      <td><p><key>Down</key></p></td>
       <td><p>Move the cursor down</p></td>
     </tr>
     <tr>
@@ -107,11 +107,11 @@
     </tr>
     <tr>
       <td><p><key>Delete</key></p></td>
-      <td><p>Delete at cursor</p></td>
+      <td><p>Left-shift patterns on current track, starting at cursor</p></td>
     </tr>
     <tr>
       <td><p><key>Insert</key></p></td>
-      <td><p>Insert at cursor</p></td>
+      <td><p>Right-shift patterns on current track, starting at cursor</p></td>
     </tr>
     <tr>
       <td><p><key>Period</key></p></td>
