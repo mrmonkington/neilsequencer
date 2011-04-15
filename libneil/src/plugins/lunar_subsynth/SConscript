@@ -1,0 +1,7 @@
+Import('pluginenv', 'build_plugin')
+
+localenv = pluginenv.Clone()
+
+files = ["SubSynth.cpp"]
+
+build_plugin(localenv, "somono_subsynth", files)
