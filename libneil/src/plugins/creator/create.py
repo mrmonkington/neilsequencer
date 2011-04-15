@@ -89,7 +89,12 @@ bool %%%NAME%%%::process_stereo(float **pin, float **pout, int n, int mode) {
 }
 
 const char *%%%NAME%%%::describe_value(int param, int value) {
-  return 0;
+  static char txt[20];
+  switch (param) {
+  default:
+    return 0;
+  }
+  return txt;
 }
 """
 
