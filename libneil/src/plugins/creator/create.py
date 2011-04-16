@@ -81,8 +81,7 @@ void %%%NAME%%%::init(zzub::archive *pi) {
 }
 	
 void %%%NAME%%%::process_events() {
-
-}
+%%%SETPARAMETERS%%%}
 
 bool %%%NAME%%%::process_stereo(float **pin, float **pout, int n, int mode) {
   return true;
@@ -164,6 +163,8 @@ class Machine:
         self.param_declarations = ""
         self.gvals_struct = ""
         self.parameter_setup = ""
+        self.setparameters = ""
+        self.parameter_counter = 0
 
     def header_file_id(self):
         id = self.author.upper() + '_' + self.name.upper() + '_HPP'
@@ -187,7 +188,8 @@ class Machine:
                 signature +
                 class_definition.\
                     replace('%%%NAME%%%', self.name).\
-                    replace('%%%PARAMS%%%', param_declarations) + '\n\n' +
+                    replace('%%%PARAMS%%%', param_declarations)\
+                    + '\n\n' +
                 machine_info.\
                     replace('%%%NAME%%%', self.name).\
                     replace('%%%LONG_NAME%%%', self.long_name).\
@@ -207,7 +209,8 @@ class Machine:
             param_declarations += '  global_values = &gval;'
         body = implementation.\
             replace('%%%NAME%%%', self.name).\
-            replace('%%%PARAMS%%%', param_declarations)
+            replace('%%%PARAMS%%%', param_declarations).\
+            replace('%%%SETPARAMETERS%%%', self.setparameters)
         return body
 
     def make_sconscript(self):
@@ -236,6 +239,8 @@ class Machine:
         self.param_declarations +=\
             "const zzub::parameter *para_%s = 0;\n" % id_
         self.parameter_setup += description
+        self.setparameters +=\
+            "  if (gvals.%s != %s) {\n    \n  }\n" % (id_, none)
 
 if __name__ == '__main__':
     import os
@@ -262,27 +267,31 @@ if __name__ == '__main__':
         global_params = [p.strip() for p in config.get('General', 'globals').split(',')]
     except ConfigParser.NoOptionError:
         global_params = []
-    machine = Machine(config.get('General', 'author'),
-                      config.get('General', 'name'),
-                      config.get('General', 'longname'),
-                      config.get('General', 'uri'),
-                      config.get('General', 'type'),
-                      min_tracks,
-                      max_tracks)
-    for param in global_params:
-        machine.add_global_parameter(param,
-                                     config.get(param, 'type'),
-                                     config.get(param, 'name'),
-                                     config.get(param, 'description'),
-                                     config.get(param, 'min'),
-                                     config.get(param, 'max'),
-                                     config.get(param, 'none'),
-                                     config.get(param, 'default'),
-                                     config.get(param, 'state'))
-    fhpp = open(output_dir + '/' + machine.hpp_name, 'w')
-    fcpp = open(output_dir + '/' + machine.cpp_name, 'w')
-    fscons = open(output_dir + '/SConscript', 'w')
-    fhpp.write(machine.make_header())
-    fcpp.write(machine.make_implementation())
-    fscons.write(machine.make_sconscript())
-    print "All files successfully written!"
+    try:
+        machine = Machine(config.get('General', 'author'),
+                          config.get('General', 'name'),
+                          config.get('General', 'longname'),
+                          config.get('General', 'uri'),
+                          config.get('General', 'type'),
+                          min_tracks,
+                          max_tracks)
+        for param in global_params:
+            machine.add_global_parameter(param,
+                                         config.get(param, 'type'),
+                                         config.get(param, 'name'),
+                                         config.get(param, 'description'),
+                                         config.get(param, 'min'),
+                                         config.get(param, 'max'),
+                                         config.get(param, 'none'),
+                                         config.get(param, 'default'),
+                                         config.get(param, 'state'))
+        fhpp = open(output_dir + '/' + machine.hpp_name, 'w')
+        fcpp = open(output_dir + '/' + machine.cpp_name, 'w')
+        fscons = open(output_dir + '/SConscript', 'w')
+        fhpp.write(machine.make_header())
+        fcpp.write(machine.make_implementation())
+        fscons.write(machine.make_sconscript())
+        print "All files successfully written!"
+    except ConfigParser.NoOptionError as e:
+        print "ERROR! Not all options properly defined in %s" % config_file
+        print "Option: %s, Section: %s" % (e.option, e.section)
