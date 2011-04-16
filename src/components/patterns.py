@@ -1728,6 +1728,8 @@ class PatternView(gtk.DrawingArea):
         """
         Callback that creates a pattern.
         """
+        if m == None:
+            return
         player = com.get('neil.core.player')
         name = self.get_new_pattern_name(m)
         result = show_pattern_dialog(self, name, self.patternsize, DLGMODE_NEW)
