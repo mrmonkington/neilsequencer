@@ -90,7 +90,7 @@ bool %%%NAME%%%::process_stereo(float **pin, float **pout, int n, int mode) {
 const char *%%%NAME%%%::describe_value(int param, int value) {
   static char txt[20];
   switch (param) {
-  default:
+%%%PRINTPARAMETERS%%%  default:
     return 0;
   }
   return txt;
@@ -165,6 +165,7 @@ class Machine:
         self.parameter_setup = ""
         self.setparameters = ""
         self.parameter_counter = 0
+        self.printparameters = ""
 
     def header_file_id(self):
         id = self.author.upper() + '_' + self.name.upper() + '_HPP'
@@ -210,7 +211,8 @@ class Machine:
         body = implementation.\
             replace('%%%NAME%%%', self.name).\
             replace('%%%PARAMS%%%', param_declarations).\
-            replace('%%%SETPARAMETERS%%%', self.setparameters)
+            replace('%%%SETPARAMETERS%%%', self.setparameters).\
+            replace('%%%PRINTPARAMETERS%%%', self.printparameters)
         return body
 
     def make_sconscript(self):
@@ -241,6 +243,10 @@ class Machine:
         self.parameter_setup += description
         self.setparameters +=\
             "  if (gvals.%s != %s) {\n    \n  }\n" % (id_, none)
+        self.printparameters +=\
+            "  case %d:\n    sprintf(txt, \"%%d\", value);\n    break;\n" %\
+            self.parameter_counter
+        self.parameter_counter += 1
 
 if __name__ == '__main__':
     import os
