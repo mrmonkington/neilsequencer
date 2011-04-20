@@ -5,6 +5,9 @@
 #include <zzub/plugin.h>
 #include <stdint.h>
 
+#define NPARAMS 5
+#define BUFMAX 2048
+
 const zzub::parameter *para_rate = 0;
 const zzub::parameter *para_depth = 0;
 const zzub::parameter *para_mix = 0;
@@ -19,8 +22,6 @@ struct Gvals {
   uint8_t depthmod;
 } __attribute__((__packed__));
 
-
-
 const char *zzub_get_signature() { 
   return ZZUB_SIGNATURE; 
 }
@@ -28,9 +29,18 @@ const char *zzub_get_signature() {
 class ThruZero : public zzub::plugin {
 private:
   Gvals gval;
+  ///global internal variables
+  //rate, depth, wet & dry mix, feedback, mindepth
+  float rat, dep, wet, dry, fb, dem; 
+  float phi, fb1, fb2, deps; //lfo & feedback buffers, depth change smoothing 
+  float *buffer, *buffer2; //maybe use 2D buffer?
+  float param[5];
+  void resume();
+  void suspend();
+  uint32_t size, bufpos;
 public:
   ThruZero();
-  virtual ~ThruZero() {}
+  virtual ~ThruZero();
   virtual void init(zzub::archive* pi);
   virtual void process_events();
   virtual bool process_stereo(float **pin, float **pout, 
@@ -76,12 +86,10 @@ struct ThruZeroInfo : zzub::info {
   ThruZeroInfo() {
     this->flags = 
       zzub::plugin_flag_has_audio_input | zzub::plugin_flag_has_audio_output;
-    this->min_tracks = 1;
-    this->max_tracks = 1;
     this->name = "Lunar ThruZero";
     this->short_name = "ThruZero";
     this->author = "SoMono";
-    this->uri = "@mda/effect/mdaThruZero";
+    this->uri = "@mda/effect/mdaThruZero;1";
     para_rate = &add_global_parameter()
       .set_byte()
       .set_name("Rate")
@@ -103,7 +111,7 @@ struct ThruZeroInfo : zzub::info {
     para_mix = &add_global_parameter()
       .set_byte()
       .set_name("Mix")
-      .set_description("Wet/dry mix - set to 50%% for complete cancelling")
+      .set_description("Wet/dry mix - set to 50% for complete cancelling")
       .set_value_min(0)
       .set_value_max(100)
       .set_value_none(255)
@@ -121,7 +129,7 @@ struct ThruZeroInfo : zzub::info {
     para_depthmod = &add_global_parameter()
       .set_byte()
       .set_name("Depth Mod")
-      .set_description("Modulation depth - set to less than 100%% to limit build up of low frequencies with feedback")
+      .set_description("Modulation depth - set to less than 100% to limit build up of low frequencies with feedback")
       .set_value_min(0)
       .set_value_max(100)
       .set_value_none(255)
