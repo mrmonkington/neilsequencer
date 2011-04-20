@@ -68,7 +68,9 @@ machine_info =\
 } MachineInfo;"""
 
 implementation =\
-"""#include "%%%NAME%%%.hpp"
+"""#include <cstdio>
+
+#include "%%%NAME%%%.hpp"
 
 %%%NAME%%%::%%%NAME%%%() {
 %%%PARAMS%%%
@@ -242,7 +244,7 @@ class Machine:
             "const zzub::parameter *para_%s = 0;\n" % id_
         self.parameter_setup += description
         self.setparameters +=\
-            "  if (gvals.%s != %s) {\n    \n  }\n" % (id_, none)
+            "  if (gval.%s != %s) {\n    \n  }\n" % (id_, none)
         self.printparameters +=\
             "  case %d:\n    sprintf(txt, \"%%d\", value);\n    break;\n" %\
             self.parameter_counter
