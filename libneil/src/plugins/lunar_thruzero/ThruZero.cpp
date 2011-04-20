@@ -1,3 +1,5 @@
+#include <cstdio>
+
 #include "ThruZero.hpp"
 
 ThruZero::ThruZero() {
@@ -11,19 +13,19 @@ void ThruZero::init(zzub::archive *pi) {
 }
 	
 void ThruZero::process_events() {
-  if (gvals.rate != 255) {
+  if (gval.rate != 255) {
     
   }
-  if (gvals.depth != 255) {
+  if (gval.depth != 255) {
     
   }
-  if (gvals.mix != 255) {
+  if (gval.mix != 255) {
     
   }
-  if (gvals.feedback != 255) {
+  if (gval.feedback != 255) {
     
   }
-  if (gvals.depthmod != 255) {
+  if (gval.depthmod != 255) {
     
   }
 }
