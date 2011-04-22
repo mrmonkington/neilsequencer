@@ -214,7 +214,7 @@ class WavetablePanel(gtk.VBox):
         envsection.pack_start(envprops, expand=False)
         self.envscrollwin = add_scrollbars(self.envelope)
         envsection.pack_start(self.envscrollwin)
-        self.waveedit.set_size_request(-1, 400)
+        self.waveedit.set_size_request(-1, 300)
         nbsampleprops.add1(self.waveedit)
         nbsampleprops.add2(envsection)
         sampleprops.pack_start(nbsampleprops)
