@@ -1728,7 +1728,7 @@ class PatternView(gtk.DrawingArea):
         """
         Callback that creates a pattern.
         """
-        if m == None:
+        if self.get_plugin() == None:
             return
         player = com.get('neil.core.player')
         name = self.get_new_pattern_name(m)
