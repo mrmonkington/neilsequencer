@@ -171,6 +171,3 @@ const char *Cloud::describe_value(int param, int value) {
   }
   return str;
 }
-
-
-

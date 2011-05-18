@@ -198,11 +198,13 @@ class SelectComboBox(gtk.ComboBox):
         player = com.get('neil.core.player')
         if self.get_property('popup-shown'):
             for win in gtk.window_list_toplevels():
-                if (len(win.get_children()) == 1) and (isinstance(win.get_children()[0],gtk.Menu)):
+                if (len(win.get_children()) == 1) and (isinstance(win.get_children()[0], gtk.Menu)):
                     menu = win.get_children()[0]
+                    print "titties"
+                    print menu.get_property('attach-widget')
                     if menu.get_attach_widget() == self:
-                        for index,item in enumerate(menu.get_children()):
-                            self.tokens.append((item,item.connect('select', self.on_item_activate,index)))
+                        for index, item in enumerate(menu.get_children()):
+                            self.tokens.append((item, item.connect('select', self.on_item_activate, index)))
         else:
             for item,token in self.tokens:
                 item.disconnect(token)
@@ -290,22 +292,29 @@ class PatternToolBar(gtk.HBox):
         eventbus.zzub_wave_changed += self.waveselect.update
         eventbus.zzub_delete_wave += self.waveselect.update
         eventbus.document_loaded += self.waveselect.update
-
         self.wavelabel.set_mnemonic_widget(self.waveselect)
+
+        # An octave selector combo box.
         self.octavelabel = gtk.Label()
         self.octavelabel.set_text_with_mnemonic("_Base octave")
-        self.octaveselect = SelectComboBox(
-                source_func=self.get_octave_source,
-                get_selection_func=self.get_octave_sel,
-                set_selection_func=self.set_octave_sel,
-        )
+        self.octaveselect = gtk.combo_box_new_text()
         self.octavelabel.set_mnemonic_widget(self.octaveselect)
-        eventbus.octave_changed += self.octaveselect.update
-
+        for octave in range(1, 9):
+            self.octaveselect.append_text(str(octave))
+        player = com.get('neil.core.player')
+        self.octaveselect.set_active(player.octave - 1)
+        def octave_update():
+            self.octaveselect.set_active(player.octave - 1)
+        def octave_set(event):
+            player.octave = int(self.octaveselect.get_active_text())
+        self.octaveselect.connect('changed', octave_set)
+        eventbus.octave_changed += octave_update
+        
+        # An edit step selector combo box.
         self.edit_step_label = gtk.Label("Edit step")
         self.edit_step_box = gtk.combo_box_new_text()
-        for i in range(12):
-            self.edit_step_box.append_text(str(i + 1))
+        for step in range(12):
+            self.edit_step_box.append_text(str(step + 1))
         self.edit_step_box.set_active(0)
         self.edit_step_box.connect('changed', self.edit_step_changed)
 
@@ -332,24 +341,12 @@ class PatternToolBar(gtk.HBox):
     def on_playnotes_click(self, event):
         self.pattern_view.play_notes = self.playnotes.get_active()
 
-    def get_octave_source(self):
-        return [(str(i), i) for i in xrange(10)]
-
-    def get_octave_sel(self):
-        player = com.get('neil.core.player')
-        return player.octave
-
-    def set_octave_sel(self, sel):
-        if sel:
-            player = com.get('neil.core.player')
-            player.octave = sel
-
     def get_plugin_source(self):
         player = com.get('neil.core.player')
         def cmp_func(a,b):
             return cmp(a.get_name().lower(), b.get_name().lower())
         plugins = sorted(list(player.get_plugin_list()), cmp_func)
-        return [(plugin.get_name(),plugin) for plugin in plugins]
+        return [(plugin.get_name(), plugin) for plugin in plugins]
 
     def get_plugin_sel(self):
         player = com.get('neil.core.player')
