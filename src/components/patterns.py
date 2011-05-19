@@ -301,8 +301,6 @@ class PatternToolBar(gtk.HBox):
         for octave in range(1, 9):
             self.octaveselect.append_text(str(octave))
         self.octaveselect.set_active(player.octave - 1)
-        def octave_update():
-            self.octaveselect.set_active(player.octave - 1)
         def octave_set(event):
             player.octave = int(self.octaveselect.get_active_text())
         self.octaveselect.connect('changed', octave_set)
@@ -332,7 +330,19 @@ class PatternToolBar(gtk.HBox):
         self.pack_start(self.edit_step_box, expand=False)
         self.pack_start(self.playnotes, expand=False)
 
+    def octave_update(self, *args):
+        """
+        This function is called when the current octave for entering
+        notes is changed somewhere.
+        """
+        player = com.get('neil.core.player')
+        self.octaveselect.set_active(player.octave - 1)
+
     def waveselect_update(self, *args):
+        """
+        This function is called whenever it is decided that
+        the wave list in the combox box is outdated.
+        """
         player = com.get('neil.core.player')
         for i in range(player.get_wave_count()):
             w = player.get_wave(i)
@@ -345,8 +355,6 @@ class PatternToolBar(gtk.HBox):
         if sel != []:
             index = sel[0].get_index()
             self.waveselect.set_active(index)
-        #if player.active_waves != []:
-        #    self.waveselect.set_active(player.active_waves[0].get_index())
 
     def edit_step_changed(self, event):
         step = int(self.edit_step_box.get_active_text())
