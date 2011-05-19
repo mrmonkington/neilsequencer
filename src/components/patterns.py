@@ -245,6 +245,7 @@ class PatternToolBar(gtk.HBox):
         Initialization.
         """
         # begin wxGlade: SequencerFrame.__init__
+        player = com.get('neil.core.player')
         gtk.HBox.__init__(self, False, MARGIN)
         self.pattern_view = pattern_view
         self.set_border_width(MARGIN)
@@ -279,19 +280,17 @@ class PatternToolBar(gtk.HBox):
 
         self.patternlabel.set_mnemonic_widget(self.patternselect)
 
+        # Wave selector combo box.
         self.wavelabel = gtk.Label()
         self.wavelabel.set_text_with_mnemonic("_Instrument")
-        self.waveselect = SelectComboBox(
-                source_func=self.get_wave_source,
-                get_selection_func=self.get_wave_sel,
-                set_selection_func=self.set_wave_sel,
-                activate_func=self.activate_wave,
-        )
-        eventbus.active_waves_changed += self.waveselect.update
-        eventbus.zzub_wave_allocated += self.waveselect.update
-        eventbus.zzub_wave_changed += self.waveselect.update
-        eventbus.zzub_delete_wave += self.waveselect.update
-        eventbus.document_loaded += self.waveselect.update
+        self.waveselect = gtk.combo_box_new_text()
+        self.waveselect.set_size_request(100, 0)
+        self.waveselect.connect('changed', self.set_wave_sel)
+        #eventbus.active_waves_changed += self.waveselect_update
+        eventbus.zzub_wave_allocated += self.waveselect_update
+        eventbus.zzub_wave_changed += self.waveselect_update
+        eventbus.zzub_delete_wave += self.waveselect_update
+        eventbus.document_loaded += self.waveselect_update
         self.wavelabel.set_mnemonic_widget(self.waveselect)
 
         # An octave selector combo box.
@@ -301,7 +300,6 @@ class PatternToolBar(gtk.HBox):
         self.octavelabel.set_mnemonic_widget(self.octaveselect)
         for octave in range(1, 9):
             self.octaveselect.append_text(str(octave))
-        player = com.get('neil.core.player')
         self.octaveselect.set_active(player.octave - 1)
         def octave_update():
             self.octaveselect.set_active(player.octave - 1)
@@ -333,6 +331,22 @@ class PatternToolBar(gtk.HBox):
         self.pack_start(self.edit_step_label, expand=False)
         self.pack_start(self.edit_step_box, expand=False)
         self.pack_start(self.playnotes, expand=False)
+
+    def waveselect_update(self, *args):
+        player = com.get('neil.core.player')
+        for i in range(player.get_wave_count()):
+            w = player.get_wave(i)
+            if w.get_level_count() >= 1:
+                self.waveselect.remove_text(i)
+                self.waveselect.insert_text(i, "%02X. %s" %\
+                                                (i + 1, w.get_name()))
+        sel = player.active_waves
+        print sel
+        if sel != []:
+            index = sel[0].get_index()
+            self.waveselect.set_active(index)
+        #if player.active_waves != []:
+        #    self.waveselect.set_active(player.active_waves[0].get_index())
 
     def edit_step_changed(self, event):
         step = int(self.edit_step_box.get_active_text())
@@ -385,21 +399,9 @@ class PatternToolBar(gtk.HBox):
             player = com.get('neil.core.player')
             player.active_patterns = [sel]
 
-    def get_wave_source(self):
+    def set_wave_sel(self, *args):
         player = com.get('neil.core.player')
-        waves = []
-        for i in range(player.get_wave_count()):
-            w = player.get_wave(i)
-            if w.get_level_count() >= 1:
-                waves.append(("%02X. %s" % (i+1, w.get_name()), w))
-        return waves
-
-    def get_wave_sel(self):
-        player = com.get('neil.core.player')
-        sel = player.active_waves
-        return sel and sel[0] or None
-
-    def set_wave_sel(self, sel):
+        sel = player.get_wave(self.waveselect.get_active())
         if sel:
             player = com.get('neil.core.player')
             player.active_waves = [sel]
