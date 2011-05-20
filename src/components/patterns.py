@@ -267,17 +267,18 @@ class PatternToolBar(gtk.HBox):
         self.pluginlabel.set_mnemonic_widget(self.pluginselect)
         self.patternlabel = gtk.Label()
         self.patternlabel.set_text_with_mnemonic("_Pattern")
-        self.patternselect = SelectComboBox(
-                source_func=self.get_pattern_source,
-                get_selection_func=self.get_pattern_sel,
-                set_selection_func=self.set_pattern_sel,
-        )
-        eventbus.active_plugins_changed += self.patternselect.update
-        eventbus.active_patterns_changed += self.patternselect.update
-        eventbus.zzub_delete_pattern += self.patternselect.update
-        eventbus.zzub_new_pattern += self.patternselect.update
-        eventbus.zzub_pattern_changed += self.patternselect.update
-
+        #self.patternselect = SelectComboBox(
+        #        source_func=self.get_pattern_source,
+        #        get_selection_func=self.get_pattern_sel,
+        #        set_selection_func=self.set_pattern_sel,
+        #)
+        self.patternselect = gtk.combo_box_new_text()
+        self.patternselect.connect('changed', self.set_pattern_sel)
+        eventbus.active_plugins_changed += self.get_pattern_source
+        #eventbus.active_patterns_changed += self.get_pattern_source
+        eventbus.zzub_delete_pattern += self.get_pattern_source
+        eventbus.zzub_new_pattern += self.get_pattern_source
+        eventbus.zzub_pattern_changed += self.get_pattern_source
         self.patternlabel.set_mnemonic_widget(self.patternselect)
 
         # Wave selector combo box.
@@ -304,7 +305,7 @@ class PatternToolBar(gtk.HBox):
         def octave_set(event):
             player.octave = int(self.octaveselect.get_active_text())
         self.octaveselect.connect('changed', octave_set)
-        eventbus.octave_changed += octave_update
+        eventbus.octave_changed += self.octave_update
         
         # An edit step selector combo box.
         self.edit_step_label = gtk.Label("Edit step")
@@ -385,17 +386,22 @@ class PatternToolBar(gtk.HBox):
             else:
                 player.active_patterns = []
 
-    def get_pattern_source(self):
+    def get_pattern_source(self, *args):
         player = com.get('neil.core.player')
         plugin = self.get_plugin_sel()
         if not plugin:
-            return []
+            self.patternselect.get_model().clear()
+            return
         def cmp_func(a,b):
             aname = a[0].get_pattern_name(a[1])
             bname = b[0].get_pattern_name(b[1])
             return cmp(aname.lower(), bname.lower())
-        patterns = sorted([(plugin,i) for i in xrange(plugin.get_pattern_count())],cmp_func)
-        return [(plugin.get_pattern_name(i),(plugin,i)) for plugin,i in patterns]
+        patterns = sorted([(plugin, i) for i in xrange(plugin.get_pattern_count())], cmp_func)
+        self.patternselect.get_model().clear()
+        names = [(i, plugin.get_pattern_name(i)) for plugin, i in patterns]
+        print names
+        for i, name in names:
+            self.patternselect.append_text("%s" % name)
 
     def get_pattern_sel(self):
         player = com.get('neil.core.player')
@@ -403,6 +409,9 @@ class PatternToolBar(gtk.HBox):
         return sel and sel[0] or None
 
     def set_pattern_sel(self, sel):
+        player = com.get('neil.core.player')
+        sel = (player.active_plugins[0], self.patternselect.get_active())
+        print sel
         if sel:
             player = com.get('neil.core.player')
             player.active_patterns = [sel]
