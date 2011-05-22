@@ -200,7 +200,6 @@ class SelectComboBox(gtk.ComboBox):
             for win in gtk.window_list_toplevels():
                 if (len(win.get_children()) == 1) and (isinstance(win.get_children()[0], gtk.Menu)):
                     menu = win.get_children()[0]
-                    print "titties"
                     print menu.get_property('attach-widget')
                     if menu.get_attach_widget() == self:
                         for index, item in enumerate(menu.get_children()):
@@ -253,25 +252,25 @@ class PatternToolBar(gtk.HBox):
 
         self.pluginlabel = gtk.Label()
         self.pluginlabel.set_text_with_mnemonic("_Plugin")
-
-        self.pluginselect = SelectComboBox(
-                source_func=self.get_plugin_source,
-                get_selection_func=self.get_plugin_sel,
-                set_selection_func=self.set_plugin_sel,
-        )
+        #self.pluginselect = SelectComboBox(
+        #        source_func=self.get_plugin_source,
+        #        get_selection_func=self.get_plugin_sel,
+        #        set_selection_func=self.set_plugin_sel,
+        #)
+        self.pluginselect = gtk.combo_box_new_text()
         self.pluginselect.set_active(0)
-        eventbus.zzub_new_plugin += self.pluginselect.update
-        eventbus.zzub_delete_plugin += self.pluginselect.update
-        eventbus.active_plugins_changed += self.pluginselect.update
+        self.pluginselect.connect('changed', self.set_plugin_sel)
+        plugins = self.get_plugin_source()
+        for plugin in plugins:
+            self.pluginselect.append_text("%s" % plugin[0])
+        eventbus.zzub_new_plugin += self.pluginselect_update
+        eventbus.zzub_delete_plugin += self.pluginselect_update
+        eventbus.document_loaded += self.pluginselect_update
+        #eventbus.active_plugins_changed += self.pluginselect.update
 
         self.pluginlabel.set_mnemonic_widget(self.pluginselect)
         self.patternlabel = gtk.Label()
         self.patternlabel.set_text_with_mnemonic("_Pattern")
-        #self.patternselect = SelectComboBox(
-        #        source_func=self.get_pattern_source,
-        #        get_selection_func=self.get_pattern_sel,
-        #        set_selection_func=self.set_pattern_sel,
-        #)
         self.patternselect = gtk.combo_box_new_text()
         self.patternselect.connect('changed', self.set_pattern_sel)
         eventbus.active_plugins_changed += self.get_pattern_source
@@ -331,6 +330,13 @@ class PatternToolBar(gtk.HBox):
         self.pack_start(self.edit_step_box, expand=False)
         self.pack_start(self.playnotes, expand=False)
 
+    def pluginselect_update(self, *args):
+        plugins = self.get_plugin_source()
+        self.pluginselect.get_model().clear()
+        for plugin in plugins:
+            print plugin[0]
+            self.pluginselect.append_text(plugin[0])
+
     def octave_update(self, *args):
         """
         This function is called when the current octave for entering
@@ -366,7 +372,7 @@ class PatternToolBar(gtk.HBox):
 
     def get_plugin_source(self):
         player = com.get('neil.core.player')
-        def cmp_func(a,b):
+        def cmp_func(a, b):
             return cmp(a.get_name().lower(), b.get_name().lower())
         plugins = sorted(list(player.get_plugin_list()), cmp_func)
         return [(plugin.get_name(), plugin) for plugin in plugins]
@@ -377,7 +383,11 @@ class PatternToolBar(gtk.HBox):
         sel = sel and sel[0] or None
         return sel
 
-    def set_plugin_sel(self, sel):
+    def set_plugin_sel(self, *args):
+        sel_index = self.pluginselect.get_active()
+        # Hack below.
+        plugins = self.get_plugin_source()
+        sel = plugins[sel_index][1]
         if sel:
             player = com.get('neil.core.player')
             player.active_plugins = [sel]
@@ -402,6 +412,7 @@ class PatternToolBar(gtk.HBox):
         print names
         for i, name in names:
             self.patternselect.append_text("%s" % name)
+        self.patternselect.set_active(0)
 
     def get_pattern_sel(self):
         player = com.get('neil.core.player')
@@ -411,8 +422,7 @@ class PatternToolBar(gtk.HBox):
     def set_pattern_sel(self, sel):
         player = com.get('neil.core.player')
         sel = (player.active_plugins[0], self.patternselect.get_active())
-        print sel
-        if sel:
+        if sel[1] >= 0:
             player = com.get('neil.core.player')
             player.active_patterns = [sel]
 
