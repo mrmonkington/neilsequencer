@@ -16,7 +16,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, 
+# USA.
 
 """
 Contains all classes and functions needed to render the pattern
@@ -200,7 +201,6 @@ class SelectComboBox(gtk.ComboBox):
             for win in gtk.window_list_toplevels():
                 if (len(win.get_children()) == 1) and (isinstance(win.get_children()[0], gtk.Menu)):
                     menu = win.get_children()[0]
-                    print menu.get_property('attach-widget')
                     if menu.get_attach_widget() == self:
                         for index, item in enumerate(menu.get_children()):
                             self.tokens.append((item, item.connect('select', self.on_item_activate, index)))
@@ -252,11 +252,6 @@ class PatternToolBar(gtk.HBox):
 
         self.pluginlabel = gtk.Label()
         self.pluginlabel.set_text_with_mnemonic("_Plugin")
-        #self.pluginselect = SelectComboBox(
-        #        source_func=self.get_plugin_source,
-        #        get_selection_func=self.get_plugin_sel,
-        #        set_selection_func=self.set_plugin_sel,
-        #)
         self.pluginselect = gtk.combo_box_new_text()
         self.pluginselect.set_active(0)
         self.pluginselect.connect('changed', self.set_plugin_sel)
@@ -332,10 +327,15 @@ class PatternToolBar(gtk.HBox):
 
     def pluginselect_update(self, *args):
         plugins = self.get_plugin_source()
-        self.pluginselect.get_model().clear()
+        active = self.pluginselect.get_active()
+        model = self.pluginselect.get_model()
+        model.clear()
         for plugin in plugins:
-            print plugin[0]
             self.pluginselect.append_text(plugin[0])
+        if active == -1:
+            self.pluginselect.set_active(0)
+        else:
+            self.pluginselect.set_active(active)
 
     def octave_update(self, *args):
         """
@@ -358,7 +358,6 @@ class PatternToolBar(gtk.HBox):
                 self.waveselect.insert_text(i, "%02X. %s" %\
                                                 (i + 1, w.get_name()))
         sel = player.active_waves
-        print sel
         if sel != []:
             index = sel[0].get_index()
             self.waveselect.set_active(index)
@@ -399,6 +398,12 @@ class PatternToolBar(gtk.HBox):
     def get_pattern_source(self, *args):
         player = com.get('neil.core.player')
         plugin = self.get_plugin_sel()
+        active = self.patternselect.get_active()
+        if isinstance(plugin, (list, tuple)):
+            plugin = plugin[0]
+        print args[0][0], plugin
+        if args[0][0] != plugin:
+            return
         if not plugin:
             self.patternselect.get_model().clear()
             return
@@ -409,11 +414,13 @@ class PatternToolBar(gtk.HBox):
         patterns = sorted([(plugin, i) for i in xrange(plugin.get_pattern_count())], cmp_func)
         self.patternselect.get_model().clear()
         names = [(i, plugin.get_pattern_name(i)) for plugin, i in patterns]
-        print names
         for i, name in names:
             self.patternselect.append_text("%s" % name)
-        self.patternselect.set_active(0)
-
+        if active == -1:
+            self.patternselect.set_active(0)
+        else:
+            self.patternselect.set_active(active)
+        
     def get_pattern_sel(self):
         player = com.get('neil.core.player')
         sel = player.active_patterns
@@ -878,7 +885,6 @@ class PatternView(gtk.DrawingArea):
         # Pattern effects menu
         label, effects_menu = menu.add_submenu("Pattern effects")
         effects = com.get_from_category('patternfx')
-        print effects
         for effect in effects:
             effects_menu.add_item(effect.name, self.on_pattern_effect, effect).\
                 set_sensitive(sel_sensitive) 
@@ -981,7 +987,6 @@ class PatternView(gtk.DrawingArea):
         """
         Initializes pattern storage and information.
         """
-        print "other"
         # plugin
         self.plugin = None
         self.pattern = -1
@@ -1197,7 +1202,7 @@ class PatternView(gtk.DrawingArea):
         self.draw(self.context)
         return False
 
-    def redraw(self,*args):
+    def redraw(self, *args):
         if self.window:
             w, h = self.get_client_size()
             self.window.invalidate_rect((0, 0, w, h), False)
@@ -1434,7 +1439,6 @@ class PatternView(gtk.DrawingArea):
         rows.reverse()
         values = [[row] + entry[1:] for (row, entry) in zip(rows, values)]
         for row, group, track, index, value in values:
-            print row, group, track, index, value
             self.plugin.set_pattern_value(self.pattern, group, track, 
                                           index, row, value)
         player = com.get('neil.core.player')
@@ -1477,7 +1481,7 @@ class PatternView(gtk.DrawingArea):
         from selection start to selection end.
         """
         player = com.get('neil.core.player')
-        player.set_callback_state(False)
+        #player.set_callback_state(False)
         if not self.selection:
             return
         if self.selection.end == self.selection.begin + 1:
@@ -1514,9 +1518,9 @@ class PatternView(gtk.DrawingArea):
         tmp_sel = self.selection
         player.history_commit("interpolate")
         self.selection = tmp_sel
-        if player.set_callback_state(True):
-            eventbus = com.get('neil.core.eventbus')
-            eventbus.document_loaded()
+        # if player.set_callback_state(True):
+        #     eventbus = com.get('neil.core.eventbus')
+        #     eventbus.document_loaded()
 
     def cut(self):
         """
@@ -1526,19 +1530,20 @@ class PatternView(gtk.DrawingArea):
             return
         self.copy()
         player = com.get('neil.core.player')
-        player.set_callback_state(False)
-        for r,g,t,i in self.selection_range():
-            if r>self.plugin.get_pattern_length(self.pattern)-1:
+        #player.set_callback_state(False)
+        for r, g, t, i in self.selection_range():
+            if r > self.plugin.get_pattern_length(self.pattern) - 1:
                 break
-            if r<0:
+            if r < 0:
                 continue
-            p = self.plugin.get_parameter(g,t,i)
-            self.plugin.set_pattern_value(self.pattern,g,t,i,r,p.get_value_none())
+            p = self.plugin.get_parameter(g, t, i)
+            self.plugin.set_pattern_value(self.pattern, g, t, i, r, 
+                                          p.get_value_none())
         player = com.get('neil.core.player')
         player.history_commit("remove event")
-        if player.set_callback_state(True):
-            eventbus = com.get('neil.core.eventbus')
-            eventbus.document_loaded()
+        # if player.set_callback_state(True):
+        #     eventbus = com.get('neil.core.eventbus')
+        #     eventbus.document_loaded()
 
     def copy(self):
         """
@@ -1561,7 +1566,7 @@ class PatternView(gtk.DrawingArea):
         Deletes the current selection
         """
         player = com.get('neil.core.player')
-        player.set_callback_state(False)
+        #player.set_callback_state(False)
         for r,g,t,i in self.selection_range():
             if r>self.plugin.get_pattern_length(self.pattern)-1:
                 break
@@ -1571,9 +1576,9 @@ class PatternView(gtk.DrawingArea):
             self.plugin.set_pattern_value(self.pattern,g,t,i,r,p.get_value_none())
         player = com.get('neil.core.player')
         player.history_commit("delete events")
-        if player.set_callback_state(True):
-            eventbus = com.get('neil.core.eventbus')
-            eventbus.document_loaded()
+        # if player.set_callback_state(True):
+        #     eventbus = com.get('neil.core.eventbus')
+        #     eventbus.document_loaded()
 
     def unpack_clipboard_data(self, d):
         """
@@ -1604,7 +1609,7 @@ class PatternView(gtk.DrawingArea):
         we still try to make some sense out of what we get.
         """
         player = com.get('neil.core.player')
-        player.set_callback_state(False)
+        #player.set_callback_state(False)
         data = get_clipboard_text()
         try:
             gen = self.unpack_clipboard_data(data.strip())
@@ -1645,9 +1650,9 @@ class PatternView(gtk.DrawingArea):
             player.history_commit("paste events")
         except:
             pass
-        if player.set_callback_state(True):
-            eventbus = com.get('neil.core.eventbus')
-            eventbus.document_loaded()
+        # if player.set_callback_state(True):
+        #     eventbus = com.get('neil.core.eventbus')
+        #     eventbus.document_loaded()
 
     def on_mousewheel(self, widget, event):
         """
@@ -1777,7 +1782,7 @@ class PatternView(gtk.DrawingArea):
         keeping notes intact
         """
         player = com.get('neil.core.player')
-        player.set_callback_state(False)
+        #player.set_callback_state(False)
         pattern_index=[]
         pattern_contents=[]
         for r,g,t,i in self.pattern_range():
@@ -1792,9 +1797,9 @@ class PatternView(gtk.DrawingArea):
             item+=1
         player = com.get('neil.core.player')
         player.history_commit("double length")
-        if player.set_callback_state(True):
-            eventbus = com.get('neil.core.eventbus')
-            eventbus.document_loaded()
+        # if player.set_callback_state(True):
+        #     eventbus = com.get('neil.core.eventbus')
+        #     eventbus.document_loaded()
 
     def on_popup_halve(self, *args):
         """
@@ -1802,7 +1807,7 @@ class PatternView(gtk.DrawingArea):
         keeping notes intact
         """
         player = com.get('neil.core.player')
-        player.set_callback_state(False)
+        #player.set_callback_state(False)
         if self.plugin.get_pattern_length(self.pattern)==1:
             return
         for r,g,t,i in self.pattern_range():
@@ -1812,9 +1817,9 @@ class PatternView(gtk.DrawingArea):
         self.plugin.set_pattern_length(self.pattern,self.plugin.get_pattern_length(self.pattern)/2)
         player = com.get('neil.core.player')
         player.history_commit("halve length")
-        if player.set_callback_state(True):
-            eventbus = com.get('neil.core.eventbus')
-            eventbus.document_loaded()
+        # if player.set_callback_state(True):
+        #     eventbus = com.get('neil.core.eventbus')
+        #     eventbus.document_loaded()
 
     def on_popup_create_copy(self, *args):
         """
@@ -2443,7 +2448,6 @@ class PatternView(gtk.DrawingArea):
                 self.statuslabels[1].set_label("")
 
     def update_all(self):
-        print "updated"
         if self.window and self.window.is_visible():
             self.prepare_textbuffer()
             self.refresh_view()
