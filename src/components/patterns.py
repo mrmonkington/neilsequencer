@@ -399,11 +399,6 @@ class PatternToolBar(gtk.HBox):
         player = com.get('neil.core.player')
         plugin = self.get_plugin_sel()
         active = self.patternselect.get_active()
-        if isinstance(plugin, (list, tuple)):
-            plugin = plugin[0]
-        print args[0][0], plugin
-        if args[0][0] != plugin:
-            return
         if not plugin:
             self.patternselect.get_model().clear()
             return
