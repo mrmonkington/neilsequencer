@@ -425,7 +425,10 @@ class PatternToolBar(gtk.HBox):
 
     def set_pattern_sel(self, sel):
         player = com.get('neil.core.player')
-        sel = (player.active_plugins[0], self.patternselect.get_active())
+        try:
+            sel = (player.active_plugins[0], self.patternselect.get_active())
+        except IndexError:
+            return
         if sel[1] >= 0:
             player = com.get('neil.core.player')
             player.active_patterns = [sel]
