@@ -777,7 +777,9 @@ class RouteView(gtk.DrawingArea):
         mx,my = int(event.x), int(event.y)
         res = self.get_plugin_at((mx,my))
         if not res:
-            com.get('neil.core.searchplugins').show_all()
+            searchwindow = com.get('neil.core.searchplugins')
+            searchwindow.show_all()
+            searchwindow.present()
             return
         mp, (x, y), area = res
         if area == AREA_ANY:
