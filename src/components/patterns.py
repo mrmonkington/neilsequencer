@@ -253,6 +253,7 @@ class PatternToolBar(gtk.HBox):
         self.pluginlabel = gtk.Label()
         self.pluginlabel.set_text_with_mnemonic("_Plugin")
         self.pluginselect = gtk.combo_box_new_text()
+        self.pluginselect.set_size_request(100, 0)
         self.pluginselect.set_active(0)
         self.pluginselect.connect('changed', self.set_plugin_sel)
         plugins = self.get_plugin_source()
@@ -267,6 +268,7 @@ class PatternToolBar(gtk.HBox):
         self.patternlabel = gtk.Label()
         self.patternlabel.set_text_with_mnemonic("_Pattern")
         self.patternselect = gtk.combo_box_new_text()
+        self.patternselect.set_size_request(100, 0)
         self.patternselect.connect('changed', self.set_pattern_sel)
         eventbus.active_plugins_changed += self.get_pattern_source
         #eventbus.active_patterns_changed += self.get_pattern_source
@@ -290,7 +292,7 @@ class PatternToolBar(gtk.HBox):
 
         # An octave selector combo box.
         self.octavelabel = gtk.Label()
-        self.octavelabel.set_text_with_mnemonic("_Base octave")
+        self.octavelabel.set_text_with_mnemonic("_Octave")
         self.octaveselect = gtk.combo_box_new_text()
         self.octavelabel.set_mnemonic_widget(self.octaveselect)
         for octave in range(1, 9):
@@ -302,7 +304,7 @@ class PatternToolBar(gtk.HBox):
         eventbus.octave_changed += self.octave_update
         
         # An edit step selector combo box.
-        self.edit_step_label = gtk.Label("Edit step")
+        self.edit_step_label = gtk.Label("Step")
         self.edit_step_box = gtk.combo_box_new_text()
         for step in range(12):
             self.edit_step_box.append_text(str(step + 1))
