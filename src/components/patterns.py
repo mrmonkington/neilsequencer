@@ -41,7 +41,7 @@ from neil.utils import get_clipboard_text, set_clipboard_text, question
 from neil.utils import error, get_new_pattern_name, new_liststore
 from neil.utils import new_combobox, db2linear, make_menu_item
 from neil.utils import make_check_item, ObjectHandlerGroup, AcceleratorMap
-from neil.utils import Menu, padded_partition
+from neil.utils import Menu, padded_partition, is_generator, is_effect
 
 import zzub
 import time
@@ -387,7 +387,14 @@ class PatternToolBar(gtk.HBox):
         def cmp_func(a, b):
             return cmp(a.get_name().lower(), b.get_name().lower())
         plugins = sorted(list(player.get_plugin_list()), cmp_func)
-        return [(plugin.get_name(), plugin) for plugin in plugins]
+        generators = [(plugin.get_name(), plugin) for plugin
+                      in plugins if is_generator(plugin)]
+        effects = [(plugin.get_name(), plugin) for plugin
+                   in plugins if is_effect(plugin)]
+        other = [(plugin.get_name(), plugin) for plugin
+                 in plugins if not (is_generator(plugin) or 
+                                    is_effect(plugin))]
+        return generators + effects + other
 
     def get_plugin_sel(self):
         player = com.get('neil.core.player')
