@@ -770,8 +770,8 @@ int CTrack::DoTremolo() {
     break;
   }
 
-  depth *= m_fTremoloDepth;
-  depth += m_fBaseVolume;
+  depth = m_fBaseVolume - m_fBaseVolume * (1.0 - depth) * m_fTremoloDepth;
+
   if (depth > 2.0f)
     depth = 2.0f; 
   else if (depth < 0.0f)
