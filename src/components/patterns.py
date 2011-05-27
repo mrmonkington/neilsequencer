@@ -250,8 +250,8 @@ class PatternToolBar(gtk.HBox):
         self.set_border_width(MARGIN)
         eventbus = com.get('neil.core.eventbus')
 
-        self.pluginlabel = gtk.Label()
-        self.pluginlabel.set_text_with_mnemonic("_Plugin")
+        #self.pluginlabel = gtk.Label()
+        #self.pluginlabel.set_text_with_mnemonic("_Mach")
         self.pluginselect = gtk.combo_box_new_text()
         self.pluginselect.set_size_request(100, 0)
         self.pluginselect.set_active(0)
@@ -263,10 +263,10 @@ class PatternToolBar(gtk.HBox):
         eventbus.zzub_delete_plugin += self.pluginselect_update
         eventbus.document_loaded += self.pluginselect_update
         #eventbus.active_plugins_changed += self.pluginselect.update
+        #self.pluginlabel.set_mnemonic_widget(self.pluginselect)
 
-        self.pluginlabel.set_mnemonic_widget(self.pluginselect)
         self.patternlabel = gtk.Label()
-        self.patternlabel.set_text_with_mnemonic("_Pattern")
+        self.patternlabel.set_text_with_mnemonic("_Patt")
         self.patternselect = gtk.combo_box_new_text()
         self.patternselect.set_size_request(100, 0)
         self.patternselect.connect('changed', self.set_pattern_sel)
@@ -279,7 +279,7 @@ class PatternToolBar(gtk.HBox):
 
         # Wave selector combo box.
         self.wavelabel = gtk.Label()
-        self.wavelabel.set_text_with_mnemonic("_Instrument")
+        self.wavelabel.set_text_with_mnemonic("_Wave")
         self.waveselect = gtk.combo_box_new_text()
         self.waveselect.set_size_request(100, 0)
         self.waveselect.connect('changed', self.set_wave_sel)
@@ -292,7 +292,7 @@ class PatternToolBar(gtk.HBox):
 
         # An octave selector combo box.
         self.octavelabel = gtk.Label()
-        self.octavelabel.set_text_with_mnemonic("_Octave")
+        self.octavelabel.set_text_with_mnemonic("_Oct")
         self.octaveselect = gtk.combo_box_new_text()
         self.octavelabel.set_mnemonic_widget(self.octaveselect)
         for octave in range(1, 9):
@@ -300,6 +300,7 @@ class PatternToolBar(gtk.HBox):
         self.octaveselect.set_active(player.octave - 1)
         def octave_set(event):
             player.octave = int(self.octaveselect.get_active_text())
+            self.pattern_view.grab_focus()
         self.octaveselect.connect('changed', octave_set)
         eventbus.octave_changed += self.octave_update
         
@@ -315,7 +316,7 @@ class PatternToolBar(gtk.HBox):
         self.playnotes.set_active(True)
         self.playnotes.connect('clicked', self.on_playnotes_click)
  
-        self.pack_start(self.pluginlabel, expand=False)
+        #self.pack_start(self.pluginlabel, expand=False)
         self.pack_start(self.pluginselect, expand=False)
         self.pack_start(self.patternlabel, expand=False)
         self.pack_start(self.patternselect, expand=False)
@@ -363,10 +364,13 @@ class PatternToolBar(gtk.HBox):
         if sel != []:
             index = sel[0].get_index()
             self.waveselect.set_active(index)
+        else:
+            self.waveselect.set_active(0)
 
     def edit_step_changed(self, event):
         step = int(self.edit_step_box.get_active_text())
         self.pattern_view.edit_step = step
+        self.pattern_view.grab_focus()
 
     def on_playnotes_click(self, event):
         self.pattern_view.play_notes = self.playnotes.get_active()
@@ -396,6 +400,7 @@ class PatternToolBar(gtk.HBox):
                 player.active_patterns = [(sel, 0)]
             else:
                 player.active_patterns = []
+        self.pattern_view.grab_focus()
 
     def get_pattern_source(self, *args):
         player = com.get('neil.core.player')
@@ -432,6 +437,7 @@ class PatternToolBar(gtk.HBox):
         if sel[1] >= 0:
             player = com.get('neil.core.player')
             player.active_patterns = [sel]
+        self.pattern_view.grab_focus()
 
     def set_wave_sel(self, *args):
         player = com.get('neil.core.player')
@@ -439,6 +445,7 @@ class PatternToolBar(gtk.HBox):
         if sel:
             player = com.get('neil.core.player')
             player.active_waves = [sel]
+        self.pattern_view.grab_focus()
 
     def activate_wave(self, w):
         player = com.get('neil.core.player')
