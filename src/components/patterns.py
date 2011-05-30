@@ -514,6 +514,10 @@ class PatternPanel(gtk.VBox):
         self.statusbar.pack_start(label, expand=False)
         self.statusbar.pack_start(gtk.VSeparator(), expand=False)
 
+        label = gtk.Label()
+        self.statuslabels.append(label)
+        self.statusbar.pack_end(label, expand=False)
+
         self.view = PatternView(self, hscroll, vscroll)
         self.viewport = gtk.Viewport()
         self.viewport.add(self.view)
@@ -1981,7 +1985,7 @@ class PatternView(gtk.DrawingArea):
                 self.selection.begin = self.row
             else:
                 self.selection.begin = self.shiftselect
-                self.selection.end = self.row+1
+                self.selection.end = self.row + 1
             self.adjust_selection()
             self.redraw()
         elif mask & gtk.gdk.SHIFT_MASK and k == 'Up':
@@ -2004,7 +2008,7 @@ class PatternView(gtk.DrawingArea):
             if self.shiftselect == None:
                 self.shiftselect = self.row
                 self.selection.begin = self.shiftselect
-                self.selection.end = self.row+1
+                self.selection.end = self.row + 1
             self.selection.mode = (self.selection.mode + 1) % 4
             self.adjust_selection()
             self.redraw()
@@ -2059,9 +2063,11 @@ class PatternView(gtk.DrawingArea):
             self.adjust_scrollbars()
         elif k == 'Up' or k == 'KP_Up':
             self.move_up(self.edit_step)
+            self.shiftselect = None
             self.adjust_scrollbars()
         elif k == 'Down' or k == 'KP_Down':
             self.move_down(self.edit_step)
+            self.shiftselect = None
             self.adjust_scrollbars()
         elif k == 'Page_Up' or k == 'KP_Page_Up':
             self.move_up(16)
@@ -2827,15 +2833,18 @@ class PatternView(gtk.DrawingArea):
                     width = self.column_width
                     x2 = self.parameter_width[sel_g][sel_i] * width
                     draw_box(x, y1, x2, y2 - y1)
+                    self.statuslabels[3].set_label("Sel Column")
                 elif self.selection.mode == SEL_TRACK:
                     x2 = ((self.track_width[self.selection.group] - 1) * 
                           self.column_width)
                     draw_box(x, y1, x2, y2 - y1)
+                    self.statuslabels[3].set_label("Sel Track")
                 elif self.selection.mode == SEL_GROUP:
                     track_count = self.group_track_count[self.selection.group]
                     x2 = ((self.track_width[self.selection.group] * 
                            track_count - 1) * self.column_width)
                     draw_box(x, y1, x2, y2 - y1)
+                    self.statuslabels[3].set_label("Sel Group")
                 elif self.selection.mode == SEL_ALL:
                     x2 = 0
                     for group in range(3):
@@ -2845,6 +2854,9 @@ class PatternView(gtk.DrawingArea):
                                    self.column_width)
                     x2 -= self.column_width
                     draw_box(x, y1, x2, y2 - y1)
+                    self.statuslabels[3].set_label("Sel All")
+            else:
+                self.statuslabels[3].set_label("")
 
     def draw_background(self, ctx):
         w, h = self.get_client_size()
