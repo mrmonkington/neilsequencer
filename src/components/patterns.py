@@ -403,7 +403,7 @@ class PatternToolBar(gtk.HBox):
         return sel
 
     def set_plugin_sel(self, *args):
-        print args
+        #print args
         sel_index = self.pluginselect.get_active()
         # Hack below.
         plugins = self.get_plugin_source()
