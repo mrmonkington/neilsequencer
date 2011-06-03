@@ -199,24 +199,24 @@ class ViewMenu(Menu):
 #~                toggle = True,
 #~  )
 
-class NeilStatusbar(gtk.Statusbar):
-  __neil__ = dict(
-          id = 'neil.core.statusbar',
-          singleton = True,
-          categories = [
-                  'view',
-          ],
-  )
+# class NeilStatusbar(gtk.Statusbar):
+#   __neil__ = dict(
+#           id = 'neil.core.statusbar',
+#           singleton = True,
+#           categories = [
+#                   'view',
+#           ],
+#   )
 
-  __view__ = dict(
-                  label = "Statusbar",
-                  order = 0,
-                  toggle = True,
-  )
+#   __view__ = dict(
+#                   label = "Statusbar",
+#                   order = 0,
+#                   toggle = True,
+#   )
 
-  def __init__(self):
-    gtk.Statusbar.__init__(self)
-    self.push(0, "Ready to rok again")
+#   def __init__(self):
+#     gtk.Statusbar.__init__(self)
+#     self.push(0, "Ready to rok again")
 
 class NeilFrame(gtk.Window):
   """
@@ -343,10 +343,10 @@ class NeilFrame(gtk.Window):
     hbox.pack_end(self.mastertoolbar, expand=False)
     vbox.add(hbox)
 
-    self.neilframe_statusbar = com.get('neil.core.statusbar')
+    #self.neilframe_statusbar = com.get('neil.core.statusbar')
 
     vbox.pack_start(self.transport, expand=False)
-    vbox.pack_end(self.neilframe_statusbar, expand=False)
+    #vbox.pack_end(self.neilframe_statusbar, expand=False)
 
     self.update_title()
     gtk.window_set_default_icon_list(
@@ -554,7 +554,7 @@ class NeilFrame(gtk.Window):
     #~cfg.load_window_pos("Toolbar", self.neilframe_toolbar)
     cfg.load_window_pos("MasterToolbar", self.mastertoolbar)
     cfg.load_window_pos("Transport", self.transport)
-    cfg.load_window_pos("StatusBar", self.neilframe_statusbar)
+    #cfg.load_window_pos("StatusBar", self.neilframe_statusbar)
 
   def save_view(self):
     """
@@ -565,7 +565,7 @@ class NeilFrame(gtk.Window):
     #~cfg.save_window_pos("Toolbar", self.neilframe_toolbar)
     cfg.save_window_pos("MasterToolbar", self.mastertoolbar)
     cfg.save_window_pos("Transport", self.transport)
-    cfg.save_window_pos("StatusBar", self.neilframe_statusbar)
+    #cfg.save_window_pos("StatusBar", self.neilframe_statusbar)
 
   def on_help_contents(self, *args):
     """
@@ -949,7 +949,7 @@ __neil__ = dict(
                 ViewMenu,
                 Accelerators,
                 NeilFrame,
-                NeilStatusbar,
+                #NeilStatusbar,
                 #~NeilToolbar,
         ],
 )

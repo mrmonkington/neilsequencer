@@ -85,10 +85,10 @@ namespace zzub {
 
     int read(void* v, int size) {
       int pos = position();
-      size_t result;
+      int result;
       result = fread(v, size, 1, f);
-      if (result != (unsigned int)size) {
-	fputs("Reading error", stderr);
+      if (result != size) {
+	fputs("Reading error.\n", stderr);
       }
       return position() - pos;
     }
