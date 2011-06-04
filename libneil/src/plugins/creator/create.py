@@ -103,7 +103,6 @@ const char *%%%NAME%%%::describe_value(int param, int value) {
 
 signature =\
 """
-
 const char *zzub_get_signature() { 
   return ZZUB_SIGNATURE; 
 }
@@ -177,7 +176,7 @@ class Machine:
 
     def preprocessor(self, body):
         id = self.header_file_id()
-        output = "#ifndef %s\n#define %s\n%s\n%s\n\n#endif // %s" %\
+        output = "#ifndef %s\n#define %s\n%s\n%s#endif // %s" %\
             (id, id, includes, body, id)
         return output
 
@@ -185,7 +184,7 @@ class Machine:
         gvals = ''
         param_declarations = ''
         if self.gvals_struct != '':
-            gvals = "\nstruct Gvals {\n%s} __attribute__((__packed__));\n\n" %\
+            gvals = "\nstruct Gvals {\n%s} __attribute__((__packed__));\n" %\
                 self.gvals_struct
             param_declarations += '  Gvals gval;'
         body = ('\n' + self.param_declarations +
@@ -235,9 +234,11 @@ class Machine:
             "      .set_value_min(%s)\n" % min_ +\
             "      .set_value_max(%s)\n" % max_ +\
             "      .set_value_none(%s)\n" % none +\
-            "      .set_value_default(%s)\n" % default
+            "      .set_value_default(%s)" % default
         if state == 'yes':
-            description += '      .set_state_flag();\n'
+            description += '\n      .set_state_flag();\n'
+        else:
+            description += ';\n';
         if type_ == 'word':
             self.gvals_struct += "  uint16_t %s;\n" % id_
         else:
