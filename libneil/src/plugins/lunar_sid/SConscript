@@ -1,0 +1,7 @@
+Import('pluginenv', 'build_plugin')
+
+localenv = pluginenv.Clone()
+
+files = ["SID.cpp"]
+
+build_plugin(localenv, "somono_sid", files)

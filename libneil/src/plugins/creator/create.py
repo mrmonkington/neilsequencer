@@ -8,8 +8,7 @@ includes =\
 class_definition=\
 """class %%%NAME%%% : public zzub::plugin {
 private:
-%%%PARAMS%%%
-public:
+%%%PARAMS%%%public:
   %%%NAME%%%();
   virtual ~%%%NAME%%%() {}
   virtual void init(zzub::archive* pi);
@@ -75,10 +74,7 @@ implementation =\
 #include "%%%NAME%%%.hpp"
 
 %%%NAME%%%::%%%NAME%%%() {
-%%%PARAMS%%%
-  attributes = 0;
-  track_values = 0;
-}
+%%%PARAMS%%%}
 
 void %%%NAME%%%::init(zzub::archive *pi) {
 
@@ -165,6 +161,7 @@ class Machine:
         self.max_tracks = max_tracks
         self.param_declarations = ""
         self.gvals_struct = ""
+        self.tvals_struct = ""
         self.parameter_setup = ""
         self.setparameters = ""
         self.parameter_counter = 0
@@ -182,13 +179,19 @@ class Machine:
 
     def make_header(self):
         gvals = ''
+        tvals = ''
         param_declarations = ''
         if self.gvals_struct != '':
             gvals = "\nstruct Gvals {\n%s} __attribute__((__packed__));\n" %\
                 self.gvals_struct
-            param_declarations += '  Gvals gval;'
+            param_declarations += '  Gvals gval;\n'
+        if self.tvals_struct != '':
+            tvals = "\nstruct Tvals {\n%s} __attribute__((__packed__));\n" %\
+                self.tvals_struct
+            param_declarations += '  Tvals tval;\n'
         body = ('\n' + self.param_declarations +
                 gvals +
+                tvals +
                 signature +
                 class_definition.\
                     replace('%%%NAME%%%', self.name).\
@@ -210,7 +213,14 @@ class Machine:
     def make_implementation(self):
         param_declarations = ''
         if self.gvals_struct != '':
-            param_declarations += '  global_values = &gval;'
+            param_declarations += '  global_values = &gval;\n'
+        else:
+            param_declarations += '  global_values = 0;\n'
+        if self.tvals_struct != '':
+            param_declarations += '  track_values = &gval;\n'
+        else:
+            param_declarations += '  track_values = 0;\n'
+        param_declarations += '  attributes = 0;\n'
         body = implementation.\
             replace('%%%NAME%%%', self.name).\
             replace('%%%PARAMS%%%', param_declarations).\
@@ -240,14 +250,24 @@ class Machine:
         else:
             description += ';\n';
         if type_ == 'word':
-            self.gvals_struct += "  uint16_t %s;\n" % id_
+            if ptype == 'global_parameter':
+                self.gvals_struct += "  uint16_t %s;\n" % id_
+            elif ptype == 'track_parameter':
+                self.tvals_struct += "  uint16_t %s;\n" % id_
         else:
-            self.gvals_struct += "  uint8_t %s;\n" % id_
+            if ptype == 'global_parameter':
+                self.gvals_struct += "  uint8_t %s;\n" % id_
+            elif ptype == 'track_parameter':
+                self.tvals_struct += "  uint8_t %s;\n" % id_
         self.param_declarations +=\
             "const zzub::parameter *para_%s = 0;\n" % id_
         self.parameter_setup += description
-        self.setparameters +=\
-            "  if (gval.%s != %s) {\n    \n  }\n" % (id_, none)
+        if ptype == 'global_parameter':
+            self.setparameters +=\
+                "  if (gval.%s != %s) {\n    \n  }\n" % (id_, none)
+        elif ptype == 'track_parameter':
+            self.setparameters +=\
+                "  if (tval.%s != %s) {\n    \n  }\n" % (id_, none)
         self.printparameters +=\
             "  case %d:\n    sprintf(txt, \"%%d\", value);\n    break;\n" %\
             self.parameter_counter
