@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 includes =\
 """\n#include <zzub/signature.h>
 #include <zzub/plugin.h>
@@ -223,10 +225,10 @@ class Machine:
             replace('%%%LIB_NAME%%%', self.lib_name)
         return body
 
-    def add_global_parameter(self, id_, type_, name, description, min_, max_, none, default, state):
+    def add_parameter(self, ptype, id_, type_, name, description, min_, max_, none, default, state):
         para_name = 'para_' + id_
         description =\
-            "    %s = &add_global_parameter()\n" % para_name +\
+            "    %s = &add_%s()\n" % (para_name, ptype) +\
             "      .set_%s()\n" % type_ +\
             "      .set_name(\"%s\")\n" % name +\
             "      .set_description(\"%s\")\n" % description +\
@@ -273,8 +275,10 @@ if __name__ == '__main__':
         max_tracks = 1
     try:
         global_params = [p.strip() for p in config.get('General', 'globals').split(',')]
+        track_params = [p.strip() for p in config.get('General', 'track').split(',')]
     except ConfigParser.NoOptionError:
         global_params = []
+        track_params = []
     try:
         machine = Machine(config.get('General', 'author'),
                           config.get('General', 'name'),
@@ -284,15 +288,27 @@ if __name__ == '__main__':
                           min_tracks,
                           max_tracks)
         for param in global_params:
-            machine.add_global_parameter(param,
-                                         config.get(param, 'type'),
-                                         config.get(param, 'name'),
-                                         config.get(param, 'description'),
-                                         config.get(param, 'min'),
-                                         config.get(param, 'max'),
-                                         config.get(param, 'none'),
-                                         config.get(param, 'default'),
-                                         config.get(param, 'state'))
+            machine.add_parameter('global_parameter',
+                                  param,
+                                  config.get(param, 'type'),
+                                  config.get(param, 'name'),
+                                  config.get(param, 'description'),
+                                  config.get(param, 'min'),
+                                  config.get(param, 'max'),
+                                  config.get(param, 'none'),
+                                  config.get(param, 'default'),
+                                  config.get(param, 'state'))
+        for param in track_params:
+            machine.add_parameter('track_parameter',
+                                  param,
+                                  config.get(param, 'type'),
+                                  config.get(param, 'name'),
+                                  config.get(param, 'description'),
+                                  config.get(param, 'min'),
+                                  config.get(param, 'max'),
+                                  config.get(param, 'none'),
+                                  config.get(param, 'default'),
+                                  config.get(param, 'state'))
         fhpp = open(output_dir + '/' + machine.hpp_name, 'w')
         fcpp = open(output_dir + '/' + machine.cpp_name, 'w')
         fscons = open(output_dir + '/SConscript', 'w')
