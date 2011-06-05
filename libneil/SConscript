@@ -66,13 +66,11 @@ opts.Add("REVISION", 'Revision number (will be set automatically)', '0')
 opts.Add("SIGNATURE", 'Host signature (will be set automatically)', '')
 opts.Add("CONFIGURED", 'Version for which the build is configured (will be set automatically)', '')
 opts.Add("TOOLS", 'Compiler suite to use', 'default', None, tools_converter)
-opts.Add("LUNAR", 'Support Lunar plugins', posix, None, bool_converter)
 opts.Add("LLVMGCCPATH", 'Path to llvm-gcc', '')
 opts.Add("JACK", 'Support Jack Audio Connection Kit', False, None, bool_converter)
 opts.Add("AUDIOENGINE", 'Support Portaudio', "rtaudio", None, audioengine_converter)
 opts.Add("OSS", 'Support OSS', False, None, bool_converter)
 opts.Add("ALSA", 'Support ALSA', False, None, bool_converter)
-opts.Add("LUNARTARGET", 'Target for Lunar (llvm,gcc)', 'gcc')
 opts.Add("SSE", "Support SSE instructions", False, None, bool_converter)
 opts.Add("SSE2", "Support SSE2 instructions", False, None, bool_converter)
 opts.Add("LADSPA", "Support LADSPA plugins", False, None, bool_converter)
@@ -275,7 +273,6 @@ env['PORTMIDI_SRC_PATH'] = '${ROOTPATH}/src/portmidi'
 env['LIBZZUB_SRC_PATH'] = '${ROOTPATH}/src/libzzub'
 env['MINIZIP_SRC_PATH'] = '${ROOTPATH}/src/minizip'
 env['PLUGINS_SRC_PATH'] = '${ROOTPATH}/src/plugins'
-env['LUNAR_SCRIPT_PATH'] = '${ROOTPATH}/share/zzub/lunar'
 env['PYZZUB_SRC_PATH'] = '${ROOTPATH}/src/pyzzub'
 env['LANTERNFISH_SRC_PATH'] = '${ROOTPATH}/src/lanternfish'
 
@@ -335,9 +332,6 @@ def check_cpu_flag(conf, flag):
     # XXX: add cpu flag check for other platforms
     conf.Result('ERROR: not supported for this platform.')
     return False
-
-if env['LUNARTARGET'] == '':
-    env['CONFIGURED'] = ''
 
 def is_cleaning():
     import SCons.Script.Main 
@@ -405,49 +399,6 @@ if (not is_cleaning()) and ('configure' in COMMAND_LINE_TARGETS):
 	env['SSE'] = False
 	env['SSE2'] = True
 
-    if env['LUNAR'] == True: # user wants to build lunar
-	# needs LLVM for that
-	wantversion = '1.9'
-	target = env['LUNARTARGET']
-	if target == 'llvm':
-	    llvmcfgpath = None
-	    llvmcfgname = 'llvm-config'
-	    llvmcfgpath = conf.HasExecutable(llvmcfgname)
-	    if not llvmcfgpath:
-		print "Error: %s not found in PATH." % llvmcfgname
-		print "You need to install LLVM %s from http://www.llvm.org" % wantversion
-		Exit(1)
-	    # LLVM 1.9 needed
-	    ver = conf.CommandIsVersion('%s --version' % llvmcfgpath, wantversion)
-	    if not ver:
-		print "Error: LLVM %s required." % wantversion
-		print "You need to install LLVM %s from http://www.llvm.org" % wantversion
-		Exit(1)
-	    # /home/paniq/devel/sources/llvm-gcc4-1.9-x86-linux-RHEL4/bin
-	    if env['LLVMGCCPATH'] == '':
-		llvmgccpath = conf.HasExecutable("llvm-gcc")
-		if not llvmgccpath:
-		    print "Error: can not find llvm-gcc."
-		    print "Run configure with the path that llvm-gcc is installed to, e.g."
-		    print "\tscons configure LLVMGCCPATH=/home/paniq/bin"
-		    Exit(1)
-	    else:
-		llvmgccpath = str(env.File('${LLVMGCCPATH}/llvm-gcc'))
-		if win32:
-		    llvmgccpath += '.exe'
-		if not os.path.isfile(llvmgccpath):
-		    print "Error: can not find llvm-gcc in %s" % env['LLVMGCCPATH']
-		    print "Run configure with the path that llvm-gcc is installed to, e.g."
-		    print "\tscons configure LLVMGCCPATH=/home/paniq/bin"
-		    Exit(1)
-	elif target == 'gcc':
-	    pass
-	else:
-	    print "Error: Please pick a backend for Lunar:"
-	    print "    'scons configure LUNARTARGET=llvm' to pick LLVM %s as target." % wantversion
-	    print "    'scons configure LUNARTARGET=gcc' to pick GCC as target."
-	    Exit(1)
-
     print "Finished configuration."
     print
     print "=== Using ===".center(50)
@@ -458,15 +409,11 @@ if (not is_cleaning()) and ('configure' in COMMAND_LINE_TARGETS):
     print "Use SSE2 CPU Extension:".rjust(30),yesno[env['SSE2'] == True]
     print
     print "=== Components ===".center(50)
-    print "Lunar DSP Host:".rjust(30),yesno[env['LUNAR'] == True]
-    print "Lunar Target:".rjust(30),env['LUNARTARGET']
     print "DSSI:".rjust(30),yesno[env['DSSI'] == True]
     print "LADSPA:".rjust(30),yesno[env['LADSPA'] == True]
     print "pyzzub (zubb for Python):".rjust(30),yesno[env['PYZZUB'] == True]
     print
     print "=== Directories ===".center(50)
-    if env['LUNARTARGET'] == 'llvm':
-	print "llvm-gcc:".rjust(30),env['LLVMGCCPATH']
     print "Prefix:".rjust(30),env['PREFIX']
     print "Install into:".rjust(30),env.Dir("${DESTDIR}${PREFIX}")
     print "Library Directory:".rjust(30),env.Dir("${PREFIX}${LIBDIR}")
