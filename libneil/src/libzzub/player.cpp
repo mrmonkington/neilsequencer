@@ -164,8 +164,9 @@ namespace zzub {
     assert(i == 0);
     assert(level == 0);
     importwave_info iwi;
-    if (!get_wave_level_info(i, level, iwi)) return ;
-
+    if (!get_wave_level_info(i, level, iwi)) {
+      return;
+    }
     // TODO: this could use a larger buffer
     for (int i = 0; i < iwi.sample_count; i++) {
       float f[2];

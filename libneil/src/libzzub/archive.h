@@ -86,8 +86,8 @@ namespace zzub {
     int read(void* v, int size) {
       int pos = position();
       int result;
-      result = fread(v, size, 1, f);
-      if (result != 1) {
+      result = fread(v, 1, size, f);
+      if (result != size) {
 	//
       }
       return position() - pos;
