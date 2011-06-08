@@ -87,8 +87,8 @@ namespace zzub {
       int pos = position();
       int result;
       result = fread(v, size, 1, f);
-      if (result != size) {
-	fputs("Reading error.\n", stderr);
+      if (result != 1) {
+	//
       }
       return position() - pos;
     }

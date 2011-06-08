@@ -122,23 +122,35 @@ namespace zzub {
   bool import_sndfile::get_wave_level_info(int i, int level, importwave_info& info) {
     assert(i == 0);
     assert(level == 0);
-    if (i != 0 && level != 0) return false;
+    if (i != 0 && level != 0) {
+      return false;
+    }
     info.channels = sfinfo.channels;
-
+    // All the type info below is set in such a way, that
+    // during the convertion from float (soundfile library is set
+    // to read in float) it would all convert to 16 bit PCM.
+    // This was done due to simplicy, some machines only working
+    // with 16 bit files and due to the fact that if it were not
+    // for this notice you would have never noticed it did this.
+    // With time, of course, this should be re-implemented in a 
+    // more pleasing manner.
     switch (sfinfo.format & SF_FORMAT_SUBMASK) {
-    case SF_FORMAT_PCM_U8: // convert anything 8 bit to 16-bit
+    case SF_FORMAT_PCM_U8:
     case SF_FORMAT_PCM_S8:
     case SF_FORMAT_PCM_16:
       info.format = wave_buffer_type_si16;
       break;
     case SF_FORMAT_PCM_24:
-      info.format = wave_buffer_type_si24;
+      //info.format = wave_buffer_type_si24;
+      info.format = wave_buffer_type_si16;
       break;
     case SF_FORMAT_PCM_32:
-      info.format = wave_buffer_type_si32;
+      //info.format = wave_buffer_type_si32;
+      info.format = wave_buffer_type_si16;
       break;
     case SF_FORMAT_FLOAT:
-      info.format = wave_buffer_type_f32;
+      //info.format = wave_buffer_type_f32;
+      info.format = wave_buffer_type_si16;
       break;
     default:
       return false;
