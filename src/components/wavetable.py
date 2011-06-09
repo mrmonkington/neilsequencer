@@ -248,7 +248,7 @@ class WavetablePanel(gtk.VBox):
         self.ohg.connect(self.edsamplerate,'activate', self.on_samplerate_apply)
 
         self.ohg.connect(self.libpanel,'key-press-event', self.on_filelist_key_down)
-        self.ohg.connect(self.libpanel,'file-activated', self.on_load_sample)
+        #self.ohg.connect(self.libpanel,'file-activated', self.on_load_sample)
         self.ohg.connect(self.libpanel,'selection-changed', self.on_libpanel_selection_changed)
 
         currentpath = config.get_config().get_default('SampleBrowserPath')
@@ -670,13 +670,14 @@ class WavetablePanel(gtk.VBox):
             selects = selects[:len(samplepaths)]
         assert len(selects) == len(samplepaths)
         player = com.get('neil.core.player')
-        for source,target in zip(samplepaths, selects):
-            print "loading %s => %s" % (source,target)
+        for source, target in zip(samplepaths, selects):
             w = player.get_wave(target)
             w.clear()
             w.set_volume(1.0)
             if not player.load_wave(w, source):
+                player.history_flush()
                 error(self, "<b><big>Unable to load <i>%s</i>.</big></b>\n\nThe file may be corrupt or the file type is not supported." % source)
+                return
             else:
                 w.set_name(os.path.splitext(os.path.basename(source))[0])
         player.history_commit("load instrument")
