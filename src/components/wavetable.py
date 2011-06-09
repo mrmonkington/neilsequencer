@@ -129,11 +129,29 @@ class WavetablePanel(gtk.VBox):
         self.libpanel.set_preview_widget(preview)
         #self.libpanel.set_border_width(MARGIN2)
         #self.libpanel.add_shortcut_folder(config.get_config().get_freesound_samples_folder())
-        self.libpanel.add_filter(file_filter('All Supported Formats', '*.wav', '*.flac', '*.mp3', '*.aif', '*.aiff'))
+        self.libpanel.add_filter(file_filter('All Supported Formats', '*.wav', '*.aif',
+                                             '*.aifc', '*.aiff', '*.flac', '*.xi',
+                                             '*.au', '*.paf', '*.snd', '*.voc', 
+                                             '*.smp', '*.iff', '*.8svx', '*.16svx',
+                                             '*.w64', '*.mat4', '*.mat5', '*.pvf',
+                                             '*.htk', '*.caf', '*.sd2', '*.raw'))
+        self.libpanel.add_filter(file_filter('All Files', '*'))
+        self.libpanel.add_filter(file_filter('Wave Audio File Format (*.wav)', '*.wav'))
+        self.libpanel.add_filter(file_filter('Audio Interchange File Format (*.aif, *.aiff, *.aifc)', '*.aif', '*.aiff', '*.aifc'))
         self.libpanel.add_filter(file_filter('Free Lossless Audio Codec (*.flac)', '*.flac'))
-        self.libpanel.add_filter(file_filter('WAVE (*.wav)', '*.wav'))
-        self.libpanel.add_filter(file_filter('Audio Interchange File Format (*.aif, *.aiff)', '*.aif', '*.aiff'))
-        self.libpanel.add_filter(file_filter('MPEG-1 Audio Layer 3 (*.mp3)', '*.mp3'))
+        self.libpanel.add_filter(file_filter('Fasttracker 2 Extended Instrument File (*.xi)', '*.xi'))
+        self.libpanel.add_filter(file_filter('Sun Microsystems Audio File Format (*.au, *.snd)', '*.au', '*.snd'))
+        self.libpanel.add_filter(file_filter('Ensoniq PARIS Audio Format (*.paf)', '*.paf'))
+        self.libpanel.add_filter(file_filter('Creative Labs Audio File (*.voc)', '*.voc'))
+        self.libpanel.add_filter(file_filter('SampleVision Audio Sample Format (*.smp)', '*.smp'))
+        self.libpanel.add_filter(file_filter('Interchange File Format (*.iff, *.8svx, *.16svx)', '*.iff', '*.8svx', '*.16svx'))
+        self.libpanel.add_filter(file_filter('Sony Wave64 Audio Format (*.w64)', '*.w64'))
+        self.libpanel.add_filter(file_filter('Matlab Audio Format (*.mat4, *.mat5)', '*.mat4', '*.mat5'))
+        self.libpanel.add_filter(file_filter('Portable Voice Format (*.pvf)', '*.pvf'))
+        self.libpanel.add_filter(file_filter('Hidden Markov Model Toolkit Format (*.htk)', '*.htk'))
+        self.libpanel.add_filter(file_filter('Core Audio Format (*.caf)', '*.caf'))
+        self.libpanel.add_filter(file_filter('Sound Designer II File (*.sd2)', '*.sd2'))
+        self.libpanel.add_filter(file_filter('Raw Data Audio Format (*.raw)', '*.raw'))
         self.libpanel.set_local_only(True)
         self.libpanel.set_select_multiple(True)
         #self.append_page(self.instrpanel, gtk.Label("Instruments"))

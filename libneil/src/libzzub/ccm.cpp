@@ -1201,7 +1201,8 @@ namespace zzub {
     // flac is not going to encode anything that's not
     // having a standard samplerate, and since that
     // doesn't matter anyway, pick the default one.
-    int sample_rate = 44100; //info.getSamplesPerSec(level);
+    //int sample_rate = 44100; 
+    int sample_rate = info.get_samples_per_sec(level);
     int bps = info.get_bits_per_sample(level);
     int num_samples = info.get_sample_count(level);
 
