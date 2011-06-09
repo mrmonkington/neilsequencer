@@ -457,7 +457,6 @@ class WaveEditView(gtk.DrawingArea):
 	    else: # we are awake
 		if (p <= peakbottom): # noise goes below threshold
 		    sleeping = True # sleep
-	print "done."
 
     def set_sensitive(self, enable):
 	gtk.DrawingArea.set_sensitive(self, enable)
