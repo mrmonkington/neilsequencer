@@ -167,13 +167,26 @@ namespace zzub {
     if (!get_wave_level_info(i, level, iwi)) {
       return;
     }
-    // TODO: this could use a larger buffer
-    for (int i = 0; i < iwi.sample_count; i++) {
-      float f[2];
-      sf_read_float(sf, f, iwi.channels);
-      CopySamples(&f, buffer, 1, wave_buffer_type_f32, iwi.format, 1, 1, 0, i * iwi.channels);
-      if (iwi.channels == 2) 
-	CopySamples(&f, buffer, 1, wave_buffer_type_f32, iwi.format, 1, 1, 1, (i * iwi.channels) + 1);
+    const int stream_buffer_size = 2048;
+    for (int i = 0; i < iwi.sample_count / stream_buffer_size; i++) {
+      float f[2 * stream_buffer_size];
+      sf_read_float(sf, f, iwi.channels * stream_buffer_size);
+      CopySamples(&f, buffer, stream_buffer_size * iwi.channels, 
+		  wave_buffer_type_f32, iwi.format, 1, 1, 0, 
+		  i * iwi.channels * stream_buffer_size);
+    }
+    /* If the number of samples in the file is not an exact
+       multiple of the stream_buffer_size then load the remaining
+       samples.
+    */
+    int remainder = iwi.sample_count % stream_buffer_size;
+    if (remainder) {
+      int divided = iwi.sample_count / stream_buffer_size;
+      float f[2 * stream_buffer_size];
+      sf_read_float(sf, f, iwi.channels * remainder);
+      CopySamples(&f, buffer, remainder * iwi.channels, 
+		  wave_buffer_type_f32, iwi.format, 1, 1, 0, 
+		  divided * iwi.channels * stream_buffer_size);      
     }
   }
 
