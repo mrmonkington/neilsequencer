@@ -1346,7 +1346,7 @@ namespace zzub {
 
     op_wavetable_remove_sampledata* undo = new op_wavetable_remove_sampledata(wave, level, offset, wavedata.sample_count);
     prepare_operation_undo(undo);
-
+    wave_set_samples_per_second(wave, level, wavedata.samples_per_second);
     return wavedata.sample_count;
   }
 
