@@ -173,29 +173,21 @@ class PatternToolBar(gtk.HBox):
         """
         Initialization.
         """
-        # begin wxGlade: SequencerFrame.__init__
         player = com.get('neil.core.player')
         gtk.HBox.__init__(self, False, MARGIN)
         self.pattern_view = pattern_view
         self.set_border_width(MARGIN)
         eventbus = com.get('neil.core.eventbus')
 
-        #self.pluginlabel = gtk.Label()
-        #self.pluginlabel.set_text_with_mnemonic("_Mach")
         self.pluginselect = gtk.combo_box_new_text()
         self.pluginselect.set_size_request(100, 0)
-        #self.pluginselect.set_active(0)
         self.pluginselect_handler =\
             self.pluginselect.connect('changed', self.set_plugin_sel)
         self.pluginselect.set_tooltip_text("Machine to edit a pattern for")
-        #plugins = self.get_plugin_source()
-        #for plugin in plugins:
-        #    self.pluginselect.append_text("%s" % plugin[0])
         eventbus.zzub_new_plugin += self.pluginselect_update
         eventbus.zzub_delete_plugin += self.pluginselect_update
         eventbus.document_loaded += self.pluginselect_update
         eventbus.active_plugins_changed += self.pluginselect_update
-        #self.pluginlabel.set_mnemonic_widget(self.pluginselect)
 
         self.patternlabel = gtk.Label()
         self.patternlabel.set_text_with_mnemonic("_Patt")
@@ -217,7 +209,8 @@ class PatternToolBar(gtk.HBox):
         self.waveselect = gtk.combo_box_new_text()
         self.waveselect.set_tooltip_text("Which wave to use")
         self.waveselect.set_size_request(100, 0)
-        self.waveselect.connect('changed', self.set_wave_sel)
+        self.waveselect_handler =\
+            self.waveselect.connect('changed', self.set_wave_sel)
         eventbus.active_waves_changed += self.waveselect_update
         eventbus.zzub_wave_allocated += self.waveselect_update
         eventbus.zzub_wave_changed += self.waveselect_update
@@ -254,12 +247,9 @@ class PatternToolBar(gtk.HBox):
         self.playnotes.set_active(True)
         self.playnotes.set_tooltip_text("If checked, the notes will be played as you enter them in the editor")
         self.playnotes.connect('clicked', self.on_playnotes_click)
- 
-        #self.pack_start(self.pluginlabel, expand=False)
+
         self.pack_start(self.pluginselect, expand=False)
-        #self.pack_start(self.patternlabel, expand=False)
         self.pack_start(self.patternselect, expand=False)
-        #self.pack_start(self.wavelabel, expand=False)
         self.pack_start(self.waveselect, expand=False)
         self.pack_start(gtk.VSeparator(), expand=False)
         self.pack_start(self.octavelabel, expand=False)
@@ -269,9 +259,14 @@ class PatternToolBar(gtk.HBox):
         self.pack_start(self.playnotes, expand=False)
 
     def pluginselect_update(self, *args):
+        player = com.get('neil.core.player')
         self.pluginselect.handler_block(self.pluginselect_handler)
         plugins = self.get_plugin_source()
-        active = self.pluginselect.get_active()
+        active = -1
+        if player.active_plugins != []:
+            for plugin, i in zip(plugins, range(len(plugins))):
+                if plugin[1] == player.active_plugins[0]:
+                    active = i
         model = self.pluginselect.get_model()
         model.clear()
         for plugin in plugins:
@@ -295,11 +290,10 @@ class PatternToolBar(gtk.HBox):
         This function is called whenever it is decided that
         the wave list in the combox box is outdated.
         """
+        self.waveselect.handler_block(self.waveselect_handler)
         player = com.get('neil.core.player')
         sel = player.active_waves
         active = self.waveselect.get_active()
-        if sel != [] and sel[0].get_index() == active:
-            return
         for i in range(player.get_wave_count()):
             w = player.get_wave(i)
             if w.get_level_count() >= 1:
@@ -311,6 +305,7 @@ class PatternToolBar(gtk.HBox):
             self.waveselect.set_active(index)
         else:
             self.waveselect.set_active(0)
+        self.waveselect.handler_unblock(self.waveselect_handler)
 
     def edit_step_changed(self, event):
         step = int(self.edit_step_box.get_active_text())
@@ -387,7 +382,8 @@ class PatternToolBar(gtk.HBox):
     def set_pattern_sel(self, sel):
         player = com.get('neil.core.player')
         try:
-            sel = (player.active_plugins[0], self.patternselect.get_active())
+            sel = (player.active_plugins[0], 
+                   self.patternselect.get_active())
         except IndexError:
             return
         if sel[1] >= 0:
