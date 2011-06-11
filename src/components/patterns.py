@@ -256,7 +256,7 @@ class PatternToolBar(gtk.HBox):
         self.pluginselect.set_size_request(100, 0)
         self.pluginselect.set_active(0)
         self.pluginselect.connect('changed', self.set_plugin_sel)
-        self.pluginselect.set_tooltip_text("Pick a machine to edit a pattern for")
+        self.pluginselect.set_tooltip_text("Machine to edit a pattern for")
         plugins = self.get_plugin_source()
         for plugin in plugins:
             self.pluginselect.append_text("%s" % plugin[0])
@@ -269,7 +269,7 @@ class PatternToolBar(gtk.HBox):
         self.patternlabel = gtk.Label()
         self.patternlabel.set_text_with_mnemonic("_Patt")
         self.patternselect = gtk.combo_box_new_text()
-        self.patternselect.set_tooltip_text("Choose a pattern to edit")
+        self.patternselect.set_tooltip_text("The pattern to edit")
         self.patternselect.set_size_request(100, 0)
         self.patternselect.connect('changed', self.set_pattern_sel)
         eventbus.active_plugins_changed += self.get_pattern_source
@@ -283,7 +283,7 @@ class PatternToolBar(gtk.HBox):
         self.wavelabel = gtk.Label()
         self.wavelabel.set_text_with_mnemonic("_Wave")
         self.waveselect = gtk.combo_box_new_text()
-        self.waveselect.set_tooltip_text("Choose which wave to use when entering notes in samplers (like Matilde Tracker)")
+        self.waveselect.set_tooltip_text("Which wave to use")
         self.waveselect.set_size_request(100, 0)
         self.waveselect.connect('changed', self.set_wave_sel)
         eventbus.active_waves_changed += self.waveselect_update
@@ -309,7 +309,7 @@ class PatternToolBar(gtk.HBox):
         eventbus.octave_changed += self.octave_update
         
         # An edit step selector combo box.
-        self.edit_step_label = gtk.Label("Step")
+        self.edit_step_label = gtk.Label("_Step")
         self.edit_step_box = gtk.combo_box_new_text()
         self.edit_step_box.set_tooltip_text("Set how many rows the cursor will jump when editting")
         for step in range(12):
@@ -317,17 +317,18 @@ class PatternToolBar(gtk.HBox):
         self.edit_step_box.set_active(0)
         self.edit_step_box.connect('changed', self.edit_step_changed)
 
-        self.playnotes = gtk.CheckButton(label="Play _notes")
+        self.playnotes = gtk.CheckButton(label="_Play")
         self.playnotes.set_active(True)
         self.playnotes.set_tooltip_text("If checked, the notes will be played as you enter them in the editor")
         self.playnotes.connect('clicked', self.on_playnotes_click)
  
         #self.pack_start(self.pluginlabel, expand=False)
         self.pack_start(self.pluginselect, expand=False)
-        self.pack_start(self.patternlabel, expand=False)
+        #self.pack_start(self.patternlabel, expand=False)
         self.pack_start(self.patternselect, expand=False)
-        self.pack_start(self.wavelabel, expand=False)
+        #self.pack_start(self.wavelabel, expand=False)
         self.pack_start(self.waveselect, expand=False)
+        self.pack_start(gtk.VSeparator(), expand=False)
         self.pack_start(self.octavelabel, expand=False)
         self.pack_start(self.octaveselect, expand=False)
         self.pack_start(self.edit_step_label, expand=False)
