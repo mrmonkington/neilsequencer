@@ -162,76 +162,6 @@ def show_pattern_dialog(parent, name, length, dlgmode, letswitch=True):
     dlg.destroy()
     return result
 
-class SelectComboBox(gtk.ComboBox):
-    """
-    a combobox which mirrors a numeration stored somewhere else using four
-    methods to retrieve the options, get/set the active selection, and
-    hover the selection (e.g. for updating previews).
-    """
-
-    def __init__(self, source_func=None, get_selection_func=None, set_selection_func=None, activate_func=None):
-        gtk.ComboBox.__init__(self)
-        columns = [
-                ('Name', str),
-                (None, gobject.TYPE_PYOBJECT),
-        ]
-        store, columncontrols = new_liststore(self, columns)
-        self.ohg = ObjectHandlerGroup()
-        self.source_func = source_func
-        self.get_selection_func = get_selection_func
-        self.set_selection_func = set_selection_func
-        self.activate_func = activate_func
-        self.tokens = []
-        self.ohg.connect(self, 'changed', self.on_selection_changed)
-        self.ohg.connect(self, 'notify::popup-shown', self.on_popup)
-        self.update()
-
-    def get_active(self):
-        if gtk.ComboBox.get_active(self) == -1:
-            return None
-        return self.get_model().get_value(self.get_active_iter(), 1)
-
-    def on_selection_changed(self, widget):
-        if self.set_selection_func:
-            self.set_selection_func(self.get_active())
-
-    def on_popup(self, widget, *args):
-        player = com.get('neil.core.player')
-        if self.get_property('popup-shown'):
-            for win in gtk.window_list_toplevels():
-                if (len(win.get_children()) == 1) and (isinstance(win.get_children()[0], gtk.Menu)):
-                    menu = win.get_children()[0]
-                    if menu.get_attach_widget() == self:
-                        for index, item in enumerate(menu.get_children()):
-                            self.tokens.append((item, item.connect('select', self.on_item_activate, index)))
-        else:
-            for item,token in self.tokens:
-                item.disconnect(token)
-            self.tokens = []
-            if self.activate_func:
-                self.activate_func(None)
-
-    def on_item_activate(self, item, index):
-        if not self.activate_func:
-            return
-        obj = self.get_model().get_value(self.get_model().get_iter((index,)), 1)
-        self.activate_func(obj)
-
-    def update(self, *args):
-        block = self.ohg.autoblock()
-        player = com.get('neil.core.player')
-        store = self.get_model()
-        store.clear()
-        sel = None
-        if self.get_selection_func:
-            sel = self.get_selection_func()
-        if not self.source_func:
-            return
-        for name,obj in self.source_func():
-            it = store.append([prepstr(name), obj])
-            if obj == sel:
-                self.set_active_iter(it)
-
 class PatternToolBar(gtk.HBox):
     """
     Pattern Toolbar
@@ -254,16 +184,17 @@ class PatternToolBar(gtk.HBox):
         #self.pluginlabel.set_text_with_mnemonic("_Mach")
         self.pluginselect = gtk.combo_box_new_text()
         self.pluginselect.set_size_request(100, 0)
-        self.pluginselect.set_active(0)
-        self.pluginselect.connect('changed', self.set_plugin_sel)
+        #self.pluginselect.set_active(0)
+        self.pluginselect_handler =\
+            self.pluginselect.connect('changed', self.set_plugin_sel)
         self.pluginselect.set_tooltip_text("Machine to edit a pattern for")
-        plugins = self.get_plugin_source()
-        for plugin in plugins:
-            self.pluginselect.append_text("%s" % plugin[0])
+        #plugins = self.get_plugin_source()
+        #for plugin in plugins:
+        #    self.pluginselect.append_text("%s" % plugin[0])
         eventbus.zzub_new_plugin += self.pluginselect_update
         eventbus.zzub_delete_plugin += self.pluginselect_update
         eventbus.document_loaded += self.pluginselect_update
-        #eventbus.active_plugins_changed += self.pluginselect.update
+        eventbus.active_plugins_changed += self.pluginselect_update
         #self.pluginlabel.set_mnemonic_widget(self.pluginselect)
 
         self.patternlabel = gtk.Label()
@@ -271,9 +202,10 @@ class PatternToolBar(gtk.HBox):
         self.patternselect = gtk.combo_box_new_text()
         self.patternselect.set_tooltip_text("The pattern to edit")
         self.patternselect.set_size_request(100, 0)
-        self.patternselect.connect('changed', self.set_pattern_sel)
+        self.patternselect_handler =\
+            self.patternselect.connect('changed', self.set_pattern_sel)
         eventbus.active_plugins_changed += self.get_pattern_source
-        #eventbus.active_patterns_changed += self.get_pattern_source
+        eventbus.active_patterns_changed += self.get_pattern_source
         eventbus.zzub_delete_pattern += self.get_pattern_source
         eventbus.zzub_new_pattern += self.get_pattern_source
         eventbus.zzub_pattern_changed += self.get_pattern_source
@@ -309,7 +241,8 @@ class PatternToolBar(gtk.HBox):
         eventbus.octave_changed += self.octave_update
         
         # An edit step selector combo box.
-        self.edit_step_label = gtk.Label("_Step")
+        self.edit_step_label = gtk.Label()
+        self.edit_step_label.set_text_with_mnemonic("_Step")
         self.edit_step_box = gtk.combo_box_new_text()
         self.edit_step_box.set_tooltip_text("Set how many rows the cursor will jump when editting")
         for step in range(12):
@@ -336,6 +269,7 @@ class PatternToolBar(gtk.HBox):
         self.pack_start(self.playnotes, expand=False)
 
     def pluginselect_update(self, *args):
+        self.pluginselect.handler_block(self.pluginselect_handler)
         plugins = self.get_plugin_source()
         active = self.pluginselect.get_active()
         model = self.pluginselect.get_model()
@@ -346,6 +280,7 @@ class PatternToolBar(gtk.HBox):
             self.pluginselect.set_active(0)
         else:
             self.pluginselect.set_active(active)
+        self.pluginselect.handler_unblock(self.pluginselect_handler)
 
     def octave_update(self, *args):
         """
@@ -407,9 +342,7 @@ class PatternToolBar(gtk.HBox):
         return sel
 
     def set_plugin_sel(self, *args):
-        #print args
         sel_index = self.pluginselect.get_active()
-        # Hack below.
         plugins = self.get_plugin_source()
         sel = plugins[sel_index][1]
         if sel:
@@ -432,15 +365,19 @@ class PatternToolBar(gtk.HBox):
             aname = a[0].get_pattern_name(a[1])
             bname = b[0].get_pattern_name(b[1])
             return cmp(aname.lower(), bname.lower())
-        patterns = sorted([(plugin, i) for i in xrange(plugin.get_pattern_count())], cmp_func)
+        patterns = sorted([(plugin, i) for i in 
+                           xrange(plugin.get_pattern_count())], cmp_func)
         self.patternselect.get_model().clear()
         names = [(i, plugin.get_pattern_name(i)) for plugin, i in patterns]
         for i, name in names:
             self.patternselect.append_text("%s" % name)
+        # Block signal handler to avoid infinite recursion.
+        self.patternselect.handler_block(self.patternselect_handler)
         if active == -1:
             self.patternselect.set_active(0)
         else:
-            self.patternselect.set_active(active)
+            self.patternselect.set_active(player.active_patterns[0][1])
+        self.patternselect.handler_unblock(self.patternselect_handler)
         
     def get_pattern_sel(self):
         player = com.get('neil.core.player')
@@ -454,7 +391,6 @@ class PatternToolBar(gtk.HBox):
         except IndexError:
             return
         if sel[1] >= 0:
-            player = com.get('neil.core.player')
             player.active_patterns = [sel]
         self.pattern_view.grab_focus()
 
