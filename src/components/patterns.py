@@ -286,7 +286,7 @@ class PatternToolBar(gtk.HBox):
         self.waveselect.set_tooltip_text("Choose which wave to use when entering notes in samplers (like Matilde Tracker)")
         self.waveselect.set_size_request(100, 0)
         self.waveselect.connect('changed', self.set_wave_sel)
-        #eventbus.active_waves_changed += self.waveselect_update
+        eventbus.active_waves_changed += self.waveselect_update
         eventbus.zzub_wave_allocated += self.waveselect_update
         eventbus.zzub_wave_changed += self.waveselect_update
         eventbus.zzub_delete_wave += self.waveselect_update
@@ -360,13 +360,16 @@ class PatternToolBar(gtk.HBox):
         the wave list in the combox box is outdated.
         """
         player = com.get('neil.core.player')
+        sel = player.active_waves
+        active = self.waveselect.get_active()
+        if sel != [] and sel[0].get_index() == active:
+            return
         for i in range(player.get_wave_count()):
             w = player.get_wave(i)
             if w.get_level_count() >= 1:
                 self.waveselect.remove_text(i)
                 self.waveselect.insert_text(i, "%02X. %s" %\
                                                 (i + 1, w.get_name()))
-        sel = player.active_waves
         if sel != []:
             index = sel[0].get_index()
             self.waveselect.set_active(index)
