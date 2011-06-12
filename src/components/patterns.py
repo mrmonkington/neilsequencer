@@ -371,7 +371,8 @@ class PatternToolBar(gtk.HBox):
         if active == -1:
             self.patternselect.set_active(0)
         else:
-            self.patternselect.set_active(player.active_patterns[0][1])
+            if len(player.active_patterns) > 0:
+                self.patternselect.set_active(player.active_patterns[0][1])
         self.patternselect.handler_unblock(self.patternselect_handler)
         
     def get_pattern_sel(self):
