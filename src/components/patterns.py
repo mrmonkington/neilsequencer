@@ -42,6 +42,8 @@ from neil.utils import error, get_new_pattern_name, new_liststore
 from neil.utils import new_combobox, db2linear, make_menu_item
 from neil.utils import make_check_item, ObjectHandlerGroup, AcceleratorMap
 from neil.utils import Menu, padded_partition, is_generator, is_effect
+from neil.utils import new_stock_image_button, show_machine_manual
+from neil.utils import filenameify
 
 import zzub
 import time
@@ -248,6 +250,10 @@ class PatternToolBar(gtk.HBox):
         self.playnotes.set_tooltip_text("If checked, the notes will be played as you enter them in the editor")
         self.playnotes.connect('clicked', self.on_playnotes_click)
 
+        self.btnhelp = new_stock_image_button(gtk.STOCK_HELP)
+	self.btnhelp.set_tooltip_text("Machine help page")
+        self.btnhelp.connect('clicked', self.on_button_help)
+
         self.pack_start(self.pluginselect, expand=False)
         self.pack_start(self.patternselect, expand=False)
         self.pack_start(self.waveselect, expand=False)
@@ -257,6 +263,18 @@ class PatternToolBar(gtk.HBox):
         self.pack_start(self.edit_step_label, expand=False)
         self.pack_start(self.edit_step_box, expand=False)
         self.pack_start(self.playnotes, expand=False)
+        self.pack_start(gtk.VSeparator(), expand=False)
+        self.pack_start(self.btnhelp, expand=False)
+
+    def on_button_help(self, *args):
+        player = com.get('neil.core.player')
+        if len(player.active_plugins) < 1:
+            return
+        name = filenameify(player.active_plugins[0].get_pluginloader().get_name())
+	if not show_machine_manual(name):
+	    info = gtk.MessageDialog(self.get_toplevel(), flags=0, type=gtk.MESSAGE_INFO, buttons=gtk.BUTTONS_OK, message_format="Sorry, there's no help for this plugin yet")
+	    info.run()
+	    info.destroy()
 
     def pluginselect_update(self, *args):
         player = com.get('neil.core.player')
