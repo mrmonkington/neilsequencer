@@ -17,10 +17,10 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //  ---------------------------------------------------------------------------
 
-#include <lunar/fx.hpp>
-#include <lunar/dsp.h>
+//#include <lunar/fx.hpp>
+//#include <lunar/dsp.h>
 #include "sidemu.h"
-//#include <math.h>
+#include <math.h>
 
 RESID_NAMESPACE_START
 
