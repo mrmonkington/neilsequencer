@@ -1009,7 +1009,7 @@ def show_machine_manual(name):
     """
     path = docpath("manual")
     if os.path.isfile((path + "/%s.page") % name):
-        os.system("yelp %s/%s.page &" % (path, name))
+        os.system("yelp %s?%s &" % (path, name))
         return True
     else:
         return False
