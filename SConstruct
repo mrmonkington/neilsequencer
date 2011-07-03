@@ -48,7 +48,7 @@ opts.Add("PREFIX", 'Set the install "prefix" ( /path/to/PREFIX )', "/usr/local")
 opts.Add("DESTDIR", 'Set the root directory to install into ( /path/to/DESTDIR )', "")
 opts.Add("ETCDIR", 'Set the configuration dir "prefix" ( /path/to/ETC )', "/etc")
 
-env = Environment(ENV = os.environ, options=opts, tools=['docbook'])
+env = Environment(ENV = os.environ, options=opts)
 
 env.SConsignFile()
 

@@ -3,4 +3,7 @@
 import glob
 Import('env', 'install', 'install_recursive')
 
-install('${DOC_PATH}/manual', glob.glob('manual/*.page'))
+docbook = Builder(action='xmlto html -m doc/docbook/config.xsl doc/docbook/index.xml -o doc/manual')
+env.Append(BUILDERS={'DocBook' : docbook})
+env.DocBook('docbook/index.xml')
+install('${DOC_PATH}/manual', glob.glob('manual/*'))
