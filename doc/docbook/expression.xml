@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="expression">
+  <title>Expression</title>
+  <para>
+    This pattern effect contains a text editor box that you can use to
+    enter python statements. This can be used in various ways. Both
+    generating data values and transforming existing data is
+    possible. There are some special values that you can use in your
+    expression. Those are explained in the table below.
+  </para>
+  <table><title>Variables</title>
+  <tgroup cols='2' align='left' colsep='1' rowsep='1'>
+    <thead>
+      <row>
+	<entry><para>Variable</para></entry>
+	<entry><para>Explanations</para></entry>
+      </row>
+    </thead>
+    <tbody>
+    <row>
+      <entry><para><emphasis>x</emphasis></para></entry>
+      <entry><para>The value in the pattern cell that is currently being
+      acted on.</para></entry>
+    </row>
+    <row>
+      <entry><para><emphasis>a</emphasis></para></entry>
+      <entry><para>Lower bound for the machine parameter on which the
+	  expression is supposed to work on.</para></entry>
+    </row>
+    <row>
+      <entry><para><emphasis>b</emphasis></para></entry>
+      <entry><para>Upper bound for the machine parameter on which the
+	  expression is supposed to work on.</para></entry>
+    </row>
+    <row>
+      <entry><para><emphasis>i</emphasis></para></entry>
+      <entry><para>Index of the row on which the expression is currently
+	  working.</para></entry>
+    </row>
+    <row>
+      <entry><para><emphasis>p</emphasis></para></entry>
+      <entry><para>"Phase" value. This ranges from 0 to 1 over the course of
+      the selection.</para></entry>
+    </row>
+    <row>
+      <entry><para><emphasis>n</emphasis></para></entry>
+      <entry><para>Number of rows in the selection.</para></entry>
+    </row>
+    <row>
+      <entry><para><emphasis>z</emphasis></para></entry>
+      <entry><para>Value that is used to show that this cell is
+	  empty.</para></entry>
+    </row>
+    <row>
+      <entry><para><emphasis>y</emphasis></para></entry>
+      <entry><para>This variable should be set to what you want current cell
+      to contain.</para></entry>
+    </row>
+    </tbody>
+  </tgroup>
+  </table>
+  <section>
+    <title>Examples</title>
+    <para>
+      The following example expressions can be entered in the expression
+      box in the Expression dialog and executed with the appropriate
+      results.
+    </para>
+    <section>
+      <title>Constant</title>
+      <para>
+	Simply sets every cell in the selection to the value 42. You
+	will want to make sure that the constant falls
+	between <emphasis>a</emphasis> and <emphasis>b</emphasis>.
+      </para>
+      <programlisting>
+y = 42
+      </programlisting>
+    </section>
+    <section>
+      <title>Sparse Constant</title>
+      <para>
+	Set every 4th cell to the value 42. This example uses the
+	special variable <emphasis>i</emphasis> to find out which row the
+	expression is being applied to.
+      </para>
+      <programlisting>
+if i % 4 == 0:
+    y = 42
+else:
+    y = z
+      </programlisting>
+    </section>
+    <section>
+      <title>Random Values</title>
+      <para>
+	Set every cell with a random value ranging from <emphasis>a</emphasis>
+	to <emphasis>b</emphasis>. This demonstrates that you can use all the
+	functions from <emphasis>math</emphasis> and <emphasis>random</emphasis> Python
+	modules.
+      </para>
+      <programlisting>
+y = randint(a, b - 1)
+      </programlisting>
+    </section>
+    <section>
+      <title>LFO</title>
+      <para>
+	This creates a single sine LFO cycle ranging from <emphasis>a</emphasis>
+	to <emphasis>b</emphasis>.
+      </para>
+      <programlisting>
+y = a + (sin(2.0 * pi * p) + 1.0) * 0.5 * (b - a)
+      </programlisting>
+    </section>
+  </section>
+</section>

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="bigyo_frequencyshifter">
+  <title>Bigyo FrequencyShifter</title>
+  <para>The Bigyo Frequencyshifter is a Hilbert-transformer based frequency
+  shifter effect. It produces a versatile and distinctive sound, almost
+  like a cross between a flanger, a phaser and a ring modulator.
+  </para>
+  <table><title>Attributes</title>
+  <tgroup cols='2' align='left' colsep='1' rowsep='1'>
+    <thead>
+      <row>
+	<entry>Attribute</entry>
+	<entry>Description</entry>
+      </row>
+    </thead>
+    <tbody>
+      <row>
+	<entry>
+	  Frequency non-linearity
+	</entry>
+	<entry>
+	  Frequency slope parameter
+	</entry>
+      </row>
+      <row>  
+	<entry>
+	  Max Frequency (Hz)
+	</entry>
+	<entry>
+	  Set the maximum possible value of the frequency
+	  parameter 
+	</entry>
+      </row>
+    </tbody>
+  </tgroup>
+  </table>
+  <table><title>Parameters</title>
+  <tgroup cols='2' align='left' colsep='1' rowsep='1'>
+    <thead>
+      <row>
+	<entry>Column</entry>
+	<entry>Description</entry>
+      </row>
+    </thead>
+    <tbody>
+      <row>
+	<entry>
+	  Frequency
+	</entry>
+	<entry>
+	  How many Hz to shift up or down 
+	</entry>
+      </row>
+      <row>
+	<entry>
+	  Left Direction
+	</entry>
+	<entry>
+	  The direction of the shift for the left channel
+	</entry>
+      </row>  
+      <row>
+	<entry>
+	  Right direction
+	</entry>
+	<entry>
+	  The direction of the shift for the right channel
+	</entry>
+      </row>
+      <row>
+	<entry>
+	  Feedback
+	</entry>
+	<entry>
+	  How much of a previously processed sample to mix back in
+	</entry>
+      </row>
+      <row>
+	<entry>
+	  Lfo Rate
+	</entry>
+	<entry>
+	  Frequency LFO rate
+	</entry>
+      </row>
+      <row>
+	<entry>
+	  Lfo Amp
+	</entry>
+	<entry>
+	  Frequency LFO depth
+	</entry>
+      </row>	
+      <row>
+	<entry>
+	  Wet
+	</entry>
+	<entry>
+	  Amount of wet signal in the mix
+	</entry>
+      </row>
+      <row>
+	<entry>
+	  Dry
+	</entry>
+	<entry>
+	  Amount of dry signal in the mix 
+	</entry>
+      </row>
+    </tbody>
+  </tgroup>
+  </table>
+</section>

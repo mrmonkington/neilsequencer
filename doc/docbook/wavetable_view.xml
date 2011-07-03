@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="wavetable_view">
+  <title>Wavetable view</title>
+  <para>
+    You can use the wavetable view to load, export and edit samples. You
+    can also edit the envelopes that are used by Matilde Tracker and can
+    be used by any other machine when the author thinks that is
+    convenient. 
+  </para>
+  <section>
+    <title>Wave Editor</title>
+    <para>
+      After the sample is loaded you can navigade the wave editor view
+      with the mouse. Use the middle mouse button to zoom in and out. Note
+      the indicator at the buttom indicating the section of the wave that
+      is currently displayed. Press the right mouse button and sroll
+      around to move around in the waveform. You can use the left mouse
+      button to make selections. Start a selection by clicking with the
+      left mouse button and dragging. If you want to adjust the selection
+      just click with the left button on either left or right side of the
+      selection and drag. You can apply certain actions to
+      selections. Those are explained bellow along other commands that
+      operate with the waves and that can be launched with the buttons at
+      the bottom of the wave editor.
+    </para>
+  </section>
+  <section>
+    <title>Envelope Editor</title>
+    <para></para>
+  </section>
+</section>

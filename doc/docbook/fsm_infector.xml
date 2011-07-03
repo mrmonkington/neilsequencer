@@ -1,0 +1,359 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="fsm_infector">
+  <title>FSM Infector</title>
+  <para>
+    Infector is a subtractive synth (also known as analogue synthesizer
+    emulator). It consists of the following parts:
+    <itemizedlist>
+      <listitem><simpara>Oscillator block</simpara></listitem>
+      <listitem><simpara>Filter block (with its own envelope)</simpara></listitem>
+      <listitem><simpara>Amp block (ditto)</simpara></listitem>
+      <listitem><simpara>2 independent assignable LFOs</simpara></listitem>
+    </itemizedlist>
+  </para>
+  <section>
+    <title>Oscillators</title>
+    <para>Infector has got an oscillator section, which consists of two
+    regular oscillators (called <emphasis>OSC1</emphasis> and <emphasis>OSC2</emphasis>) and a
+    sub-oscillator. Both regular oscillators have built in Pulse Width
+    Modulation (PWM) "circuitry", which can adds some "moving" quality
+    to the sound. <emphasis>OSC2</emphasis> can be detuned from <emphasis>OSC1</emphasis>, for
+    improved "phatness" (transposing and detuning effects). You can
+    also change balance between these oscillators (relative volume
+    of <emphasis>OSC1</emphasis> and
+    <emphasis>OSC2</emphasis>). Both oscillators have a variety of built-in
+    waveforms (simple ones - like sine or sawtooth wave, or more
+    complex - like SuperSaw). You can also create waveforms yourself -
+    using user waveform slots.</para>
+    
+    <para>The user waveforms are divided into 4 double slots - A, A', B,
+    B', C, C' and D,D'. For plain PWM use only half of a slot
+    (oscillator waveform set to A, B, C, D). You can also set up two
+    waveforms in the same slot (for example, A and A'), and set the
+    oscillator waveform to mixed mode (AA'). Then the oscillator plays
+    both waveforms at once, with a phase shift controlled by PWM LFO. It
+    might give interesting effects if the waveforms have similar
+    harmonic content.</para>
+    
+    <para>The sub-oscillator is a simple oscillator tuned always octave
+    down the note frequency. It has no PWM or transpose/detune controls,
+    but you can change its volume and waveform (user waveforms are
+    allowed, too).</para>
+    
+    <table><title>Oscillator Parameters</title>
+    <tgroup cols='2' align='left' colsep='1' rowsep='1'>
+      <thead>
+	<row>
+	  <entry>Attribute</entry>
+	  <entry>Description</entry>
+	</row>
+      </thead>
+      <tbody>
+	<row>
+	  <entry><para>OSC1/OSC2 Wave</para></entry>
+	  <entry><para>Waveform of the OSC1/OSC2</para></entry>
+	</row>
+	<row>
+	  <entry><para>PWM Rate</para></entry>
+	  <entry><para>Rate of PWM Low Frequency Oscillator</para></entry>
+	</row>
+	<row>
+	  <entry><para>PWM Depth</para></entry>
+	  <entry><para>Depth of Pulse Width Modulation</para></entry>
+	</row>
+	<row>
+	  <entry><para>PW Offset</para></entry>
+	  <entry><para>Center pulse width (when LFO is zero)</para></entry>
+	</row>
+	<row>
+	  <entry><para>OSC2 Transpose</para></entry>
+	  <entry><para>Number of semitones OSC2 is transposed from OSC1</para></entry>
+	</row>
+	<row>
+	  <entry><para>OSC2 Detune</para></entry>
+	  <entry><para>Number of cents OSC2 is detuned from OSC1</para></entry>
+	</row>
+	<row>
+	  <entry><para>OSC Mix</para></entry>
+	  <entry><para>Balance between OSC1 and OSC2</para></entry>
+	</row>
+	<row>
+	  <entry><para>SubOsc Wave</para></entry>
+	  <entry><para>Waveform of the sub-oscillator</para></entry>
+	</row>
+	<row>
+	  <entry><para>SubOsc Vol</para></entry>
+	  <entry><para>Volume of the sub-oscillator</para></entry>
+	</row>
+	<row>
+	  <entry><para>Glide</para></entry>
+	  <entry><para>Note glide amount (smooth transition between different
+	  note pitches)</para></entry>
+	</row>
+      </tbody>
+    </tgroup>
+    </table>
+  </section>
+  <section>
+    <title>Filter</title>
+    <para>The synthesizer is equipped with a single 6-pole multimode
+    filter, with a built-in ADSR envelope generator. The filter can be
+    set to different modes, including 36dB/oct lowpass (<emphasis>6L</emphasis>),
+    24dB/oct lowpass (<emphasis>4L</emphasis>), 12dB/oct lowpass (<emphasis>2L</emphasis>),
+    triple 6-pole notch (<emphasis>Notchez</emphasis>), 36dB/oct highpass
+    (<emphasis>6H</emphasis>), 18dB/oct bandpass (<emphasis>6B</emphasis>), and mixed filter
+    (<emphasis>6X</emphasis>). Except that distinction, some of filter modes have
+    different versions (like <emphasis>6L</emphasis> have Multipeak, Separated and
+    HiSquelch variants).</para>
+    
+    <para>Every filter has two parameters - Cutoff and Resonance. Cutoff
+    always controls the filter's cutoff or center frequency (or
+    frequencies), and resonance is used for different parameters in
+    specific filters (however, it usually controls width or height of
+    resonant peaks). The filter cutoff frequency is controlled by the
+    envelope generator. Two parameters control modulation amount and
+    modulation shape (ie. how envelope generator's output affects the
+    cutoff frequency). Filter cutoff can be also linked to note pitch,
+    with the Keytrack parameter. Keytrack of 0ct means no keytracking,
+    while Keytrack of 100ct means that pitch change of one octave up
+    causes cutoff change of one octave up.</para>
+    
+    <table><title>Filter Parameters</title>
+    <tgroup cols='2' align='left' colsep='1' rowsep='1'>
+      <thead>
+	<row>
+	  <entry><para>Parameter</para></entry>
+	  <entry><para>Meaning</para></entry>
+	</row>
+      </thead>
+      <tbody>
+	<row>
+	  <entry><para>Flt Type</para></entry>
+	  <entry><para>Filter type (like: lowpass, highpass, bandpass...)</para></entry>
+	</row>
+	<row>
+	  <entry><para>Cutoff</para></entry>
+	  <entry><para>Filter cutoff frequency (when no modulation occurs)</para></entry>
+	</row>
+	<row>
+	  <entry><para>Resonance</para></entry>
+	  <entry><para>Amount of filter resonance (meaning changes with filter types)</para></entry>
+	</row>
+	<row>
+	  <entry><para>EnvMod</para></entry>
+	  <entry><para>Amount of cutoff frequency modulation by the envelope
+	  generator (how much the envelope generator modulates the cutoff frequency)</para></entry>
+	</row>
+	<row>
+	  <entry><para>Attack</para></entry>
+	  <entry><para>Filter envelope attack time</para></entry>
+	</row>
+	<row>
+	  <entry><para>Decay</para></entry>
+	  <entry><para>Filter envelope decay time</para></entry>
+	</row>
+	<row>
+	  <entry><para>Sustain</para></entry>
+	  <entry><para>Filter envelope sustain level</para></entry>
+	</row>
+	<row>
+	  <entry><para>Release</para></entry>
+	  <entry><para>Filter envelope release time</para></entry>
+	</row>
+	<row>
+	  <entry><para>Mod Shp</para></entry>
+	  <entry><para>Modulation curve shape ("bends" envelope curve in either direction)</para></entry>
+	</row>
+	<row>
+	  <entry><para>Inertia</para></entry>
+	  <entry><para>Inertia amount (controls smoothing of manual parameter changes)</para></entry>
+	</row>
+	<row>
+	  <entry><para>KTrack</para></entry>
+	  <entry><para>Keytrack amount (how much note pitch affects cutoff frequency)</para></entry>
+	</row>
+      </tbody>
+    </tgroup>
+    </table>
+  </section>
+  <section>
+    <title>LFO</title>
+    <para>
+      LFOs in Infector are used for controlling filter
+      parameters. <emphasis>LFO1</emphasis> is connected to filter cutoff and envelope
+      modulation amount, while
+      <emphasis>LFO2</emphasis> is connected to filter cutoff and resonance. While it
+      may seem "suboptimal", it's pretty effective because oscillators'
+      PWM is linked to the separate PWM LFOs, making LFO to PWM path
+      unnecessary (which also frees <emphasis>LFO1</emphasis> and <emphasis>LFO2</emphasis> from
+      PWM-related duties). Both LFOs have a variety of different shapes,
+      like sine, triangle, saw up and down, square, steps and special
+      sample-and-hold (random) modes. LFO outputs are smoothed out to
+      avoid rapid filter parameter changes (which might cause all those
+      famous clicks and pops).
+    </para>
+    <table><title>LFO Parameters</title>
+    <tgroup cols='2' align='left' colsep='1' rowsep='1'>
+      <thead>
+	<row>
+	  <entry><para>Parameter</para></entry>
+	  <entry><para>Meaning</para></entry>
+	</row>
+      </thead>
+      <tbody>
+	<row>
+	  <entry><para>LFO rate</para></entry>
+	  <entry><para>Period/frequency of LFO (expressed in Hertz or in ticks)</para></entry>
+	</row>
+	<row>
+	  <entry><para>To Cutoff</para></entry>
+	  <entry><para>Amount of modulation of cutoff frequency by LFO</para></entry>
+	</row>
+	<row>
+	  <entry><para>To Env</para></entry>
+	  <entry><para>Amount of modulation of envelope modulation amount
+	  (huh?) by LFO</para></entry>
+	</row>
+	<row>
+	  <entry><para>To Res</para></entry>
+	  <entry><para>Amount of modulation of resonance parameter by LFO</para></entry>
+	</row>
+	<row>
+	  <entry><para>Shape</para></entry>
+	  <entry><para>LFO waveform</para></entry>
+	</row>
+      </tbody>
+    </tgroup>
+    </table>
+  </section>
+  <section>
+    <title>Commands</title>
+    <table><title>Commands</title>
+    <tgroup cols='2' align='left' colsep='1' rowsep='1'>
+      <thead>
+	<row>
+	  <entry><para>Command</para></entry>
+	  <entry><para>Meaning</para></entry>
+	</row>
+      </thead>
+      <tbody>
+	<row>
+	  <entry><para>01 aabb</para></entry>
+	  <entry><para>Start portamento up; aa = number of ticks/4; bb = number
+	  of semitones</para></entry>
+	</row>
+	<row>
+	  <entry><para>02 aabb</para></entry>
+	  <entry><para>Start portamento down; aa = number of ticks/4; bb =
+	  number of semitones</para></entry>
+	</row>
+	<row>
+	  <entry><para>03 00aa</para></entry>
+	  <entry><para>Start portamento to the specified note; aa = number of
+	  ticks/4</para></entry>
+	</row>
+	<row>
+	  <entry><para>04 abcd</para></entry>
+	  <entry><para>Start vibrato; a = LFO1 speed; b = LFO1 depth; c = LFO2
+	  speed; d = LFO2 depth</para></entry>
+	</row>
+	<row>
+	  <entry><para>05 aabb</para></entry>
+	  <entry><para>Protracker-style arpeggio; aa = number of semitones
+	  up/down in 2 triple; bb = number of semitones up/down in 3
+	  triple</para></entry>
+	</row>
+	<row>
+	  <entry><para>06 aabb</para></entry>
+	  <entry><para>06 aabb Play second note (two note arpeggio); aa = delay
+	  before playing 2nd note (in ticks/12);  = interval between 2nd
+	  and 1st note</para></entry>
+	</row>
+	<row>
+	  <entry><para>0C aabb</para></entry>
+	  <entry><para>Reset LFOs; aa = new position of LFO1; bb = new position
+	  of LFO2</para></entry>
+	</row>
+	<row>
+	  <entry><para>13 000a</para></entry>
+	  <entry><para>Simple shuffle (delay every second note by a/16
+	  ticks)</para></entry>
+	</row>
+	<row>
+	  <entry><para>E5 aaaa</para></entry>
+	  <entry><para>Set channel detune; aaaa=8000 - no detune, 8100 - 1
+	  semitone up, 8080 - 1 quartertone up etc.</para></entry>
+	</row>
+	<row>
+	  <entry><para>E9 000a</para></entry>
+	  <entry><para>Retrigger every a/6 ticks</para></entry>
+	</row>
+	<row>
+	  <entry><para>ED 000a</para></entry>
+	  <entry><para>Delay note by a/6 ticks</para></entry>
+	</row>
+	<row>
+	  <entry><para>FD 0000</para></entry>
+	  <entry><para>Reset channel commands (disable vibrato, detune
+	  etc)</para></entry>
+	</row>
+	<row>
+	  <entry><para>FE 0000</para></entry>
+	  <entry><para>Reset ALL channels' comands (like FD placed in all
+	  channels)</para></entry>
+	</row>
+      </tbody>
+    </tgroup>
+    </table>
+  </section>
+  <section>
+    <title>Synth Modes</title>
+    <table><title>Synth Modes</title>
+    <tgroup cols='2' align='left' colsep='1' rowsep='1'>
+      <thead>
+	<row>
+	  <entry><para>Mode</para></entry>
+	  <entry><para>Meaning</para></entry>
+	</row>
+      </thead>
+      <tbody>
+	<row>
+	  <entry><para>L1 (01)</para></entry>
+	  <entry><para>Restart LFO1 on every note</para></entry>
+	</row>
+	<row>
+	  <entry><para>L2 (02)</para></entry>
+	  <entry><para>Restart LFO2 on every note</para></entry>
+	</row>
+	<row>
+	  <entry><para>FE (04)</para></entry>
+	  <entry><para>Don't restart filter envelope on new note (filter
+	  legato)</para></entry>
+	</row>
+	<row>
+	  <entry><para>AE (08)</para></entry>
+	  <entry><para>Don't restart amplifier envelope on new note (amplitude
+	  legato)</para></entry>
+	</row>
+	<row>
+	  <entry><para>PQ (10)</para></entry>
+	  <entry><para>Pitch Quantize (all portamentos etc. are quantized to
+	  nearest note)</para></entry>
+	</row>
+	<row>
+	  <entry><para>MM (20)</para></entry>
+	  <entry><para>Monosynth mode for MIDI (plays all notes in the same
+	  channel)</para></entry>
+	</row>
+	<row>
+	  <entry><para>IK (40)</para></entry>
+	  <entry><para>Inertia for Keytrack (makes cutoff changes related to
+	  keytracking smooth)</para></entry>
+	</row>
+      </tbody>
+    </tgroup>
+    </table>
+  </section>
+</section>

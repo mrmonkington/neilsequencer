@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="somono_mdadubdelay">
+  <title>mda DubDelay</title>
+  <para>Simple delay with feedback saturation and delay time modulation</para>
+  <table><title>SoMono mdaDubDelay Parameters</title>
+  <tgroup cols='2' align='left' colsep='1' rowsep='1'>
+    <thead>
+      <row>
+	<entry><para>Parameter</para></entry>
+	<entry><para>Meaning</para></entry>
+      </row>
+    </thead>
+    <tbody>
+      <row>
+	<entry><para>Delay</para></entry>
+	<entry><para>Delay time (delay is mono for authenticity!)</para></entry>
+      </row>
+      <row>
+	<entry><para>Feedback</para></entry>
+	<entry><para>Feedback - with soft saturation at maximum left position,
+	hard clipping at maximum right</para></entry>
+      </row>
+      <row>
+	<entry><para>FB Tone</para></entry>
+	<entry><para>Feedback filtering - low-pass to left, high-pass to
+	right</para></entry>
+      </row>
+      <row>
+	<entry><para>LFO Depth</para></entry>
+	<entry><para>Delay time modulation (sine wave)</para></entry>
+      </row>
+      <row>
+	<entry><para>LFO Rate</para></entry>
+	<entry><para>Modulation rate</para></entry>
+      </row>
+      <row>
+	<entry><para>FX Mix</para></entry>
+	<entry><para>Wet / dry mix</para></entry>
+      </row>
+      <row>
+	<entry><para>Output</para></entry>
+	<entry><para>Level trim</para></entry>
+      </row>
+    </tbody>
+  </tgroup>
+  </table>
+</section>

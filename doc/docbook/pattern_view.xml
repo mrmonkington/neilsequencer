@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="pattern_view">
+  <title>Pattern view</title>
+  <para>Use this view to enter pattern data. Since Neil is a so-called
+  tracker, you have to enter notes in a certain quite peculiar
+  format. Time in trackers go from top to bottom. Each line in this
+  view is a musical event. Columns are used to enter data which are
+  always integral numbers displayed in hexadecimal. These numbers can
+  be used to set synthesizer parameters, note values and other
+  performance data.</para>
+  <para>
+  </para>
+  <section>
+    <title>Shortcuts</title>
+    <table><title>Pattern View Shortcuts</title>
+    <tgroup cols='2' align='left' colsep='1' rowsep='1'>
+      <thead>
+	<row>
+	  <entry><para>Shortcut</para></entry>
+	  <entry><para>Action</para></entry>
+	</row>
+      </thead>
+      <tbody>
+	<row>
+	  <entry>
+	    <para>Ctrl+Shift+Enter</para>
+	  </entry>
+	  <entry>
+	    <para>Create a copy of the currently open pattern.</para>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>Ctrl+Enter</para>
+	  </entry>
+	  <entry>
+	    <para>Create a new pattern</para>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>Ctrl+Backspace</para>
+	  </entry>
+	  <entry>
+	    <para>Display pattern properties</para>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>Ctrl+Delete</para>
+	  </entry>
+	  <entry>
+	    <para>Delete current pattern</para>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>Shift+Plus</para>
+	  </entry>
+	  <entry>
+	    <para>Transpose the note at cursor by +1</para>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>Shift+Minus</para>
+	  </entry>
+	  <entry>
+	    <para>Transpose the note at cursor by -1</para>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>Ctrl+c</para>
+	  </entry>
+	  <entry>
+	    <para>Copy selection to clipboard</para>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>Ctrl+x</para>
+	  </entry>
+	  <entry>
+	    <para>Cut selection to clipboard</para>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>Ctrl+v</para>
+	  </entry>
+	  <entry>
+	    <para>Paste from clipboard</para>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>Ctrl+i</para>
+	  </entry>
+	  <entry>
+	    <para>Interpolate selection</para>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>Ctrl+Plus</para>
+	  </entry>
+	  <entry>
+	    <para>Add a track</para>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>Ctrl+Minus</para>
+	  </entry>
+	  <entry>
+	    <para>Delete last track</para>
+	  </entry>
+	</row>
+      </tbody>
+    </tgroup>
+    </table>
+  </section>
+</section>

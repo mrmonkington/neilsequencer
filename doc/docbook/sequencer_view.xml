@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="sequencer_view">
+  <title>Sequencer view</title>
+  <section>
+    <title>Shortcuts</title>
+    <table><title>Sequencer View Shortcuts</title>
+    <tgroup cols='2' align='left' colsep='1' rowsep='1'>
+      <thead>
+	<row>
+	  <entry><para>Shortcut</para></entry>
+	  <entry><para>Action</para></entry>
+	</row>
+      </thead>
+      <tbody>
+	<row>
+	  <entry><para>Shift+Plus</para></entry>
+	  <entry><para>Increase the resolution</para></entry>
+	</row>
+	<row>
+	  <entry><para>Shift+Minus</para></entry>
+	  <entry><para>Decrease the resolution</para></entry>
+	</row>
+	<row>
+	  <entry><para>Ctrl+Enter</para></entry>
+	  <entry><para>Add a new track</para></entry>
+	</row>
+	<row>
+	  <entry><para>Ctrl+Delete</para></entry>
+	  <entry><para>Delete a track</para></entry>
+	</row>
+	<row>
+	  <entry><para>Ctrl+b</para></entry>
+	  <entry><para>Set the loop start point to where the cursor is</para></entry>
+	</row>
+	<row>
+	  <entry><para>Ctrl+e</para></entry>
+	  <entry><para>Set the loop end point to where the cursor is</para></entry>
+	</row>
+	<row>
+	  <entry><para>Ctrl+l</para></entry>
+	  <entry><para>Solo the track on which the cursor is</para></entry>
+	</row>
+	<row>
+	  <entry><para>Ctrl+i</para></entry>
+	  <entry><para>Right-shift patterns on all tracks, starting at cursor</para></entry>
+	</row>
+	<row>
+	  <entry><para>Ctrl+d</para></entry>
+	  <entry><para>Left-shift patterns on all tracks, starting at cursor</para></entry>
+	</row>
+	<row>
+	  <entry><para>Ctrl+c</para></entry>
+	  <entry><para>Copy selection to clipboard</para></entry>
+	</row>
+	<row>
+	  <entry><para>Ctrl+x</para></entry>
+	  <entry><para>Cut selection to clipboard</para></entry>
+	</row>
+	<row>
+	  <entry><para>Ctrl+v</para></entry>
+	  <entry><para>Paste data from clipboard</para></entry>
+	</row>
+	<row>
+	  <entry><para>Ctrl+Up</para></entry>
+	  <entry><para>Move the track up one position</para></entry>
+	</row>
+	<row>
+	  <entry><para>Ctrl+Down</para></entry>
+	  <entry><para>Move the track down one position</para></entry>
+	</row>
+	<row>
+	  <entry><para>Ctrl+Left</para></entry>
+	  <entry><para>Move the cursor 16 steps to the left</para></entry>
+	</row>
+	<row>
+	  <entry><para>Ctrl+Right</para></entry>
+	  <entry><para>Move the cursor 16 steps to the right</para></entry>
+	</row>
+	<row>
+	  <entry><para>Left</para></entry>
+	  <entry><para>Move the cursor to the left</para></entry>
+	</row>
+	<row>
+	  <entry><para>Right</para></entry>
+	  <entry><para>Move the cursor to the right</para></entry>
+	</row>
+	<row>
+	  <entry><para>Up</para></entry>
+	  <entry><para>Move the cursor up</para></entry>
+	</row>
+	<row>
+	  <entry><para>Down</para></entry>
+	  <entry><para>Move the cursor down</para></entry>
+	</row>
+	<row>
+	  <entry><para>Space</para></entry>
+	  <entry><para>Insert the pattern that is selected in the pattern selector</para></entry>
+	</row>
+	<row>
+	  <entry><para>Page Up</para></entry>
+	  <entry><para>Move up in the pattern selector</para></entry>
+	</row>
+	<row>
+	  <entry><para>Page Down</para></entry>
+	  <entry><para>Move down in the pattern selector</para></entry>
+	</row>
+	<row>
+	  <entry><para>Delete</para></entry>
+	  <entry><para>Left-shift patterns on current track, starting at cursor</para></entry>
+	</row>
+	<row>
+	  <entry><para>Insert</para></entry>
+	  <entry><para>Right-shift patterns on current track, starting at cursor</para></entry>
+	</row>
+	<row>
+	  <entry><para>Period</para></entry>
+	  <entry><para>Remove pattern at cursor from the sequence</para></entry>
+	</row>
+	<row>
+	  <entry><para>Home</para></entry>
+	  <entry><para>Go to song start</para></entry>
+	</row>
+	<row>
+	  <entry><para>End</para></entry>
+	  <entry><para>Go to song end</para></entry>
+	</row>
+	<row>
+	  <entry><para>Enter</para></entry>
+	  <entry><para>Open the pattern view with the pattern at cursor</para></entry>
+	</row>
+      </tbody>
+    </tgroup>
+    </table>
+  </section>
+</section>

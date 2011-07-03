@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="linear_transform">
+  <title>Linear Transformation</title>
+  <para>
+    This pattern effect allows you to scale numeric values. You can
+    multiply a value by a real number and add an integer to it. If the
+    result exceeds the parameter range for that column it will get
+    clipped to fall in to said range.
+  </para>
+</section>

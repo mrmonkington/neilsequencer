@@ -1,0 +1,801 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="matilde_tracker">
+  <title>Matilde Tracker</title>
+  <para>
+    Matilde Tracker is a tracker machine for Buzz which behaves more like
+    Protracker than Jeskola Tracker.
+    
+    All Protracker effects that make sense in Buzz are implemented and
+    behave in a similar fashion to their Protracker cousins, so you'll
+    feel right at home. The E/xy effects have been renamed to Ex/yy, read
+    on.
+    
+    Additionally you now have two effects per note, life is sweet!
+    
+    Volume, pitch and panning envelopes are supported, they take 64 ticks
+    to complete. If this value is undesirable, it can be changed in the
+    machine's attributes. 
+  </para>
+  <section>
+    <title>Virtual Channels</title>
+    <para>
+      Matilde Tracker supports "virtual channels." It's a bit like NNAs in
+      Impulse Tracker, but on the other hand, it's not. To use them, you
+      must enable them for the tracker machine in question - this is done
+      through an attribute (see below.)
+
+      When enabled, the tracker supports 64 note polyphony, in much the same
+      way a hardware sampler handles it. What it does exactly, is when you
+      play a new note the last one is allowed to finish. This is great for
+      chord riffs, plucked strings and a bunch of other stuff. So now,
+      instead of going through the hassle of using more tracks, you can
+      enable virtual channels instead.
+
+      Sometimes the note will be cut anyway to make sure no samples sit
+      there and take up all the channels. This happens when you have a
+      looping sample with no suitable volume envelope. This is a safety
+      measure and completely intentional.
+    </para>
+  </section>
+  <section>
+    <title>Using MIDI</title>
+    <para>
+      Setting up MIDI input is now very easy - everything is controlled from
+      the attributes.
+
+      You'll have to set up the attributes to the right channel. Now, the
+      machine will respond to MIDI in events.
+      The tracks play the note with the last instrument used in the track,
+      so a track will have to have played something before any sound is
+      made. This is normally not what you want, using an attribute you can
+      select the wave MIDI events will use instead.
+
+      The default behaviour for MIDI events is to use all available tracks
+      in succession from left to right, including all unused tracks. You can
+      change the behaviour using an attribute to use unused tracks only so
+      you can jam along with your track.
+
+      For more information, refer to the attribute descriptions below. 
+    </para>
+  </section>
+  <section>
+    <title>Machine Attributes</title>
+    <table><title>Matilde Tracker Attributes</title>
+    <tgroup cols='2' align='left' colsep='1' rowsep='1'>
+      <thead>
+	<row>
+	  <entry>
+	    <para>Attribute</para>
+	  </entry>
+	  <entry>
+	    <para>Description</para>
+	  </entry>
+	</row>
+      </thead>
+      <tbody>
+	<row>
+	  <entry>
+	    <para>Volume Ramp</para>
+	  </entry>
+	  <entry>
+	    <para>The time in milliseconds micro volume-ramping takes. This
+	    is to avoid clicks.</para>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>Volume Envelope Span</para>
+	  </entry>
+	  <entry>
+	    <para>The number of ticks a volume envelope spans from left to right.</para>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>MIDI Channel</para>
+	  </entry>
+	  <entry>
+	    <para>The MIDI channel the machine responds to. 0 means it
+	    doesn't respond.</para>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>MIDI Velocity Sensitivity</para>
+	  </entry>
+	  <entry>
+	    <para>How sensitive the machine is to MIDI velocity. 0 means it
+	    doesn't care, 256 means it cares a lot ;)</para>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>MIDI Wave</para>
+	  </entry>
+	  <entry>
+	    <para>MIDI notes will use this waveform.</para>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>MIDI Uses Free Tracks</para>
+	  </entry>
+	  <entry>
+	    <para>If 1 - MIDI notes will only use free tracks. If not, all tracks.</para>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>Filter</para>
+	  </entry>
+	  <entry>
+	    <para>Filtering mode when playing waveforms. 0=none, 1=linear,
+	    2=spline. Spline is much slower than linear, so only use it
+	    if you can handle it.</para>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>Pitch Envelope Depth</para>
+	  </entry>
+	  <entry>
+	    <para>Pitch envelope will range between +- this attribute.</para>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>Enable Virtual Channels</para>
+	  </entry>
+	  <entry>
+	    <para>0=normal behaviour, 1=virtual channels enabled</para>
+	  </entry>
+	</row>
+      </tbody>
+    </tgroup>
+    </table>
+  </section>
+  <section>
+    <title>Pattern Editor</title>
+    <table><title>Matilde Tracker Parameters</title>
+    <tgroup cols='2' align='left' colsep='1' rowsep='1'>
+      <thead>
+	<row>
+	  <entry>
+	    <para>Column</para>
+	  </entry>
+	  <entry>
+	    <para>Description</para>
+	  </entry>
+	</row>
+      </thead>
+      <tbody>
+	<row>
+	  <entry>
+	    <para>1</para>
+	  </entry>
+	  <entry>
+	    <para>The note to play</para>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>2</para>
+	  </entry>
+	  <entry>
+	    <para>The current wave. If empty, the previously selected wave
+	    will be used</para>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>3</para>
+	  </entry>
+	  <entry>
+	    <para>Volume. 0=mute, 40=half, 80=full, FE=about double the
+	    volume</para>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>4 and 6</para>
+	  </entry>
+	  <entry>
+	    <para>Effect to use, see below for description</para>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>5 and 7</para>
+	  </entry>
+	  <entry>
+	    <para>Argument to the effect</para>
+	  </entry>
+	</row>
+      </tbody>
+    </tgroup>
+    </table>
+  </section>
+  <section>
+    <title>Implemented Effects</title>
+    <table><title>Matilde Tracker Effects</title>
+    <tgroup cols='3' align='left' colsep='1' rowsep='1'>
+      <thead>
+	<row>
+	  <entry>
+	    <para>Command</para>
+	  </entry>
+	  <entry>
+	    <para>Argument</para>
+	  </entry>
+	  <entry>
+	    <para>Description</para>
+	  </entry>
+	</row>
+      </thead>
+      <tbody>
+	<row>
+	  <entry>
+	    <para>00</para>
+	  </entry>
+	  <entry>
+	    <para>xy</para>
+	  </entry>
+	  <entry>
+	    <para>
+	      <emphasis>Arpeggio</emphasis>
+	    </para>
+	    <para>
+	      On subdivision step 0, the original note will be
+	      played. Step one will play the original note+x halftones. Step two
+	      will play the original note+y halftones. Step three will restart the
+	      process
+	    </para>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>01</para>
+	  </entry>
+	  <entry>
+	    <para>xx</para>
+	  </entry>
+	  <entry>
+	    <para>Slide up xx notches</para>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>02</para>
+	  </entry>
+	  <entry>
+	    <para>xx</para>
+	  </entry>
+	  <entry>
+	    <para>Slide down xx notches</para>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>03</para>
+	  </entry>
+	  <entry>
+	    <para>xx</para>
+	  </entry>
+	  <entry>
+	    <para><emphasis>Tone portamento</emphasis></para>
+	    <para>If xx is zero, keep portamento'ing</para>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>04</para>
+	  </entry>
+	  <entry>
+	    <para>xy</para>
+	  </entry>
+	  <entry>
+	    <para><emphasis>Vibrato</emphasis></para>
+	    <itemizedlist>
+	      <listitem><simpara>x - speed</simpara></listitem>
+	      <listitem><simpara>y - depth</simpara></listitem>
+	      <listitem><simpara>If either is zero, use previous value</simpara></listitem>
+	    </itemizedlist>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>05</para>
+	  </entry>
+	  <entry>
+	    <para>xy</para>
+	  </entry>
+	  <entry>
+	    <para><emphasis>Slide panning</emphasis></para>
+	    <itemizedlist>
+	      <listitem><simpara>x - amount to slide panning left</simpara></listitem>
+	      <listitem><simpara>y - amount to slide panning right</simpara></listitem>
+	    </itemizedlist>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>06</para>
+	  </entry>
+	  <entry>
+	    <para>xy</para>
+	  </entry>
+	  <entry>
+	    <para><emphasis>Autopan</emphasis></para>
+	    <itemizedlist>
+	      <listitem><simpara>x - speed</simpara></listitem>
+	      <listitem><simpara>y - depth</simpara></listitem>
+	      <listitem><simpara>If either is zero, use previous value</simpara></listitem>
+	    </itemizedlist>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>07</para>
+	  </entry>
+	  <entry>
+	    <para>xy</para>
+	  </entry>
+	  <entry>
+	    <para><emphasis>Tremolo</emphasis></para>
+	    <itemizedlist>
+	      <listitem><simpara>x - speed</simpara></listitem>
+	      <listitem><simpara>y - depth</simpara></listitem>
+	      <listitem><simpara>If either is zero, use previous value</simpara></listitem>
+	    </itemizedlist>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>08</para>
+	  </entry>
+	  <entry>
+	    <para>xx</para>
+	  </entry>
+	  <entry>
+	    <para><emphasis>Set panning position</emphasis></para>
+	    <itemizedlist>
+	      <listitem><simpara>0 = left, 80 = middle, FF = right</simpara></listitem>
+	    </itemizedlist>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>09</para>
+	  </entry>
+	  <entry>
+	    <para>xx</para>
+	  </entry>
+	  <entry>
+	    <para><emphasis>Sample offset</emphasis></para>
+	    <itemizedlist>
+	      <listitem><simpara>xx - offset into sample</simpara></listitem>
+	      <listitem><simpara>Unlike Protracker this is not an absolute offset
+	      but scales to the whole length of the sample, ie a value of
+	      80 will start from the middle of the sample. If there's no
+	      argument, the sample offset will be set right at the end,
+	      useful for E8/01.</simpara></listitem>
+	    </itemizedlist>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>0A</para>
+	  </entry>
+	  <entry>
+	    <para>xy</para>
+	  </entry>
+	  <entry>
+	    <para><emphasis>Volume slide</emphasis></para>
+	    <itemizedlist>
+	      <listitem><simpara>x - amount to slide volume up</simpara></listitem>
+	      <listitem><simpara>y - amount to slide volume down</simpara></listitem>
+	    </itemizedlist>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>0F</para>
+	  </entry>
+	  <entry>
+	    <para>xx</para>
+	  </entry>
+	  <entry>
+	    <para><emphasis>Subdivide amount</emphasis></para>
+	    <itemizedlist>
+	      <listitem><simpara>This is the same as the Protracker Fxx command,
+	      except it doesn't actually change the speed of the song,
+	      only the speed of the track's effects. If the subdivide
+	      amount is higher, effects will be updated more often,
+	      making them run faster. The default value is 6.</simpara></listitem>
+	    </itemizedlist>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>10</para>
+	  </entry>
+	  <entry>
+	    <para>xx</para>
+	  </entry>
+	  <entry>
+	    <para><emphasis>Probability</emphasis></para>
+	    <itemizedlist>
+	      <listitem><simpara>xx - Probability for sample being
+	      played. 01=will almost certainly not be played, 80=50%,
+	      FF=almost certain</simpara></listitem>
+	    </itemizedlist>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>11</para>
+	  </entry>
+	  <entry>
+	    <para>xx</para>
+	  </entry>
+	  <entry>
+	    <para><emphasis>Loop fit</emphasis></para>
+	    <itemizedlist>
+	      <listitem><simpara>xx - Number of ticks the waveform's loop should
+	      take to complete. Changes the frequency of the
+	      waveform.</simpara></listitem>
+	    </itemizedlist>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>12</para>
+	  </entry>
+	  <entry>
+	    <para>xx</para>
+	  </entry>
+	  <entry>
+	    <para><emphasis>Loop fit</emphasis></para>
+	    <itemizedlist>
+	      <listitem><simpara>xx - Same as 11, but tracks song speed changes
+	      and adjust the frequency accordingly.</simpara></listitem>
+	    </itemizedlist>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>13</para>
+	  </entry>
+	  <entry>
+	    <para>xy</para>
+	  </entry>
+	  <entry>
+	    <para><emphasis>Auto shuffle</emphasis></para>
+	    <itemizedlist>
+	      <listitem><simpara>x - Ticks to shuffle. 2 shuffles every other
+		  step, 3 every third step and so on.
+		</simpara>
+	      </listitem>
+	      <listitem><simpara>
+		y = Shuffle amount. 0 = none, F = almost a full
+		tick. change the subdivision amount to, say, 10 for
+		greater 
+		precision.
+	      </simpara>
+	      </listitem> 
+	    </itemizedlist>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>14</para>
+	  </entry>
+	  <entry>
+	    <para>xx</para>
+	  </entry>
+	  <entry>
+	    <para><emphasis>Randomize volume</emphasis></para>
+	    <itemizedlist>
+	      <listitem><simpara>xx - Maximum amount the volume will be
+	      randomized</simpara></listitem>
+	    </itemizedlist>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>15</para>
+	  </entry>
+	  <entry>
+	    <para>xx</para>
+	  </entry>
+	  <entry>
+	    <para><emphasis>Random delay</emphasis></para>
+	    <itemizedlist>
+	      <listitem><simpara>xx - Maximum number of subdivision steps the
+	      note will be delayed</simpara></listitem>
+	    </itemizedlist>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>16</para>
+	  </entry>
+	  <entry>
+	    <para>xx</para>
+	  </entry>
+	  <entry>
+	    <para><emphasis>Randomize pitch</emphasis></para>
+	    <itemizedlist>
+	      <listitem><simpara>xx - Maximum number of notches the pitch will be
+	      randomized</simpara></listitem> 
+	    </itemizedlist>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>17</para>
+	  </entry>
+	  <entry>
+	    <para>xx</para>
+	  </entry>
+	  <entry>
+	    <para><emphasis>Harmonic play</emphasis></para>
+	    <itemizedlist>
+	      <listitem><simpara>xx - The base frequency will be multiplied by
+	      xx</simpara></listitem>  
+	    </itemizedlist>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>18</para>
+	  </entry>
+	  <entry>
+	    <para>xy</para>
+	  </entry>
+	  <entry>
+	    <para><emphasis>Combined note delay and cut</emphasis></para>
+	    <itemizedlist>
+	      <listitem><simpara>x - The subdivision step to trigger the
+	      note</simpara></listitem>  
+	      <listitem><simpara>y - The subdivision step to release the
+	      note</simpara></listitem> 
+	    </itemizedlist>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>19</para>
+	  </entry>
+	  <entry>
+	    <para>xy</para>
+	  </entry>
+	  <entry>
+	    <para><emphasis>Sustain pedal</emphasis></para>
+	    <itemizedlist>
+	      <listitem><simpara>y - Subdivision step to trigger
+	      command</simpara></listitem>   
+	      <listitem><simpara>x = 1 - Depress sustain pedal</simpara></listitem> 
+	      <listitem><simpara>x = 2 - Release sustain pedal</simpara></listitem> 
+	    </itemizedlist>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>DC</para>
+	  </entry>
+	  <entry>
+	    <para>xx</para>
+	  </entry>
+	  <entry>
+	    <para><emphasis>Note cutoff, releases note</emphasis></para>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>E1</para>
+	  </entry>
+	  <entry>
+	    <para>xx</para>
+	  </entry>
+	  <entry>
+	    <para><emphasis>Fine slide up xx notches</emphasis></para>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>E2</para>
+	  </entry>
+	  <entry>
+	    <para>xx</para>
+	  </entry>
+	  <entry>
+	    <para><emphasis>Fine slide down xx notches</emphasis></para>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>E4</para>
+	  </entry>
+	  <entry>
+	    <para>0x</para>
+	  </entry>
+	  <entry>
+	    <para><emphasis>Set vibrato type</emphasis></para>
+	    <itemizedlist>
+	      <listitem><simpara>x - 0 - sine, retrig waveform at
+	      samplestart</simpara></listitem>
+	      <listitem><simpara>x - 1 - saw, retrig waveform at
+	      samplestart</simpara></listitem> 
+	      <listitem><simpara>x - 2 - square, retrig waveform at
+	      samplestart</simpara></listitem> 
+	      <listitem><simpara>x - 4 - sine, don't retrig waveform at
+	      samplestart</simpara></listitem> 
+	      <listitem><simpara>x - 5 - saw, don't retrig waveform at
+	      samplestart</simpara></listitem>
+	      <listitem><simpara>x - 6 - square, don't retrig waveform at
+	      samplestart</simpara></listitem>
+	    </itemizedlist>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>E5</para>
+	  </entry>
+	  <entry>
+	    <para>xx</para>
+	  </entry>
+	  <entry>
+	    <para><emphasis>Set finetune for track</emphasis></para>
+	    <itemizedlist>
+	      <listitem><simpara>00 = -1/2 halfnote, 80 = 0, FF = ~+1/2
+	      halfnote</simpara></listitem>
+	    </itemizedlist>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>E6</para>
+	  </entry>
+	  <entry>
+	    <para>0x</para>
+	  </entry>
+	  <entry>
+	    <para><emphasis>Set panning type</emphasis></para>
+	    <itemizedlist>
+	      <listitem><simpara>See E4/0x for parameter</simpara></listitem>
+	    </itemizedlist>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>E7</para>
+	  </entry>
+	  <entry>
+	    <para>0x</para>
+	  </entry>
+	  <entry>
+	    <para><emphasis>Set tremolo type</emphasis></para>
+	    <itemizedlist>
+	      <listitem><simpara>See E4/0x for parameter</simpara></listitem>
+	    </itemizedlist>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>E8</para>
+	  </entry>
+	  <entry>
+	    <para>01</para>
+	  </entry>
+	  <entry>
+	    <para><emphasis>Reverse direction of sample being played</emphasis></para>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>E9</para>
+	  </entry>
+	  <entry>
+	    <para>xx</para>
+	  </entry>
+	  <entry>
+	    <para><emphasis>Retrig sample</emphasis></para>
+	    <itemizedlist>
+	      <listitem><simpara>xx - subdivision count at which sample is
+	      retriggered</simpara></listitem>
+	    </itemizedlist>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>EA</para>
+	  </entry>
+	  <entry>
+	    <para>xx</para>
+	  </entry>
+	  <entry>
+	    <para><emphasis>Fine volume slide up</emphasis></para>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>EB</para>
+	  </entry>
+	  <entry>
+	    <para>xx</para>
+	  </entry>
+	  <entry>
+	    <para><emphasis>Fine volume slide down</emphasis></para>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>EC</para>
+	  </entry>
+	  <entry>
+	    <para>xx</para>
+	  </entry>
+	  <entry>
+	    <para><emphasis>Note cutoff, set volume to zero</emphasis></para>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>ED</para>
+	  </entry>
+	  <entry>
+	    <para>xx</para>
+	  </entry>
+	  <entry>
+	    <para><emphasis>Note delay</emphasis></para>
+	    <itemizedlist>
+	      <listitem><simpara>Delay samplestart for xx subdivision
+	      steps</simpara></listitem>
+	    </itemizedlist>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>ED</para>
+	  </entry>
+	  <entry>
+	    <para>xx</para>
+	  </entry>
+	  <entry>
+	    <para><emphasis>Note delay</emphasis></para>
+	    <itemizedlist>
+	      <listitem><simpara>Delay samplestart for xx subdivision
+	      steps</simpara></listitem>
+	    </itemizedlist>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>EE</para>
+	  </entry>
+	  <entry>
+	    <para>xx</para>
+	  </entry>
+	  <entry>
+	    <para><emphasis>Fine panning slide left</emphasis></para>
+	  </entry>
+	</row>
+	<row>
+	  <entry>
+	    <para>EF</para>
+	  </entry>
+	  <entry>
+	    <para>xx</para>
+	  </entry>
+	  <entry>
+	    <para><emphasis>Fine panning slide right</emphasis></para>
+	  </entry>
+	</row>
+      </tbody>
+    </tgroup>
+  </table>
+</section>
+</section>

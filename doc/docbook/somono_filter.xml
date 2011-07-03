@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="somono_filter">
+  <title>SoMono Filter</title>
+  <para>SoMono Filter is a state variable filter with a couple of extra
+  cutoff frequency modulation capabilities. These include an LFO that
+  goes in to audio range and an envelope follower. This machine can
+  be used simply to cut out or boost certain frequencies or in more
+  creative ways. For example using envelope following on drum samples
+  in high pass mode and with resonance turned up for interesting bass
+  boost effects. You can use the LFO for simple sweeps or crank it
+  all the way to audio range for ring modulator type of sounds with a
+  metallic character.</para>
+  <table><title>SoMono Cloud Parameters</title>
+  <tgroup cols='2' align='left' colsep='1' rowsep='1'>
+    <thead>
+      <row>
+	<entry><para>Parameter</para></entry>
+	<entry><para>Meaning</para></entry>
+      </row>
+    </thead>
+    <tbody>
+      <row>
+	<entry><para>Filter Type</para></entry>
+	<entry><para>Choose among lowpass, highpass and bandpass filter
+	modes</para></entry> 
+      </row>
+      <row>
+	<entry><para>Cutoff</para></entry>
+	<entry><para>Filter cutoff frequency</para></entry>
+      </row>
+      <row>
+	<entry><para>Resonance</para></entry>
+	<entry><para>Resonance amount; essentially how much boost to apply at
+	cutoff frequency</para></entry>
+      </row>
+      <row>
+	<entry><para>LFO Freq</para></entry>
+	<entry><para>LFO frequency in Hertz</para></entry>
+      </row>
+      <row>
+	<entry><para>LFO Amp</para></entry>
+	<entry><para>How much does LFO affect the cutoff frequency</para></entry>
+      </row>
+      <row>
+	<entry><para>Env Mod</para></entry>
+	<entry><para>Amount of envelope following</para></entry>
+      </row>
+    </tbody>
+  </tgroup>
+  </table>
+</section>

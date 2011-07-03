@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="geonik_df_filter">
+  <title>Geonik DF Filter</title>
+  <para>The Dobson and Fitch Filter is a non-linear filter based on the
+  equation 
+  <inlineequation>
+    <alt>y(n) = a * y(n - 1) + b * y(n - 2) + d * y^2(n - L) + x(n)</alt>
+    <mathphrase>
+      y(n) = a y(n - 1) + b y (n - 2) + d y <superscript>2</superscript>(n - L) + x(n)
+    </mathphrase>
+  </inlineequation>.
+  It can be
+  used to create interesting sounds from any input. All the filter
+  coefficients a, b, d and C, here referenced as Alpha, Beta, Delta
+  and C, are adjustable.</para>
+  <section>
+    <title>Usage</title>
+    <para>Information below is taken from CSound manual.</para>
+    <itemizedlist>
+      <listitem>
+	<para><emphasis>Non-linear effect</emphasis></para>
+	<programlisting>
+a = b = 0 
+d = 0.8, 0.9, 0.7
+C = 0.4, 0.5, 0.6
+L = 20
+	</programlisting>
+	<para>This affects the lower register most but there are audible
+	effects over the whole range. We suggest that it may be useful
+	for colouring drums, and for adding arbitrary highlights to
+	notes</para>
+      </listitem>
+      <listitem>
+	<para><emphasis>Low Pass with non-linearity</emphasis></para>
+	<programlisting>
+a = 0.4
+b = 0.2
+d = 0.7 
+C = 0.11
+L = 20, ..., 200
+	</programlisting>
+	<para>There are instability problems with this variant but the
+	effect is more pronounced of the lower register, but is
+	otherwise much like the pure comb. Short values of <emphasis>L</emphasis>
+	can add attack to a sound.</para>
+      </listitem>
+      <listitem>
+	<para><emphasis>High Pass with non-linearity</emphasis></para>
+	<programlisting>
+a = 0.35
+b = -0.3
+d = 0.95
+C = 0,2, ..., 0.4
+L = 200
+	</programlisting>
+      </listitem>
+      <listitem>
+	<para><emphasis>High Pass with non-linear</emphasis></para>
+	<programlisting>
+a = 0.7 
+b = -0.2, ..., 0.5
+d = 0.9 
+C = 0.12, ..., 0.24
+L = 500, 10
+	</programlisting>
+	<para>The high pass version is less likely to oscillate. It adds
+	scintillation to medium-high registers. With a large
+	delay <emphasis>L</emphasis> it is a little like a reverberation, while with
+	small values there appear to be formant-like regions. There are
+	arbitrary colour changes and resonances as the pitch
+	changes. Works well with individual notes.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+  <section>
+    <title>Notes</title>
+    <para>I found this filter into CSound and wanted to try it. Be careful
+    when playing with the coefficients, especially Beta. Certain
+    combinations of values make the filter unstable in such a way that
+    sounds stops passing through. In case this happens, 1) Set Alpha and
+    Beta near zero 2) Decrease the level of the input 2) Raise C and
+    then lower it again slowly. It is very important that the input
+    sound doesn't exceed the standard 16bit amplitude. If you hear
+    digital distortion, then your input's volume is too loud.</para>
+  </section>
+</section>

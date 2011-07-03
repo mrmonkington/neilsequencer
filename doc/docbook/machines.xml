@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="machines">
+  <title>Machines</title>
+  <xi:include href="bigyo_frequencyshifter.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="fsm_infector.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="geonik_df_filter.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="matilde_tracker.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="somono_cloud.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="somono_filter.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="somono_mdadubdelay.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+</section>
