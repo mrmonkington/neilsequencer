@@ -3,6 +3,11 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="machines">
   <title>Machines</title>
+  <section><title>Description</title>
+  <para>
+    This section contains manual pages for all the different machines available for Neil.
+  </para>
+  </section>
   <xi:include href="bigyo_frequencyshifter.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
   <xi:include href="fsm_infector.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
   <xi:include href="geonik_df_filter.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>

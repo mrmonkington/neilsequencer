@@ -998,8 +998,9 @@ def show_manual():
     """
     Invoke yelp program with the Neil manual.
     """
+    import webbrowser
     path = docpath("manual")
-    os.system("yelp %s &" % path)
+    webbrowser.open_new("%s/index.html" % path)
 
 def show_machine_manual(name):
     """
@@ -1007,9 +1008,10 @@ def show_machine_manual(name):
     Parameter name is the long name of the machine in all lower caps
     and with spaces replaced by underscores.
     """
+    import webbrowser
     path = docpath("manual")
-    if os.path.isfile((path + "/%s.page") % name):
-        os.system("yelp %s?%s &" % (path, name))
+    if os.path.isfile((path + "/%s.html") % name):
+        webbrowser.open_new("%s/%s.html" % (path, name))
         return True
     else:
         return False

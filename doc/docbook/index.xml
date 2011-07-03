@@ -48,6 +48,11 @@
   <xi:include href="machines.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
   <section>
     <title>Pattern Effects</title>
+    <section><title>Description</title>
+    <para>
+      Manual pages for different contraptions that work on pattern data.
+    </para>
+    </section>
     <xi:include href="expression.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
     <xi:include href="linear_transform.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
   </section>
