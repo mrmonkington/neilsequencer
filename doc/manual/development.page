@@ -1,9 +1,0 @@
-<page xmlns="http://projectmallard.org/1.0/"
-      type="guide"
-      id="development">
-<info>
-  <desc>Information for (potential) developers</desc>
-  <link type="guide" xref="index"/>
-</info>
-<title>Development</title>
-</page>

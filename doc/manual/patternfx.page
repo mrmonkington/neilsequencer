@@ -1,9 +1,0 @@
-<page xmlns="http://projectmallard.org/1.0/"
-      type="guide"
-      id="patternfx">
-<info>
-  <desc>Components that operate on pattern data</desc>
-  <link type="guide" xref="index"/>
-</info>
-<title>Pattern Effects</title>
-</page>
