@@ -289,9 +289,7 @@ class PatternToolBar(gtk.HBox):
         model.clear()
         for plugin in plugins:
             self.pluginselect.append_text(plugin[0])
-        if active == -1:
-            self.pluginselect.set_active(0)
-        else:
+        if active != -1:
             self.pluginselect.set_active(active)
         self.pluginselect.handler_unblock(self.pluginselect_handler)
 
@@ -312,12 +310,12 @@ class PatternToolBar(gtk.HBox):
         player = com.get('neil.core.player')
         sel = player.active_waves
         active = self.waveselect.get_active()
+        model = self.waveselect.get_model()
+        model.clear()
         for i in range(player.get_wave_count()):
             w = player.get_wave(i)
             if w.get_level_count() >= 1:
-                self.waveselect.remove_text(i)
-                self.waveselect.insert_text(i, "%02X. %s" %\
-                                                (i + 1, w.get_name()))
+                self.waveselect.append_text("%02X. %s" % (i + 1, w.get_name()))
         if sel != []:
             index = sel[0].get_index()
             self.waveselect.set_active(index)
@@ -339,14 +337,7 @@ class PatternToolBar(gtk.HBox):
         def cmp_func(a, b):
             return cmp(a.get_name().lower(), b.get_name().lower())
         plugins = sorted(list(player.get_plugin_list()), cmp_func)
-        generators = [(plugin.get_name(), plugin) for plugin
-                      in plugins if is_generator(plugin)]
-        effects = [(plugin.get_name(), plugin) for plugin
-                   in plugins if is_effect(plugin)]
-        other = [(plugin.get_name(), plugin) for plugin
-                 in plugins if not (is_generator(plugin) or 
-                                    is_effect(plugin))]
-        return generators + effects + other
+        return [(plugin.get_name(), plugin) for plugin in plugins]
 
     def get_plugin_sel(self):
         player = com.get('neil.core.player')
