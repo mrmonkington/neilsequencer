@@ -254,13 +254,14 @@ class ParameterView(gtk.VBox):
 	    namelabel = gtk.Label()
 	    namelabel._default_name = name
 	    slider = gtk.HScale()
-            slider.set_tooltip_markup(p.get_description())
+            #slider.set_tooltip_markup(p.get_description())
 	    slider.set_property('draw-value', False)
 	    slider.set_range(p.get_value_min(),p.get_value_max())
 	    # set increment size for left and right arrow and mouse clicks
 	    increment = (p.get_value_max() - p.get_value_min()) / 10
 	    slider.set_increments(1, increment)
 	    v = plugin.get_parameter_value(g, t, i)
+            slider.set_tooltip_markup("<b>Description</b>: %s\n<b>Value</b>: #%s" % (p.get_description(), ("%4x" % v).replace(" ", "0")))
 	    slider.set_value(v)
 	    slider.drag_dest_set(gtk.DEST_DEFAULT_ALL, self.DROP_TARGETS,
 		    gtk.gdk.ACTION_COPY)
