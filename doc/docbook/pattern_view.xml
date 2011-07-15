@@ -3,15 +3,34 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="pattern_view">
   <title>Pattern view</title>
-  <para>Use this view to enter pattern data. Since Neil is a so-called
-  tracker, you have to enter notes in a certain quite peculiar
-  format. Time in trackers go from top to bottom. Each line in this
-  view is a musical event. Columns are used to enter data which are
-  always integral numbers displayed in hexadecimal. These numbers can
-  be used to set synthesizer parameters, note values and other
-  performance data.</para>
-  <para>
-  </para>
+  <section>
+    <title>Description</title>
+    <para>Use this view to enter pattern data. Since Neil is a so-called
+    tracker, you have to enter notes in a certain quite peculiar
+    format. Time in trackers go from top to bottom. Each line in this
+    view is a musical event. Columns are used to enter data which are
+    always integral numbers displayed in hexadecimal. These numbers can
+    be used to set synthesizer parameters, note values and other
+    performance data.</para>
+  </section>
+  <section>
+    <title>Navigating with keyboard</title>
+    <para>
+      For those of you who prefer using keyboard to using mouse (this
+      is probably everyone when shown how). Apart from moving the
+      cursor with arrow keys there are ways to change the active
+      machine, pattern, wave, step, octave and to make selections in
+      the pattern editor. To change the active machine use Ctrl + Up
+      and Ctrl + Down shortcut. To change the active pattern use "+"
+      and "-" keys on the numeric keypad if your are on a laptop use
+      the key kombination that emulates numeric keypad. Plus key
+      increases active pattern number while the minus key decreases
+      it. To change the active wave you can use the "&#60;" and
+      "&#62;" keys. Use the "*" and "/" keys on the numpad to change
+      the active octave up and down one octave. Use the "[" and "]"
+      keys to change the step size for the editor.
+    </para>
+  </section>
   <section>
     <title>Shortcuts</title>
     <table><title>Pattern View Shortcuts</title>

@@ -1915,6 +1915,7 @@ class PatternView(gtk.DrawingArea):
         eventbus = com.get('neil.core.eventbus')
         shiftdown = mask & gtk.gdk.SHIFT_MASK
         ctrldown = mask & gtk.gdk.CONTROL_MASK
+        print "Key pressed:", k
         if k == 'less':
             player.activate_wave(-1)
             pass
@@ -2075,6 +2076,12 @@ class PatternView(gtk.DrawingArea):
         elif k in ('KP_Divide', 'ssharp'):
             player = com.get('neil.core.player')
             self.set_octave(player.octave - 1)
+        elif k == 'bracketleft':
+            step_select = self.panel.toolbar.edit_step_box
+            step_select.set_active((step_select.get_active() - 1) % 12)
+        elif k == 'bracketright':
+            step_select = self.panel.toolbar.edit_step_box
+            step_select.set_active((step_select.get_active() + 1) % 12)
         elif k == 'Escape':
             self.selection = None
             self.shiftselect = None
