@@ -28,7 +28,11 @@
       it. To change the active wave you can use the "&#60;" and
       "&#62;" keys. Use the "*" and "/" keys on the numpad to change
       the active octave up and down one octave. Use the "[" and "]"
-      keys to change the step size for the editor.
+      keys to change the step size for the editor. To manage
+      selections with the keyboard just hold down the "Shift" button
+      and use the arrow keys to select. When you want to deselect,
+      release the "Shift" key and use the arrow keys to move the
+      cursor. 
     </para>
   </section>
   <section>
