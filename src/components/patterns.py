@@ -359,9 +359,11 @@ class PatternToolBar(gtk.HBox):
         self.pattern_view.grab_focus()
 
     def get_pattern_source(self, *args):
+        print "get_pattern_source()"
         player = com.get('neil.core.player')
         plugin = self.get_plugin_sel()
-        active = self.patternselect.get_active()
+        print plugin
+        print player.active_patterns
         if not plugin:
             self.patternselect.get_model().clear()
             return
@@ -377,11 +379,8 @@ class PatternToolBar(gtk.HBox):
             self.patternselect.append_text("%s" % name)
         # Block signal handler to avoid infinite recursion.
         self.patternselect.handler_block(self.patternselect_handler)
-        if active == -1:
-            self.patternselect.set_active(0)
-        else:
-            if len(player.active_patterns) > 0:
-                self.patternselect.set_active(player.active_patterns[0][1])
+        if len(player.active_patterns) > 0:
+            self.patternselect.set_active(player.active_patterns[0][1])
         self.patternselect.handler_unblock(self.patternselect_handler)
         
     def get_pattern_sel(self):

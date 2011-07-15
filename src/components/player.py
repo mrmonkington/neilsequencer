@@ -479,7 +479,7 @@ class NeilPlayer(Player, PropertyEventHandler):
         if not self.get_plugin_count():
             return
         if self.active_patterns:
-            plugin,index = self.active_patterns[0]
+            plugin, index = self.active_patterns[0]
         else:
             if not self.active_plugins:
                 self.activate_plugin(direction)
@@ -525,7 +525,11 @@ class NeilPlayer(Player, PropertyEventHandler):
             self.active_plugins = [plugins[failsafe]]
         else:
             pindex = plugins.index(self.active_plugins[0])
-            self.active_plugins = [plugins[(pindex+offset)%len(plugins)]]
+            self.active_plugins = [plugins[(pindex + offset) % len(plugins)]]
+        if self.active_plugins[0].get_pattern_count() > 0:
+            self.active_patterns = [(self.active_plugins[0], 0)]
+        else:
+            self.active_patterns = []
 
     def handle_event(self, player, plugin, data, tag):
         """
