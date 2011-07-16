@@ -119,7 +119,7 @@ env.Append(CCFLAGS=[
         '-DPOSIX',
         ])
 env.Append(LINKFLAGS=[
-        '--rpath%s' % str(env.Dir('${PREFIX}${LIBDIR}')),
+        '-Wl,-rpath=%s' % str(env.Dir('${PREFIX}${LIBDIR}')),
         ])
 if os.uname()[0] == 'FreeBSD':
     env.Append(CCFLAGS=[ '-I/usr/local/include' ])
