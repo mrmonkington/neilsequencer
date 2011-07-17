@@ -367,16 +367,16 @@ class PatternToolBar(gtk.HBox):
         if not plugin:
             self.patternselect.get_model().clear()
             return
-        def cmp_func(a,b):
-            aname = a[0].get_pattern_name(a[1])
-            bname = b[0].get_pattern_name(b[1])
-            return cmp(aname.lower(), bname.lower())
-        patterns = sorted([(plugin, i) for i in 
-                           xrange(plugin.get_pattern_count())], cmp_func)
+        #def cmp_func(a,b):
+        #    aname = a[0].get_pattern_name(a[1])
+        #    bname = b[0].get_pattern_name(b[1])
+        #    return cmp(aname.lower(), bname.lower())
+        #patterns = sorted([(plugin, i) for i in 
+        #                   xrange(plugin.get_pattern_count())], cmp_func)
         self.patternselect.get_model().clear()
-        names = [(i, plugin.get_pattern_name(i)) for plugin, i in patterns]
+        names = [(i, plugin.get_pattern_name(i)) for i in range(plugin.get_pattern_count())]
         for i, name in names:
-            self.patternselect.append_text("%s" % name)
+            self.patternselect.append_text("%d %s" % (i, name))
         # Block signal handler to avoid infinite recursion.
         self.patternselect.handler_block(self.patternselect_handler)
         if len(player.active_patterns) > 0:
