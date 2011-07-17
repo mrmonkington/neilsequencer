@@ -240,7 +240,7 @@ class WavetablePanel(gtk.VBox):
         self.instrpanel.add2(sampleprops)
         self.instrpanel.set_position(250)
         
-        self.connect("expose_event", self.expose)
+        #self.connect("expose_event", self.expose)
 
         self.ohg.connect(self.samplelist.get_selection(),'changed', self.on_samplelist_select)
         self.ohg.connect(self.samplelist,'button-press-event', self.on_samplelist_dclick)
@@ -307,7 +307,12 @@ class WavetablePanel(gtk.VBox):
     
     def handle_focus(self):
         self.samplelist.grab_focus()
-        self.samplelist.get_selection().select_path(0)
+        player = com.get('neil.core.player')
+        if player.active_waves == []:
+            self.samplelist.get_selection().select_path(0)
+        else:
+            self.samplelist.get_selection().\
+                select_path(player.active_waves[0].get_index())
         self.needfocus = True
     
     def on_libpanel_selection_changed(self, widget):
