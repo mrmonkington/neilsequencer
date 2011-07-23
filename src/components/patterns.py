@@ -712,6 +712,7 @@ class PatternView(gtk.DrawingArea):
         self.accel_map.add_accelerator('<Control>x', self.cut)
         self.accel_map.add_accelerator('<Control>i', self.interpolate_selection)
         self.accel_map.add_accelerator('<Control>l', self.on_popup_solo)
+        self.accel_map.add_accelerator('<Control>a', self.select_all)
         self.accel_map.add_accelerator('<Control>KP_Add',
                                        self.on_popup_add_track)
         self.accel_map.add_accelerator('<Control>plus',
@@ -1492,6 +1493,18 @@ class PatternView(gtk.DrawingArea):
         # if player.set_callback_state(True):
         #     eventbus = com.get('neil.core.eventbus')
         #     eventbus.document_loaded()
+
+    def select_all(self, widget=None):
+        """
+        Select all contents of the open pattern.
+        Invoked when user presses Ctrl+a.
+        """
+        if not self.selection:
+            self.selection = self.Selection()
+        self.selection.mode = SEL_ALL
+        self.selection.begin = 0
+        self.selection.end = self.plugin.get_pattern_length(self.pattern)
+        self.redraw()
 
     def cut(self):
         """
