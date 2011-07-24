@@ -494,6 +494,11 @@ class SequencerView(gtk.DrawingArea):
         eventbus.zzub_set_sequence_event += self.redraw
         eventbus.document_loaded += self.redraw
         set_clipboard_text("invalid_clipboard_data")
+        self.reset_selection()
+
+    def reset_selection(self):
+        self.selection_start = (self.track, self.row)
+        self.selection_end = (self.track, self.row)
 
     def track_row_to_pos(self, (track,row)):
         """
@@ -1196,8 +1201,7 @@ class SequencerView(gtk.DrawingArea):
         """
         if self.selection_end != None:
             self.dragging = False
-            self.selection_end = None
-            self.selection_start = None
+            self.reset_selection()
             self.redraw()
 
     def on_mousewheel(self, widget, event):
@@ -1286,8 +1290,7 @@ class SequencerView(gtk.DrawingArea):
                 # we reset.
                 if (self.selection_start[0] == self.selection_end[0] and
                     self.selection_start[1] == self.selection_end[1]):
-                    self.selection_start = None
-                    self.selection_end = None
+                    self.reset_selection()
                 self.redraw()
 
     def get_client_size(self):
@@ -1507,7 +1510,7 @@ class SequencerView(gtk.DrawingArea):
         reset selection.
         """
         self.startseqtime = self.startseqtime - (self.startseqtime % self.step)
-        self.selection_start = None
+        self.reset_selection()
         if self.row != -1:
             self.row = self.row - (self.row % self.step)
         self.redraw()
