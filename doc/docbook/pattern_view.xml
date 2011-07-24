@@ -14,6 +14,69 @@
     performance data.</para>
   </section>
   <section>
+    <title>Editting patterns</title>
+    <para>
+      An example of a 16 bar pattern is shown bellow. It is for the
+      Oomek Aggressor machine. Oomek Aggressor is a an emulator of a
+      famous bassline synthesizer by a famous Japanese company. It
+      comes with the standard Neil machine set and it has very many
+      musical applications starting with obvious basslines and acid
+      leads and ending with sound effects and all even pads. If you
+      need examples of good use for this kind of synthesizer just
+      check out old Plastikman records. To see how you add this
+      machine to your song read the manual page on using the Router
+      view. This assumes that you have added the machine and have the
+      first pattern open in the pattern editor. Obviously, when you
+      open that view it won't contain the pattern below. This is just
+      a pattern I entered semi-randomly.
+    </para>
+    <programlisting>
+0 6E 5A 6E 64 2C 64 32 | D#5 . 1
+. .. .. .. .. .. .. .. | C#4 1 .
+. .. .. .. .. .. .. .. | D#4 1 .
+. .. .. .. .. .. .. .. | D#3 1 .
+. .. .. .. .. .. .. .. | D#4 . 1
+. .. .. .. .. .. .. .. | F-5 . .
+. .. .. .. .. .. .. .. | F-5 1 .
+. .. .. .. .. .. .. .. | F-3 . .
+. .. .. .. .. .. .. .. | D#5 . 1
+. .. .. .. .. .. .. .. | C-5 1 .
+. .. .. .. .. .. .. .. | F#3 . .
+. .. .. .. .. .. .. .. | D#5 . .
+. .. .. .. .. .. .. .. | F#5 1 1
+. .. .. .. .. .. .. .. | E-5 . .
+. .. .. .. .. .. .. .. | A#5 . .
+. .. .. .. .. .. .. .. | B-4 . .
+    </programlisting>
+    <para>
+      You can see that the view is divided in to two big columns. The
+      first one contains global parameters and the other one contains
+      track parameters. A particular machine can ommit one or both of
+      these. Global parameters usually control the sound of the
+      synth. It is used to enter values that would affect, for example,
+      cutoff frequency of a synthesizers filter. As a matter of fact
+      this one does contain a column for that. You use the arrow keys to
+      move around in the pattern view editor. Click with the mouse on
+      the view if it is not in focus and try using the arrow keys to
+      move the cursor. As you move the cursor notice that a short
+      description of the column you are on appears below the pattern
+      editor. For example, try locating the cutoff frequency and
+      resonance in the global parameter column.
+    </para>
+    <para>
+      Values are entered using a hexadecimal base format. This used to
+      be done because it allows to enter values that fit in to one
+      byte using just two digits. Similarly it allows to enter two
+      bytes using four digits. It has to do with the way that
+      computers store information. While it requires to think a little
+      differently it is a compact way of entering numeric information
+      in to computers. To convert from hexadecimal to decimal you can
+      use the two formulas below. They are for the two and four digit
+      cases respectively. Neil only allows those two types numeric
+      values. 
+    </para>
+  </section>
+  <section>
     <title>Navigating with keyboard</title>
     <para>
       For those of you who prefer using keyboard to using mouse (this
