@@ -1,7 +1,8 @@
 import gtk
-import random
 import neil.com as com
 from neil.utils import roundint, bn2mn, mn2bn
+from random import *
+from math import *
 
 class SimpleRandom():
     __neil__ = dict(
@@ -148,8 +149,6 @@ class Expression():
         if response:
             try:
                 for i in range(len(data)):
-                    from random import *
-                    from math import *
                     x = data[i]
                     a = parameter.get_value_min()
                     b = parameter.get_value_max()
