@@ -494,11 +494,6 @@ class SequencerView(gtk.DrawingArea):
         eventbus.zzub_set_sequence_event += self.redraw
         eventbus.document_loaded += self.redraw
         set_clipboard_text("invalid_clipboard_data")
-        self.reset_selection()
-
-    def reset_selection(self):
-        self.selection_start = (self.track, self.row)
-        self.selection_end = (self.track, self.row)
 
     def track_row_to_pos(self, (track,row)):
         """
@@ -702,6 +697,9 @@ class SequencerView(gtk.DrawingArea):
     def on_popup_create_pattern(self, *args):
         player = com.get('neil.core.player')
         seq = player.get_current_sequencer()
+        if not self.selection_start:
+            self.selection_start = (self.track, self.row)
+            self.selection_end = (self.track, self.row)
         try:
             start = (min(self.selection_start[0], self.selection_end[0]),
                      min(self.selection_start[1], self.selection_end[1]))
@@ -935,7 +933,7 @@ class SequencerView(gtk.DrawingArea):
         menu.add_item("Paste", self.on_popup_paste).set_sensitive(paste_sensitive)
         menu.add_item("Delete", self.on_popup_delete).set_sensitive(sel_sensitive)
         menu.add_separator()
-        menu.add_item("Create pattern", self.on_popup_create_pattern).set_sensitive(sel_sensitive)
+        menu.add_item("Create pattern", self.on_popup_create_pattern)
         menu.add_item("Merge patterns", self.on_popup_merge).set_sensitive(sel_sensitive)
         menu.show_all()
         menu.attach_to_widget(self, None)
@@ -1201,7 +1199,8 @@ class SequencerView(gtk.DrawingArea):
         """
         if self.selection_end != None:
             self.dragging = False
-            self.reset_selection()
+            self.selection_end = None
+            self.selection_start = None
             self.redraw()
 
     def on_mousewheel(self, widget, event):
@@ -1290,7 +1289,8 @@ class SequencerView(gtk.DrawingArea):
                 # we reset.
                 if (self.selection_start[0] == self.selection_end[0] and
                     self.selection_start[1] == self.selection_end[1]):
-                    self.reset_selection()
+                    self.selection_start = None
+                    self.selection_end = None
                 self.redraw()
 
     def get_client_size(self):
@@ -1510,7 +1510,7 @@ class SequencerView(gtk.DrawingArea):
         reset selection.
         """
         self.startseqtime = self.startseqtime - (self.startseqtime % self.step)
-        self.reset_selection()
+        self.selection_start = None
         if self.row != -1:
             self.row = self.row - (self.row % self.step)
         self.redraw()
