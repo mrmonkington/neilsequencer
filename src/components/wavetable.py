@@ -39,7 +39,6 @@ import zzub
 import config
 from neil.envelope import EnvelopeView
 from neil.waveedit import WaveEditPanel
-import popen2
 import neil.common as common
 from neil.common import MARGIN, MARGIN2, MARGIN3
 import neil.com as com
@@ -421,18 +420,6 @@ class WavetablePanel(gtk.VBox):
                 import traceback
                 traceback.print_exc()
         data_entry.destroy()
-
-    def on_edit_file(self, widget):
-        files = [path for path in self.libpanel.get_filenames() if os.path.isfile(path)]
-        if not(files) or len(files)>1:
-            return
-        editor = config.get_config().get_audioeditor_command()
-        try:
-            popen2.Popen4(editor+' \"'+files[0]+'\"')
-        except:
-            import traceback
-            error(self, "<b><big>There was an error starting the external audio editor.</big></b>")
-            print traceback.format_exc()
 
     def on_samplerate_apply(self, widget, *args):
         """
