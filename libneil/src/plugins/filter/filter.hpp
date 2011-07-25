@@ -7,7 +7,7 @@
 #include <zzub/signature.h>
 #include <zzub/plugin.h>
 
-const int RMS_WINDOW = 64;
+const int RMS_WINDOW = 200;
 const float RMS_WINDOW_INV = 1.0f / RMS_WINDOW;
 
 struct Gvals {

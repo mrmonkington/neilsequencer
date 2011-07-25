@@ -35,11 +35,11 @@ namespace lanternfish {
   
   void Svf::set_resonance(float reso) 
   {
-    this->q = reso;
+    q = sqrt(1.0 - atan(sqrt(reso * 100.0)) * 2.0 / M_PI) * 1.33 - 0.33;
   }
 
   inline void Svf::kill_denormal(float &val) {
-    if (fabs(val) < 1e-15)
+    if (fabs(val) < 1e-2)
       val = 0.0;
   }
   
@@ -49,14 +49,14 @@ namespace lanternfish {
       out[i] = 0.0;
     if (!this->bypass) {
       for (int i = 0; i < n; i++) {
-	float freq = 2.0 * sin(M_PI * std::min(0.25f, cutoff[i] / (sps * 2)));
-	float damp = std::min(2.0 * (1.0 - pow(q, 0.25)), std::min(2.0, 2.0 / freq - freq * 0.5));
-	float in = input[i];
+	float scale, f;
+	scale = sqrt(q);
 	for (int j = 0; j < 2; j++) {
-	  notch = in - damp * band;
-	  low = low + freq * band;
-	  high = notch - low;
-	  band = freq * high + band;
+	  f = cutoff[i] / sps * 2.0;
+	  low = low + f * band;
+	  high = scale * input[i] - low - q * band;
+	  band = f * high + band;
+	  notch = high + low;
 	  switch(mode) {
 	  case 0:
 	    out[i] += 0.5 * low;
@@ -75,11 +75,6 @@ namespace lanternfish {
 	    break;
 	  }
 	}
-	kill_denormal(low);
-	kill_denormal(high);
-	kill_denormal(band);
-	kill_denormal(notch);
-	kill_denormal(peak);
       }
     } else {
       for (int i = 0; i < n; i++) {
