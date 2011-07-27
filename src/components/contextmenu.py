@@ -35,7 +35,7 @@ from neil.utils import is_generator, is_root, is_controller, is_effect, \
         prepstr, Menu, new_theme_image, gettext
 from neil.utils import PLUGIN_FLAGS_MASK, ROOT_PLUGIN_FLAGS, \
         GENERATOR_PLUGIN_FLAGS, EFFECT_PLUGIN_FLAGS, CONTROLLER_PLUGIN_FLAGS
-from neil.utils import iconpath
+from neil.utils import iconpath, show_machine_manual, filenameify
 
 class ContextMenu(Menu):
     __neil__ = dict(
@@ -300,6 +300,15 @@ class PluginContextMenu(gtk.Menu):
                 else:
                     menu.add_item(prepstr(cmd), self.on_popup_command,
                                   mp, 0, index)
+        menu.add_separator()
+        menu.add_item("_Help", self.on_machine_help, mp)
+
+    def on_machine_help(self, widget, mp):
+        name = filenameify(mp.get_pluginloader().get_name())
+	if not show_machine_manual(name):
+	    info = gtk.MessageDialog(self.get_toplevel(), flags=0, type=gtk.MESSAGE_INFO, buttons=gtk.BUTTONS_OK, message_format="Sorry, there's no help for this plugin yet")
+	    info.run()
+	    info.destroy()
 
     def on_popup_rename(self, widget, mp):
         text = gettext(self, "Enter new plugin name:", prepstr(mp.get_name()))
