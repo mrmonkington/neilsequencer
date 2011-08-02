@@ -33,7 +33,8 @@ private:
   Gvals gval;
   uint16_t cval;
   static const int tsize = 2048;
-  float rate, min, max;
+  int rate;
+  float min, max;
   inline float lookup(float table[], float phi, float min, float max) {
     float temp = min + table[(int)(phi * tsize)] * (max - min);
     if (temp <= 0.0)
@@ -42,7 +43,6 @@ private:
       return 1.0;
     return temp;
   }
-  float phase;
   float val;
   int table;
   float tables[32][tsize];
