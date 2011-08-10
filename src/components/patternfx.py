@@ -165,7 +165,7 @@ class Expression():
                 error_box.vbox.add(gtk.Label("There was some problem with your expression"))
                 error_box.show_all()
                 error_box.run()
-                error_box.detroy()
+                error_box.destroy()
         return data
 
 
