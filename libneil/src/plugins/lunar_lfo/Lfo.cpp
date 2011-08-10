@@ -15,7 +15,6 @@ LunarLfo::LunarLfo() {
 
 void LunarLfo::init(zzub::archive* pi) {
   val = 0;
-  phase = 0;
   table = 0;
   for (int i = 0; i < tsize; i++) {
     float phase = (float)i / (float)tsize;
@@ -35,7 +34,6 @@ void LunarLfo::process_events() {
     table = gval.wave;
   }
   if (gval.rate != 0xffff) {
-    phase = 0.0;
     rate = gval.rate;
   }
   if (gval.min != 0xffff) {
@@ -44,11 +42,8 @@ void LunarLfo::process_events() {
   if (gval.max != 0xffff) {
     max = gval.max * 0.001f;
   }
-  while (phase >= 1.0) {
-    phase -= 1.0;
-  }
-  val = lookup(tables[table], phase, min, max);
-  phase += 1.0 / rate; 
+  val = lookup(tables[table], (_host->get_play_position() % rate) / float(rate),
+	       min, max);
 }
 
 void LunarLfo::process_controller_events() {
