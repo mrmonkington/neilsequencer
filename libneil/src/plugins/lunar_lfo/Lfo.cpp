@@ -16,6 +16,7 @@ LunarLfo::LunarLfo() {
 void LunarLfo::init(zzub::archive* pi) {
   val = 0;
   table = 0;
+  _host->set_event_handler(_host->get_metaplugin(), this);
   for (int i = 0; i < tsize; i++) {
     float phase = (float)i / (float)tsize;
     // sin
@@ -88,4 +89,12 @@ const char *LunarLfo::describe_value(int param, int value) {
     return 0;
   }
   return txt;
+}
+
+bool LunarLfo::invoke(zzub_event_data_t& data) {
+  if (data.type == zzub::event_type_double_click) {
+    printf("Double click!\n");
+    return true;
+  }
+  return false;
 }

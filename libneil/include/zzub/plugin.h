@@ -174,7 +174,8 @@ namespace zzub {
     plugin_flag_offline = zzub_plugin_flag_offline, 
     plugin_flag_stream = zzub_plugin_flag_stream,
     plugin_flag_has_midi_input = zzub_plugin_flag_has_midi_input,
-    plugin_flag_has_midi_output = zzub_plugin_flag_has_midi_output
+    plugin_flag_has_midi_output = zzub_plugin_flag_has_midi_output,
+    plugin_flag_has_custom_gui = zzub_plugin_flag_has_custom_gui
   };
 
   enum state_flag {

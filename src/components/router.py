@@ -783,12 +783,10 @@ class RouteView(gtk.DrawingArea):
             return
         mp, (x, y), area = res
         if area == AREA_ANY:
-            if mp.get_pluginloader().get_loader_name().startswith("@zzub.org/dssidapter"):
-                data = zzub.zzub_event_data_t()
-                data.type = zzub.zzub_event_type_double_click;
-                if mp.invoke_event(data, 1) != 0:
-                    print "Failed to show DSSI GUI?"
-            else:
+            data = zzub.zzub_event_data_t()
+            data.type = zzub.zzub_event_type_double_click;
+            mp.invoke_event(data, 1)
+            if not (mp.get_flags() & zzub.zzub_plugin_flag_has_custom_gui):
                 com.get('neil.core.parameterdialog.manager').show(mp, self)
 
     def on_left_down(self, widget, event):

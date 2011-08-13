@@ -28,7 +28,7 @@ const char *zzub_get_signature() {
   return ZZUB_SIGNATURE; 
 }
 
-class LunarLfo : public zzub::plugin {
+class LunarLfo : public zzub::plugin, public zzub::event_handler {
 private:
   Gvals gval;
   uint16_t cval;
@@ -46,6 +46,7 @@ private:
   float val;
   int table;
   float tables[32][tsize];
+  virtual bool invoke(zzub_event_data_t& data);
 public:
   LunarLfo();
   virtual ~LunarLfo() {}
@@ -94,6 +95,7 @@ struct LunarLfoInfo : zzub::info {
   LunarLfoInfo() {
     this->flags = 
       zzub::plugin_flag_has_event_output;
+      //zzub::plugin_flag_has_custom_gui;
     this->name = "Lunar Lfo";
     this->short_name = "Lfo";
     this->author = "SoMono";

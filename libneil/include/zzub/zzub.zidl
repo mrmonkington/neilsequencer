@@ -287,6 +287,8 @@ namespace zzub:
 		
 		set no_undo = bit 25 # do not add changes to the history
 		set no_save = bit 26 # do not save this plugin in songs
+		
+		set has_custom_gui = bit 27 # machine draws its own GUI
 
 	enum StateFlag:
 		# player state flags
