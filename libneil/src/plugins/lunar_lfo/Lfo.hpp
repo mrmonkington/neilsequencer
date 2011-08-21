@@ -6,6 +6,8 @@
 #include <cstring>
 #include <string>
 #include <sstream>
+#include <string>
+#include <vector>
 
 #include <zzub/signature.h>
 #include <zzub/plugin.h>
@@ -28,6 +30,74 @@ const char *zzub_get_signature() {
   return ZZUB_SIGNATURE; 
 }
 
+class LfoWave {
+protected:
+  std::string name;
+public:
+  virtual float lookup(float phase) {
+    return 0.0;
+  }
+
+  void set_name(std::string name) {
+    this->name = name;
+  }
+  
+  std::string get_name() {
+    return name;
+  }
+};
+
+class LfoWaveSine : public LfoWave {
+public:
+  LfoWaveSine() {
+    name = "Sine Wave";
+  }
+
+  float lookup(float phase) {
+    return (sin(2.0 * M_PI * phase) + 1.0) * 0.5;
+  }
+};
+
+class LfoWaveSaw : public LfoWave {
+public:
+  LfoWaveSaw() {
+    name = "Saw Wave";
+  }
+
+  float lookup(float phase) {
+    return phase;
+  }
+};
+
+class LfoWaveSquare : public LfoWave {
+public:
+  LfoWaveSquare() {
+    name = "Square Wave";
+  }
+
+  float lookup(float phase) {
+    return phase < 0.5 ? 0.0 : 1.0;
+  }
+};
+
+class LfoWaveTriangle : public LfoWave {
+public:
+  LfoWaveTriangle() {
+    name = "Triangle Wave";
+  }
+
+  float lookup(float phase) {
+    return phase < 0.5 ? phase * 2.0 : (1.0 - phase) * 2.0;
+  }
+};
+
+static struct DrawingData {
+  LfoWave *wave;
+  float phase;
+  float min;
+  float max;
+} drawing_data;
+
 class LunarLfo : public zzub::plugin, public zzub::event_handler {
 private:
   Gvals gval;
@@ -46,8 +116,15 @@ private:
   float val;
   int table;
   float tables[32][tsize];
+  LfoWave* lfo_shapes[4];
   virtual bool invoke(zzub_event_data_t& data);
+  // GUI stuff
+  GtkWidget *drawing_box;
+  GtkWidget *window;
+  void redraw_box();
+  void update_drawing_data();
 public:
+  static gboolean expose_handler(GtkWidget *widget, GdkEventExpose *event, gpointer wave);
   LunarLfo();
   virtual ~LunarLfo() {}
   virtual void init(zzub::archive* pi);
@@ -59,7 +136,7 @@ public:
 			       int *samplerate) { return false; }
   virtual const char * describe_value(int param, int value); 
   virtual void process_controller_events();
-  virtual void destroy() {}
+  virtual void destroy();
   virtual void stop() {}
   virtual void load(zzub::archive *arc) {}
   virtual void save(zzub::archive*) {}
@@ -95,7 +172,6 @@ struct LunarLfoInfo : zzub::info {
   LunarLfoInfo() {
     this->flags = 
       zzub::plugin_flag_has_event_output;
-      //zzub::plugin_flag_has_custom_gui;
     this->name = "Lunar Lfo";
     this->short_name = "Lfo";
     this->author = "SoMono";
