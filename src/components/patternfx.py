@@ -18,7 +18,7 @@ class SimpleRandom():
         for row in range(len(data)):
             a = parameter.get_value_min()
             b = parameter.get_value_max()
-            value = random.randint(a, b)
+            value = randint(a, b)
             data[row] = value
         return data
 
@@ -70,10 +70,10 @@ class RandomWalk():
         if response:
             for row in range(len(data)):
                 data[row] = int(value)
-                if random.randint(0, 1) == 0:
-                    value += random.randint(min_step, max_step)
+                if randint(0, 1) == 0:
+                    value += randint(min_step, max_step)
                 else:
-                    value -= random.randint(min_step, max_step)
+                    value -= randint(min_step, max_step)
                 while (value > parameter.get_value_max() or
                        value < parameter.get_value_min()):
                     if value > parameter.get_value_max():
