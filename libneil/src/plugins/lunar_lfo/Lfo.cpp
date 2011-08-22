@@ -48,7 +48,7 @@ void LunarLfo::destroy() {
 
 void LunarLfo::update_drawing_data() {
   drawing_data.wave = lfo_shapes[table];
-  drawing_data.phase = (_host->get_play_position() % rate) / float(rate);
+  drawing_data.phase = ((_host->get_play_position() + offset) % rate) / float(rate);
   drawing_data.min = min;
   drawing_data.max = max;
 }
@@ -56,6 +56,9 @@ void LunarLfo::update_drawing_data() {
 void LunarLfo::process_events() {
   if (gval.wave != 0xff) {
     table = gval.wave;
+  }
+  if (gval.offset != 0xff) {
+    offset = gval.offset;
   }
   if (gval.rate != 0xffff) {
     rate = gval.rate;
@@ -66,7 +69,7 @@ void LunarLfo::process_events() {
   if (gval.max != 0xffff) {
     max = gval.max * 0.001f;
   }
-  val = lookup(tables[table], (_host->get_play_position() % rate) / float(rate),
+  val = lookup(tables[table], ((_host->get_play_position() + offset) % rate) / float(rate),
 	       min, max);
   update_drawing_data();
   redraw_box();
@@ -104,10 +107,11 @@ const char *LunarLfo::describe_value(int param, int value) {
     }
     break;
   case 1:
+  case 2:
     sprintf(txt, "%d", value);
     break;
-  case 2:
   case 3:
+  case 4:
     sprintf(txt, "%.2f", value * 0.001f);
     break;
   default:
