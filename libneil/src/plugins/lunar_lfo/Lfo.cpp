@@ -147,6 +147,21 @@ gboolean LunarLfo::expose_handler(GtkWidget *widget, GdkEventExpose *event, gpoi
   return TRUE;
 }
 
+gboolean LunarLfo::mouse_click_handler(GtkWidget *widget, GdkEventButton *event, gpointer ddata) {
+  DrawingData *data = (DrawingData *)ddata;
+  if (event->button == 1) {
+    printf("Left button pressed.\n");
+  } else if (event->button == 3) {
+    printf("Right button pressed.\n");
+  }
+  return TRUE;
+}
+
+gboolean LunarLfo::mouse_release_handler(GtkWidget *widget, GdkEventButton *event, gpointer ddata) {
+  printf("Mouse release!\n");
+  return TRUE;
+}
+
 void LunarLfo::redraw_box() {
   if (window) {
     gtk_widget_queue_draw_area(GTK_WIDGET(drawing_box), 0, 0, 
@@ -160,7 +175,14 @@ bool LunarLfo::invoke(zzub_event_data_t& data) {
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_keep_above(GTK_WINDOW(window), TRUE);
     drawing_box = gtk_drawing_area_new();
-    gtk_signal_connect(GTK_OBJECT(drawing_box), "expose-event", GTK_SIGNAL_FUNC(&expose_handler), (gpointer)(&drawing_data));
+    gtk_widget_set_events(drawing_box, GDK_EXPOSURE_MASK
+			  | GDK_BUTTON_PRESS_MASK);
+    gtk_signal_connect(GTK_OBJECT(drawing_box), "expose-event", 
+		       GTK_SIGNAL_FUNC(&expose_handler), (gpointer)(&drawing_data));
+    gtk_signal_connect(GTK_OBJECT(drawing_box), "button-press-event", 
+		       GTK_SIGNAL_FUNC(&mouse_click_handler), (gpointer)(&drawing_data));
+    gtk_signal_connect(GTK_OBJECT(drawing_box), "button-release-event", 
+		       GTK_SIGNAL_FUNC(&mouse_release_handler), (gpointer)(&drawing_data));
     gtk_widget_set_size_request(drawing_box, 200, 200);
     gtk_container_add(GTK_CONTAINER(window), drawing_box);
     gtk_widget_show(drawing_box);

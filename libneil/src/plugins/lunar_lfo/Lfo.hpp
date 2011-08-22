@@ -125,6 +125,8 @@ private:
   void update_drawing_data();
 public:
   static gboolean expose_handler(GtkWidget *widget, GdkEventExpose *event, gpointer wave);
+  static gboolean mouse_click_handler(GtkWidget *widget, GdkEventButton *event, gpointer ddata);
+  static gboolean mouse_release_handler(GtkWidget *widget, GdkEventButton *event, gpointer ddata);
   LunarLfo();
   virtual ~LunarLfo() {}
   virtual void init(zzub::archive* pi);
