@@ -37,6 +37,7 @@ void LunarLfo::init(zzub::archive* pi) {
   lfo_shapes[1] = new LfoWaveSaw();
   lfo_shapes[2] = new LfoWaveSquare();
   lfo_shapes[3] = new LfoWaveTriangle();
+  drawing_data.host = _host;
 }
 
 void LunarLfo::destroy() {
@@ -150,9 +151,15 @@ gboolean LunarLfo::expose_handler(GtkWidget *widget, GdkEventExpose *event, gpoi
 gboolean LunarLfo::mouse_click_handler(GtkWidget *widget, GdkEventButton *event, gpointer ddata) {
   DrawingData *data = (DrawingData *)ddata;
   if (event->button == 1) {
-    printf("Left button pressed.\n");
+    int value = data->host->get_parameter(data->host->get_metaplugin(), 1, 0, 0);
+    data->host->set_parameter(data->host->get_metaplugin(), 1, 0, 0, (value + 1) % n_shapes);
   } else if (event->button == 3) {
-    printf("Right button pressed.\n");
+    int value = data->host->get_parameter(data->host->get_metaplugin(), 1, 0, 0);
+    value -= 1;
+    if (value < 0) {
+      value = n_shapes - 1;
+    }
+    data->host->set_parameter(data->host->get_metaplugin(), 1, 0, 0, value);
   }
   return TRUE;
 }

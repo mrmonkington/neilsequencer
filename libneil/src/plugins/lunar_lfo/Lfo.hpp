@@ -96,7 +96,10 @@ static struct DrawingData {
   float phase;
   float min;
   float max;
+  zzub::host *host;
 } drawing_data;
+
+static int n_shapes = 4;
 
 class LunarLfo : public zzub::plugin, public zzub::event_handler {
 private:

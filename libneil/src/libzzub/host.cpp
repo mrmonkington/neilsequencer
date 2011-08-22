@@ -385,6 +385,10 @@ namespace zzub {
     return plugin_player->plugin_get_parameter(_metaplugin->id, group, track, param);
   }
 
+  void host::set_parameter(metaplugin_proxy* _metaplugin, int group, int track, int param, int value) {
+    plugin_player->plugin_set_parameter_direct(_metaplugin->id, group, track, param, value, false);
+  }
+
   plugin *host::get_plugin(metaplugin_proxy* _metaplugin) {
     return plugin_player->plugins[_metaplugin->id]->plugin;//_metaplugin->plugin;
   }
