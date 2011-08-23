@@ -93,13 +93,13 @@ public:
   }
 };
 
-static struct DrawingData {
+struct DrawingData {
   LfoWave *wave;
   float phase;
   float min;
   float max;
   zzub::host *host;
-} drawing_data;
+};
 
 static int n_shapes = 4;
 
@@ -128,6 +128,7 @@ private:
   GtkWidget *window;
   void redraw_box();
   void update_drawing_data();
+  DrawingData drawing_data;
 public:
   static gboolean expose_handler(GtkWidget *widget, GdkEventExpose *event, gpointer wave);
   static gboolean mouse_click_handler(GtkWidget *widget, GdkEventButton *event, gpointer ddata);
