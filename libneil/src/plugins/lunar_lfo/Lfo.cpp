@@ -152,24 +152,72 @@ gboolean LunarLfo::expose_handler(GtkWidget *widget, GdkEventExpose *event, gpoi
   return TRUE;
 }
 
+bool LunarLfo::near_min_bar(GtkWidget *widget, int y, void *ddata) {
+  DrawingData *data = (DrawingData *)ddata;
+  int h = widget->allocation.height;
+  int min_y = h - h * data->min;
+  return ((y > min_y - 5) && (y < min_y + 5));
+}
+
+bool LunarLfo::near_max_bar(GtkWidget *widget, int y, void *ddata) {
+  DrawingData *data = (DrawingData *)ddata;
+  int h = widget->allocation.height;
+  int max_y = h - h * data->max;
+  return ((y > max_y - 5) && (y < max_y + 5));
+}
+
 gboolean LunarLfo::mouse_click_handler(GtkWidget *widget, GdkEventButton *event, gpointer ddata) {
   DrawingData *data = (DrawingData *)ddata;
-  if (event->button == 1) {
-    int value = data->host->get_parameter(data->host->get_metaplugin(), 1, 0, 0);
-    data->host->set_parameter(data->host->get_metaplugin(), 1, 0, 0, (value + 1) % n_shapes);
-  } else if (event->button == 3) {
-    int value = data->host->get_parameter(data->host->get_metaplugin(), 1, 0, 0);
-    value -= 1;
-    if (value < 0) {
-      value = n_shapes - 1;
+  if (near_min_bar(widget, event->y, ddata)) {
+    data->min_bar_drag_start = true;
+    data->max_bar_drag_start = false;
+  }
+  if (near_max_bar(widget, event->y, ddata)) {
+    data->min_bar_drag_start = false;
+    data->max_bar_drag_start = true;
+  }
+  return TRUE;
+}
+
+gboolean LunarLfo::mouse_motion_handler(GtkWidget *widget, GdkEventMotion *event, gpointer ddata) {
+  DrawingData *data = (DrawingData *)ddata;
+  int h = widget->allocation.height;
+  if (data->min_bar_drag_start) {
+    if (event->y <= h && event->y >= 0) {
+      float value = (h - event->y) / float(h);
+      data->host->set_parameter(data->host->get_metaplugin(), 1, 0, 3, value * para_min->value_max);
     }
-    data->host->set_parameter(data->host->get_metaplugin(), 1, 0, 0, value);
+  } else if (data->max_bar_drag_start) {
+    if (event->y <= h && event->y >= 0) {
+      float value = (h - event->y) / float(h);
+      data->host->set_parameter(data->host->get_metaplugin(), 1, 0, 4, value * para_max->value_max);
+    }
+  } else if (near_min_bar(widget, event->y, ddata) || near_max_bar(widget, event->y, ddata)) {
+    gdk_window_set_cursor(widget->window, gdk_cursor_new_for_display(gtk_widget_get_display(widget), GDK_DOUBLE_ARROW));
+  } else {
+    gdk_window_set_cursor(widget->window, gdk_cursor_new_for_display(gtk_widget_get_display(widget), GDK_ARROW));
   }
   return TRUE;
 }
 
 gboolean LunarLfo::mouse_release_handler(GtkWidget *widget, GdkEventButton *event, gpointer ddata) {
-  printf("Mouse release!\n");
+  DrawingData *data = (DrawingData *)ddata;
+  if (!(data->min_bar_drag_start) && !(data->max_bar_drag_start)) {
+    if (event->button == 1) {
+      int value = data->host->get_parameter(data->host->get_metaplugin(), 1, 0, 0);
+      data->host->set_parameter(data->host->get_metaplugin(), 1, 0, 0, (value + 1) % n_shapes);
+    } else if (event->button == 3) {
+      int value = data->host->get_parameter(data->host->get_metaplugin(), 1, 0, 0);
+      value -= 1;
+      if (value < 0) {
+	value = n_shapes - 1;
+      }
+      data->host->set_parameter(data->host->get_metaplugin(), 1, 0, 0, value);
+    }
+  } else {
+    data->min_bar_drag_start = false;
+    data->max_bar_drag_start = false;
+  }
   return TRUE;
 }
 
@@ -187,13 +235,17 @@ bool LunarLfo::invoke(zzub_event_data_t& data) {
     gtk_window_set_keep_above(GTK_WINDOW(window), TRUE);
     drawing_box = gtk_drawing_area_new();
     gtk_widget_set_events(drawing_box, GDK_EXPOSURE_MASK
-			  | GDK_BUTTON_PRESS_MASK);
+			  | GDK_BUTTON_PRESS_MASK
+			  | GDK_BUTTON_RELEASE_MASK
+			  | GDK_POINTER_MOTION_MASK);
     gtk_signal_connect(GTK_OBJECT(drawing_box), "expose-event", 
 		       GTK_SIGNAL_FUNC(&expose_handler), (gpointer)(&drawing_data));
     gtk_signal_connect(GTK_OBJECT(drawing_box), "button-press-event", 
 		       GTK_SIGNAL_FUNC(&mouse_click_handler), (gpointer)(&drawing_data));
     gtk_signal_connect(GTK_OBJECT(drawing_box), "button-release-event", 
 		       GTK_SIGNAL_FUNC(&mouse_release_handler), (gpointer)(&drawing_data));
+    gtk_signal_connect(GTK_OBJECT(drawing_box), "motion-notify-event",
+		       GTK_SIGNAL_FUNC(&mouse_motion_handler), (gpointer)(&drawing_data));
     gtk_widget_set_size_request(drawing_box, 200, 200);
     gtk_container_add(GTK_CONTAINER(window), drawing_box);
     gtk_widget_show(drawing_box);

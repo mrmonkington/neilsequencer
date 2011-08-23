@@ -99,6 +99,8 @@ struct DrawingData {
   float min;
   float max;
   zzub::host *host;
+  bool min_bar_drag_start;
+  bool max_bar_drag_start;
 };
 
 static int n_shapes = 4;
@@ -128,11 +130,14 @@ private:
   GtkWidget *window;
   void redraw_box();
   void update_drawing_data();
-  DrawingData drawing_data;
 public:
+  DrawingData drawing_data;
   static gboolean expose_handler(GtkWidget *widget, GdkEventExpose *event, gpointer wave);
   static gboolean mouse_click_handler(GtkWidget *widget, GdkEventButton *event, gpointer ddata);
   static gboolean mouse_release_handler(GtkWidget *widget, GdkEventButton *event, gpointer ddata);
+  static gboolean mouse_motion_handler(GtkWidget *widget, GdkEventMotion *event, gpointer ddata);
+  static bool near_min_bar(GtkWidget *widget, int y, void *ddata);
+  static bool near_max_bar(GtkWidget *widget, int y, void *ddata);
   LunarLfo();
   virtual ~LunarLfo() {}
   virtual void init(zzub::archive* pi);
