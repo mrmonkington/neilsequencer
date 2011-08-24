@@ -221,8 +221,18 @@ gboolean LunarLfo::mouse_release_handler(GtkWidget *widget, GdkEventButton *even
   return TRUE;
 }
 
+gboolean LunarLfo::offset_slider_set(GtkRange *range, gpointer ddata) {
+  printf("%.4f\n", gtk_range_get_value(range));
+  return TRUE;
+}
+
+gboolean LunarLfo::rate_slider_set(GtkRange *range, gpointer ddata) {
+  printf("%.4f\n", gtk_range_get_value(range));
+  return TRUE;
+}
+
 void LunarLfo::redraw_box() {
-  if (window) {
+  if (window && drawing_box) {
     gtk_widget_queue_draw_area(GTK_WIDGET(drawing_box), 0, 0, 
 			       drawing_box->allocation.width,
 			       drawing_box->allocation.height);
@@ -231,6 +241,10 @@ void LunarLfo::redraw_box() {
 
 bool LunarLfo::invoke(zzub_event_data_t& data) {
   if (data.type == zzub::event_type_double_click) {
+    GtkWidget *vbox = gtk_vbox_new(FALSE, 0);
+    GtkWidget *offset_slider = gtk_hscale_new_with_range(0, 512, 1);
+    GtkWidget *rate_slider = gtk_hscale_new_with_range(0, 512, 1);
+    GtkWidget *drag_button = gtk_button_new_with_label("Drag to connect");
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_keep_above(GTK_WINDOW(window), TRUE);
     drawing_box = gtk_drawing_area_new();
@@ -239,16 +253,34 @@ bool LunarLfo::invoke(zzub_event_data_t& data) {
 			  | GDK_BUTTON_RELEASE_MASK
 			  | GDK_POINTER_MOTION_MASK);
     gtk_signal_connect(GTK_OBJECT(drawing_box), "expose-event", 
-		       GTK_SIGNAL_FUNC(&expose_handler), (gpointer)(&drawing_data));
+		       GTK_SIGNAL_FUNC(&expose_handler), 
+		       (gpointer)(&drawing_data));
     gtk_signal_connect(GTK_OBJECT(drawing_box), "button-press-event", 
-		       GTK_SIGNAL_FUNC(&mouse_click_handler), (gpointer)(&drawing_data));
+		       GTK_SIGNAL_FUNC(&mouse_click_handler), 
+		       (gpointer)(&drawing_data));
     gtk_signal_connect(GTK_OBJECT(drawing_box), "button-release-event", 
-		       GTK_SIGNAL_FUNC(&mouse_release_handler), (gpointer)(&drawing_data));
+		       GTK_SIGNAL_FUNC(&mouse_release_handler), 
+		       (gpointer)(&drawing_data));
     gtk_signal_connect(GTK_OBJECT(drawing_box), "motion-notify-event",
-		       GTK_SIGNAL_FUNC(&mouse_motion_handler), (gpointer)(&drawing_data));
+		       GTK_SIGNAL_FUNC(&mouse_motion_handler), 
+		       (gpointer)(&drawing_data));
+    gtk_signal_connect(GTK_OBJECT(offset_slider), "value-changed",
+		       GTK_SIGNAL_FUNC(&offset_slider_set),
+		       (gpointer)(&drawing_data));
+    gtk_signal_connect(GTK_OBJECT(rate_slider), "value-changed",
+		       GTK_SIGNAL_FUNC(&rate_slider_set),
+		       (gpointer)(&drawing_data));
     gtk_widget_set_size_request(drawing_box, 200, 200);
-    gtk_container_add(GTK_CONTAINER(window), drawing_box);
+    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(drawing_box), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(offset_slider), FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(rate_slider), FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(drag_button), FALSE, FALSE, 0);
+    gtk_container_add(GTK_CONTAINER(window), vbox);
     gtk_widget_show(drawing_box);
+    gtk_widget_show(offset_slider);
+    gtk_widget_show(rate_slider);
+    gtk_widget_show(drag_button);
+    gtk_widget_show(vbox);
     gtk_window_set_title(GTK_WINDOW(window), "Lunar LFO");
     gtk_widget_show(window);
     return true;

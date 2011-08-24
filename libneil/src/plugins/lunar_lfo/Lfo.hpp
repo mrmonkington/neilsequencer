@@ -138,6 +138,8 @@ public:
   static gboolean mouse_motion_handler(GtkWidget *widget, GdkEventMotion *event, gpointer ddata);
   static bool near_min_bar(GtkWidget *widget, int y, void *ddata);
   static bool near_max_bar(GtkWidget *widget, int y, void *ddata);
+  static gboolean offset_slider_set(GtkRange *range, gpointer ddata);
+  static gboolean rate_slider_set(GtkRange *range, gpointer ddata);
   LunarLfo();
   virtual ~LunarLfo() {}
   virtual void init(zzub::archive* pi);
