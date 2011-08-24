@@ -14,7 +14,7 @@
 
 struct Gvals {
   uint8_t wave;
-  uint8_t offset;
+  uint16_t offset;
   uint16_t rate;
   uint16_t min;
   uint16_t max;
@@ -210,12 +210,12 @@ struct LunarLfoInfo : zzub::info {
       .set_value_default(0)
       .set_state_flag();
     para_offset = &add_global_parameter()
-      .set_byte()
+      .set_word()
       .set_name("Offset")
       .set_description("Lfo offset")
       .set_value_min(0)
-      .set_value_max(64)
-      .set_value_none(0xff)
+      .set_value_max(512)
+      .set_value_none(0xffff)
       .set_value_default(0)
       .set_state_flag();
     para_rate = &add_global_parameter()
