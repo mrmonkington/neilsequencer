@@ -255,7 +255,9 @@ bool LunarLfo::invoke(zzub_event_data_t& data) {
   if (data.type == zzub::event_type_double_click) {
     GtkWidget *vbox = gtk_vbox_new(FALSE, 0);
     offset_slider = gtk_hscale_new_with_range(0, 256, 1);
+    gtk_widget_set_tooltip_text(GTK_WIDGET(offset_slider), "Offset");
     rate_slider = gtk_hscale_new_with_range(2, 256, 1);
+    gtk_widget_set_tooltip_text(GTK_WIDGET(rate_slider), "Rate");
     GtkWidget *drag_button = gtk_button_new_with_label("Drag to connect");
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_keep_above(GTK_WINDOW(window), TRUE);
