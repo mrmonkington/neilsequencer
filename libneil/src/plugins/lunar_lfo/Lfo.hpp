@@ -101,6 +101,8 @@ struct DrawingData {
   zzub::host *host;
   bool min_bar_drag_start;
   bool max_bar_drag_start;
+  int offset;
+  int rate;
 };
 
 static int n_shapes = 4;
@@ -128,6 +130,8 @@ private:
   // GUI stuff
   GtkWidget *drawing_box;
   GtkWidget *window;
+  GtkWidget *offset_slider;
+  GtkWidget *rate_slider;
   void redraw_box();
   void update_drawing_data();
 public:

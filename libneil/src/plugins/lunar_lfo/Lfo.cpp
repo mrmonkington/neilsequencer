@@ -51,22 +51,24 @@ void LunarLfo::update_drawing_data() {
   drawing_data.phase = ((_host->get_play_position() + offset) % rate) / float(rate);
   drawing_data.min = min;
   drawing_data.max = max;
+  drawing_data.offset = offset;
+  drawing_data.rate = rate;
 }
 
 void LunarLfo::process_events() {
-  if (gval.wave != 0xff) {
+  if (gval.wave != para_wave->value_none) {
     table = gval.wave;
   }
-  if (gval.offset != 0xff) {
+  if (gval.offset != para_offset->value_none) {
     offset = gval.offset;
   }
-  if (gval.rate != 0xffff) {
+  if (gval.rate != para_rate->value_none) {
     rate = gval.rate;
   }
-  if (gval.min != 0xffff) {
+  if (gval.min != para_min->value_none) {
     min = gval.min * 0.001f;
   }
-  if (gval.max != 0xffff) {
+  if (gval.max != para_max->value_none) {
     max = gval.max * 0.001f;
   }
   val = lookup(tables[table], ((_host->get_play_position() + offset) % rate) / float(rate),
@@ -241,13 +243,19 @@ void LunarLfo::redraw_box() {
 			       drawing_box->allocation.width,
 			       drawing_box->allocation.height);
   }
+  if (gtk_range_get_value(GTK_RANGE(offset_slider)) != drawing_data.offset) {
+    gtk_range_set_value(GTK_RANGE(offset_slider), drawing_data.offset);
+  }
+  if (gtk_range_get_value(GTK_RANGE(rate_slider)) != drawing_data.rate) {
+    gtk_range_set_value(GTK_RANGE(rate_slider), drawing_data.rate);
+  }
 }
 
 bool LunarLfo::invoke(zzub_event_data_t& data) {
   if (data.type == zzub::event_type_double_click) {
     GtkWidget *vbox = gtk_vbox_new(FALSE, 0);
-    GtkWidget *offset_slider = gtk_hscale_new_with_range(0, 512, 1);
-    GtkWidget *rate_slider = gtk_hscale_new_with_range(2, 512, 1);
+    offset_slider = gtk_hscale_new_with_range(0, 256, 1);
+    rate_slider = gtk_hscale_new_with_range(2, 256, 1);
     GtkWidget *drag_button = gtk_button_new_with_label("Drag to connect");
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_keep_above(GTK_WINDOW(window), TRUE);
