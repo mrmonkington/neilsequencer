@@ -75,6 +75,10 @@ void Degrade::process_events() {
 bool Degrade::process_stereo(float **pin, float **pout, int sampleFrames, int mode) {
   float *in1 = pin[0];
   float *in2 = pin[1];
+  if (!zzub::buffer_has_signals(in1, sampleFrames) &&
+      !zzub::buffer_has_signals(in2, sampleFrames)) {
+    return false;
+  }
   float *out1 = pout[0];
   float *out2 = pout[1];
   float b0 = buf0, l = lin, l2 = lin2;
