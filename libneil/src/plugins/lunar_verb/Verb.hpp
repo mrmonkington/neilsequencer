@@ -43,6 +43,7 @@ private:
       return 0.0f;
     return pow(10.0f, db / 20.0f);
   }
+  bool last_empty;
 public:
   LunarVerb();
   virtual ~LunarVerb() {}

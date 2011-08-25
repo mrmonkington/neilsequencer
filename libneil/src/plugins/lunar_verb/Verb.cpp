@@ -36,7 +36,18 @@ void LunarVerb::process_events() {
 }
 
 bool LunarVerb::process_stereo(float **pin, float **pout, int n, int mode) {
+  if (last_empty &&
+      !zzub::buffer_has_signals(pin[0], n) &&
+      !zzub::buffer_has_signals(pin[1], n)) {
+    return false;
+  }
   processreplace(pin[0], pin[1], pout[0], pout[1], n, 1);
+  if (!zzub::buffer_has_signals(pout[0], n) &&
+      !zzub::buffer_has_signals(pout[1], n)) {
+    last_empty = true;
+  } else {
+    last_empty = false;
+  }
   return true;
 }
 
