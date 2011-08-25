@@ -266,6 +266,11 @@ bool LunarLfo::invoke(zzub_event_data_t& data) {
 			  | GDK_BUTTON_PRESS_MASK
 			  | GDK_BUTTON_RELEASE_MASK
 			  | GDK_POINTER_MOTION_MASK);
+    gtk_drag_source_set(GTK_WIDGET(drag_button), 
+			(GdkModifierType)(GDK_BUTTON1_MASK | GDK_BUTTON3_MASK),
+			&drag_targets,
+			1,
+			GDK_ACTION_COPY);
     gtk_signal_connect(GTK_OBJECT(drawing_box), "expose-event", 
 		       GTK_SIGNAL_FUNC(&expose_handler), 
 		       (gpointer)(&drawing_data));
