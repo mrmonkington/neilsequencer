@@ -146,6 +146,9 @@ public:
   static gboolean mouse_click_handler(GtkWidget *widget, GdkEventButton *event, gpointer ddata);
   static gboolean mouse_release_handler(GtkWidget *widget, GdkEventButton *event, gpointer ddata);
   static gboolean mouse_motion_handler(GtkWidget *widget, GdkEventMotion *event, gpointer ddata);
+  static gboolean on_drag_data_get(GtkWidget*, GdkDragContext*, gint, gint, GtkSelectionData*, guint, guint, gpointer);
+  static gboolean on_drag_data_delete(GtkWidget*, GdkDragContext*, gpointer);
+  static gboolean on_drag_end(GtkWidget*, GdkDragContext*, gpointer);
   static bool near_min_bar(GtkWidget *widget, int y, void *ddata);
   static bool near_max_bar(GtkWidget *widget, int y, void *ddata);
   static gboolean offset_slider_set(GtkRange *range, gpointer ddata);

@@ -237,6 +237,30 @@ gboolean LunarLfo::rate_slider_set(GtkRange *range, gpointer ddata) {
   return TRUE;
 }
 
+gboolean LunarLfo::on_drag_data_get(GtkWidget *widget,
+				    GdkDragContext *drag_context,
+				    gint x, gint y,
+				    GtkSelectionData *data,
+				    guint info, guint time,
+				    gpointer ddata) {
+  printf("LunarLfo::on_drag_data_get()\n");
+  return TRUE;
+}
+
+gboolean LunarLfo::on_drag_data_delete(GtkWidget *widget,
+				       GdkDragContext *drag_context,
+				       gpointer ddata) {
+  printf("LunarLfo::on_drag_data_delete()\n");
+  return TRUE;
+}
+
+gboolean LunarLfo::on_drag_end(GtkWidget *widget,
+			       GdkDragContext *drag_context,
+			       gpointer ddata) {
+  printf("LunarLfo::on_drag_data_end()\n");
+  return TRUE;
+}
+
 void LunarLfo::redraw_box() {
   if (window && drawing_box) {
     gtk_widget_queue_draw_area(GTK_WIDGET(drawing_box), 0, 0, 
@@ -288,6 +312,15 @@ bool LunarLfo::invoke(zzub_event_data_t& data) {
 		       (gpointer)(&drawing_data));
     gtk_signal_connect(GTK_OBJECT(rate_slider), "value-changed",
 		       GTK_SIGNAL_FUNC(&rate_slider_set),
+		       (gpointer)(&drawing_data));
+    gtk_signal_connect(GTK_OBJECT(drag_button), "drag-data-get",
+		       GTK_SIGNAL_FUNC(&on_drag_data_get),
+		       (gpointer)(&drawing_data));
+    gtk_signal_connect(GTK_OBJECT(drag_button), "drag-data-delete",
+		       GTK_SIGNAL_FUNC(&on_drag_data_delete),
+		       (gpointer)(&drawing_data));
+    gtk_signal_connect(GTK_OBJECT(drag_button), "drag-end",
+		       GTK_SIGNAL_FUNC(&on_drag_end),
 		       (gpointer)(&drawing_data));
     gtk_widget_set_size_request(drawing_box, 300, 200);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(drawing_box), TRUE, TRUE, 0);
