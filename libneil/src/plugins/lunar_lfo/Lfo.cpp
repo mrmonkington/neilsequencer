@@ -243,7 +243,12 @@ gboolean LunarLfo::on_drag_data_get(GtkWidget *widget,
 				    GtkSelectionData *data,
 				    guint info, guint time,
 				    gpointer ddata) {
-  printf("LunarLfo::on_drag_data_get()\n");
+  printf("%d\n", info);
+  if (info == 0) {
+    static char *text;
+    sprintf(text, "(I%d\nI3\nI0\nI0\nt.", 0);
+    printf("%s", text);
+  }
   return TRUE;
 }
 

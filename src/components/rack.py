@@ -329,6 +329,7 @@ class ParameterView(gtk.VBox):
     def on_drag_data_get(self, btn, context, selection_data, info, time, (g,t,i)):
 	if info == self.DROP_TARGET_CTRL_SLIDER:
 	    text = cPickle.dumps((hash(self.plugin), g, t, i))
+            print text
 	    selection_data.set(selection_data.target, 8, text)
 
     def on_drag_data_delete(self, btn, context, data, (g,t,i)):
