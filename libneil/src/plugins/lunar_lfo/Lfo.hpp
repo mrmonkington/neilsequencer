@@ -200,7 +200,8 @@ public:
 struct LunarLfoInfo : zzub::info {
   LunarLfoInfo() {
     this->flags = 
-      zzub::plugin_flag_has_event_output;
+      zzub::plugin_flag_has_event_output |
+      zzub::plugin_flag_has_custom_gui;
     this->name = "Lunar Lfo";
     this->short_name = "Lfo";
     this->author = "SoMono";
