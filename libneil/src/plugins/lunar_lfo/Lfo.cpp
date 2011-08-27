@@ -17,33 +17,27 @@ LunarLfo::LunarLfo() {
   attributes = 0;
   drawing_box = 0;
   window = 0;
-}
-
-void LunarLfo::init(zzub::archive* pi) {
-  val = 0;
   table = 0;
-  _host->set_event_handler(_host->get_metaplugin(), this);
-  for (int i = 0; i < tsize; i++) {
-    float phase = (float)i / (float)tsize;
-    // sin
-    tables[0][i] = (sin(2 * M_PI * phase) + 1.0) * 0.5;
-    // saw
-    tables[1][i] = phase;
-    // sqr
-    tables[2][i] = phase < 0.5 ? 0.0 : 1.0;
-    // tri
-    tables[3][i] = phase < 0.5 ? phase * 2.0 : (1.0 - phase) * 2.0;
-  }
+  val = 0;
   lfo_shapes[0] = new LfoWaveSine();
   lfo_shapes[1] = new LfoWaveSaw();
   lfo_shapes[2] = new LfoWaveSquare();
   lfo_shapes[3] = new LfoWaveTriangle();
+  lfo_shapes[4] = new LfoWaveTriangle1();
+  lfo_shapes[5] = new LfoWaveTriangle2();
+  lfo_shapes[6] = new LfoWaveSineSaw();
+  lfo_shapes[7] = new LfoWaveSineSqr();
+  lfo_shapes[8] = new LfoWaveRandom();
+}
+
+void LunarLfo::init(zzub::archive* pi) {
+  _host->set_event_handler(_host->get_metaplugin(), this);
   drawing_data.host = _host;
   drawing_data.id = _host->get_plugin_id(_host->get_metaplugin());
 }
 
 void LunarLfo::destroy() {
-  for (int i = 0; i < 4; i++) {
+  for (int i = 0; i < n_shapes; i++) {
     delete lfo_shapes[i];
   }
 }
@@ -73,8 +67,7 @@ void LunarLfo::process_events() {
   if (gval.max != para_max->value_none) {
     max = gval.max * 0.001f;
   }
-  val = lookup(tables[table], ((_host->get_play_position() + offset) % rate) / float(rate),
-	       min, max);
+  val = min + lfo_shapes[table]->lookup(((_host->get_play_position() + offset) % rate) / float(rate)) * (max - min);
   update_drawing_data();
   redraw_box();
 }
@@ -92,23 +85,7 @@ const char *LunarLfo::describe_value(int param, int value) {
   static char txt[20];
   switch (param) {
   case 0:
-    switch(value) {
-    case 0:
-      sprintf(txt, "Sine");
-      break;
-    case 1:
-      sprintf(txt, "Saw");
-      break;
-    case 2:
-      sprintf(txt, "Square");
-      break;
-    case 3:
-      sprintf(txt, "Triangle");
-      break;
-    default:
-      sprintf(txt, "???");
-      break;
-    }
+    sprintf(txt, lfo_shapes[table]->get_name().c_str());
     break;
   case 1:
   case 2:
@@ -268,16 +245,10 @@ gboolean LunarLfo::on_drag_end(GtkWidget *widget,
 }
 
 void LunarLfo::redraw_box() {
-  if (window && drawing_box) {
+  if (drawing_box) {
     gtk_widget_queue_draw_area(GTK_WIDGET(drawing_box), 0, 0, 
 			       drawing_box->allocation.width,
 			       drawing_box->allocation.height);
-  }
-  if (gtk_range_get_value(GTK_RANGE(offset_slider)) != drawing_data.offset) {
-    gtk_range_set_value(GTK_RANGE(offset_slider), drawing_data.offset);
-  }
-  if (gtk_range_get_value(GTK_RANGE(rate_slider)) != drawing_data.rate) {
-    gtk_range_set_value(GTK_RANGE(rate_slider), drawing_data.rate);
   }
 }
 
@@ -343,6 +314,13 @@ bool LunarLfo::invoke(zzub_event_data_t& data) {
     gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_MOUSE);
     gtk_widget_show(window);
     return true;
+  } else if (data.type == zzub::event_type_parameter_changed) {
+    if (offset_slider) {
+      gtk_range_set_value(GTK_RANGE(offset_slider), drawing_data.offset);
+    }
+    if (rate_slider) {
+      gtk_range_set_value(GTK_RANGE(rate_slider), drawing_data.rate);
+    }
   }
   return false;
 }

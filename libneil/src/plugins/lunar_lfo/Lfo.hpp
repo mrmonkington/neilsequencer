@@ -52,7 +52,7 @@ public:
 class LfoWaveSine : public LfoWave {
 public:
   LfoWaveSine() {
-    name = "Sine Wave";
+    name = "Sine";
   }
 
   float lookup(float phase) {
@@ -63,7 +63,7 @@ public:
 class LfoWaveSaw : public LfoWave {
 public:
   LfoWaveSaw() {
-    name = "Saw Wave";
+    name = "Saw";
   }
 
   float lookup(float phase) {
@@ -74,7 +74,7 @@ public:
 class LfoWaveSquare : public LfoWave {
 public:
   LfoWaveSquare() {
-    name = "Square Wave";
+    name = "Square";
   }
 
   float lookup(float phase) {
@@ -85,11 +85,74 @@ public:
 class LfoWaveTriangle : public LfoWave {
 public:
   LfoWaveTriangle() {
-    name = "Triangle Wave";
+    name = "Triangle";
   }
 
   float lookup(float phase) {
     return phase < 0.5 ? phase * 2.0 : (1.0 - phase) * 2.0;
+  }
+};
+
+class LfoWaveTriangle1 : public LfoWave {
+public:
+  LfoWaveTriangle1() {
+    name = "Triangle1";
+  }
+
+  float lookup(float phase) {
+    return phase < 0.25 ? phase * 4.0 : (1.0 - phase) * (1.0 / 0.75);
+  }
+};
+
+class LfoWaveTriangle2 : public LfoWave {
+public:
+  LfoWaveTriangle2() {
+    name = "Triangle2";
+  }
+
+  float lookup(float phase) {
+    float multiplier = 1.0 / 0.75;
+    return phase < 0.75 ? phase * multiplier : (1.0 - phase) * 4.0;
+  }
+};
+
+class LfoWaveSineSaw : public LfoWave {
+public:
+  LfoWaveSineSaw() {
+    name = "SineSaw";
+  }
+
+  float lookup(float phase) {
+    return ((0.5 * sin(2.0 * M_PI * phase) + 
+	     0.5 * sin(4.0 * M_PI * phase) + 1.0) * 0.5);
+  }
+};
+
+class LfoWaveSineSqr : public LfoWave {
+public:
+  LfoWaveSineSqr() {
+    name = "SineSqr";
+  }
+
+  float lookup(float phase) {
+    return ((0.5 * sin(2.0 * M_PI * phase) +
+	     0.5 * sin(8.0 * M_PI * phase) + 1.0) * 0.5);
+  }
+};
+
+class LfoWaveRandom : public LfoWave {
+private:
+  float table[16];
+public:
+  LfoWaveRandom() {
+    name = "Random";
+    for (int i = 0; i < 16; i++) {
+      table[i] = float(rand()) / RAND_MAX;
+    }
+  }
+
+  float lookup(float phase) {
+    return table[int(phase * 16)];
   }
 };
 
@@ -106,7 +169,7 @@ struct DrawingData {
   int id;
 };
 
-static int n_shapes = 4;
+static const int n_shapes = 9;
 
 static GtkTargetEntry drag_targets = {
   (gchar *)"application/x-controller-slider-drop",
@@ -118,21 +181,11 @@ class LunarLfo : public zzub::plugin, public zzub::event_handler {
 private:
   Gvals gval;
   uint16_t cval;
-  static const int tsize = 2048;
   int offset, rate;
   float min, max;
-  inline float lookup(float table[], float phi, float min, float max) {
-    float temp = min + table[(int)(phi * tsize)] * (max - min);
-    if (temp <= 0.0)
-      return 0.0;
-    if (temp >= 1.0)
-      return 1.0;
-    return temp;
-  }
   float val;
   int table;
-  float tables[32][tsize];
-  LfoWave* lfo_shapes[4];
+  LfoWave* lfo_shapes[n_shapes];
   virtual bool invoke(zzub_event_data_t& data);
   // GUI stuff
   GtkWidget *drawing_box;
@@ -220,7 +273,7 @@ struct LunarLfoInfo : zzub::info {
       .set_name("Wave")
       .set_description("Lfo wave form")
       .set_value_min(0)
-      .set_value_max(3)
+      .set_value_max(n_shapes - 1)
       .set_value_none(0xff)
       .set_value_default(0)
       .set_state_flag();
@@ -229,7 +282,7 @@ struct LunarLfoInfo : zzub::info {
       .set_name("Offset")
       .set_description("Lfo offset")
       .set_value_min(0)
-      .set_value_max(512)
+      .set_value_max(256)
       .set_value_none(0xffff)
       .set_value_default(0)
       .set_state_flag();
@@ -238,7 +291,7 @@ struct LunarLfoInfo : zzub::info {
       .set_name("Rate")
       .set_description("Lfo period length in ticks")
       .set_value_min(2)
-      .set_value_max(512)
+      .set_value_max(256)
       .set_value_none(0xffff)
       .set_value_default(64)
       .set_state_flag();
@@ -249,7 +302,7 @@ struct LunarLfoInfo : zzub::info {
       .set_value_min(0)
       .set_value_max(1000)
       .set_value_none(0xffff)
-      .set_value_default(0)
+      .set_value_default(200)
       .set_state_flag();
     para_max = &add_global_parameter()
       .set_word()
@@ -258,7 +311,7 @@ struct LunarLfoInfo : zzub::info {
       .set_value_min(0)
       .set_value_max(1000)
       .set_value_none(0xffff)
-      .set_value_default(1000)
+      .set_value_default(800)
       .set_state_flag();
   }
   virtual zzub::plugin* create_plugin() const { return new LunarLfo(); }
