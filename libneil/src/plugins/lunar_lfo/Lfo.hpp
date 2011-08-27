@@ -108,7 +108,7 @@ struct DrawingData {
 static int n_shapes = 4;
 
 static GtkTargetEntry drag_targets = {
-  (char *)"application/x-controller-slider-drop",
+  (gchar *)"application/x-controller-slider-drop",
   GTK_TARGET_SAME_APP,
   0
 };

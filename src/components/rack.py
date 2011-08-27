@@ -328,8 +328,7 @@ class ParameterView(gtk.VBox):
 
     def on_drag_data_get(self, btn, context, selection_data, info, time, (g,t,i)):
 	if info == self.DROP_TARGET_CTRL_SLIDER:
-	    text = cPickle.dumps((hash(self.plugin), g, t, i))
-            print text
+	    text = cPickle.dumps((self.plugin.get_id(), g, t, i))
 	    selection_data.set(selection_data.target, 8, text)
 
     def on_drag_data_delete(self, btn, context, data, (g,t,i)):
@@ -366,10 +365,10 @@ class ParameterView(gtk.VBox):
 	player = com.get('neil.core.player')
 	try:
 	    if data and data.format == 8:
-		pluginhash, sg,st,si = cPickle.loads(data.data)
+		plugin_id, sg, st, si = cPickle.loads(data.data)
 		for plugin in player.get_plugin_list():
-		    if hash(plugin) == pluginhash:
-			self.connect_controller(plugin,sg,st,si,g,t,i)
+		    if plugin.get_id() == plugin_id:
+			self.connect_controller(plugin, sg, st, si, g, t, i)
 			player.history_commit("add event connection")
 			break
 		context.finish(True, False, time)
