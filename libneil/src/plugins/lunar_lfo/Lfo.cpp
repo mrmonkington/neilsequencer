@@ -6,6 +6,7 @@
 #include <string>
 
 #include <gtk/gtk.h>
+#include <zzub/zzub.h>
 
 #include "Lfo.hpp"
 
@@ -38,6 +39,7 @@ void LunarLfo::init(zzub::archive* pi) {
   lfo_shapes[2] = new LfoWaveSquare();
   lfo_shapes[3] = new LfoWaveTriangle();
   drawing_data.host = _host;
+  drawing_data.id = _host->get_plugin_id(_host->get_metaplugin());
 }
 
 void LunarLfo::destroy() {
@@ -239,14 +241,15 @@ gboolean LunarLfo::rate_slider_set(GtkRange *range, gpointer ddata) {
 
 gboolean LunarLfo::on_drag_data_get(GtkWidget *widget,
 				    GdkDragContext *drag_context,
-				    gint x, gint y,
 				    GtkSelectionData *data,
 				    guint info, guint time,
 				    gpointer ddata) {
-  printf("info = %d\n", info);
-  static char *text;
-  sprintf(text, "(I%d\nI3\nI0\nI0\nt.", 0);
-  printf("%s", text);
+  DrawingData *data_ = (DrawingData *)ddata;
+  if (info == 0) {
+    static char text[100];
+    sprintf(text, "(I%d\nI3\nI0\nI0\nt.", data_->id);
+    gtk_selection_data_set(data, data->target, 8, (guchar*)text, strlen(text));
+  }
   return TRUE;
 }
 
@@ -325,7 +328,7 @@ bool LunarLfo::invoke(zzub_event_data_t& data) {
     gtk_signal_connect(GTK_OBJECT(drag_button), "drag-end",
 		       GTK_SIGNAL_FUNC(&on_drag_end),
 		       (gpointer)(&drawing_data));
-    gtk_widget_set_size_request(drawing_box, 300, 200);
+    gtk_widget_set_size_request(drawing_box, 250, 200);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(drawing_box), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(offset_slider), FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(rate_slider), FALSE, FALSE, 0);

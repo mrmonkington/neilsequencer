@@ -393,6 +393,10 @@ namespace zzub {
     return plugin_player->plugins[_metaplugin->id]->plugin;//_metaplugin->plugin;
   }
 
+  int host::get_plugin_id(metaplugin_proxy* _metaplugin) {
+    return _metaplugin->id;
+  }
+
   // returns pointer to the sequence if there is a pattern playing
   sequence_proxy* host::get_playing_sequence(metaplugin_proxy* pmacid) {
     message("GetPlayingSequence not implemented");

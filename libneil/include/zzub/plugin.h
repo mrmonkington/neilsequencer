@@ -526,6 +526,7 @@ namespace zzub {
     virtual int get_parameter(zzub_plugin_t* _metaplugin, int group, int track, int param);
     virtual void set_parameter(zzub_plugin_t* _metaplugin, int group, int track, int param, int value);
     virtual plugin *get_plugin(zzub_plugin_t* _metaplugin);
+    virtual int get_plugin_id(zzub_plugin_t* _metaplugin);
 
     // hacked extensions
     virtual int get_song_begin();

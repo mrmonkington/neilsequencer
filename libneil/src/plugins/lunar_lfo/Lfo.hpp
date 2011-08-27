@@ -103,6 +103,7 @@ struct DrawingData {
   bool max_bar_drag_start;
   int offset;
   int rate;
+  int id;
 };
 
 static int n_shapes = 4;
@@ -146,7 +147,7 @@ public:
   static gboolean mouse_click_handler(GtkWidget *widget, GdkEventButton *event, gpointer ddata);
   static gboolean mouse_release_handler(GtkWidget *widget, GdkEventButton *event, gpointer ddata);
   static gboolean mouse_motion_handler(GtkWidget *widget, GdkEventMotion *event, gpointer ddata);
-  static gboolean on_drag_data_get(GtkWidget*, GdkDragContext*, gint, gint, GtkSelectionData*, guint, guint, gpointer);
+  static gboolean on_drag_data_get(GtkWidget*, GdkDragContext*, GtkSelectionData*, guint, guint, gpointer);
   static gboolean on_drag_data_delete(GtkWidget*, GdkDragContext*, gpointer);
   static gboolean on_drag_end(GtkWidget*, GdkDragContext*, gpointer);
   static bool near_min_bar(GtkWidget *widget, int y, void *ddata);
