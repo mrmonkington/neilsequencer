@@ -112,7 +112,7 @@ gboolean LunarLfo::expose_handler(GtkWidget *widget, GdkEventExpose *event, gpoi
   cairo_set_source_rgb(cr, 0, 0, 0);
   cairo_fill(cr);
   cairo_move_to(cr, 0, h - h * (data->min + data->wave->lookup(0.0) * (data->max - data->min)));
-  int steps = 64;
+  int steps = 100;
   for (int i = 1; i < steps + 1; i++) {
     float phase = (i / float(steps));
     cairo_line_to(cr, w * phase, h - (h * (data->min + data->wave->lookup(phase) * (data->max - data->min))));

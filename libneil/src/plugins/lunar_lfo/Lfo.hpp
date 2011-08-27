@@ -123,8 +123,9 @@ public:
   }
 
   float lookup(float phase) {
-    return ((0.5 * sin(2.0 * M_PI * phase) + 
-	     0.5 * sin(4.0 * M_PI * phase) + 1.0) * 0.5);
+    return ((0.4 * sin(1.0 * 2.0 * M_PI * phase) + 
+	     0.4 * sin(2.0 * 2.0 * M_PI * phase) + 
+	     0.4 * sin(3.0 * 2.0 * M_PI * phase) + 1.0) * 0.5);
   }
 };
 
@@ -135,8 +136,9 @@ public:
   }
 
   float lookup(float phase) {
-    return ((0.5 * sin(2.0 * M_PI * phase) +
-	     0.5 * sin(8.0 * M_PI * phase) + 1.0) * 0.5);
+    return ((0.4 * sin(1.0 * 2.0 * M_PI * phase) +
+	     0.4 * sin(3.0 * 2.0 * M_PI * phase) + 
+	     0.4 * sin(5.0 * 2.0 * M_PI * phase) + 1.0) * 0.5);
   }
 };
 
