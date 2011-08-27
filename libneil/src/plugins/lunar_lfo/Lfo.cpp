@@ -340,6 +340,7 @@ bool LunarLfo::invoke(zzub_event_data_t& data) {
     gtk_widget_show(drag_button);
     gtk_widget_show(vbox);
     gtk_window_set_title(GTK_WINDOW(window), "Lunar LFO");
+    gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_MOUSE);
     gtk_widget_show(window);
     return true;
   }
