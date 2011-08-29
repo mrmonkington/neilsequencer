@@ -34,6 +34,8 @@ void LunarLfo::init(zzub::archive* pi) {
   _host->set_event_handler(_host->get_metaplugin(), this);
   drawing_data.host = _host;
   drawing_data.id = _host->get_plugin_id(_host->get_metaplugin());
+  drawing_data.min_bar_drag_start = false;
+  drawing_data.max_bar_drag_start = false;
 }
 
 void LunarLfo::destroy() {
@@ -224,6 +226,7 @@ gboolean LunarLfo::on_drag_data_get(GtkWidget *widget,
   DrawingData *data_ = (DrawingData *)ddata;
   if (info == 0) {
     static char text[100];
+    // The data below is in Python pickle format.
     sprintf(text, "(I%d\nI3\nI0\nI0\nt.", data_->id);
     gtk_selection_data_set(data, data->target, 8, (guchar*)text, strlen(text));
   }
@@ -308,6 +311,8 @@ bool LunarLfo::invoke(zzub_event_data_t& data) {
     gtk_signal_connect(GTK_OBJECT(rate_slider), "destroy",
 		       GTK_SIGNAL_FUNC(&gtk_widget_destroyed),
 		       &rate_slider);
+    gtk_range_set_value(GTK_RANGE(offset_slider), offset);
+    gtk_range_set_value(GTK_RANGE(rate_slider), rate);
     gtk_widget_set_size_request(drawing_box, 250, 200);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(drawing_box), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(offset_slider), FALSE, FALSE, 0);
