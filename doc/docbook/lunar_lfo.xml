@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="lunar_lfo">
+  <title>Lunar LFO</title>
+  <para>
+    Use Lunar LFO to control parameters of other machines (including
+    other Lunar LFO instances). This is useful for adding movement to
+    sound when a particular machine does not provide an LFO modulation
+    option for some parameter. This LFO synchronizes with the song
+    position, which means that the song will sound the same each
+    time, no matter where or when you start the playback. This machine
+    also comes with its' own GUI. This GUI allows you to visualize LFO
+    wave shape and the range of values it cycles through.
+  </para>
+  <figure>
+    <title>Lunar LFO Screenshot</title>
+    <graphic fileref="images/lunar_lfo.png"></graphic>
+  </figure>
+  <para>
+    Lunar LFO screenshot is presented in the figure. The green line
+    represents the LFO wave shape. Drag the gray bars with the mouse
+    up or down to adjust the range which the LFO output can take. The
+    red bar represents where in the LFO wave the playback cursor is
+    at. The sliders are used to adjust offset and rate
+    respectively. These parameters are explained in the table
+    below. If you click on the LFO wave visualization with your left
+    mouse button it will move forward by one wave shape, if you click
+    with the right button it will move backward one shape. The "Drag to
+    connect button" should be self explanatory. If it is not - you
+    should try clicking on it and then dragging and dropping on a
+    slider you want to control.
+  </para>
+  <table><title>Lunar LFO Parameters</title>
+  <tgroup cols='2' align='left' colsep='1' rowsep='1'>
+    <thead>
+      <row>
+	<entry><para>Parameter</para></entry>
+	<entry><para>Meaning</para></entry>
+      </row>
+    </thead>
+    <tbody>
+      <row>
+	<entry><para>Wave</para></entry>
+	<entry><para>
+	  Pick an LFO wave to use. You can see its' shape in the GUI
+	  so those are not listed here.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Offset</para></entry>
+	<entry><para>
+	  This value will be added to the playback position when
+	  calculating how far in to the LFO wave the cursor should
+	  be.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Rate</para></entry>
+	<entry><para>
+	  How fast (in rows) should an LFO cycle complete. That is, if
+	  the value is, say, 64, it will take it one pattern of length
+	  64 to finish. If you want the cycle to start exactly at the
+	  start of the pattern you might need to use the offset
+	  parameter.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Min</para></entry>
+	<entry><para>
+	  The relative minimum of the LFO output range. That is, if
+	  the machine parameter you want to control goes, say, from 0
+	  to 100 and the Min is set to 0.1 and the Max is set to 0.6,
+	  then the parameter will cycle from 10 to 60 while the LFO
+	  completes one round of its' eternal journey.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Max</para></entry>
+	<entry><para>
+	  Mins' brother.
+	</para></entry>
+      </row>
+    </tbody>
+  </tgroup>
+</table>
+</section>
