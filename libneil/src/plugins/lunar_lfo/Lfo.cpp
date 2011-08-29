@@ -245,7 +245,7 @@ gboolean LunarLfo::on_drag_end(GtkWidget *widget,
 }
 
 void LunarLfo::redraw_box() {
-  if (drawing_box) {
+  if (window) {
     gtk_widget_queue_draw_area(GTK_WIDGET(drawing_box), 0, 0, 
 			       drawing_box->allocation.width,
 			       drawing_box->allocation.height);
@@ -299,6 +299,15 @@ bool LunarLfo::invoke(zzub_event_data_t& data) {
     gtk_signal_connect(GTK_OBJECT(drag_button), "drag-end",
 		       GTK_SIGNAL_FUNC(&on_drag_end),
 		       (gpointer)(&drawing_data));
+    gtk_signal_connect(GTK_OBJECT(window), "destroy",
+		       GTK_SIGNAL_FUNC(&gtk_widget_destroyed),
+		       &window);
+    gtk_signal_connect(GTK_OBJECT(offset_slider), "destroy",
+		       GTK_SIGNAL_FUNC(&gtk_widget_destroyed),
+		       &offset_slider);
+    gtk_signal_connect(GTK_OBJECT(rate_slider), "destroy",
+		       GTK_SIGNAL_FUNC(&gtk_widget_destroyed),
+		       &rate_slider);
     gtk_widget_set_size_request(drawing_box, 250, 200);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(drawing_box), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(offset_slider), FALSE, FALSE, 0);

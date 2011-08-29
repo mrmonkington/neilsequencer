@@ -304,7 +304,7 @@ struct LunarLfoInfo : zzub::info {
       .set_value_min(0)
       .set_value_max(1000)
       .set_value_none(0xffff)
-      .set_value_default(200)
+      .set_value_default(100)
       .set_state_flag();
     para_max = &add_global_parameter()
       .set_word()
@@ -313,7 +313,7 @@ struct LunarLfoInfo : zzub::info {
       .set_value_min(0)
       .set_value_max(1000)
       .set_value_none(0xffff)
-      .set_value_default(800)
+      .set_value_default(900)
       .set_state_flag();
   }
   virtual zzub::plugin* create_plugin() const { return new LunarLfo(); }
