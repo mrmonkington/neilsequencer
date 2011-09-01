@@ -189,13 +189,13 @@ class TransportPanel(gtk.HBox):
         self.hgroup.connect(self.btnloop, 'clicked', self.on_toggle_loop)
         self.hgroup.connect(self.btnpanic, 'clicked', self.on_toggle_panic)
         self.hgroup.connect(self.volume_button, 'clicked', self.on_toggle_volume)
+        self.volume_button.connect('focus-out-event', self.on_master_focus_out)
 
         accel = com.get('neil.core.accelerators')
         #accel.add_accelerator('F5', self.btnplay, 'clicked')
         accel.add_accelerator('F7', self.btnrecord, 'clicked')
         #accel.add_accelerator('F8', self.btnstop, 'clicked')
         accel.add_accelerator('F12', self.btnpanic, 'clicked')
-
         self.update_all()
 
     #def spinbox_clicked(self, widget, event):
@@ -252,6 +252,10 @@ class TransportPanel(gtk.HBox):
             self.master_control_window.show_all()
         else:
             self.master_control_window.hide_all()
+
+    def on_master_focus_out(self, widget, event):
+        #self.master_control_window.hide_all()
+        self.volume_button.set_active(False)
 
     def update_cpu(self):
         cpu = com.get('neil.core.driver.audio').get_cpu_load()
