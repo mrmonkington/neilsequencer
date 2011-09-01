@@ -1,0 +1,9 @@
+[Neil COM]
+Module=playback
+Name=Playback Info
+Description=Provides information about playback position.
+Icon=aldrin
+Authors=The Aldrin Development Team
+Copyright=Copyright (C) 2006,2007,2008 The Aldrin Development Team
+Website=http://www.aldrin.eu
+

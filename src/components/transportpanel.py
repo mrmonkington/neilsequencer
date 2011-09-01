@@ -102,31 +102,6 @@ class TransportPanel(gtk.HBox):
                                                 "Panic (F12)")
         self.volume_button = new_image_toggle_button(imagepath("speaker.svg"),
                                                      "Volume")
-        vbox = gtk.VBox(False, 0)
-        sg1 = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
-        sg2 = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
-        def add_row(name):
-            import pango
-            c1 = gtk.Label()
-            c1.modify_font(pango.FontDescription("Monospace 6"))
-            c1.set_markup("<b>%s</b>" % name)
-            c1.set_alignment(1, 0.5)
-            c2 = gtk.Label()
-            c2.modify_font(pango.FontDescription("Monospace 6"))
-            c2.set_alignment(1, 0.5)
-            hbox = gtk.HBox(False, MARGIN)
-            hbox.pack_start(c1, expand=False)
-            hbox.pack_start(c2, expand=False)
-            sg1.add_widget(c1)
-            sg2.add_widget(c2)
-            vbox.add(hbox)
-            return c2
-        self.elapsed = add_row("Elapsed")
-        self.current = add_row("Current")
-        self.loop = add_row("Loop")
-        self.starttime = time.time()
-        self.update_label()
-
         combosizer = gtk.HBox(False, MARGIN)
 
         hbox = gtk.HBox(False, MARGIN0)
@@ -143,9 +118,6 @@ class TransportPanel(gtk.HBox):
         self.connect('realize', on_realize)
 
         combosizer.pack_start(hbox, expand=False)
-        combosizer.pack_start(gtk.VSeparator(), expand=False)
-
-        combosizer.pack_start(vbox, expand=False)
         combosizer.pack_start(gtk.VSeparator(), expand=False)
 
         combosizer.pack_start(self.bpmlabel,expand=False)
@@ -180,7 +152,6 @@ class TransportPanel(gtk.HBox):
         self.hgroup = ObjectHandlerGroup()
         self.hgroup.connect(self.bpm, 'value-changed', self.on_bpm)
         self.hgroup.connect(self.tpb, 'value-changed', self.on_tpb)
-        gobject.timeout_add(100, self.update_label)
         gobject.timeout_add(500, self.update_cpu)
 
         self.hgroup.connect(self.btnplay, 'clicked', self.play)
@@ -261,28 +232,6 @@ class TransportPanel(gtk.HBox):
         cpu = com.get('neil.core.driver.audio').get_cpu_load()
         #self.cpu.set_fraction(cpu)
         self.cpuvalue.set_label("%i%%" % int((cpu*100) + 0.5))
-        return True
-
-    def update_label(self):
-        """
-        Event handler triggered by a 10fps timer event.
-        """
-        player = com.get('neil.core.player')
-        p = player.get_position()
-        m = player.get_plugin(0)
-        bpm = m.get_parameter_value(1, 0, 1)
-        tpb = m.get_parameter_value(1, 0, 2)
-        time.time() - self.starttime
-        if player.get_state() == 0: # playing
-            e = format_time(time.time() - player.playstarttime)
-        else:
-            e = format_time(0.0)
-        c = format_time(ticks_to_time(p,bpm,tpb))
-        lb,le = player.get_loop()
-        l = format_time(ticks_to_time(le-lb,bpm,tpb))
-        for text,control in [(e,self.elapsed),(c,self.current),(l,self.loop)]:
-            #~ if text != control.get_text():
-            control.set_markup("%s" % text)
         return True
 
     def update_btnplay(self):

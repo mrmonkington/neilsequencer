@@ -336,6 +336,7 @@ class NeilFrame(gtk.Window):
 
     self.mastertoolbar = com.get('neil.core.panel.master')
     self.transport = com.get('neil.core.panel.transport')
+    self.playback_info = com.get('neil.core.playback')
     self.framepanel = com.get('neil.core.framepanel')
 
     hbox = gtk.HBox()
@@ -554,6 +555,7 @@ class NeilFrame(gtk.Window):
     #~cfg.load_window_pos("Toolbar", self.neilframe_toolbar)
     #cfg.load_window_pos("MasterToolbar", self.mastertoolbar)
     cfg.load_window_pos("Transport", self.transport)
+    cfg.load_window_pos("Playback", self.playback_info)
     #cfg.load_window_pos("StatusBar", self.neilframe_statusbar)
 
   def save_view(self):
@@ -565,6 +567,7 @@ class NeilFrame(gtk.Window):
     #~cfg.save_window_pos("Toolbar", self.neilframe_toolbar)
     #cfg.save_window_pos("MasterToolbar", self.mastertoolbar)
     cfg.save_window_pos("Transport", self.transport)
+    cfg.save_window_pos("Playback", self.playback_info)
     #cfg.save_window_pos("StatusBar", self.neilframe_statusbar)
 
   def on_help_contents(self, *args):
