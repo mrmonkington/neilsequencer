@@ -62,10 +62,11 @@ class TransportPanel(gtk.HBox):
         """
         gtk.HBox.__init__(self)
         self.master_controls = com.get('neil.core.panel.master')
-        self.master_control_window = gtk.Window(gtk.WINDOW_POPUP)
+        self.master_control_window = gtk.Window()
         self.master_control_window.add(self.master_controls)
-        #self.master_control_window.set_deletable(False)
-        #self.master_control_window.set_resizable(False)
+        self.master_control_window.set_deletable(False)
+        self.master_control_window.set_resizable(False)
+        self.master_control_window.set_position(gtk.WIN_POS_MOUSE)
         eventbus = com.get('neil.core.eventbus')
         eventbus.zzub_parameter_changed += self.on_zzub_parameter_changed
         eventbus.zzub_player_state_changed += self.on_zzub_player_state_changed
@@ -160,7 +161,7 @@ class TransportPanel(gtk.HBox):
         self.hgroup.connect(self.btnloop, 'clicked', self.on_toggle_loop)
         self.hgroup.connect(self.btnpanic, 'clicked', self.on_toggle_panic)
         self.hgroup.connect(self.volume_button, 'clicked', self.on_toggle_volume)
-        self.volume_button.connect('focus-out-event', self.on_master_focus_out)
+        #self.volume_button.connect('focus-out-event', self.on_master_focus_out)
 
         accel = com.get('neil.core.accelerators')
         #accel.add_accelerator('F5', self.btnplay, 'clicked')
@@ -218,15 +219,13 @@ class TransportPanel(gtk.HBox):
 
     def on_toggle_volume(self, widget):
         if widget.get_active():
-            x, y = widget.get_allocation().x, widget.get_allocation().y
-            self.master_control_window.move(x, y - 210)
             self.master_control_window.show_all()
         else:
             self.master_control_window.hide_all()
 
-    def on_master_focus_out(self, widget, event):
+    #def on_master_focus_out(self, widget, event):
         #self.master_control_window.hide_all()
-        self.volume_button.set_active(False)
+    #    self.volume_button.set_active(False)
 
     def update_cpu(self):
         cpu = com.get('neil.core.driver.audio').get_cpu_load()
