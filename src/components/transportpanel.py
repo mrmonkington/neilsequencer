@@ -95,6 +95,8 @@ class TransportPanel(gtk.HBox):
         self.btnloop.modify_bg(gtk.STATE_ACTIVE, gtk.gdk.color_parse("green"))
         self.btnpanic = new_image_toggle_button(imagepath("playback_panic.svg"),
                                                 "Panic (F12)")
+        self.volume_button = new_image_toggle_button(imagepath("speaker.svg"),
+                                                     "Volume")
         vbox = gtk.VBox(False, 0)
         sg1 = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
         sg2 = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
@@ -120,10 +122,7 @@ class TransportPanel(gtk.HBox):
         self.starttime = time.time()
         self.update_label()
 
-
         combosizer = gtk.HBox(False, MARGIN)
-        combosizer.pack_start(vbox, expand=False)
-        combosizer.pack_start(gtk.VSeparator(), expand=False)
 
         hbox = gtk.HBox(False, MARGIN0)
         hbox.pack_start(self.btnplay,expand=False)
@@ -139,6 +138,9 @@ class TransportPanel(gtk.HBox):
         self.connect('realize', on_realize)
 
         combosizer.pack_start(hbox, expand=False)
+        combosizer.pack_start(gtk.VSeparator(), expand=False)
+
+        combosizer.pack_start(vbox, expand=False)
         combosizer.pack_start(gtk.VSeparator(), expand=False)
 
         combosizer.pack_start(self.bpmlabel,expand=False)
@@ -158,10 +160,13 @@ class TransportPanel(gtk.HBox):
         combosizer.pack_start(cpuvbox, expand=False)
         combosizer.pack_start(gtk.VSeparator(), expand=False)
         combosizer.pack_start(self.btnpanic, expand=False)
-
-        self.pack_start(gtk.HBox())
+        combosizer.pack_start(self.volume_button, expand=False)
+        
+        # To center the transport panel uncomment the HBox's below.
+        #self.pack_start(gtk.HBox())
         self.pack_start(combosizer, expand=False)
-        self.pack_end(gtk.HBox())
+        #self.pack_end(gtk.HBox())
+
         self.set_border_width(MARGIN)
         player = com.get('neil.core.player')
         player.get_plugin(0).set_parameter_value(1, 0, 1, config.get_config().get_default_int('BPM', 126), 1)
