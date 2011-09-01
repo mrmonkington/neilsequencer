@@ -340,7 +340,7 @@ class NeilFrame(gtk.Window):
 
     hbox = gtk.HBox()
     hbox.add(self.framepanel)
-    hbox.pack_end(self.mastertoolbar, expand=False)
+    #hbox.pack_end(self.mastertoolbar, expand=False)
     vbox.add(hbox)
 
     #self.neilframe_statusbar = com.get('neil.core.statusbar')
@@ -552,7 +552,7 @@ class NeilFrame(gtk.Window):
     cfg = config.get_config()
     cfg.load_window_pos("MainFrameWindow", self)
     #~cfg.load_window_pos("Toolbar", self.neilframe_toolbar)
-    cfg.load_window_pos("MasterToolbar", self.mastertoolbar)
+    #cfg.load_window_pos("MasterToolbar", self.mastertoolbar)
     cfg.load_window_pos("Transport", self.transport)
     #cfg.load_window_pos("StatusBar", self.neilframe_statusbar)
 
@@ -563,7 +563,7 @@ class NeilFrame(gtk.Window):
     cfg = config.get_config()
     cfg.save_window_pos("MainFrameWindow", self)
     #~cfg.save_window_pos("Toolbar", self.neilframe_toolbar)
-    cfg.save_window_pos("MasterToolbar", self.mastertoolbar)
+    #cfg.save_window_pos("MasterToolbar", self.mastertoolbar)
     cfg.save_window_pos("Transport", self.transport)
     #cfg.save_window_pos("StatusBar", self.neilframe_statusbar)
 
