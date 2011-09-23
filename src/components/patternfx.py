@@ -1,6 +1,6 @@
 import gtk
 import neil.com as com
-from neil.utils import roundint, bn2mn, mn2bn
+from neil.utils import roundint, bn2mn, mn2bn, new_stock_image_button
 from random import *
 from math import *
 
@@ -135,15 +135,51 @@ class Expression():
 
     name = "Expression"
 
+    def read_expressions(self, filename):
+        fd = open(filename, 'r')
+        expressions = {}
+        while True:
+            nametag = fd.readline()
+            if len(nametag) == 0:
+                break
+            name, length = nametag.strip().split(',')
+            expression = ""
+            for i in range(int(length)):
+                expression += fd.readline()
+            expressions[name] = expression
+        fd.close()
+        return expressions
+
+    def write_expressions(self, expressions, filename):
+        fd = open(filename, 'w')
+        for name, expression in expressions.items():
+            nametag = name + ',' + expression.count('\n')
+            fd.write(nametag + '\n')
+            fd.write(expression)
+        fd.close()
+
     def transform(self, data, parameter):
         dialog = gtk.Dialog(
             "Expression",
             buttons=(gtk.STOCK_OK, True, gtk.STOCK_CANCEL, False)
             )
+        hbox = gtk.HBox()
+        selector = gtk.ComboBox()
+        add_button = new_stock_image_button(gtk.STOCK_OPEN, "Add Snippet")
+        del_button = new_stock_image_button(gtk.STOCK_REMOVE, "Remove Snippet")
+        mov_button = new_stock_image_button(gtk.STOCK_BOLD, "Rename Snippet")
+        add_button.set_size_request(30, 30)
+        del_button.set_size_request(30, 30)
+        mov_button.set_size_request(30, 30)
+        hbox.pack_start(selector)
+        hbox.pack_start(add_button, expand=False)
+        hbox.pack_start(del_button, expand=False)
+        hbox.pack_start(mov_button, expand=False)
         scrolled_window = gtk.ScrolledWindow()
         text = gtk.TextView()
         scrolled_window.add_with_viewport(text)
-        scrolled_window.set_size_request(200, 300)
+        scrolled_window.set_size_request(300, 300)
+        dialog.vbox.add(hbox)
         dialog.vbox.add(scrolled_window)
         dialog.show_all()
         response = dialog.run()
