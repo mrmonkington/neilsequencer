@@ -140,23 +140,22 @@ class Expression():
             "Expression",
             buttons=(gtk.STOCK_OK, True, gtk.STOCK_CANCEL, False)
             )
+        scrolled_window = gtk.ScrolledWindow()
         text = gtk.TextView()
-        dialog.vbox.add(text)
+        scrolled_window.add_with_viewport(text)
+        scrolled_window.set_size_request(200, 300)
+        dialog.vbox.add(scrolled_window)
         dialog.show_all()
         response = dialog.run()
         expr = text.get_buffer().get_property('text')
         dialog.destroy()
         if response:
             try:
-                for i in range(len(data)):
-                    x = data[i]
-                    a = parameter.get_value_min()
-                    b = parameter.get_value_max()
-                    z = parameter.get_value_none()
-                    n = len(data)
-                    p = i / float(n)
-                    exec expr
-                    data[i] = int(y)
+                a = parameter.get_value_min()
+                b = parameter.get_value_max()
+                z = parameter.get_value_none()
+                n = len(data)
+                exec expr
             except Exception:
                 error_box = gtk.Dialog(
                     "Expression Error",
