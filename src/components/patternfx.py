@@ -1,6 +1,9 @@
 import gtk
+import gobject
+import os
 import neil.com as com
 from neil.utils import roundint, bn2mn, mn2bn, new_stock_image_button
+from neil.utils import gettext
 from random import *
 from math import *
 
@@ -133,7 +136,9 @@ class Expression():
             ]
         )
 
+    EXPRESSIONS_FILE = os.path.expanduser('~/.neil/expressions.txt')
     name = "Expression"
+    expressions = {}
 
     def read_expressions(self, filename):
         fd = open(filename, 'r')
@@ -153,38 +158,92 @@ class Expression():
     def write_expressions(self, expressions, filename):
         fd = open(filename, 'w')
         for name, expression in expressions.items():
-            nametag = name + ',' + expression.count('\n')
+            if expression[-1] != '\n':
+                expression += '\n'
+            nametag = name + ',' + str(expression.count('\n'))
             fd.write(nametag + '\n')
             fd.write(expression)
         fd.close()
 
+    def add_expression(self, widget):
+        name = gettext(self.dialog, "Enter the name of your expression")
+        if name != '':
+            self.expressions[name] = self.text.get_buffer().get_property('text')
+            model = self.selector.get_model()
+            model.append([name])
+            self.write_expressions(self.expressions, self.EXPRESSIONS_FILE)
+
+    def del_expression(self, widget):
+        model = self.selector.get_model()
+        active = self.selector.get_active_iter()
+        name = model.get_value(active, 0)
+        model.remove(active)
+        del self.expressions[name]
+        self.write_expressions(self.expressions, self.EXPRESSIONS_FILE)
+
+    def mov_expression(self, widget):
+        new_name = gettext(self.dialog, "Enter new name for your expression")
+        if new_name != '':
+            model = self.selector.get_model()
+            active = self.selector.get_active_iter()
+            name = model.get_value(active, 0)
+            self.expressions[new_name] = str(self.expressions[name])
+            del self.expressions[name]
+            model.remove(active)
+            self.write_expressions(self.expressions, self.EXPRESSIONS_FILE)
+
+    def active_expression_changed(self, combobox):
+        model = combobox.get_model()
+        active = combobox.get_active_iter()
+        if active != None:
+            name = model.get_value(active, 0)
+            self.text.get_buffer().set_text(self.expressions[name])
+
     def transform(self, data, parameter):
-        dialog = gtk.Dialog(
-            "Expression",
-            buttons=(gtk.STOCK_OK, True, gtk.STOCK_CANCEL, False)
-            )
+        try:
+            self.expressions = self.read_expressions(self.EXPRESSIONS_FILE)
+        except IOError:
+            self.expressions = {}
+        self.dialog = gtk.Dialog(
+                "Expression",
+                buttons=(gtk.STOCK_OK, True, gtk.STOCK_CANCEL, False)
+                )
         hbox = gtk.HBox()
-        selector = gtk.ComboBox()
-        add_button = new_stock_image_button(gtk.STOCK_OPEN, "Add Snippet")
-        del_button = new_stock_image_button(gtk.STOCK_REMOVE, "Remove Snippet")
-        mov_button = new_stock_image_button(gtk.STOCK_BOLD, "Rename Snippet")
+        self.selector = gtk.ComboBox(gtk.ListStore(str))
+        cell = gtk.CellRendererText()
+        self.selector.pack_start(cell, True)
+        self.selector.add_attribute(cell, 'text', 0)
+        self.selector.connect('changed', self.active_expression_changed)
+        # Fill in the combobox expression selector with entries
+        model = self.selector.get_model()
+        for name, expression in self.expressions.items():
+            model.append([name])
+        add_button = new_stock_image_button(gtk.STOCK_OPEN, "Add Expression")
+        del_button = new_stock_image_button(gtk.STOCK_REMOVE, "Remove Expression")
+        mov_button = new_stock_image_button(gtk.STOCK_BOLD, "Rename Expression")
+        hlp_button = new_stock_image_button(gtk.STOCK_HELP, "Help")
+        add_button.connect('clicked', self.add_expression)
+        del_button.connect('clicked', self.del_expression)
+        mov_button.connect('clicked', self.mov_expression)
         add_button.set_size_request(30, 30)
         del_button.set_size_request(30, 30)
         mov_button.set_size_request(30, 30)
-        hbox.pack_start(selector)
+        hlp_button.set_size_request(30, 30)
+        hbox.pack_start(self.selector)
         hbox.pack_start(add_button, expand=False)
         hbox.pack_start(del_button, expand=False)
         hbox.pack_start(mov_button, expand=False)
+        hbox.pack_start(hlp_button, expand=False)
         scrolled_window = gtk.ScrolledWindow()
-        text = gtk.TextView()
-        scrolled_window.add_with_viewport(text)
+        self.text = gtk.TextView()
+        scrolled_window.add_with_viewport(self.text)
         scrolled_window.set_size_request(300, 300)
-        dialog.vbox.add(hbox)
-        dialog.vbox.add(scrolled_window)
-        dialog.show_all()
-        response = dialog.run()
-        expr = text.get_buffer().get_property('text')
-        dialog.destroy()
+        self.dialog.vbox.add(hbox)
+        self.dialog.vbox.add(scrolled_window)
+        self.dialog.show_all()
+        response = self.dialog.run()
+        expr = self.text.get_buffer().get_property('text')
+        self.dialog.destroy()
         if response:
             try:
                 a = parameter.get_value_min()
