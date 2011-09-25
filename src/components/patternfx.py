@@ -166,27 +166,37 @@ class Expression():
             self.expressions[name] = self.text.get_buffer().get_property('text')
             if name != old_name:
                 model = self.selector.get_model()
-                model.append([name])
+                self.selector.set_active_iter(model.append([name]))
             self.write_expressions()
 
     def del_expression(self, widget):
         model = self.selector.get_model()
         active = self.selector.get_active_iter()
+        if active == None:
+            return
         name = model.get_value(active, 0)
         model.remove(active)
         del self.expressions[name]
+        if self.selector.get_model().get_iter_first():
+            self.selector.set_active(0)
         self.write_expressions()
 
     def mov_expression(self, widget):
-        new_name = gettext(self.dialog, "Enter new name for your expression")
+        model = self.selector.get_model()
+        active = self.selector.get_active_iter()
+        if active != None:
+            old_name = model.get_value(active, 0)
+        else:
+            return
+        new_name = gettext(self.dialog, "Enter new name for your expression",
+                           old_name)
         if new_name != None:
             new_name = new_name.replace(',', ' ')
-            model = self.selector.get_model()
-            active = self.selector.get_active_iter()
             name = model.get_value(active, 0)
             self.expressions[new_name] = str(self.expressions[name])
             del self.expressions[name]
             model.remove(active)
+            self.selector.set_active_iter(model.append([new_name]))
             self.write_expressions()
 
     def active_expression_changed(self, combobox):
@@ -198,7 +208,7 @@ class Expression():
 
     def transform(self, data, parameter):
         try:
-            self.expressions = self.read_expressions()
+            self.read_expressions()
         except IOError:
             self.expressions = {}
         self.dialog = gtk.Dialog(
@@ -236,9 +246,11 @@ class Expression():
         buff = CodeBuffer(lang=lang)
         self.text = gtk.TextView(buff)
         scrolled_window.add_with_viewport(self.text)
-        scrolled_window.set_size_request(300, 300)
-        self.dialog.vbox.add(hbox)
-        self.dialog.vbox.add(scrolled_window)
+        scrolled_window.set_size_request(500, 300)
+        self.dialog.vbox.pack_start(hbox, expand=False)
+        self.dialog.vbox.pack_start(scrolled_window)
+        if self.selector.get_model().get_iter_first():
+            self.selector.set_active(0)
         self.dialog.show_all()
         response = self.dialog.run()
         expr = self.text.get_buffer().get_property('text')
@@ -259,7 +271,14 @@ class Expression():
                 error_box.show_all()
                 error_box.run()
                 error_box.destroy()
-        return [int(value) for value in data]
+        for i, value in enumerate(data):
+            data[i] = int(value)
+            if data[i] != parameter.get_value_none():
+                if data[i] <= parameter.get_value_min():
+                    data[i] = parameter.get_value_min()
+                if data[i] >= parameter.get_value_max():
+                    data[i] = parameter.get_value_max()
+        return data
 
 
 __all__ = [
