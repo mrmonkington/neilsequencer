@@ -142,35 +142,23 @@ class Expression():
     name = "Expression"
     expressions = {}
 
-    def read_expressions(self, filename):
-        fd = open(filename, 'r')
-        expressions = {}
-        while True:
-            nametag = fd.readline()
-            if len(nametag) == 0:
-                break
-            name, length = nametag.strip().split(',')
-            expression = ""
-            for i in range(int(length)):
-                expression += fd.readline()
-            expressions[name] = expression
+    def read_expressions(self):
+        fd = open(self.EXPRESSIONS_FILE, 'r')
+        self.expressions = pickle.load(fd)
         fd.close()
-        return expressions
 
-    def write_expressions(self, expressions, filename):
-        fd = open(filename, 'w')
-        for name, expression in expressions.items():
-            if expression[-1] != '\n':
-                expression += '\n'
-            nametag = name + ',' + str(expression.count('\n'))
-            fd.write(nametag + '\n')
-            fd.write(expression)
+    def write_expressions(self):
+        fd = open(self.EXPRESSIONS_FILE, 'w')
+        pickle.dump(self.expressions, fd)
         fd.close()
 
     def add_expression(self, widget):
         model = self.selector.get_model()
         active = self.selector.get_active_iter()
-        old_name = model.get_value(active, 0)
+        if active != None:
+            old_name = model.get_value(active, 0)
+        else:
+            old_name = ''
         name = gettext(self.dialog, "Enter the name of your expression", 
                        old_name)
         if name != None:
@@ -179,7 +167,7 @@ class Expression():
             if name != old_name:
                 model = self.selector.get_model()
                 model.append([name])
-            self.write_expressions(self.expressions, self.EXPRESSIONS_FILE)
+            self.write_expressions()
 
     def del_expression(self, widget):
         model = self.selector.get_model()
@@ -187,7 +175,7 @@ class Expression():
         name = model.get_value(active, 0)
         model.remove(active)
         del self.expressions[name]
-        self.write_expressions(self.expressions, self.EXPRESSIONS_FILE)
+        self.write_expressions()
 
     def mov_expression(self, widget):
         new_name = gettext(self.dialog, "Enter new name for your expression")
@@ -199,7 +187,7 @@ class Expression():
             self.expressions[new_name] = str(self.expressions[name])
             del self.expressions[name]
             model.remove(active)
-            self.write_expressions(self.expressions, self.EXPRESSIONS_FILE)
+            self.write_expressions()
 
     def active_expression_changed(self, combobox):
         model = combobox.get_model()
@@ -210,7 +198,7 @@ class Expression():
 
     def transform(self, data, parameter):
         try:
-            self.expressions = self.read_expressions(self.EXPRESSIONS_FILE)
+            self.expressions = self.read_expressions()
         except IOError:
             self.expressions = {}
         self.dialog = gtk.Dialog(
