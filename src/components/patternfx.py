@@ -167,7 +167,8 @@ class Expression():
 
     def add_expression(self, widget):
         name = gettext(self.dialog, "Enter the name of your expression")
-        if name != '':
+        if name != None:
+            name = name.replace(',', ' ')
             self.expressions[name] = self.text.get_buffer().get_property('text')
             model = self.selector.get_model()
             model.append([name])
@@ -183,7 +184,8 @@ class Expression():
 
     def mov_expression(self, widget):
         new_name = gettext(self.dialog, "Enter new name for your expression")
-        if new_name != '':
+        if new_name != None:
+            new_name = new_name.replace(',', ' ')
             model = self.selector.get_model()
             active = self.selector.get_active_iter()
             name = model.get_value(active, 0)
