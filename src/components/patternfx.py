@@ -1,6 +1,7 @@
 import gtk
 import gobject
 import os
+import pickle
 import neil.com as com
 from neil.utils import roundint, bn2mn, mn2bn, new_stock_image_button
 from neil.utils import gettext
@@ -167,12 +168,17 @@ class Expression():
         fd.close()
 
     def add_expression(self, widget):
-        name = gettext(self.dialog, "Enter the name of your expression")
+        model = self.selector.get_model()
+        active = self.selector.get_active_iter()
+        old_name = model.get_value(active, 0)
+        name = gettext(self.dialog, "Enter the name of your expression", 
+                       old_name)
         if name != None:
             name = name.replace(',', ' ')
             self.expressions[name] = self.text.get_buffer().get_property('text')
-            model = self.selector.get_model()
-            model.append([name])
+            if name != old_name:
+                model = self.selector.get_model()
+                model.append([name])
             self.write_expressions(self.expressions, self.EXPRESSIONS_FILE)
 
     def del_expression(self, widget):
@@ -238,7 +244,6 @@ class Expression():
         hbox.pack_start(mov_button, expand=False)
         hbox.pack_start(hlp_button, expand=False)
         scrolled_window = gtk.ScrolledWindow()
-        print os.path.join('.', 'syntax')
         lang = SyntaxLoader("python")
         buff = CodeBuffer(lang=lang)
         self.text = gtk.TextView(buff)
@@ -266,7 +271,7 @@ class Expression():
                 error_box.show_all()
                 error_box.run()
                 error_box.destroy()
-        return data
+        return [int(value) for value in data]
 
 
 __all__ = [
