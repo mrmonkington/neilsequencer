@@ -6,6 +6,7 @@ from neil.utils import roundint, bn2mn, mn2bn, new_stock_image_button
 from neil.utils import gettext
 from random import *
 from math import *
+from neil.gtkcodebuffer import CodeBuffer, SyntaxLoader, add_syntax_path
 
 class SimpleRandom():
     __neil__ = dict(
@@ -237,7 +238,10 @@ class Expression():
         hbox.pack_start(mov_button, expand=False)
         hbox.pack_start(hlp_button, expand=False)
         scrolled_window = gtk.ScrolledWindow()
-        self.text = gtk.TextView()
+        print os.path.join('.', 'syntax')
+        lang = SyntaxLoader("python")
+        buff = CodeBuffer(lang=lang)
+        self.text = gtk.TextView(buff)
         scrolled_window.add_with_viewport(self.text)
         scrolled_window.set_size_request(300, 300)
         self.dialog.vbox.add(hbox)

@@ -76,7 +76,7 @@ SYNTAX_PATH = [ os.path.join('.', 'syntax'),
                 this_module_path,
                 os.path.join(os.path.expanduser('~'),".pygtkcodebuffer"),
                 os.path.join(sys.prefix,"share","pygtkcodebuffer","syntax")]
-         
+
 
 # enable/disable debug-messages
 DEBUG_FLAG  = False
@@ -333,6 +333,7 @@ class SyntaxLoader(ContentHandler, LanguageDefinition):
         # search for syntax-files:
         fname = None
         for syntax_dir in SYNTAX_PATH:
+            print syntax_dir
             fname = os.path.join(syntax_dir, "%s.xml"%lang_name)
             if os.path.isfile(fname): break
 

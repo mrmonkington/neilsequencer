@@ -24,3 +24,5 @@ import glob
 for filename in glob.glob('*.py'):
 	install('${SITE_PACKAGE_PATH}/neil', filename, 0644)
 
+for filename in glob.glob('*.xml'):
+	install('${SITE_PACKAGE_PATH}/neil', filename, 0444)
