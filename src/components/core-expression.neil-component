@@ -1,0 +1,9 @@
+[Neil COM]
+Module=expression
+Name=Expression editor
+Description=Provides an editor for expressions that work on patterns.
+Icon=neil
+Authors=The Neil Development Team
+Copyright=Copyright (C) 2006,2007,2008,2009,2010,2011 The Neil Development Team
+Website=http://sites.google.com/site/neilsequencer/
+
