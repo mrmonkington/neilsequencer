@@ -41,19 +41,9 @@ DOTSIZE = 8
 EXACT = 0
 NEXT = 1
 
-class EnvelopeView(gtk.DrawingArea):
-    """
-    Envelope viewer.
-
-    A drawing surface where you can specify how the volume of a sample changes over time.
-    """
-
-    def __init__(self, wavetable):
-	"""
-	Initialization.
-	"""
-	self.envelope = None
-	self.wavetable = wavetable
+class BasicEnvelope(gtk.DrawingArea):
+    def __init__(self):
+        self.envelope = None
 	self.currentpoint = None
 	self.dragging = False
 	self.showpoints = False
@@ -66,59 +56,6 @@ class EnvelopeView(gtk.DrawingArea):
 	self.connect('leave-notify-event', self.on_leave)
 	self.connect('expose_event', self.expose)
 
-	# Menu that get's activated when you click right mouse button.
-	self.context_menu = gtk.Menu()
-	
-	self.sustain = gtk.MenuItem("Sustain")
-	self.sustain.show()
-	self.sustain.connect('button-press-event', self.on_set_sustain)
-	self.context_menu.append(self.sustain)
-	
-	self.delete = gtk.MenuItem("Delete")
-	self.delete.show()
-	self.delete.connect('button-press-event', self.on_delete_point)
-	self.context_menu.append(self.delete)
-
-	self.reset = gtk.MenuItem("Reset")
-	self.reset.show()
-	self.reset.connect('button-press-event', self.on_reset)
-	self.context_menu.append(self.reset)
-	
-	separator = gtk.SeparatorMenuItem()
-	separator.show()
-	self.context_menu.append(separator)
-
-	self.load = gtk.MenuItem("Load")
-	self.load.show()
-	self.load.connect('button-press-event', self.on_load)
-	self.context_menu.append(self.load)
-
-	self.save = gtk.MenuItem("Save")
-	self.save.show()
-	self.save.connect('button-press-event', self.on_save)
-	self.context_menu.append(self.save)
-
-	self.open_dialog =\
-	    gtk.FileChooserDialog(title="Open Envelope File",
-				  action=gtk.FILE_CHOOSER_ACTION_OPEN,
-				  buttons=(gtk.STOCK_CANCEL,
-					   gtk.RESPONSE_CANCEL,
-					   gtk.STOCK_OPEN,
-					   gtk.RESPONSE_OK))
-	self.save_dialog =\
-	    gtk.FileChooserDialog(title="Save Envelope File",
-				  action=gtk.FILE_CHOOSER_ACTION_SAVE,
-				  buttons=(gtk.STOCK_CANCEL,
-					   gtk.RESPONSE_CANCEL,
-					   gtk.STOCK_OPEN,
-					   gtk.RESPONSE_OK))
-
-	self.filter_ = gtk.FileFilter()
-	self.filter_.set_name("Buzz Envelope File (*.bef)")
-	self.filter_.add_pattern("*.bef")
-	self.open_dialog.add_filter(self.filter_)
-	self.save_dialog.add_filter(self.filter_)
-	
     def expose(self, widget, event):
 	self.context = widget.window.cairo_create()
 	self.draw(self.context)
@@ -232,6 +169,71 @@ class EnvelopeView(gtk.DrawingArea):
 		self.currentpoint = i
 		self.redraw()
 
+class EnvelopeView(BasicEnvelope):
+    """
+    Envelope viewer.
+
+    A drawing surface where you can specify how the volume of a sample changes over time.
+    """
+    def __init__(self, wavetable):
+	"""
+	Initialization.
+	"""
+	self.wavetable = wavetable
+        BasicEnvelope.__init__(self)
+	# Menu that get's activated when you click right mouse button.
+	self.context_menu = gtk.Menu()
+	
+	self.sustain = gtk.MenuItem("Sustain")
+	self.sustain.show()
+	self.sustain.connect('button-press-event', self.on_set_sustain)
+	self.context_menu.append(self.sustain)
+	
+	self.delete = gtk.MenuItem("Delete")
+	self.delete.show()
+	self.delete.connect('button-press-event', self.on_delete_point)
+	self.context_menu.append(self.delete)
+
+	self.reset = gtk.MenuItem("Reset")
+	self.reset.show()
+	self.reset.connect('button-press-event', self.on_reset)
+	self.context_menu.append(self.reset)
+	
+	separator = gtk.SeparatorMenuItem()
+	separator.show()
+	self.context_menu.append(separator)
+
+	self.load = gtk.MenuItem("Load")
+	self.load.show()
+	self.load.connect('button-press-event', self.on_load)
+	self.context_menu.append(self.load)
+
+	self.save = gtk.MenuItem("Save")
+	self.save.show()
+	self.save.connect('button-press-event', self.on_save)
+	self.context_menu.append(self.save)
+
+	self.open_dialog =\
+	    gtk.FileChooserDialog(title="Open Envelope File",
+				  action=gtk.FILE_CHOOSER_ACTION_OPEN,
+				  buttons=(gtk.STOCK_CANCEL,
+					   gtk.RESPONSE_CANCEL,
+					   gtk.STOCK_OPEN,
+					   gtk.RESPONSE_OK))
+	self.save_dialog =\
+	    gtk.FileChooserDialog(title="Save Envelope File",
+				  action=gtk.FILE_CHOOSER_ACTION_SAVE,
+				  buttons=(gtk.STOCK_CANCEL,
+					   gtk.RESPONSE_CANCEL,
+					   gtk.STOCK_OPEN,
+					   gtk.RESPONSE_OK))
+
+	self.filter_ = gtk.FileFilter()
+	self.filter_.set_name("Buzz Envelope File (*.bef)")
+	self.filter_.add_pattern("*.bef")
+	self.open_dialog.add_filter(self.filter_)
+	self.save_dialog.add_filter(self.filter_)
+	
     def on_set_sustain(self, widget, event):
 	"""
 	Callback responding to the context menu item that sets the current
