@@ -57,6 +57,8 @@ class Expression():
         del self.expressions[name]
         if self.selector.get_model().get_iter_first():
             self.selector.set_active(0)
+        else:
+            self.text.get_buffer().set_text('')
         self.write_expressions()
 
     def mov_expression(self, widget):
