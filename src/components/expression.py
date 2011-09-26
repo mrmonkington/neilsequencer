@@ -84,7 +84,7 @@ class Expression():
             name = model.get_value(active, 0)
             self.text.get_buffer().set_text(self.expressions[name])
 
-    def transform(self, pattern, selection):
+    def transform(self, plugin, pattern, selection):
         try:
             self.read_expressions()
         except IOError:
@@ -136,12 +136,12 @@ class Expression():
         if response:
             try:
                 exec expr
-            except Exception:
+            except Exception as e:
                 error_box = gtk.Dialog(
                     "Expression Error",
                     buttons=(gtk.STOCK_OK, True)
                     )
-                error_box.vbox.add(gtk.Label("There was some problem with your expression"))
+                error_box.vbox.add(gtk.Label("There was a problem with your expression:\n" + str(e)))
                 error_box.show_all()
                 error_box.run()
                 error_box.destroy()

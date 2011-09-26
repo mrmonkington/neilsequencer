@@ -909,7 +909,7 @@ class PatternView(gtk.DrawingArea):
 
     def on_expression(self, item):
         expression = com.get('neil.core.expression')
-        expression.transform(self.pattern, self.selection_range)
+        expression.transform(self.plugin, self.pattern, self.selection_range())
 
     def update_position(self):
         """
