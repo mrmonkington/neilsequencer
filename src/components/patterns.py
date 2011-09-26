@@ -862,19 +862,20 @@ class PatternView(gtk.DrawingArea):
                 set_sensitive(sel_sensitive) 
 
         # User script menu
-        label, scripts_menu = menu.add_submenu("User scripts")
-        import sys
-        import os
-        home_folder = os.getenv('HOME') + '/.neil'
-        if not (home_folder in sys.path):
-            sys.path.append(home_folder)
-        try:
-            from neil_scripts import scripts
-            for key in scripts.iterkeys():
-                scripts_menu.add_item(key, self.on_activate_user_script, 
-                                      scripts[key]).set_sensitive(sel_sensitive)
-        except ImportError:
-            pass
+        # label, scripts_menu = menu.add_submenu("User scripts")
+        # import sys
+        # import os
+        # home_folder = os.getenv('HOME') + '/.neil'
+        # if not (home_folder in sys.path):
+        #     sys.path.append(home_folder)
+        # try:
+        #     from neil_scripts import scripts
+        #     for key in scripts.iterkeys():
+        #         scripts_menu.add_item(key, self.on_activate_user_script, 
+        #                               scripts[key]).set_sensitive(sel_sensitive)
+        # except ImportError:
+        #     pass
+        menu.add_item("Expression", self.on_expression).set_sensitive(sel_sensitive)
         menu.add_separator()
 
         issolo = player.solo_plugin == self.get_plugin()
@@ -906,31 +907,9 @@ class PatternView(gtk.DrawingArea):
             player = com.get('neil.core.player')
             player.history_commit('pattern effect')
 
-    def on_activate_user_script(self, item, method):
-        values = {}
-        for row, group, track, index in self.selection_range():
-            value = self.plugin.get_pattern_value(self.pattern, group, 
-                                                  track, index, row)
-            try:
-                values[(group, track, index)] = (values[(group, track, index)] +
-                                                 [(row, value)])
-            except KeyError:
-                values[(group, track, index)] = [(row, value)]
-        for key in values.iterkeys():
-            group = key[0]
-            track = key[1]
-            index = key[2]
-            param = self.plugin.get_parameter(group, track, index)
-            min_ = param.get_value_min()
-            max_ = param.get_value_max()
-            none = param.get_value_none()
-            output = method([value[1] for value in values[key]], 
-                            min_, max_, none)
-            for (row, value), i in zip(values[key], range(len(output))):
-                self.plugin.set_pattern_value(self.pattern, group, track, index,
-                                              row, output[i])
-        player = com.get('neil.core.player')
-        player.history_commit("user script")
+    def on_expression(self, item):
+        expression = com.get('neil.core.expression')
+        expression.transform(self.pattern, self.selection_range)
 
     def update_position(self):
         """

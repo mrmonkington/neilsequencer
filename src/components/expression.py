@@ -84,7 +84,7 @@ class Expression():
             name = model.get_value(active, 0)
             self.text.get_buffer().set_text(self.expressions[name])
 
-    def transform(self, data, parameter):
+    def transform(self, pattern, selection):
         try:
             self.read_expressions()
         except IOError:
@@ -135,10 +135,6 @@ class Expression():
         self.dialog.destroy()
         if response:
             try:
-                a = parameter.get_value_min()
-                b = parameter.get_value_max()
-                z = parameter.get_value_none()
-                n = len(data)
                 exec expr
             except Exception:
                 error_box = gtk.Dialog(
@@ -149,14 +145,6 @@ class Expression():
                 error_box.show_all()
                 error_box.run()
                 error_box.destroy()
-        for i, value in enumerate(data):
-            data[i] = int(value)
-            if data[i] != parameter.get_value_none():
-                if data[i] <= parameter.get_value_min():
-                    data[i] = parameter.get_value_min()
-                if data[i] >= parameter.get_value_max():
-                    data[i] = parameter.get_value_max()
-        return data
 
 __all__ = [
     'Expression',
