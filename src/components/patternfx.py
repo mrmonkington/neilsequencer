@@ -5,6 +5,7 @@ import pickle
 import neil.com as com
 from neil.utils import roundint, bn2mn, mn2bn, new_stock_image_button
 from neil.utils import gettext
+from neil.envelope import BasicEnvelope
 from random import *
 from math import *
 from neil.gtkcodebuffer import CodeBuffer, SyntaxLoader, add_syntax_path
@@ -130,10 +131,33 @@ class LinearTransform():
                     data[row] = max(data[row], parameter.get_value_min())
         return data
 
+class Envelope():
+    __neil__ = dict(
+        id = 'neil.core.patternfx.envelope',
+        categories = [
+            'patternfx'
+            ]
+        )
+
+    name = "Envelope"
+
+    def transform(self, data, parameter):
+        dialog = gtk.Dialog(
+            "Linear Transform",
+            buttons=(gtk.STOCK_OK, True, gtk.STOCK_CANCEL, False)
+            )
+        dialog.show_all()
+        response = dialog.run()
+        dialog.destroy()
+        if response:
+            pass
+        return data
+
 __all__ = [
     'SimpleRandom',
     'RandomWalk',
     'LinearTransform',
+    'Envelope',
     ]
 
 __neil__ = dict(
@@ -141,5 +165,6 @@ __neil__ = dict(
         SimpleRandom,
         RandomWalk,
         LinearTransform,
+        Envelope,
         ]
     )

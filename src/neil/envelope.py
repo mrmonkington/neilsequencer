@@ -231,6 +231,71 @@ class BasicEnvelope(gtk.DrawingArea):
 	return [self.env_to_pixel(x, y) + (f,) for x, y, f in \
 		self.envelope.get_point_list()]
 
+    def draw(self, ctx):
+	"""
+	Overriding a L{Canvas} method that paints onto an offscreen buffer.
+	Draws the envelope view graphics.
+	"""	
+	w, h = self.get_client_size()
+	cfg = config.get_config()
+
+	bgbrush = cfg.get_float_color('EE BG')
+	dotbrush = cfg.get_float_color('EE Dot')
+	selectbrush = cfg.get_float_color('EE Dot Selected')
+	pen = cfg.get_float_color('EE Line')
+	brush = cfg.get_float_color('EE Fill')
+	gridpen = cfg.get_float_color('EE Grid')
+
+	ctx.translate(0.5, 0.5)
+	ctx.set_source_rgb(*bgbrush)
+	ctx.rectangle(0, 0, w, h)
+	ctx.fill()
+	ctx.set_line_width(1)
+
+	if not self.envelope:
+	    return
+	# 4096 (16)
+	# 8192 (8)
+	xlines = 16
+	ylines = 8
+	xf = 65535.0 / float(xlines)
+	yf = 65535.0 / float(ylines)
+	ctx.set_source_rgb(*gridpen)
+	for xg in range(xlines + 1):
+	    pt1 = self.env_to_pixel(xg * xf, 0)
+	    ctx.move_to(pt1[0], 0)
+	    ctx.line_to(pt1[0], h)
+	    ctx.stroke()
+	for yg in range(ylines + 1):
+	    pt1 = self.env_to_pixel(0, yg * yf)
+	    ctx.move_to(0, pt1[1])
+	    ctx.line_to(w, pt1[1])
+	    ctx.stroke()
+	if not self.get_property('sensitive'):
+	    return
+	points = self.get_translated_points()
+	ctx.move_to(*self.env_to_pixel(0, 0))
+	for i in xrange(len(points)):
+	    pt1 = points[max(i, 0)]
+	    ctx.line_to(pt1[0], pt1[1])
+	ctx.line_to(*self.env_to_pixel(65535, 0))
+	ctx.set_source_rgba(*(brush + (0.6,)))
+	ctx.fill_preserve()
+	ctx.set_source_rgb(*pen)
+	ctx.stroke()
+	if self.showpoints:
+	    for i in reversed(range(len(points))):
+		pt1 = points[max(i, 0)]
+		pt2 = points[min(i + 1, len(points) - 1)]
+		if i == self.currentpoint:
+		    ctx.set_source_rgb(*selectbrush)
+		else:
+		    ctx.set_source_rgb(*dotbrush)
+		import math
+		ctx.arc(pt1[0], pt1[1],
+			int((DOTSIZE / 2.0) + 0.5), 0.0, math.pi * 2)
+		ctx.fill()
+
 class EnvelopeView(BasicEnvelope):
     """
     Envelope viewer.
@@ -371,57 +436,16 @@ class EnvelopeView(BasicEnvelope):
 	Overriding a L{Canvas} method that paints onto an offscreen buffer.
 	Draws the envelope view graphics.
 	"""	
+        BasicEnvelope.draw(self, ctx)
 	w, h = self.get_client_size()
 	cfg = config.get_config()
-
-	bgbrush = cfg.get_float_color('EE BG')
-	dotbrush = cfg.get_float_color('EE Dot')
-	selectbrush = cfg.get_float_color('EE Dot Selected')
-	pen = cfg.get_float_color('EE Line')
-	brush = cfg.get_float_color('EE Fill')
 	sustainpen = cfg.get_float_color('EE Sustain')
-	gridpen = cfg.get_float_color('EE Grid')
-
-	ctx.translate(0.5, 0.5)
-	ctx.set_source_rgb(*bgbrush)
-	ctx.rectangle(0, 0, w, h)
-	ctx.fill()
-	ctx.set_line_width(1)
-
-	if not self.envelope:
-	    return
-	# 4096 (16)
-	# 8192 (8)
-	xlines = 16
-	ylines = 8
-	xf = 65535.0 / float(xlines)
-	yf = 65535.0 / float(ylines)
-	ctx.set_source_rgb(*gridpen)
-	for xg in range(xlines + 1):
-	    pt1 = self.env_to_pixel(xg * xf, 0)
-	    ctx.move_to(pt1[0], 0)
-	    ctx.line_to(pt1[0], h)
-	    ctx.stroke()
-	for yg in range(ylines + 1):
-	    pt1 = self.env_to_pixel(0, yg * yf)
-	    ctx.move_to(0, pt1[1])
-	    ctx.line_to(w, pt1[1])
-	    ctx.stroke()
-	if not self.get_property('sensitive'):
-	    return
-	points = self.get_translated_points()
+	points = BasicEnvelope.get_translated_points(self)
 	envp = None
-	ctx.move_to(*self.env_to_pixel(0, 0))
 	for i in xrange(len(points)):
 	    pt1 = points[max(i, 0)]
-	    ctx.line_to(pt1[0], pt1[1])
 	    if pt1[2] & zzub.zzub_envelope_flag_sustain:
 		envp = pt1
-	ctx.line_to(*self.env_to_pixel(65535, 0))
-	ctx.set_source_rgba(*(brush + (0.6,)))
-	ctx.fill_preserve()
-	ctx.set_source_rgb(*pen)
-	ctx.stroke()
 	if envp:
 	    ctx.set_source_rgb(*sustainpen)
 	    ctx.move_to(envp[0], 0)
@@ -429,18 +453,6 @@ class EnvelopeView(BasicEnvelope):
 	    ctx.set_dash([4.0, 2.0], 0.5)
 	    ctx.stroke()
 	    ctx.set_dash([], 0.0)
-	if self.showpoints:
-	    for i in reversed(range(len(points))):
-		pt1 = points[max(i, 0)]
-		pt2 = points[min(i + 1, len(points) - 1)]
-		if i == self.currentpoint:
-		    ctx.set_source_rgb(*selectbrush)
-		else:
-		    ctx.set_source_rgb(*dotbrush)
-		import math
-		ctx.arc(pt1[0], pt1[1],
-			int((DOTSIZE / 2.0) + 0.5), 0.0, math.pi * 2)
-		ctx.fill()
 
 def load_envelope(path):
     """
