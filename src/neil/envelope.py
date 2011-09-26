@@ -55,6 +55,18 @@ class BasicEnvelope(gtk.DrawingArea):
 	self.connect('enter-notify-event', self.on_enter)
 	self.connect('leave-notify-event', self.on_leave)
 	self.connect('expose_event', self.expose)
+        
+        self.context_menu = gtk.Menu()
+
+	self.delete = gtk.MenuItem("Delete")
+	self.delete.show()
+	self.delete.connect('button-press-event', self.on_delete_point)
+	self.context_menu.append(self.delete)
+
+	self.reset = gtk.MenuItem("Reset")
+	self.reset.show()
+	self.reset.connect('button-press-event', self.on_reset)
+	self.context_menu.append(self.reset)
 
     def expose(self, widget, event):
 	self.context = widget.window.cairo_create()
@@ -169,6 +181,56 @@ class BasicEnvelope(gtk.DrawingArea):
 		self.currentpoint = i
 		self.redraw()
 
+    def on_reset(self, widget, event):
+	"""
+	Callback responding to the "reset" context menu item.
+	"""
+	while self.envelope.get_point_count() > 2:
+	    self.envelope.delete_point(1)
+	self.redraw()
+
+    def on_delete_point(self, widget, event):
+	"""
+	Callback responding to the context menu item that deletes the current
+	point of the envelope.
+	"""
+        if self.currentpoint != None:
+            self.envelope.delete_point(self.currentpoint)
+            self.currentpoint = None
+            self.redraw()
+
+    def env_to_pixel(self, x, y):
+	w, h = self.get_client_size()
+	xf = (w - (2 * BORDER) - 1) / 65535.0
+	yf = (h - (2 * BORDER) - 1) / 65535.0
+	return int(x * xf) + BORDER, int((65535 - y) * yf) + BORDER
+
+    def pixel_to_env(self, position):
+	"""
+	Converts a (x,y) pixel coordinate into an envelope point value.
+
+	@param position: Pixel coordinate.
+	@type position: (int, int)
+	@return: (time, amplitude) point on the envelope.
+	@rtype: (int, int)
+	"""
+	x, y = position
+	w, h = self.get_client_size()
+	xf = 65535.0 / (w - (2 * BORDER) - 1)
+	yf = 65535.0 / (h - (2 * BORDER) - 1)
+	return max(min(int((x - BORDER) * xf), 65535), 0),\
+	       65535 - max(min(int((y - BORDER) * yf), 65535), 0)
+
+    def get_translated_points(self):
+	"""
+	Converts the envelope values to a list of pixel values.
+
+	@return: Pixel values.
+	@rtype: list		
+	"""
+	return [self.env_to_pixel(x, y) + (f,) for x, y, f in \
+		self.envelope.get_point_list()]
+
 class EnvelopeView(BasicEnvelope):
     """
     Envelope viewer.
@@ -182,23 +244,12 @@ class EnvelopeView(BasicEnvelope):
 	self.wavetable = wavetable
         BasicEnvelope.__init__(self)
 	# Menu that get's activated when you click right mouse button.
-	self.context_menu = gtk.Menu()
 	
 	self.sustain = gtk.MenuItem("Sustain")
 	self.sustain.show()
 	self.sustain.connect('button-press-event', self.on_set_sustain)
 	self.context_menu.append(self.sustain)
-	
-	self.delete = gtk.MenuItem("Delete")
-	self.delete.show()
-	self.delete.connect('button-press-event', self.on_delete_point)
-	self.context_menu.append(self.delete)
-
-	self.reset = gtk.MenuItem("Reset")
-	self.reset.show()
-	self.reset.connect('button-press-event', self.on_reset)
-	self.context_menu.append(self.reset)
-	
+		
 	separator = gtk.SeparatorMenuItem()
 	separator.show()
 	self.context_menu.append(separator)
@@ -252,14 +303,6 @@ class EnvelopeView(BasicEnvelope):
             self.currentpoint = None
             self.redraw()
 
-    def on_reset(self, widget, event):
-	"""
-	Callback responding to the "reset" context menu item.
-	"""
-	while self.envelope.get_point_count() > 2:
-	    self.envelope.delete_point(1)
-	self.redraw()
-
     def on_load(self, widget, event):
 	"""
 	Callback responding to the 'load' context menu item.
@@ -304,16 +347,6 @@ class EnvelopeView(BasicEnvelope):
 	self.save_dialog.hide()
 	self.redraw()
 
-    def on_delete_point(self, widget, event):
-	"""
-	Callback responding to the context menu item that deletes the current
-	point of the envelope.
-	"""
-        if self.currentpoint != None:
-            self.envelope.delete_point(self.currentpoint)
-            self.currentpoint = None
-            self.redraw()
-
     def update(self, *args):
 	"""
 	Updates the envelope view based on the sample selected in the sample list.		
@@ -328,38 +361,6 @@ class EnvelopeView(BasicEnvelope):
 	    if w.get_envelope_count():
 		self.envelope = w.get_envelope(0)
 	self.redraw()
-
-    def env_to_pixel(self, x, y):
-	w, h = self.get_client_size()
-	xf = (w - (2 * BORDER) - 1) / 65535.0
-	yf = (h - (2 * BORDER) - 1) / 65535.0
-	return int(x * xf) + BORDER, int((65535 - y) * yf) + BORDER
-
-    def pixel_to_env(self, position):
-	"""
-	Converts a (x,y) pixel coordinate into an envelope point value.
-
-	@param position: Pixel coordinate.
-	@type position: (int, int)
-	@return: (time, amplitude) point on the envelope.
-	@rtype: (int, int)
-	"""
-	x, y = position
-	w, h = self.get_client_size()
-	xf = 65535.0 / (w - (2 * BORDER) - 1)
-	yf = 65535.0 / (h - (2 * BORDER) - 1)
-	return max(min(int((x - BORDER) * xf), 65535), 0),\
-	       65535 - max(min(int((y - BORDER) * yf), 65535), 0)
-
-    def get_translated_points(self):
-	"""
-	Converts the envelope values to a list of pixel values.
-
-	@return: Pixel values.
-	@rtype: list		
-	"""
-	return [self.env_to_pixel(x, y) + (f,) for x, y, f in \
-		self.envelope.get_point_list()]
 
     def set_sensitive(self, enable):
 	gtk.DrawingArea.set_sensitive(self, enable)
