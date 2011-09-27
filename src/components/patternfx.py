@@ -153,7 +153,13 @@ class Envelope():
         response = dialog.run()
         dialog.destroy()
         if response:
-            pass
+            env = envelope.envelope
+            index = 0
+            for row, value in enumerate(data):
+                phase = float(row) / len(data)
+                while env[index + 1][0] < phase:
+                    index += 1
+                data[row] = value
         return data
 
 __all__ = [
