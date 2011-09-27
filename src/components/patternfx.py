@@ -146,7 +146,23 @@ class Envelope():
             "Envelope",
             buttons=(gtk.STOCK_OK, True, gtk.STOCK_CANCEL, False)
             )
+        a = parameter.get_value_min()
+        b = parameter.get_value_max()
         envelope = SimpleEnvelope()
+        envelope.envelope = []
+        last_point = (0.0, 0.0)
+        for row, value in enumerate(data):
+            if value != parameter.get_value_none():
+                last_point = (float(row) / (len(data) - 1), 
+                              (value - a) / float(b - a))
+                envelope.envelope.append(last_point)
+            else:
+                last_point = (float(row) / (len(data) - 1), 
+                              last_point[1])
+                envelope.envelope.append(last_point)
+        # Prune points that are linear interpolations of the points
+        # on both sides of said points.
+
         envelope.set_size_request(600, 200)
         dialog.vbox.pack_start(envelope)
         dialog.show_all()
@@ -159,7 +175,10 @@ class Envelope():
                 phase = float(row) / len(data)
                 while env[index + 1][0] < phase:
                     index += 1
-                data[row] = value
+                p = ((phase - env[index][0]) / 
+                     (env[index + 1][0] - env[index][0]))
+                value = env[index][1] + p * (env[index + 1][1] - env[index][1])
+                data[row] = int(a + value * (b - a))
         return data
 
 __all__ = [
