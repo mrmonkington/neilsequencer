@@ -24,6 +24,7 @@ Provides dialogs, classes and controls to display/load/save envelopes
 
 import gtk
 import os, sys
+import math
 from utils import prepstr, db2linear, linear2db, note2str
 from utils import read_int, write_int
 import zzub
@@ -55,14 +56,11 @@ class SimpleEnvelope(gtk.DrawingArea):
 	self.connect('enter-notify-event', self.on_enter)
 	self.connect('leave-notify-event', self.on_leave)
 	self.connect('expose_event', self.expose)
-        
         self.context_menu = gtk.Menu()
-
 	self.delete = gtk.MenuItem("Delete")
 	self.delete.show()
 	self.delete.connect('button-press-event', self.on_delete_point)
 	self.context_menu.append(self.delete)
-
 	self.reset = gtk.MenuItem("Reset")
 	self.reset.show()
 	self.reset.connect('button-press-event', self.on_reset)
@@ -108,7 +106,6 @@ class SimpleEnvelope(gtk.DrawingArea):
 	"""
 	x, y = position
 	points = self.get_translated_points()
-        print points
 	ds = int((DOTSIZE / 2.0) + 0.5)
 	bestindex = None
 	for i, point in enumerate(points):
@@ -134,12 +131,9 @@ class SimpleEnvelope(gtk.DrawingArea):
 	    self.dragging = True
 	    if location == NEXT:
 		# No direct hit, create a new one
-		#self.envelope.insert_point(self.currentpoint)
-		#x, y, f = self.envelope.get_point(self.currentpoint)
 		x, y = self.pixel_to_env((mx, my))
-		self.envelope.append([x, y])
-                self.envelope.sort()
-                self.currentpoint = self.envelope.index([x, y])
+                index = self.currentpoint
+		self.envelope = self.envelope[:index] + [(x, y)] + self.envelope[index:]
 	    self.redraw()
 	elif event.button == 3:
 	    mx, my = int(event.x), int(event.y)
@@ -170,8 +164,20 @@ class SimpleEnvelope(gtk.DrawingArea):
 	mx, my, state = self.window.get_pointer()
 	mx, my = int(mx), int(my)
 	if self.dragging:
-	    x, y = self.envelope[self.currentpoint]
 	    x, y = self.pixel_to_env((mx, my))
+            if self.currentpoint == 0:
+                x = 0.0
+            elif self.currentpoint == len(self.envelope) - 1:
+                x = 1.0
+            else:
+                if (x < self.envelope[self.currentpoint - 1][0]):
+                    x = self.envelope[self.currentpoint - 1][0]
+                if (x > self.envelope[self.currentpoint + 1][0]):
+                    x = self.envelope[self.currentpoint + 1][0]
+            if (y < 0.0):
+                y = 0.0
+            if (y > 1.0):
+                y = 1.0
 	    self.envelope[self.currentpoint] = x, y
 	    self.redraw()
 	else:
@@ -186,8 +192,7 @@ class SimpleEnvelope(gtk.DrawingArea):
 	"""
 	Callback responding to the "reset" context menu item.
 	"""
-	#while self.envelope.get_point_count() > 2:
-	#    self.envelope.delete_point(1)
+        self.envelope = [[0.0, 0.0], [1.0, 0.0]]
 	self.redraw()
 
     def on_delete_point(self, widget, event):
@@ -248,7 +253,7 @@ class SimpleEnvelope(gtk.DrawingArea):
 	if not self.envelope:
 	    return
         # Draw the background grid.
-	xlines = 16
+	xlines = 24
 	ylines = 8
 	ctx.set_source_rgb(*gridpen)
 	for xg in range(xlines + 1):
@@ -264,21 +269,21 @@ class SimpleEnvelope(gtk.DrawingArea):
 	if not self.get_property('sensitive'):
 	    return
 	points = self.get_translated_points()
-	ctx.move_to(*self.env_to_pixel(0.0, 1.0))
+	ctx.move_to(*self.env_to_pixel(0.0, 0.0))
 	for point in points:
 	    ctx.line_to(point[0], point[1])
+	ctx.line_to(*self.env_to_pixel(1.0, 0.0))
 	ctx.set_source_rgba(*(brush + (0.6,)))
 	ctx.fill_preserve()
 	ctx.set_source_rgb(*pen)
 	ctx.stroke()
 	if self.showpoints:
-	    for i in range(len(points) - 1):
+	    for i in range(len(points)):
 		pt1 = points[i]
 		if i == self.currentpoint:
 		    ctx.set_source_rgb(*selectbrush)
 		else:
 		    ctx.set_source_rgb(*dotbrush)
-		import math
 		ctx.arc(pt1[0], pt1[1],
 			int((DOTSIZE / 2.0) + 0.5), 0.0, math.pi * 2)
 		ctx.fill()
@@ -667,7 +672,6 @@ class EnvelopeView(BasicEnvelope):
 	    w = player.get_wave(sel[0])
 	    if w.get_envelope_count():
 		self.envelope = w.get_envelope(0)
-                print self.envelope
 	self.redraw()
 
     def set_sensitive(self, enable):

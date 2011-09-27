@@ -147,7 +147,7 @@ class Envelope():
             buttons=(gtk.STOCK_OK, True, gtk.STOCK_CANCEL, False)
             )
         envelope = SimpleEnvelope()
-        envelope.set_size_request(400, 200)
+        envelope.set_size_request(600, 200)
         dialog.vbox.pack_start(envelope)
         dialog.show_all()
         response = dialog.run()
