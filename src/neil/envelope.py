@@ -41,9 +41,251 @@ DOTSIZE = 8
 EXACT = 0
 NEXT = 1
 
+class SimpleEnvelope(gtk.DrawingArea):
+    def __init__(self):
+        self.envelope = [[0.0, 0.0], [1.0, 0.0]]
+	self.currentpoint = None
+	self.dragging = False
+	self.showpoints = False
+	gtk.DrawingArea.__init__(self)
+	self.add_events(gtk.gdk.ALL_EVENTS_MASK)
+	self.connect('button-press-event', self.on_button_down)
+	self.connect('button-release-event', self.on_button_up)
+	self.connect('motion-notify-event', self.on_motion)
+	self.connect('enter-notify-event', self.on_enter)
+	self.connect('leave-notify-event', self.on_leave)
+	self.connect('expose_event', self.expose)
+        
+        self.context_menu = gtk.Menu()
+
+	self.delete = gtk.MenuItem("Delete")
+	self.delete.show()
+	self.delete.connect('button-press-event', self.on_delete_point)
+	self.context_menu.append(self.delete)
+
+	self.reset = gtk.MenuItem("Reset")
+	self.reset.show()
+	self.reset.connect('button-press-event', self.on_reset)
+	self.context_menu.append(self.reset)
+
+    def expose(self, widget, event):
+	self.context = widget.window.cairo_create()
+	self.draw(self.context)
+	return False
+
+    def get_client_size(self):
+	rect = self.get_allocation()
+	return rect.width, rect.height
+
+    def redraw(self):
+	if self.window:
+	    w, h = self.get_client_size()
+	    self.window.invalidate_rect((0, 0, w, h), False)
+
+    def on_enter(self, widget, event):
+	"""
+	Called when the mouse enters the envelope editor.
+	"""
+	self.showpoints = True
+	self.redraw()
+
+    def on_leave(self, widget, event):
+	"""
+	Called when the mouse leaves the envelope editor.
+	"""
+	self.showpoints = False
+	self.redraw()
+
+    def get_point_at(self, position):
+	"""
+	Finds an existing envelope point that matches the given position the best.
+
+	@param position: Pixel coordinate.
+	@type position: (int, int)
+	@return: (index, match) that represents the index of a point
+	and whether it matches exactly or not (with EXACT and NEXT).
+	@rtype: (int, int)
+	"""
+	x, y = position
+	points = self.get_translated_points()
+        print points
+	ds = int((DOTSIZE / 2.0) + 0.5)
+	bestindex = None
+	for i, point in enumerate(points):
+	    px, py = point
+	    if (bestindex == None) and (px > x):
+		bestindex = i
+	    rc = gtk.gdk.Rectangle(px - ds, py - ds, DOTSIZE, DOTSIZE)
+	    if sum(rc.intersect((x, y, 1, 1))):
+		return i, EXACT
+	return bestindex, NEXT
+
+    def on_button_down(self, widget, event):
+	"""
+	Callback that responds to mouse down over the envelope view.
+	"""
+	if event.button == 1:
+	    mx, my = int(event.x), int(event.y)
+	    i, location = self.get_point_at((mx, my))
+	    if i == None:
+		return
+	    self.grab_add()
+	    self.currentpoint = i
+	    self.dragging = True
+	    if location == NEXT:
+		# No direct hit, create a new one
+		#self.envelope.insert_point(self.currentpoint)
+		#x, y, f = self.envelope.get_point(self.currentpoint)
+		x, y = self.pixel_to_env((mx, my))
+		self.envelope.append([x, y])
+                self.envelope.sort()
+                self.currentpoint = self.envelope.index([x, y])
+	    self.redraw()
+	elif event.button == 3:
+	    mx, my = int(event.x), int(event.y)
+	    i, location = self.get_point_at((mx, my))
+	    if i == None:
+		return
+	    if location == NEXT:
+                self.delete.hide()
+		self.context_menu.popup(None, None, None, event.button, event.time)
+	    else:
+                self.delete.show()
+		self.context_menu.popup(None, None, None, event.button, event.time)
+
+    def on_button_up(self, widget, event):
+	"""
+	Callback that responds to mouse up over the envelope view.
+	"""
+	if self.dragging:
+	    self.grab_remove()
+	    self.dragging = False
+	    self.currentpoint = None
+	    self.redraw()
+
+    def on_motion(self, widget, event):		
+	"""
+	Callback that responds to mouse motion over the envelope view.
+	"""
+	mx, my, state = self.window.get_pointer()
+	mx, my = int(mx), int(my)
+	if self.dragging:
+	    x, y = self.envelope[self.currentpoint]
+	    x, y = self.pixel_to_env((mx, my))
+	    self.envelope[self.currentpoint] = x, y
+	    self.redraw()
+	else:
+	    i, location = self.get_point_at((mx, my))
+	    if location != EXACT:
+		i = None
+	    if (self.currentpoint != i):
+		self.currentpoint = i
+		self.redraw()
+
+    def on_reset(self, widget, event):
+	"""
+	Callback responding to the "reset" context menu item.
+	"""
+	#while self.envelope.get_point_count() > 2:
+	#    self.envelope.delete_point(1)
+	self.redraw()
+
+    def on_delete_point(self, widget, event):
+	"""
+	Callback responding to the context menu item that deletes the current
+	point of the envelope.
+	"""
+        if self.currentpoint != None:
+            del self.envelope[self.currentpoint]
+            self.currentpoint = None
+            self.redraw()
+
+    def env_to_pixel(self, x, y):
+	w, h = self.get_client_size()
+        return int(x * w), int((1.0 - y) * h)
+
+    def pixel_to_env(self, position):
+	"""
+	Converts a (x,y) pixel coordinate into an envelope point value.
+
+	@param position: Pixel coordinate.
+	@type position: (int, int)
+	@return: (time, amplitude) point on the envelope.
+	@rtype: (int, int)
+	"""
+	x, y = position
+	w, h = self.get_client_size()
+        return x / float(w), (h - y) / float(h)
+
+    def get_translated_points(self):
+	"""
+	Converts the envelope values to a list of pixel values.
+
+	@return: Pixel values.
+	@rtype: list		
+	"""
+	return [self.env_to_pixel(x, y) for x, y in self.envelope]
+
+    def draw(self, ctx):
+	"""
+	Overriding a L{Canvas} method that paints onto an offscreen buffer.
+	Draws the envelope view graphics.
+	"""	
+	w, h = self.get_client_size()
+	cfg = config.get_config()
+
+	bgbrush = cfg.get_float_color('EE BG')
+	dotbrush = cfg.get_float_color('EE Dot')
+	selectbrush = cfg.get_float_color('EE Dot Selected')
+	pen = cfg.get_float_color('EE Line')
+	brush = cfg.get_float_color('EE Fill')
+	gridpen = cfg.get_float_color('EE Grid')
+	ctx.translate(0.5, 0.5)
+	ctx.set_source_rgb(*bgbrush)
+	ctx.rectangle(0, 0, w, h)
+	ctx.fill()
+	ctx.set_line_width(1)
+	if not self.envelope:
+	    return
+        # Draw the background grid.
+	xlines = 16
+	ylines = 8
+	ctx.set_source_rgb(*gridpen)
+	for xg in range(xlines + 1):
+            x = w / float(xlines) * xg
+	    ctx.move_to(x, 0)
+	    ctx.line_to(x, h)
+	    ctx.stroke()
+	for yg in range(ylines + 1):
+            y = h / float(ylines) * yg
+	    ctx.move_to(0, y)
+	    ctx.line_to(w, y)
+	    ctx.stroke()
+	if not self.get_property('sensitive'):
+	    return
+	points = self.get_translated_points()
+	ctx.move_to(*self.env_to_pixel(0.0, 1.0))
+	for point in points:
+	    ctx.line_to(point[0], point[1])
+	ctx.set_source_rgba(*(brush + (0.6,)))
+	ctx.fill_preserve()
+	ctx.set_source_rgb(*pen)
+	ctx.stroke()
+	if self.showpoints:
+	    for i in range(len(points) - 1):
+		pt1 = points[i]
+		if i == self.currentpoint:
+		    ctx.set_source_rgb(*selectbrush)
+		else:
+		    ctx.set_source_rgb(*dotbrush)
+		import math
+		ctx.arc(pt1[0], pt1[1],
+			int((DOTSIZE / 2.0) + 0.5), 0.0, math.pi * 2)
+		ctx.fill()
+
 class BasicEnvelope(gtk.DrawingArea):
     def __init__(self):
-        self.envelope = None
+        self.envelope = zzub.Envelope(0)
 	self.currentpoint = None
 	self.dragging = False
 	self.showpoints = False
@@ -425,6 +667,7 @@ class EnvelopeView(BasicEnvelope):
 	    w = player.get_wave(sel[0])
 	    if w.get_envelope_count():
 		self.envelope = w.get_envelope(0)
+                print self.envelope
 	self.redraw()
 
     def set_sensitive(self, enable):

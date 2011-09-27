@@ -5,7 +5,7 @@ import pickle
 import neil.com as com
 from neil.utils import roundint, bn2mn, mn2bn, new_stock_image_button
 from neil.utils import gettext
-from neil.envelope import BasicEnvelope
+from neil.envelope import SimpleEnvelope
 from random import *
 from math import *
 from neil.gtkcodebuffer import CodeBuffer, SyntaxLoader, add_syntax_path
@@ -143,9 +143,12 @@ class Envelope():
 
     def transform(self, data, parameter):
         dialog = gtk.Dialog(
-            "Linear Transform",
+            "Envelope",
             buttons=(gtk.STOCK_OK, True, gtk.STOCK_CANCEL, False)
             )
+        envelope = SimpleEnvelope()
+        envelope.set_size_request(400, 200)
+        dialog.vbox.pack_start(envelope)
         dialog.show_all()
         response = dialog.run()
         dialog.destroy()
