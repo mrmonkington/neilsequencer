@@ -141,6 +141,12 @@ class Envelope():
 
     name = "Envelope"
 
+    def linear(self, point1, point2, point3, a, b):
+        y = int(a + point2[1] * (b - a))
+        i_y = int(a + (((point3[1] - point1[1]) / (point3[0] - point1[0])) *
+                       (point2[0] - point1[0]) - point1[1]) * (b - a))
+        return y == i_y
+
     def transform(self, data, parameter):
         dialog = gtk.Dialog(
             "Envelope",
@@ -162,7 +168,6 @@ class Envelope():
                 envelope.envelope.append(last_point)
         # Prune points that are linear interpolations of the points
         # on both sides of said points.
-
         envelope.set_size_request(600, 200)
         dialog.vbox.pack_start(envelope)
         dialog.show_all()
@@ -172,7 +177,7 @@ class Envelope():
             env = envelope.envelope
             index = 0
             for row, value in enumerate(data):
-                phase = float(row) / len(data)
+                phase = float(row) / (len(data) - 1)
                 while env[index + 1][0] < phase:
                     index += 1
                 p = ((phase - env[index][0]) / 
