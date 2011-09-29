@@ -260,8 +260,6 @@ class SimpleEnvelope(gtk.DrawingArea):
 	    ctx.move_to(0, y)
 	    ctx.line_to(w, y)
 	    ctx.stroke()
-	if not self.get_property('sensitive'):
-	    return
 	points = self.get_translated_points()
 	ctx.move_to(*self.env_to_pixel(0.0, 0.0))
 	for point in points:
