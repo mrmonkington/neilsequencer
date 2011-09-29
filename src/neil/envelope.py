@@ -57,10 +57,6 @@ class SimpleEnvelope(gtk.DrawingArea):
 	self.connect('leave-notify-event', self.on_leave)
 	self.connect('expose_event', self.expose)
         self.context_menu = gtk.Menu()
-	self.delete = gtk.MenuItem("Delete")
-	self.delete.show()
-	self.delete.connect('button-press-event', self.on_delete_point)
-	self.context_menu.append(self.delete)
 	self.reset = gtk.MenuItem("Reset")
 	self.reset.show()
 	self.reset.connect('button-press-event', self.on_reset)
@@ -141,11 +137,9 @@ class SimpleEnvelope(gtk.DrawingArea):
 	    if i == None:
 		return
 	    if location == NEXT:
-                self.delete.hide()
 		self.context_menu.popup(None, None, None, event.button, event.time)
 	    else:
-                self.delete.show()
-		self.context_menu.popup(None, None, None, event.button, event.time)
+                del self.envelope[i]
 
     def on_button_up(self, widget, event):
 	"""
