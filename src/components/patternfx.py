@@ -4,7 +4,7 @@ import os
 import pickle
 import neil.com as com
 from neil.utils import roundint, bn2mn, mn2bn, new_stock_image_button
-from neil.utils import gettext
+from neil.utils import gettext, warning
 from neil.envelope import SimpleEnvelope
 from random import *
 from math import *
@@ -146,6 +146,9 @@ class Envelope():
             "Envelope",
             buttons=(gtk.STOCK_OK, True, gtk.STOCK_CANCEL, False)
             )
+        if len(data) < 2:
+            warning(dialog, "The selection is too short! Select more rows.")
+            return data
         a = parameter.get_value_min()
         b = parameter.get_value_max()
         envelope = SimpleEnvelope()
@@ -168,7 +171,7 @@ class Envelope():
             to_delete = []
             for triple in triples:
                 p1, p2, p3 = [points[i] for i in triple]
-                if abs((p1[1] + p3[1]) * 0.5 - p2[1]) < (1.0 / (b - a)):
+                if abs((p1[1] + p3[1]) * 0.5 - p2[1]) <= (1.0 / (b - a)):
                     to_delete.append(triple[1])
             envelope.envelope = [point for index, point in enumerate(points) 
                                  if index not in to_delete]
