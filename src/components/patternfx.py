@@ -168,7 +168,7 @@ class Envelope():
             to_delete = []
             for triple in triples:
                 p1, p2, p3 = [points[i] for i in triple]
-                if abs((p1[1] + p3[1]) * 0.5 - p2[1]) <= (1.0 / (b - a)):
+                if abs((p1[1] + p3[1]) * 0.5 - p2[1]) < (1.0 / (b - a)):
                     to_delete.append(triple[1])
             envelope.envelope = [point for index, point in enumerate(points) 
                                  if index not in to_delete]

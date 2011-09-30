@@ -201,7 +201,8 @@ class SimpleEnvelope(gtk.DrawingArea):
 
     def env_to_pixel(self, x, y):
 	w, h = self.get_client_size()
-        return int(x * w), int((1.0 - y) * h)
+        return (int(BORDER + x * (w - 2 * BORDER)), 
+                int(BORDER + (1.0 - y) * (h - 2 * BORDER)))
 
     def pixel_to_env(self, position):
 	"""
@@ -214,7 +215,8 @@ class SimpleEnvelope(gtk.DrawingArea):
 	"""
 	x, y = position
 	w, h = self.get_client_size()
-        return x / float(w), (h - y) / float(h)
+        return ((x - BORDER) / float(w - 2 * BORDER), 
+                1.0 - (y - BORDER) / float(h - 2 * BORDER))
 
     def get_translated_points(self):
 	"""
@@ -250,15 +252,13 @@ class SimpleEnvelope(gtk.DrawingArea):
 	xlines = 24
 	ylines = 8
 	ctx.set_source_rgb(*gridpen)
-	for xg in range(xlines + 1):
-            x = w / float(xlines) * xg
-	    ctx.move_to(x, 0)
-	    ctx.line_to(x, h)
+	for x in [1.0 / float(xlines) * xg for xg in range(xlines + 1)]:
+	    ctx.move_to(*self.env_to_pixel(x, 0.0))
+	    ctx.line_to(*self.env_to_pixel(x, 1.0))
 	    ctx.stroke()
-	for yg in range(ylines + 1):
-            y = h / float(ylines) * yg
-	    ctx.move_to(0, y)
-	    ctx.line_to(w, y)
+	for y in [1.0 / float(ylines) * yg for yg in range(ylines + 1)]:
+	    ctx.move_to(*self.env_to_pixel(0.0, y))
+	    ctx.line_to(*self.env_to_pixel(1.0, y))
 	    ctx.stroke()
 	points = self.get_translated_points()
 	ctx.move_to(*self.env_to_pixel(0.0, 0.0))
