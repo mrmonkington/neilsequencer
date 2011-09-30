@@ -875,7 +875,9 @@ class PatternView(gtk.DrawingArea):
         #                               scripts[key]).set_sensitive(sel_sensitive)
         # except ImportError:
         #     pass
-        menu.add_item("Expression", self.on_expression).set_sensitive(sel_sensitive)
+        envelope_effect = com.get('neil.core.patternfx.envelope')
+        menu.add_item("Envelope", self.on_pattern_effect, envelope_effect).set_sensitive(sel_sensitive)
+        menu.add_item("Expression", self.on_expression)
         menu.add_separator()
 
         issolo = player.solo_plugin == self.get_plugin()
