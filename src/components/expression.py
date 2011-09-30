@@ -4,7 +4,7 @@ import os
 import pickle
 import neil.com as com
 from neil.utils import roundint, bn2mn, mn2bn, new_stock_image_button
-from neil.utils import gettext
+from neil.utils import gettext, error
 from random import *
 from math import *
 from neil.gtkcodebuffer import CodeBuffer, SyntaxLoader, add_syntax_path
@@ -137,16 +137,20 @@ class Expression():
         self.dialog.destroy()
         if response:
             try:
-                exec expr
+                global_ = globals()
+                new_global = {
+                    '__builtins__' : global_['__builtins__'], 
+                    '__name__' : global_['__name__'], 
+                    '__doc__' : global_['__doc__'], 
+                    '__package__' : global_['__package__'],
+                    'plugin' : plugin,
+                    'pattern' : pattern,
+                    'selection' : selection,
+                    }
+                exec expr in new_global
             except Exception as e:
-                error_box = gtk.Dialog(
-                    "Expression Error",
-                    buttons=(gtk.STOCK_OK, True)
-                    )
-                error_box.vbox.add(gtk.Label("There was a problem with your expression:\n" + str(e)))
-                error_box.show_all()
-                error_box.run()
-                error_box.destroy()
+                error(self.dialog, "There was a problem with your expression!", details=str(e))
+
 
 __all__ = [
     'Expression',
