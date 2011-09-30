@@ -37,5 +37,21 @@
       won't always (most of the time) be the same. They will, hopefully,
       be similar enough though.
     </para>
+    <para>
+      To add new points to the envelope just click anywhere on empty
+      (not occupied by another point) space. This will add a new
+      envelope point at the cursor position. If you want to delete a
+      point, click on the point with the right mouse button. If you
+      want to reset the envelope right-click on any empty space that
+      does not contain a point and select "Reset" from the menu that
+      will appear.
+    </para>
+    <para>
+      After you are done editing the envelope just click "OK". If you
+      changed your mind click "Cancel". After you click "OK", the
+      envelope will be applied to the selected column. If you have
+      selected more than one column, a separate editor will appear for
+      each of the columns.
+    </para>
   </section>
 </section>
