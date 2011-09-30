@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="envelope">
+  <title>Envelope</title>
+  <para>
+    This pattern effect allows you to visually edit the pattern editor
+    value columns.
+  </para>
+  <section>
+    <title>Usage</title>
+    <para>
+      Select a column by double clicking on it, or select a range in the
+      column by clicking and dragging with the mouse. After you have the
+      selection, right click on the pattern editor and select
+      "Envelope". This will invoke the envelope editor displayed
+      below.
+    </para>
+    <figure>
+      <title>Envelope Screenshot</title>
+      <graphic fileref="images/envelope.png"></graphic>
+    </figure>
+    <para>
+      If there was data already in the selection, the envelope editor
+      will attempt to re-create an envelope from it. This process
+      involves first adding a point for each rows' value to the
+      envelope. After that, the envelope is pruned to remove points that
+      are linear interpolations of the points on both sides of
+      them. This means basically that if a point is an average of the
+      points on boths sides, it will be deleted. This does not remove
+      any information since that point does not contain any new
+      information not present in the points that are its' neighbors. It
+      also makes the envelope clearer and easier to edit. Please note
+      however, that due to the limited resolution of the tracker column
+      format, after you apply an envelope to a column and then
+      reconstruct it using the envelope editor later, the two envelopes
+      won't always (most of the time) be the same. They will, hopefully,
+      be similar enough though.
+    </para>
+  </section>
+</section>

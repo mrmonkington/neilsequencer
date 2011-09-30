@@ -55,6 +55,7 @@
     </section>
     <xi:include href="expression.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
     <xi:include href="linear_transform.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+    <xi:include href="envelope.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
   </section>
   <section>
     <title>Info View</title>
