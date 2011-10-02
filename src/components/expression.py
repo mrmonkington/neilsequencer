@@ -136,6 +136,14 @@ class Expression():
         expr = self.text.get_buffer().get_property('text')
         self.dialog.destroy()
         if response:
+            model = self.selector.get_model()
+            active = self.selector.get_active_iter()
+            if active != None:
+                old_name = model.get_value(active, 0)
+                self.expressions[old_name] = expr
+                self.write_expressions()
+            else:
+                return
             try:
                 global_ = globals()
                 new_global = {
