@@ -145,15 +145,24 @@ class Expression():
             else:
                 return
             try:
+                def get_value(group, track, index, row):
+                    return plugin.get_pattern_value(pattern, group, 
+                                                    track, index, row)
+                def set_value(group, track, index, row, value):
+                    plugin.set_pattern_value(pattern, group, track, 
+                                             index, row, value)
+                def get_param(group, track, index):
+                    return plugin.get_parameter(group, track, index)
                 global_ = globals()
                 new_global = {
                     '__builtins__' : global_['__builtins__'], 
                     '__name__' : global_['__name__'], 
                     '__doc__' : global_['__doc__'], 
                     '__package__' : global_['__package__'],
-                    'plugin' : plugin,
-                    'pattern' : pattern,
-                    'selection' : selection,
+                    'get_value' : get_value,
+                    'set_value' : set_value,
+                    'get_param' : get_param,
+                    'n' : plugin.get_pattern_length(pattern),
                     }
                 exec expr in new_global
             except Exception as e:
