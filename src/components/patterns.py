@@ -820,7 +820,7 @@ class PatternView(gtk.DrawingArea):
         Callback that constructs and displays the popup menu
         """
         player = com.get('neil.core.player')
-        if self.selection != None and self.selection.begin >= 0:
+        if self.selection.begin < self.selection.end:
             sel_sensitive = True
         else:
             sel_sensitive = False
