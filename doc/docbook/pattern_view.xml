@@ -72,9 +72,37 @@
       differently it is a compact way of entering numeric information
       in to computers. To convert from hexadecimal to decimal you can
       use the two formulas below. They are for the two and four digit
-      cases respectively. Neil only allows those two types numeric
+      cases respectively. Neil only allows those two types of numeric
       values. 
     </para>
+    <section><title>Convert from hexadecimal</title>
+    <para>
+      Equation for two digit numbers (that go up to 255) is below. The
+      number before the equality sign is a hexadecimal number. It
+      consists of two digits in hexadecimal format. Digits up to ten
+      are displayed as usual, while the numbers higher than ten are as
+      follows: a := 10, b := 11, c := 12, d := 13, e := 14, f :=
+      15. As you can see, one hexadecimal digit can represent numbers
+      from zero to fifteen. If you have, for example, hexadecimal
+      number 2e, you can convert it to decimal by doing the following
+      simple calculation
+      <inlineequation><mathphrase>(2e)<subscript>x</subscript> = (16 *
+      2 + 14)<subscript>d</subscript> =
+      (46)<subscript>d</subscript></mathphrase></inlineequation>.
+    </para>
+    <equation>
+      <mathphrase>
+	(xy)<subscript>x</subscript> = (16x + y)<subscript>d</subscript>
+      </mathphrase>
+    </equation>
+    <para>
+      <inlineequation>
+	<mathphrase>
+	  (wxyz)<subscript>x</subscript> = (16<superscript>3</superscript>w + 16<superscript>2</superscript>x + 16y + z)<subscript>d</subscript>
+	</mathphrase>
+      </inlineequation>
+    </para>
+    </section>
   </section>
   <section>
     <title>Navigating with keyboard</title>
