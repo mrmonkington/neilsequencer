@@ -125,7 +125,7 @@ class Expression():
         lang = SyntaxLoader("python")
         buff = CodeBuffer(lang=lang)
         self.text = gtk.TextView(buff)
-        scrolled_window.add_with_viewport(self.text)
+        scrolled_window.add(self.text)
         scrolled_window.set_size_request(500, 300)
         self.dialog.vbox.pack_start(hbox, expand=False)
         self.dialog.vbox.pack_start(scrolled_window)
