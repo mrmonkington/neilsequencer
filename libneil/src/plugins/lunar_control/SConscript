@@ -1,0 +1,8 @@
+Import('pluginenv', 'build_plugin')
+
+localenv = pluginenv.Clone()
+
+files = ["Control.cpp"]
+
+build_plugin(localenv, "lunar_control", files)
+	     
