@@ -75,7 +75,7 @@
       cases respectively. Neil only allows those two types of numeric
       values. 
     </para>
-    <section><title>Convert from hexadecimal</title>
+    <section><title>Convert from Hexadecimal</title>
     <para>
       Equation for two digit numbers (that go up to 255) is below. The
       number before the equality sign is a hexadecimal number. It
@@ -90,17 +90,66 @@
       2 + 14)<subscript>d</subscript> =
       (46)<subscript>d</subscript></mathphrase></inlineequation>.
     </para>
-    <equation>
+    <equation><title>Two digit case</title>
       <mathphrase>
 	(xy)<subscript>x</subscript> = (16x + y)<subscript>d</subscript>
       </mathphrase>
     </equation>
     <para>
-      <inlineequation>
+      Converting four digit columns is outlined in the equation
+      below. It works analogously to the two digit case.
+    </para>
+    <equation><title>Four digit case</title>
 	<mathphrase>
 	  (wxyz)<subscript>x</subscript> = (16<superscript>3</superscript>w + 16<superscript>2</superscript>x + 16y + z)<subscript>d</subscript>
 	</mathphrase>
-      </inlineequation>
+    </equation>
+    </section>
+    <section><title>Converting to Hexadecimal</title>
+    <para>
+      Converting decimal values to hexadecimal ones is a bit more
+      involved than the other way round. To convert them you need to
+      use integer division and modulo operators. They will be written
+      / and % respectively. The first operator simply divides an
+      integer by another integer and drops the remainder. The other
+      one divides one integer by another and returns the
+      remainder. So, for example 5 / 2 = 2, while 5 % 2 = 1.
+    </para>
+    <para>
+      We need to consider two cases. The first one is the two digit
+      columns, while the second one is four digit columns. When two
+      digits are used, the highest decimal number that can be
+      expressed is 255 (or ff in hexadecimal). If four digits are
+      used, the highest number that can be expressed is 65535 (or ffff
+      in hexadecimal). We will show how to convert numbers that are
+      below 255 and below 65535 separately.
+    </para>
+    <para>
+      To convert a number x, where x &lt; 255 to a decimal number y
+      that consists of two digits:
+      <inlineequation><mathphrase>y<subscript>1</subscript></mathphrase></inlineequation>
+      and
+      <inlineequation><mathphrase>y<subscript>2</subscript></mathphrase></inlineequation>, you
+      get those digits use the two formulas below.
+    </para>
+    <equation><title>First Digit</title>
+    <mathphrase>
+      y<subscript>1</subscript> = x / 16
+    </mathphrase>
+    </equation>
+    <equation><title>Second Digit</title>
+    <mathphrase>
+      y<subscript>2</subscript> = x % 16
+    </mathphrase>
+    </equation>
+    <para>
+      To convert a number x where x &lt; 65535 to a decimal number y
+      that consists of four digits:
+      <inlineequation><mathphrase>y<subscript>1</subscript></mathphrase></inlineequation>, 
+      <inlineequation><mathphrase>y<subscript>2</subscript></mathphrase></inlineequation>, 
+      <inlineequation><mathphrase>y<subscript>3</subscript></mathphrase></inlineequation> and 
+      <inlineequation><mathphrase>y<subscript>4</subscript></mathphrase></inlineequation>,
+      you get those digits using the formulas below.
     </para>
     </section>
   </section>
