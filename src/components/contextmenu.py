@@ -131,6 +131,8 @@ class PluginContextMenu(gtk.Menu):
                        ['Effects', 'Distortion'],
                    '@libneil/edsca/effect/Migraine' :
                        ['Effects', 'Distortion'],
+                   '@bblunars/effect/mdaSubSynth' :
+                       ['Effects', 'Distortion'],
                    '@bigyo/frequency+shifter;1' :
                        ['Effects', 'Modulation'],
                    'jamesmichaelmcdermott@gmail.com/effect/btdsys_ringmod;1' :
@@ -155,7 +157,7 @@ class PluginContextMenu(gtk.Menu):
                        ['Effects', 'Sampling'],
                    '@libneil/somono/controller/lfnoise;1' :
                        ['Control'],
-                   '@neil/lunar/controller/Controller;1' :
+                   '@neil/lunar/controller/Control;1' :
                        ['Control'],
                    '@trac.zeitherrschaft.org/aldrin/lunar/controller/LunarLFO;1' :
                        ['Control'],
