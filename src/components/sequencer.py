@@ -457,11 +457,11 @@ class SequencerView(gtk.DrawingArea):
         self.needfocus = True
         
         # Variables that were previously defined as constants.
-        self.seq_track_size = 28
+        self.seq_track_size = 36
         self.seq_step = 16
         self.seq_left_margin = 96
         self.seq_top_margin = self.seq_track_size
-        self.seq_row_size = 30
+        self.seq_row_size = 38
 
         self.plugin_info = common.get_plugin_infos()
         player = com.get('neil.core.player')
