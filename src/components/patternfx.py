@@ -149,6 +149,9 @@ class Envelope():
         if len(data) < 2:
             warning(dialog, "The selection is too short! Select more rows.")
             return data
+        if parameter.get_type() in [0, 1]:
+            warning(dialog, "This column type is not supported by Envelope.")
+            return data
         a = parameter.get_value_min()
         b = parameter.get_value_max()
         envelope = SimpleEnvelope()
