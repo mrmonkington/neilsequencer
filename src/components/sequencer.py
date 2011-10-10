@@ -460,7 +460,7 @@ class SequencerView(gtk.DrawingArea):
         self.seq_track_size = 36
         self.seq_step = 16
         self.seq_left_margin = 96
-        self.seq_top_margin = self.seq_track_size
+        self.seq_top_margin = 20
         self.seq_row_size = 38
 
         self.plugin_info = common.get_plugin_infos()
@@ -1538,9 +1538,9 @@ class SequencerView(gtk.DrawingArea):
     def get_random_color(seed):
         """Generates a random color in html format."""
         random.seed(seed)
-        r = int(random.random() * 155) + 100
-        g = int(random.random() * 155) + 100
-        b = int(random.random() * 155) + 100
+        r = int(random.random() * 105) + 150
+        g = int(random.random() * 105) + 150
+        b = int(random.random() * 105) + 150
         result = "#%2x%2x%2x" % (r, g, b)
         return result.replace(' ', '0')
 
@@ -1562,10 +1562,10 @@ class SequencerView(gtk.DrawingArea):
                 layout.set_markup("<small>%s</small>" % str(start))
                 px, py = layout.get_pixel_size()
                 drawable.draw_layout(ctx, x + 2,
-                                     self.seq_track_size / 2 - py / 2, layout)
+                                     self.seq_top_margin / 2 - py / 2, layout)
             else:
                 ctx.set_foreground(colors['Weak Line'])
-                drawable.draw_line(ctx, x, self.seq_track_size, x, height)
+                drawable.draw_line(ctx, x, self.seq_top_margin, x, height)
             x += self.seq_row_size
             start += self.step
         ctx.set_foreground(colors['Border'])
@@ -1599,44 +1599,100 @@ class SequencerView(gtk.DrawingArea):
             for (position, value), index in zip(event_list, range(len(event_list))):
                 pattern = None
                 if value >= 0x10:
-                    pattern = plugin.get_pattern(value - 0x10)
-                    name = prepstr(pattern.get_name())
-                    length = pattern.get_row_count()
-                    # Handle the case where the pattern overlaps with the next one.
-                    # This is done by shortening the current pattern so they display nice.
                     try:
-                        if position + length > event_list[index + 1][0]:
-                            length -= position + length - event_list[index + 1][0]
-                    except IndexError:
-                        pass
-                    end = position + length
-                    width_in_bars = (width / self.seq_row_size) * self.step
-                    if ((end >= self.startseqtime) and
-                        (position < self.startseqtime + width_in_bars)):
-                        box_size = max(int(((self.seq_row_size * length) /
-                                            self.step) + 0.5), 4)
-                        x = (self.seq_left_margin +
-                             ((position - self.startseqtime) * self.seq_row_size) /
-                             self.step)
-                        pattern_color = self.get_random_color(plugin.get_name() +
-                                                              name)
+                        gfx = plugin_info.patterngfx[value]
+                    except KeyError:
+                        pattern = plugin.get_pattern(value - 0x10)
+                        name = prepstr(pattern.get_name())
+                        length = pattern.get_row_count()
+                        # Handle the case where the pattern overlaps with the next one.
+                        # This is done by shortening the current pattern so they display nice.
+                        try:
+                            if position + length > event_list[index + 1][0]:
+                                length -= position + length - event_list[index + 1][0]
+                        except IndexError:
+                            pass
+                        box_size = max(int(((self.seq_row_size * length) / self.step) + 0.5), 4)
+                        gfx_w, gfx_h = box_size - 3, self.seq_track_size - 3
+                        gfx = gtk.gdk.Pixmap(drawable, gfx_w, gfx_h, -1)
+                        pattern_color = self.get_random_color(plugin.get_name() + name)
                         ctx.set_foreground(ctx.get_colormap().alloc_color(pattern_color))
-                        drawable.draw_rectangle(ctx, True, x + 2, y + 2,
-                                                box_size - 4,
-                                                self.seq_track_size - 4)
+                        gfx.draw_rectangle(ctx, True, 0, 0, gfx_w, gfx_h)
+                        if plugin.get_pluginloader().get_uri() == '@neil/lunar/controller/Control;1':
+                            ctx.set_foreground(ctx.get_colormap().alloc_color('#202020'))
+                            for row in range(length - 1):
+                                val1 = plugin.get_pattern_value(value - 0x10, 1, 0, 0, row)
+                                val2 = plugin.get_pattern_value(value - 0x10, 1, 0, 0, row + 1)
+                                param = plugin.get_parameter(1, 0, 0)
+                                scale = 1.0 / (param.get_value_max() - param.get_value_min())
+                                if val1 != param.get_value_none() and val2 != param.get_value_none:
+                                    scaled1 = (val1 - param.get_value_min()) * scale
+                                    scaled2 = (val2 - param.get_value_min()) * scale
+                                    gfx.draw_line(ctx, 
+                                                  gfx_w * (row / float(length)),
+                                                  gfx_h * (1.0 - scaled1),
+                                                  gfx_w * ((row + 1) / float(length)),
+                                                  gfx_h * (1.0 - scaled2))
                         ctx.set_foreground(colors['Border'])
-                        drawable.draw_rectangle(ctx, False, x + 2, y + 2,
-                                                box_size - 4,
-                                                self.seq_track_size - 4)
+                        gfx.draw_rectangle(ctx, False, 0, 0, gfx_w - 1, gfx_h - 1)
                         layout.set_markup("<small>%s</small>" % name)
                         px, py = layout.get_pixel_size()
-                        # A dumb hack to limit the width of the pattern name label.
-                        while px > (box_size - 4):
-                            name = name[:-1]
-                            layout.set_markup("<small>%s</small>" % name)
-                            px, py = layout.get_pixel_size()
                         ctx.set_foreground(colors['Text'])
-                        drawable.draw_layout(ctx, x + 4, y + 4, layout)
+                        gfx.draw_layout(ctx, 4, 4, layout)
+                        plugin_info.patterngfx[value] = gfx
+                    x = self.seq_left_margin + ((position - self.startseqtime) * self.seq_row_size / self.step)
+                    drawable.draw_drawable(ctx, gfx, 0, 0, x + 2, y + 2, -1, -1)
+                    # pattern = plugin.get_pattern(value - 0x10)
+                    # name = prepstr(pattern.get_name())
+                    # length = pattern.get_row_count()
+                    # # Handle the case where the pattern overlaps with the next one.
+                    # # This is done by shortening the current pattern so they display nice.
+                    # try:
+                    #     if position + length > event_list[index + 1][0]:
+                    #         length -= position + length - event_list[index + 1][0]
+                    # except IndexError:
+                    #     pass
+                    # end = position + length
+                    # width_in_bars = (width / self.seq_row_size) * self.step
+                    # if ((end >= self.startseqtime) and
+                    #     (position < self.startseqtime + width_in_bars)):
+                    #     box_size = max(int(((self.seq_row_size * length) /
+                    #                         self.step) + 0.5), 4)
+                    #     x = (self.seq_left_margin +
+                    #          ((position - self.startseqtime) * self.seq_row_size) /
+                    #          self.step)
+                    #     pattern_color = self.get_random_color(plugin.get_name() +
+                    #                                           name)
+                    #     ctx.set_foreground(ctx.get_colormap().alloc_color(pattern_color))
+                    #     drawable.draw_rectangle(ctx, True, x + 2, y + 2,
+                    #                             box_size - 4,
+                    #                             self.seq_track_size - 4)
+                    #     if plugin.get_pluginloader().get_uri() == '@neil/lunar/controller/Control;1':
+                    #         ctx.set_foreground(colors['Border'])
+                    #         for row in range(length):
+                    #             param = plugin.get_parameter(1, 0, 0)
+                    #             scale = 1.0 / (param.get_value_max() - param.get_value_min())
+                    #             non_scaled = plugin.get_pattern_value(value - 0x10, 1, 0, 0, row)
+                    #             if non_scaled != param.get_value_none():
+                    #                 scaled = (plugin.get_pattern_value(value - 0x10, 1, 0, 0, row) - 
+                    #                           param.get_value_min()) * scale
+                    #                 drawable.draw_rectangle(ctx, True, 
+                    #                                         x + 2 + (box_size - 4) * (row / float(length)),
+                    #                                         y + 2 + (self.seq_track_size - 4) * (1.0 - scaled),
+                    #                                         2, 2)
+                    #     ctx.set_foreground(colors['Border'])
+                    #     drawable.draw_rectangle(ctx, False, x + 2, y + 2,
+                    #                             box_size - 4,
+                    #                             self.seq_track_size - 4)
+                    #     layout.set_markup("<small>%s</small>" % name)
+                    #     px, py = layout.get_pixel_size()
+                    #     # A dumb hack to limit the width of the pattern name label.
+                    #     while px > (box_size - 4):
+                    #         name = name[:-1]
+                    #         layout.set_markup("<small>%s</small>" % name)
+                    #         px, py = layout.get_pixel_size()
+                    #     ctx.set_foreground(colors['Text'])
+                    #     drawable.draw_layout(ctx, x + 4, y + 4, layout)
                     if pattern != None:
                         pattern.destroy()
                 elif value == 0x00 or value == 0x01:
