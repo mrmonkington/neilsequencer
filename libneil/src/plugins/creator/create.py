@@ -296,10 +296,13 @@ if __name__ == '__main__':
         max_tracks = 1
     try:
         global_params = [p.strip() for p in config.get('General', 'globals').split(',')]
-        track_params = [p.strip() for p in config.get('General', 'track').split(',')]
     except ConfigParser.NoOptionError:
         global_params = []
+    try:
+        track_params = [p.strip() for p in config.get('General', 'track').split(',')]
+    except ConfigParser.NoOptionError:
         track_params = []
+    print global_params
     try:
         machine = Machine(config.get('General', 'author'),
                           config.get('General', 'name'),
@@ -309,6 +312,7 @@ if __name__ == '__main__':
                           min_tracks,
                           max_tracks)
         for param in global_params:
+            print param
             machine.add_parameter('global_parameter',
                                   param,
                                   config.get(param, 'type'),

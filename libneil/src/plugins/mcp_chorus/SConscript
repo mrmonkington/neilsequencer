@@ -1,0 +1,7 @@
+Import('pluginenv', 'build_plugin')
+
+localenv = pluginenv.Clone()
+
+files = ["MCPChorus.cpp"]
+
+build_plugin(localenv, "mrmonkington_mcpchorus", files)
