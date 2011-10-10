@@ -1619,7 +1619,7 @@ class SequencerView(gtk.DrawingArea):
                         ctx.set_foreground(ctx.get_colormap().alloc_color(pattern_color))
                         gfx.draw_rectangle(ctx, True, 0, 0, gfx_w, gfx_h)
                         if plugin.get_pluginloader().get_uri() == '@neil/lunar/controller/Control;1':
-                            ctx.set_foreground(ctx.get_colormap().alloc_color('#202020'))
+                            ctx.set_foreground(ctx.get_colormap().alloc_color('#404040'))
                             for row in range(length - 1):
                                 val1 = plugin.get_pattern_value(value - 0x10, 1, 0, 0, row)
                                 val2 = plugin.get_pattern_value(value - 0x10, 1, 0, 0, row + 1)
@@ -1629,10 +1629,10 @@ class SequencerView(gtk.DrawingArea):
                                     scaled1 = (val1 - param.get_value_min()) * scale
                                     scaled2 = (val2 - param.get_value_min()) * scale
                                     gfx.draw_line(ctx, 
-                                                  gfx_w * (row / float(length)),
-                                                  gfx_h * (1.0 - scaled1),
-                                                  gfx_w * ((row + 1) / float(length)),
-                                                  gfx_h * (1.0 - scaled2))
+                                                  1 + gfx_w * (row / float(length)),
+                                                  1 + (gfx_h - 2) * (1.0 - scaled1),
+                                                  1 + gfx_w * ((row + 1) / float(length)),
+                                                  1 + (gfx_h - 2) * (1.0 - scaled2))
                         ctx.set_foreground(colors['Border'])
                         gfx.draw_rectangle(ctx, False, 0, 0, gfx_w - 1, gfx_h - 1)
                         layout.set_markup("<small>%s</small>" % name)
