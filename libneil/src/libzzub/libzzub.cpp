@@ -2464,8 +2464,8 @@ extern "C"
     float scaler = 1.0f / (1<<(bitsps-1));
     //int samplecount = l.sample_count;
     int samplerange = end - start;
-    assert((start >= 0) && (start < samplecount));
-    assert((end > start) && (end <= samplecount));
+    //assert((start >= 0) && (start < samplecount));
+    //assert((end > start) && (end <= samplecount));
     assert(samplerange > 0);
     int channels = w.get_stereo()?2:1;
     float sps = (float)samplerange / (float)digestsize; // samples per sample

@@ -38,7 +38,7 @@ private:
     float    *_line_r;
 
     float _freq1, _freq2;
-    unsigned long _delay, _tmod1, _tmod2;
+    float _delay, _tmod1, _tmod2;
 
 public:
   MCPChorus();
@@ -99,16 +99,16 @@ struct MCPChorusInfo : zzub::info {
       .set_name("Delay")
       .set_description("Delay between lines in ms")
       .set_value_min(0)
-      .set_value_max(2000)
+      .set_value_max(300)
       .set_value_none(65535)
-      .set_value_default(30)
+      .set_value_default(0)
       .set_state_flag();
     para_freq1 = &add_global_parameter()
       .set_word()
       .set_name("Freq 1")
       .set_description("Mod Frequency 1 in Hz")
       .set_value_min(0)
-      .set_value_max(30000)
+      .set_value_max(10000)
       .set_value_none(65535)
       .set_value_default(3)
       .set_state_flag();
@@ -117,9 +117,9 @@ struct MCPChorusInfo : zzub::info {
       .set_name("Mod 1")
       .set_description("Mod Amp 1 in ms")
       .set_value_min(0)
-      .set_value_max(2000)
+      .set_value_max(100)
       .set_value_none(65535)
-      .set_value_default(10)
+      .set_value_default(0)
       .set_state_flag();
     para_freq2 = &add_global_parameter()
       .set_word()
@@ -135,9 +135,9 @@ struct MCPChorusInfo : zzub::info {
       .set_name("Mod 2")
       .set_description("Mod Amp 2 in ms")
       .set_value_min(0)
-      .set_value_max(2000)
+      .set_value_max(300)
       .set_value_none(65535)
-      .set_value_default(30)
+      .set_value_default(0)
       .set_state_flag();
   }
   virtual zzub::plugin* create_plugin() const { return new MCPChorus(); }

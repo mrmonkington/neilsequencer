@@ -9,10 +9,6 @@ MCPChorus::MCPChorus() {
     global_values = &gval;
     track_values = 0;
     attributes = 0;
-    _size = (unsigned long)(ceil (30 * _master_info->samples_per_second / 1000.0)) + 64;
-    _size = (_size >> 6) << 6; 
-    _line_l = new float [_size + 1];
-	_line_r = new float [_size + 1];
 }
 MCPChorus::~MCPChorus() {
     delete[] _line_l;
@@ -21,6 +17,11 @@ MCPChorus::~MCPChorus() {
 
 void MCPChorus::init(zzub::archive *pi) {
     unsigned int i;
+
+    _size = (unsigned long)(ceil (30 * _master_info->samples_per_second / 1000.0)) + 64;
+    _size = (_size >> 6) << 6; 
+    _line_l = new float [_size + 1];
+	_line_r = new float [_size + 1];
 
     _wi = _gi = 0;
     _x1 = _x2 = 1;
@@ -33,19 +34,19 @@ void MCPChorus::init(zzub::archive *pi) {
 	
 void MCPChorus::process_events() {
   if (gval.delay != 65535) {
-    _delay = gval.delay;
+    _delay = (float)gval.delay / 10.0;
   }
   if (gval.freq1 != 65535) {
-    _freq2 = (float)gval.freq2 / 1000.0;
+    _freq1 = (float)gval.freq1 / 1000.0;
   }
   if (gval.tmod1 != 65535) {
-    _tmod1 = gval.tmod1;
+    _tmod1 = (float)gval.tmod1 / 10.0;
   }
   if (gval.freq2 != 65535) {
     _freq2 = (float)gval.freq2 / 1000.0;
   }
   if (gval.tmod2 != 65535) {
-    _tmod2 = gval.tmod2;
+    _tmod2 = (float)gval.tmod2 / 10.0;
   }
 }
 
@@ -161,19 +162,19 @@ const char *MCPChorus::describe_value(int param, int value) {
   static char txt[20];
   switch (param) {
   case 0:
-    sprintf(txt, "%d ms", value);
+    sprintf(txt, "%0.1f ms", (float)value/10.0);
     break;
   case 1:
     sprintf(txt, "%0.3fHz", (float)value/1000.0);
     break;
   case 2:
-    sprintf(txt, "%d ms", value);
+    sprintf(txt, "%0.1f ms", (float)value/10.0);
     break;
   case 3:
     sprintf(txt, "%0.3fHz", (float)value/1000.0);
     break;
   case 4:
-    sprintf(txt, "%d ms", value);
+    sprintf(txt, "%0.1f ms", (float)value/10.0);
     break;
   default:
     return 0;
