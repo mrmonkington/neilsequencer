@@ -42,7 +42,7 @@ private:
 
 public:
   MCPChorus();
-  virtual ~MCPChorus() {}
+  virtual ~MCPChorus();
   virtual void init(zzub::archive* pi);
   virtual void process_events();
   virtual bool process_stereo(float **pin, float **pout, 
@@ -88,8 +88,8 @@ struct MCPChorusInfo : zzub::info {
   MCPChorusInfo() {
     this->flags = 
       zzub::plugin_flag_has_audio_input | zzub::plugin_flag_has_audio_output;
-    this->min_tracks = 1;
-    this->max_tracks = 1;
+    this->min_tracks = 0;
+    this->max_tracks = 0;
     this->name = "MrMonkington MCPChrous";
     this->short_name = "MCPChorus";
     this->author = "MrMonkington";
