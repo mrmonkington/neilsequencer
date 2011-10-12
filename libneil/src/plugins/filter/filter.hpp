@@ -34,18 +34,13 @@ class Filter : public zzub::plugin {
 private:
   Gvals gval;
   Svf svf_l, svf_r;
-  Osc lfo;
-  Phasor phase;
-  Lag lag_cutoff, lag_lfo;
+  Lag lag_cutoff;
   float cutoff, lfo_speed, lfo_amp, rms_amp;
-  float *sine_table;
   int type;
   float rms_buffer[RMS_WINDOW];
   int rms_cursor;
-  float svf_cutoff[zzub_buffer_size], phaser[zzub_buffer_size],
-    phaser_freq[zzub_buffer_size], lfo_out[zzub_buffer_size],
-    rms_out[zzub_buffer_size];
-  float squared_sum;
+  float svf_cutoff[zzub_buffer_size], rms_out[zzub_buffer_size];
+  float squared_sum, phase;
 public:
   Filter();
   virtual ~Filter();
