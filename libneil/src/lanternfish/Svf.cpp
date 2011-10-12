@@ -39,8 +39,9 @@ namespace lanternfish {
   }
 
   inline void Svf::kill_denormal(float &val) {
-    if (fabs(val) < 1e-15)
+    if (fabs(val) < 1e-15) {
       val = 0.0;
+    }
   }
   
   void Svf::process(float *out, float *cutoff, float *input, int mode, int n) 
