@@ -85,9 +85,7 @@ class PlaybackInfo(gtk.Dialog):
         self.update_label()
         self.set_deletable(False)
         self.set_resizable(False)
-        self.add(self.vbox)
         gobject.timeout_add(100, self.on_timer)
-        #self.show_all()
 
     def on_timer(self):
         """
