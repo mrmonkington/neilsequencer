@@ -160,7 +160,7 @@ Export(
 
 env.SConscript('applications/SConscript')
 env.SConscript('bin/SConscript')
-#env.SConscript('doc/SConscript')
+env.SConscript('doc/SConscript')
 env.SConscript('demosongs/SConscript')
 env.SConscript('etc/SConscript')
 env.SConscript('icons/SConscript')

@@ -359,11 +359,8 @@ class PatternToolBar(gtk.HBox):
         self.pattern_view.grab_focus()
 
     def get_pattern_source(self, *args):
-        print "get_pattern_source()"
         player = com.get('neil.core.player')
         plugin = self.get_plugin_sel()
-        print plugin
-        print player.active_patterns
         if not plugin:
             self.patternselect.get_model().clear()
             return
@@ -490,18 +487,16 @@ class PatternPanel(gtk.VBox):
 
     def handle_focus(self):
         player = com.get('neil.core.player')
-        #print 'pattern', self.view.plugin, self.view.pattern
-        #print 'active', player.active_patterns
         # check if active patterns match the pattern view settings
         if not (self.view.plugin, self.view.pattern) in player.active_patterns:
-            if player.active_plugins:
-                plugin = player.active_plugins[0]
-                # make sure there is a pattern of selected machine to edit
-                if plugin.get_pattern_count() > 0:
-                    player.active_patterns = [(plugin, 0)]
-                else:
-                    player.active_patterns = []
-                self.view.plugin, self.view.pattern  = plugin, 0
+            # if player.active_plugins:
+            #     plugin = player.active_plugins[0]
+            #     # make sure there is a pattern of selected machine to edit
+            #     if plugin.get_pattern_count() > 0:
+            #         player.active_patterns = [(plugin, 0)]
+            #     else:
+            #         player.active_patterns = []
+            #     self.view.plugin, self.view.pattern  = plugin, 0
             self.view.init_values()
         try:
             self.view.show_cursor_right()
@@ -1911,7 +1906,6 @@ class PatternView(gtk.DrawingArea):
         eventbus = com.get('neil.core.eventbus')
         shiftdown = mask & gtk.gdk.SHIFT_MASK
         ctrldown = mask & gtk.gdk.CONTROL_MASK
-        print "Key pressed:", k
         if k == 'less':
             player.activate_wave(-1)
             pass
