@@ -206,6 +206,8 @@ class SequencerPanel(gtk.VBox):
         self.seqpatternlist.set_rules_hint(True)
         self.seqpatternlist.connect("button-press-event", 
                                     self.on_pattern_list_button)
+        self.seqpatternlist.connect("enter-notify-event",
+                                    self.on_mouse_over)
         self.seqpatternlist.connect("row-activated", self.on_visit_pattern)
         tvkey = gtk.TreeViewColumn("Key")
         tvkey.set_resizable(True)
@@ -227,6 +229,8 @@ class SequencerPanel(gtk.VBox):
         hscroll = gtk.HScrollbar()
 
         self.seqview = SequencerView(self, hscroll, vscroll)
+        self.seqview.connect("enter-notify-event",
+                             self.on_mouse_over)
         self.viewport = gtk.Viewport()
         self.viewport.add(self.seqview)
         scrollwin = gtk.Table(2,2)
@@ -361,6 +365,9 @@ class SequencerPanel(gtk.VBox):
                 delete.show()
             if hasattr(self, 'plugin') and self.plugin != None:
                 menu.popup(None, None, None, event.button, event.time)
+
+    def on_mouse_over(self, widget, event):
+        widget.grab_focus()
 
     def edit_sequence_request(self, track=None, row=None):
         framepanel = com.get('neil.core.framepanel')

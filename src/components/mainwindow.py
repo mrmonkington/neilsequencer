@@ -479,7 +479,7 @@ class NeilFrame(gtk.Window):
   
   def page_select(self, notebook, page, page_num, *args):
     new_page = notebook.get_nth_page(page_num)
-    print new_page
+    #print new_page
     new_page.handle_focus()
 
   def update_filemenu(self, *args):
