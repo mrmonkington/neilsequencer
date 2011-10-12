@@ -60,7 +60,7 @@ class FramePanel(gtk.Notebook):
 
   def __init__(self):
     gtk.Notebook.__init__(self)
-    self.set_tab_pos(gtk.POS_TOP)
+    self.set_tab_pos(gtk.POS_LEFT)
     self.set_show_border(True)
     self.set_border_width(1)
     self.set_show_tabs(True)
@@ -78,11 +78,11 @@ class FramePanel(gtk.Notebook):
       if options.get('default'):
         defaultpanel = panel
       panel.show_all()
-      header = gtk.HBox()
+      header = gtk.VBox()
       labelwidget = gtk.Label(label)
-      #labelwidget.set_angle(90)
-      header.pack_start(new_theme_image(stockid, gtk.ICON_SIZE_MENU))
+      labelwidget.set_angle(90)
       header.pack_start(labelwidget)
+      header.pack_start(new_theme_image(stockid, gtk.ICON_SIZE_MENU))
       header.show_all()
       if key:
         header.set_tooltip_text("%s (%s)" % (label, key))
