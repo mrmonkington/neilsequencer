@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<section id="lunar_lfo">
+<section id="mcp_chorus">
   <title>MCP Chorus</title>
   <para>
     A simple stereo chorus effect achieved by mixing in a copy of the source signal,
@@ -32,7 +32,7 @@
       <row>
 	<entry><para>Mod 1</para></entry>
 	<entry><para>
-        Maximum drift in milliseconds of first channel (left) as effected by modulator.  The greater this value to greater the apparent detuning of the signal, which might not be wholly desirable.
+        Maximum drift in milliseconds of first channel (left) as effected by modulator.  The greater this value the greater the apparent detuning of the signal, which might not be wholly desirable.
 	</para></entry>
       </row>
       <row>
