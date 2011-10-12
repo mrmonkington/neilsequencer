@@ -123,8 +123,8 @@ struct MCPChorusInfo : zzub::info {
       .set_state_flag();
     para_freq2 = &add_global_parameter()
       .set_word()
-      .set_name("Freq 1")
-      .set_description("Mod Frequency 2")
+      .set_name("Freq 2")
+      .set_description("Mod Frequency 2 in Hz")
       .set_value_min(0)
       .set_value_max(30000)
       .set_value_none(65535)
