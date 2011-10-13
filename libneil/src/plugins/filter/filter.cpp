@@ -21,6 +21,7 @@ Filter::Filter()
   }
   squared_sum = 0.0;
   rms_cursor = 0;
+  phase = 1.0;
 }
 
 Filter::~Filter() 
@@ -30,16 +31,16 @@ Filter::~Filter()
 
 void Filter::init(zzub::archive* pi) 
 {
-  sine_table = make_sine_table(256);
   svf_l.set_sampling_rate(_master_info->samples_per_second);
   svf_r.set_sampling_rate(_master_info->samples_per_second);
-  phase.set_sampling_rate(_master_info->samples_per_second);
-  lfo.set_table(sine_table, 256);
+  lag_cutoff.set_value(2000.0, 0);
+  svf_l.set_resonance(0.0);
+  svf_r.set_resonance(0.0);
 }
 
 void Filter::destroy() 
 {
-  delete[] sine_table;
+
 }
 
 void Filter::stop() {
@@ -68,7 +69,6 @@ void Filter::process_events()
   if (gval.lfo_speed != paramLfoSpeed->value_none) {
     lfo_speed = 0.01 + 
       pow(gval.lfo_speed / float(paramLfoSpeed->value_max), 8.0) * 5000.0;
-    lag_lfo.set_value(lfo_speed, _master_info->samples_per_tick);
   }
   if (gval.lfo_amp != paramLfoAmp->value_none) {
     lfo_amp = (gval.lfo_amp / float(paramLfoAmp->value_max)) * 0.99;
@@ -80,9 +80,6 @@ void Filter::process_events()
 
 bool Filter::process_stereo(float **pin, float **pout, int n, int mode) 
 {
-  lag_lfo.process(phaser_freq, n);
-  phase.process(phaser_freq, phaser, n);
-  lfo.process(phaser, lfo_out, n);
   lag_cutoff.process(svf_cutoff, n);
   for (int i = 0; i < n; i++) {
     rms_buffer[rms_cursor] = (pin[0][i] + pin[1][i]) * 0.5;
@@ -91,14 +88,21 @@ bool Filter::process_stereo(float **pin, float **pout, int n, int mode)
     squared_sum -= oldest * oldest;
     squared_sum += newest * newest;
     rms_out[i] = sqrt(squared_sum * RMS_WINDOW_INV);
+    rms_out[i] = std::max(rms_out[i], 0.0f);
+    rms_out[i] = std::min(rms_out[i], 1.0f);
     rms_cursor = (rms_cursor + 1) % RMS_WINDOW;
   }
-  add_signals(1.0, lfo_out, n);
-  mul_signals(0.5, lfo_out, n);
-  scale_signal(lfo_out, 1.0 - lfo_amp, 1.0, n);
-  mul_signals(lfo_out, svf_cutoff, n);
-  scale_signal(rms_out, 1.0 - rms_amp, 1.0, n);
-  mul_signals(rms_out, svf_cutoff, n);
+  float lfo;
+  for (int i = 0; i < n; i++) {
+    rms_out[i] = (1.0 - rms_amp) + rms_out[i] * rms_amp;
+    svf_cutoff[i] *= rms_out[i];
+    lfo = (1.0 + sin(2.0 * M_PI * phase)) * 0.5;
+    phase += lfo_speed / _master_info->samples_per_second;
+    while (phase > 1.0) {
+      phase -= 1.0;
+    }
+    svf_cutoff[i] *= (1.0 - lfo_amp) + lfo * rms_amp;
+  }
   svf_l.process(pout[0], svf_cutoff, pin[0], type, n);
   svf_r.process(pout[1], svf_cutoff, pin[1], type, n);
   return true;

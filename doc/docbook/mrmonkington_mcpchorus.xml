@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="mrmonkington_mcpchorus">
+  <title>MCP Chorus</title>
+  <para>
+    A simple stereo chorus effect achieved by mixing in a copy of the source signal,
+    delaying it a bit, then modulating the pitch of each channel a small amount to create
+    a little colour.
+  </para>
+  <table><title>Parameters</title>
+  <tgroup cols='2' align='left' colsep='1' rowsep='1'>
+    <thead>
+      <row>
+	<entry><para>Parameter</para></entry>
+	<entry><para>Meaning</para></entry>
+      </row>
+    </thead>
+    <tbody>
+      <row>
+	<entry><para>Delay</para></entry>
+	<entry><para>
+        Delay between lines in milliseconds.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Freq 1</para></entry>
+	<entry><para>
+        Modulation frequency of first (left) channel.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Mod 1</para></entry>
+	<entry><para>
+        Maximum drift in milliseconds of first channel (left) as effected by modulator.  The greater this value the greater the apparent detuning of the signal, which might not be wholly desirable.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Freq 2</para></entry>
+	<entry><para>
+        As Freq 1 but for second (right) channel.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Mod 2</para></entry>
+	<entry><para>
+        As Mod 1 but for second (right) channel.
+	</para></entry>
+      </row>
+    </tbody>
+  </tgroup>
+</table>
+</section>

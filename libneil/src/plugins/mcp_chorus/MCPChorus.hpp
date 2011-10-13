@@ -90,7 +90,7 @@ struct MCPChorusInfo : zzub::info {
       zzub::plugin_flag_has_audio_input | zzub::plugin_flag_has_audio_output;
     this->min_tracks = 0;
     this->max_tracks = 0;
-    this->name = "MrMonkington MCPChrous";
+    this->name = "MrMonkington MCPChorus";
     this->short_name = "MCPChorus";
     this->author = "MrMonkington";
     this->uri = "@libneil/mrmonkington/effect/mcp_chorus";
@@ -123,8 +123,8 @@ struct MCPChorusInfo : zzub::info {
       .set_state_flag();
     para_freq2 = &add_global_parameter()
       .set_word()
-      .set_name("Freq 1")
-      .set_description("Mod Frequency 2")
+      .set_name("Freq 2")
+      .set_description("Mod Frequency 2 in Hz")
       .set_value_min(0)
       .set_value_max(30000)
       .set_value_none(65535)

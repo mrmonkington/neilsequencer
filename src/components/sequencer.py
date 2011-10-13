@@ -206,6 +206,8 @@ class SequencerPanel(gtk.VBox):
         self.seqpatternlist.set_rules_hint(True)
         self.seqpatternlist.connect("button-press-event", 
                                     self.on_pattern_list_button)
+        self.seqpatternlist.connect("enter-notify-event",
+                                    self.on_mouse_over)
         self.seqpatternlist.connect("row-activated", self.on_visit_pattern)
         tvkey = gtk.TreeViewColumn("Key")
         tvkey.set_resizable(True)
@@ -227,6 +229,8 @@ class SequencerPanel(gtk.VBox):
         hscroll = gtk.HScrollbar()
 
         self.seqview = SequencerView(self, hscroll, vscroll)
+        self.seqview.connect("enter-notify-event",
+                             self.on_mouse_over)
         self.viewport = gtk.Viewport()
         self.viewport.add(self.seqview)
         scrollwin = gtk.Table(2,2)
@@ -361,6 +365,9 @@ class SequencerPanel(gtk.VBox):
                 delete.show()
             if hasattr(self, 'plugin') and self.plugin != None:
                 menu.popup(None, None, None, event.button, event.time)
+
+    def on_mouse_over(self, widget, event):
+        widget.grab_focus()
 
     def edit_sequence_request(self, track=None, row=None):
         framepanel = com.get('neil.core.framepanel')
@@ -1625,8 +1632,8 @@ class SequencerView(gtk.DrawingArea):
                             if plugin.get_pluginloader().get_uri() == '@neil/lunar/controller/Control;1':
                                 ctx.set_foreground(ctx.get_colormap().alloc_color('#404040'))
                                 for row in range(length - 1):
-                                    val1 = plugin.get_pattern_value(value - 0x10, 1, 0, 0, row)
-                                    val2 = plugin.get_pattern_value(value - 0x10, 1, 0, 0, row + 1)
+                                    val1 = pattern.get_value(row, 1, 0, 0)
+                                    val2 = pattern.get_value(row, 1, 0, 0)
                                     param = plugin.get_parameter(1, 0, 0)
                                     scale = 1.0 / (param.get_value_max() - param.get_value_min())
                                     if val1 != param.get_value_none() and val2 != param.get_value_none:
@@ -1646,7 +1653,7 @@ class SequencerView(gtk.DrawingArea):
                                         for track in range(tracks_):
                                             cols = pattern.get_column_count(group, track)
                                             for col in range(cols):
-                                                val = plugin.get_pattern_value(value - 0x10, group, track, col, row)
+                                                val = pattern.get_value(row, group, track, col)
                                                 param = plugin.get_parameter(group, track, col)
                                                 if param.get_type() in [0, 2, 3]:
                                                     if val != param.get_value_none():

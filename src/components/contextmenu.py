@@ -139,6 +139,8 @@ class PluginContextMenu(gtk.Menu):
                        ['Effects', 'Modulation'],
                    'jamesmichaelmcdermott@gmail.com/effect/modulator;1' :
                        ['Effects', 'Modulation'],
+                   '@libneil/mrmonkington/effect/mcp_chorus' :
+                       ['Effects', 'Modulation'],
                    '@libneil/arguru/effect/compressor' :
                        ['Effects', 'Dynamics'],
                    '@binarywerks.dk/multi-2;1' :
