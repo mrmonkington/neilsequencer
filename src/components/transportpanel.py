@@ -141,9 +141,9 @@ class TransportPanel(gtk.HBox):
         combosizer.pack_start(self.volume_button, expand=False)
         
         # To center the transport panel uncomment the HBox's below.
-        #self.pack_start(gtk.HBox())
+        self.pack_start(gtk.HBox())
         self.pack_start(combosizer, expand=False)
-        #self.pack_end(gtk.HBox())
+        self.pack_end(gtk.HBox())
 
         self.set_border_width(MARGIN)
         player = com.get('neil.core.player')
