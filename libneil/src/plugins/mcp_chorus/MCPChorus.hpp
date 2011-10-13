@@ -90,7 +90,7 @@ struct MCPChorusInfo : zzub::info {
       zzub::plugin_flag_has_audio_input | zzub::plugin_flag_has_audio_output;
     this->min_tracks = 0;
     this->max_tracks = 0;
-    this->name = "MrMonkington MCPChrous";
+    this->name = "MrMonkington MCPChorus";
     this->short_name = "MCPChorus";
     this->author = "MrMonkington";
     this->uri = "@libneil/mrmonkington/effect/mcp_chorus";
