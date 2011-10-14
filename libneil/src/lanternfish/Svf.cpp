@@ -25,12 +25,12 @@ namespace lanternfish {
   
   void Svf::set_bypass(bool on) 
   {
-    this->bypass = on;
+    bypass = on;
   }
   
   void Svf::set_sampling_rate(int rate) 
   {
-    this->sps = (float)rate;
+    sps = (float)rate;
   }
   
   void Svf::set_resonance(float reso) 
@@ -39,14 +39,16 @@ namespace lanternfish {
   }
 
   inline void Svf::kill_denormal(float &val) {
-    if (fabs(val) < 1e-15)
+    if (fabs(val) < 1e-15) {
       val = 0.0;
+    }
   }
   
   void Svf::process(float *out, float *cutoff, float *input, int mode, int n) 
   {
-    for (int i = 0; i < n; i++)
+    for (int i = 0; i < n; i++) {
       out[i] = 0.0;
+    }
     if (!this->bypass) {
       for (int i = 0; i < n; i++) {
 	float scale, f;
@@ -74,10 +76,6 @@ namespace lanternfish {
 	    out[i] += 0.5 * (low - high);
 	    break;
 	  }
-	  kill_denormal(low);
-	  kill_denormal(high);
-	  kill_denormal(band);
-	  kill_denormal(notch);
 	}
       }
     } else {

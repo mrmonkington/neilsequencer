@@ -151,7 +151,33 @@
       <inlineequation><mathphrase>y<subscript>4</subscript></mathphrase></inlineequation>,
       you get those digits using the formulas below.
     </para>
+    <equation><title>First Digit</title>
+    <mathphrase>
+      y<subscript>1</subscript> = x / 16<superscript>3</superscript>
+    </mathphrase>
+    </equation>
+    <equation><title>Second Digit</title>
+    <mathphrase>
+      y<subscript>2</subscript> = (x % 16<superscript>3</superscript>) / 16<superscript>2</superscript>
+    </mathphrase>
+    </equation>
+    <equation><title>Third Digit</title>
+    <mathphrase>
+      y<subscript>2</subscript> = ((x % 16<superscript>3</superscript>) % 16<superscript>2</superscript>) / 16
+    </mathphrase>
+    </equation>
+    <equation><title>Fourth Digit</title>
+    <mathphrase>
+      y<subscript>2</subscript> = ((x % 16<superscript>3</superscript>) % 16<superscript>2</superscript>) % 16
+    </mathphrase>
+    </equation>
     </section>
+    <section><title>Keyboard Layout</title>
+    <figure>
+      <title>Keyboard Layout</title>
+      <graphic format="SVG" fileref="images/keyboard.svg"></graphic>
+    </figure>
+  </section>
   </section>
   <section>
     <title>Navigating with keyboard</title>
