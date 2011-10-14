@@ -173,10 +173,27 @@
     </equation>
     </section>
     <section><title>Keyboard Layout</title>
+    <para>
+      The following applies to columns that are used to enter notes.
+      The mapping of notes to keyboard keys is displayed in the
+      diagram below. As you can see, you have access to two octaves at
+      one time. The keys on the lower part of the keyboard represent
+      the octave currently selected via the pattern view dropdown
+      combo box. The keys on the upper part are one octave higher. So
+      if you have fourth octave selected, the "z" key represents the
+      note "C-4" and so on.
+    </para>
     <figure>
       <title>Keyboard Layout</title>
       <graphic format="SVG" fileref="images/keyboard.svg"></graphic>
     </figure>
+    <para>
+      There are also special keys defined. The "1" key is "note
+      off". That is you use it to end a playing note. Depending on the
+      machine this may, for example, force the envelopes of a synth to
+      go in to the release stage. The "." key is used to clear a value
+      and works on non-note columns too.
+    </para>
   </section>
   </section>
   <section>
