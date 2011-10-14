@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="mdaLeslie">
+  <title>mda Leslie</title>
+  <para>
+    A port of mda's Leslie Rotary Speaker simulator.
+  </para>
+  <para>
+    A Leslie speaker is a special amplifier and set of speakers mounted in such a way that the rotation of the components creates a pleasing
+    doppler effect.  It's something like a very wide chorus and phaser.  There is a crossover circuit so the exact parameters of the sound
+    can be controlled independently for high and low tones.
+  </para>
+  <para>
+    This sound is especially suited to electric pianos and (Hammond) organs.
+  </para>
+  <table><title>Parameters</title>
+  <tgroup cols='2' align='left' colsep='1' rowsep='1'>
+    <thead>
+      <row>
+	<entry><para>Parameter</para></entry>
+	<entry><para>Meaning</para></entry>
+      </row>
+    </thead>
+    <tbody>
+      <row>
+	<entry><para>Speed</para></entry>
+	<entry><para>
+        Overall operation speed.  Can be one of 'STOP' (no rotation), 'SLOW' or 'FAST'.  Param 'Finespeed' futher allows you to tweak actual speed to suit.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Gain</para></entry>
+	<entry><para>
+        Output gain.  Use to give signal a boost if operation attenuates signal a little.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Crossover</para></entry>
+	<entry><para>
+        Crossover frequency between hi and low speakers.  Moving this up can result in a more disorientating sound.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>High Width</para></entry>
+	<entry><para>
+        High tone speaker (tweeter) stereo modulation width.  Makes the sound wobble from side to side more!
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>High Depth</para></entry>
+	<entry><para>
+        High tone speaker phase shift size.  Sort of simulates the sound receding and approaching.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>High Throb</para></entry>
+	<entry><para>
+        High tone speaker volume modulation.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Low Width</para></entry>
+	<entry><para>
+        As for high width, but for low tones from the woofer.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Fine speed</para></entry>
+	<entry><para>
+        Fine control over rotation speed.  Can take a few seconds to reach the desired speed, to simulate
+        the momentum of a real Leslie speaker!
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Low Throb</para></entry>
+	<entry><para>
+        Again, as for high throb but for low tones.
+	</para></entry>
+      </row>
+    </tbody>
+  </tgroup>
+</table>
+<para>
+    Ported by mrmonkington https://bitbucket.org/mrmonkington/neil
+</para>
+</section>

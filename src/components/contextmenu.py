@@ -105,6 +105,8 @@ class PluginContextMenu(gtk.Menu):
                        ['Synthesizers', 'Other'],
                    '@rift.dk/generator/Matilde+Tracker;1.5' :
                        ['Samplers'],
+                   '@libneil/mrmonkington/effect/mcp_chorus' :
+                       ['Effects', 'Time based'],
                    '@trac.zeitherrschaft.org/aldrin/lunar/effect/delay;1' :
                        ['Effects', 'Time based'],
                    '@trac.zeitherrschaft.org/aldrin/lunar/effect/phaser;1' :
@@ -133,6 +135,8 @@ class PluginContextMenu(gtk.Menu):
                        ['Effects', 'Distortion'],
                    '@bblunars/effect/mdaSubSynth' :
                        ['Effects', 'Distortion'],
+                   '@libneil/mda/effect/leslie' :
+                       ['Effects', 'Modulation'],
                    '@bigyo/frequency+shifter;1' :
                        ['Effects', 'Modulation'],
                    'jamesmichaelmcdermott@gmail.com/effect/btdsys_ringmod;1' :

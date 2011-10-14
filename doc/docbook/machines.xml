@@ -17,4 +17,5 @@
   <xi:include href="somono_mdadubdelay.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
   <xi:include href="lunar_lfo.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
   <xi:include href="mcp_chorus.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="mda_leslie.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 </section>

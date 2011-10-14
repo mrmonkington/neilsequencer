@@ -1,0 +1,7 @@
+Import('pluginenv', 'build_plugin')
+
+localenv = pluginenv.Clone()
+
+files = ["Leslie.cpp"]
+
+build_plugin(localenv, "mda_leslie", files)
