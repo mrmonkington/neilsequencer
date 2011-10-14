@@ -4,6 +4,7 @@
 <section id="matilde_tracker">
   <title>Matilde Tracker</title>
   <para>
+    <graphic fileref="images/Matilde.bmp"></graphic>
     Matilde Tracker is a tracker machine for Buzz which behaves more like
     Protracker than Jeskola Tracker.
     
