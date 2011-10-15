@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="lunar_control">
+  <title>Lunar Control</title>
+  <para>
+    Lunar Control is a helper machine for automating other machine
+    parameters. It allows you to automate the parameters easier by
+    letting you specify upper and lower bounds for automation and also
+    by introducing non-linearity that is helpful when you have
+    parameters for which linear automation is inconvenient (such as
+    cutoff or modulation frequencies, etc).
+  </para>
+  <table><title>Lunar Control Parameters</title>
+  <tgroup cols='2' align='left' colsep='1' rowsep='1'>
+    <thead>
+      <row>
+	<entry><para>Parameter</para></entry>
+	<entry><para>Meaning</para></entry>
+      </row>
+    </thead>
+    <tbody>
+      <row>
+	<entry><para>Value</para></entry>
+	<entry><para>
+	  Use this to specify the value of automated parameter. If the
+	  <emphasis>Power</emphasis> parameter is set to zero,
+	  <emphasis>Min</emphasis> set to zero and 
+	  <emphasis>Max</emphasis> set to one, then setting
+	  <emphasis>Value</emphasis> to 
+	  zero will set the 
+	  automated parameter to its' lowest possible value and
+	  setting <emphasis>Value</emphasis> to one will set the
+	  automated parameter to 
+	  its' highest values. Altering <emphasis>Power</emphasis>,
+	  <emphasis>Min</emphasis> and <emphasis>Max</emphasis> will 
+	  change this behavior.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Power</para></entry>
+	<entry><para>
+	  Adds non-linearity to the Control value. If you assume that
+	  machine outputs goes from zero to one, where zero is the 
+	  lowest automated parameter value and one is highest, than
+	  this parameter works as follows: when
+	  <emphasis>Power</emphasis> - <emphasis>p</emphasis> is 
+	  negative and <emphasis>y</emphasis> is the output, then the
+	  actual output is 
+	  <inlineequation><mathphrase><emphasis>y</emphasis><superscript>(1
+	  / (1 -
+	  <emphasis>p</emphasis>))</superscript></mathphrase></inlineequation>,
+	  if <emphasis>p</emphasis> is
+	  positive then the actual output is
+	  <inlineequation><mathphrase><emphasis>y</emphasis><superscript>(1 + 
+	  <emphasis>p</emphasis>)</superscript></mathphrase></inlineequation>.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Min</para></entry>
+	<entry><para>
+	  Used for scaling the output value. If you set this value,
+	  say, to 0.2, then the automated parameter will be at its' 20%
+	  value range when the <emphasis>Value</emphasis> parameter is
+	  set to zero. 
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Max</para></entry>
+	<entry><para>
+	  Used for scaling the output value. If you set this value,
+	  say, to 0.8, then the automated parameter will be at its' 80%
+	  value range when the <emphasis>Value</emphasis> parameter is
+	  set to one. 
+	</para></entry>
+      </row>
+    </tbody>
+  </tgroup>
+</table>
+</section>
