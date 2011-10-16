@@ -59,6 +59,7 @@ void LunarDelay::rb_init(ringbuffer_t *rb) {
   }
   rb->eob = rb->buffer + 1;
   rb->pos = rb->buffer;
+  rb->rpos = rb->pos;
 }
 
 void LunarDelay::rb_setup(ringbuffer_t *rb, int size) {
@@ -72,8 +73,13 @@ void LunarDelay::rb_mix(ringbuffer_t *rb, Svf *filter, float **out, int n) {
   while (n--) {
     sl = *out[0];
     sr = *out[1];
-    *out[0] = (*out[0] * dry) + (*rb[0].pos * wet);
-    *out[1] = (*out[1] * dry) + (*rb[1].pos * wet);
+    if (mode == 0 || mode == 1) {
+      *out[0] = (*out[0] * dry) + (*rb[0].pos * wet);
+      *out[1] = (*out[1] * dry) + (*rb[1].pos * wet);
+    } else {
+      *out[0] = (*out[0] * dry) + (*rb[0].rpos * wet);
+      *out[1] = (*out[1] * dry) + (*rb[1].rpos * wet);
+    }
     if (mode == 0 || mode == 2) {
       *rb[0].pos = std::min(std::max((*rb[0].pos * fb) + sl, -1.0f), 1.0f);
       *rb[1].pos = std::min(std::max((*rb[1].pos * fb) + sr, -1.0f), 1.0f);
@@ -87,18 +93,22 @@ void LunarDelay::rb_mix(ringbuffer_t *rb, Svf *filter, float **out, int n) {
     *rb[1].pos = squash(*rb[1].pos);
     out[0]++;
     out[1]++;
-    if (mode == 0 || mode == 1) {
-      rb[0].pos++;
-      rb[1].pos++;
-      if (rb[0].pos == rb[0].eob) {
-	rb[0].pos = rb[0].buffer;
-      }
-      if (rb[1].pos == rb[1].eob) {
-	rb[1].pos = rb[1].buffer;
-      }
-    } else {
-      // Disabled
+    rb[0].pos++;
+    rb[1].pos++;
+    if (rb[0].pos == rb[0].eob) {
+      rb[0].pos = rb[0].buffer;
     }
+    if (rb[1].pos == rb[1].eob) {
+      rb[1].pos = rb[1].buffer;
+    }
+    if (rb[0].rpos == rb[0].buffer) {
+      rb[0].rpos = rb[0].eob;
+    }
+    if (rb[1].rpos == rb[1].buffer) {
+      rb[1].rpos = rb[1].eob;
+    }
+    rb[0].rpos--;
+    rb[1].rpos--;
   }
 }
 

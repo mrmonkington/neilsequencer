@@ -59,6 +59,7 @@ private:
     float buffer[MAX_DELAY_LENGTH]; // ringbuffer
     float *eob; // end of buffer
     float *pos; // buffer position
+    float *rpos; // reverse position
   };
   ringbuffer_t rb[2];
   float ldelay_ticks, rdelay_ticks;
