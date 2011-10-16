@@ -19,6 +19,7 @@ struct Gvals {
   uint16_t fb;
   uint16_t wet;
   uint16_t dry;
+  uint8_t mode;
 } __attribute__((__packed__));
 
 const zzub::parameter *para_l_delay_ticks = 0;
@@ -29,6 +30,7 @@ const zzub::parameter *para_resonance = 0;
 const zzub::parameter *para_fb = 0;
 const zzub::parameter *para_wet = 0;
 const zzub::parameter *para_dry = 0;
+const zzub::parameter *para_mode = 0;
 
 const char *zzub_get_signature() { 
   return ZZUB_SIGNATURE; 
@@ -65,7 +67,7 @@ private:
   float wet;
   float dry;
   float fb;
-  int mode, filter_mode;
+  int mode, filter_mode, increment;
   float cutoff, resonance;
   Svf filters[2];
   inline float dbtoamp(float db, float limit) {
@@ -76,7 +78,7 @@ private:
   float squash(float x);
   void rb_init(ringbuffer_t *rb);
   void rb_setup(ringbuffer_t *rb, int size);
-  void rb_mix(ringbuffer_t *rb, Svf *filter, float *out, int n);
+  void rb_mix(ringbuffer_t *rb, Svf *filter, float **out, int n);
   void update_buffer();
 public:
   LunarDelay();
@@ -201,6 +203,15 @@ struct LunarDelayInfo : zzub::info {
       .set_value_max(6000)
       .set_value_none(0xffff)
       .set_value_default(4800)
+      .set_state_flag();
+    para_mode = &add_global_parameter()
+      .set_byte()
+      .set_name("Mode")
+      .set_description("Delay mode of operation")
+      .set_value_min(0)
+      .set_value_max(3)
+      .set_value_none(0xff)
+      .set_value_default(0)
       .set_state_flag();
   }
   virtual zzub::plugin* create_plugin() const { return new LunarDelay(); }

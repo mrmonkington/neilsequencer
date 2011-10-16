@@ -67,18 +67,47 @@ void LunarDelay::rb_setup(ringbuffer_t *rb, int size) {
     rb->pos -= size;
 }
 
-void LunarDelay::rb_mix(ringbuffer_t *rb, Svf *filter, float *out, int n) {
-  float s;
+void LunarDelay::rb_mix(ringbuffer_t *rb, Svf *filter, float **out, int n) {
+  float sl, sr;
   while (n--) {
-    s = *out;
-    *out = (*out * dry) + (*rb->pos * wet);
-    *rb->pos = std::min(std::max((*rb->pos * fb) + s, -1.0f), 1.0f);
-    *rb->pos = filter->sample(*rb->pos, filter_mode);
-    *rb->pos = squash(*rb->pos);
-    out++;
-    rb->pos++;
-    if (rb->pos == rb->eob) // wrap
-      rb->pos = rb->buffer;
+    sl = *out[0];
+    sr = *out[1];
+    *out[0] = (*out[0] * dry) + (*rb[0].pos * wet);
+    *out[1] = (*out[1] * dry) + (*rb[1].pos * wet);
+    if (mode == 0 || mode == 2) {
+      *rb[0].pos = std::min(std::max((*rb[0].pos * fb) + sl, -1.0f), 1.0f);
+      *rb[1].pos = std::min(std::max((*rb[1].pos * fb) + sr, -1.0f), 1.0f);
+    } else {
+      *rb[0].pos = std::min(std::max((*rb[1].pos * fb) + sl, -1.0f), 1.0f);
+      *rb[1].pos = std::min(std::max((*rb[0].pos * fb) + sr, -1.0f), 1.0f);
+    }
+    *rb[0].pos = filter[0].sample(*rb[0].pos, filter_mode);
+    *rb[0].pos = squash(*rb[0].pos);
+    *rb[1].pos = filter[1].sample(*rb[1].pos, filter_mode);
+    *rb[1].pos = squash(*rb[1].pos);
+    out[0]++;
+    out[1]++;
+    if (mode == 0 || mode == 1) {
+      rb[0].pos++;
+      rb[1].pos++;
+      if (rb[0].pos == rb[0].eob || rb[1].pos == rb[0].eob) {
+	rb[0].pos = rb[0].buffer;
+	rb[1].pos = rb[1].buffer;
+      }
+    } else {
+      if (increment == -1 && 
+	  (rb[0].pos == rb[0].buffer || 
+	   rb[1].pos == rb[1].buffer)) {
+	increment = 1;
+      }
+      if (increment == 1 &&
+	  (rb[0].pos == rb[0].eob || 
+	   rb[1].pos == rb[0].eob)) {
+	increment = -1;
+      }
+      rb[0].pos += increment;
+      rb[1].pos += increment;
+    }
   }
 }
 
@@ -94,6 +123,7 @@ void LunarDelay::init(zzub::archive *pi) {
   wet = 0.0f;
   dry = 0.0f;
   fb = 0.0f;
+  increment = -1;
 }
 	
 void LunarDelay::update_buffer() {
@@ -141,6 +171,9 @@ void LunarDelay::process_events() {
     float val = -48.0 + (gval.fb / (float)para_fb->value_max) * 60.0;
     fb = dbtoamp(val, -48.0f);
   }
+  if (gval.mode != 0xff) {
+    mode = gval.mode;
+  }
   if (update == 1) {
     int srate = _master_info->samples_per_second;
     for (int i = 0; i < 2; i++) {
@@ -155,8 +188,7 @@ bool LunarDelay::process_stereo(float **pin, float **pout, int n, int mode) {
     pout[0][i] = pin[0][i];
     pout[1][i] = pin[1][i];
   }
-  rb_mix(&rb[0], &filters[0], pout[0], n);
-  rb_mix(&rb[1], &filters[1], pout[1], n);
+  rb_mix(rb, filters, pout, n);
   return true;
 }
 
@@ -199,6 +231,22 @@ const char *LunarDelay::describe_value(int param, int value) {
     break;
   case 7:
     sprintf(txt, "%.2f", 10.0 * log10(dry));
+    break;
+  case 8:
+    switch(value) {
+    case 0: 
+      sprintf(txt, "Straight");
+      break;
+    case 1:
+      sprintf(txt, "Ping-Pong");
+      break;
+    case 2:
+      sprintf(txt, "Reverse");
+      break;
+    case 3:
+      sprintf(txt, "Rev. Ping-Pong");
+      break;
+    }
     break;
   default:
     return 0;
