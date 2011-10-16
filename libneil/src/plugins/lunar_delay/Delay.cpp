@@ -90,23 +90,14 @@ void LunarDelay::rb_mix(ringbuffer_t *rb, Svf *filter, float **out, int n) {
     if (mode == 0 || mode == 1) {
       rb[0].pos++;
       rb[1].pos++;
-      if (rb[0].pos == rb[0].eob || rb[1].pos == rb[0].eob) {
+      if (rb[0].pos == rb[0].eob) {
 	rb[0].pos = rb[0].buffer;
+      }
+      if (rb[1].pos == rb[1].eob) {
 	rb[1].pos = rb[1].buffer;
       }
     } else {
-      if (increment == -1 && 
-	  (rb[0].pos == rb[0].buffer || 
-	   rb[1].pos == rb[1].buffer)) {
-	increment = 1;
-      }
-      if (increment == 1 &&
-	  (rb[0].pos == rb[0].eob || 
-	   rb[1].pos == rb[0].eob)) {
-	increment = -1;
-      }
-      rb[0].pos += increment;
-      rb[1].pos += increment;
+      // Disabled
     }
   }
 }
@@ -123,7 +114,10 @@ void LunarDelay::init(zzub::archive *pi) {
   wet = 0.0f;
   dry = 0.0f;
   fb = 0.0f;
-  increment = -1;
+  l_incr = -1;
+  r_incr = -1;
+  l_count = 0;
+  r_count = 0;
 }
 	
 void LunarDelay::update_buffer() {

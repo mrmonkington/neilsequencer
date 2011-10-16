@@ -67,7 +67,7 @@ private:
   float wet;
   float dry;
   float fb;
-  int mode, filter_mode, increment;
+  int mode, filter_mode, l_incr, r_incr, l_count, r_count;
   float cutoff, resonance;
   Svf filters[2];
   inline float dbtoamp(float db, float limit) {
