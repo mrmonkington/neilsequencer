@@ -561,7 +561,6 @@ class WaveEditView(gtk.DrawingArea):
             y += (h / 8)
         ctx.stroke()
 
-        print self.wave.get_path()
         ctx.move_to(2, 14)
         ctx.set_source_rgba(0.4, 0.4, 0.4, 1.0)
         pango_ctx = pangocairo.CairoContext(ctx)
