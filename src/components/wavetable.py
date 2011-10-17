@@ -690,6 +690,7 @@ class WavetablePanel(gtk.VBox):
                 return
             else:
                 w.set_name(os.path.splitext(os.path.basename(source))[0])
+                w.set_path(source)
         player.history_commit("load instrument")
         #self.set_current_page(0)
         self.samplelist.grab_focus()

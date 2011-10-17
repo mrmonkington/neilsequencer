@@ -561,6 +561,18 @@ class WaveEditView(gtk.DrawingArea):
             y += (h / 8)
         ctx.stroke()
 
+        print self.wave.get_path()
+        ctx.move_to(2, 14)
+        ctx.set_source_rgba(0.4, 0.4, 0.4, 1.0)
+        pango_ctx = pangocairo.CairoContext(ctx)
+        layout = pango_ctx.create_layout()
+        layout.set_width(-1)
+        layout.set_font_description(pango.FontDescription("sans 8"))
+        layout.set_markup("<b>%s</b>" % self.wave.get_path())
+        pango_ctx.update_layout(layout)
+        pango_ctx.show_layout(layout)
+        ctx.stroke()
+
         channels = 1
         if self.wave.get_flags() & zzub.zzub_wave_flag_stereo:
             channels = 2
