@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="somono_lfnoise">
+  <title>SoMono LFNoise</title>
+  <para>
+    SoMono LFNoise is a controller machine that generates a random
+    value every specified number of sequencer rows. It then either
+    outputs the value straight to control a parameter of another
+    machine or allows the user to interpolate between the random
+    values to create slower sweeps. It can be used to automate
+    parameters of machines in a random way, which is sometimes seen as
+    adding a touch of "humanness" to the musical output, or to simply
+    add movement to sound without investing time to manual
+    automation. 
+  </para>
+  <table><title>SoMono LFNoise Parameters</title>
+  <tgroup cols='2' align='left' colsep='1' rowsep='1'>
+    <thead>
+      <row>
+	<entry><para>Parameter</para></entry>
+	<entry><para>Meaning</para></entry>
+      </row>
+    </thead>
+    <tbody>
+      <row>
+	<entry><para>Rate</para></entry>
+	<entry><para>
+	  Rate in rows in which a new random value between zero and
+	  one is generated.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Type</para></entry>
+	<entry><para>
+	  Interpolation type. Choose between
+	  <emphasis>None</emphasis>, which simply means that random
+	  values are output without interpolation,
+	  <emphasis>Linear</emphasis> which attempts to draw a line
+	  between adjacent random values and
+	  <emphasis>Cubic</emphasis> which generates a smooth curve. 
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Min</para></entry>
+	<entry><para>
+	  Used for scaling the output value. If you set this value,
+	  say, to 0.2, then the automated parameter will be at its' 20%
+	  value range when the <emphasis>Value</emphasis> parameter is
+	  set to zero. 
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Max</para></entry>
+	<entry><para>
+	  Used for scaling the output value. If you set this value,
+	  say, to 0.8, then the automated parameter will be at its' 80%
+	  value range when the <emphasis>Value</emphasis> parameter is
+	  set to one. 
+	</para></entry>
+      </row>
+    </tbody>
+  </tgroup>
+</table>
+</section>
