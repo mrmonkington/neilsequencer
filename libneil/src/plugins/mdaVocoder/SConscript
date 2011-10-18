@@ -1,0 +1,7 @@
+Import('pluginenv', 'build_plugin')
+
+localenv = pluginenv.Clone()
+
+files = ["Vocoder.cpp"]
+
+build_plugin(localenv, "mda_vocoder", files)
