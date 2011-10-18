@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="mda_vocoder">
+  <title>mda Vocoder</title>
+  <para>
+    A port of mda's vocoder plug-in.
+  </para>
+  <para>
+    16-band vocoder for applying the spectrum of one sound (the modulator,
+    usually a voice or rhythm part) to the waveform of another (the
+    carrier, usually a synth pad or sawtooth wave).
+  </para>
+  <para>
+    Note that both carrier and modulator signals are taken from one input
+    channel, which therefore must be stereo for normal operation. This is
+    different to some other vocoder plug-ins where one of the input
+    signals is taken from another plug-in in a different channel. 
+  </para>
+  <table><title>Parameters</title>
+  <tgroup cols='2' align='left' colsep='1' rowsep='1'>
+    <thead>
+      <row>
+	<entry><para>Parameter</para></entry>
+	<entry><para>Meaning</para></entry>
+      </row>
+    </thead>
+    <tbody>
+      <row>
+	<entry><para>Mod In</para></entry>
+	<entry><para>
+	  <itemizedlist>
+	    <listitem><para>LEFT - Modulator on left channel, carrier.
+	    on right</para></listitem>
+	    <listitem><para>RIGHT - Modulator on right channel,
+	    carrier on right.</para></listitem>
+	  </itemizedlist>
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Output</para></entry>
+	<entry><para>
+	  Level trim.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Hi Thru</para></entry>
+	<entry><para>
+	  Level of high frequency input modulator input fed to output
+	  - can improve realism and intelligibility.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Glide</para></entry>
+	<entry><para>
+	  Level of high frequency vocoder band - may be unpleasant for
+	  some carrier signals.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Transpose</para></entry>
+	<entry><para>
+	  Envelope tracking speed - set to minimum to freeze filter
+	  shape.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Maximum</para></entry>
+	<entry><para>
+	  Sharpness of each filter band - low values sound more
+	  synthetic, high-mid values more vocal.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Trigger</para></entry>
+	<entry><para>
+	  Shift the filter bank up or down to optimize frequency
+	  range. 
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Output</para></entry>
+	<entry><para>
+	  Select 16-band operation, or 8-band for thinner sound and
+	  reduced processor usage. 
+	</para></entry>
+      </row>
+    </tbody>
+  </tgroup>
+</table>
+</section>

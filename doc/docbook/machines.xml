@@ -21,4 +21,5 @@
   <xi:include href="mrmonkington_mcpchorus.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
   <xi:include href="mda_leslie.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
   <xi:include href="mda_tracker.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="mda_vocoder.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 </section>
