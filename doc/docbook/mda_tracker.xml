@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="mda_tracker">
+  <title>mda Tracker</title>
+  <para>
+    A port of mda's pitch tracking plug-in.
+  </para>
+  <para>
+    This plug-in tracks the frequency of the input signal with an
+    oscillator, ring modulator or filter.  The pitch tracking only
+    works with monophonic inputs, but can create interesting effects
+    on unpitched sounds such as drums.
+  </para>
+  <para>
+    This plug can be used with white or pink noise inputs to generate
+    random pitch sequences.  Interesting evolving soundscapes can be
+    made with a drum loop input and Tracker, RezFilter and Delay in
+    series.
+  </para>
+  <table><title>Parameters</title>
+  <tgroup cols='2' align='left' colsep='1' rowsep='1'>
+    <thead>
+      <row>
+	<entry><para>Parameter</para></entry>
+	<entry><para>Meaning</para></entry>
+      </row>
+    </thead>
+    <tbody>
+      <row>
+	<entry><para>Mode</para></entry>
+	<entry><para>
+	  <itemizedlist>
+	    <listitem><para>SINE - Sine wave oscillator</para></listitem>
+	    <listitem><para>SQUARE - Square wave oscillator</para></listitem>
+	    <listitem><para>SAW - Sawtooth wave oscillator</para></listitem>
+	    <listitem><para>RING - Ring modulator</para></listitem>
+	    <listitem><para>EQ - Peaking EQ</para></listitem>
+	  </itemizedlist>
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Dynamics</para></entry>
+	<entry><para>
+	  Apply dynamics of input signal to generated output.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Mix</para></entry>
+	<entry><para>
+	  Wet dry mix.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Glide</para></entry>
+	<entry><para>
+	  Maximum pitch change rate.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Transpose</para></entry>
+	<entry><para>
+	  Pitch offset to create harmonics, octave doubling, etc.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Maximum</para></entry>
+	<entry><para>
+	  Maximum allowed pitch - to supress pitch tracking errors.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Trigger</para></entry>
+	<entry><para>
+	  Threshold level for pitch tracker - raise to stop tracking
+	  in gaps. 
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Output</para></entry>
+	<entry><para>
+	  Level trim.
+	</para></entry>
+      </row>
+    </tbody>
+  </tgroup>
+</table>
+</section>
