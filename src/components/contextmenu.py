@@ -157,6 +157,8 @@ class PluginContextMenu(gtk.Menu):
                        ['Effects', 'Filter'],
                    '@libneil/somono/effect/filter' :
                        ['Effects', 'Filter'],
+                   '@libneil/mda/effect/vocoder' :
+                       ['Effects', 'Filter'],
                    'jamesmichaelmcdermott@gmail.com/effect/sprayman;1' :
                        ['Effects', 'Sampling'],
                    '@libneil/somono/effect/stutter;1' :
