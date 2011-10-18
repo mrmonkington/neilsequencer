@@ -1,0 +1,7 @@
+Import('pluginenv', 'build_plugin')
+
+localenv = pluginenv.Clone()
+
+files = ["Tracker.cpp"]
+
+build_plugin(localenv, "mda_tracker", files)
