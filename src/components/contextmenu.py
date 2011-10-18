@@ -161,6 +161,8 @@ class PluginContextMenu(gtk.Menu):
                        ['Effects', 'Sampling'],
                    '@libneil/somono/effect/stutter;1' :
                        ['Effects', 'Sampling'],
+                   '@libneil/mda/effect/tracker' :
+                       ['Effects', 'Other'],
                    '@libneil/somono/controller/lfnoise;1' :
                        ['Control'],
                    '@neil/lunar/controller/Control;1' :
