@@ -64,6 +64,7 @@ private:
   int sbuflen, sbufpos, sdel, sfx;
   int kbuflen, kbufpos, kdel, ksfx;
   int rec, recx, recpos;
+  void synth();
 public:
   BeatBox();
   virtual ~BeatBox() {}
@@ -76,7 +77,7 @@ public:
 			       int *samplerate) { return false; }
   virtual const char * describe_value(int param, int value); 
   virtual void process_controller_events() {}
-  virtual void destroy() {}
+  virtual void destroy();
   virtual void stop() {}
   virtual void load(zzub::archive *arc) {}
   virtual void save(zzub::archive*) {}
@@ -221,10 +222,10 @@ struct BeatBoxInfo : zzub::info {
       .set_word()
       .set_name("Thru Mix")
       .set_description("Thru mix")
-      .set_value_min(1)
+      .set_value_min(0)
       .set_value_max(1000)
       .set_value_none(65535)
-      .set_value_default(1)
+      .set_value_default(0)
       .set_state_flag();
   }
   virtual zzub::plugin* create_plugin() const { return new BeatBox(); }
