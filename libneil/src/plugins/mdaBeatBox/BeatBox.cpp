@@ -416,10 +416,10 @@ const char *BeatBox::describe_value(int param, int value) {
       sprintf(txt, "-> HAT");
       break;
     case 3:
-      sprintf(txt, "-> KIK");
+      sprintf(txt, "-> KICK");
       break;
     case 4:
-      sprintf(txt, "-> SNR");
+      sprintf(txt, "-> SNARE");
       break;
     }
     break;

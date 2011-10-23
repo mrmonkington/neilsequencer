@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="mda_beatbox">
+  <title>mda BeatBox</title>
+  <para>
+    A port of mda's BeatBox drum-replacer plug-in.
+  </para>
+  <para>
+    Contains three samples (kick, snare and hat) designed to be
+    triggered by incoming audio in three frequency ranges. The plug-in
+    has built-in drum sounds based on the Roland CR-78 but these can
+    be replaced by the (advanced) user.
+  </para>
+  <para>
+    To record your own sounds, use the Record control to monitor the
+    plug's input, then with the source stopped select the slot to
+    record into, play your sound, then with the source stopped again,
+    switch back to monitoring.
+  </para>
+  <table><title>Parameters</title>
+  <tgroup cols='2' align='left' colsep='1' rowsep='1'>
+    <thead>
+      <row>
+	<entry><para>Parameter</para></entry>
+	<entry><para>Meaning</para></entry>
+      </row>
+    </thead>
+    <tbody>
+      <row>
+	<entry><para>Hat Thresh</para></entry>
+	<entry><para>
+	  Trigger threshold level (the level that will trigger hi-hat
+	  playback). 
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Hat Rate</para></entry>
+	<entry><para>
+	  Maximum trigger rate. Higher values will result in more
+	  rapid hi-hat triggering. 
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Hat Mix</para></entry>
+	<entry><para>
+	  Hi-hat playback level.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Kick Thresh</para></entry>
+	<entry><para>
+	  Trigger threshold level (the level that will trigger kick
+	  playback). 
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Kick Trig</para></entry>
+	<entry><para>
+	  The frequency that will trigger kick playback. When
+	  adjusting this value, the machine will switch to "key
+	  listen" mode, so you can listen to filtered output and
+	  decided on the value that best represents your particular
+	  audio source.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Kick Mix</para></entry>
+	<entry><para>
+	  Kick playback level.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Snare Thresh</para></entry>
+	<entry><para>
+	  Trigger threshold level (the level that will trigger snare
+	  playback). 
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Snare Trig</para></entry>
+	<entry><para>
+	  The frequency that will trigger snare playback. When
+	  adjusting this value, the machine will switch to "key
+	  listen" mode, so you can listen to filtered output and
+	  decided on the value that best represents your particular
+	  audio source.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Snare Mix</para></entry>
+	<entry><para>
+	  Kick playback level.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Dynamics</para></entry>
+	<entry><para>
+	  Apply input signal level variations to output.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Record</para></entry>
+	<entry><para>
+	  <itemizedlist>
+	    <listitem><para>Monitor - listen to input signal (return
+	    to this setting after making a recording). 
+	    </para></listitem>
+	    <listitem><para>->Hat - record input signal into hi-hat
+	    sample.</para></listitem>
+	    <listitem><para>->Kick - record input signal into kick
+	    sample.</para></listitem>
+	    <listitem><para>->Snare - record input signal into snare
+	    sample.</para></listitem>
+	  </itemizedlist>
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Thru Mix</para></entry>
+	<entry><para>
+	  Allow some of the input signal to be mixed with the output. 
+	</para></entry>
+      </row>
+    </tbody>
+  </tgroup>
+</table>
+</section>
