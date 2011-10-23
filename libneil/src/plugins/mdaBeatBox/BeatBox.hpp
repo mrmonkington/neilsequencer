@@ -121,7 +121,7 @@ struct BeatBoxInfo : zzub::info {
     this->uri = "@libneil/mda/effect/beatbox";
     para_hat_thresh = &add_global_parameter()
       .set_word()
-      .set_name("Hat Thr")
+      .set_name("Hat Thresh")
       .set_description("Hi-Hat threshold")
       .set_value_min(0)
       .set_value_max(1000)
@@ -148,7 +148,7 @@ struct BeatBoxInfo : zzub::info {
       .set_state_flag();
     para_kick_thresh = &add_global_parameter()
       .set_word()
-      .set_name("Kik Thr")
+      .set_name("Kick Thresh")
       .set_description("Kick threshold")
       .set_value_min(0)
       .set_value_max(1000)
@@ -157,7 +157,7 @@ struct BeatBoxInfo : zzub::info {
       .set_state_flag();
     para_kick_key = &add_global_parameter()
       .set_word()
-      .set_name("Kik Trig")
+      .set_name("Kick Trig")
       .set_description("Kick trigger frequency")
       .set_value_min(0)
       .set_value_max(1000)
@@ -166,7 +166,7 @@ struct BeatBoxInfo : zzub::info {
       .set_state_flag();
     para_kick_mix = &add_global_parameter()
       .set_word()
-      .set_name("Kik Mix")
+      .set_name("Kick Mix")
       .set_description("Kick mix")
       .set_value_min(0)
       .set_value_max(1000)
@@ -175,7 +175,7 @@ struct BeatBoxInfo : zzub::info {
       .set_state_flag();
     para_snare_thresh = &add_global_parameter()
       .set_word()
-      .set_name("Snr Thr")
+      .set_name("Snare Thresh")
       .set_description("Snare threshold")
       .set_value_min(0)
       .set_value_max(1000)
@@ -184,7 +184,7 @@ struct BeatBoxInfo : zzub::info {
       .set_state_flag();
     para_snare_key = &add_global_parameter()
       .set_word()
-      .set_name("Snr Trig")
+      .set_name("Snare Trig")
       .set_description("Snare trigger frequency")
       .set_value_min(0)
       .set_value_max(1000)
@@ -193,7 +193,7 @@ struct BeatBoxInfo : zzub::info {
       .set_state_flag();
     para_snare_mix = &add_global_parameter()
       .set_word()
-      .set_name("Snr Mix")
+      .set_name("Snare Mix")
       .set_description("Snare mix")
       .set_value_min(0)
       .set_value_max(1000)
@@ -211,7 +211,7 @@ struct BeatBoxInfo : zzub::info {
       .set_state_flag();
     para_record = &add_global_parameter()
       .set_word()
-      .set_name("Record:")
+      .set_name("Record")
       .set_description("Record")
       .set_value_min(0)
       .set_value_max(1000)
