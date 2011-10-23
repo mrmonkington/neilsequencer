@@ -10,6 +10,14 @@ Vocoder::Vocoder() {
 }
 
 void Vocoder::init(zzub::archive *pi) {
+  param[0] = 0.33f; //input select
+  param[1] = 0.50f; //output dB
+  param[2] = 0.40f; //hi thru
+  param[3] = 0.40f; //hi band
+  param[4] = 0.16f; //envelope
+  param[5] = 0.55f; //filter q
+  param[6] = 0.6667f; //freq range       
+  param[7] = 0.33f; //num bands      
   suspend();
 }
 

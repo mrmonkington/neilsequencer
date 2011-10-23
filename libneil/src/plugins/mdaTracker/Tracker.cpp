@@ -10,6 +10,15 @@ Tracker::Tracker() {
 }
 
 void Tracker::init(zzub::archive *pi) {
+  //inits here!
+  fParam1 = (float)0.00; //Mode
+  fParam2 = (float)1.00; //Dynamics
+  fParam3 = (float)1.00; //Mix
+  fParam4 = (float)0.97; //Tracking
+  fParam5 = (float)0.50; //Trnspose
+  fParam6 = (float)0.80; //Maximum Hz
+  fParam7 = (float)0.50; //Trigger dB
+  fParam8 = (float)0.50; //Output
   dphi = 100.f / _master_info->samples_per_second; //initial pitch
   min = (int)(_master_info->samples_per_second / 30.0); //lower limit
   res1 = (float)cos(0.01); //p
