@@ -167,6 +167,8 @@ class PluginContextMenu(gtk.Menu):
                        ['Effects', 'Other'],
                    '@libneil/mda/effect/beatbox' :
                        ['Effects', 'Other'],
+                   '@libneil/mda/effect/envelope' :
+                       ['Effects', 'Other'],
                    '@libneil/somono/controller/lfnoise;1' :
                        ['Control'],
                    '@neil/lunar/controller/Control;1' :

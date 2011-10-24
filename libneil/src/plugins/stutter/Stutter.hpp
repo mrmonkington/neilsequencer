@@ -25,7 +25,7 @@ private:
   Gvals gval;
   float *buffer[2];
   bool record;
-  int cursor, counter, length;
+  int cursor, counter, length, time;
   float tick_length, smoothing;
   float envelope(int cursor, int length);
 public:
@@ -85,10 +85,10 @@ struct StutterInfo : zzub::info {
       .set_name("Length")
       .set_description("Sampling window size in subticks")
       .set_value_min(0x01)
-      .set_value_max(0x80)
-      .set_value_none(0xFF)
+      .set_value_max(0xff)
+      .set_value_none(0x00)
       .set_state_flag()
-      .set_value_default(0x04);
+      .set_value_default(0x10);
     param_time = &add_global_parameter()
       .set_byte()
       .set_name("Time")

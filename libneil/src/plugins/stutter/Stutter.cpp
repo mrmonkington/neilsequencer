@@ -4,7 +4,7 @@
 
 #include "Stutter.hpp"
 
-#define MAX_SMOOTH 1000
+#define MAX_SMOOTH 100
 
 using namespace std;
 
@@ -23,11 +23,9 @@ Stutter::~Stutter() {
 
 void Stutter::init(zzub::archive* pi) {
   buffer[0] = new float[_master_info->samples_per_tick * 
-			(param_length->value_max / 4)]; 
+			(param_length->value_max / 16)]; 
   buffer[1] = new float[_master_info->samples_per_tick *
-			(param_length->value_max / 4)];
-  length = _master_info->samples_per_tick;
-  tick_length = 1.0;
+			(param_length->value_max / 16)];
 }
 
 void Stutter::destroy() {
@@ -37,12 +35,12 @@ void Stutter::destroy() {
 
 void Stutter::process_events() {
   if (gval.length != param_length->value_none) {
-    length = (gval.length / 4.0) * _master_info->samples_per_tick;
-    tick_length = gval.length / 4.0;
-    cursor = 0;
+    length = (_master_info->samples_per_tick / 16.0) * gval.length;
+    counter = 0;
   }
-  if (gval.time != param_length->value_none) {
-    counter = gval.time / tick_length;
+  if (gval.time != param_time->value_none) {
+    counter = (gval.time * _master_info->samples_per_tick) / length;
+    time = gval.time;
     cursor = 0;
     record = true;
   }
@@ -52,10 +50,14 @@ void Stutter::process_events() {
 }
 
 float Stutter::envelope(int cursor, int length) {
-  if (cursor < (MAX_SMOOTH * smoothing)) {
-    return cursor / (MAX_SMOOTH * smoothing);
-  } else if (cursor > (length - MAX_SMOOTH * smoothing)) {
-    return (length - cursor) / (MAX_SMOOTH * smoothing);
+  int smooth_samples = MAX_SMOOTH * smoothing;
+  if (length < 2 * smooth_samples) {
+    return 1.0;
+  }
+  if (cursor < smooth_samples) {
+    return cursor / smooth_samples;
+  } else if (cursor > length - smooth_samples) {
+    return (length - cursor) / smooth_samples;
   } else {
     return 1.0;
   }
@@ -63,43 +65,34 @@ float Stutter::envelope(int cursor, int length) {
 
 bool Stutter::process_stereo(float **pin, float **pout, int n, int mode) {
   for (int i = 0; i < n; i++) {
-    if (counter == 0) {
-      float env;
-      if (cursor < (MAX_SMOOTH * smoothing)) {
-	env = envelope(cursor, length);
-	cursor += 1;
-      } else {
-	env = 1.0;
-      }
+    if (record) {
+      // Record mode
+      // Memorize the data
+      buffer[0][cursor] = pin[0][i];
+      buffer[1][cursor] = pin[1][i];
+      // Apply the envelope to output
+      float env = envelope(cursor, length);
       pout[0][i] = pin[0][i] * env;
       pout[1][i] = pin[1][i] * env;
-    } else {
-      if (record) {
-	buffer[0][cursor] = pin[0][i];
-	buffer[1][cursor] = pin[1][i];
-	float env;
-	if (cursor < MAX_SMOOTH * smoothing) {
-	  env = 1.0;
-	} else {
-	  env = envelope(cursor, length);
-	}
-	pout[0][i] = pin[0][i] * env;
-	pout[1][i] = pin[1][i] * env;
-	cursor += 1;
-	if (cursor >= length) {
-	  cursor = 0;
-	  record = false;
-	}
-      } else {
-	float env = envelope(cursor, length);
-	pout[0][i] = buffer[0][cursor] * env;
-	pout[1][i] = buffer[1][cursor] * env;
-	cursor += 1;
-	if (cursor >= length) {
-	  counter -= 1;
-	  cursor = 0;
-	}
+      if (cursor++ >= length) {
+	cursor = 0;
+	// Turn off recording
+	record = false;
       }
+    } else if (counter > 0) {
+      // Playback mode
+      float env = envelope(cursor, length);
+      // Playback memorized output
+      pout[0][i] = buffer[0][cursor] * env;
+      pout[1][i] = buffer[1][cursor] * env;
+      if (cursor++ >= length) {
+	counter--;
+	cursor = 0;
+      }
+    } else {
+      // Bypass mode, if nothing needs to be done
+      pout[0][i] = pin[0][i];
+      pout[1][i] = pin[1][i];
     }
   }
   return true;
