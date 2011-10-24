@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="mda_envelope">
+  <title>mda Envelope</title>
+  <para>
+    A port of mda's envelope follower plug-in.
+  </para>
+  <para>
+    Normally two Envelope plug-ins will be used with the first set to
+    FLAT/ENV to separate the signal waveform and envelope and the
+    second set to L x |R| to recombine them. Effects applied to eith
+    the left or right channel between these plug-ins can be used to
+    process the waveform and envelope separately, for example delaying
+    the envelope relative to the waveform, or applying waveshaping
+    with a constant "drive" level. 
+    Note that in L x |R| mode with a mono input the plug-in acts as a
+    2:1 expander. 
+  </para>
+  <table><title>Parameters</title>
+  <tgroup cols='2' align='left' colsep='1' rowsep='1'>
+    <thead>
+      <row>
+	<entry><para>Parameter</para></entry>
+	<entry><para>Meaning</para></entry>
+      </row>
+    </thead>
+    <tbody>
+      <row>
+	<entry><para>Output</para></entry>
+	<entry><para>
+	  <itemizedlist>
+	    <listitem><para>Lx|R| - Multiplies left channel signal by
+	    right channel level.</para></listitem>
+	    <listitem><para>IN/ENV - Left channel is not processed,
+	    right output is a DC signal derived from the input signal
+	    level.</para></listitem>
+	    <listitem><para>FLAT/ENV - Same as IN/ENV, but the left
+	    channel is processed to remove level variations.
+	    </para></listitem>
+	  </itemizedlist>
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Attack</para></entry>
+	<entry><para>
+	  Envelope attack time in milliseconds.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Release</para></entry>
+	<entry><para>
+	  Envelope release time in milliseconds.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Gain</para></entry>
+	<entry><para>
+	  Output volume.
+	</para></entry>
+      </row>
+    </tbody>
+  </tgroup>
+</table>
+</section>
