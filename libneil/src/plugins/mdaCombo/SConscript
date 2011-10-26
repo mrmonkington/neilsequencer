@@ -1,0 +1,7 @@
+Import('pluginenv', 'build_plugin')
+
+localenv = pluginenv.Clone()
+
+files = ["Combo.cpp"]
+
+build_plugin(localenv, "mda_combo", files)
