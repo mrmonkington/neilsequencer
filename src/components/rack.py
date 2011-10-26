@@ -261,7 +261,7 @@ class ParameterView(gtk.VBox):
 	    increment = (p.get_value_max() - p.get_value_min()) / 10
 	    slider.set_increments(1, increment)
 	    v = plugin.get_parameter_value(g, t, i)
-            slider.set_tooltip_markup("<b>Description</b>: %s\n<b>Value</b>: #%s" % (p.get_description(), ("%4x" % v).replace(" ", "0")))
+            slider.set_tooltip_markup("<b>Description</b>: %s" % p.get_description())
 	    slider.set_value(v)
 	    slider.drag_dest_set(gtk.DEST_DEFAULT_ALL, self.DROP_TARGETS,
 		    gtk.gdk.ACTION_COPY)

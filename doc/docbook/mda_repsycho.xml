@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="mda_repsycho">
+  <title>mda RePsycho!</title>
+  <para>
+    A port of mda's event-based pitch shifter plug-in.
+  </para>
+  <para>
+    Chops audio into individual beats and shifts each beat downwards
+    in pitch. Only allowing downwards shifts helps keep timing very
+    tight - depending on complexity, whole rhythm sections can be
+    shifted!
+  </para>
+  <para>
+    Alternative uses include a triggered flanger or sub-octave doubler
+    (both with mix set to 50% or less) and a swing quantizer (with a
+    high threshold so not all beats trigger).
+  </para>
+  <table><title>Parameters</title>
+  <tgroup cols='2' align='left' colsep='1' rowsep='1'>
+    <thead>
+      <row>
+	<entry><para>Parameter</para></entry>
+	<entry><para>Meaning</para></entry>
+      </row>
+    </thead>
+    <tbody>
+      <row>
+	<entry><para>Thresh</para></entry>
+	<entry><para>
+	  Trigger level to divide the input into chunks.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Decay</para></entry>
+	<entry><para>
+	  Adjust envelope of each chunk (a fast decay can be useful
+	  while setting up).
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Tune</para></entry>
+	<entry><para>
+	  Coarse tune (semitones).
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Mix</para></entry>
+	<entry><para>
+	  Mix original signal with output.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Hold</para></entry>
+	<entry><para>
+	  Minimum chunk length.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Fine</para></entry>
+	<entry><para>
+	  Fine tune (cents).
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Quality</para></entry>
+	<entry><para>
+	  The High setting uses smoother pitch-shifting and allows
+	  processing of stereo signals.
+	</para></entry>
+      </row>
+    </tbody>
+  </tgroup>
+</table>
+</section>

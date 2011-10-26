@@ -163,9 +163,13 @@ class PluginContextMenu(gtk.Menu):
                        ['Effects', 'Sampling'],
                    '@libneil/somono/effect/stutter;1' :
                        ['Effects', 'Sampling'],
+                   '@libneil/mda/effect/repsycho' :
+                       ['Effects', 'Sampling'],
                    '@libneil/mda/effect/tracker' :
                        ['Effects', 'Other'],
                    '@libneil/mda/effect/beatbox' :
+                       ['Effects', 'Other'],
+                   '@libneil/mda/effect/envelope' :
                        ['Effects', 'Other'],
                    '@libneil/somono/controller/lfnoise;1' :
                        ['Control'],
