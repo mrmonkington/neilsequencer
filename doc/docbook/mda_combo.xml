@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="mda_combo">
+  <title>mda Combo</title>
+  <para>
+    A port of mda's amp and speaker simulator plug-in.
+  </para>
+  <para>
+    This plug-in can sound quite subtle but comes alive when used on
+    guitar with the drive turned up! Remember that distortion may not
+    sound good on time-based effects such as delay and reverb, so put
+    those effects after this plug, or after a separate distortion plug
+    with Combo acting only as a speaker simulator. 
+  </para>
+  <table><title>Parameters</title>
+  <tgroup cols='2' align='left' colsep='1' rowsep='1'>
+    <thead>
+      <row>
+	<entry><para>Parameter</para></entry>
+	<entry><para>Meaning</para></entry>
+      </row>
+    </thead>
+    <tbody>
+      <row>
+	<entry><para>Model</para></entry>
+	<entry><para>
+	  <itemizedlist>
+	    <listitem><para>D.I. - Flat frequency
+	    response.</para></listitem> 
+	    <listitem><para>Spkr Sim - Tradtional speaker
+	    simulator.</para></listitem> 
+	    <listitem><para>Radio - Small radio speaker.
+	    </para></listitem>
+	    <listitem><para>MB 1" - Small combo (close mic).
+	    </para></listitem>
+	    <listitem><para>MB 8" - Small combo (far mic).
+	    </para></listitem>
+	    <listitem><para>4x12^ - Large stack (mic in
+	    front). </para></listitem>
+	    <listitem><para>4x12> - Large stack (mic from side,
+	    scooped out mid EQ).
+	    </para></listitem>
+	  </itemizedlist>
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Drive</para></entry>
+	<entry><para>
+	  Amount of clipping (turn to left for soft, right for hard).
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Bias</para></entry>
+	<entry><para>
+	  Clip one side of the waveform more than the other for
+	  rougher or "gated" effects (use an oscilloscope plug-in to
+	  see what's happening).
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Output</para></entry>
+	<entry><para>
+	  Level trim.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Process</para></entry>
+	<entry><para>
+	  Defaults to Mono to reduce processor usage, even in a
+	  stereo channel.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>HPF Freq</para></entry>
+	<entry><para>
+	  High-pass filter cutoff frequency.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>HPF Reso</para></entry>
+	<entry><para>
+	  High-pass filter resonance amount.
+	</para></entry>
+      </row>
+    </tbody>
+  </tgroup>
+</table>
+</section>

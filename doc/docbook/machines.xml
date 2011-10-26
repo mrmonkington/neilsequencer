@@ -25,4 +25,5 @@
   <xi:include href="mda_beatbox.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
   <xi:include href="mda_envelope.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
   <xi:include href="mda_repsycho.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="mda_combo.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 </section>
