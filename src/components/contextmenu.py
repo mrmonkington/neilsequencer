@@ -135,6 +135,8 @@ class PluginContextMenu(gtk.Menu):
                        ['Effects', 'Distortion'],
                    '@bblunars/effect/mdaSubSynth' :
                        ['Effects', 'Distortion'],
+                   '@libneil/mda/effect/combo' :
+                       ['Effects', 'Distortion'],
                    '@libneil/mda/effect/leslie' :
                        ['Effects', 'Modulation'],
                    '@bigyo/frequency+shifter;1' :
