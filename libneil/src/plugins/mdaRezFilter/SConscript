@@ -1,0 +1,7 @@
+Import('pluginenv', 'build_plugin')
+
+localenv = pluginenv.Clone()
+
+files = ["RezFilter.cpp"]
+
+build_plugin(localenv, "mda_rezfilter", files)
