@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="mda_rezfilter">
+  <title>mda RezFilter</title>
+  <para>
+    A port of mda's filter plug-in.
+  </para>
+  <para>
+    Voltage Controlled Filter with Low Frequency Oscillator and
+    Envelope Generator.
+  </para>
+  <table><title>Parameters</title>
+  <tgroup cols='2' align='left' colsep='1' rowsep='1'>
+    <thead>
+      <row>
+	<entry><para>Parameter</para></entry>
+	<entry><para>Meaning</para></entry>
+      </row>
+    </thead>
+    <tbody>
+      <row>
+	<entry><para>Freq</para></entry>
+	<entry><para>
+	  Cut-off frequency.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Res</para></entry>
+	<entry><para>
+	  Filter resonance amount.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Output</para></entry>
+	<entry><para>
+	  Output level trim.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Env->VCF</para></entry>
+	<entry><para>
+	  Positive or negative (squelchy!) envelope modulation of
+	  cut-off frequency.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Attack</para></entry>
+	<entry><para>
+	  Envelope attack time in milliseconds.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Release</para></entry>
+	<entry><para>
+	  Envelope release time in milliseconds. Use fast attack and
+	  release for "dirty" modulation.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>LFO->VCF</para></entry>
+	<entry><para>
+	  LFO modulation of cut-off frequency (turn to left for sample
+	  &amp; hold LFO, right for sine).
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>LFO Rate</para></entry>
+	<entry><para>
+	  LFO modulation speed.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Trigger</para></entry>
+	<entry><para>
+	  Envelope trigger level (normally set to minimum to acts as a
+	  free-running envelope follower).
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Max Freq</para></entry>
+	<entry><para>
+	  Limit maximum cut-off frequency for a mellower sound (the
+	  filter can sound "screechy" at high frequencies).
+	</para></entry>
+      </row>
+    </tbody>
+  </tgroup>
+</table>
+</section>
