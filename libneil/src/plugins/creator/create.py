@@ -217,7 +217,7 @@ class Machine:
         else:
             param_declarations += '  global_values = 0;\n'
         if self.tvals_struct != '':
-            param_declarations += '  track_values = &gval;\n'
+            param_declarations += '  track_values = &tval;\n'
         else:
             param_declarations += '  track_values = 0;\n'
         param_declarations += '  attributes = 0;\n'
