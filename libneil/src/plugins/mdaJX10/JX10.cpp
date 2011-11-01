@@ -443,6 +443,10 @@ const char *JX10::describe_value(int index, int value) {
   case 22:
     sprintf(txt, "%d", (int)(param[index] * 4.9f) - 2);
     break;
+  case 24:
+  case 25:
+    return 0;
+    break;
   default:
     sprintf(txt, "%.0f%%", 100.0f * param[index]);
     break;
