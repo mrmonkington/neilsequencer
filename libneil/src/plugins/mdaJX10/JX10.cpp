@@ -223,7 +223,7 @@ void JX10::process_events() {
 bool JX10::process_stereo(float **pin, float **pout, int sampleFrames, int mode) {
   float* out1 = pout[0];
   float* out2 = pout[1];
-  int event = 0, frame = 0, frames, v;
+  int v;
   float o, e, vib, pwm, pb = pbend, ipb = ipbend, gl = glide;
   float x, y, hpf = 0.997f, min = 1.0f, w = 0.0f, ww = noisemix;
   float ff, fe = filtenv, fq = filtq * rezwhl, fx = 1.97f - 0.85f * fq, fz = fzip;
