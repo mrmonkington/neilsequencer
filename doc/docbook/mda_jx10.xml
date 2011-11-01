@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="mda_jx10">
+  <title>mda JX10</title>
+  <para>
+    Simple 2-Oscillator Analog Synthesizer.
+  </para>
+  <para>
+    The plug-in is designed for high quality (lower aliasing than most
+    soft synths) and low processor usage - this means that some
+    features that would increase CPU load have been left out! 
+
+    When Vibrato is set to PWM, the two oscillators are phase-locked
+    and will produce a square wave if set to the same pitch. Pitch 
+    modulation of one oscillator then causes Pulse Width
+    Modulation. (pitch modulation of both oscillators for vibrato is
+    still available from the modulation wheel). Unlike other synths,
+    in PWM mode the oscillators can still be detuned to give a wider
+    range of PWM effects.
+  </para>
+  <table><title>Parameters</title>
+  <tgroup cols='2' align='left' colsep='1' rowsep='1'>
+    <thead>
+      <row>
+	<entry><para>Parameter</para></entry>
+	<entry><para>Meaning</para></entry>
+      </row>
+    </thead>
+    <tbody>
+      <row>
+	<entry><para>OSC Mix</para></entry>
+	<entry><para>
+	  Level of second oscillator (both oscillators are sawtooth
+	  wave only - but see Vibrato below). 
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>OSC Tune</para></entry>
+	<entry><para>
+	  Tuning of second oscillator in semitones.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>OSC Fine</para></entry>
+	<entry><para>
+	  Tuning of second oscillator in cents.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Glide Mode</para></entry>
+	<entry><para>
+	  <itemizedlist>
+	    <listitem><para>POLY - 8-voice
+	    polyphonic.</para></listitem> 
+	    <listitem><para>P-LEGATO - 8-voice polyphonic with pitch
+	    glide if a key is held.</para></listitem>
+	    <listitem><para>P-GLIDE - 8-voice polyphonic with pitch
+	    glide.
+	    </para></listitem>
+	    <listitem><para>MONO - monophonic.
+	    </para></listitem>
+	    <listitem><para>M-LEGATO - monophonic with pitch glide if
+	    key is held.
+	    </para></listitem>
+	    <listitem><para>M-GLIDE - monophonic with pitch glide.
+	    </para></listitem>
+	  </itemizedlist>
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Glide Rate</para></entry>
+	<entry><para>
+	  Pitch glide rate.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Glide Bend</para></entry>
+	<entry><para>
+	  Initial pitch-glide offset, for pitch-envelope effects.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>VCF Freq</para></entry>
+	<entry><para>
+	  Filter cutoff frequency.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>VCF Reso</para></entry>
+	<entry><para>
+	  Filter resonance.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>VCF Env</para></entry>
+	<entry><para>
+	  Cutoff modulation by VCF envelope.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>VCF LFO</para></entry>
+	<entry><para>
+	  Cutoff modulation by LFO.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>VCF Vel</para></entry>
+	<entry><para>
+	  Cutoff modulation by velocity (turn fully left to disable
+	  velocity control of cutoff and amplitude). 
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>VCF A,D,S,R</para></entry>
+	<entry><para>
+	  Attack, Decay, Sustain, Release envelope for filter cutoff.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>ENV A,D,S,R</para></entry>
+	<entry><para>
+	  Attack, Decay, Sustain, Release envelope for amplitude. 
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>LFO Rate</para></entry>
+	<entry><para>
+	  LFO rate (sine wave only).
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Vibrato</para></entry>
+	<entry><para>
+	  LFO modulation of pitch - turn to left for PWM effects.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Noise</para></entry>
+	<entry><para>
+	  White noise mix.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Octave</para></entry>
+	<entry><para>
+	  Master tuning in octaves.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Tuning</para></entry>
+	<entry><para>
+	  Master tuning in cents.
+	</para></entry>
+      </row>
+    </tbody>
+  </tgroup>
+</table>
+</section>
