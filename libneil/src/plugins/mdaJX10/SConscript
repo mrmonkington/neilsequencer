@@ -1,0 +1,7 @@
+Import('pluginenv', 'build_plugin')
+
+localenv = pluginenv.Clone()
+
+files = ["JX10.cpp"]
+
+build_plugin(localenv, "mda_jx10", files)
