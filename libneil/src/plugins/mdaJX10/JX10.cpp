@@ -42,6 +42,7 @@ JX10::JX10() {
 }
 
 void JX10::init(zzub::archive *pi) {
+  ntracks = 1;
   Fs = _master_info->samples_per_second;
   for (int v = 0; v < NVOICES; v++)  {
     voice[v].dp = voice[v].dp2 = 1.0f;
@@ -52,13 +53,11 @@ void JX10::init(zzub::archive *pi) {
     voice[v].note = 0;
     last_note[v] = 0;
   }
-  //notes[0] = EVENTS_DONE;
   lfo = modwhl = filtwhl = press = fzip = 0.0f; 
   rezwhl = pbend = ipbend = 1.0f;
   volume = 0.0005f;
   K = mode = lastnote = sustain = activevoices = 0;
   noise = 22222;
-
   update();
 }
 
@@ -121,6 +120,11 @@ void JX10::update()  //parameter change
   }
   glidedisp = (6.604f * param[5] - 3.302f);
   glidedisp *= glidedisp * glidedisp;
+}
+
+void JX10::set_track_count(int track_count) 
+{
+  ntracks = track_count;
 }
 	
 void JX10::process_events() {
@@ -196,7 +200,7 @@ void JX10::process_events() {
   if (gval.tuning != 65535) {
     param[23] = gval.tuning * 0.001f;
   }
-  for (int track = 0; track < NVOICES; track++) {
+  for (int track = 0; track < ntracks; track++) {
     if (tval[track].note != zzub::note_value_none) {
       if (tval[track].note == zzub::note_value_off) {
 	noteOn(last_note[track], 0);

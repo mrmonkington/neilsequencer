@@ -142,6 +142,7 @@ private:
   unsigned int noise;
   float param[NPARAMS];
   void suspend();
+  int ntracks;
 public:
   JX10();
   virtual ~JX10() {}
@@ -160,7 +161,7 @@ public:
   virtual void save(zzub::archive*) {}
   virtual void attributes_changed() {}
   virtual void command(int) {}
-  virtual void set_track_count(int) {}
+  virtual void set_track_count(int);
   virtual void mute_track(int) {}
   virtual bool is_track_muted(int) const { return false; }
   virtual void midi_note(int, int, int) {}
@@ -415,7 +416,11 @@ struct JX10Info : zzub::info {
     para_note = &add_track_parameter()
       .set_note()
       .set_name("Note")
-      .set_description("Note to play");
+      .set_description("Note to play")
+      .set_value_min(zzub::note_value_min)
+      .set_value_max(zzub::note_value_max)
+      .set_value_none(zzub::note_value_none)
+      .set_flags(0);
     para_velocity = &add_track_parameter()
       .set_byte()
       .set_name("Velocity")
