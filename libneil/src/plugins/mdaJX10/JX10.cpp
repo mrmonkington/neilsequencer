@@ -205,13 +205,26 @@ void JX10::process_events() {
 	int oct = tval[track].note / 16 + 1;
 	int note = tval[track].note % 16 - 1;
 	int midi = oct * 12 + note;
+	bool slide = 
+	  tval[track].slide != zzub::switch_value_none &&
+	  tval[track].slide == zzub::switch_value_on;
 	if (tval[track].velocity != 255) {
-	  noteOn(last_note[track], 0);
+	  if (!slide) {
+	    noteOn(last_note[track], 0);
+	  }
 	  noteOn(midi, tval[track].velocity);
+	  if (slide) {
+	    noteOn(last_note[track], 0);
+	  }
 	  last_note[track] = midi;
 	} else {
-	  noteOn(last_note[track], 0);
+	  if (!slide) {
+	    noteOn(last_note[track], 0);
+	  }
 	  noteOn(midi, 80);
+	  if (slide) {
+	    noteOn(last_note[track], 0);
+	  }
 	  last_note[track] = midi;
 	}
       }
@@ -445,6 +458,7 @@ const char *JX10::describe_value(int index, int value) {
     break;
   case 24:
   case 25:
+  case 26:
     return 0;
     break;
   default:

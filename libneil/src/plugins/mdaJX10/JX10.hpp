@@ -41,6 +41,7 @@ const zzub::parameter *para_octave = 0;
 const zzub::parameter *para_tuning = 0;
 const zzub::parameter *para_note = 0;
 const zzub::parameter *para_velocity = 0;
+const zzub::parameter *para_slide = 0;
 
 struct Gvals {
   uint16_t osc_mix;
@@ -72,6 +73,7 @@ struct Gvals {
 struct Tvals {
   uint8_t note;
   uint8_t velocity;
+  uint8_t slide;
 } __attribute__((__packed__));
 
 const char *zzub_get_signature() { 
@@ -422,6 +424,10 @@ struct JX10Info : zzub::info {
       .set_value_max(254)
       .set_value_none(255)
       .set_value_default(80);
+    para_slide = &add_track_parameter()
+      .set_switch()
+      .set_name("Slide")
+      .set_description("Don't turn off previous note");
   }
   virtual zzub::plugin* create_plugin() const { return new JX10(); }
   virtual bool store_info(zzub::archive *data) const { return false; }
