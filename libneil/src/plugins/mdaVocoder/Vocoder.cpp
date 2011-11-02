@@ -19,7 +19,7 @@ Vocoder::Vocoder() {
 }
 
 void Vocoder::init(zzub::archive *pi) {
-
+  process_events();
 }
 
 void Vocoder::suspend() ///clear any buffers...
