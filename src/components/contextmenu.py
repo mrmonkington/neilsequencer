@@ -179,6 +179,8 @@ class PluginContextMenu(gtk.Menu):
                        ['Effects', 'Other'],
                    '@libneil/mda/effect/envelope' :
                        ['Effects', 'Other'],
+                   '@libneil/mda/effect/shepard':
+                       ['Effects', 'Other'],
                    '@libneil/somono/controller/lfnoise;1' :
                        ['Control'],
                    '@neil/lunar/controller/Control;1' :
