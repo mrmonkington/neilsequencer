@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="mda_shepard">
+  <title>mda Shepard</title>
+  <para>
+    A port of mdas' Shepard to generator plug-in.
+  </para>
+  <para>
+    Continuously rising or falling pitch.
+  </para>
+  <para>
+    This plug-in actually generates "Risset tones". Discrete stepping
+    "Shepard tones" will hopefully be included in a future version. 
+  </para>
+  <table><title>Parameters</title>
+  <tgroup cols='2' align='left' colsep='1' rowsep='1'>
+    <thead>
+      <row>
+	<entry><para>Parameter</para></entry>
+	<entry><para>Meaning</para></entry>
+      </row>
+    </thead>
+    <tbody>
+      <row>
+	<entry><para>Mode</para></entry>
+	<entry><para>
+	  <itemizedlist>
+	    <listitem><para>TONES - Tones only.</para></listitem> 
+	    <listitem><para>RING MOD - Input ring modulated by
+	    tones.</para></listitem>
+	    <listitem><para>TONES+IN - Tones mixed with input.
+	    </para></listitem>
+	  </itemizedlist>
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Rate</para></entry>
+	<entry><para>
+	  Speed of rising (right) or falling (left).
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Output</para></entry>
+	<entry><para>
+	  Level trim.
+	</para></entry>
+      </row>
+    </tbody>
+  </tgroup>
+</table>
+</section>

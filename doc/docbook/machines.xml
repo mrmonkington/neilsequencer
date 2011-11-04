@@ -28,5 +28,6 @@
   <xi:include href="mda_combo.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
   <xi:include href="mda_rezfilter.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
   <xi:include href="mda_jx10.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <xi:include href="mda_shepard.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
 </section>
