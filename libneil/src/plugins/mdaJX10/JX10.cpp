@@ -126,6 +126,16 @@ void JX10::set_track_count(int track_count)
 {
   ntracks = track_count;
 }
+
+void JX10::stop() 
+{
+  for (int v = 0; v < NVOICES; v++) {
+    voice[v].envl = voice[v].env = 0.0f; 
+    voice[v].envd = 0.99f;
+    voice[v].note = 0;
+    voice[v].f0 = voice[v].f1 = voice[v].f2 = 0.0f;
+  }
+}
 	
 void JX10::process_events() {
   if (gval.osc_mix != 65535) {
