@@ -7,9 +7,6 @@ Vocoder::Vocoder() {
   global_values = &gval;
   track_values = 0;
   attributes = 0;
-}
-
-void Vocoder::init(zzub::archive *pi) {
   param[0] = 0.33f; //input select
   param[1] = 0.50f; //output dB
   param[2] = 0.40f; //hi thru
@@ -19,6 +16,10 @@ void Vocoder::init(zzub::archive *pi) {
   param[6] = 0.6667f; //freq range       
   param[7] = 0.33f; //num bands      
   suspend();
+}
+
+void Vocoder::init(zzub::archive *pi) {
+  process_events();
 }
 
 void Vocoder::suspend() ///clear any buffers...

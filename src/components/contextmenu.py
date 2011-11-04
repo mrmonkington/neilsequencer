@@ -87,6 +87,8 @@ class PluginContextMenu(gtk.Menu):
                        ['Synthesizers', 'Subtractive'],
                    '@libneil/oomek/generator/aggressor' :
                        ['Synthesizers', 'Subtractive'],
+                   '@libneil/mda/generator/jx10' :
+                       ['Synthesizers', 'Subtractive'],
                    'jamesmichaelmcdermott@gmail.com/generator/4fm2f;1' :
                        ['Synthesizers', 'FM'],
                    '@libneil/somono/generator/fm303;1' :
