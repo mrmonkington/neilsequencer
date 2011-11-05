@@ -156,7 +156,7 @@ public:
   virtual const char * describe_value(int param, int value); 
   virtual void process_controller_events() {}
   virtual void destroy() {}
-  virtual void stop() {}
+  virtual void stop();
   virtual void load(zzub::archive *arc) {}
   virtual void save(zzub::archive*) {}
   virtual void attributes_changed() {}
