@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="mda_detune">
+  <title>mda Detune</title>
+  <para>
+    A port of mdas' detuning plug-in.
+  </para>
+  <para>
+    Stereo pitch shifter.
+  </para>
+  <para>
+    A low-quality stereo pitch shifter for the sort of chorus and
+    detune effects found on multi-effects hardware.
+  </para>
+  <table><title>Parameters</title>
+  <tgroup cols='2' align='left' colsep='1' rowsep='1'>
+    <thead>
+      <row>
+	<entry><para>Parameter</para></entry>
+	<entry><para>Meaning</para></entry>
+      </row>
+    </thead>
+    <tbody>
+      <row>
+	<entry><para>Detune</para></entry>
+	<entry><para>
+	  Detune amount in cents (left channel is lowered in pitch,
+	  right channel is raised).
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Mix</para></entry>
+	<entry><para>
+	  Wet / dry mix.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Output</para></entry>
+	<entry><para>
+	  Level trim.
+	</para></entry>
+      </row>
+      <row>
+	<entry><para>Latency</para></entry>
+	<entry><para>
+	  Trade-off between latency and low-frequency response.
+	</para></entry>
+      </row>
+    </tbody>
+  </tgroup>
+</table>
+</section>
