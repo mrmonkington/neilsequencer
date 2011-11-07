@@ -93,6 +93,8 @@ class PluginContextMenu(gtk.Menu):
                        ['Synthesizers', 'FM'],
                    '@libneil/somono/generator/fm303;1' :
                        ['Synthesizers', 'FM'],
+                   '@libneil/mda/generator/dx10' :
+                       ['Synthesizers', 'FM'],
                    'jamesmichaelmcdermott@gmail.com/generator/pluckedstring;1' :
                        ['Synthesizers', 'Physical Modelling'],
                    'jamesmichaelmcdermott@gmail.com/generator/dynamite6;1' :
