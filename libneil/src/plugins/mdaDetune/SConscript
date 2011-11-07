@@ -1,0 +1,7 @@
+Import('pluginenv', 'build_plugin')
+
+localenv = pluginenv.Clone()
+
+files = ["Detune.cpp"]
+
+build_plugin(localenv, "mda_detune", files)
