@@ -167,6 +167,8 @@ class PluginContextMenu(gtk.Menu):
                        ['Effects', 'Filter'],
                    '@libneil/mda/effect/vocoder' :
                        ['Effects', 'Filter'],
+                   '@libneil/mda/effect/talkbox' :
+                       ['Effects', 'Filter'],
                    '@libneil/mda/effect/rezfilter' :
                        ['Effects', 'Filter'],
                    'jamesmichaelmcdermott@gmail.com/effect/sprayman;1' :
