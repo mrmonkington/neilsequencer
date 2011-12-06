@@ -167,7 +167,67 @@ void MultiBand::process_events() {
   }
 }
 
-bool MultiBand::process_stereo(float **pin, float **pout, int n, int mode) {
+bool MultiBand::process_stereo(float **pin, float **pout, int sampleFrames, int mode) {
+  float *in1 = pin[0];
+  float *in2 = pin[1];
+  float *out1 = pout[0];
+  float *out2 = pout[1];
+  float a, b, c, d, l = fb3, m, h, s, sl = slev, tmp1, tmp2, tmp3;	
+  float f1i = fi1, f1o = fo1, f2i = fi2, f2o = fo2, b1 = fb1, b2 = fb2;
+  float g1 = gain1, d1 = driv1, t1 = trim1, a1 = att1, r1 = 1.f - rel1;
+  float g2 = gain2, d2 = driv2, t2 = trim2, a2 = att2, r2 = 1.f - rel2;
+  float g3 = gain3, d3 = driv3, t3 = trim3, a3 = att3, r3 = 1.f - rel3;
+  int ms = mswap;
+
+  --in1;	
+  --in2;	
+  --out1;
+  --out2;
+  while (--sampleFrames >= 0) {
+    a = *++in1;		
+    b = *++in2; // process from here...
+		
+    b = (ms) ? -b : b;
+
+    s = (a - b) * sl; // keep stereo component for later
+    a += b;
+    b2 = (f2i * a) + (f2o * b2); // crossovers
+    b1 = (f1i * b2) + (f1o * b1); 
+    l = (f1i * b1) + (f1o * l);
+    m = b2 - l; 
+    h = a - b2;
+
+    tmp1 = (l > 0) ? l : -l;  // l
+    g1 = (tmp1 > g1) ? g1 + a1 * (tmp1 - g1) : g1 * r1;
+    tmp1 = 1.f / (1.f + d1 * g1); 
+
+    tmp2 = (m > 0) ? m : -m;
+    g2 = (tmp2 > g2) ? g2 + a2 * (tmp2 - g2) : g2 * r2;
+    tmp2 = 1.f / (1.f + d2 * g2); 
+
+    tmp3 = (h > 0) ? h : -h;
+    g3 = (tmp3 > g3) ? g3 + a3 * (tmp3 - g3) : g3 * r3;
+    tmp3 = 1.f / (1.f + d3 * g3); 
+            
+    a = (l * tmp3 * t1) + (m * tmp2 * t2) + (h * tmp3 * t3);
+    c = a + s; // output
+    d = (ms) ? s - a : a - s;
+    
+    *++out1 = c;
+    *++out2 = d;
+  }
+  gain1 = (g1 < 1.0e-10) ? 0.f : g1;
+  gain2 = (g2 < 1.0e-10) ? 0.f : g2;
+  gain3 = (g3 < 1.0e-10) ? 0.f : g3;
+  if (fabs(b1) < 1.0e-10) { 
+    fb1 = 0.f; 
+    fb2 = 0.f; 
+    fb3 = 0.f; 
+  } else { 
+    fb1 = b1;  
+    fb2 = b2;  
+    fb3 = l;   
+  }
   return true;
 }
 
