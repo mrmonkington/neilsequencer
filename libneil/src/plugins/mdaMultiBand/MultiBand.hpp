@@ -42,6 +42,14 @@ const char *zzub_get_signature() {
 class MultiBand : public zzub::plugin {
 private:
   Gvals gval;
+  float fParam1, fParam2, fParam3, fParam4;
+  float fParam5, fParam6, fParam7, fParam8;
+  float fParam9, fParam10, fParam11, fParam12, fParam13;
+  float gain1, driv1, att1, rel1, trim1;
+  float gain2, driv2, att2, rel2, trim2;
+  float gain3, driv3, att3, rel3, trim3;
+  float fi1, fb1, fo1, fi2, fb2, fo2, fb3, slev;
+  int mswap;
 public:
   MultiBand();
   virtual ~MultiBand() {}
