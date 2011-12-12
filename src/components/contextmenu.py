@@ -157,6 +157,8 @@ class PluginContextMenu(gtk.Menu):
                        ['Effects', 'Dynamics'],
                    '@libneil/mda/effect/transient' :
                        ['Effects', 'Dynamics'],
+                   '@libneil/mda/effect/multiband' :
+                       ['Effects', 'Dynamics'],
                    '@FireSledge.org/ParamEQ;1' :
                        ['Effects', 'Filter'],
                    '@trac.zeitherrschaft.org/aldrin/lunar/effect/philthy;1' :
