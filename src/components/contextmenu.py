@@ -189,7 +189,11 @@ class PluginContextMenu(gtk.Menu):
                        ['Effects', 'Other'],
                    '@libneil/mda/effect/shepard':
                        ['Effects', 'Other'],
-                   '@libneil/mda/effect/detune':
+                   '@libneil/mda/effect/detune' :
+                       ['Effects', 'Other'],
+                   '@libneil/mda/effect/vocinput' :
+                       ['Effects', 'Other'],
+                   '@libneil/mda/effect/stereo' :
                        ['Effects', 'Other'],
                    '@libneil/somono/controller/lfnoise;1' :
                        ['Control'],

@@ -2415,9 +2415,9 @@ class PatternView(gtk.DrawingArea):
             self.statuslabels[2].set_label(prepstr(p.get_description() or ""))
             v = self.plugin.get_pattern_value(self.pattern, self.group, self.track, self.index, self.row)
             if v != p.get_value_none():
-                text = prepstr(self.get_plugin().describe_value(self.group,self.index,v))
+                text = prepstr(self.get_plugin().describe_value(self.group, self.index, v))
                 s = get_str_from_param(p,self.plugin.get_pattern_value(self.pattern, self.group, self.track, self.index, self.row))
-                self.statuslabels[1].set_label("%s (%i) %s" % (s,v,text))
+                self.statuslabels[1].set_label("%s (%i) %s" % (s, v, text))
             else:
                 self.statuslabels[1].set_label("")
 
