@@ -971,7 +971,7 @@ struct dynamite6_plugin_info : zzub::info {
     this->flags = zzub::plugin_flag_has_audio_output;
     this->min_tracks = 1;
     this->max_tracks = MAX_CHANNELS;
-    this->name = "MadBrain's Dynamite6";
+    this->name = "MadBrain Dynamite6";
     this->short_name = "Dynamite6";
     this->author = "Madbrain";
     this->uri = "jamesmichaelmcdermott@gmail.com/generator/dynamite6;1";
