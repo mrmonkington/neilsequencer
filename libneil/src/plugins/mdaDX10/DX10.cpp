@@ -149,6 +149,7 @@ void DX10::process_events() {
   if (gval.lfo_rate != 65535) {
     param[15] = gval.lfo_rate * 0.001f;
   }
+  update();
   for (int track = 0; track < ntracks; track++) {
     if (tval[track].note != zzub::note_value_none) {
       if (tval[track].note == zzub::note_value_off) {
@@ -170,7 +171,6 @@ void DX10::process_events() {
       }
     }
   }
-  update();
 }
 
 bool DX10::process_stereo(float **pin, float **pout, int sampleFrames, int mode) {

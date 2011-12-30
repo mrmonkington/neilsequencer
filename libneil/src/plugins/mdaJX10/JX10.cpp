@@ -210,6 +210,7 @@ void JX10::process_events() {
   if (gval.tuning != 65535) {
     param[23] = gval.tuning * 0.001f;
   }
+  update();
   for (int track = 0; track < ntracks; track++) {
     if (tval[track].note != zzub::note_value_none) {
       if (tval[track].note == zzub::note_value_off) {
@@ -244,7 +245,6 @@ void JX10::process_events() {
       }
     }
   }
-  update();
 }
 
 bool JX10::process_stereo(float **pin, float **pout, int sampleFrames, int mode) {
