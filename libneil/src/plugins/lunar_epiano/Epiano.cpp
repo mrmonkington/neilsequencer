@@ -131,7 +131,7 @@ void LunarEpiano::update()
 void LunarEpiano::noteOn(long note, long velocity, long vl)
 {
   float l = 99.0f;
-  long  v, k, s; 
+  long k, s; 
   if (velocity > 0) {
     voice[vl].f0 = voice[vl].f1 = 0.0f;	// since we're not doing polyphony, this is the remainder of the voice-picking code
     k = (note - 60) * (note - 60);
@@ -236,7 +236,7 @@ void LunarEpiano::process_events()
     update();
   }
   int event = 0;
-  for (int i = 0; i < track_count; i++) {
+  for (unsigned int i = 0; i < track_count; i++) {
     long velocity = 127;
     if (tval[i].volume != 0xff) {
       velocity = tval[i].volume;
@@ -261,9 +261,11 @@ bool LunarEpiano::process_stereo(float **pin, float **pout, int n, int mode)
 { 
   float* out0 = pout[0];
   float* out1 = pout[1];
-  long event = 0, frame = 0, frames, v;
+  long event = 0, frame = 0, frames;
+  unsigned int v;
   float x, l, r, od = overdrive;
   long i;
+  bool something_done = false;
   while (frame < n) {
     frames = notes[event++];
     if (frames > n) {
@@ -279,6 +281,7 @@ bool LunarEpiano::process_stereo(float **pin, float **pout, int n, int mode)
 	  V++;
 	  continue;
 	}
+	something_done = true;
 	V->frac += V->delta;  //integer-based linear interpolation
 	V->pos += V->frac >> 16;
 	V->frac &= 0xFFFF;
@@ -332,7 +335,7 @@ bool LunarEpiano::process_stereo(float **pin, float **pout, int n, int mode)
     }
   }
   notes[0] = EVENTS_DONE;  //mark events buffer as done
-  return true;
+  return something_done;
 }
 
 const char *LunarEpiano::describe_value(int param, int value) 
