@@ -179,6 +179,7 @@ bool DX10::process_stereo(float **pin, float **pout, int sampleFrames, int mode)
   int event = 0, frame = 0, frames, v;
   float o, x, e, mw = MW, w = rich, m = modmix;
   int k = K;
+  bool something_done = false;
   
   while (--sampleFrames >= 0) {
     VOICE *V = voice;
@@ -213,6 +214,8 @@ bool DX10::process_stereo(float **pin, float **pout, int sampleFrames, int mode)
 	}
 	V->car = x;
 	o += V->cenv * (m * V->mod1 + (x + x * x * x * (w * x * x - 1.0f - w))); 
+      } else {
+	something_done = true;
       }
       V++;
     }
@@ -231,7 +234,7 @@ bool DX10::process_stereo(float **pin, float **pout, int sampleFrames, int mode)
 
   K = k; 
   MW = mw; //remember these so vibrato speed not buffer size dependant!
-  return true;
+  return something_done;
 }
 
 const char *DX10::describe_value(int index, int value) {
