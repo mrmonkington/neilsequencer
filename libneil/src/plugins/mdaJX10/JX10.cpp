@@ -256,6 +256,7 @@ bool JX10::process_stereo(float **pin, float **pout, int sampleFrames, int mode)
   float ff, fe = filtenv, fq = filtq * rezwhl, fx = 1.97f - 0.85f * fq, fz = fzip;
   int k = K;
   unsigned int r;
+  bool something_done = false;
 
   vib = (float)sin(lfo);
   ff = filtf + filtwhl + (filtlfo + press) * vib; //have to do again here as way that
@@ -383,6 +384,8 @@ bool JX10::process_stereo(float **pin, float **pout, int sampleFrames, int mode)
 	V->f2 = x;
           
 	o += V->env * V->f0;
+      } else {
+	something_done = true;
       }
       V++;
     }
@@ -399,7 +402,7 @@ bool JX10::process_stereo(float **pin, float **pout, int sampleFrames, int mode)
   }
   fzip = fz;
   K = k;
-  return true;
+  return something_done;
 }
 
 const char *JX10::describe_value(int index, int value) {
