@@ -18,18 +18,19 @@ MCPChorus::~MCPChorus() {
 void MCPChorus::init(zzub::archive *pi) {
     unsigned int i;
 
-    _size = (unsigned long)(ceil (30 * _master_info->samples_per_second / 1000.0)) + 64;
+    _size = (unsigned long)(ceil(30 * _master_info->samples_per_second / 1000.0)) + 64;
     _size = (_size >> 6) << 6; 
     _line_l = new float [_size + 1];
-	_line_r = new float [_size + 1];
+    _line_r = new float [_size + 1];
 
     _wi = _gi = 0;
     _x1 = _x2 = 1;
     _y1 = _y2 = 0;
     memset (_line_l, 0, (_size + 1) * sizeof (float));
     memset (_line_r, 0, (_size + 1) * sizeof (float));
-    for (i = 0; i < 3; i++) _ri [i] = _dr [i] = 0;
-
+    for (i = 0; i < 3; i++) { 
+      _ri [i] = _dr [i] = 0;
+    }
 }
 	
 void MCPChorus::process_events() {
@@ -55,6 +56,15 @@ bool MCPChorus::process_stereo(float **pin, float **pout, int n, int mode) {
     int   j;
     float *p0_l,*p0_r, *p1_l, *p1_r;
     float t, x, y,y_r;
+
+    if (mode != zzub::process_mode_read_write) {
+      for (unsigned int i = 0; i < _size + 1; i++) {
+	if ((_line_l[i] > 0.0001f) || (_line_r[i] > 0.0001f)) {
+	  break;
+	}
+	return false;
+      }
+    }
 
     // sample count
     len = n;
