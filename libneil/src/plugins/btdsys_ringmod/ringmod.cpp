@@ -1,31 +1,31 @@
 // ported by jmmcd May 2008.
 
 /*
-Copyright (c) 2002, Edward Powley
-All rights reserved.
+  Copyright (c) 2002, Edward Powley
+  All rights reserved.
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions are met:
 
-    * Redistributions of source code must retain the above copyright notice, 
-      this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice,
-      this list of conditions and the following disclaimer in the documentation
-      and/or other materials provided with the distribution.
-    * Neither the name of BTDSys nor the names of its contributors may be used
-      to endorse or promote products derived from this software without
-      specific prior written permission.
+  * Redistributions of source code must retain the above copyright notice, 
+  this list of conditions and the following disclaimer.
+  * Redistributions in binary form must reproduce the above copyright notice,
+  this list of conditions and the following disclaimer in the documentation
+  and/or other materials provided with the distribution.
+  * Neither the name of BTDSys nor the names of its contributors may be used
+  to endorse or promote products derived from this software without
+  specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
-ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
-ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+  ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #include <cstdio>
 #include <zzub/signature.h>
@@ -42,25 +42,25 @@ typedef unsigned char byte;
 // Copied from lunar/dspbb.h
 
 void dsp_zero(float *b, int numsamples) {
-	memset(b, 0, sizeof(float) * numsamples);
+  memset(b, 0, sizeof(float) * numsamples);
 }
 void dsp_copy(float *i, float *o, int numsamples) {
-	memcpy(o, i, sizeof(float) * numsamples);
+  memcpy(o, i, sizeof(float) * numsamples);
 }
 void dsp_add(float *i, float *o, int numsamples) {
-	while (numsamples--) {
-		*o++ += *i++;
-	}
+  while (numsamples--) {
+    *o++ += *i++;
+  }
 }
 void dsp_copyamp(float *i, float *o, int numsamples, float s) {
-	while (numsamples--) {
-		*o++ = *i++ * s;
-	}
+  while (numsamples--) {
+    *o++ = *i++ * s;
+  }
 }
 void dsp_addamp(float *i, float *o, int numsamples, float s) {
-	while (numsamples--) {
-		*o++ += *i++ * s;
-	}
+  while (numsamples--) {
+    *o++ += *i++ * s;
+  }
 }
 
 
@@ -79,8 +79,8 @@ const zzub::parameter *paraWetOut = 0;
 class gvals
 {
 public:
-	byte DryOut;
-	byte WetOut;
+  byte DryOut;
+  byte WetOut;
 };
 
 #pragma pack()
@@ -92,7 +92,7 @@ public:
 class CInput
 {
 public:
-	char MacName[256];
+  char MacName[256];
 };
 
 
@@ -136,16 +136,16 @@ public:
   virtual void midi_control_change(int, int, int) {}
   virtual bool handle_input(int, int, int) { return false; }
   //virtual void set_input_channels(char const *macname, bool stereo);
-	virtual void process_midi_events(zzub::midi_message* pin, int nummessages) {}
-	virtual void get_midi_output_names(zzub::outstream *pout) {}
-	virtual void set_stream_source(const char* resource) {}
-	virtual const char* get_stream_source() { return 0; }
-	virtual void play_pattern(int index) {}
-	virtual void configure(const char *key, const char *value) {}
-	
+  virtual void process_midi_events(zzub::midi_message* pin, int nummessages) {}
+  virtual void get_midi_output_names(zzub::outstream *pout) {}
+  virtual void set_stream_source(const char* resource) {}
+  virtual const char* get_stream_source() { return 0; }
+  virtual void play_pattern(int index) {}
+  virtual void configure(const char *key, const char *value) {}
+  
   
 
-private:
+  private:
   
   gvals gval;
   
@@ -169,22 +169,22 @@ private:
 
 void ringmod::init (zzub::archive *a)
 {
-	InitBuffer = true;
-	// SetOutputMode(true);
-	// pCB->SetnumOutputChannels(pCB->GetThisMachine(), 2);
+  InitBuffer = true;
+  // SetOutputMode(true);
+  // pCB->SetnumOutputChannels(pCB->GetThisMachine(), 2);
 
-	//Don't need any custom data
+  //Don't need any custom data
 }
 
 ////////////////////////////////////////////////////////////////////////
 
 void ringmod::process_events()
 {
-	if (gval.DryOut != paraDryOut->value_none)
-		DryOut = gval.DryOut / 128.0f;
+  if (gval.DryOut != paraDryOut->value_none)
+    DryOut = gval.DryOut / 128.0f;
 
-	if (gval.WetOut != paraWetOut->value_none)
-		WetOut = gval.WetOut / 128.0f;
+  if (gval.WetOut != paraWetOut->value_none)
+    WetOut = gval.WetOut / 128.0f;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -195,13 +195,13 @@ void ringmod::process_events()
 //the NULL one.
 void ringmod::add_input(const char *macname, zzub::connection_type type)
 {
-	if (macname != NULL)
-	{
-		CInput Temp;
-		strcpy(Temp.MacName, macname);
+  if (macname != NULL)
+    {
+      CInput Temp;
+      strcpy(Temp.MacName, macname);
 
-		Inputs.push_back(Temp); //Add to end of connection vector
-	}
+      Inputs.push_back(Temp); //Add to end of connection vector
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -211,12 +211,12 @@ void ringmod::add_input(const char *macname, zzub::connection_type type)
 //Returns the index of the input, or -1 if not found.
 int ringmod::find_input(const char *macname)
 {
-	for (unsigned int i=0; i<Inputs.size(); i++)
-	{
-		if (strcmp(Inputs[i].MacName, macname) == 0) return i;
-	}
-	printf("find_input returning -1\n");
-	return -1;
+  for (unsigned int i=0; i<Inputs.size(); i++)
+    {
+      if (strcmp(Inputs[i].MacName, macname) == 0) return i;
+    }
+  printf("find_input returning -1\n");
+  return -1;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -224,8 +224,8 @@ int ringmod::find_input(const char *macname)
 //This is called when a machine gets disconnected from our input.
 void ringmod::delete_input(const char *macname, zzub::connection_type type)
 {
-	int i = find_input(macname);
-	if (i != -1) Inputs.erase(Inputs.begin() + i);
+  int i = find_input(macname);
+  if (i != -1) Inputs.erase(Inputs.begin() + i);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -233,8 +233,8 @@ void ringmod::delete_input(const char *macname, zzub::connection_type type)
 //This is called when a connected machine has its name changed.
 void ringmod::rename_input(const char *macoldname, const char *macnewname)
 {
-	int i = find_input(macoldname);
-	if (i != -1) strcpy(Inputs[i].MacName, macnewname);
+  int i = find_input(macoldname);
+  if (i != -1) strcpy(Inputs[i].MacName, macnewname);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -253,37 +253,37 @@ void ringmod::rename_input(const char *macoldname, const char *macnewname)
 //amp is as set by the volume slider on the little triangle in machine view.
 void ringmod::input(float **psamples, int numsamples, float amp)
 {
-	if (numsamples == 0) //machine is off
+  if (numsamples == 0) //machine is off
+    {
+      //If machine is off, we would multiply the whole buffer by zero.
+      //ie we zero the whole buffer.
+      dsp_zero(wetbuffer[0], MAX_BUFFER_LENGTH);
+      dsp_zero(wetbuffer[1], MAX_BUFFER_LENGTH);
+      SilentInput = true;
+    }
+  else
+    {
+      //Four separate loops -- but in zzub connections are always stereo, so we only need these two -- jmmcd.
+      if (InitBuffer) //need to initialise it
 	{
-		//If machine is off, we would multiply the whole buffer by zero.
-		//ie we zero the whole buffer.
-		dsp_zero(wetbuffer[0], MAX_BUFFER_LENGTH);
-		dsp_zero(wetbuffer[1], MAX_BUFFER_LENGTH);
-		SilentInput = true;
+	  for (int i=0; i < 2; i++)
+	    for (int j = 0; j < numsamples; j++)
+	      wetbuffer[i][j] = psamples[i][j] * amp;
 	}
-	else
+      else //mult with current wet buffer
 	{
-	  //Four separate loops -- but in zzub connections are always stereo, so we only need these two -- jmmcd.
-	  if (InitBuffer) //need to initialise it
-	    {
-	      for (int i=0; i < 2; i++)
-		for (int j = 0; j < numsamples; j++)
-		  wetbuffer[i][j] = psamples[i][j] * amp;
-	    }
-	  else //mult with current wet buffer
-	    {
-	      for (int i=0; i < 2; i++)
-		for (int j = 0; j < numsamples; j++)
-		  wetbuffer[i][j] *= psamples[i][j] * amp;
-	    }
+	  for (int i=0; i < 2; i++)
+	    for (int j = 0; j < numsamples; j++)
+	      wetbuffer[i][j] *= psamples[i][j] * amp;
+	}
 	  
-	  //Mix with dry buffer as normal
-	  dsp_addamp(psamples[0], drybuffer[0], numsamples, amp);
-	  dsp_addamp(psamples[1], drybuffer[1], numsamples, amp);
-	}
+      //Mix with dry buffer as normal
+      dsp_addamp(psamples[0], drybuffer[0], numsamples, amp);
+      dsp_addamp(psamples[1], drybuffer[1], numsamples, amp);
+    }
 
-	CurrentInput++; //increment our counter
-	InitBuffer = false; //no need to init the buffer next time, we did it already
+  CurrentInput++; //increment our counter
+  InitBuffer = false; //no need to init the buffer next time, we did it already
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -293,58 +293,58 @@ void ringmod::input(float **psamples, int numsamples, float amp)
 //next pass.
 bool ringmod::process_stereo(float **pin, float **pout, int numsamples, const int mode)
 {
-	if (mode & zzub::process_mode_read)
+  if (mode & zzub::process_mode_read)
+    {
+      if (mode & zzub::process_mode_write)
 	{
-		if (mode & zzub::process_mode_write)
-		{
-			dsp_copyamp(drybuffer[0], pout[0], numsamples, DryOut);
-			dsp_copyamp(drybuffer[1], pout[1], numsamples, DryOut);
-			dsp_addamp(wetbuffer[0], pout[0], numsamples, WetOut);
-			dsp_addamp(wetbuffer[1], pout[1], numsamples, WetOut);
-		}
+	  dsp_copyamp(drybuffer[0], pout[0], numsamples, DryOut);
+	  dsp_copyamp(drybuffer[1], pout[1], numsamples, DryOut);
+	  dsp_addamp(wetbuffer[0], pout[0], numsamples, WetOut);
+	  dsp_addamp(wetbuffer[1], pout[1], numsamples, WetOut);
 	}
+    }
 
-	InitBuffer = true; //initialise it next time
-	SilentInput = false; //assumption for next pass
-	CurrentInput = 0; //set counter to first input
-	dsp_zero(drybuffer[0], numsamples); //clear the buffer
-	dsp_zero(drybuffer[1], numsamples); //clear the buffer
+  InitBuffer = true; //initialise it next time
+  SilentInput = false; //assumption for next pass
+  CurrentInput = 0; //set counter to first input
+  dsp_zero(drybuffer[0], numsamples); //clear the buffer
+  dsp_zero(drybuffer[1], numsamples); //clear the buffer
 
-	return (mode & zzub::process_mode_read);
+  return (mode & zzub::process_mode_read);
 }
 
 ////////////////////////////////////////////////////////////////////////
 
 void ringmod::command(const int i)
 {
-	//The exciting about box
-	char txt[10000];
-	strcpy(txt,
-		"BTDSys RingMod v1.0\n"
-		"©2002 Ed Powley (BTDSys)\n\n"
-		"Comments/suggestions/bug reports to e@btd2001.freeserve.co.uk\n\n");
-	sprintf(txt,"%s%zi inputs", txt, Inputs.size());
-	for (unsigned int j=0; j<Inputs.size(); j++)
-		sprintf(txt, "%s\n%i: %s", txt, j, Inputs[j].MacName);
-	sprintf(txt, "%s\n", txt);
-	_host->message(txt);
+  //The exciting about box
+  char txt[10000];
+  strcpy(txt,
+	 "BTDSys RingMod v1.0\n"
+	 "©2002 Ed Powley (BTDSys)\n\n"
+	 "Comments/suggestions/bug reports to e@btd2001.freeserve.co.uk\n\n");
+  sprintf(txt,"%s%zi inputs", txt, Inputs.size());
+  for (unsigned int j=0; j<Inputs.size(); j++)
+    sprintf(txt, "%s\n%i: %s", txt, j, Inputs[j].MacName);
+  sprintf(txt, "%s\n", txt);
+  _host->message(txt);
 }
 
 ////////////////////////////////////////////////////////////////////////
 
 char const *ringmod::describe_value(const int param, const int value)
 {
-	static char txt[16];
+  static char txt[16];
 
-	switch (param)
-	{
-	case 0: //dry out
-	case 1: //wet out
-		sprintf(txt, "%.2f%%", value / 1.28f);
-		return txt;
-	default:
-		return NULL;
-	}
+  switch (param)
+    {
+    case 0: //dry out
+    case 1: //wet out
+      sprintf(txt, "%.2f%%", value / 1.28f);
+      return txt;
+    default:
+      return NULL;
+    }
 }
 
 
