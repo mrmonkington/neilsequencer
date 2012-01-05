@@ -208,7 +208,9 @@ class PluginContextMenu(gtk.Menu):
                    '@zzub.org/recorder/file' :
                        ['Utility'],
                    '@zzub.org/recorder/wavetable' :
-                       ['Utility']}
+                       ['Utility'],
+                   '@libneil/gershon/gfx/Oscilloscope' :
+                       ['Graphical']}
 
     def populate_contextmenu(self, menu):
         if menu.context_id == 'plugin':
