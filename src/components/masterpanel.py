@@ -33,7 +33,10 @@ import neil.com as com
 import driver
 import zzub
 import sys
+from collections import deque
+import numpy as np
 
+  
 class AmpView(gtk.DrawingArea):
     """
     A simple control rendering a Buzz-like master VU bar.
@@ -48,10 +51,11 @@ class AmpView(gtk.DrawingArea):
         self.channel = channel
         self.stops = (0.0, 6.0 / self.range, 12.0 / self.range) # red, yellow, green
         self.index = 0
+        self.peaks = np.zeros(20)
         gtk.DrawingArea.__init__(self)
-        self.set_size_request(10, -1)
+        self.set_size_request(20, -1)
         self.connect("expose_event", self.expose)
-        gobject.timeout_add(100, self.on_update)
+        gobject.timeout_add(50, self.on_update)
 
     def on_update(self):
         """
@@ -61,6 +65,8 @@ class AmpView(gtk.DrawingArea):
         master = player.get_plugin(0)
         vol = master.get_parameter_value(1, 0, 0)
         self.amp = min(master.get_last_peak()[self.channel], 1.0)
+        self.peaks = np.roll(self.peaks, 1)
+        self.peaks[0] = self.amp
         rect = self.get_allocation()
         if self.window:
             self.window.invalidate_rect((0, 0, rect.width, rect.height), False)
@@ -78,14 +84,67 @@ class AmpView(gtk.DrawingArea):
             ctx.fill()
         else:
             y = 0
+            ctx.set_source_rgb(.1, .1, .1)
+            ctx.rectangle(0, 0, w, h)
+            ctx.fill()                    
+                               
+            import array
+            data = array.array('B', [0, 0, 0, 255, 0, 0, 0, 255,
+                                     0, 0, 0, 0, 0, 0, 0, 0,
+                                     0, 0, 0, 0, 0, 0, 0, 0
+                                     ])
+            image = cairo.ImageSurface.create_for_data(data, cairo.FORMAT_ARGB32, 1, 6, 4)
+            pattern = cairo.SurfacePattern(image)
+            pattern.set_extend(cairo.EXTEND_REPEAT)
+#            ctx.set_source(pattern)
+
+            linear = cairo.LinearGradient(0, 0, 0, h)
+            linear.add_color_stop_rgb(self.stops[0], 1, 0, 0)
+            linear.add_color_stop_rgb(self.stops[1], 1, 1, 0)
+            linear.add_color_stop_rgb(self.stops[2], 0, 1, 0)
+            linear.add_color_stop_rgb(1, 0, .3, 0)
+            ctx.set_source(linear)                 
+
+            # db
+            bh = int((h * (utils.linear2db(self.amp, limit= -self.range) + 
+                           self.range)) / self.range)
+#            ctx.set_source_rgb(0, 1, 0)
+            ctx.rectangle(1 + (0 if self.channel else w / 2) , h - bh - 1, w / 2 - 2, bh)               
+            ctx.fill()
+            
+            
+            # linear
+            from math import sqrt
+            peaks = np.array(map(lambda x: (utils.linear2db(x, limit= -self.range) + self.range) / self.range, self.peaks))                        
+            rms = sqrt(peaks.mean() ** 2)
+            bhl = int(h * rms)
+            ctx.set_source(linear)
+            ctx.rectangle(1 + (w / 2 if self.channel else 0), h - bhl - 1, w / 2 - 2, bhl)
+            ctx.fill()
+            
+            # border 
             ctx.set_source_rgb(0, 0, 0)
             ctx.rectangle(0, 0, w, h)
-            ctx.fill()
-            bh = int((h * (utils.linear2db(self.amp, limit=-self.range) + 
-                           self.range)) / self.range)
-            ctx.set_source_rgb(0, 1, 0)
-            ctx.rectangle(1, h - bh - 1, w - 2, bh)
-            ctx.fill()
+            ctx.stroke()
+                        
+            ctx.mask(pattern)  
+
+            # db peak
+            dbp = map(lambda x: (utils.linear2db(x, limit= -self.range) + self.range) / self.range, self.peaks)                        
+            ph = max(bh, int(h * sum(dbp) / len(self.peaks)))
+            ctx.set_source_rgb(1, 1, 1)
+            ctx.move_to(1 + (0 if self.channel else w / 2), h - ph)
+            ctx.line_to(w / 2 - 1 + (0 if self.channel else w / 2), h - ph)
+            ctx.stroke() 
+            
+            # linear peak
+            phl = max(bhl, int(h * self.peaks.mean()))
+            ctx.set_source_rgb(1, 1, 1)
+            ctx.move_to(1 + (w / 2 if self.channel else 0), h - phl)
+            ctx.line_to(w / 2 - 1 + (w / 2 if self.channel else 0), h - phl)
+            ctx.stroke()
+            
+                        
 
     def expose(self, widget, event):
         self.context = widget.window.cairo_create()
@@ -98,8 +157,8 @@ class MasterPanel(gtk.VBox):
     """
 
     __neil__ = dict(
-            id = 'neil.core.panel.master',
-            singleton = True,
+            id='neil.core.panel.master',
+            singleton=True,
     )
 
     def __init__(self):
@@ -112,7 +171,7 @@ class MasterPanel(gtk.VBox):
         self.masterslider = gtk.VScale()
         self.masterslider.set_draw_value(False)
         self.masterslider.set_range(0, 16384)
-        self.masterslider.set_size_request(-1, 200)
+        self.masterslider.set_size_request(-1, 500)
         self.masterslider.set_increments(500, 500)
         self.masterslider.set_inverted(True)
         #self.ohg.connect(self.masterslider, 'scroll-event', self.on_mousewheel)
@@ -130,9 +189,10 @@ class MasterPanel(gtk.VBox):
         vbox.pack_start(hbox)
         vbox.pack_start(self.volumelabel, expand=False, fill=False)
         self.pack_start(vbox)
+                
         self.update_all()
 
-    def on_zzub_parameter_changed(self, plugin,group,track,param,value):
+    def on_zzub_parameter_changed(self, plugin, group, track, param, value):
         player = com.get('neil.core.player')
         if plugin == player.get_plugin(0):
             self.update_all()
@@ -145,7 +205,7 @@ class MasterPanel(gtk.VBox):
         @type event: wx.Event
         """
         import time
-        vol = int(min(max(value,0), 16384) + 0.5)
+        vol = int(min(max(value, 0), 16384) + 0.5)
         player = com.get('neil.core.player')
         master = player.get_plugin(0)
         master.set_parameter_value_direct(1, 0, 0, 16384 - vol, 1)
@@ -164,7 +224,7 @@ class MasterPanel(gtk.VBox):
             vol += step
         elif event.direction == gtk.gdk.SCROLL_DOWN:
             vol -= step
-        vol = min(max(0,vol), 16384)
+        vol = min(max(0, vol), 16384)
         self.on_scroll_changed(None, None, vol)
 
     def update_all(self):
@@ -187,7 +247,7 @@ class MasterPanel(gtk.VBox):
         self.latency = com.get('neil.core.driver.audio').get_latency()
 
 __neil__ = dict(
-        classes = [
+        classes=[
                 MasterPanel,
         ],
 )
