@@ -1,0 +1,10 @@
+Import('pluginenv', 'build_plugin')
+
+localenv = pluginenv.Clone()
+
+localenv.Append(CCFLAGS=' `pkg-config --cflags gtk+-2.0` ')
+localenv.Append(LINKFLAGS=' `pkg-config --libs gtk+-2.0` ')
+
+files = ["Oscilloscope.cpp"]
+
+build_plugin(localenv, "gershon_oscilloscope", files)

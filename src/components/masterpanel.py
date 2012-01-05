@@ -35,8 +35,9 @@ import zzub
 import sys
 from collections import deque
 import numpy as np
+import array
+from math import sqrt
 
-  
 class AmpView(gtk.DrawingArea):
     """
     A simple control rendering a Buzz-like master VU bar.
@@ -88,7 +89,6 @@ class AmpView(gtk.DrawingArea):
             ctx.rectangle(0, 0, w, h)
             ctx.fill()                    
                                
-            import array
             data = array.array('B', [0, 0, 0, 255, 0, 0, 0, 255,
                                      0, 0, 0, 0, 0, 0, 0, 0,
                                      0, 0, 0, 0, 0, 0, 0, 0
@@ -96,7 +96,6 @@ class AmpView(gtk.DrawingArea):
             image = cairo.ImageSurface.create_for_data(data, cairo.FORMAT_ARGB32, 1, 6, 4)
             pattern = cairo.SurfacePattern(image)
             pattern.set_extend(cairo.EXTEND_REPEAT)
-#            ctx.set_source(pattern)
 
             linear = cairo.LinearGradient(0, 0, 0, h)
             linear.add_color_stop_rgb(self.stops[0], 1, 0, 0)
@@ -108,13 +107,10 @@ class AmpView(gtk.DrawingArea):
             # db
             bh = int((h * (utils.linear2db(self.amp, limit= -self.range) + 
                            self.range)) / self.range)
-#            ctx.set_source_rgb(0, 1, 0)
             ctx.rectangle(1 + (0 if self.channel else w / 2) , h - bh - 1, w / 2 - 2, bh)               
             ctx.fill()
             
-            
             # linear
-            from math import sqrt
             peaks = np.array(map(lambda x: (utils.linear2db(x, limit= -self.range) + self.range) / self.range, self.peaks))                        
             rms = sqrt(peaks.mean() ** 2)
             bhl = int(h * rms)
