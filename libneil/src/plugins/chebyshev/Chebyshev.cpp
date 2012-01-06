@@ -46,6 +46,9 @@ void Chebyshev::process_events() {
 }
 
 bool Chebyshev::process_stereo(float **pin, float **pout, int n, int mode) {
+  if (mode != zzub::process_mode_read_write) {
+    return false;
+  }
   float *in_l, *in_r, *out_l, *out_r;
   float param_n = pn;
   in_l = pin[0];
