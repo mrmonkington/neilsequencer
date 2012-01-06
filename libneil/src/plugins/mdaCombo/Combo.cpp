@@ -185,8 +185,8 @@ void Combo::process_events() {
   }
 }
 
-bool Combo::process_stereo(float **pin, float **pout, int sampleFrames, int mode) {
-  if (mode != zzub::process_mode_read_write) {
+bool Combo::process_stereo(float **pin, float **pout, int sampleFrames, int pmode) {
+  if (pmode != zzub::process_mode_read_write) {
     bool buffers_empty = true;
     for (int i = 0; i < size; i++) {
       if (buffer[i] > 0.0001f || buffe2[i] > 0.0001f) {
