@@ -58,10 +58,13 @@ bool MCPChorus::process_stereo(float **pin, float **pout, int n, int mode) {
     float t, x, y,y_r;
 
     if (mode != zzub::process_mode_read_write) {
+      bool buffers_empty = true;
       for (unsigned int i = 0; i < _size + 1; i++) {
 	if ((_line_l[i] > 0.0001f) || (_line_r[i] > 0.0001f)) {
-	  break;
+	  buffers_empty = false;
 	}
+      }
+      if (buffers_empty) {
 	return false;
       }
     }

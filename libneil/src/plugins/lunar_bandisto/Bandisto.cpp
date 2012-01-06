@@ -145,6 +145,9 @@ void LunarBandisto::process_events() {
 }
 
 bool LunarBandisto::process_stereo(float **pin, float **pout, int sampleFrames, int mode) {
+  if (mode != zzub::process_mode_read_write) {
+    return false;
+  }
   float *in1 = pin[0];
   float *in2 = pin[1];
   float *out1 = pout[0];

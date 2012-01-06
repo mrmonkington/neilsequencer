@@ -136,7 +136,7 @@ void Combo::process_events() {
     break;
   case 5: 
     trim = 0.59f; 
-    lpf = lpf = filterFreq(2795.f); 
+    lpf = filterFreq(2795.f); 
     mix1 = -0.29f; 
     mix2 = 0.38f; //Marshall 4x12" celestion
     del1 = int(_master_info->samples_per_second / 982.f);
@@ -186,6 +186,17 @@ void Combo::process_events() {
 }
 
 bool Combo::process_stereo(float **pin, float **pout, int sampleFrames, int mode) {
+  if (mode != zzub::process_mode_read_write) {
+    bool buffers_empty = true;
+    for (int i = 0; i < size; i++) {
+      if (buffer[i] > 0.0001f || buffe2[i] > 0.0001f) {
+	buffers_empty = false;
+      }
+    }
+    if (buffers_empty) {
+      return false;
+    }
+  }
   float *in1 = pin[0];
   float *in2 = pin[1];
   float *out1 = pout[0];

@@ -101,11 +101,14 @@ void Leslie::process_events() {
 
 bool Leslie::process_stereo(float **pin, float **pout, int n, int mode) {
   if (mode != zzub::process_mode_read_write) {
-    for (int i = 0; i < size; i++) {
+    bool buffers_empty = true;
+    for (unsigned int i = 0; i < size; i++) {
       if (hbuf[i] > 0.0001f) {
-	break;
+	buffers_empty = false;
       }
-      return false;
+      if (buffers_empty) {
+	return false;
+      }
     }
   }
   float a; // input accumulator

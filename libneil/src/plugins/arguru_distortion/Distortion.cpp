@@ -28,8 +28,8 @@ void Distortion::process_events() {
   if (gval.paraPreGain != paraPreGain->value_none) {
     Vals[4] = gval.paraPreGain;
   }
-  if (gval.paraThresholdNeg != paraThresholdNeg->value_none) {
-    Vals[5] = gval.paraThresholdNeg;
+  if (gval.paraAsymmetry != paraAsymmetry->value_none) {
+    Vals[5] = gval.paraAsymmetry;
   }
   if (gval.paraThreshold != paraThreshold->value_none) {
     Vals[0] = gval.paraThreshold;
@@ -72,11 +72,14 @@ inline void Distortion::Saturate(float * psamplesleft, float const threshold,
 
 bool Distortion::process_stereo(float **pin, float **pout, 
 				int numsamples, int mode) {
+  if (mode != zzub::process_mode_read_write) {
+    return false;
+  }
   float *psamplesleft = pin[0];
   float *psamplesright = pin[1];
 
-  float const threshold = (float)(Vals[0]) / float(0x8000);
-  float const negthreshold = -(float)(Vals[5]) / float(0x8000);
+  float const threshold = float(Vals[0]) / float(0x8000);
+  float const negthreshold = -threshold * (1.0 - float(Vals[5]) / float(0x8000));
 
   float const wet = (float)Vals[1] * 0.00390625f;
   float const negwet = -(float)Vals[1] * 0.00390625f;
@@ -135,10 +138,7 @@ const char *Distortion::describe_value(int param, int value) {
     return txt;
   }
   case 1: {
-    if(value > 0)
-      sprintf(txt, "%.1f dB", 20.0f * log10(value * 0.000030517578125f));
-    else
-      sprintf(txt,"-Inf. dB");				
+    sprintf(txt, "%.2f", value * 0.000030517578125f);
     return txt;
   }
   case 2: {

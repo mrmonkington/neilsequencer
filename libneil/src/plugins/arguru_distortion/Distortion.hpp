@@ -9,7 +9,7 @@
 
 struct Gvals {
   uint16_t paraPreGain;
-  uint16_t paraThresholdNeg;
+  uint16_t paraAsymmetry;
   uint16_t paraThreshold;
   uint16_t paraGain;
   uint8_t paraInvert;
@@ -17,7 +17,7 @@ struct Gvals {
 } __attribute__((__packed__));
 
 const zzub::parameter *paraPreGain = 0;
-const zzub::parameter *paraThresholdNeg = 0;
+const zzub::parameter *paraAsymmetry = 0;
 const zzub::parameter *paraThreshold = 0;
 const zzub::parameter *paraGain = 0;
 const zzub::parameter *paraInvert = 0;
@@ -106,19 +106,19 @@ struct DistortionInfo : zzub::info {
       .set_value_none(0xFFFF)
       .set_state_flag()
       .set_value_default(0x0100);
-    paraThresholdNeg = &add_global_parameter()
+    paraAsymmetry = &add_global_parameter()
       .set_word()
-      .set_name("Threshold (-)")
-      .set_description("Threshold level (negative)")
+      .set_name("Asymmetry")
+      .set_description("Assymetry")
       .set_value_min(0x0001)
       .set_value_max(0x8000)
       .set_value_none(0xFFFF)
       .set_state_flag()
-      .set_value_default(0x200);
+      .set_value_default(0);
     paraThreshold = &add_global_parameter()
       .set_word()
-      .set_name("Threshold (+)")
-      .set_description("Threshold level (positive)")
+      .set_name("Threshold")
+      .set_description("Threshold level")
       .set_value_min(0x0001)
       .set_value_max(0x8000)
       .set_value_none(0xFFFF)
