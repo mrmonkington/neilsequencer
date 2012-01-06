@@ -22,23 +22,23 @@ float Degrade::filterFreq(float hz)
 	
 void Degrade::process_events() {
   float f;
-  if (gval.clip != 0xff) {
-    fParam1 = gval.clip * 0.01f;
+  if (gval.clip != 0xffff) {
+    fParam1 = gval.clip * 0.001f;
   }
-  if (gval.bits != 0xff) {
-    fParam2 = gval.bits * 0.01f;
+  if (gval.bits != 0xffff) {
+    fParam2 = gval.bits * 0.001f;
   }
-  if (gval.rate != 0xff) {
-    fParam3 = gval.rate * 0.01f;
+  if (gval.rate != 0xffff) {
+    fParam3 = gval.rate * 0.001f;
   }
-  if (gval.postfilt != 0xff) {
-    fParam4 = gval.postfilt * 0.01f;
+  if (gval.postfilt != 0xffff) {
+    fParam4 = gval.postfilt * 0.001f;
   }
-  if (gval.nonlin != 0xff) {
-    fParam5 = gval.nonlin * 0.01f;
+  if (gval.nonlin != 0xffff) {
+    fParam5 = gval.nonlin * 0.001f;
   }
-  if (gval.level != 0xff) {
-    fParam6 = gval.level * 0.01f;
+  if (gval.level != 0xffff) {
+    fParam6 = gval.level * 0.001f;
   }
   //calcs here
   if (fParam3 > 0.5) { 
@@ -73,12 +73,11 @@ void Degrade::process_events() {
 }
 
 bool Degrade::process_stereo(float **pin, float **pout, int sampleFrames, int mode) {
-  float *in1 = pin[0];
-  float *in2 = pin[1];
-  if (!zzub::buffer_has_signals(in1, sampleFrames) &&
-      !zzub::buffer_has_signals(in2, sampleFrames)) {
+  if (mode != zzub::process_mode_read_write) {
     return false;
   }
+  float *in1 = pin[0];
+  float *in2 = pin[1];
   float *out1 = pout[0];
   float *out2 = pout[1];
   float b0 = buf0, l = lin, l2 = lin2;

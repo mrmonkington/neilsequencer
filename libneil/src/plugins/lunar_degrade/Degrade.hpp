@@ -13,12 +13,12 @@ const zzub::parameter *para_nonlin = 0;
 const zzub::parameter *para_level = 0;
 
 struct Gvals {
-  uint8_t clip;
-  uint8_t bits;
-  uint8_t rate;
-  uint8_t postfilt;
-  uint8_t nonlin;
-  uint8_t level;
+  uint16_t clip;
+  uint16_t bits;
+  uint16_t rate;
+  uint16_t postfilt;
+  uint16_t nonlin;
+  uint16_t level;
 } __attribute__((__packed__));
 
 const char *zzub_get_signature() { 
@@ -93,58 +93,58 @@ struct DegradeInfo : zzub::info {
     this->author = "SoMono";
     this->uri = "@bblunars/effect/mdaDegrade";
     para_clip = &add_global_parameter()
-      .set_byte()
+      .set_word()
       .set_name("Headroom")
       .set_description("Peak clipping threshold")
       .set_value_min(0)
-      .set_value_max(100)
-      .set_value_none(255)
-      .set_value_default(80)
+      .set_value_max(1000)
+      .set_value_none(0xffff)
+      .set_value_default(800)
       .set_state_flag();
     para_bits = &add_global_parameter()
-      .set_byte()
+      .set_word()
       .set_name("Quant")
       .set_description("Bit depth")
       .set_value_min(0)
-      .set_value_max(100)
-      .set_value_none(255)
-      .set_value_default(50)
+      .set_value_max(1000)
+      .set_value_none(0xffff)
+      .set_value_default(500)
       .set_state_flag();
     para_rate = &add_global_parameter()
-      .set_byte()
+      .set_word()
       .set_name("Rate")
       .set_description("Sampling rate reduction")
       .set_value_min(0)
-      .set_value_max(100)
-      .set_value_none(255)
-      .set_value_default(65)
+      .set_value_max(1000)
+      .set_value_none(0xffff)
+      .set_value_default(650)
       .set_state_flag();
     para_postfilt = &add_global_parameter()
-      .set_byte()
+      .set_word()
       .set_name("PostFilt")
       .set_description("Low-pass filter amount")
       .set_value_min(0)
-      .set_value_max(100)
-      .set_value_none(255)
-      .set_value_default(90)
+      .set_value_max(1000)
+      .set_value_none(0xffff)
+      .set_value_default(900)
       .set_state_flag();
     para_nonlin = &add_global_parameter()
-      .set_byte()
+      .set_word()
       .set_name("NonLin")
       .set_description("Additional harmonic distortion")
       .set_value_min(0)
-      .set_value_max(100)
-      .set_value_none(255)
-      .set_value_default(58)
+      .set_value_max(1000)
+      .set_value_none(0xffff)
+      .set_value_default(580)
       .set_state_flag();
     para_level = &add_global_parameter()
-      .set_byte()
+      .set_word()
       .set_name("Output")
       .set_description("Level trim")
       .set_value_min(0)
-      .set_value_max(100)
-      .set_value_none(255)
-      .set_value_default(50)
+      .set_value_max(1000)
+      .set_value_none(0xffff)
+      .set_value_default(500)
       .set_state_flag();
   }
   virtual zzub::plugin* create_plugin() const { return new Degrade(); }

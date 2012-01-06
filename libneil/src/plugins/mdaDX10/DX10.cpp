@@ -174,9 +174,12 @@ void DX10::process_events() {
 }
 
 bool DX10::process_stereo(float **pin, float **pout, int sampleFrames, int mode) {
+  if (mode != zzub::process_mode_write) {
+    return false;
+  }
   float* out1 = pout[0];
   float* out2 = pout[1];
-  int event = 0, frame = 0, frames, v;
+  int v;
   float o, x, e, mw = MW, w = rich, m = modmix;
   int k = K;
   bool something_done = false;

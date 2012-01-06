@@ -248,6 +248,9 @@ void JX10::process_events() {
 }
 
 bool JX10::process_stereo(float **pin, float **pout, int sampleFrames, int mode) {
+  if (mode != zzub::process_mode_write) {
+    return false;
+  }
   float* out1 = pout[0];
   float* out2 = pout[1];
   int v;
