@@ -110,6 +110,12 @@ void TalkBox::process_events() {
 }
 
 bool TalkBox::process_stereo(float **pin, float **pout, int sampleFrames, int mode) {
+  if (mode == zzub::process_mode_write || mode == zzub::process_mode_no_io) {
+    return false;
+  }
+  if (mode == zzub::process_mode_read) {
+    return true;
+  }
   float *in1 = pin[0];
   float *in2 = pin[1];
   if (swap) {
@@ -203,7 +209,12 @@ bool TalkBox::process_stereo(float **pin, float **pout, int sampleFrames, int mo
   if (fabs(u3) < den) {
     u3 = 0.0f;
   }
-  return true;
+  if (zzub::buffer_has_signals(pout[0], BUF_MAX) ||
+      zzub::buffer_has_signals(pout[1], BUF_MAX)) {
+    return true;
+  } else {
+    return false;
+  }
 }
 
 void TalkBox::lpc(float *buf, float *car, int n, int o)
