@@ -27,6 +27,12 @@ void LunarBitCrusher::process_events() {
 }
 
 bool LunarBitCrusher::process_stereo(float **pin, float **pout, int n, int mode) {
+  if (mode == zzub::process_mode_write || mode == zzub::process_mode_no_io) {
+    return false;
+  }
+  if (mode == zzub::process_mode_read) {
+    return true;
+  }
   for (int i = 0; i < n; i++) {
     // Only play back every <downsample> samples.
     if (--counter == 0) {
