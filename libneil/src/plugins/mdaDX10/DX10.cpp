@@ -216,8 +216,7 @@ bool DX10::process_stereo(float **pin, float **pout, int sampleFrames, int mode)
 	  x += 2.0f;
 	}
 	V->car = x;
-	o += V->cenv * (m * V->mod1 + (x + x * x * x * (w * x * x - 1.0f - w))); 
-      } else {
+	o += V->cenv * (m * V->mod1 + (x + x * x * x * (w * x * x - 1.0f - w)));
 	something_done = true;
       }
       V++;

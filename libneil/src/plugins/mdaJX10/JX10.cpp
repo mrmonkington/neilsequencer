@@ -387,7 +387,6 @@ bool JX10::process_stereo(float **pin, float **pout, int sampleFrames, int mode)
 	V->f2 = x;
           
 	o += V->env * V->f0;
-      } else {
 	something_done = true;
       }
       V++;
