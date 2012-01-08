@@ -23,16 +23,16 @@ the envelope viewer.
 """
 
 if __name__ == '__main__':
-    import os   
+    import os
     os.system('../../bin/neil-combrowser neil.core.wavetablepanel')
     raise SystemExit
 
 import gtk
 import gobject
 import os, sys, stat
-from neil.utils import prepstr, db2linear, linear2db, note2str, filepath,\
-     new_listview, new_image_button, add_scrollbars, file_filter, question,\
-     new_image_toggle_button, format_filesize, error, new_stock_image_button,\
+from neil.utils import prepstr, db2linear, linear2db, note2str, filepath, \
+     new_listview, new_image_button, add_scrollbars, file_filter, question, \
+     format_filesize, error, new_stock_image_button, \
      ObjectHandlerGroup, imagepath
 import neil.utils as utils
 import zzub
@@ -42,29 +42,30 @@ from neil.waveedit import WaveEditPanel
 import neil.common as common
 from neil.common import MARGIN, MARGIN2, MARGIN3
 import neil.com as com
+from neil.utils import Menu
 
 class WavetablePanel(gtk.VBox):
     """
     Wavetable editor.
 
-    Contains a list of samples loaded in the song and a file list showing wave files in the file system. 
+    Contains a list of samples loaded in the song and a file list showing wave files in the file system.
     It contains controls to transfer files between the song and the file system, and components that facilitate
     sample editing for example loops and envelopes.
     """
     __neil__ = dict(
-            id = 'neil.core.wavetablepanel',
-            singleton = True,
-            categories = [
+            id='neil.core.wavetablepanel',
+            singleton=True,
+            categories=[
                     'neil.viewpanel',
                     'view',
             ]
-    )   
+    )
 
     __view__ = dict(
-                    label = "Wavetable",
-                    stockid = "neil_samplebank",
-                    shortcut = 'F9',
-                    order = 9,
+                    label="Wavetable",
+                    stockid="neil_samplebank",
+                    shortcut='F9',
+                    order=9,
     )
 
     def __init__(self):
@@ -78,7 +79,7 @@ class WavetablePanel(gtk.VBox):
         gtk.VBox.__init__(self)
         self.instrpanel = gtk.HPaned()
         self.instrpanel.set_border_width(MARGIN2)
-        self.libpanel =\
+        self.libpanel = \
             gtk.FileChooserDialog(title="Open Sample",
                                   action=gtk.FILE_CHOOSER_ACTION_OPEN,
                                   buttons=(gtk.STOCK_CANCEL,
@@ -87,7 +88,7 @@ class WavetablePanel(gtk.VBox):
                                            gtk.RESPONSE_OK))
         preview = gtk.VBox(False, MARGIN)
         #preview.set_size_request(100,-1)
-        
+
         #btnopen = new_stock_image_button(gtk.STOCK_ADD, "Add/Insert Instrument", self.tooltips)
         #self.ohg.connect(btnopen,'clicked', self.on_load_sample)
         #btndeletefile = new_stock_image_button(gtk.STOCK_DELETE, "Delete File", self.tooltips)
@@ -108,15 +109,15 @@ class WavetablePanel(gtk.VBox):
         #hbox.pack_end(btndeletefile, expand=False)
         #hbox.pack_end(btnopen, expand=False)
         #hbox.pack_end(chkautoplay, expand=False)
-        
+
         #self.libpanel.set_extra_widget(hbox)
         self.previewdesc = gtk.Label()
         self.previewdesc.set_alignment(0, 0)
         btnpreviewplay = new_stock_image_button(gtk.STOCK_MEDIA_PLAY, "Preview Sample")
-        self.ohg.connect(btnpreviewplay,'clicked', self.on_play_filelist_wave)
+        self.ohg.connect(btnpreviewplay, 'clicked', self.on_play_filelist_wave)
         btnpreviewstop = new_stock_image_button(gtk.STOCK_MEDIA_STOP, "Stop Preview")
-        self.ohg.connect(btnpreviewstop,'clicked', self.on_stop_wave)
-        
+        self.ohg.connect(btnpreviewstop, 'clicked', self.on_stop_wave)
+
         hbox = gtk.HBox(False, MARGIN)
         hbox.pack_start(btnpreviewplay, expand=False)
         hbox.pack_start(btnpreviewstop, expand=False)
@@ -124,13 +125,13 @@ class WavetablePanel(gtk.VBox):
         preview.pack_start(self.previewdesc, expand=False)
         preview.pack_start(chkautoplay, expand=False)
         preview.show_all()
-        
+
         self.libpanel.set_preview_widget(preview)
         #self.libpanel.set_border_width(MARGIN2)
         #self.libpanel.add_shortcut_folder(config.get_config().get_freesound_samples_folder())
         self.libpanel.add_filter(file_filter('All Supported Formats', '*.wav', '*.aif',
                                              '*.aifc', '*.aiff', '*.flac', '*.xi',
-                                             '*.au', '*.paf', '*.snd', '*.voc', 
+                                             '*.au', '*.paf', '*.snd', '*.voc',
                                              '*.smp', '*.iff', '*.8svx', '*.16svx',
                                              '*.w64', '*.mat4', '*.mat5', '*.pvf',
                                              '*.htk', '*.caf', '*.sd2', '*.raw'))
@@ -190,7 +191,7 @@ class WavetablePanel(gtk.VBox):
         self.chkenable = gtk.CheckButton("Use Envelope")
         self.envelope = EnvelopeView(self)
         self.waveedit = WaveEditPanel(self)
-        
+
         # Buttons to find zero crossings for looping samples.
         #self.btn_start_prev = gtk.Button("<")
         #self.btn_start_next = gtk.Button(">")
@@ -238,44 +239,44 @@ class WavetablePanel(gtk.VBox):
         self.instrpanel.add1(samplesel)
         self.instrpanel.add2(sampleprops)
         self.instrpanel.set_position(250)
-        
+
         #self.connect("expose_event", self.expose)
 
-        self.ohg.connect(self.samplelist.get_selection(),'changed', self.on_samplelist_select)
-        self.ohg.connect(self.samplelist,'button-press-event', self.on_samplelist_dclick)
-        self.ohg.connect(self.samplelist,'key-press-event', self.on_samplelist_key_down)
+        self.ohg.connect(self.samplelist.get_selection(), 'changed', self.on_samplelist_select)
+        self.ohg.connect(self.samplelist, 'button-press-event', self.on_samplelist_click)
+        self.ohg.connect(self.samplelist, 'key-press-event', self.on_samplelist_key_down)
 
         self.ohg.connect(self.btnloadsample, 'clicked', self.on_load_sample)
-        self.ohg.connect(self.btnstoresample,'clicked', self.on_save_sample)
-        self.ohg.connect(self.btnplay,'clicked', self.on_play_wave)
-        self.ohg.connect(self.btnstop,'clicked', self.on_stop_wave)
-        self.ohg.connect(self.btnclear,'clicked', self.on_clear)
-        self.ohg.connect(self.btnrename,'clicked', self.on_rename_instrument)
+        self.ohg.connect(self.btnstoresample, 'clicked', self.on_save_sample)
+        self.ohg.connect(self.btnplay, 'clicked', self.on_play_wave)
+        self.ohg.connect(self.btnstop, 'clicked', self.on_stop_wave)
+        self.ohg.connect(self.btnclear, 'clicked', self.on_clear)
+        self.ohg.connect(self.btnrename, 'clicked', self.on_rename_instrument)
         #self.ohg.connect(self.btnfitloop,'clicked', self.on_fit_loop)
         #self.ohg.connect(self.btnstrloop,'clicked', self.on_stretch_loop)
-        self.ohg.connect(self.chkloop,'clicked', self.on_check_loop)
-        self.ohg.connect(self.chkpingpong,'clicked', self.on_check_pingpong)
-        self.ohg.connect(self.chkenable,'clicked', self.on_check_envdisabled)
+        self.ohg.connect(self.chkloop, 'clicked', self.on_check_loop)
+        self.ohg.connect(self.chkpingpong, 'clicked', self.on_check_pingpong)
+        self.ohg.connect(self.chkenable, 'clicked', self.on_check_envdisabled)
 
-        self.ohg.connect(self.edloopstart,'focus-out-event', self.on_loop_start_apply)
-        self.ohg.connect(self.edloopstart,'activate', self.on_loop_start_apply)
-        self.ohg.connect(self.edloopend,'focus-out-event', self.on_loop_end_apply)
-        self.ohg.connect(self.edloopend,'activate', self.on_loop_end_apply)
-        self.ohg.connect(self.edsamplerate,'focus-out-event', self.on_samplerate_apply)
-        self.ohg.connect(self.edsamplerate,'activate', self.on_samplerate_apply)
+        self.ohg.connect(self.edloopstart, 'focus-out-event', self.on_loop_start_apply)
+        self.ohg.connect(self.edloopstart, 'activate', self.on_loop_start_apply)
+        self.ohg.connect(self.edloopend, 'focus-out-event', self.on_loop_end_apply)
+        self.ohg.connect(self.edloopend, 'activate', self.on_loop_end_apply)
+        self.ohg.connect(self.edsamplerate, 'focus-out-event', self.on_samplerate_apply)
+        self.ohg.connect(self.edsamplerate, 'activate', self.on_samplerate_apply)
 
-        self.ohg.connect(self.libpanel,'key-press-event', self.on_filelist_key_down)
+        self.ohg.connect(self.libpanel, 'key-press-event', self.on_filelist_key_down)
         #self.ohg.connect(self.libpanel,'file-activated', self.on_load_sample)
-        self.ohg.connect(self.libpanel,'selection-changed', self.on_libpanel_selection_changed)
+        self.ohg.connect(self.libpanel, 'selection-changed', self.on_libpanel_selection_changed)
 
         currentpath = config.get_config().get_default('SampleBrowserPath')
-        
+
         if currentpath:
             try:
                 self.libpanel.set_current_folder(currentpath)
             except:
                 print "couldn't set current sample browser path: '%s'." % currentpath
-                
+
         eventbus = com.get('neil.core.eventbus')
         eventbus.zzub_wave_allocated += self.update_samplelist
         eventbus.zzub_wave_allocated += self.update_sampleprops
@@ -307,7 +308,7 @@ class WavetablePanel(gtk.VBox):
         if self.needfocus:
             self.samplelist.grab_focus()
             self.needfocus = False
-    
+
     def handle_focus(self):
         self.samplelist.grab_focus()
         player = com.get('neil.core.player')
@@ -317,7 +318,7 @@ class WavetablePanel(gtk.VBox):
             self.samplelist.get_selection().\
                 select_path(player.active_waves[0].get_index())
         self.needfocus = True
-    
+
     def on_libpanel_selection_changed(self, widget):
         """
         Called when the current file browser selection changes.
@@ -340,15 +341,15 @@ class WavetablePanel(gtk.VBox):
         """
         self.Layout()
         #event.Skip()
-        x,y,w,h = self.filelist.GetClientRect()
+        x, y, w, h = self.filelist.GetClientRect()
         w -= 32
         self.filelist.SetColumnWidth(0, int(w * 0.5))
         self.filelist.SetColumnWidth(1, int(w * 0.25))
         self.filelist.SetColumnWidth(2, int(w * 0.25))
-        x,y,w,h = self.samplelist.GetClientRect()
+        x, y, w, h = self.samplelist.GetClientRect()
         w -= 32
         self.samplelist.SetColumnWidth(0, 48)
-        self.samplelist.SetColumnWidth(1, w-48)
+        self.samplelist.SetColumnWidth(1, w - 48)
 
     def get_sample_selection(self):
         """
@@ -376,7 +377,7 @@ class WavetablePanel(gtk.VBox):
         if not files:
             return
         sel = self.get_sample_selection()
-        if question(self, '<b><big>Really delete selected files?</big></b>',False) != gtk.RESPONSE_YES:
+        if question(self, '<b><big>Really delete selected files?</big></b>', False) != gtk.RESPONSE_YES:
             return
         for file in files:
             os.remove(file)
@@ -387,21 +388,55 @@ class WavetablePanel(gtk.VBox):
         Renames currently selected file
         """
         files = [path for path in self.libpanel.get_filenames() if os.path.isfile(path)]
-        if not(files) or len(files)>1:
+        if not(files) or len(files) > 1:
             return
-        data_entry = DataEntry(self, "Rename File")
+        data_entry = DataEntry(self, "Rename File", "New Name:")
         if data_entry.run() == gtk.RESPONSE_OK:
             try:
                 value = data_entry.edit.get_text()
-                filename=os.path.basename(files[0])
-                if filename[filename.rfind("."):]!=value[value.rfind("."):]:
-                    value=value+filename[filename.rfind("."):]
-                os.rename(files[0], os.path.join(os.path.dirname(files[0]),value))
+                filename = os.path.basename(files[0])
+                if filename[filename.rfind("."):] != value[value.rfind("."):]:
+                    value = value + filename[filename.rfind("."):]
+                os.rename(files[0], os.path.join(os.path.dirname(files[0]), value))
             except:
                 import traceback
                 traceback.print_exc()
         data_entry.destroy()
         self.libpanel.set_current_folder(self.libpanel.get_current_folder())
+
+    def on_swap_instrument(self, widget):
+        """
+        Swap instrument with another
+        """
+        data_entry = DataEntry(self, "Swap Instruments", "With #:")
+        if data_entry.run() == gtk.RESPONSE_OK:
+            try:
+                selects = self.get_sample_selection()
+                player = com.get('neil.core.player')
+
+                sourceIdx = self.get_sample_selection()[0]
+                targetIdx = int("0x" + data_entry.edit.get_text(), 16) - 1
+
+                # swap rows
+                self.samplestore.swap(self.samplestore.get_iter(sourceIdx), self.samplestore.get_iter(targetIdx))
+
+                tmp = self.samplestore[sourceIdx][0]
+                sourceWaveIdx = self.samplestore[sourceIdx][2].get_index()
+                targetWaveIdx = self.samplestore[targetIdx][2].get_index()
+
+                # swap #s
+                self.samplestore[sourceIdx][0] = self.samplestore[targetIdx][0]
+                self.samplestore[targetIdx][0] = tmp
+
+                # swap wave indices
+                self.samplestore[targetIdx][2].set_index(targetWaveIdx)
+                self.samplestore[sourceIdx][2].set_index(targetWaveIdx)
+
+                player.history_commit("swap instruments")
+            except:
+                import traceback
+                traceback.print_exc()
+        data_entry.destroy()
 
 
     def on_rename_instrument(self, widget):
@@ -410,13 +445,13 @@ class WavetablePanel(gtk.VBox):
         """
         player = com.get('neil.core.player')
         selects = self.get_sample_selection()
-        if not(selects) or len(selects)>1:
+        if not(selects) or len(selects) > 1:
             return
         data_entry = DataEntry(self, "Rename Instrument")
         if data_entry.run() == gtk.RESPONSE_OK:
             try:
                 value = data_entry.edit.get_text()
-                target=self.get_sample_selection()[0]
+                target = self.get_sample_selection()[0]
                 w = player.get_wave(target)
                 w.set_name(value)
                 player.history_commit("rename instrument")
@@ -433,7 +468,7 @@ class WavetablePanel(gtk.VBox):
         @type event: wx.CommandEvent
         """
         try:
-            v = min(max(int(self.edsamplerate.get_text()),50),200000)
+            v = min(max(int(self.edsamplerate.get_text()), 50), 200000)
         except ValueError:
             return
         player = com.get('neil.core.player')
@@ -462,7 +497,7 @@ class WavetablePanel(gtk.VBox):
             w = player.get_wave(i)
             if w.get_level_count() >= 1:
                 level = w.get_level(0)
-                level.set_loop_start(min(max(v,0),level.get_loop_end()-1))
+                level.set_loop_start(min(max(v, 0), level.get_loop_end() - 1))
         player.history_commit("change loop start")
         self.update_sampleprops()
         #~ self.update_subsamplelist()
@@ -484,7 +519,7 @@ class WavetablePanel(gtk.VBox):
             w = player.get_wave(i)
             if w.get_level_count() >= 1:
                 level = w.get_level(0)
-                level.set_loop_end(min(max(v,level.get_loop_start()+1),level.get_sample_count()))
+                level.set_loop_end(min(max(v, level.get_loop_start() + 1), level.get_sample_count()))
         player.history_commit("change loop end")
         self.update_sampleprops()
         #~ self.update_subsamplelist()
@@ -538,15 +573,15 @@ class WavetablePanel(gtk.VBox):
         player.history_commit("envelope option")
         self.update_sampleprops()
 
-    def on_scroll_changed(self, range, scroll, value):          
+    def on_scroll_changed(self, range, scroll, value):
         """
         Callback that responds to change in the wave volume slider.
 
         @param event: CommandEvent event
-        @type event: wx.CommandEvent            
+        @type event: wx.CommandEvent
         """
         player = com.get('neil.core.player')
-        vol = db2linear(int(value) / 100.0)             
+        vol = db2linear(int(value) / 100.0)
         for i in self.get_sample_selection():
             w = player.get_wave(i)
             w.set_volume(vol)
@@ -576,9 +611,9 @@ class WavetablePanel(gtk.VBox):
         """
         sel = self.get_sample_selection()
         if len(sel) > 1:
-            if question(self, '<b><big>Really delete %s instruments?</big></b>' % len(sel),False) != gtk.RESPONSE_YES:
+            if question(self, '<b><big>Really delete %s instruments?</big></b>' % len(sel), False) != gtk.RESPONSE_YES:
                 return
-        elif question(self, '<b><big>Really delete instrument?</big></b>',False) != gtk.RESPONSE_YES:
+        elif question(self, '<b><big>Really delete instrument?</big></b>', False) != gtk.RESPONSE_YES:
             return
         player = com.get('neil.core.player')
         for i in sel:
@@ -594,7 +629,7 @@ class WavetablePanel(gtk.VBox):
         Callback of a button that refreshes the file list.
 
         @param event: CommandEvent event
-        @type event: wx.CommandEvent            
+        @type event: wx.CommandEvent
         """
         self.working_directory = ''
         self.stworkpath.SetLabel(self.working_directory)
@@ -606,8 +641,8 @@ class WavetablePanel(gtk.VBox):
         # master = player.get_plugin(0)
         # vol = -76.0 * (master.get_parameter_value(1, 0, 0) / 16384.0)
         player = com.get('neil.core.player')
-        vol = min(max(config.get_config().get_sample_preview_volume(),-76.0),0.0)
-        amp = db2linear(vol,limit=-76.0)
+        vol = min(max(config.get_config().get_sample_preview_volume(), -76.0), 0.0)
+        amp = db2linear(vol, limit= -76.0)
         #player.set_wave_amp(amp)
 
     def on_play_filelist_wave(self, widget):
@@ -619,7 +654,7 @@ class WavetablePanel(gtk.VBox):
     def on_play_wave(self, widget):
         """
         Callback of a button that plays the currently selected sample in the sample list.
-        """             
+        """
         player = com.get('neil.core.player')
         selects = self.get_sample_selection()
         if selects:
@@ -647,7 +682,7 @@ class WavetablePanel(gtk.VBox):
         selects = self.get_sample_selection()
         for s in selects:
             w = player.get_wave(s)
-            origpath = w.get_path().replace('/',os.sep).replace('\\',os.sep)
+            origpath = w.get_path().replace('/', os.sep).replace('\\', os.sep)
             if origpath:
                 filename = os.path.splitext(os.path.basename(origpath))[0] + '.wav'
             else:
@@ -677,8 +712,8 @@ class WavetablePanel(gtk.VBox):
             return
         # if sample selection less than files, increase sample selection
         if len(selects) < len(samplepaths):
-            diffcount = len(samplepaths) - len(selects)                 
-            selects += tuple(range(selects[-1]+1,selects[-1]+1+diffcount))                      
+            diffcount = len(samplepaths) - len(selects)
+            selects += tuple(range(selects[-1] + 1, selects[-1] + 1 + diffcount))
         # if sample selection more than files, set sample selection equal to number files
         elif len(selects) > len(samplepaths):
             selects = selects[:len(samplepaths)]
@@ -702,7 +737,7 @@ class WavetablePanel(gtk.VBox):
 
     def on_load_sample(self, widget):
         """
-        Callback that responds to clicking the load sample button. 
+        Callback that responds to clicking the load sample button.
         Loads a sample from the file list into the sample list of the song.
         """
         response = self.libpanel.run()
@@ -724,7 +759,7 @@ class WavetablePanel(gtk.VBox):
         Callback that responds to clicking the parent button. Moves up in the directory hierarchy.
 
         @param event: CommandEvent event
-        @type event: wx.CommandEvent            
+        @type event: wx.CommandEvent
         """
         if not self.working_directory:
             return
@@ -732,26 +767,38 @@ class WavetablePanel(gtk.VBox):
         if abspath in self.get_wavetable_paths():
             self.working_directory = ''
         else:
-            self.working_directory = os.path.abspath(os.path.join(self.working_directory,'..'))
+            self.working_directory = os.path.abspath(os.path.join(self.working_directory, '..'))
 
-    def on_samplelist_dclick(self, widget, event):
+    def on_samplelist_click(self, widget, event):
         """
-        Callback that responds to double click in the sample list. Plays the selected file.
+        Callback that responds to clicks in the sample list.
 
         @param event: MouseEvent event
         @type event: wx.MouseEvent
         """
+        #  Plays the selected file
         if (event.button == 1) and (event.type == gtk.gdk._2BUTTON_PRESS):
             # double click
             self.on_play_wave(event)
             #I think this makes much more sense..
             #self.on_load_sample(widget)
+        #  Open context menu
+        elif (event.button == 3):
+            menu = Menu()
+            menu.add_item("Load Sample", self.on_load_sample)
+            menu.add_item("Save Sample", self.on_save_sample)
+            menu.add_item("Remove Instrument", self.on_delete_file)
+            menu.add_item("Rename Instrument", self.on_rename_instrument)
+            menu.add_item("Swap Instrument", self.on_swap_instrument)
+            menu.show_all()
+            menu.attach_to_widget(self, None)
+            menu.popup(self, event)
 
     def preview_sample(self, path):
         """
         Previews a sample from the filesystem.
         """
-        base,ext = os.path.splitext(path)
+        base, ext = os.path.splitext(path)
         player = com.get('neil.core.player')
         # (4 << 4) + 1 ?
         if not player.preview_file(path):
@@ -854,7 +901,7 @@ class WavetablePanel(gtk.VBox):
         Updates the subsample list, containing specifics about the wave length, rate and loop range.
         """
         self.subsamplelist.ClearAll()
-        w,h = self.subsamplelist.GetClientSize()
+        w, h = self.subsamplelist.GetClientSize()
         cw = w / 5.0
         self.subsamplelist.InsertColumn(0, "Root", width=cw)
         self.subsamplelist.InsertColumn(1, "Length", width=cw)
@@ -919,16 +966,16 @@ class WavetablePanel(gtk.VBox):
         #self.volumeslider.set_value(v)
 
         f = w.get_flags()
-        
+
         isloop = bool(f & zzub.zzub_wave_flag_loop)
         ispingpong = bool(f & zzub.zzub_wave_flag_pingpong)
-        
+
         self.chkloop.set_active(isloop)
-        self.edloopstart.set_sensitive(isloop)          
+        self.edloopstart.set_sensitive(isloop)
         self.edloopstart.set_text(str(level.get_loop_start()))
         self.edloopend.set_sensitive(isloop)
         self.edloopend.set_text(str(level.get_loop_end()))
-        self.edsamplerate.set_text(str(level.get_samples_per_second()))         
+        self.edsamplerate.set_text(str(level.get_samples_per_second()))
         self.chkpingpong.set_active(ispingpong)
         self.chkpingpong.set_sensitive(isloop)
         if w.get_envelope_count() != 0:
@@ -948,7 +995,7 @@ class WavetablePanel(gtk.VBox):
 
     def on_samplelist_select(self, selection):
         """
-        Callback that responds to left click on sample list. 
+        Callback that responds to left click on sample list.
         Updates the sample properties, the subsample list and the envelope.
 
         @param event: Command event
@@ -969,7 +1016,7 @@ class WavetablePanel(gtk.VBox):
         if not iter: # empty
             for i in range(player.get_wave_count()):
                 w = player.get_wave(i)
-                it = self.samplestore.append(["%02X." % (i+1), prepstr(w.get_name()), w])
+                it = self.samplestore.append(["%02X." % (i + 1), prepstr(w.get_name()), w])
                 if w in player.active_waves:
                     selection.select_iter(it)
         else: # update, it's a bit faster than rebuilding the list.
@@ -1000,14 +1047,14 @@ class WavetablePanel(gtk.VBox):
                 # get sample length
                 ls = float(level.get_sample_count()) / float(sps)
                 # samples per beat
-                spb = 60.0/bpm
+                spb = 60.0 / bpm
                 # get exponent
-                f = math.log(ls/spb) / math.log(2.0)
+                f = math.log(ls / spb) / math.log(2.0)
                 # new samplerate
-                newsps = sps * 2**(f-int(f+0.5))
+                newsps = sps * 2 ** (f - int(f + 0.5))
                 # new size
-                newsize = int(((level.get_sample_count() * sps) / newsps)+0.5)
-                level.stretch_range(0,level.get_sample_count(),newsize)
+                newsize = int(((level.get_sample_count() * sps) / newsps) + 0.5)
+                level.stretch_range(0, level.get_sample_count(), newsize)
                 self.waveedit.update()
                 #level.set_samples_per_second(int(sps+0.5))
         player.history_commit("stretch loop")
@@ -1028,19 +1075,20 @@ class WavetablePanel(gtk.VBox):
                 # get sample length
                 ls = float(level.get_sample_count()) / float(sps)
                 # samples per beat
-                spb = 60.0/bpm
+                spb = 60.0 / bpm
                 # get exponent
-                f = math.log(ls/spb) / math.log(2.0)
+                f = math.log(ls / spb) / math.log(2.0)
                 # new samplerate
-                sps = sps * 2**(f-int(f+0.5))
-                level.set_samples_per_second(int(sps+0.5))
+                sps = sps * 2 ** (f - int(f + 0.5))
+                level.set_samples_per_second(int(sps + 0.5))
         player.history_commit("fit loop")
+
 
 class DataEntry(gtk.Dialog):
     """
     A data entry control for renaming files
     """
-    def __init__(self, parent, title):
+    def __init__(self, parent, title, label):
         """
         Initializer.
         """
@@ -1049,15 +1097,15 @@ class DataEntry(gtk.Dialog):
                 parent.get_toplevel(),
                 gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
                 (gtk.STOCK_OK, gtk.RESPONSE_OK, gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL),
-        )       
-        self.label = gtk.Label("New name:")
+        )
+        self.label = gtk.Label(label)
         self.edit = gtk.Entry()
         s = gtk.HBox()
         s.pack_start(self.label, expand=False)
         s.pack_start(self.edit)
         self.vbox.pack_start(s, expand=False)
         self.edit.grab_focus()
-        self.edit.select_region(1,-1)
+        self.edit.select_region(1, -1)
         self.show_all()
         self.edit.connect('activate', self.on_text_enter)
 
@@ -1071,7 +1119,7 @@ __all__ = [
 ]
 
 __neil__ = dict(
-        classes = [
+        classes=[
                 EnvelopeView,
                 WavetablePanel,
         ],

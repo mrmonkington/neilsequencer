@@ -64,8 +64,10 @@ class TransportPanel(gtk.HBox):
         self.master_controls = com.get('neil.core.panel.master')
         self.master_control_window = gtk.Window()
         self.master_control_window.add(self.master_controls)
-        self.master_control_window.set_deletable(False)
-        self.master_control_window.set_resizable(False)
+        self.master_control_window.connect('delete-event', lambda widget, event: self.volume_button.set_state(False))
+        self.master_control_window.connect('delete-event', self.master_control_window.hide_on_delete)
+        #self.master_control_window.set_deletable(False)
+        self.master_control_window.set_resizable(True)
         self.master_control_window.set_position(gtk.WIN_POS_MOUSE)
         eventbus = com.get('neil.core.eventbus')
         eventbus.zzub_parameter_changed += self.on_zzub_parameter_changed
@@ -88,7 +90,8 @@ class TransportPanel(gtk.HBox):
         self.tpb.set_value(4)
         self.tpb.set_increments(1, 2)
         #self.tpb.connect('button-press-event', self.spinbox_clicked)
-
+        
+        #from utils import ImageToggleButton
         self.btnplay = new_image_toggle_button(imagepath("playback_play.svg"),
                                                "Play (F5/F6)")
         self.btnrecord = new_image_toggle_button(imagepath("playback_record.svg"), 
@@ -220,6 +223,7 @@ class TransportPanel(gtk.HBox):
     def on_toggle_volume(self, widget):
         if widget.get_active():
             self.master_control_window.show_all()
+            self.master_control_window.set_transient_for(com.get('neil.core.window.root'))            
         else:
             self.master_control_window.hide_all()
 

@@ -1,0 +1,73 @@
+MV Amp BG			FFFFFF
+MV Amp Handle		999999
+MV Arrow			B6D164
+MV Arrow Border In 	ff00ff
+MV Arrow Border Out 272727
+MV Background		424242
+MV Controller		60CC7B
+MV Controller Arrow	60CC7B
+MV Controller Arrow	Border In 272727
+MV Controller Arrow Border Out 272727
+MV Controller Mute	3E8550
+MV Effect			617CCD
+MV Effect LED Off	435EAF
+MV Effect LED On	377AFF
+MV Effect Mute		254091
+MV Effect Pan BG	7F9AEB
+MV Generator		F2BF55
+MV Generator LED Off	C3A137
+MV Generator LED On	FFFF19
+MV Generator Mute	B68319
+MV Generator Pan BG	FFDD73
+MV Machine Text		000000
+MV Master			CCCCCC
+MV Master Mute		CCCCCC
+MV Master LED Off	808080
+MV Master LED On	EEEEEE
+MV Pan Handle		000000
+MV Line				292929
+MV Machine Border	000000
+MV Selected Border	ff00ff
+MV Border			000000
+PE BG				424242
+PE BG Dark			404040
+PE BG Very Dark		3D3D3D
+PE BG Light			474747
+PE BG Very Light	4D4D4D
+PE Sel BG			AAAAAA
+PE Sel BG			AAAAAA
+PE Text				9E9E9E
+PE Track Numbers	ADADAD
+PE Row Numbers		7A7A7A
+SA Amp BG			007D5D
+SA Amp Line			FFFFFF
+SA Freq BG			007D5D
+SA Freq Line		FFFFFF
+SE Background		424242
+SE BG Dark			383838
+SE BG Very Dark		323232
+SE Line				4D4D4D
+SE Weak Line		4D4D4D
+SE Strong Line		5C5C5C
+SE Sel BG			AAAAAA
+SE Text				000000
+SE Loop Line		FFFFFF
+SE Track Background	575757
+WE BG 				424242
+WE Line 			AAAAAA
+WE Fill 			FFFFFF
+WE Peak Fill 		ff0000
+WE Grid 			5C5C5C
+WE Selection 		ff0000
+WE Stretch Cue 		00ff00
+WE Split Bar 		800080
+WE Slice Bar 		FF0080
+WE Wakeup Peaks 	ff0080
+WE Sleep Peaks		8000ff
+EE Line 			383838
+EE Fill 			CCCCCC
+EE Dot				383838
+EE Sustain 			ff6040
+EE Dot Selected 	5C5C5C
+EE BG 				424242
+EE Grid				5C5C5C

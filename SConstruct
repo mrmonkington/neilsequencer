@@ -166,6 +166,7 @@ env.SConscript('etc/SConscript')
 env.SConscript('icons/SConscript')
 env.SConscript('pixmaps/SConscript')
 env.SConscript('presets/SConscript')
+env.SConscript('themes/SConscript')
 env.SConscript('src/SConscript')
 
 # libneil

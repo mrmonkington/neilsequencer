@@ -418,6 +418,15 @@ def write_string(f,s):
         write_int(f, len(s))
         f.write(s)
 
+def blend (color1, color2, weight = 0.5):
+    """
+        Blend (lerp) two gtk.gdk.Colors
+    """
+    return gtk.gdk.Color (
+        color1.red_float   * weight + color2.red_float   * (1 - weight),
+        color1.green_float * weight + color2.green_float * (1 - weight),
+        color1.blue_float  * weight + color2.blue_float  * (1 - weight))
+
 def from_hsb(h=0.0,s=1.0,b=1.0):
         """
         Converts hue/saturation/brightness into red/green/blue components.
@@ -582,7 +591,7 @@ def error(parent, msg, msg2=None, details=None):
                 sw = gtk.ScrolledWindow()
                 sw.set_shadow_type(gtk.SHADOW_ETCHED_IN)
                 sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-
+                
                 sw.add(label)
                 expander.add(sw)
                 dialog.show_all()
@@ -1349,3 +1358,16 @@ if __name__ == '__main__':
         synchronize_list(oldlist,newlist,insert_entry,del_entry,swap_entry)
         print oldlist, newlist
 
+
+class ImageToggleButton(gtk.ToggleButton):
+    """
+    GTK ToggleButton with Image 
+    """
+    def __init__(self, path, tooltip=None, width=20, height=20):
+        from gtk import ToggleButton, Image
+        self.image = gtk.Image()
+        self.image.set_from_pixbuf(gtk.gdk.pixbuf_new_from_file_at_size(path, width, height))
+        gtk.ToggleButton.__init__(self)
+        if tooltip:
+            self.set_tooltip_text(tooltip)
+        self.set_image(self.image)

@@ -815,14 +815,8 @@ class PatternView(gtk.DrawingArea):
         Callback that constructs and displays the popup menu
         """
         player = com.get('neil.core.player')
-        if self.selection.begin < self.selection.end:
-            sel_sensitive = True
-        else:
-            sel_sensitive = False
-        if get_clipboard_text().startswith(self.CLIPBOARD_MAGIC):
-            paste_sensitive = True
-        else:
-            paste_sensitive = False
+        sel_sensitive = (self.selection.begin < self.selection.end)
+        paste_sensitive = (get_clipboard_text().startswith(self.CLIPBOARD_MAGIC))
 
         menu = Menu()
         menu.add_item("Add track", self.on_popup_add_track)
@@ -2607,7 +2601,7 @@ class PatternView(gtk.DrawingArea):
         cfg = config.get_config()
         drawable = self.window
         background = cm.alloc_color(cfg.get_color('PE BG'))
-        pen = cm.alloc_color(cfg.get_color('PE Text'))
+        pen = cm.alloc_color(cfg.get_color('PE Row Numbers'))
         gc.set_foreground(background)
         drawable.draw_rectangle(gc, True, 0, 0, w, self.row_height)
         drawable.draw_rectangle(gc, True, 0, 0, PATLEFTMARGIN, h)
@@ -2628,7 +2622,7 @@ class PatternView(gtk.DrawingArea):
         # Draw a black horizontal separator line
         drawable.draw_line(gc, PATLEFTMARGIN, y, w, y)
         # The color of text as specified in config.py
-        text_color = cm.alloc_color(cfg.get_color('PE Text'))
+        text_color = cm.alloc_color(cfg.get_color('PE Track Numbers'))
         gc.set_foreground(text_color)
         # Display track numbers in the middle of each track column at the to
         # For each existing track:
@@ -2665,14 +2659,18 @@ class PatternView(gtk.DrawingArea):
             height = self.row_height
             gc.set_foreground(color)
             drawable.draw_rectangle(gc, True, x, y, width, height)
-        darkest = cm.alloc_color('#b0b0b0')
-        lighter = cm.alloc_color('#d0d0d0')
-        lightest = cm.alloc_color('#f0f0f0')
+#        darkest = cm.alloc_color('#b0b0b0')
+#        lighter = cm.alloc_color('#d0d0d0')
+#        lightest = cm.alloc_color('#f0f0f0')
+        cfg = config.get_config()
+        darkest = cm.alloc_color(cfg.get_color('PE BG Very Dark'))
+        lighter = cm.alloc_color(cfg.get_color('PE BG Light'))
+        lightest = cm.alloc_color(cfg.get_color('PE BG Very Light'))
         def get_color(row):
             "What color to paint the bar with?"
             if row % 16 == 0:
                 return darkest
-            if row % 8 == 0:
+            elif row % 8 == 0:
                 return lighter
             elif row % 4 == 0:
                 return lightest
@@ -2704,6 +2702,7 @@ class PatternView(gtk.DrawingArea):
         gc = self.window.new_gc()
         cm = gc.get_colormap()
         cfg = config.get_config()
+        pen = cm.alloc_color(cfg.get_color('PE Text'))
         drawable = self.window
         def draw_parameters_range(row, num_rows, group, track=0):
             """Draw the parameter values for a range of rows"""
@@ -2713,6 +2712,7 @@ class PatternView(gtk.DrawingArea):
             w = self.column_width * len(self.lines[group][track][row])
             layout.set_text(s)
             px, py = layout.get_pixel_size()
+            gc.set_foreground(pen)            
             drawable.draw_layout(gc, x, y, layout)
             return x + px
         # Draw the parameter values

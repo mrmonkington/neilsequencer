@@ -12,27 +12,72 @@ const char *zzub_get_signature() {
   return ZZUB_SIGNATURE; 
 }
 
+#include <vector>
+#include <algorithm>
+using namespace std;
+
 struct Data {
-  float amp[2][1024];
+  // float amp[2][N];
   int n;
-  void update(float** pin, int n) {
- 	for(int i=0; i<n; i++) {
-		amp[0][i] = pin[0][i];
-		amp[1][i] = pin[1][i];
-	}
-//	memcpy(amp[0], pin[0], sizeof(float)*n);
-//	memcpy(amp[1], pin[1], sizeof(float)*n);
-	this->n = n;	
+  unsigned int N;
+  vector<float> amp[2];
+  Data() : n(0), N(256) {}  
+  void update(float** pin, int i) {
+    if(amp[0].size()>=N) amp[0].erase(amp[0].begin(), amp[0].begin()+i);
+    if(amp[1].size()>=N) amp[1].erase(amp[1].begin(), amp[1].begin()+i);
+    // amp[0].resize(min(N,i));
+    // amp[1].resize(min(N,i));
+    // copy(pin[0], pin[0]+i, amp[0].begin());
+    // copy(pin[1], pin[1]+i, amp[1].begin());
+    // copy(pin[0], pin[0]+i, amp[0].begin());
+    for(int j=0; j<i; j++)    
+      amp[0].push_back(pin[0][j]);
+
+    for(int j=0; j<i; j++)    
+      amp[1].push_back(pin[1][j]);
+    
+    assert(amp[0].size() == amp[1].size());
+    n = (amp[0].size() + amp[1].size())/2;
+
+    // if(n<=N) {
+    //   memcpy(amp[0], pin[0], sizeof(float) * n);
+    //   memcpy(amp[1], pin[1], sizeof(float) * n);
+    // 	n = i;
+    // }
+    // else {
+    //   int r = n/N + 1;
+    //   for(int i=0; i<n/r; i+=r) {    
+    //     amp[0][i] = pin[0][i];
+    //     amp[1][i] = pin[1][i]; 
+    //   }
+    //   this->n = n/r;
+    // }
+  }
+  void clear() {
+    amp[0].clear();
+    amp[1].clear();
+    n = 0;
   }
 };
 
 class Oscilloscope : public zzub::plugin, public zzub::event_handler {
 private:
   GtkWidget *window;
-  GtkWidget *drawing_box;  
+  GtkWidget *drawing_box;
+  GdkPixmap *pixmap;
+  GtkWidget *rate_slider;
+  GtkWidget *buffer_slider;
+  GtkWidget *flip_checkbox;
+  GtkWidget *fill_checkbox;
+  guint32 timer;
+  bool drawing;
+  bool flip;
+  bool fill;
+  bool freeze;
   virtual bool invoke(zzub_event_data_t& data);
-  void redraw_box();
 public:
+  void redraw_box();
+  void draw();  
   Data data;
   Oscilloscope();
   virtual ~Oscilloscope() {}
@@ -45,7 +90,7 @@ public:
 			       int *samplerate) { return false; }
   virtual const char * describe_value(int param, int value); 
   virtual void process_controller_events() {}
-  virtual void destroy() {}
+  virtual void destroy();
   virtual void stop() {}
   virtual void load(zzub::archive *arc) {}
   virtual void save(zzub::archive*) {}
@@ -76,28 +121,24 @@ public:
   virtual void play_pattern(int index) {}
   virtual void configure(const char *key, const char *value) {}
   
-  static gboolean expose_handler(GtkWidget *widget, GdkEventExpose *event, gpointer data);  
-  
-  static gboolean callback(gpointer data) {
-        Oscilloscope *o = (Oscilloscope*)data;
-        o->redraw_box();
-        return TRUE;
-  }
+  static gboolean expose_handler(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);  
+  static gboolean resize_handler(GtkWidget *widget, GdkEventConfigure * event, gpointer user_data);  
+  static gboolean timer_handler(Oscilloscope *o);
+  static gboolean destroy_handler(GtkWidget *widget, GdkEvent *event, gpointer user_data);
+  static gboolean button_handler(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
+  static gboolean on_rate_slider_changed(GtkWidget *widget, gpointer user_data);
+  static gboolean on_buffer_slider_changed(GtkWidget *widget, gpointer user_data);
+  static gboolean on_flip_toggled(GtkWidget *widget, gpointer user_data);
+  static gboolean on_fill_toggled(GtkWidget *widget, gpointer user_data);
 };
 
 struct OscilloscopeInfo : zzub::info {
   OscilloscopeInfo() {
-    this->flags = 
-      zzub::plugin_flag_has_audio_input  | 
-      zzub::plugin_flag_has_event_output |
-      zzub::plugin_flag_has_custom_gui
-      ;
-    this->min_tracks = 1;
-    this->max_tracks = 1;
+    this->flags = zzub::plugin_flag_has_audio_input | zzub::plugin_flag_has_custom_gui;
     this->name = "Oscilloscope";
     this->short_name = "Oscilloscope";
     this->author = "gershon";
-    this->uri = "@libneil/gershon/gfx/Oscilloscope";
+    this->uri = "@libneil/gershon/gfx/Oscilloscope";    
   }
   virtual zzub::plugin* create_plugin() const { return new Oscilloscope(); }
   virtual bool store_info(zzub::archive *data) const { return false; }
