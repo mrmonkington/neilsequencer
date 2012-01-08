@@ -49,6 +49,12 @@ void Compressor::process_events() {
 
 bool Compressor::process_stereo(float **pin, float **pout, 
 				int numsamples, int mode) {
+  if (mode == zzub::process_mode_write || mode == zzub::process_mode_no_io) {
+    return false;
+  }
+  if (mode == zzub::process_mode_read) {
+    return true;
+  }
   //float const corrected_gain = (Vals[paramGain] * 0.015625000f + 1.0f);
   float *psamplesleft = pin[0];
   float *psamplesright = pin[1];
