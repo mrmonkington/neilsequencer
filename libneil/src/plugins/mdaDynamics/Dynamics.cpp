@@ -97,6 +97,12 @@ void Dynamics::process_events() {
 }
 
 bool Dynamics::process_stereo(float **pin, float **pout, int sampleFrames, int pmode) {
+  if (pmode == zzub::process_mode_write || pmode == zzub::process_mode_no_io) {
+    return false;
+  }
+  if (pmode == zzub::process_mode_read) {
+    return true;
+  }
   float *in1 = pin[0];
   float *in2 = pin[1];
   float *out1 = pout[0];
