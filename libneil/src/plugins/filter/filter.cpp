@@ -80,6 +80,12 @@ void Filter::process_events()
 
 bool Filter::process_stereo(float **pin, float **pout, int n, int mode) 
 {
+  if (mode == zzub::process_mode_write || mode == zzub::process_mode_no_io) {
+    return false;
+  }
+  if (mode == zzub::process_mode_read) {
+    return true;
+  }
   lag_cutoff.process(svf_cutoff, n);
   for (int i = 0; i < n; i++) {
     rms_buffer[rms_cursor] = (pin[0][i] + pin[1][i]) * 0.5;
