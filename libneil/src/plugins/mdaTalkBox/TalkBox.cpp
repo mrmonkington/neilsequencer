@@ -113,9 +113,6 @@ bool TalkBox::process_stereo(float **pin, float **pout, int sampleFrames, int mo
   if (mode == zzub::process_mode_write || mode == zzub::process_mode_no_io) {
     return false;
   }
-  if (mode == zzub::process_mode_read) {
-    return true;
-  }
   float *in1 = pin[0];
   float *in2 = pin[1];
   if (swap) {
