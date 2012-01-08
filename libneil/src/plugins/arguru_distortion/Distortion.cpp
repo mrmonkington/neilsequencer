@@ -72,8 +72,11 @@ inline void Distortion::Saturate(float * psamplesleft, float const threshold,
 
 bool Distortion::process_stereo(float **pin, float **pout, 
 				int numsamples, int mode) {
-  if (mode != zzub::process_mode_read_write) {
+  if (mode == zzub::process_mode_write || mode == zzub::process_mode_no_io) {
     return false;
+  }
+  if (mode == zzub::process_mode_read) {
+    return true;
   }
   float *psamplesleft = pin[0];
   float *psamplesright = pin[1];
