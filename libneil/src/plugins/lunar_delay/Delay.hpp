@@ -77,9 +77,11 @@ private:
     return pow(10.0f, db / 20.0f);
   }
   float squash(float x);
+  bool rb_empty(ringbuffer_t *rb);
   void rb_init(ringbuffer_t *rb);
   void rb_setup(ringbuffer_t *rb, int size);
   void rb_mix(ringbuffer_t *rb, Svf *filter, float **out, int n);
+  float peak(float *buffer, int n);
   void update_buffer();
 public:
   LunarDelay();
