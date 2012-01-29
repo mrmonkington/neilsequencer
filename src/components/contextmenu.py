@@ -313,6 +313,9 @@ class PluginContextMenu(gtk.Menu):
         if is_generator(mp):
             menu.add_check_item("_Solo", player.solo_plugin == mp,
                                 self.on_popup_solo, mp)
+	else:
+            menu.add_check_item("_Bypass", common.get_plugin_infos().get(mp).bypassed,
+                                self.on_popup_bypass, mp)
         menu.add_separator()
         menu.add_item("_Parameters...", self.on_popup_show_params, mp)
         menu.add_item("_Attributes...", self.on_popup_show_attribs, mp)
@@ -383,6 +386,16 @@ class PluginContextMenu(gtk.Menu):
         """
         player = com.get('neil.core.player')
         player.toggle_mute(mp)
+
+    def on_popup_bypass(self, widget, mp):
+        """
+        Event handler for the "Bypass" context menu option.
+
+        @param event: Menu event.
+        @type event: wx.MenuEvent
+        """
+        player = com.get('neil.core.player')
+        player.toggle_bypass(mp)
 
     def on_popup_delete(self, widget, mp):
         """

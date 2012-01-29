@@ -37,6 +37,7 @@ class PluginInfo(object):
 	def __init__(self, plugin):
 		self.plugin = plugin
 		self.muted = False
+		self.bypassed = False
 		self.cpu = -9999.0
 		self.pattern_position = (0, 0, 0, 0, 0)
 		self.selection = None

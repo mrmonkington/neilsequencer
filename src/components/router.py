@@ -990,7 +990,7 @@ class RouteView(gtk.DrawingArea):
                 pi.plugingfx = gtk.gdk.Pixmap(self.window, PLUGINWIDTH, 
                                               PLUGINHEIGHT, -1)
                 # adjust colour for muted plugins
-                if pi.muted:
+                if pi.muted or pi.bypassed:
                     gc.set_foreground(cm.alloc_color(brushes[self.COLOR_MUTED]))
                 else:
                     gc.set_foreground(cm.alloc_color(brushes[self.COLOR_DEFAULT]))
