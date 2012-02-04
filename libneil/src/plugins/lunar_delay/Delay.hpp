@@ -61,6 +61,7 @@ private:
     float *pos; // buffer position
     float *rpos; // reverse position
   };
+  bool last_empty;
   ringbuffer_t rb[2];
   float ldelay_ticks, rdelay_ticks;
   float ldelay;

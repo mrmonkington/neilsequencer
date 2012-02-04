@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cstdio>
+#include <iostream>
 
 #include "Delay.hpp"
 
@@ -144,6 +145,7 @@ LunarDelay::LunarDelay() {
   global_values = &gval;
   attributes = 0;
   track_values = 0;
+  last_empty = true;
 }
 
 void LunarDelay::init(zzub::archive *pi) {
@@ -215,25 +217,6 @@ void LunarDelay::process_events() {
 }
 
 bool LunarDelay::process_stereo(float **pin, float **pout, int n, int mode) {
-  if (mode == zzub::process_mode_no_io) {
-    return false;
-  }
-  if (mode == zzub::process_mode_read) {
-    return true;
-  }
-  if (mode == zzub::process_mode_write) {
-    if (rb_empty(&rb[0]) && rb_empty(&rb[1])) {
-      return false;
-    } else {
-      update_buffer();
-      for (int i = 0; i < n; i++) {
-	pout[0][i] = 0.0f;
-	pout[1][i] = 0.0f;
-      }
-      rb_mix(rb, filters, pout, n);
-      return true;
-    }
-  }
   update_buffer();
   for (int i = 0; i < n; i++) {
     pout[0][i] = pin[0][i];

@@ -49,11 +49,9 @@ void Compressor::process_events() {
 
 bool Compressor::process_stereo(float **pin, float **pout, 
 				int numsamples, int mode) {
-  if (mode == zzub::process_mode_write || mode == zzub::process_mode_no_io) {
+  if (mode != zzub::process_mode_read_write) {
+    currentGain = 1.0f;
     return false;
-  }
-  if (mode == zzub::process_mode_read) {
-    return true;
   }
   //float const corrected_gain = (Vals[paramGain] * 0.015625000f + 1.0f);
   float *psamplesleft = pin[0];
@@ -81,16 +79,14 @@ bool Compressor::process_stereo(float **pin, float **pout,
       double const analyzedValue = std::max(fabs(*pleft), fabs(*pright));
       if (analyzedValue <= correctedthreshold) {
 	targetGain = 1.0f;
-      }
-      else {
+      } else {
 	targetGain = ((analyzedValue - correctedthreshold) * 
 		      corrected_ratio + correctedthreshold) / analyzedValue;
       }
       double newgain = (targetGain - currentGain);
       if (targetGain < currentGain) {
 	newgain *= attackconst;
-      }
-      else {
+      } else {
 	newgain *= releaseconst;
       }
       currentGain += newgain;
