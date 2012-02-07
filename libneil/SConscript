@@ -78,6 +78,7 @@ opts.Add("DSSI", "Support DSSI plugins", False, None, bool_converter)
 opts.Add("JOBS", "Number of threads to compile with", '2') 
 opts.Add("PYZZUB", "Support pyzzub", True, None, bool_converter)
 opts.Add("GTK2", "Support GTK2 GUIs", False, None, bool_converter)
+opts.Add("MAD", "Support libmad encoder", False, None, bool_converter)
 
 env = Environment(ENV = os.environ, options = opts)
 
@@ -407,6 +408,16 @@ if (not is_cleaning()) and ('configure' in COMMAND_LINE_TARGETS):
         print "Error: no sound library development files seem to be installed."
         print "Libraries and headers for either ALSA, OSS, JACK or CoreAudio are required for building."
         Exit(1)
+    if not conf.CheckCHeader('FLAC/all.h'):
+        print "Error: no FLAC library development files found."
+        Exit(1)
+    if not conf.CheckCHeader('mad.h'):
+        env['MAD'] = False
+    else:
+        env['MAD'] = True
+    if not conf.HasExecutable('xmlto'):
+        print "Error: xmlto is not available on your system."
+        Exit(1)
 
     if conf.CheckCPUFlag('sse'):
 	env['SSE'] = True
@@ -422,7 +433,6 @@ if (not is_cleaning()) and ('configure' in COMMAND_LINE_TARGETS):
         env['GTK2'] = True
     else:
         env['GTK2'] = False
-    
 
     print "Finished configuration."
     print
@@ -431,6 +441,7 @@ if (not is_cleaning()) and ('configure' in COMMAND_LINE_TARGETS):
     print "ALSA:".rjust(30), yesno[env['ALSA'] == True]
     print "OSS:".rjust(30), yesno[env['OSS'] == True]
     print "GTK2:".rjust(30), yesno[env['GTK2'] == True]
+    print "MAD:".rjust(30), yesno[env['MAD'] == True]
     print "Use SSE CPU Extension:".rjust(30),yesno[env['SSE'] == True]
     print "Use SSE2 CPU Extension:".rjust(30),yesno[env['SSE2'] == True]
     print

@@ -20,7 +20,7 @@
 
 Import('pluginenv', 'build_plugin')
 
-if pluginenv['ZZUB_STREAM']:
+if pluginenv['ZZUB_STREAM'] and pluginenv['MAD']:
 	# make sure libmad.lib is in 
 	pluginenv.Append(LIBS = [ "libmad", "sndfile" ] );
 	pluginenv.Append(CPPPATH = [ "resampler" ] );
