@@ -288,6 +288,7 @@ class ParameterView(gtk.VBox):
 	    valuelabel.add_events(gtk.gdk.ALL_EVENTS_MASK)
 	    valuelabel.connect('button-press-event', self.on_context_menu, (g, t, i))
 	    slider.connect('scroll-event', self.on_mousewheel, (g, t, i))
+	    slider.connect('button-press-event', self.on_button_press, (g, t, i))
 	    slider.connect('change-value', self.on_scroll_changed, (g, t, i))
 	    slider.connect('key-press-event', self.on_key_down, (g, t, i))
 	    self.update_valuelabel(g, t, i)
@@ -771,6 +772,24 @@ class ParameterView(gtk.VBox):
 #			plugin = player.get_plugin_by_id(m.get_plugin())
 #			player.remove_midimapping(plugin, m.get_group(), m.get_track(), m.get_column())
 #			player.history_commit("remove MIDI mapping")	
+
+    def on_button_press(self, widget, event, (g,t,i)):
+	"""
+	Buttons press on slider
+	Used to reset value to default on double click
+	"""		
+	if event.type == gtk.gdk._2BUTTON_PRESS:
+		p = self.plugin.get_parameter(g,t,i)
+		v = p.get_value_default()
+		self.plugin.set_parameter_value(g,t,i,v,1)
+		v = self.plugin.get_parameter_value(g,t,i)
+		nl,s,vl = self.pid2ctrls[(g,t,i)]
+		s.set_value(v)
+		self.update_valuelabel(g,t,i)
+		player = com.get('neil.core.player')
+		player.history_commit("reset plugin parameter")
+		# s.emit_stop_by_name('button-press-event')
+
 
     def on_mousewheel(self, widget, event, (g,t,i)):
 	"""

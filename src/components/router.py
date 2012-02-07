@@ -447,9 +447,9 @@ class VolumeSlider(gtk.Window):
         gc.set_foreground(black)
         import pango
         layout = pango.Layout(self.get_pango_context())
-        font = pango.FontDescription("sans 8")
+        font = pango.FontDescription("sans 6")
         layout.set_font_description(font)
-        layout.set_markup("<small>%d%%</small>" % int((1.0 - self.amp) * 100))
+        layout.set_markup("<small>%.1f dB</small>" % (self.amp * -48.0))
         drawable.draw_layout(gc, 2, 2, layout)
 
     def display(self, (mx, my), mp, index):
@@ -783,6 +783,7 @@ class RouteView(gtk.DrawingArea):
         if not res:
             searchwindow = com.get('neil.core.searchplugins')
             searchwindow.show_all()
+            searchwindow.set_transient_for(com.get('neil.core.window.root'))            
             searchwindow.present()
             return
         mp, (x, y), area = res
