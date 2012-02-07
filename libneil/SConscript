@@ -77,6 +77,7 @@ opts.Add("LADSPA", "Support LADSPA plugins", False, None, bool_converter)
 opts.Add("DSSI", "Support DSSI plugins", False, None, bool_converter)
 opts.Add("JOBS", "Number of threads to compile with", '2') 
 opts.Add("PYZZUB", "Support pyzzub", True, None, bool_converter)
+opts.Add("GTK2", "Support GTK2 GUIs", False, None, bool_converter)
 
 env = Environment(ENV = os.environ, options = opts)
 
@@ -333,6 +334,18 @@ def check_cpu_flag(conf, flag):
     conf.Result('ERROR: not supported for this platform.')
     return False
 
+def check_pkg_config(context, version):
+    context.Message( 'Checking for pkg-config... ' )
+    ret = context.TryAction('pkg-config --atleast-pkgconfig-version=%s' % version)[0]
+    context.Result( ret )
+    return ret
+
+def check_pkg(context, name):
+    context.Message( 'Checking for %s... ' % name )
+    ret = context.TryAction('pkg-config --exists \'%s\'' % name)[0]
+    context.Result( ret )
+    return ret
+
 def is_cleaning():
     import SCons.Script.Main 
     try: return SCons.Script.Main.GetOption('clean')
@@ -348,6 +361,8 @@ if (not is_cleaning()) and ('configure' in COMMAND_LINE_TARGETS):
 		    'HasExecutable' : check_has_executable,
 		    'CommandIsVersion' : check_command_is_version,
 		    'CheckCPUFlag' : check_cpu_flag,
+                    'CheckPKGConfig' : check_pkg_config,
+                    'CheckPKG': check_pkg,
 	    }
     )
     if not conf.CheckCHeader('zlib.h'):
@@ -399,12 +414,23 @@ if (not is_cleaning()) and ('configure' in COMMAND_LINE_TARGETS):
 	env['SSE'] = False
 	env['SSE2'] = True
 
+    if not conf.CheckPKGConfig('0.15.0'):
+        print 'pkg-config >= 0.15.0 not found.'
+        Exit(1)
+
+    if conf.CheckPKG('gtk+-2.0'):
+        env['GTK2'] = True
+    else:
+        env['GTK2'] = False
+    
+
     print "Finished configuration."
     print
     print "=== Using ===".center(50)
-    print "JACK:".rjust(30),yesno[env['JACK'] == True]
-    print "ALSA:".rjust(30),yesno[env['ALSA'] == True]
-    print "OSS:".rjust(30),yesno[env['OSS'] == True]
+    print "JACK:".rjust(30), yesno[env['JACK'] == True]
+    print "ALSA:".rjust(30), yesno[env['ALSA'] == True]
+    print "OSS:".rjust(30), yesno[env['OSS'] == True]
+    print "GTK2:".rjust(30), yesno[env['GTK2'] == True]
     print "Use SSE CPU Extension:".rjust(30),yesno[env['SSE'] == True]
     print "Use SSE2 CPU Extension:".rjust(30),yesno[env['SSE2'] == True]
     print
