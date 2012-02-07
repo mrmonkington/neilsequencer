@@ -1,0 +1,9 @@
+Import('pluginenv', 'build_plugin')
+
+localenv = pluginenv.Clone()
+
+files = ["PeakController.cpp"]
+
+localenv.Append(CCFLAGS = '-g -pedantic -Wall')
+
+build_plugin(localenv, "gershon_peakcontroller", files)
