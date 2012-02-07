@@ -1693,10 +1693,10 @@ class SequencerView(gtk.DrawingArea):
                 player.solo_plugin != plugin and
                 is_generator(plugin)):
                 title = "[%s]" % title
-            elif self.plugin_info[plugin].muted:
+            elif self.plugin_info[plugin].muted or self.plugin_info[plugin].bypassed:
                 title = "(%s)" % title
             # Draw a box that states the name of the machine on that track.
-            if self.plugin_info[plugin].muted:
+            if self.plugin_info[plugin].muted or self.plugin_info[plugin].bypassed:
                 if (is_effect(plugin)):
                     ctx.set_foreground(colors['Effect Bg Mute'])
                 elif (is_generator(plugin)):

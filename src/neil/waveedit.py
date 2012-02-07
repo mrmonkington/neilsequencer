@@ -129,8 +129,8 @@ class WaveEditView(gtk.DrawingArea):
 	self.stretching = False
 	gtk.DrawingArea.__init__(self)
 	self.add_events(gtk.gdk.ALL_EVENTS_MASK)
-	self.connect('button-press-event', self.on_left_down)
-	self.connect('button-release-event', self.on_left_up)
+	self.connect('button-press-event', self.on_button_down)
+	self.connect('button-release-event', self.on_button_up)
 	self.connect('motion-notify-event', self.on_motion)
 	self.connect('enter-notify-event', self.on_enter)
 	self.connect('leave-notify-event', self.on_leave)
@@ -279,46 +279,35 @@ class WaveEditView(gtk.DrawingArea):
 	"""
 	self.redraw()
 
-    def on_left_down(self, widget, event):
+    def on_button_down(self, widget, event):
 	"""
 	Callback that responds to left mouse down over the wave view.
 	"""
 	mx, my = int(event.x), int(event.y)
 	if (event.button == 1):
 	    s, a = self.client_to_sample(mx,my)
-	    if (event.state & gtk.gdk.SHIFT_MASK):
-		if self.selection:
-		    begin,end = self.selection
-		    self.stretching = True
-		    self.stretchbegin = max(min(s, end),begin)
-		    self.stretchend = self.stretchbegin
-		    self.grab_add()
-		    self.redraw()
-	    elif (event.type == gtk.gdk._2BUTTON_PRESS):
+            # If a user double-clicks - clear the selection.
+	    if (event.type == gtk.gdk._2BUTTON_PRESS):
 		self.selection = None
 		self.dragging = False
 		self.redraw()
 	    else:
-		self.dragging = True
-		if self.selection:
-		    begin,end = self.selection
-		    if abs(s - begin) < abs(s - end):
-			self.startpos = end
-		    else:
-			self.startpos = begin
+                if self.selection:
+                    begin, end = self.selection
+                    x1, y1 = self.sample_to_client(begin, 0)
+                    x2, y2 = self.sample_to_client(end, 0)
+                    if ((mx > x1 - 10) and (mx < x1 + 10)):
+                        self.dragging = True
+                        self.startpos = end
+                    elif ((mx > x2 - 10) and (mx < x2 + 10)):
+                        self.dragging = True
+                        self.startpos = begin
 		else:
 		    self.startpos = s
+                    self.dragging = True
 		self.grab_add()
 		self.redraw()
-	elif (event.button == 2):
-	    s, a = self.client_to_sample(mx,my,True)
-	    if (event.state & gtk.gdk.SHIFT_MASK):
-		self.offpeak = a
-	    else:
-		self.onpeak = a
-	    self.update_peaks()
-	    self.redraw()
-        elif (event.button == 3):
+        elif (event.button == 2):
 	    s, a = self.client_to_sample(mx, my)
             self.right_dragging = True
             self.right_drag_start = s
@@ -332,36 +321,22 @@ class WaveEditView(gtk.DrawingArea):
 	self.update_digest()
 	self.redraw()
 
-    def on_left_up(self, widget, event):
+    def on_button_up(self, widget, event):
 	"""
-	Callback that responds to left mouse up over the wave view.
+	Callback that responds to mouse button up over the wave view.
 	"""
-	if self.stretching == True:
-	    self.grab_remove()
-	    self.stretching = False
-	    begin, end = self.selection
-	    xo,xn = self.stretchbegin, self.stretchend # old pos, new pos
-	    if xo != xn:
-		print "begin=%i, end=%i, xo=%i, xn=%i" % (begin,end,xo,xn)
-		if end > xo:
-		    print "stretch 2nd part (from %i to %i (%i -> %i)" % (xo,end,end-xo,end-xn)
-		    self.level.stretch_range(xo,end,end - xn)
-		if begin < xo:					
-		    print "stretch 1st part (from %i to %i (%i -> %i)" % (begin,xo,xo - begin, xn - begin)
-		    self.level.stretch_range(begin,xo,xn - begin)
-		#~ self.level.stretch_range(self.range[0],self.range[1],(self.range[1] - self.range[0])*2)
-	    self.sample_changed()
-	elif self.dragging == True:
-	    self.dragging = False
-	    self.grab_remove()
-	    mx,my = int(event.x), int(event.y)
-	    s,a = self.client_to_sample(mx,my)
-	    if s < self.startpos:
-		self.set_selection(s, self.startpos)
-	    else:
-		self.set_selection(self.startpos, s)
-	    self.redraw()
-        elif event.button == 3:
+        if event.button == 1:
+            if self.dragging == True:
+                self.dragging = False
+                self.grab_remove()
+                mx, my = int(event.x), int(event.y)
+                s, a = self.client_to_sample(mx,my)
+                if s < self.startpos:
+                    self.set_selection(s, self.startpos)
+                else:
+                    self.set_selection(self.startpos, s)
+                self.redraw()
+        elif event.button == 2:
             self.right_dragging = False
 
     def on_motion(self, widget, event):
@@ -370,12 +345,19 @@ class WaveEditView(gtk.DrawingArea):
 	"""
 	mx, my = int(event.x), int(event.y)
 	s, a = self.client_to_sample(mx, my)
-	if self.stretching == True:
-	    if self.selection:
-		begin, end = self.selection
-		self.stretchend = max(min(s, end),begin)
-		self.redraw()
-	elif self.dragging == True:
+        # Change the cursor if the mouse pointer is near selection borders.
+        if self.selection:
+            begin, end = self.selection
+            x1, y1 = self.sample_to_client(begin, 0)
+            x2, y2 = self.sample_to_client(end, 0)
+            if (((mx > x1 - 10) and (mx < x1 + 10)) or
+                ((mx > x2 - 10) and (mx < x2 + 10))):
+                resizer = gtk.gdk.Cursor(gtk.gdk.SB_H_DOUBLE_ARROW)
+                self.window.set_cursor(resizer)
+            else:
+                arrow = gtk.gdk.Cursor(gtk.gdk.ARROW)
+                self.window.set_cursor(arrow)
+	if self.dragging == True:
 	    if s < self.startpos:
 		self.set_selection(s, self.startpos)
 	    else:

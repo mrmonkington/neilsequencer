@@ -1234,7 +1234,7 @@ namespace zzub {
 	bool has_signals = 
 	  buffer_has_signals(&m.work_buffer[0].front(), sample_count) || 
 	  buffer_has_signals(&m.work_buffer[1].front(), sample_count);
-	flags = (does_input_mixing || has_signals)? zzub::process_mode_read_write:zzub::process_mode_write;
+	flags = (does_input_mixing || has_signals) ? zzub::process_mode_read_write : zzub::process_mode_write;
       } else
 	flags = zzub::process_mode_write;
     }

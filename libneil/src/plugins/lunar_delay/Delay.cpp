@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cstdio>
+#include <iostream>
 
 #include "Delay.hpp"
 
@@ -43,6 +44,18 @@ float Svf::sample(float sample, int mode) {
   return out;    
 }
 
+float LunarDelay::peak(float *buffer, int n) {
+  float abs_peak;
+  float peak_value = fabs(buffer[0]);
+  for (int i = 1; i < n; i++) {
+    abs_peak = fabs(buffer[i]);
+    if (abs_peak > peak_value) {
+      peak_value = abs_peak;
+    }
+  }
+  return peak_value;
+}
+
 float LunarDelay::squash(float x) {
   if (x >= 1.0) {
     return 1.0;
@@ -51,6 +64,22 @@ float LunarDelay::squash(float x) {
   } else {
     return 1.5 * x - 0.5 * x * x * x;
   }
+}
+
+bool LunarDelay::rb_empty(ringbuffer_t *rb) {
+  /* 
+     Checks if a ringbuffer rb is empty.
+     Iterate through the buffer until the end is reached
+     if any one sample exceeds the threshold return false,
+     otherwise return true.
+  */
+  float *pointer = rb->buffer;
+  while (pointer++ != rb->eob) {
+    if (fabs(*pointer) > 0.0001f) {
+      return false;
+    }
+  }
+  return true;
 }
 
 void LunarDelay::rb_init(ringbuffer_t *rb) {
@@ -116,6 +145,7 @@ LunarDelay::LunarDelay() {
   global_values = &gval;
   attributes = 0;
   track_values = 0;
+  last_empty = true;
 }
 
 void LunarDelay::init(zzub::archive *pi) {
