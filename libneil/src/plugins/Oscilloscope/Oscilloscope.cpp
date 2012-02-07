@@ -1,12 +1,57 @@
 #include <cstdio>
+#include <cmath>
 
-#include "Oscilloscope.hpp"
+#include <zzub/signature.h>
+#include <zzub/plugin.h>
+#include <zzub/types.h>
+#include <zzub/zzub.h>
 
 #include <gtk/gtk.h>
+#include <gdk/gdkgl.h>
 
-#include <limits>
-#include <algorithm>
+#include "Data.hpp"
+#include "Oscilloscope.hpp"
+#include "Renderer.hpp"
 
+gboolean idle_handler(gpointer data) {
+  Oscilloscope* osc = (Oscilloscope*)data;
+
+  // gint64 t = g_get_monotonic_time();
+  // static gint64 t0 = g_get_monotonic_time();
+  // if(t-t0 < 33000) return TRUE;
+  // t0 = t;
+
+  if(osc->tick) return TRUE;
+
+  g_return_val_if_fail(osc->drawing_box, FALSE);
+
+  // if(osc->r->drawing) return TRUE;  
+  int drawing = g_atomic_int_get(&osc->r->drawing);
+  if(drawing) return TRUE;
+
+  // gdk_threads_enter();
+  gtk_widget_queue_draw(osc->drawing_box);
+  // gdk_threads_leave();
+  
+  // g_main_context_wakeup (NULL);
+  // osc->tick = true;
+
+
+  return TRUE;
+}
+
+int Oscilloscope::MSToSamples(double const ms)
+{
+  return (int)(_master_info->samples_per_second * ms * (1.0 / 1000.0));
+}
+
+zzub::plugincollection *zzub_get_plugincollection() {
+  return new Oscilloscope_PluginCollection();
+}
+
+const char *zzub_get_signature() { 
+  return ZZUB_SIGNATURE; 
+}
 
 Oscilloscope::Oscilloscope() {
   global_values = 0;
@@ -16,10 +61,8 @@ Oscilloscope::Oscilloscope() {
   window = 0;
   drawing_box = 0; 
   pixmap = 0;
-
-  drawing = false;
-  flip = false;
-  fill = false;
+  r = 0;
+  tick = false;
 }
 
 void Oscilloscope::init(zzub::archive *pi) {
@@ -28,18 +71,65 @@ void Oscilloscope::init(zzub::archive *pi) {
 
 void Oscilloscope::destroy() {
   g_source_remove(timer);
-  gtk_widget_destroy(rate_slider);
+  // gtk_idle_remove (idle);
+
+  if(r) 
+    r->stop();
+
+  // gdk_pixmap_unref(pixmap);
+  // gtk_widget_destroy(rate_slider);
   gtk_widget_destroy(buffer_slider);
   gtk_widget_destroy(flip_checkbox);
-  gdk_pixmap_unref(pixmap);
   gtk_widget_destroy(drawing_box);
   gtk_widget_destroy(window);
+
+  // _host->remove_event_handler(_host->get_metaplugin(), this);
 }
 
-bool Oscilloscope::process_stereo(float **pin, float **pout, int n, int mode) {	
-  if(!freeze)  
-    data.update(pin, n);
-  return false;
+void Oscilloscope::process_events() {
+}
+
+bool Oscilloscope::process_stereo(float **pin, float **pout, int n, int mode) {
+  assert(n <= Data::MAX_BUFFER);
+
+  // zzub_plugin_t* mp = _host->get_metaplugin();
+  // bool bypassed = zzub_plugin_get_bypass(mp) || (mp->sequencer_state == sequencer_event_type_thru);
+  // bool muted = zzub_plugin_get_mute(mp) || (mp->sequencer_state == sequencer_event_type_mute);  
+  // bool bypassed = mp->is_bypassed || (mp->sequencer_state == sequencer_event_type_thru);
+  // bool muted = mp->is_muted || (mp->sequencer_state == sequencer_event_type_mute);
+  // if(bypassed || muted) return false;
+
+  // ZZUB_PLUGIN_LOCK
+    
+  // if (mode == zzub::process_mode_write || mode == zzub::process_mode_no_io)
+  //     return false;
+  // if (mode == zzub::process_mode_read)
+  //     return true;
+
+  // if(_host->get_state_flags() & zzub_player_state_muted) return false;
+
+  if(freeze) return true;
+
+  // if (!zzub::buffer_has_signals(pin[0], n) &&
+  //     !zzub::buffer_has_signals(pin[1], n)) {
+  //     return false;
+  // }  
+ 
+  if(!GTK_IS_WIDGET(window) || !gtk_widget_get_visible(window)) return true;
+
+  // for(int i=0; i<n; i+=data.N/n) {
+  // printf("[before-read]: in:%d, readable:%d, writable:%d\n", n, data.left.readable(), data.left.writable());
+  // int w=0;
+  for(int i=0; i<n; i++) {
+    // data.push(pin[0][i], pin[1][i]);
+    // if(!data.push(pin[0][i], pin[1][i])) break;    
+    if(!data.push(pin[0][i], pin[1][i])) continue;
+    // w++;
+  }
+  // printf("[after-read]:  in:%d, readable:%d, writable:%d, written:%d\n", n, data.left.readable(), data.left.writable(), w);
+
+  return true;
+  // return false;
 }
 
 const char *Oscilloscope::describe_value(int param, int value) {
@@ -52,71 +142,104 @@ const char *Oscilloscope::describe_value(int param, int value) {
 }
 
 bool Oscilloscope::invoke(zzub_event_data_t& data) {
-    if (data.type == zzub::event_type_double_click) {
-      if(window==NULL) {
-        // g_thread_init (NULL);
+  if (data.type == zzub::event_type_double_click) {
 
-        GtkWidget *vbox = gtk_vbox_new(FALSE, 0);	
-        window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-        //TODO!: get parent
-        //gtk_window_set_transient_for(window, parent)
-        gtk_window_set_title(GTK_WINDOW(window), "Oscilloscope");
-        gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_MOUSE);
-        gtk_widget_set_app_paintable(window, TRUE);
+    XInitThreads();
+    
+    // if(g_thread_supported())
+    g_thread_init (NULL);
 
-        drawing_box = gtk_drawing_area_new();		
-        gtk_widget_set_events(drawing_box, GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK  | GDK_BUTTON_RELEASE_MASK);
-        gtk_signal_connect(GTK_OBJECT(drawing_box), "expose_event", GTK_SIGNAL_FUNC(&expose_handler), gpointer(this));		
-        gtk_signal_connect(GTK_OBJECT(drawing_box), "configure_event", GTK_SIGNAL_FUNC(&resize_handler), gpointer(this));
-        gtk_signal_connect(GTK_OBJECT(drawing_box), "button_press_event", GTK_SIGNAL_FUNC(&button_handler), gpointer(this));
-        gtk_signal_connect(GTK_OBJECT(drawing_box), "button_release_event", GTK_SIGNAL_FUNC(&button_handler), gpointer(this));
+    gdk_threads_init();
 
-        // gtk_signal_connect(GTK_OBJECT(window), "destroy", GTK_SIGNAL_FUNC(&destroy_handler), gpointer(this));
-        gtk_signal_connect(GTK_OBJECT(window), "delete_event", GTK_SIGNAL_FUNC(&destroy_handler), NULL);
+    // gdk_gl_init(NULL, NULL);
 
-        gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(drawing_box), TRUE, TRUE, 0);	    					       
-        gtk_container_add(GTK_CONTAINER(window), vbox);    		
+    if(window==NULL) {    
+      GtkWidget *vbox = gtk_vbox_new(FALSE, 0);	
+      window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+      gtk_widget_set_app_paintable(window, TRUE);
 
-        gtk_widget_set_size_request(drawing_box, 256, 256);
-    	
-        rate_slider = gtk_hscale_new_with_range(10, 250, 1);    
-        gtk_range_set_value(GTK_RANGE(rate_slider), 33);
-        gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(rate_slider), FALSE, FALSE, 0);
-        gtk_signal_connect(GTK_OBJECT(rate_slider), "value-changed", GTK_SIGNAL_FUNC(&on_rate_slider_changed), (gpointer)(this));
 
-        buffer_slider = gtk_hscale_new_with_range(256, 4096, 256);    
-        gtk_range_set_value(GTK_RANGE(buffer_slider), 256);
-        gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(buffer_slider), FALSE, FALSE, 0);
-        gtk_signal_connect(GTK_OBJECT(buffer_slider), "value-changed", GTK_SIGNAL_FUNC(&on_buffer_slider_changed), (gpointer)(this));
+      //TODO!: get parent
+      //gtk_window_set_transient_for(window, parent)
 
-        flip_checkbox = gtk_check_button_new_with_label("Show Flipped");
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(flip_checkbox), flip);
-        gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(flip_checkbox), FALSE, FALSE, 0);
-        gtk_signal_connect(GTK_OBJECT(flip_checkbox), "toggled", GTK_SIGNAL_FUNC(&on_flip_toggled), gpointer(this));
+      gtk_window_set_title(GTK_WINDOW(window), "Oscilloscope");
+      gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_MOUSE);
+      // gtk_window_set_skip_taskbar_hint(GTK_WINDOW(window), TRUE);
+      // gtk_window_set_skip_pager_hint(GTK_WINDOW(window), TRUE);
 
-        fill_checkbox = gtk_check_button_new_with_label("Fill");
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(fill_checkbox), fill);
-        gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(fill_checkbox), FALSE, FALSE, 0);
-        gtk_signal_connect(GTK_OBJECT(fill_checkbox), "toggled", GTK_SIGNAL_FUNC(&on_fill_toggled), gpointer(this));
+      drawing_box = gtk_drawing_area_new();		
+      gtk_widget_set_events(drawing_box, GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
+      // gtk_widget_set_events(drawing_box, GDK_EXPOSURE_MASK);
+      gtk_signal_connect(GTK_OBJECT(drawing_box), "expose_event", GTK_SIGNAL_FUNC(&expose_handler), gpointer(this));		
+      gtk_signal_connect(GTK_OBJECT(drawing_box), "configure_event", GTK_SIGNAL_FUNC(&resize_handler), gpointer(this));
+      gtk_signal_connect(GTK_OBJECT(drawing_box), "button_press_event", GTK_SIGNAL_FUNC(&button_handler), gpointer(this));
+      gtk_signal_connect(GTK_OBJECT(drawing_box), "button_release_event", GTK_SIGNAL_FUNC(&button_handler), gpointer(this));
+      gtk_widget_set_double_buffered(drawing_box, FALSE);
+      gtk_widget_set_app_paintable (drawing_box, TRUE);
 
-        // gtk_widget_show(drawing_box);
-        // gtk_widget_show(vbox);   
-        // gtk_widget_show(window);
-        gtk_widget_show_all(window);
+      // gtk_signal_connect(GTK_OBJECT(window), "destroy", GTK_SIGNAL_FUNC(&destroy_handler), gpointer(this));
+      gtk_signal_connect(GTK_OBJECT(window), "delete_event", GTK_SIGNAL_FUNC(&destroy_handler), gpointer(this));
 
-        timer = g_timeout_add(33, (GSourceFunc)timer_handler, gpointer(this));
-        timer_handler(this);
+      gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(drawing_box), TRUE, TRUE, 0);	    					       
+      gtk_container_add(GTK_CONTAINER(window), vbox);    		
+
+      gtk_widget_set_size_request(drawing_box, 256, 256);
+  	
+      // rate_slider = gtk_hscale_new_with_range(2, 500, 10);    
+      // gtk_range_set_value(GTK_RANGE(rate_slider), 33);
+      // gtk_range_set_update_policy(GTK_RANGE(rate_slider), GTK_UPDATE_DISCONTINUOUS);
+      // gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(rate_slider), FALSE, FALSE, 0);
+      // gtk_signal_connect(GTK_OBJECT(rate_slider), "value-changed", GTK_SIGNAL_FUNC(&on_rate_slider_changed), gpointer(this));
+
+      buffer_slider = gtk_hscale_new_with_range(256, Data::MAX_BUFFER, 2);
+      // buffer_slider = gtk_hscale_new_with_range(256, Data::MAX_BUFFER, 256);
+      gtk_range_set_value(GTK_RANGE(buffer_slider), this->data.N);
+      // gtk_range_set_update_policy(GTK_RANGE(buffer_slider), GTK_UPDATE_DISCONTINUOUS);
+      gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(buffer_slider), FALSE, FALSE, 0);
+      gtk_signal_connect(GTK_OBJECT(buffer_slider), "value-changed", GTK_SIGNAL_FUNC(&on_buffer_slider_changed), gpointer(this));
+
+      flip_checkbox = gtk_check_button_new_with_label("Show Flipped");
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(flip_checkbox), false);
+      gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(flip_checkbox), FALSE, FALSE, 0);
+      gtk_signal_connect(GTK_OBJECT(flip_checkbox), "toggled", GTK_SIGNAL_FUNC(&on_flip_toggled), gpointer(this));
+
+      fill_checkbox = gtk_check_button_new_with_label("Fill");
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(fill_checkbox), false);
+      gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(fill_checkbox), FALSE, FALSE, 0);
+      gtk_signal_connect(GTK_OBJECT(fill_checkbox), "toggled", GTK_SIGNAL_FUNC(&on_fill_toggled), gpointer(this));
+
+            
+      // gtk_widget_show(drawing_box);
+      // gtk_widget_show(vbox);   
+      // gtk_widget_show(window);
+      gtk_widget_show_all(window);
+
+      r = new Renderer(this);      
     }
-    else
+    else {
       gtk_window_present((GtkWindow*)window);
+    }
+
+    timer = g_timeout_add(5.8, (GSourceFunc)timer_handler, gpointer(this));
+    timer_handler(this);
+
+    r->start();
+    
+    // gtk_idle_add(idle_handler, gpointer(this));
+
+    // idle = gtk_idle_add_priority(GTK_PRIORITY_LOW, idle_handler, gpointer(this));
+    // idle = gtk_idle_add_priority(G_PRIORITY_DEFAULT, idle_handler, gpointer(this));
+    // idle = gtk_idle_add_priority(G_PRIORITY_DEFAULT_IDLE, idle_handler, gpointer(this));
+    // g_idle_add(idle_handler, gpointer(this));
 
     return true;
+  }
+  else if (data.type == zzub::event_type_parameter_changed) {
   }
   return false;
 }
 
-gboolean Oscilloscope::button_handler (GtkWidget *widget, GdkEventButton *event, gpointer user_data)
-{
+gboolean Oscilloscope::button_handler (GtkWidget *widget, GdkEventButton *event, gpointer user_data) {
   Oscilloscope* osc = ((Oscilloscope*)user_data);
   if(event->button == 1) {
     osc->freeze = event->type == GDK_BUTTON_PRESS;
@@ -126,13 +249,13 @@ gboolean Oscilloscope::button_handler (GtkWidget *widget, GdkEventButton *event,
 
 gboolean Oscilloscope::on_flip_toggled(GtkWidget *widget, gpointer user_data) {
   Oscilloscope* osc = ((Oscilloscope*)user_data);
-  osc->flip = gtk_toggle_button_get_active((GtkToggleButton*)widget);
+  osc->r->flip = gtk_toggle_button_get_active((GtkToggleButton*)widget);
   return TRUE;
 }
 
 gboolean Oscilloscope::on_fill_toggled(GtkWidget *widget, gpointer user_data) {
   Oscilloscope* osc = ((Oscilloscope*)user_data);
-  osc->fill = gtk_toggle_button_get_active((GtkToggleButton*)widget);
+  osc->r->fill = gtk_toggle_button_get_active((GtkToggleButton*)widget);
   return TRUE;
 }
 
@@ -148,233 +271,148 @@ gboolean Oscilloscope::on_rate_slider_changed(GtkWidget *widget, gpointer user_d
 
 gboolean Oscilloscope::on_buffer_slider_changed(GtkWidget *widget, gpointer user_data) {
   Oscilloscope* osc = ((Oscilloscope*)user_data);
-  osc->data.N = (int)gtk_range_get_value((GtkRange*)widget);
+  GtkRange* w = (GtkRange*)widget;
+  GtkAdjustment* a = gtk_range_get_adjustment(w);
+  int v = (int)gtk_adjustment_get_value(a);
+  // int s = (int)gtk_adjustment_get_step_increment(a);
+  // v -= v % s;
+  gtk_range_set_value(w, v);
+  osc->data.N = v;
   return TRUE;  
 }
 
 gboolean Oscilloscope::destroy_handler(GtkWidget *widget, GdkEvent *event, gpointer user_data) {
-  // gtk_widget_destroy(o->drawing_box);
-  // gtk_widget_destroy(o->window);
-  // delete drawing_box;
-  // gtk_widget_destroyed(o->drawing_box, &(o->drawing_box));
-  // gtk_widget_destroyed(o->window, &(o->window));
-  // printf("Oscilloscope::destroy_handler\n");
+  Oscilloscope* osc = ((Oscilloscope*)user_data);  
+
+  if(osc->timer)
+    g_source_remove(osc->timer);
+      
+  osc->r->stop();
+
   gtk_widget_hide(widget);
+
   return TRUE;
 }
 
 gboolean Oscilloscope::resize_handler(GtkWidget* da, GdkEventConfigure* event, gpointer user_data) {
-  static int oldw = 0;
-  static int oldh = 0;
   Oscilloscope* osc = ((Oscilloscope*)user_data);
-  if (osc->pixmap==NULL) {
-    osc->pixmap = gdk_pixmap_new(GDK_DRAWABLE(osc->drawing_box->window), 256, 256, -1);
-  }
-  else
-  if (oldw != event->width || oldh != event->height){
-      //create our new pixmap with the correct size.
-      GdkPixmap *tmppixmap = gdk_pixmap_new(GDK_DRAWABLE(da->window), event->width,  event->height, -1);
-      //copy the contents of the old pixmap to the new pixmap.  This keeps ugly uninitialized
-      //pixmaps from being painted upon resize
-      int minw = oldw, minh = oldh;
-      if( event->width < minw ){ minw =  event->width; }
-      if( event->height < minh ){ minh =  event->height; }
-      gdk_draw_drawable(tmppixmap, da->style->fg_gc[GTK_WIDGET_STATE(da)], osc->pixmap, 0, 0, 0, 0, minw, minh);
-      //we're done with our old pixmap, so we can get rid of it and replace it with our properly-sized one.
-      g_object_unref(osc->pixmap); 
-      osc->pixmap = tmppixmap;
-  }
-  oldw = event->width;
-  oldh = event->height;
-
-  const int w = event->width, h = event->height;
-
-  //create a gtk-independant surface to draw on
-  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_RGB24, w, h);
-  cairo_t *cr = cairo_create(cst);    
-
-  cairo_t *cr_pixmap = gdk_cairo_create(GDK_PIXMAP(osc->pixmap));
-  cairo_rectangle(cr, 0, 0, w, h);
-  cairo_set_source_rgb(cr, 0, 0, 0);
-  cairo_fill(cr);  
-  cairo_destroy(cr_pixmap);
-
-  cairo_surface_destroy(cst); 
+  osc->pixmap = gdk_pixmap_new(GDK_DRAWABLE(osc->drawing_box->window), 
+                                2*event->width, event->height, -1); 
+  gdk_draw_rectangle(osc->pixmap, da->style->black_gc, true, 0, 0, 2*event->width, event->height);
 
   return TRUE;
-}
-
-void* do_draw(void* ptr) {
-  Oscilloscope* osc = (Oscilloscope*)ptr;
-  osc->draw();
-  return NULL;   
 }
 
 gboolean Oscilloscope::expose_handler(GtkWidget *widget, GdkEventExpose *event, gpointer user_data) {
   Oscilloscope* osc = (Oscilloscope*)user_data;
+  // assert(!osc->tick && !osc->r->drawing);
+  
+  gint64 t = g_get_monotonic_time();
+  static gint64 t0 = g_get_monotonic_time();
+  static gint64 frames = 0;  
 
-  if(!osc->drawing) {
-    GError* error = NULL;    
-    GThread* t = g_thread_create((GThreadFunc)do_draw, (void *)osc, TRUE, NULL);
-    if(!t){
-        g_print("Error: %s\n", error->message);
-        return FALSE;
-    }    
-    g_thread_join(t);
-  }
-  // static gboolean first_execution = TRUE;  
-  // if(!osc->drawing){
-  //     static pthread_t thread_info;
-  //     int  iret;
-  //     if(first_execution != TRUE){
-  //         pthread_join(thread_info, NULL);
-  //     }
-  //     iret = pthread_create(&thread_info, NULL, do_draw, osc);
-  // }
+  // if(osc->r->drawing)
+  if(!osc->tick)
+    osc->phase = 0;
 
-  // osc->draw();
+  printf("%f\n", osc->phase);
+
+  osc->flip_buffer();  
+
+  gdk_flush();
+
+
+  static gint64 last = 0;
+
+  frames++;
+
+  float dt = (t-last)/float(G_USEC_PER_SEC);
+  float fps = float(frames)/((t-t0)/float(G_USEC_PER_SEC));
+  float ws = float(osc->data.N) / osc->_master_info->samples_per_second;
+
+  char* txt = new char[512];
+  sprintf(txt, "DT:  %.2f", dt * 1000);
+  sprintf(txt, "%s\nFPS: %.2f", txt, fps);
+  // int windowSize = osc->_master_info->samples_per_second * 1.f/osc->MSToSamples((t-last)/1000.f);
+  // int windowSize = osc->MSToSamples((t-last)/1000.f);
+  sprintf(txt, "%s\nWS:  %.3f", txt, ws);
+  sprintf(txt, "%s\nRD:  %d", txt, osc->data.left.readable());
+  
+  // osc->phase += int(osc->data.left.readable() * float(t-last) / osc->drawing_box->allocation.width);
+  int w = osc->drawing_box->allocation.width;
+  float x = float(w) / ws * ((t-last)/float(G_USEC_PER_SEC));
+  // float x = float(w) * 1.f/30.f;
+  // if(!osc->freeze) 
+  // if(!osc->r->drawing)
+    osc->phase += x;
+  // osc->phase %= w;
+  osc->phase = fmod(osc->phase, w);
+  // if(osc->phase >= w) osc->phase = 0;
+
+  PangoFontDescription * font;
+  PangoContext *context;
+  PangoLayout  *layout;
+  GdkColormap *colormap = gtk_widget_get_colormap(GTK_WIDGET(widget));
+  GdkColor color;
+  gdk_colormap_alloc_color(colormap, &color, TRUE, TRUE);
+  gdk_color_parse("red", &color);
+  GdkGC *gc = gdk_gc_new(widget->window);
+  gdk_gc_set_rgb_fg_color(gc, &color);
+
+  font =  pango_font_description_from_string ("Mono,Medium 8");
+  context = gtk_widget_create_pango_context (osc->drawing_box);
+  layout  = pango_layout_new (context);
+  g_object_unref (context);
+  pango_layout_set_font_description (layout, font);
+  pango_layout_set_text (layout, txt, -1);
+  gdk_draw_layout (osc->drawing_box->window, gc, 4, 4, layout);
+  
+  pango_font_description_free (font);
+  g_object_unref (layout);
+  gdk_gc_destroy(gc);
+
+  last = t;
+  delete[] txt;
+
+  // gdk_flush();
+  // XFlush(GDK_DISPLAY_XDISPLAY(gdk_display_get_default()));
+  // XSync(GDK_DISPLAY_XDISPLAY(gdk_display_get_default()), true);
+
+  osc->tick = true;
 
   return FALSE;
 }
 
-void Oscilloscope::draw() {
-  const int w = drawing_box->allocation.width;
-  const int h = drawing_box->allocation.height;
-  const int n = data.n;
 
-  drawing = true;
-
-  cairo_t *cr = gdk_cairo_create(GDK_PIXMAP(pixmap));
-
-  if(data.n) {  
-  cairo_rectangle(cr, 0, 0, w, h);
-  cairo_set_source_rgba(cr, 0, 0, 0, .5);
-  cairo_fill(cr);
-  // cairo_set_source_rgb(cr, 0, 0, 0);
-  // cairo_paint (cr);
-  }
-
-  cairo_set_line_width (cr, 1);    
-  cairo_set_source_rgb(cr, 1, 1, 1);
-
-  // Draw Left Channel (Up)
-  cairo_save(cr);
-  cairo_translate(cr,0, h*.25f);
-  cairo_scale(cr, (float)w/(float)n, (float)h*.25f);
-
-  cairo_move_to(cr, 0, 0);
-  cairo_line_to(cr, 0, data.amp[0][0]);
-  for (int i=0; i<=n; i++) {
-    cairo_line_to(cr, i, data.amp[0][i]);
-    cairo_line_to(cr, i+1, data.amp[0][i]);      
-    cairo_line_to(cr, i+1, data.amp[0][i+1]);  
-  }
-  cairo_line_to(cr, n, 0);
-  // cairo_close_path(cr);
-  cairo_path_t* path = cairo_copy_path(cr);
-  cairo_restore(cr);
-  cairo_stroke_preserve(cr);
-  if(fill)
-    cairo_fill(cr);
-
-  if(flip) {
-    cairo_save(cr);       
-    cairo_translate(cr, 0, h*.25f);
-    cairo_scale(cr, (float)w/(float)n, -(float)h*.25f);
-    cairo_new_path(cr);
-    cairo_append_path (cr, path);
-    cairo_restore(cr);    
-    cairo_stroke_preserve(cr);
-    if(fill)
-      cairo_fill(cr);    
-  }
-  cairo_path_destroy(path);  
-
-  // Draw Right Channel (Bottom)
-  cairo_save(cr);
-  cairo_translate(cr, 0, h*.75f);
-  cairo_scale(cr, (float)w/(float)n, (float)h*.25f);
-  cairo_move_to(cr, 0, 0);
-  cairo_line_to(cr, 0, data.amp[1][0]);  
-  for (int i=0; i<=n; i++) {
-    cairo_line_to(cr, i, data.amp[1][i]);
-    cairo_line_to(cr, i+1, data.amp[1][i]);      
-    cairo_line_to(cr, i+1, data.amp[1][i+1]);    
-  }
-  cairo_line_to(cr, n, 0);  
-  // cairo_close_path(cr);
-  path = cairo_copy_path(cr);
-  cairo_restore(cr);
-  cairo_stroke_preserve(cr);
-  if(fill)
-    cairo_fill(cr);
-
-  if(flip) {
-    cairo_save(cr);       
-    cairo_translate(cr, 0, h*.75f);
-    cairo_scale(cr, (float)w/(float)n, -(float)h*.25f);
-    cairo_new_path(cr);
-    cairo_append_path (cr, path);
-    cairo_restore(cr);    
-    cairo_stroke_preserve(cr);
-    if(fill)
-      cairo_fill(cr);
-  }
-
-  cairo_path_destroy(path);  
-
-  cairo_destroy(cr);
-  
-  cr = gdk_cairo_create(GDK_DRAWABLE(drawing_box->window));
-
-  gdk_cairo_set_source_pixmap(cr, pixmap, 0, 0);
-  cairo_rectangle(cr, 0, 0, w, h);
-  cairo_fill (cr);
-
-  static const double dashed[] = {4.0, 2.0};
-  static int len  = sizeof(dashed) / sizeof(dashed[0]); 
-  cairo_set_dash(cr, dashed, len, 0);
-  cairo_set_line_width (cr, 1);
-  cairo_set_operator (cr, CAIRO_OPERATOR_ADD);
-
-  cairo_translate(cr, -.5f, -.5f);
-  cairo_set_source_rgb(cr, .2, .2, .2); 
-  for(int i=1; i<w; i+=w>>3) {
-    cairo_move_to(cr, i, 0);
-    cairo_line_to(cr, i, h);
-    cairo_stroke(cr);       
-  }
-  for(int i=1; i<h; i+=h>>3) {
-    cairo_move_to(cr, 0, i);
-    cairo_line_to(cr, w, i);
-    cairo_stroke(cr);
-  }
-        
-  cairo_destroy(cr);
-  
-  // data.n = 0;
-  data.clear();
-  drawing = false;  
-}
-
-void Oscilloscope::redraw_box() {
-  if (window && drawing_box) {
-    gtk_widget_queue_draw_area(GTK_WIDGET(drawing_box), 0, 0, 
-			       drawing_box->allocation.width,
-			       drawing_box->allocation.height);
-  }
-}
-
-void Oscilloscope::process_events() {
-}
-
+// Timer callback - not executed on gui thread
 gboolean Oscilloscope::timer_handler(Oscilloscope* osc) {
-  if(osc->window == NULL) return FALSE;
-  // osc->draw();
-  // if(!osc->drawing) {
-    // GThread* t = g_thread_create((GThreadFunc)do_draw, (void *)osc, TRUE, NULL);
-    // g_thread_join(t);
-  // } 
-  osc->redraw_box();
+  // if(osc->tick) return TRUE;  
+
+  // int drawing = g_atomic_int_get(&osc->r->drawing);
+  // if(drawing) return TRUE;
+
+  g_return_val_if_fail(osc->drawing_box, FALSE);
+  gdk_threads_enter();
+  gtk_widget_queue_draw(osc->drawing_box);
+  gdk_threads_leave();
+
+  // osc->tick = true;
+
   return TRUE;
+}
+
+void Oscilloscope::flip_buffer() {
+  // cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(drawing_box->window));  
+  // gdk_cairo_set_source_pixmap(cr, pixmap, 0, 0);
+  // cairo_rectangle(cr, 0, 0, drawing_box->allocation.width, drawing_box->allocation.height);
+  // cairo_fill(cr);  
+  // cairo_destroy(cr);
+  
+  // if(r->drawing) return;
+
+  gdk_draw_drawable(drawing_box->window,
+        drawing_box->style->black_gc,
+        pixmap, phase, 0, 0, 0, -1, -1);
+
+  // printf("%f\n", phase);
 }

@@ -634,6 +634,12 @@ class NeilPlayer(Player, PropertyEventHandler):
         if not self.solo_plugin or plugin == self.solo_plugin or is_effect(plugin):
             plugin.set_mute(pi.muted)
         pi.reset_plugingfx()
+        
+    def toggle_bypass(self, plugin):
+        pi = common.get_plugin_infos().get(plugin)
+        pi.bypassed = not pi.bypassed
+        plugin.set_bypass(pi.bypassed)
+        pi.reset_plugingfx()
 
     def create_plugin(self, pluginloader, connection=None, plugin=None):
         # find an unique name for the new plugin

@@ -1,97 +1,45 @@
 #ifndef OSCILLOSCOPE_HPP
 #define OSCILLOSCOPE_HPP
 
-#include <zzub/signature.h>
 #include <zzub/plugin.h>
 #include <stdint.h>
 
 #include <gtk/gtk.h>
-#include "../fft/kiss_fft.h"
 
-const char *zzub_get_signature() { 
-  return ZZUB_SIGNATURE; 
-}
-
-#include <vector>
-#include <algorithm>
-using namespace std;
-
-struct Data {
-  // float amp[2][N];
-  int n;
-  unsigned int N;
-  vector<float> amp[2];
-  Data() : n(0), N(256) {}  
-  void update(float** pin, int i) {
-    if(amp[0].size()>=N) amp[0].erase(amp[0].begin(), amp[0].begin()+i);
-    if(amp[1].size()>=N) amp[1].erase(amp[1].begin(), amp[1].begin()+i);
-    // amp[0].resize(min(N,i));
-    // amp[1].resize(min(N,i));
-    // copy(pin[0], pin[0]+i, amp[0].begin());
-    // copy(pin[1], pin[1]+i, amp[1].begin());
-    // copy(pin[0], pin[0]+i, amp[0].begin());
-    for(int j=0; j<i; j++)    
-      amp[0].push_back(pin[0][j]);
-
-    for(int j=0; j<i; j++)    
-      amp[1].push_back(pin[1][j]);
-    
-    assert(amp[0].size() == amp[1].size());
-    n = (amp[0].size() + amp[1].size())/2;
-
-    // if(n<=N) {
-    //   memcpy(amp[0], pin[0], sizeof(float) * n);
-    //   memcpy(amp[1], pin[1], sizeof(float) * n);
-    // 	n = i;
-    // }
-    // else {
-    //   int r = n/N + 1;
-    //   for(int i=0; i<n/r; i+=r) {    
-    //     amp[0][i] = pin[0][i];
-    //     amp[1][i] = pin[1][i]; 
-    //   }
-    //   this->n = n/r;
-    // }
-  }
-  void clear() {
-    amp[0].clear();
-    amp[1].clear();
-    n = 0;
-  }
-};
+class Data;
+class Renderer;
 
 class Oscilloscope : public zzub::plugin, public zzub::event_handler {
 private:
-  GtkWidget *window;
-  GtkWidget *drawing_box;
-  GdkPixmap *pixmap;
-  GtkWidget *rate_slider;
+  // GtkWidget *rate_slider;
   GtkWidget *buffer_slider;
   GtkWidget *flip_checkbox;
   GtkWidget *fill_checkbox;
   guint32 timer;
-  bool drawing;
-  bool flip;
-  bool fill;
+  guint idle;
   bool freeze;
-  virtual bool invoke(zzub_event_data_t& data);
+  void draw();
+  void flip_buffer();  
 public:
-  void redraw_box();
-  void draw();  
+  float phase;
+  volatile int tick;
   Data data;
+  Renderer* r;
+  GdkPixmap *pixmap;
+  GtkWidget *window;
+  GtkWidget *drawing_box;
+  virtual bool invoke(zzub_event_data_t& data);
+
   Oscilloscope();
   virtual ~Oscilloscope() {}
   virtual void init(zzub::archive* pi);
   virtual void process_events();
-  virtual bool process_stereo(float **pin, float **pout, 
-			      int numsamples, int mode);
-  virtual bool process_offline(float **pin, float **pout, 
-			       int *numsamples, int *channels, 
-			       int *samplerate) { return false; }
+  virtual bool process_stereo(float **pin, float **pout, int numsamples, int mode);
+  virtual bool process_offline(float **pin, float **pout, int *numsamples, int *channels, int *samplerate) { return false; }
   virtual const char * describe_value(int param, int value); 
   virtual void process_controller_events() {}
   virtual void destroy();
-  virtual void stop() {}
+  virtual void stop() {}  
   virtual void load(zzub::archive *arc) {}
   virtual void save(zzub::archive*) {}
   virtual void attributes_changed() {}
@@ -121,6 +69,7 @@ public:
   virtual void play_pattern(int index) {}
   virtual void configure(const char *key, const char *value) {}
   
+  int MSToSamples(double const ms);
   static gboolean expose_handler(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);  
   static gboolean resize_handler(GtkWidget *widget, GdkEventConfigure * event, gpointer user_data);  
   static gboolean timer_handler(Oscilloscope *o);
@@ -132,13 +81,18 @@ public:
   static gboolean on_fill_toggled(GtkWidget *widget, gpointer user_data);
 };
 
-struct OscilloscopeInfo : zzub::info {
+static struct OscilloscopeInfo : zzub::info {
   OscilloscopeInfo() {
-    this->flags = zzub::plugin_flag_has_audio_input | zzub::plugin_flag_has_custom_gui;
+    // this->flags = zzub::plugin_flag_has_audio_input | zzub::plugin_flag_has_audio_output | zzub::plugin_flag_has_custom_gui;
+    this->flags = zzub_plugin_flag_has_audio_input | 
+                  zzub_plugin_flag_has_custom_gui |
+                  zzub_plugin_flag_no_output |
+                  zzub_plugin_flag_no_undo | 
+                  zzub_plugin_flag_no_save ;  
     this->name = "Oscilloscope";
     this->short_name = "Oscilloscope";
     this->author = "gershon";
-    this->uri = "@libneil/gershon/gfx/Oscilloscope";    
+    this->uri = "@libneil/gershon/gfx/Oscilloscope";  
   }
   virtual zzub::plugin* create_plugin() const { return new Oscilloscope(); }
   virtual bool store_info(zzub::archive *data) const { return false; }
@@ -162,8 +116,6 @@ struct Oscilloscope_PluginCollection : zzub::plugincollection {
   }
 };
 
-zzub::plugincollection *zzub_get_plugincollection() {
-  return new Oscilloscope_PluginCollection();
-}
 
-#endif // GERSHON_Oscilloscope_HPP
+
+#endif

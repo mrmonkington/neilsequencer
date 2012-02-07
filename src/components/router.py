@@ -515,8 +515,8 @@ class RouteView(gtk.DrawingArea):
     COLOR_LED_BORDER = 4
     COLOR_LED_WARNING = 7
     COLOR_CPU_OFF = 2
-    COLOR_CPU_ON = 7
-    COLOR_CPU_BORDER = 8
+    COLOR_CPU_ON = 3
+    COLOR_CPU_BORDER = 4
     COLOR_CPU_WARNING = 9
     COLOR_BORDER_IN = 10
     COLOR_BORDER_OUT = 12
@@ -533,7 +533,7 @@ class RouteView(gtk.DrawingArea):
         gtk.DrawingArea.__init__(self)
         self.panel = parent
         self.routebitmap = None
-        self.peaks = {}
+        # self.peaks = {}
         eventbus = com.get('neil.core.eventbus')
         eventbus.zzub_connect += self.on_zzub_redraw_event
         eventbus.zzub_disconnect += self.on_zzub_redraw_event
@@ -788,7 +788,7 @@ class RouteView(gtk.DrawingArea):
         mp, (x, y), area = res
         if area == AREA_ANY:
             data = zzub.zzub_event_data_t()
-            data.type = zzub.zzub_event_type_double_click;
+            data.type = zzub.zzub_event_type_double_click
             mp.invoke_event(data, 1)
             if not (mp.get_flags() & zzub.zzub_plugin_flag_has_custom_gui):
                 com.get('neil.core.parameterdialog.manager').show(mp, self)
@@ -1016,7 +1016,7 @@ class RouteView(gtk.DrawingArea):
                 if (player.solo_plugin and player.solo_plugin != mp 
                     and is_generator(mp)):
                     title = prepstr('[' + mp.get_name() + ']')
-                elif pi.muted:
+                elif pi.muted or pi.bypassed:
                     title = prepstr('(' + mp.get_name() + ')')                            
                 else:
                     title = prepstr(mp.get_name())
@@ -1028,13 +1028,15 @@ class RouteView(gtk.DrawingArea):
                                                 PLUGINWIDTH / 2 - lw / 2 - 3, 
                                                 PLUGINHEIGHT / 2 - lh / 2, 
                                                 lw + 6, lh)
+                gc.set_foreground(cm.alloc_color(blend(cm.alloc_color(brushes[self.COLOR_MUTED if pi.muted else self.COLOR_DEFAULT]), gtk.gdk.Color("#fff"), 0.7)))
+                pi.plugingfx.draw_layout(gc, PLUGINWIDTH / 2 - lw / 2 + 1, PLUGINHEIGHT / 2 - lh / 2 + 1, layout)
+
                 gc.set_foreground(cm.alloc_color(brushes[self.COLOR_TEXT]))
-                pi.plugingfx.draw_layout(gc, PLUGINWIDTH / 2 - lw / 2, 
-                                         PLUGINHEIGHT / 2 - lh / 2, layout)
+                pi.plugingfx.draw_layout(gc, PLUGINWIDTH / 2 - lw / 2, PLUGINHEIGHT / 2 - lh / 2, layout)
             if config.get_config().get_led_draw() == True:
                 # led border
                 color = brushes[self.COLOR_MUTED if pi.muted else self.COLOR_DEFAULT]
-                border = blend(cm.alloc_color(color), gtk.gdk.Color("#000"), 0.5)               
+                border = blend(cm.alloc_color(color), gtk.gdk.Color("#000"), 0.5)
                 gc.set_foreground(cm.alloc_color(border))
                 pi.plugingfx.draw_rectangle(gc, False, LEDOFSX, LEDOFSY, LEDWIDTH - 1, LEDHEIGHT - 1)
                 
@@ -1042,11 +1044,11 @@ class RouteView(gtk.DrawingArea):
                 amp = min(max(maxl,maxr),1.0)
                 if amp != pi.amp:                           
                     if amp >= 1:
-                        from collections import deque
-                        if not mp.get_name() in self.peaks:
-                            self.peaks[mp.get_name()] = deque(maxlen=25)
-                        dq = self.peaks[mp.get_name()]
-                        dq.append(LEDHEIGHT - 4)
+                        # from collections import deque
+                        # if not mp.get_name() in self.peaks:
+                            # self.peaks[mp.get_name()] = deque(maxlen=25)
+                        # dq = self.peaks[mp.get_name()]
+                        # dq.append(LEDHEIGHT - 4)
                                                     
                         gc.set_foreground(cm.alloc_color(brushes[self.COLOR_LED_WARNING]))
                         pi.plugingfx.draw_rectangle(gc, True, LEDOFSX + 1, 
@@ -1066,17 +1068,17 @@ class RouteView(gtk.DrawingArea):
                                                         (LEDOFSY + LEDHEIGHT - 
                                                          height - 1), 
                                                         LEDWIDTH - 2, height)
-                            # peak falloff
-                            from collections import deque
-                            if not mp.get_name() in self.peaks:
-                                self.peaks[mp.get_name()] = deque(maxlen=25)
-                            dq = self.peaks[mp.get_name()]
-                            dq.append(height)
+                            # # peak falloff
+                            # from collections import deque
+                            # if not mp.get_name() in self.peaks:
+                            #     self.peaks[mp.get_name()] = deque(maxlen=25)
+                            # dq = self.peaks[mp.get_name()]
+                            # dq.append(height)
                                               
-                            peak_color = cm.alloc_color(blend(cm.alloc_color(brushes[self.COLOR_LED_ON]), gtk.gdk.Color("#fff"), 0.15))              
-                            h = LEDOFSY + LEDHEIGHT - 1 - max(height, sum(dq)/len(dq))
-                            gc.set_foreground(peak_color)
-                            pi.plugingfx.draw_line(gc, LEDOFSX + 1, h, LEDOFSX + LEDWIDTH - 2, h)
+                            # peak_color = cm.alloc_color(blend(cm.alloc_color(brushes[self.COLOR_LED_ON]), gtk.gdk.Color("#fff"), 0.15))              
+                            # h = LEDOFSY + LEDHEIGHT - 1 - max(height, sum(dq)/len(dq))
+                            # gc.set_foreground(peak_color)
+                            # pi.plugingfx.draw_line(gc, LEDOFSX + 1, h, LEDOFSX + LEDWIDTH - 2, h)
                             
                     pi.amp = amp
                 relperc = (min(1.0, mp.get_last_cpu_load() / max_cpu_scale) * 
@@ -1092,7 +1094,7 @@ class RouteView(gtk.DrawingArea):
                     color = brushes[self.COLOR_MUTED if pi.muted else self.COLOR_DEFAULT]                    
                     border = blend(cm.alloc_color(color), gtk.gdk.Color("#000"), 0.5)               
                     gc.set_foreground(cm.alloc_color(border))
-                    pi.plugingfx.draw_rectangle(gc, False, CPUOFSX, CPUOFSY, CPUWIDTH, CPUHEIGHT)
+                    pi.plugingfx.draw_rectangle(gc, False, CPUOFSX, CPUOFSY, CPUWIDTH - 1, CPUHEIGHT - 1)
                     
                     height = int((CPUHEIGHT - 4) * relperc + 0.5)
                     if (height > 0):

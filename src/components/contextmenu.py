@@ -210,7 +210,10 @@ class PluginContextMenu(gtk.Menu):
                    '@zzub.org/recorder/wavetable' :
                        ['Utility'],
                    '@libneil/gershon/gfx/Oscilloscope' :
-                       ['Graphical']}
+                       ['Graphical'],
+                   '@libneil/gershon/gfx/Spectrum' :
+                       ['Graphical']
+                  }
 
     def populate_contextmenu(self, menu):
         if menu.context_id == 'plugin':
@@ -313,6 +316,10 @@ class PluginContextMenu(gtk.Menu):
         if is_generator(mp):
             menu.add_check_item("_Solo", player.solo_plugin == mp,
                                 self.on_popup_solo, mp)
+
+        menu.add_check_item("_Bypass", mp.get_bypass(),
+                                self.on_popup_bypass, mp)
+        menu.add_separator()                                
         menu.add_separator()
         menu.add_item("_Parameters...", self.on_popup_show_params, mp)
         menu.add_item("_Attributes...", self.on_popup_show_attribs, mp)
@@ -373,6 +380,17 @@ class PluginContextMenu(gtk.Menu):
             player.solo(mp)
         else:
             player.solo(None)
+
+    def on_popup_bypass(self, widget, mp):
+        """
+        Event handler for the "Bypass" context menu option.
+
+        @param event: Menu event.
+        @type event: wx.MenuEvent
+        """
+        player = com.get('neil.core.player')
+        player.toggle_bypass(mp)
+
 
     def on_popup_mute(self, widget, mp):
         """
