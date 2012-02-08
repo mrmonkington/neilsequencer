@@ -232,13 +232,6 @@ class WaveEditView(gtk.DrawingArea):
 	self.set_range(s - diffl, s + diffr)
 	self.redraw()
 
-    def apply_slices(self):
-	self.level.clear_slices()
-	for i, x in enumerate(self.peaks):
-	    res = self.level.add_slice(x)
-	    assert res == 0
-	self.redraw()
-
     def store_range(self):
 	w = self.wave
 	origpath = w.get_path().replace('/',os.sep).replace('\\',os.sep)
@@ -366,7 +359,6 @@ class WaveEditView(gtk.DrawingArea):
         self.sample_changed()
 
     def sample_changed(self):
-	self.update_peaks()
 	self.view_changed()
 
     def view_changed(self):
@@ -437,61 +429,6 @@ class WaveEditView(gtk.DrawingArea):
 		self.range = [0,self.level.get_sample_count()]
 		self.sample_changed()
 	self.redraw()
-
-    def update_peaks(self):
-	samplerate = int(self.level.get_samples_per_second())
-	blocksize = min(self.level.get_sample_count(), 44)
-	peaksize = self.level.get_sample_count() / blocksize
-	minbuf, maxbuf, ampbuf = self.level.get_samples_digest(0, 0, self.level.get_sample_count(), peaksize)
-	self.peaks = []
-	minpeak = 1.0
-	maxpeak = 0.0
-	mind = 1.0 # min delta
-	maxd = -1.0 # max delta
-	os = 0.0
-	power = 0
-	for s in ampbuf:
-	    s = 1.0 + linear2db(s, -80.0) / 80.0
-	    power += s
-	    d = s - os
-	    os = s
-	    mind = min(mind, d)
-	    maxd = max(maxd, d)
-	    minpeak = min(minpeak, s)
-	    maxpeak = max(maxpeak, s)
-	power = power / len(ampbuf)
-	t = 0.2
-	td = 0.01
-	li = 0
-	op = 0.0
-	falloff = 1.0 / ((0.075 * 44100.0) / blocksize) # go to 0 peak after 75ms
-	minb = (44100.0 / 20.0) / blocksize # dont divide below wavelengths of 20hz
-	p = 0.0
-	sleeping = True
-	center = (power - minpeak) / (maxpeak - minpeak)
-	peaktop = (self.onpeak - minpeak) / (maxpeak - minpeak)
-	peakbottom = (self.offpeak - minpeak) / (maxpeak - minpeak)
-	for i,s in enumerate(ampbuf):
-	    s = 1.0 + linear2db(s, -80.0) / 80.0
-	    # normalize peak sample
-	    s = (s - minpeak) / (maxpeak - minpeak)
-	    p = s#max(p - falloff, s)
-	    if sleeping: # we are sleeping
-		if (p >= peaktop): # noise reaches threshold
-		    sleeping = False # wake up
-		    pos = max(i * blocksize - blocksize / 2, 0)
-		    minb, maxb, ampb = self.level.get_samples_digest(0, pos, pos+blocksize, blocksize)
-		    bestmin = 1.0 + linear2db(ampb[0], -80.0) / 80.0
-		    bestpos = 0
-		    for j, t in enumerate(ampb):
-			t = 1.0 + linear2db(t, -80.0) / 80.0
-			if t < bestmin:
-			    bestpos = j
-			    bestmin = t
-		    self.peaks.append(pos + bestpos)
-	    else: # we are awake
-		if (p <= peakbottom): # noise goes below threshold
-		    sleeping = True # sleep
 
     def set_sensitive(self, enable):
 	gtk.DrawingArea.set_sensitive(self, enable)
