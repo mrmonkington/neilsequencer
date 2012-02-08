@@ -3,9 +3,10 @@
 
 #include <zzub/signature.h>
 #include <zzub/plugin.h>
-#include <stdint.h>
 
+#include <stdint.h>
 #include <cstdio>
+#include <cstring>
 
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
@@ -18,6 +19,7 @@
 #include <limits>
 #include <algorithm>
 #include <numeric>
+#include <functional>
 #include <cmath>
 
 #include <fftw3.h>
@@ -51,6 +53,14 @@ struct Data {
   }
 };
 
+struct GraphPoint
+{
+  int x;
+  int y;
+  int freq;
+  int db;  
+};
+
 class Spectrum : public zzub::plugin, public zzub::event_handler {
 private:
   GtkWidget *window;
@@ -58,6 +68,7 @@ private:
   GtkWidget *size_slider;
   GtkWidget *window_slider;
   GtkWidget *floor_slider;
+  GtkWidget *falloff_slider;
   GdkVisual *visual;
   GdkPixmap *pixmap;
   GdkPixmap *bgpm;
@@ -65,19 +76,23 @@ private:
   GdkGLContext *context;  
   guint32 timer;
   fftw_type* spec;
+  fftw_type* peaks;
   int fftsize;
   int winf;
+  int falloff;
   double dbrange;
   bool drawing;
   bool gridDirty;
+  GraphPoint mouse;
   virtual bool invoke(zzub_event_data_t& data);
   void calcSpectrum();
   void drawGrid(cairo_t* cr, int n, int w, int h);
   void drawSpectrum(cairo_t* cr, int n, int w, int h);
   void drawSpectrumGL(int n, int w, int h);
+  void applyFalloff();
 public:
   // Data data;
-  static const int MAX_BUFFER = 16384;
+  static const int MAX_BUFFER = 4096;
   Ring<float, MAX_BUFFER> data;
   Spectrum();
   virtual ~Spectrum() {}
@@ -124,15 +139,17 @@ public:
   static gboolean expose_handler(GtkWidget *widget, GdkEventExpose *event, gpointer data);  
   static gboolean resize_handler(GtkWidget *widget, GdkEventConfigure * event, gpointer user_data);  
   static gboolean destroy_handler(GtkWidget *widget, GdkEvent *event, gpointer user_data);
+  static gboolean motion_handler(GtkWidget *widget, GdkEvent  *event, gpointer user_data);
   static gboolean on_size_slider_changed(GtkWidget *widget, gpointer user_data);
   static gboolean on_window_slider_changed(GtkWidget *widget, gpointer user_data);
   static gboolean on_floor_slider_changed(GtkWidget *widget, gpointer user_data);
+  static gboolean on_falloff_slider_changed(GtkWidget *widget, gpointer user_data);
   static gboolean timer_handler(Spectrum* r);
 };
 
 struct SpectrumInfo : zzub::info {
   SpectrumInfo() {
-    this->flags = zzub::plugin_flag_has_audio_input | zzub::plugin_flag_has_custom_gui;
+    this->flags = zzub::plugin_flag_has_audio_input | zzub::plugin_flag_has_audio_output | zzub::plugin_flag_has_custom_gui;
     this->name = "Spectrum Analyzer";
     this->short_name = "Spectrum";
     this->author = "gershon";
