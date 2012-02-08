@@ -53,20 +53,6 @@ class WaveEditPanel(gtk.VBox):
         self.viewport.add(self.view)
         self.pack_start(self.viewport)
 	self.set_border_width(MARGIN)
-	waveedbuttons = gtk.HBox(False, MARGIN)
-	self.btndelrange = gtk.Button("Delete")
-        self.btnlooprange = gtk.Button("Loop")
-        self.btnxfaderange = gtk.Button("XFade")
-        self.btnnormalize = gtk.Button("Normalize")
-	waveedbuttons.pack_start(self.btndelrange, expand=False)
-        waveedbuttons.pack_start(self.btnlooprange, expand=False)
-        waveedbuttons.pack_start(self.btnxfaderange, expand=False)
-        waveedbuttons.pack_start(self.btnnormalize, expand=False)
-	self.pack_end(waveedbuttons, expand=False)
-	self.btndelrange.connect('clicked', self.on_delete_range)
-        self.btnlooprange.connect('clicked', self.on_loop_range)
-        self.btnxfaderange.connect('clicked', self.on_xfade_range)
-        self.btnnormalize.connect('clicked', self.on_normalize)
 
     def update(self, *args):
 	self.view.update()
@@ -137,6 +123,32 @@ class WaveEditView(gtk.DrawingArea):
 	self.connect('scroll-event', self.on_mousewheel)
 	self.connect("expose_event", self.expose)
 
+        self.context_menu = gtk.Menu()
+        
+        self.menu_delete = gtk.MenuItem("Delete")
+        self.menu_delete.show()
+        self.menu_delete.connect('activate', self.on_delete_range)
+        self.context_menu.append(self.menu_delete)
+        
+        self.menu_loop = gtk.MenuItem("Loop")
+        self.menu_loop.show()
+        self.menu_loop.connect('activate', self.on_loop_range)
+        self.context_menu.append(self.menu_loop)
+
+        self.menu_xfade = gtk.MenuItem("XFade")
+        self.menu_xfade.show()
+        self.menu_xfade.connect('activate', self.on_xfade_range)
+        self.context_menu.append(self.menu_xfade)
+        
+        separator = gtk.SeparatorMenuItem()
+        separator.show()
+        self.context_menu.append(separator)
+
+        self.menu_normalize = gtk.MenuItem("Normalize")
+        self.menu_normalize.show()
+        self.menu_normalize.connect('activate', self.on_normalize)
+        self.context_menu.append(self.menu_normalize)
+       
 	self.loop_start = 0
 	self.loop_end = 150
 
@@ -311,6 +323,47 @@ class WaveEditView(gtk.DrawingArea):
 	    s, a = self.client_to_sample(mx, my)
             self.right_dragging = True
             self.right_drag_start = s
+        elif (event.button == 3):
+            # Menu items that need selection to function properly.
+            sensitives = [self.menu_delete, self.menu_loop, self.menu_xfade]
+            if not self.selection:
+                # If there is no selection disable those menu items,
+                for sensitive in sensitives:
+                    sensitive.set_sensitive(False)
+            else:
+                # otherwise enable them.
+                for sensitive in sensitives:
+                    sensitive.set_sensitive(True)
+            self.context_menu.popup(None, None, None, event.button, event.time)
+
+    def on_delete_range(self, widget):
+	self.delete_range()
+        self.sample_changed()
+
+    def on_loop_range(self, widget):
+	player = com.get('neil.core.player')
+        begin, end = self.selection
+        self.level.set_loop_start(begin)
+        self.level.set_loop_end(end)
+        player.history_commit("set loop range")
+        self.sample_changed()
+        
+    def on_xfade_range(self, widget):
+        player = com.get('neil.core.player')
+        if self.selection == None:
+            message(self, "Select a region of the wave first.")
+            return
+        begin, end = self.selection
+        if (end - begin) < begin:
+            self.level.xfade(begin, end)
+        else:
+            message(self, "Not enough data at the start of selection.")
+        self.sample_changed()
+
+    def on_normalize(self, widget):
+        player = com.get('neil.core.player')
+        self.level.normalize()
+        self.sample_changed()
 
     def sample_changed(self):
 	self.update_peaks()
@@ -559,11 +612,11 @@ class WaveEditView(gtk.DrawingArea):
             channels = 2
             
         for channel in range(channels):
-            self.update_digest(channel)
+            #self.update_digest(channel)
             minbuffer, maxbuffer, ampbuffer = \
                 self.minbuffer, self.maxbuffer, self.ampbuffer
             # Draw the waveform.
-            ctx.set_source_rgba(*(brush + (0.5,)))
+            ctx.set_source_rgb(0.7, 0.9, 0.7)
             hm = (h / (2 * channels)) * (1 + channel * 2)
             ctx.move_to(0, hm)
             for x in xrange(0, w):
