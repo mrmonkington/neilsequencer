@@ -445,8 +445,8 @@ class WaveEditView(gtk.DrawingArea):
         begin, end = self.range
         start = 1.0 - (sample_count - begin) / float(sample_count)
         finish = 1.0 - (sample_count - end) / float(sample_count)
-        ctx.rectangle(10 + (w - 20) * start, h - 20,
-                      (w - 20) * finish - (w - 20) * start, 10)
+        ctx.rectangle(11 + (w - 20) * start, h - 19,
+                      (w - 22) * finish - (w - 20) * start, 8)
         ctx.fill()
 
     def draw_loop_points(self, ctx):
