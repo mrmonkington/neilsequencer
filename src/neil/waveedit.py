@@ -400,8 +400,9 @@ class WaveEditView(gtk.DrawingArea):
                 resizer = gtk.gdk.Cursor(gtk.gdk.SB_H_DOUBLE_ARROW)
                 self.window.set_cursor(resizer)
             else:
-                arrow = gtk.gdk.Cursor(gtk.gdk.ARROW)
-                self.window.set_cursor(arrow)
+                if not self.dragging:
+                    arrow = gtk.gdk.Cursor(gtk.gdk.ARROW)
+                    self.window.set_cursor(arrow)
 	if self.dragging == True:
 	    if s < self.startpos:
 		self.set_selection(s, self.startpos)
