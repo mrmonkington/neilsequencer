@@ -555,7 +555,7 @@ class WaveEditView(gtk.DrawingArea):
                 self.minbuffer, self.maxbuffer, self.ampbuffer
             # Draw the waveform.
             ctx.set_source_rgb(0.7, 0.9, 0.7)
-            hm = (h / (2 * channels)) * (1 + channel * 2)
+            hm = (h / (2 * channels) - 1) * (1 + channel * 2)
             ctx.move_to(0, hm)
             for x in xrange(0, w):
                 ctx.line_to(x, hm - (h / channels) * maxbuffer[x] * 0.4)
@@ -564,7 +564,6 @@ class WaveEditView(gtk.DrawingArea):
             ctx.fill_preserve()
             ctx.set_source_rgb(*pen)
             ctx.stroke()
-
 	# Draw the selection rectangle.
  	if self.selection:
  	    begin, end = self.selection
