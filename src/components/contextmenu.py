@@ -31,11 +31,9 @@ from neil.com import com
 import zzub
 import os.path
 
-from neil.utils import is_generator, is_root, is_controller, is_effect, \
-        prepstr, Menu, new_theme_image, gettext
-from neil.utils import PLUGIN_FLAGS_MASK, ROOT_PLUGIN_FLAGS, \
-        GENERATOR_PLUGIN_FLAGS, EFFECT_PLUGIN_FLAGS, CONTROLLER_PLUGIN_FLAGS
+from neil.utils import is_generator, is_root, is_effect, prepstr, Menu, gettext
 from neil.utils import iconpath, show_machine_manual, filenameify
+
 
 class ContextMenu(Menu):
     __neil__ = dict(
@@ -72,146 +70,149 @@ class ContextMenu(Menu):
         self.rootwindow = parent
         return Menu.popup(self, parent, event)
 
+
 class PluginContextMenu(gtk.Menu):
     __neil__ = dict(id='neil.core.popupmenu',
                       singleton=True,
                       categories=['contextmenu.handler'])
 
-    plugin_tree = {'@krzysztof_foltman/generator/infector;1' :
+    plugin_tree = {'@krzysztof_foltman/generator/infector;1':
                        ['Synthesizers', 'Subtractive'],
-                   'jamesmichaelmcdermott@gmail.com/generator/primifun;1' :
+                   'jamesmichaelmcdermott@gmail.com/generator/primifun;1':
                        ['Synthesizers', 'Subtractive'],
-                   '@cameron_foale/generator/green_milk;1' :
+                   '@cameron_foale/generator/green_milk;1':
                        ['Synthesizers', 'Subtractive'],
-                   '@makk.org/M4wII;1' :
+                   '@makk.org/M4wII;1':
                        ['Synthesizers', 'Subtractive'],
-                   '@libneil/oomek/generator/aggressor' :
+                   '@libneil/oomek/generator/aggressor':
                        ['Synthesizers', 'Subtractive'],
-                   '@libneil/mda/generator/jx10' :
+                   '@libneil/mda/generator/jx10':
                        ['Synthesizers', 'Subtractive'],
-                   'jamesmichaelmcdermott@gmail.com/generator/4fm2f;1' :
+                   'jamesmichaelmcdermott@gmail.com/generator/4fm2f;1':
                        ['Synthesizers', 'FM'],
-                   '@libneil/somono/generator/fm303;1' :
+                   '@libneil/somono/generator/fm303;1':
                        ['Synthesizers', 'FM'],
-                   '@libneil/mda/generator/dx10' :
+                   '@libneil/mda/generator/dx10':
                        ['Synthesizers', 'FM'],
-                   'jamesmichaelmcdermott@gmail.com/generator/pluckedstring;1' :
+                   'jamesmichaelmcdermott@gmail.com/generator/pluckedstring;1':
                        ['Synthesizers', 'Physical Modelling'],
-                   'jamesmichaelmcdermott@gmail.com/generator/dynamite6;1' :
+                   'jamesmichaelmcdermott@gmail.com/generator/dynamite6;1':
                        ['Synthesizers', 'Physical Modelling'],
-                   '@mda-vst/epiano;1' :
+                   '@mda-vst/epiano;1':
                        ['Synthesizers', 'Physical Modelling'],
-                   '@libneil/fsm/generator/kick_xp' :
+                   '@libneil/fsm/generator/kick_xp':
                        ['Synthesizers', 'Percussive'],
-                   '@libneil/somono/generator/cloud;1' :
+                   '@libneil/somono/generator/cloud;1':
                        ['Synthesizers', 'Granular'],
-                   'jamesmichaelmcdermott@gmail.com/generator/DTMF_1;1' :
+                   'jamesmichaelmcdermott@gmail.com/generator/DTMF_1;1':
                        ['Synthesizers', 'Other'],
-                   '@rift.dk/generator/Matilde+Tracker;1.5' :
+                   '@rift.dk/generator/Matilde+Tracker;1.5':
                        ['Samplers'],
-                   '@libneil/mrmonkington/effect/mcp_chorus' :
+                   '@libneil/mrmonkington/effect/mcp_chorus':
                        ['Effects', 'Time based'],
-                   '@trac.zeitherrschaft.org/aldrin/lunar/effect/delay;1' :
+                   '@trac.zeitherrschaft.org/aldrin/lunar/effect/delay;1':
                        ['Effects', 'Time based'],
-                   '@trac.zeitherrschaft.org/aldrin/lunar/effect/phaser;1' :
+                   '@trac.zeitherrschaft.org/aldrin/lunar/effect/phaser;1':
                        ['Effects', 'Time based'],
-                   '@trac.zeitherrschaft.org/aldrin/lunar/effect/reverb;1' :
+                   '@trac.zeitherrschaft.org/aldrin/lunar/effect/reverb;1':
                        ['Effects', 'Time based'],
-                   '@libneil/somono/effect/mverb' :
+                   '@libneil/somono/effect/mverb':
                        ['Effects', 'Time based'],
-                   '@libneil/somono/effect/mdaDubDelay' :
+                   '@libneil/somono/effect/mdaDubDelay':
                        ['Effects', 'Time based'],
-                   '@mda/effect/mdaThruZero;1' :
+                   '@mda/effect/mdaThruZero;1':
                        ['Effects', 'Time based'],
-                   '@libneil/somono/effect/chebyshev;1' :
+                   '@libneil/somono/effect/chebyshev;1':
                        ['Effects', 'Distortion'],
-                   '@libneil/arguru/effect/distortion' :
+                   '@libneil/arguru/effect/distortion':
                        ['Effects', 'Distortion'],
-                   'graue@oceanbase.org/effect/softsat;1' :
+                   'graue@oceanbase.org/effect/softsat;1':
                        ['Effects', 'Distortion'],
-                   '@mda/effect/mdaBandisto;1' :
+                   '@mda/effect/mdaBandisto;1':
                        ['Effects', 'Distortion'],
-                   '@neil/lunar/effect/bitcrusher;1' :
+                   '@neil/lunar/effect/bitcrusher;1':
                        ['Effects', 'Distortion'],
-                   '@bblunars/effect/mdaDegrade' :
+                   '@bblunars/effect/mdaDegrade':
                        ['Effects', 'Distortion'],
-                   '@libneil/edsca/effect/Migraine' :
+                   '@libneil/edsca/effect/Migraine':
                        ['Effects', 'Distortion'],
-                   '@bblunars/effect/mdaSubSynth' :
+                   '@bblunars/effect/mdaSubSynth':
                        ['Effects', 'Distortion'],
-                   '@libneil/mda/effect/combo' :
+                   '@libneil/mda/effect/combo':
                        ['Effects', 'Distortion'],
-                   '@libneil/mda/effect/leslie' :
+                   '@libneil/mda/effect/leslie':
                        ['Effects', 'Modulation'],
-                   '@bigyo/frequency+shifter;1' :
+                   '@bigyo/frequency+shifter;1':
                        ['Effects', 'Modulation'],
-                   'jamesmichaelmcdermott@gmail.com/effect/btdsys_ringmod;1' :
+                   'jamesmichaelmcdermott@gmail.com/effect/btdsys_ringmod;1':
                        ['Effects', 'Modulation'],
-                   'jamesmichaelmcdermott@gmail.com/effect/modulator;1' :
+                   'jamesmichaelmcdermott@gmail.com/effect/modulator;1':
                        ['Effects', 'Modulation'],
-                   '@libneil/mrmonkington/effect/mcp_chorus' :
+                   '@libneil/mrmonkington/effect/mcp_chorus':
                        ['Effects', 'Modulation'],
-                   '@libneil/arguru/effect/compressor' :
+                   '@libneil/arguru/effect/compressor':
                        ['Effects', 'Dynamics'],
-                   '@binarywerks.dk/multi-2;1' :
+                   '@binarywerks.dk/multi-2;1':
                        ['Effects', 'Dynamics'],
-                   '@libneil/mda/effect/transient' :
+                   '@libneil/mda/effect/transient':
                        ['Effects', 'Dynamics'],
-                   '@libneil/mda/effect/multiband' :
+                   '@libneil/mda/effect/multiband':
                        ['Effects', 'Dynamics'],
-                   '@libneil/mda/effect/dynamics' :
+                   '@libneil/mda/effect/dynamics':
                        ['Effects', 'Dynamics'],
-                   '@FireSledge.org/ParamEQ;1' :
+                   '@FireSledge.org/ParamEQ;1':
                        ['Effects', 'Filter'],
-                   '@trac.zeitherrschaft.org/aldrin/lunar/effect/philthy;1' :
+                   '@trac.zeitherrschaft.org/aldrin/lunar/effect/philthy;1':
                        ['Effects', 'Filter'],
-                   'jamesmichaelmcdermott@gmail.com/effect/dffilter;1' :
+                   'jamesmichaelmcdermott@gmail.com/effect/dffilter;1':
                        ['Effects', 'Filter'],
-                   '@libneil/somono/effect/filter' :
+                   '@libneil/somono/effect/filter':
                        ['Effects', 'Filter'],
-                   '@libneil/mda/effect/vocoder' :
+                   '@libneil/mda/effect/vocoder':
                        ['Effects', 'Filter'],
-                   '@libneil/mda/effect/talkbox' :
+                   '@libneil/mda/effect/talkbox':
                        ['Effects', 'Filter'],
-                   '@libneil/mda/effect/rezfilter' :
+                   '@libneil/mda/effect/rezfilter':
                        ['Effects', 'Filter'],
-                   'jamesmichaelmcdermott@gmail.com/effect/sprayman;1' :
+                   'jamesmichaelmcdermott@gmail.com/effect/sprayman;1':
                        ['Effects', 'Sampling'],
-                   '@libneil/somono/effect/stutter;1' :
+                   '@libneil/somono/effect/stutter;1':
                        ['Effects', 'Sampling'],
-                   '@libneil/mda/effect/repsycho' :
+                   '@libneil/mda/effect/repsycho':
                        ['Effects', 'Sampling'],
-                   '@libneil/mda/effect/tracker' :
+                   '@libneil/mda/effect/tracker':
                        ['Effects', 'Other'],
-                   '@libneil/mda/effect/beatbox' :
+                   '@libneil/mda/effect/beatbox':
                        ['Effects', 'Other'],
-                   '@libneil/mda/effect/envelope' :
+                   '@libneil/mda/effect/envelope':
                        ['Effects', 'Other'],
                    '@libneil/mda/effect/shepard':
                        ['Effects', 'Other'],
-                   '@libneil/mda/effect/detune' :
+                   '@libneil/mda/effect/detune':
                        ['Effects', 'Other'],
-                   '@libneil/mda/effect/vocinput' :
+                   '@libneil/mda/effect/vocinput':
                        ['Effects', 'Other'],
-                   '@libneil/mda/effect/stereo' :
+                   '@libneil/mda/effect/stereo':
                        ['Effects', 'Other'],
-                   '@libneil/somono/controller/lfnoise;1' :
+                   '@libneil/somono/controller/lfnoise;1':
                        ['Control'],
-                   '@neil/lunar/controller/Control;1' :
+                   '@neil/lunar/controller/Control;1':
                        ['Control'],
-                   '@trac.zeitherrschaft.org/aldrin/lunar/controller/LunarLFO;1' :
+                   '@trac.zeitherrschaft.org/aldrin/lunar/controller/LunarLFO;1':
                        ['Control'],
-                   '@zzub.org/input' :
+                   '@zzub.org/input':
                        ['Utility'],
-                   '@zzub.org/output' :
+                   '@zzub.org/output':
                        ['Utility'],
-                   '@zzub.org/recorder/file' :
+                   '@zzub.org/recorder/file':
                        ['Utility'],
-                   '@zzub.org/recorder/wavetable' :
+                   '@zzub.org/recorder/wavetable':
                        ['Utility'],
-                   '@libneil/gershon/gfx/Oscilloscope' :
+                   '@libneil/gershon/gfx/Oscilloscope':
                        ['Analyzers'],
-                   '@libneil/gershon/gfx/Spectrum' :
+                   '@libneil/gershon/gfx/Spectrum':
+                       ['Analyzers'],
+                   '@libneil/gershon/gfx/Spectogram':
                        ['Analyzers']
                   }
 
@@ -225,7 +226,7 @@ class PluginContextMenu(gtk.Menu):
 
     def create_add_machine_submenu(self, menu, connection=False):
         def get_icon_name(pluginloader):
-            uri = pluginloader.get_uri()
+            # uri = pluginloader.get_uri()
             #if uri.startswith('@zzub.org/dssidapter/'):
             #    return iconpath("scalable/dssi.svg")
             #if uri.startswith('@zzub.org/ladspadapter/'):
@@ -237,9 +238,10 @@ class PluginContextMenu(gtk.Menu):
             for c in '():[]/,.!"\'$%&\\=?*#~+-<>`@ ':
                 filename = filename.replace(c, '_')
             while '__' in filename:
-                filename = filename.replace('__','_')
+                filename = filename.replace('__', '_')
             filename = filename.strip('_')
             return "%s.svg" % iconpath("scalable/" + filename)
+
         def add_path(tree, path, loader):
             if len(path) == 1:
                 tree[path[0]] = loader
@@ -250,6 +252,7 @@ class PluginContextMenu(gtk.Menu):
             else:
                 tree[path[0]] = add_path(tree[path[0]], path[1:], loader)
                 return tree
+
         def populate_from_tree(menu, tree):
             for key, value in tree.iteritems():
                 if type(value) is not type({}):
@@ -264,6 +267,7 @@ class PluginContextMenu(gtk.Menu):
                 else:
                     item, submenu = menu.add_submenu(key)
                     populate_from_tree(submenu, value)
+
         def create_plugin(item, loader, connection=False):
             player = com.get('neil.core.player')
             if connection:
@@ -319,7 +323,7 @@ class PluginContextMenu(gtk.Menu):
 
         menu.add_check_item("_Bypass", mp.get_bypass(),
                                 self.on_popup_bypass, mp)
-        menu.add_separator()                                
+        menu.add_separator()
         menu.add_separator()
         menu.add_item("_Parameters...", self.on_popup_show_params, mp)
         menu.add_item("_Attributes...", self.on_popup_show_attribs, mp)
@@ -356,10 +360,10 @@ class PluginContextMenu(gtk.Menu):
 
     def on_machine_help(self, widget, mp):
         name = filenameify(mp.get_pluginloader().get_name())
-	if not show_machine_manual(name):
-	    info = gtk.MessageDialog(self.get_toplevel(), flags=0, type=gtk.MESSAGE_INFO, buttons=gtk.BUTTONS_OK, message_format="Sorry, there's no help for this plugin yet")
-	    info.run()
-	    info.destroy()
+        if not show_machine_manual(name):
+            info = gtk.MessageDialog(self.get_toplevel(), flags=0, type=gtk.MESSAGE_INFO, buttons=gtk.BUTTONS_OK, message_format="Sorry, there's no help for this plugin yet")
+            info.run()
+            info.destroy()
 
     def on_popup_rename(self, widget, mp):
         text = gettext(self, "Enter new plugin name:", prepstr(mp.get_name()))
@@ -391,7 +395,6 @@ class PluginContextMenu(gtk.Menu):
         player = com.get('neil.core.player')
         player.toggle_bypass(mp)
 
-
     def on_popup_mute(self, widget, mp):
         """
         Event handler for the "Mute" context menu option.
@@ -418,7 +421,7 @@ class PluginContextMenu(gtk.Menu):
         """
         plugin = mp.get_input_connection_plugin(index)
         conntype = mp.get_input_connection_type(index)
-        mp.delete_input(plugin,conntype)
+        mp.delete_input(plugin, conntype)
         player = com.get('neil.core.player')
         player.history_commit("disconnect")
 
@@ -429,10 +432,9 @@ class PluginContextMenu(gtk.Menu):
         @param event: Menu event.
         @type event: wx.MenuEvent
         """
-        dlg = com.get('neil.core.attributesdialog',mp,self)
+        dlg = com.get('neil.core.attributesdialog', mp, self)
         dlg.run()
         dlg.destroy()
-
 
     def on_popup_show_presets(self, widget, plugin):
         """
@@ -476,7 +478,7 @@ class PluginContextMenu(gtk.Menu):
         player = com.get('neil.core.player')
         for mp in reversed(list(player.get_plugin_list())):
             info = common.get_plugin_infos().get(mp)
-            info.muted=False
+            info.muted = False
             mp.set_mute(info.muted)
             info.reset_plugingfx()
 
@@ -484,14 +486,14 @@ class PluginContextMenu(gtk.Menu):
         """
         Event handler for plugin commands
         """
-        plugin.command((subindex<<8) | index)
+        plugin.command((subindex << 8) | index)
 
     def on_popup_set_target(self, widget, plugin):
         """
         Event handler for menu option to set machine as target for default connection
         """
         player = com.get('neil.core.player')
-        if player.autoconnect_target==plugin:
+        if player.autoconnect_target == plugin:
             player.autoconnect_target = None
         else:
             player.autoconnect_target = plugin
@@ -502,4 +504,3 @@ __neil__ = dict(
                 PluginContextMenu,
         ],
 )
-
