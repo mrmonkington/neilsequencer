@@ -1,0 +1,13 @@
+Import('pluginenv', 'build_plugin')
+
+localenv = pluginenv.Clone()
+
+localenv.Append(CCFLAGS = '-pthread -g -pedantic -Wall')
+
+localenv.Append(LIBS = ["fftw3", "fftw3f", "X11"])
+localenv.Append(CCFLAGS = ' `pkg-config --cflags fftw3 fftw3f x11 gl glu gtk+-2.0 glib-2.0 gthread-2.0 ` ')
+localenv.Append(LINKFLAGS = ' `pkg-config --libs fftw3 fftw3f x11 gl glu gtk+-2.0 glib-2.0 gthread-2.0 ` ')
+
+files = ["Spectogram.cpp"]
+
+build_plugin(localenv, "gershon_spectogram", files)
