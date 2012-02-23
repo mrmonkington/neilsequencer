@@ -20,7 +20,7 @@
 # Boston, MA  02110-1301, USA.
 
 """
-Provides dialogs and controls to render the plugin view/router and its 
+Provides dialogs and controls to render the plugin view/router and its
 associated components.
 """
 
@@ -32,41 +32,34 @@ if __name__ == '__main__':
 import neil.com as com
 import gtk
 import gobject
-import cairo
-import pangocairo
+
 from neil.utils import PLUGIN_FLAGS_MASK, ROOT_PLUGIN_FLAGS,\
      GENERATOR_PLUGIN_FLAGS, EFFECT_PLUGIN_FLAGS,\
      CONTROLLER_PLUGIN_FLAGS
-from neil.utils import is_effect,is_generator,is_controller,\
-     is_root
-from neil.utils import prepstr, filepath, db2linear, linear2db,\
-     is_debug, filenameify, get_item_count, question, error,\
-     new_listview, add_scrollbars, get_clipboard_text,\
-     set_clipboard_text, gettext, new_stock_image_button,\
-     new_liststore, add_vscrollbar
-from neil.utils import blend    
+from neil.utils import is_effect, is_generator, is_controller, is_root
+from neil.utils import prepstr, db2linear, linear2db, error, new_listview, add_scrollbars
+from neil.utils import blend
 import config
 import zzub
-import sys,os
-import fnmatch
-import ctypes
-import time
-import random
-import Queue
-import numpy as np
-from neil.preset import PresetCollection, Preset
+# import sys
+# import os
+# import fnmatch
+# import ctypes
+# import time
+# import random
+# from neil.preset import PresetCollection, Preset
 import neil.common as common
-from neil.common import MARGIN, MARGIN2, MARGIN3
+from neil.common import MARGIN
 from rack import ParameterView
 from neil.presetbrowser import PresetView
 from patterns import key_to_note
 
 PLUGINWIDTH = 100
 PLUGINHEIGHT = 25
-LEDWIDTH, LEDHEIGHT = 6, PLUGINHEIGHT - 8 # size of LED
-LEDOFSX, LEDOFSY = 4, 4 # offset of LED
-CPUWIDTH, CPUHEIGHT = 6, PLUGINHEIGHT - 8 # size of LED
-CPUOFSX, CPUOFSY = PLUGINWIDTH - CPUWIDTH - 4, 4 # offset of LED
+LEDWIDTH, LEDHEIGHT = 6, PLUGINHEIGHT - 8         # size of LED
+LEDOFSX, LEDOFSY = 4, 4                           # offset of LED
+CPUWIDTH, CPUHEIGHT = 6, PLUGINHEIGHT - 8         # size of LED
+CPUOFSX, CPUOFSY = PLUGINWIDTH - CPUWIDTH - 4, 4  # offset of LED
 
 ARROWRADIUS = 8
 
@@ -80,6 +73,7 @@ VOLKNOBHEIGHT = 16
 AREA_ANY = 0
 AREA_PANNING = 1
 AREA_LED = 2
+
 
 class AttributesDialog(gtk.Dialog):
     """
@@ -195,6 +189,7 @@ class AttributesDialog(gtk.Dialog):
             for i in range(len(self.attribs)):
                 self.plugin.set_attribute_value(i, self.attribs[i])
 
+
 class ParameterDialog(gtk.Dialog):
     """
     Displays parameter sliders for a plugin in a new Dialog.
@@ -232,6 +227,7 @@ class ParameterDialog(gtk.Dialog):
         """
         del self.manager.plugin_dialogs[self.plugin]
 
+
 class ParameterDialogManager:
     """
     Manages the different parameter dialogs.
@@ -253,10 +249,11 @@ class ParameterDialogManager:
         @param plugin: Plugin instance.
         @type plugin: Plugin
         """
-        dlg = self.plugin_dialogs.get(plugin,None)
+        dlg = self.plugin_dialogs.get(plugin, None)
         if not dlg:
             dlg = ParameterDialog(self, plugin, parent)
         dlg.show_all()
+
 
 class PresetDialogManager:
     """
@@ -268,6 +265,7 @@ class PresetDialogManager:
             categories = [
             ]
     )
+
     def __init__(self):
         self.preset_dialogs = {}
 
@@ -278,17 +276,19 @@ class PresetDialogManager:
         @param plugin: Plugin instance.
         @type plugin: Plugin
         """
-        dlg = self.preset_dialogs.get(plugin,None)
+        dlg = self.preset_dialogs.get(plugin, None)
         if not dlg:
             dlg = PresetDialog(self, plugin, parent)
         dlg.show_all()
+
 
 class PresetDialog(gtk.Dialog):
     """
     Displays parameter sliders for a plugin in a new Dialog.
     """
     def __init__(self, manager, plugin, parent):
-        gtk.Dialog.__init__(self, parent=parent.get_toplevel())
+        #gtk.Dialog.__init__(self, parent=parent.get_toplevel())
+        gtk.Dialog.__init__(self, parent=com.get('neil.core.window.root'))
         self.plugin = plugin
         self.manager = manager
         self.manager.preset_dialogs[plugin] = self
@@ -314,7 +314,7 @@ class PresetDialog(gtk.Dialog):
     def on_realize(self, widget):
         # This is the size specified in presetbrowser.py.
         # Seems to have no effect though -- PresetView is full-screen?
-        self.set_default_size(150, 400)
+        self.set_default_size(200, 400)
 
 
 DRAG_FORMAT_PLUGIN_URI = 0
@@ -322,6 +322,7 @@ DRAG_FORMAT_PLUGIN_URI = 0
 DRAG_FORMATS = [
         ('application/x-neil-plugin-uri', 0, DRAG_FORMAT_PLUGIN_URI)
 ]
+
 
 class RoutePanel(gtk.VBox):
     """
@@ -365,6 +366,7 @@ class RoutePanel(gtk.VBox):
     def update_all(self):
         self.view.update_colors()
         self.view.redraw()
+
 
 class VolumeSlider(gtk.Window):
     """
@@ -412,7 +414,7 @@ class VolumeSlider(gtk.Window):
         self.y = newpos
         self.amp = max(min(self.amp + (float(delta) / VOLBARHEIGHT), 1.0), 0.0)
         amp = min(max(int(db2linear(self.amp * -48.0, -48.0) * 16384.0), 0), 16384)
-        self.plugin.set_parameter_value_direct(0,self.index,0,amp,False)
+        self.plugin.set_parameter_value_direct(0, self.index, 0, amp, False)
         self.redraw()
         return True
 
@@ -485,6 +487,7 @@ class VolumeSlider(gtk.Window):
         self.hide_all()
         self.drawingarea.grab_remove()
 
+
 class RouteView(gtk.DrawingArea):
     """
     Allows to monitor and control plugins and their connections.
@@ -499,8 +502,8 @@ class RouteView(gtk.DrawingArea):
     current_plugin = None
     connecting = False
     dragging = False
-    dragoffset = 0,0
-    contextmenupos = 0,0
+    dragoffset = 0, 0
+    contextmenupos = 0, 0
 
     # 0 = default
     # 1 = muted
@@ -540,8 +543,8 @@ class RouteView(gtk.DrawingArea):
         eventbus.zzub_plugin_changed += self.on_zzub_plugin_changed
         eventbus.document_loaded += self.redraw
         eventbus.active_plugins_changed += self.on_active_plugins_changed
-        self.autoconnect_target=None
-        self.chordnotes=[]
+        self.autoconnect_target = None
+        self.chordnotes = []
         self.update_colors()
         self.volume_slider = VolumeSlider(self)
         self.add_events(gtk.gdk.ALL_EVENTS_MASK)
@@ -562,7 +565,7 @@ class RouteView(gtk.DrawingArea):
         self.connect('drag_leave', self.on_drag_leave)
 
     def on_active_plugins_changed(self, *args):
-        player = com.get('neil.core.player')
+       # player = com.get('neil.core.player')
         common.get_plugin_infos().reset_plugingfx()
 
     def get_plugin_info(self, plugin):
@@ -574,6 +577,19 @@ class RouteView(gtk.DrawingArea):
 
     def on_drag_motion(self, widget, context, x, y, time):
         #print "on_drag_motion",widget,context,x,y,time
+
+        # TODO!: highlight arrow drop
+        # conn = self.get_connection_at((x,y))
+        # if conn:
+        #     print conn
+        #     bmpctx = self.routebitmap.cairo_create()
+        #     bmpctx.translate(0.5,0.5)
+        #     bmpctx.set_line_width(1)
+        #     bmpctx.set_source_rgb(1,0,0)
+        #     # draw_line_arrow(bmpctx, arrowcolors[mp.get_input_connection_type(index)], int(crx), int(cry), int(rx), int(ry))
+        #     bmpctx.rectangle(x,y,20,20)
+        #     bmpctx.stroke()
+
         source = context.get_source_widget()
         if not source:
             return
@@ -598,11 +614,11 @@ class RouteView(gtk.DrawingArea):
             plugin = None
             pluginloader = player.get_pluginloader_by_name(uri)
             if is_effect(pluginloader):
-                conn = self.get_connection_at((x,y))
+                conn = self.get_connection_at((x, y))
             if not conn:
-                res = self.get_plugin_at((x,y))
+                res = self.get_plugin_at((x, y))
                 if res:
-                    mp,(px,py),area = res
+                    mp, (px, py), area = res
                     if is_effect(mp) or is_root(mp):
                         plugin = mp
             player.create_plugin(pluginloader, connection=conn, plugin=plugin)
@@ -644,7 +660,7 @@ class RouteView(gtk.DrawingArea):
         self.flags2brushes = {}
         for flags, name in flagids:
             brushes = []
-            for name in [x.replace('${PLUGIN}',name) for x in names]:
+            for name in [x.replace('${PLUGIN}', name) for x in names]:
                 brushes.append(cfg.get_color(name))
             self.flags2brushes[flags] = brushes
         common.get_plugin_infos().reset_plugingfx()
@@ -697,7 +713,7 @@ class RouteView(gtk.DrawingArea):
         """
         rect = self.get_allocation()
         w, h = rect.width, rect.height
-        cx, cy = w*0.5, h * 0.5
+        cx, cy = w * 0.5, h * 0.5
         return cx * (1 + x), cy * (1 + y)
 
     def pixel_to_float(self, (x, y)):
@@ -716,7 +732,7 @@ class RouteView(gtk.DrawingArea):
         cx, cy = w * 0.5, h * 0.5
         return (x / cx) - 1, (y / cy) - 1
 
-    def get_connection_at(self, (mx,my)):
+    def get_connection_at(self, (mx, my)):
         """
         Finds the connection arrow at a specific position.
 
@@ -729,21 +745,22 @@ class RouteView(gtk.DrawingArea):
         """
         player = com.get('neil.core.player')
         rect = self.get_allocation()
-        w,h = rect.width, rect.height
-        cx,cy = w*0.5, h * 0.5
-        def get_pixelpos(x,y):
-            return cx * (1+x), cy * (1+y)
+        w, h = rect.width, rect.height
+        cx, cy = w * 0.5, h * 0.5
+
+        def get_pixelpos(x, y):
+            return cx * (1 + x), cy * (1 + y)
         for mp in player.get_plugin_list():
-            rx,ry = get_pixelpos(*mp.get_position())
+            rx, ry = get_pixelpos(*mp.get_position())
             for index in xrange(mp.get_input_connection_count()):
                 crx, cry = get_pixelpos(*mp.get_input_connection_plugin(index).get_position())
-                cpx,cpy = (crx + rx) * 0.5, (cry + ry) * 0.5
-                dx,dy = cpx - mx, cpy - my
+                cpx, cpy = (crx + rx) * 0.5, (cry + ry) * 0.5
+                dx, dy = cpx - mx, cpy - my
                 length = (dx * dx + dy * dy) ** 0.5
-                if length <= 14: # why exactly 14?
+                if length <= 14:  # why exactly 14?
                     return mp, index
 
-    def get_plugin_at(self, (x,y)):
+    def get_plugin_at(self, (x, y)):
         """
         Finds a plugin at a specific position.
 
@@ -755,9 +772,9 @@ class RouteView(gtk.DrawingArea):
         @rtype: (zzub.Plugin,(int,int),int) or None
         """
         rect = self.get_allocation()
-        w,h = rect.width, rect.height
-        cx,cy = w*0.5, h * 0.5
-        mx, my = x,y
+        w, h = rect.width, rect.height
+        cx, cy = w * 0.5, h * 0.5
+        mx, my = x, y
         PW, PH = PLUGINWIDTH / 2, PLUGINHEIGHT / 2
         area = AREA_ANY
         player = com.get('neil.core.player')
@@ -765,25 +782,25 @@ class RouteView(gtk.DrawingArea):
             pi = common.get_plugin_infos().get(mp)
             if not pi.songplugin:
                 continue
-            x,y = mp.get_position()
-            x,y = int(cx * (1+x)), int(cy * (1+y))
+            x, y = mp.get_position()
+            x, y = int(cx * (1 + x)), int(cy * (1 + y))
             if (mx >= (x - PW)) and (mx <= (x + PW)) and (my >= (y - PH)) and (my <= (y + PH)):
-                if sum(tuple(gtk.gdk.Rectangle(x-PW+LEDOFSX,y-PH+LEDOFSY,LEDWIDTH,LEDHEIGHT).intersect((mx,my,1,1)))):
+                if sum(tuple(gtk.gdk.Rectangle(x - PW + LEDOFSX, y - PH + LEDOFSY, LEDWIDTH, LEDHEIGHT).intersect((mx, my, 1, 1)))):
                     area = AREA_LED
-                return mp,(x,y),area
+                return mp, (x, y), area
 
     def on_left_dclick(self, widget, event):
         """
         Event handler for left doubleclicks. If the doubleclick
         hits a plugin, the parameter window is being shown.
         """
-        player = com.get('neil.core.player')
-        mx,my = int(event.x), int(event.y)
-        res = self.get_plugin_at((mx,my))
+        #player = com.get('neil.core.player')
+        mx, my = int(event.x), int(event.y)
+        res = self.get_plugin_at((mx, my))
         if not res:
             searchwindow = com.get('neil.core.searchplugins')
             searchwindow.show_all()
-            searchwindow.set_transient_for(com.get('neil.core.window.root'))            
+            searchwindow.set_transient_for(com.get('neil.core.window.root'))
             searchwindow.present()
             return
         mp, (x, y), area = res
@@ -806,14 +823,15 @@ class RouteView(gtk.DrawingArea):
         player = com.get('neil.core.player')
         if (event.button == 3):
             return self.on_context_menu(widget, event)
-        if not event.button in (1,2):
+        if not event.button in (1, 2):
             return
         if (event.button == 1) and (event.type == gtk.gdk._2BUTTON_PRESS):
+            self.window.set_cursor(None)
             return self.on_left_dclick(widget, event)
-        mx,my = int(event.x), int(event.y)
-        res = self.get_plugin_at((mx,my))
+        mx, my = int(event.x), int(event.y)
+        res = self.get_plugin_at((mx, my))
         if res:
-            mp,(x,y),area = res
+            mp, (x, y), area = res
             if area == AREA_LED:
                 player.toggle_mute(mp)
                 self.redraw()
@@ -835,22 +853,24 @@ class RouteView(gtk.DrawingArea):
                     else:
                         self.connecting = True
                         self.connectpos = int(mx), int(my)
+                        self.window.set_cursor(gtk.gdk.Cursor(gtk.gdk.CROSSHAIR))
                 if not self.connecting:
                     for plugin in player.active_plugins:
                         pinfo = self.get_plugin_info(plugin)
                         pinfo.dragpos = plugin.get_position()
-                        x,y = self.float_to_pixel(pinfo.dragpos)
-                        pinfo.dragoffset = x-mx, y-my
+                        x, y = self.float_to_pixel(pinfo.dragpos)
+                        pinfo.dragoffset = x - mx, y - my
                     self.dragging = True
+                    self.window.set_cursor(gtk.gdk.Cursor(gtk.gdk.FLEUR))
                     self.grab_add()
         else:
-            res = self.get_connection_at((mx,my))
+            res = self.get_connection_at((mx, my))
             if res:
                 mp, index = res
                 ox, oy = self.window.get_origin()
                 connectiontype = mp.get_input_connection_type(index)
                 if connectiontype == zzub.zzub_connection_type_audio:
-                    self.volume_slider.display((ox+mx,oy+my), mp, index)
+                    self.volume_slider.display((ox + mx, oy + my), mp, index)
                 elif connectiontype == zzub.zzub_connection_type_event:
                     # no idea what to do when clicking on an event connection yet
                     pass
@@ -864,25 +884,30 @@ class RouteView(gtk.DrawingArea):
         @param event: Mouse event.
         @type event: wx.MouseEvent
         """
-        x,y,state = self.window.get_pointer()
+        x, y, state = self.window.get_pointer()
         if self.dragging:
             player = com.get('neil.core.player')
-            ox,oy = self.dragoffset
-            mx,my = int(x), int(y)
+            ox, oy = self.dragoffset
+            mx, my = int(x), int(y)
             size = self.get_allocation()
-            x,y = max(0, min(mx - ox, size.width)), max(0, min(my - oy, size.height))
+            x, y = max(0, min(mx - ox, size.width)), max(0, min(my - oy, size.height))
             if (event.state & gtk.gdk.CONTROL_MASK):
                 # quantize position
-                x = int(float(x)/QUANTIZEX + 0.5) * QUANTIZEX
-                y = int(float(y)/QUANTIZEY + 0.5) * QUANTIZEY
+                x = int(float(x) / QUANTIZEX + 0.5) * QUANTIZEX
+                y = int(float(y) / QUANTIZEY + 0.5) * QUANTIZEY
             for plugin in player.active_plugins:
                 pinfo = self.get_plugin_info(plugin)
-                dx,dy = pinfo.dragoffset
-                pinfo.dragpos = self.pixel_to_float((x+dx,y+dy))
+                dx, dy = pinfo.dragoffset
+                pinfo.dragpos = self.pixel_to_float((x + dx, y + dy))
             self.redraw()
         elif self.connecting:
             self.connectpos = int(x), int(y)
             self.redraw()
+        else:
+            res = self.get_plugin_at((x, y))
+            if res:
+                mp, (mx, my), area = res
+                self.window.set_cursor(gtk.gdk.Cursor(gtk.gdk.HAND1) if area == AREA_LED else None)
         return True
 
     def on_left_up(self, widget, event):
@@ -892,33 +917,41 @@ class RouteView(gtk.DrawingArea):
         @param event: Mouse event.
         @type event: wx.MouseEvent
         """
-        mx,my = int(event.x), int(event.y)
+        mx, my = int(event.x), int(event.y)
         player = com.get('neil.core.player')
         if self.dragging:
             self.dragging = False
+            self.window.set_cursor(None)
             self.grab_remove()
-            ox,oy = self.dragoffset
+            ox, oy = self.dragoffset
             size = self.get_allocation()
-            x,y = max(0, min(mx - ox, size.width)), max(0, min(my - oy, size.height))
+            x, y = max(0, min(mx - ox, size.width)), max(0, min(my - oy, size.height))
             if (event.state & gtk.gdk.CONTROL_MASK):
                 # quantize position
-                x = int(float(x)/QUANTIZEX + 0.5) * QUANTIZEX
-                y = int(float(y)/QUANTIZEY + 0.5) * QUANTIZEY
+                x = int(float(x) / QUANTIZEX + 0.5) * QUANTIZEX
+                y = int(float(y) / QUANTIZEY + 0.5) * QUANTIZEY
             for plugin in player.active_plugins:
                 pinfo = self.get_plugin_info(plugin)
-                dx,dy = pinfo.dragoffset
-                plugin.set_position(*self.pixel_to_float((dx+x,dy+y)))
+                dx, dy = pinfo.dragoffset
+                plugin.set_position(*self.pixel_to_float((dx + x, dy + y)))
             player.history_commit("move plugin")
         if self.connecting:
-            res = self.get_plugin_at((mx,my))
+            res = self.get_plugin_at((mx, my))
             if res:
-                mp,(x,y),area = res
+                mp, (x, y), area = res
                 if player.active_plugins:
                     if not is_controller(player.active_plugins[0]):
                         mp.add_input(player.active_plugins[0], zzub.zzub_connection_type_audio)
                         player.history_commit("new nonnection")
         self.connecting = False
         self.redraw()
+        res = self.get_plugin_at((mx, my))
+        if res:
+            mp, (x, y), area = res
+            if area == AREA_LED:
+                self.window.set_cursor(gtk.gdk.Cursor(gtk.gdk.HAND1))
+        else:
+            self.window.set_cursor(None)
 
     def update_all(self):
         self.update_colors()
@@ -933,14 +966,15 @@ class RouteView(gtk.DrawingArea):
         if self.window:
             player = com.get('neil.core.player')
             rect = self.get_allocation()
-            w,h = rect.width, rect.height
-            cx,cy = w*0.5,h*0.5
-            def get_pixelpos(x,y):
-                return cx * (1+x), cy * (1+y)
+            w, h = rect.width, rect.height
+            cx, cy = w * 0.5, h * 0.5
+
+            def get_pixelpos(x, y):
+                return cx * (1 + x), cy * (1 + y)
             PW, PH = PLUGINWIDTH / 2, PLUGINHEIGHT / 2
-            for mp,(rx,ry) in ((mp,get_pixelpos(*mp.get_position())) for mp in player.get_plugin_list()):
-                rx,ry = rx - PW, ry - PH
-                self.window.invalidate_rect((int(rx),int(ry),PLUGINWIDTH,PLUGINHEIGHT), False)
+            for mp, (rx, ry) in ((mp, get_pixelpos(*mp.get_position())) for mp in player.get_plugin_list()):
+                rx, ry = rx - PW, ry - PH
+                self.window.invalidate_rect((int(rx), int(ry), PLUGINWIDTH, PLUGINHEIGHT), False)
         return True
 
     def expose(self, widget, event):
@@ -952,7 +986,7 @@ class RouteView(gtk.DrawingArea):
         if self.window:
             self.routebitmap = None
             rect = self.get_allocation()
-            self.window.invalidate_rect((0,0,rect.width,rect.height), False)
+            self.window.invalidate_rect((0, 0, rect.width, rect.height), False)
 
     def draw_leds(self):
         """
@@ -963,7 +997,7 @@ class RouteView(gtk.DrawingArea):
             return
         gc = self.window.new_gc()
         cm = gc.get_colormap()
-        cfg = config.get_config()
+        #cfg = config.get_config()
         rect = self.get_allocation()
         import pango
         layout = pango.Layout(self.get_pango_context())
@@ -971,14 +1005,14 @@ class RouteView(gtk.DrawingArea):
         layout.set_width(-1)
         w, h = rect.width, rect.height
         cx, cy = w * 0.5, h * 0.5
+
         def get_pixelpos(x, y):
             return cx * (1 + x), cy * (1 + y)
         PW, PH = PLUGINWIDTH / 2, PLUGINHEIGHT / 2
         driver = com.get('neil.core.driver.audio')
         cpu_scale = driver.get_cpu_load()
         max_cpu_scale = 1.0 / player.get_plugin_count()
-        for mp, (rx, ry) in ((mp, get_pixelpos(*mp.get_position())) 
-                             for mp in player.get_plugin_list()):
+        for mp, (rx, ry) in ((mp, get_pixelpos(*mp.get_position())) for mp in player.get_plugin_list()):
             pi = common.get_plugin_infos().get(mp)
             if not pi.songplugin:
                 continue
@@ -991,9 +1025,15 @@ class RouteView(gtk.DrawingArea):
                 continue
             brushes = self.flags2brushes.get(mp.get_flags() & PLUGIN_FLAGS_MASK,
                                              self.flags2brushes[GENERATOR_PLUGIN_FLAGS])
+
+            def brush2cm(brush):
+                return cm.alloc_color(brush)
+
+            def flag2cm(flag):
+                return brush2cm(brushes[flag])
+
             if not pi.plugingfx:
-                pi.plugingfx = gtk.gdk.Pixmap(self.window, PLUGINWIDTH, 
-                                              PLUGINHEIGHT, -1)
+                pi.plugingfx = gtk.gdk.Pixmap(self.window, PLUGINWIDTH, PLUGINHEIGHT, -1)
                 # adjust colour for muted plugins
                 color = brushes[self.COLOR_MUTED if pi.muted else self.COLOR_DEFAULT]
                 gc.set_foreground(cm.alloc_color(color))
@@ -1003,116 +1043,113 @@ class RouteView(gtk.DrawingArea):
 #                    gc.set_foreground(cm.alloc_color(brushes[self.COLOR_DEFAULT]))
                 pi.plugingfx.draw_rectangle(gc, True, -1, -1,
                                             PLUGINWIDTH + 1, PLUGINHEIGHT + 1)
-                
+
                 # outer border
-                gc.set_foreground(cm.alloc_color(brushes[self.COLOR_BORDER_OUT]))
+                gc.set_foreground(flag2cm(self.COLOR_BORDER_OUT))
                 pi.plugingfx.draw_rectangle(gc, False, 0, 0,
                                             PLUGINWIDTH - 1, PLUGINHEIGHT - 1)
-                
-                #  inner border                   
-                border = blend(cm.alloc_color(color), gtk.gdk.Color("#fff"), 0.65)               
+
+                #  inner border
+                border = blend(cm.alloc_color(color), gtk.gdk.Color("#fff"), 0.65)
                 gc.set_foreground(cm.alloc_color(border))
-                pi.plugingfx.draw_rectangle(gc, False, 1, 1, PLUGINWIDTH-3,PLUGINHEIGHT-3)
-                
-                if (player.solo_plugin and player.solo_plugin != mp 
+                pi.plugingfx.draw_rectangle(gc, False, 1, 1, PLUGINWIDTH - 3, PLUGINHEIGHT - 3)
+
+                if (player.solo_plugin and player.solo_plugin != mp
                     and is_generator(mp)):
                     title = prepstr('[' + mp.get_name() + ']')
                 elif pi.muted or pi.bypassed:
-                    title = prepstr('(' + mp.get_name() + ')')                            
+                    title = prepstr('(' + mp.get_name() + ')')
                 else:
                     title = prepstr(mp.get_name())
                 layout.set_markup("<small>%s</small>" % title)
                 lw, lh = layout.get_pixel_size()
                 if mp in player.active_plugins:
-                    gc.set_foreground(cm.alloc_color(brushes[self.COLOR_BORDER_SELECT]))
-                    pi.plugingfx.draw_rectangle(gc, False, 
-                                                PLUGINWIDTH / 2 - lw / 2 - 3, 
-                                                PLUGINHEIGHT / 2 - lh / 2, 
+                    gc.set_foreground(flag2cm(self.COLOR_BORDER_SELECT))
+                    pi.plugingfx.draw_rectangle(gc, False,
+                                                PLUGINWIDTH / 2 - lw / 2 - 3,
+                                                PLUGINHEIGHT / 2 - lh / 2,
                                                 lw + 6, lh)
-                gc.set_foreground(cm.alloc_color(blend(cm.alloc_color(brushes[self.COLOR_MUTED if pi.muted else self.COLOR_DEFAULT]), gtk.gdk.Color("#fff"), 0.7)))
+                gc.set_foreground(cm.alloc_color(blend(flag2cm(self.COLOR_MUTED if pi.muted else self.COLOR_DEFAULT), gtk.gdk.Color("#fff"), 0.7)))
                 pi.plugingfx.draw_layout(gc, PLUGINWIDTH / 2 - lw / 2 + 1, PLUGINHEIGHT / 2 - lh / 2 + 1, layout)
 
-                gc.set_foreground(cm.alloc_color(brushes[self.COLOR_TEXT]))
+                gc.set_foreground(flag2cm(self.COLOR_TEXT))
                 pi.plugingfx.draw_layout(gc, PLUGINWIDTH / 2 - lw / 2, PLUGINHEIGHT / 2 - lh / 2, layout)
             if config.get_config().get_led_draw() == True:
                 # led border
-                color = brushes[self.COLOR_MUTED if pi.muted else self.COLOR_DEFAULT]
-                border = blend(cm.alloc_color(color), gtk.gdk.Color("#000"), 0.5)
+                border = blend(flag2cm(self.COLOR_MUTED if pi.muted else self.COLOR_DEFAULT), gtk.gdk.Color("#000"), 0.5)
                 gc.set_foreground(cm.alloc_color(border))
                 pi.plugingfx.draw_rectangle(gc, False, LEDOFSX, LEDOFSY, LEDWIDTH - 1, LEDHEIGHT - 1)
-                
+
                 maxl, maxr = mp.get_last_peak()
-                amp = min(max(maxl,maxr),1.0)
-                if amp != pi.amp:                           
+                amp = min(max(maxl, maxr), 1.0)
+                if amp != pi.amp:
                     if amp >= 1:
                         # from collections import deque
                         # if not mp.get_name() in self.peaks:
                             # self.peaks[mp.get_name()] = deque(maxlen=25)
                         # dq = self.peaks[mp.get_name()]
                         # dq.append(LEDHEIGHT - 4)
-                                                    
+
                         gc.set_foreground(cm.alloc_color(brushes[self.COLOR_LED_WARNING]))
-                        pi.plugingfx.draw_rectangle(gc, True, LEDOFSX + 1, 
-                                                    LEDOFSY + 1, LEDWIDTH - 2, 
+                        pi.plugingfx.draw_rectangle(gc, True, LEDOFSX + 1,
+                                                    LEDOFSY + 1, LEDWIDTH - 2,
                                                     LEDHEIGHT - 2)
                     else:
                         gc.set_foreground(cm.alloc_color(brushes[self.COLOR_LED_OFF]))
-                        pi.plugingfx.draw_rectangle(gc, True, LEDOFSX, 
-                                                    LEDOFSY, LEDWIDTH, 
+                        pi.plugingfx.draw_rectangle(gc, True, LEDOFSX,
+                                                    LEDOFSY, LEDWIDTH,
                                                     LEDHEIGHT)
                         amp = 1.0 - (linear2db(amp, -76.0) / -76.0)
-                        height = int((LEDHEIGHT - 4) * amp + 0.5)                        
-                        if (height > 0):                           
+                        height = int((LEDHEIGHT - 4) * amp + 0.5)
+                        if (height > 0):
                             # led fill
                             gc.set_foreground(cm.alloc_color(brushes[self.COLOR_LED_ON]))
-                            pi.plugingfx.draw_rectangle(gc, True, LEDOFSX + 1,
-                                                        (LEDOFSY + LEDHEIGHT - 
-                                                         height - 1), 
-                                                        LEDWIDTH - 2, height)
+                            pi.plugingfx.draw_rectangle(gc, True, LEDOFSX + 1, (LEDOFSY + LEDHEIGHT - height - 1), LEDWIDTH - 2, height)
                             # # peak falloff
                             # from collections import deque
                             # if not mp.get_name() in self.peaks:
                             #     self.peaks[mp.get_name()] = deque(maxlen=25)
                             # dq = self.peaks[mp.get_name()]
                             # dq.append(height)
-                                              
-                            # peak_color = cm.alloc_color(blend(cm.alloc_color(brushes[self.COLOR_LED_ON]), gtk.gdk.Color("#fff"), 0.15))              
+
+                            # peak_color = cm.alloc_color(blend(cm.alloc_color(brushes[self.COLOR_LED_ON]), gtk.gdk.Color("#fff"), 0.15))
                             # h = LEDOFSY + LEDHEIGHT - 1 - max(height, sum(dq)/len(dq))
                             # gc.set_foreground(peak_color)
                             # pi.plugingfx.draw_line(gc, LEDOFSX + 1, h, LEDOFSX + LEDWIDTH - 2, h)
-                            
+
                     pi.amp = amp
-                relperc = (min(1.0, mp.get_last_cpu_load() / max_cpu_scale) * 
-                           cpu_scale)
+                relperc = (min(1.0, mp.get_last_cpu_load() / max_cpu_scale) * cpu_scale)
                 if relperc != pi.cpu:
                     pi.cpu = relperc
-                    
+
                     # cpu fill
-                    gc.set_foreground(cm.alloc_color(brushes[self.COLOR_CPU_OFF]))
+                    gc.set_foreground(flag2cm(self.COLOR_CPU_OFF))
                     pi.plugingfx.draw_rectangle(gc, True, CPUOFSX, CPUOFSY, CPUWIDTH, CPUHEIGHT)
 
                     # cpu border
-                    color = brushes[self.COLOR_MUTED if pi.muted else self.COLOR_DEFAULT]                    
-                    border = blend(cm.alloc_color(color), gtk.gdk.Color("#000"), 0.5)               
+                    color = brushes[self.COLOR_MUTED if pi.muted else self.COLOR_DEFAULT]
+                    border = blend(cm.alloc_color(color), gtk.gdk.Color("#000"), 0.5)
                     gc.set_foreground(cm.alloc_color(border))
                     pi.plugingfx.draw_rectangle(gc, False, CPUOFSX, CPUOFSY, CPUWIDTH - 1, CPUHEIGHT - 1)
-                    
+
                     height = int((CPUHEIGHT - 4) * relperc + 0.5)
                     if (height > 0):
                         if relperc >= 0.9:
-                            gc.set_foreground(cm.alloc_color(brushes[self.COLOR_CPU_WARNING]))
+                            gc.set_foreground(flag2cm(self.COLOR_CPU_WARNING))
                         else:
-                            gc.set_foreground(cm.alloc_color(brushes[self.COLOR_CPU_ON]))
-                        pi.plugingfx.draw_rectangle(gc, True, CPUOFSX + 1, 
-                                                    (CPUOFSY + CPUHEIGHT - 
-                                                    height - 1), 
-                                                    CPUWIDTH - 2, height)
+                            gc.set_foreground(flag2cm(self.COLOR_CPU_ON))
+                        pi.plugingfx.draw_rectangle(gc, True, CPUOFSX + 1, (CPUOFSY + CPUHEIGHT - height - 1), CPUWIDTH - 2, height)
+            # shadow
             cr = self.window.cairo_create()
             cr.rectangle(rx + 3, ry + 3, PLUGINWIDTH, PLUGINHEIGHT)
             cr.set_source_rgba(0.0, 0.0, 0.0, 0.2)
             cr.fill()
-            self.window.draw_drawable(gc, pi.plugingfx, 0, 0, 
-                                      int(rx), int(ry), -1, -1)
+
+            if mp in player.active_plugins:
+                pass
+
+            # flip plugin pixmap to screen
+            self.window.draw_drawable(gc, pi.plugingfx, 0, 0, int(rx), int(ry), -1, -1)
 
     def draw(self, ctx):
         """
@@ -1123,14 +1160,14 @@ class RouteView(gtk.DrawingArea):
             return
         cfg = config.get_config()
         rect = self.get_allocation()
-        w, h = rect.width,rect.height
+        w, h = rect.width, rect.height
         arrowcolors = {
-                zzub.zzub_connection_type_audio : [
+                zzub.zzub_connection_type_audio: [
                         cfg.get_float_color("MV Arrow"),
                         cfg.get_float_color("MV Arrow Border In"),
                         cfg.get_float_color("MV Arrow Border Out"),
                 ],
-                zzub.zzub_connection_type_event : [
+                zzub.zzub_connection_type_event: [
                         cfg.get_float_color("MV Controller Arrow"),
                         cfg.get_float_color("MV Controller Arrow Border In"),
                         cfg.get_float_color("MV Controller Arrow Border Out"),
@@ -1161,11 +1198,9 @@ class RouteView(gtk.DrawingArea):
             if not length:
                 return
             vx, vy = vx / length, vy / length
-            bmpctx.move_to(crx, cry)
-            bmpctx.line_to(rx, ry)
-            bmpctx.set_source_rgb(*linepen)
-            bmpctx.stroke()
+
             cpx, cpy = crx + vx * (length * 0.5), cry + vy * (length * 0.5)
+
             def make_triangle(radius):
                 t1 = (int(cpx - vx * radius + vy * radius),
                       int(cpy - vy * radius - vx * radius))
@@ -1174,19 +1209,83 @@ class RouteView(gtk.DrawingArea):
                 t3 = (int(cpx - vx * radius - vy * radius),
                       int(cpy - vy * radius + vx * radius))
                 return t1, t2, t3
+
             def draw_triangle(t1, t2, t3):
                 bmpctx.move_to(*t1)
                 bmpctx.line_to(*t2)
                 bmpctx.line_to(*t3)
                 bmpctx.close_path()
             tri1 = make_triangle(ARROWRADIUS)
-            tri2 = make_triangle(ARROWRADIUS - 1)
-            draw_triangle(*tri1)
-            bmpctx.set_source_rgb(*clr[0])
-            bmpctx.fill()
-            draw_triangle(*tri1)
-            bmpctx.set_source_rgb(*clr[2])
-            bmpctx.stroke()
+
+            bmpctx.save()
+            bmpctx.translate(-0.5, -0.5)
+
+            if cfg.get_curve_arrows():
+                # stroke the triangle
+                draw_triangle(*tri1)
+                bmpctx.set_source_rgb(*[x * 0.5 for x in bgbrush])
+                bmpctx.set_line_width(1)
+                bmpctx.stroke()
+
+                # draw the line using two curves,
+                # we need 4 control points so the arrow lines up nicely
+                bmpctx.move_to(crx, cry)
+                # first curve, start to center
+                # bmpctx.line_to(cpx, cpy)
+                from math import exp
+                cp1, cp2 = exp(-1), exp(-2)
+                bmpctx.curve_to(crx + vx * (length * cp1), cry,
+                                cpx - vx * (length * cp2), cpy - vy * (length * cp2),
+                                cpx, cpy)
+                # second curve, center to end
+                bmpctx.curve_to(cpx + vx * (length * cp2), cpy + vy * (length * cp2),
+                                rx - vx * (length * cp1), ry,
+                                rx, ry)
+
+                bmpctx.set_line_width(4)
+                bmpctx.stroke_preserve()
+                bmpctx.set_line_width(2.5)
+                bmpctx.set_source_rgb(*clr[0])
+                # bmpctx.set_source_rgb(*linepen)
+                bmpctx.stroke()
+
+                draw_triangle(*tri1)
+                bmpctx.fill()
+
+            else:
+                bmpctx.set_line_width(1)
+                bmpctx.set_source_rgb(*linepen)
+                bmpctx.move_to(crx, cry)
+                bmpctx.line_to(rx, ry)
+                bmpctx.stroke()
+
+                bmpctx.set_source_rgb(*clr[0])
+                draw_triangle(*tri1)
+                bmpctx.fill_preserve()
+                bmpctx.set_source_rgb(*linepen)
+                bmpctx.stroke()
+
+            # # debug cps
+            # bmpctx.set_line_width(1)
+            # bmpctx.set_source_rgba(1, 0, 0, .5)
+            # bmpctx.move_to(crx, cry)
+            # bmpctx.line_to(crx + vx * (length * exp(-1)), cry)
+            # bmpctx.stroke()
+
+            # bmpctx.move_to(cpx, cpy)
+            # bmpctx.line_to(cpx - vx * (length * exp(-2)), cpy - vy * (length * exp(-2)))
+            # bmpctx.stroke()
+
+            # bmpctx.move_to(cpx, cpy)
+            # bmpctx.line_to(cpx + vx * (length * exp(-2)), cpy + vy * (length * exp(-2)))
+            # bmpctx.stroke()
+
+            # bmpctx.move_to(rx, ry)
+            # bmpctx.line_to(rx - vx * (length * exp(-1)), ry)
+            # bmpctx.stroke()
+            # # end debug cps
+
+            bmpctx.restore()
 
         if not self.routebitmap:
             self.routebitmap = gtk.gdk.Pixmap(self.window, w, h, -1)
@@ -1199,15 +1298,15 @@ class RouteView(gtk.DrawingArea):
             drawable.draw_rectangle(gc, True, 0, 0, w, h)
 
             bmpctx = self.routebitmap.cairo_create()
-            bmpctx.translate(0.5,0.5)
+            bmpctx.translate(0.5, 0.5)
             bmpctx.set_line_width(1)
-            mplist = [(mp,get_pixelpos(*mp.get_position())) 
+            mplist = [(mp, get_pixelpos(*mp.get_position()))
                       for mp in player.get_plugin_list()]
 
-            for mp,(rx,ry) in mplist:
+            for mp, (rx, ry) in mplist:
                 if self.dragging and mp in player.active_plugins:
                     pinfo = self.get_plugin_info(mp)
-                    rx,ry = get_pixelpos(*pinfo.dragpos)
+                    rx, ry = get_pixelpos(*pinfo.dragpos)
                 for index in xrange(mp.get_input_connection_count()):
                     targetmp = mp.get_input_connection_plugin(index)
                     pi = common.get_plugin_infos().get(targetmp)
@@ -1227,14 +1326,14 @@ class RouteView(gtk.DrawingArea):
                         #arrowcolors[zzub.zzub_connection_type_audio][0] = color
                         c = blend(cm.alloc_color(cfg.get_color("MV Arrow")), gtk.gdk.Color("#000"), amp)
                         arrowcolors[zzub.zzub_connection_type_audio][0] = [c.red_float, c.green_float, c.blue_float]
-                        
+
                     draw_line_arrow(bmpctx, arrowcolors[mp.get_input_connection_type(index)], int(crx), int(cry), int(rx), int(ry))
         gc = self.window.new_gc()
         self.window.draw_drawable(gc, self.routebitmap, 0, 0, 0, 0, -1, -1)
         if self.connecting:
             ctx.set_line_width(1)
             crx, cry = get_pixelpos(*player.active_plugins[0].get_position())
-            rx,ry= self.connectpos
+            rx, ry = self.connectpos
             draw_line(ctx, int(crx), int(cry), int(rx), int(ry))
         self.draw_leds()
 
@@ -1257,7 +1356,7 @@ class RouteView(gtk.DrawingArea):
         octave = player.octave
         if  k == 'KP_Multiply':
             octave = min(max(octave + 1, 0), 9)
-        elif k ==  'KP_Divide':
+        elif k == 'KP_Divide':
             octave = min(max(octave - 1, 0), 9)
         elif k == 'Delete':
             for plugin in player.active_plugins:
@@ -1280,13 +1379,13 @@ class RouteView(gtk.DrawingArea):
             else:
                 return
         kv = event.keyval
-        if kv<256:
+        if kv < 256:
             player = com.get('neil.core.player')
             octave = player.octave
             note = key_to_note(kv)
             if note in self.chordnotes:
                 self.chordnotes.remove(note)
-                n=((note[0]+octave)<<4|note[1]+1)
+                n = ((note[0] + octave) << 4 | note[1] + 1)
                 plugin.play_midi_note(zzub.zzub_note_value_off, n, 0)
 
 __all__ = [
@@ -1314,7 +1413,8 @@ __neil__ = dict(
 )
 
 if __name__ == '__main__':
-    import testplayer, utils
+    import testplayer
+    import utils
     player = testplayer.get_player()
     player.load_ccm(utils.filepath('demosongs/paniq-knark.ccm'))
     window = testplayer.TestWindow()

@@ -26,7 +26,7 @@ import os
 import gtk
 import webbrowser
 
-from neil.utils import prepstr, buffersize_to_latency, filepath, error, add_scrollbars, new_listview
+from neil.utils import prepstr, buffersize_to_latency, filepath, error, add_scrollbars, new_listview, sharedpath
 import config
 from neil.common import MARGIN, MARGIN2, MARGIN3
 
@@ -79,6 +79,7 @@ class GeneralPanel(gtk.VBox):
 	incsave = config.get_config().get_incremental_saving()
 	#rackpanel = config.get_config().get_experimental('RackPanel')
 	leddraw = config.get_config().get_led_draw()
+	curvearrows = config.get_config().get_curve_arrows()
 	patnoteoff = config.get_config().get_pattern_noteoff()
 	self.patternfont = gtk.FontButton(config.get_config().get_pattern_font())
 	self.patternfont.set_use_font(True)
@@ -87,12 +88,24 @@ class GeneralPanel(gtk.VBox):
 	self.patternfont.set_show_size(True)
 	self.incsave = gtk.CheckButton()
 	self.leddraw = gtk.CheckButton()
+	self.curvearrows = gtk.CheckButton()
 	self.patnoteoff = gtk.CheckButton()
 	self.rackpanel = gtk.CheckButton()
 	self.incsave.set_active(int(incsave))
 	self.leddraw.set_active(int(leddraw))
+	self.curvearrows.set_active(int(curvearrows))
 	self.patnoteoff.set_active(int(patnoteoff))
 	#self.rackpanel.set_active(rackpanel)
+	
+	self.theme = gtk.combo_box_new_text()
+	themes = os.listdir(sharedpath('themes'))
+	# self.theme.append_text('Default');
+	for i, theme in enumerate(themes):
+		name = os.path.splitext(theme)[0]
+		self.theme.append_text(name);			
+		if name == config.get_config().active_theme:
+			self.theme.set_active(i)
+
 	sg1 = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
 	sg2 = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
 	def add_row(c1, c2):
@@ -108,6 +121,8 @@ class GeneralPanel(gtk.VBox):
 	add_row(gtk.Label("Auto Note-Off in Pattern Editor"), self.patnoteoff)
 	add_row(gtk.Label("Pattern Font"), self.patternfont)
 	#add_row(gtk.Label("Rack Panel View (After Restart)"), self.rackpanel)
+	add_row(gtk.Label("Theme"), self.theme)
+	add_row(gtk.Label("Draw Curves in Router"), self.curvearrows)
 	self.add(frame1)
 
     def apply(self):
@@ -118,7 +133,14 @@ class GeneralPanel(gtk.VBox):
 	config.get_config().set_incremental_saving(self.incsave.get_active())
 	config.get_config().set_led_draw(self.leddraw.get_active())
 	config.get_config().set_pattern_noteoff(self.patnoteoff.get_active())
+	config.get_config().set_curve_arrows(self.curvearrows.get_active())
 	#config.get_config().set_experimental('RackPanel', self.rackpanel.get_active())
+
+	if config.get_config().active_theme != self.theme.get_active_text():
+		config.get_config().select_theme(self.theme.get_active_text())
+		import neil.com
+		neil.com.get('neil.core.router.view').update_all()
+		neil.com.get('neil.core.sequencerpanel').update_all()
 
 class DriverPanel(gtk.VBox):
     """

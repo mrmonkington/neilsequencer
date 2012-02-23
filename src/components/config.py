@@ -76,6 +76,7 @@ CONFIG_OPTIONS = dict(
 	PatternFontName = dict(func='pattern_font',default='Monospace 8',doc="the font used in the pattern editor."),
 	LedDraw = dict(default=True,doc="the led draw option."),
 	PatNoteOff = dict(func='pattern_noteoff',default=False,doc="pattern noteoff option."),
+	CurveArrows = dict(default=False,doc="the draw connection curves option."),
 	),
     PluginListBrowser = dict(
 	SearchTerm = dict(func='pluginlistbrowser_search_term',default='',vtype=str,doc="the current plugin search mask."),
