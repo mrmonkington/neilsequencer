@@ -85,6 +85,7 @@ static struct OscilloscopeInfo : zzub::info {
   OscilloscopeInfo() {
     // this->flags = zzub::plugin_flag_has_audio_input | zzub::plugin_flag_has_audio_output | zzub::plugin_flag_has_custom_gui;
     this->flags = zzub_plugin_flag_has_audio_input | 
+                  zzub_plugin_flag_has_audio_output |
                   zzub_plugin_flag_has_custom_gui |
                   zzub_plugin_flag_no_output |
                   zzub_plugin_flag_no_undo | 

@@ -56,7 +56,7 @@ private:
   GtkWidget *window_slider;
   GtkWidget *floor_slider;
   GtkWidget *checkbutton;
-  GdkVisual *visual;
+  // GdkVisual *visual;
   GdkImage *image;
   guint32 timer;
   fftw_type* spec;
@@ -69,6 +69,7 @@ private:
   virtual bool invoke(zzub_event_data_t& data);
   void calcSpectrum();
   void drawSpectrum(cairo_t* cr, int n, int w, int h);
+  guint32 getColor(float f);
 public:
   // Data data;
   static const int MAX_BUFFER = 4096;

@@ -253,6 +253,10 @@ class NeilFrame(gtk.Window):
     """
 
     gtk.Window.__init__(self, gtk.WINDOW_TOPLEVEL)
+
+    import ctypes
+    com.get('neil.core.player').set_host_info(1,1,ctypes.c_void_p(hash(self)))
+
     errordlg.install(self)
     self.set_geometry_hints(self,600,400)
     self.set_position(gtk.WIN_POS_CENTER)

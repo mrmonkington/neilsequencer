@@ -128,6 +128,9 @@ bool Oscilloscope::process_stereo(float **pin, float **pout, int n, int mode) {
   }
   // printf("[after-read]:  in:%d, readable:%d, writable:%d, written:%d\n", n, data.left.readable(), data.left.writable(), w);
 
+  memcpy(pout[0], pin[0], sizeof(float) * n);
+  memcpy(pout[1], pin[1], sizeof(float) * n);
+
   return true;
   // return false;
 }
@@ -159,8 +162,7 @@ bool Oscilloscope::invoke(zzub_event_data_t& data) {
       gtk_widget_set_app_paintable(window, TRUE);
 
 
-      //TODO!: get parent
-      //gtk_window_set_transient_for(window, parent)
+      gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(_host->get_host_info()->host_ptr));
 
       gtk_window_set_title(GTK_WINDOW(window), "Oscilloscope");
       gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_MOUSE);
@@ -315,7 +317,7 @@ gboolean Oscilloscope::expose_handler(GtkWidget *widget, GdkEventExpose *event, 
   if(!osc->tick)
     osc->phase = 0;
 
-  printf("%f\n", osc->phase);
+  // printf("%f\n", osc->phase);
 
   osc->flip_buffer();  
 
@@ -392,9 +394,9 @@ gboolean Oscilloscope::timer_handler(Oscilloscope* osc) {
   // if(drawing) return TRUE;
 
   g_return_val_if_fail(osc->drawing_box, FALSE);
-  gdk_threads_enter();
+  // gdk_threads_enter();
   gtk_widget_queue_draw(osc->drawing_box);
-  gdk_threads_leave();
+  // gdk_threads_leave();
 
   // osc->tick = true;
 

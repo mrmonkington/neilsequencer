@@ -23,19 +23,15 @@ if __name__ == '__main__':
     os.system('../../bin/neil-combrowser neil.core.panel.transport')
     raise SystemExit
 
-import gtk
-from neil.common import MARGIN, MARGIN2, MARGIN3, MARGIN0
-import gobject
-from neil.utils import new_stock_image_toggle_button, new_stock_image_button
-from neil.utils import format_time, ticks_to_time, new_theme_image_toggle_button
+from neil.common import MARGIN, MARGIN0
 from neil.utils import new_image_button, new_image_toggle_button, imagepath
-import neil.audiogui as audiogui
-import time
+from neil.utils import ObjectHandlerGroup
 import config
+import gobject
+import gtk
 import neil.com as com
 import zzub
-import neil.common as common
-from neil.utils import ObjectHandlerGroup
+
 
 class TransportPanel(gtk.HBox):
     """
@@ -43,17 +39,17 @@ class TransportPanel(gtk.HBox):
     """
 
     __neil__ = dict(
-            id = 'neil.core.panel.transport',
-            singleton = True,
-            categories = [
-                    'view',
-            ],
+        id = 'neil.core.panel.transport',
+        singleton = True,
+        categories = [
+                'view',
+        ],
     )
 
     __view__ = dict(
-                    label = "Transport",
-                    order = 0,
-                    toggle = True,
+        label = "Transport",
+        order = 0,
+        toggle = True,
     )
 
     def __init__(self):
@@ -77,57 +73,58 @@ class TransportPanel(gtk.HBox):
         #self.cpu = gtk.ProgressBar()
         #self.cpu.set_size_request(80,-1)
         self.cpuvalue = gtk.Label("100%")
-        self.cpuvalue.set_size_request(32,-1)
+        self.cpuvalue.set_size_request(32, -1)
         self.bpmlabel = gtk.Label("BPM")
         self.bpm = gtk.SpinButton()
-        self.bpm.set_range(16,500)
+        self.bpm.set_range(16, 500)
         self.bpm.set_value(126)
         self.bpm.set_increments(1, 10)
         #self.bpm.connect('button-press-event', self.spinbox_clicked)
         self.tpblabel = gtk.Label("TPB")
         self.tpb = gtk.SpinButton()
-        self.tpb.set_range(1,32)
+        self.tpb.set_range(1, 32)
         self.tpb.set_value(4)
         self.tpb.set_increments(1, 2)
         #self.tpb.connect('button-press-event', self.spinbox_clicked)
-        
+
         #from utils import ImageToggleButton
-        self.btnplay = new_image_toggle_button(imagepath("playback_play.svg"),
-                                               "Play (F5/F6)")
-        self.btnrecord = new_image_toggle_button(imagepath("playback_record.svg"), 
-                                                 "Record (F7)")
+        self.btnplay = new_image_toggle_button(imagepath("playback_play.svg"), "Play (F5/F6)")
+
+        self.btnrecord = new_image_toggle_button(imagepath("playback_record.svg"), "Record (F7)")
         self.btnrecord.modify_bg(gtk.STATE_ACTIVE, gtk.gdk.color_parse("red"))
-        self.btnstop = new_image_button(imagepath("playback_stop.svg"), 
-                                        "Stop (F8)")
-        self.btnloop = new_image_toggle_button(imagepath("playback_repeat.svg"),
-                                               "Repeat")
+
+        self.btnstop = new_image_button(imagepath("playback_stop.svg"), "Stop (F8)")
+
+        self.btnloop = new_image_toggle_button(imagepath("playback_repeat.svg"), "Repeat")
         self.btnloop.modify_bg(gtk.STATE_ACTIVE, gtk.gdk.color_parse("green"))
-        self.btnpanic = new_image_toggle_button(imagepath("playback_panic.svg"),
-                                                "Panic (F12)")
-        self.volume_button = new_image_toggle_button(imagepath("speaker.svg"),
-                                                     "Volume")
+
+        self.btnpanic = new_image_toggle_button(imagepath("playback_panic.svg"), "Panic (F12)")
+
+        self.volume_button = new_image_toggle_button(imagepath("speaker.svg"), "Volume")
+
         combosizer = gtk.HBox(False, MARGIN)
 
         hbox = gtk.HBox(False, MARGIN0)
-        hbox.pack_start(self.btnplay,expand=False)
-        hbox.pack_start(self.btnrecord,expand=False)
-        hbox.pack_start(self.btnstop,expand=False)
-        hbox.pack_start(self.btnloop,expand=False)
+        hbox.pack_start(self.btnplay, expand=False)
+        hbox.pack_start(self.btnrecord, expand=False)
+        hbox.pack_start(self.btnstop, expand=False)
+        hbox.pack_start(self.btnloop, expand=False)
         self.transport_buttons = hbox.get_children() + [self.btnpanic]
+
         def on_realize(self):
             for e in self.transport_buttons:
                 rc = e.get_allocation()
                 w = max(rc.width, rc.height)
-                e.set_size_request(w,w)
+                e.set_size_request(w, w)
         self.connect('realize', on_realize)
 
         combosizer.pack_start(hbox, expand=False)
         combosizer.pack_start(gtk.VSeparator(), expand=False)
 
-        combosizer.pack_start(self.bpmlabel,expand=False)
-        combosizer.pack_start(self.bpm,expand=False)
-        combosizer.pack_start(self.tpblabel,expand=False)
-        combosizer.pack_start(self.tpb,expand=False)
+        combosizer.pack_start(self.bpmlabel, expand=False)
+        combosizer.pack_start(self.bpm, expand=False)
+        combosizer.pack_start(self.tpblabel, expand=False)
+        combosizer.pack_start(self.tpb, expand=False)
 
         combosizer.pack_start(gtk.VSeparator(), expand=False)
         cpubox = gtk.HBox(False, MARGIN)
@@ -142,7 +139,7 @@ class TransportPanel(gtk.HBox):
         combosizer.pack_start(gtk.VSeparator(), expand=False)
         combosizer.pack_start(self.btnpanic, expand=False)
         combosizer.pack_start(self.volume_button, expand=False)
-        
+
         # To center the transport panel uncomment the HBox's below.
         self.pack_start(gtk.HBox())
         self.pack_start(combosizer, expand=False)
@@ -158,11 +155,14 @@ class TransportPanel(gtk.HBox):
         self.hgroup.connect(self.tpb, 'value-changed', self.on_tpb)
         gobject.timeout_add(500, self.update_cpu)
 
-        self.hgroup.connect(self.btnplay, 'clicked', self.play)
-        self.hgroup.connect(self.btnrecord, 'clicked', self.on_toggle_automation)
-        self.hgroup.connect(self.btnstop, 'clicked', self.stop)
-        self.hgroup.connect(self.btnloop, 'clicked', self.on_toggle_loop)
-        self.hgroup.connect(self.btnpanic, 'clicked', self.on_toggle_panic)
+        player = com.get('neil.core.player')
+        driver = com.get('neil.core.driver.audio')
+
+        self.hgroup.connect(self.btnplay, 'clicked', lambda x: player.play())
+        self.hgroup.connect(self.btnstop, 'clicked', lambda x: player.stop())
+        self.hgroup.connect(self.btnloop, 'clicked', lambda x: player.set_loop_enabled(x.get_active()))
+        self.hgroup.connect(self.btnpanic, 'clicked', lambda x: driver.enable(x.get_active()))
+        self.hgroup.connect(self.btnrecord, 'clicked', lambda x: player.set_automation(x.get_active()))
         self.hgroup.connect(self.volume_button, 'clicked', self.on_toggle_volume)
         #self.volume_button.connect('focus-out-event', self.on_master_focus_out)
 
@@ -177,53 +177,56 @@ class TransportPanel(gtk.HBox):
     #    player = com.get('neil.core.player')
     #    player.spinbox_edit = True
 
-    def play(self, widget):
-        player = com.get('neil.core.player')
-        player.play()
+    # def play(self, widget):
+    #     player = com.get('neil.core.player')
+    #     player.play()
 
-    def on_toggle_automation(self, widget):
-        player = com.get('neil.core.player')
-        if widget.get_active():
-            player.set_automation(1)
-        else:
-            player.set_automation(0)
+    # def on_toggle_automation(self, widget):
+    #     player = com.get('neil.core.player')
+    #     if widget.get_active():
+    #         player.set_automation(1)
+    #     else:
+    #         player.set_automation(0)
 
-    def stop(self, widget):
-        player = com.get('neil.core.player')
-        player.stop()
+    # def stop(self, widget):
+    #     player = com.get('neil.core.player')
+    #     player.stop()
 
-    def on_toggle_loop(self, widget):
-        """
-        Handler triggered by the loop toolbar button. Decides whether
-        the song loops or not.
+    # def on_toggle_loop(self, widget):
+    #     """
+    #     Handler triggered by the loop toolbar button. Decides whether
+    #     the song loops or not.
 
-        @param event command event.
-        @type event: CommandEvent
-        """
-        player = com.get('neil.core.player')
-        if widget.get_active():
-            player.set_loop_enabled(1)
-        else:
-            player.set_loop_enabled(0)
+    #     @param event command event.
+    #     @type event: CommandEvent
+    #     """
+    #     player = com.get('neil.core.player')
+    #     if widget.get_active():
+    #         player.set_loop_enabled(1)
+    #     else:
+    #         player.set_loop_enabled(0)
 
-    def on_toggle_panic(self, widget):
-        """
-        Handler triggered by the mute toolbar button. Deinits/reinits
-        sound device.
+    # def on_toggle_panic(self, widget):
+    #     """
+    #     Handler triggered by the mute toolbar button. Deinits/reinits
+    #     sound device.
 
-        @param event command event.
-        @type event: CommandEvent
-        """
-        driver = com.get('neil.core.driver.audio')
-        if widget.get_active():
-            driver.enable(0)
-        else:
-            driver.enable(1)
+    #     @param event command event.
+    #     @type event: CommandEvent
+    #     """
+    #     driver = com.get('neil.core.driver.audio')
+    #     if widget.get_active():
+    #         driver.enable(0)
+    #     else:
+    #         driver.enable(1)
 
     def on_toggle_volume(self, widget):
+        """
+        Toggle master control window
+        """
         if widget.get_active():
             self.master_control_window.show_all()
-            self.master_control_window.set_transient_for(com.get('neil.core.window.root'))            
+            self.master_control_window.set_transient_for(com.get('neil.core.window.root'))
         else:
             self.master_control_window.hide_all()
 
@@ -232,34 +235,41 @@ class TransportPanel(gtk.HBox):
     #    self.volume_button.set_active(False)
 
     def update_cpu(self):
+        """
+        Update CPU load
+        """
         cpu = com.get('neil.core.driver.audio').get_cpu_load()
         #self.cpu.set_fraction(cpu)
-        self.cpuvalue.set_label("%i%%" % int((cpu*100) + 0.5))
+        self.cpuvalue.set_label("%i%%" % int((cpu * 100) + 0.5))
         return True
 
     def update_btnplay(self):
+        """
+        Event bus callback that toggles the play button according to player state
+        """
         state = com.get('neil.core.player').get_state()
         token = self.hgroup.autoblock()
+        assert token  # nice to check, keeps the linter happy from being unsed
         if state == zzub.zzub_player_state_playing:
             self.btnplay.set_active(True)
         elif state == zzub.zzub_player_state_stopped:
             self.btnplay.set_active(False)
 
-    def on_zzub_player_state_changed(self,state):
+    def on_zzub_player_state_changed(self, state):
         """
         called when the player state changes. updates the play button.
         """
         self.update_btnplay()
 
-    def on_zzub_parameter_changed(self,plugin,group,track,param,value):
+    def on_zzub_parameter_changed(self, plugin, group, track, param, value):
         """
         called when a parameter changes in zzub. checks whether this parameter
         is related to master bpm or tpb and updates the view.
         """
-        player = com.get('neil.core.player')
-        master = player.get_plugin(0)
-        bpm = master.get_parameter_value(1, 0, 1)
-        if (group,track) == (1,0):
+        # player = com.get('neil.core.player')
+        # master = player.get_plugin(0)
+        # bpm = master.get_parameter_value(1, 0, 1)
+        if (group, track) == (1, 0):
             if param == 1:
                 self.update_bpm()
                 try:
@@ -295,14 +305,18 @@ class TransportPanel(gtk.HBox):
         config.get_config().set_default_int('TPB', int(self.tpb.get_value()))
 
     def update_bpm(self):
-        block = self.hgroup.autoblock()
+        """
+        Update Beats Per Minute
+        """
         player = com.get('neil.core.player')
         master = player.get_plugin(0)
         bpm = master.get_parameter_value(1, 0, 1)
         self.bpm.set_value(bpm)
 
     def update_tpb(self):
-        block = self.hgroup.autoblock()
+        """
+        Update Ticks Per Beat
+        """
         player = com.get('neil.core.player')
         master = player.get_plugin(0)
         tpb = master.get_parameter_value(1, 0, 2)
@@ -324,4 +338,3 @@ __neil__ = dict(
                 TransportPanel,
         ],
 )
-

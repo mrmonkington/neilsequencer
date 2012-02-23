@@ -30,16 +30,15 @@ if __name__ == '__main__':
 
 import gtk
 import pango
-import cairo
 import gobject
 import sys
-from neil.utils import PLUGIN_FLAGS_MASK, ROOT_PLUGIN_FLAGS
-from neil.utils import GENERATOR_PLUGIN_FLAGS, EFFECT_PLUGIN_FLAGS
-from neil.utils import CONTROLLER_PLUGIN_FLAGS
-from neil.utils import prepstr, from_hsb, to_hsb, get_item_count
+# from neil.utils import PLUGIN_FLAGS_MASK, ROOT_PLUGIN_FLAGS
+# from neil.utils import GENERATOR_PLUGIN_FLAGS, EFFECT_PLUGIN_FLAGS
+# from neil.utils import CONTROLLER_PLUGIN_FLAGS
+from neil.utils import prepstr, get_item_count
 from neil.utils import get_clipboard_text, set_clipboard_text, add_scrollbars
 from neil.utils import is_effect, is_generator, is_controller
-from neil.utils import is_root, get_new_pattern_name, filepath
+from neil.utils import is_root, get_new_pattern_name
 from neil.utils import Menu
 import random
 import config
@@ -56,11 +55,13 @@ SEQKEYMAP = dict(zip(SEQKEYS, range(0x10, len(SEQKEYS) + 0x10)))
 SEQKEYMAP[chr(45)] = 0x00
 SEQKEYMAP[chr(44)] = 0x01
 
+
 class PatternNotFoundException(Exception):
     """
     Exception thrown when pattern is not found.
     """
     pass
+
 
 class AddSequencerTrackDialog(gtk.Dialog):
     """
@@ -78,12 +79,13 @@ class AddSequencerTrackDialog(gtk.Dialog):
         self.btnok = self.add_button(gtk.STOCK_OK, gtk.RESPONSE_OK)
         self.btncancel = self.add_button(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL)
         self.combo = gtk.combo_box_new_text()
-        for machine in sorted(machines, lambda a,b: cmp(a.lower(), b.lower())):
+        for machine in sorted(machines, lambda a, b: cmp(a.lower(), b.lower())):
             self.combo.append_text(machine)
         # Set a default.
         self.combo.set_active(0)
         self.vbox.add(self.combo)
         self.show_all()
+
 
 class SequencerToolBar(gtk.HBox):
     """
@@ -143,7 +145,7 @@ class SequencerToolBar(gtk.HBox):
             self.stepselect.append_text("%i" % i)
         try:
             self.stepselect.set_active(self.steps.index(self.parent.view.step))
-            config.get_config().set_default_int('SequencerStep', 
+            config.get_config().set_default_int('SequencerStep',
                                                 self.parent.view.step)
             player.sequence_step = self.parent.view.step
         except ValueError:
@@ -152,10 +154,10 @@ class SequencerToolBar(gtk.HBox):
 
     def on_stepselect(self, widget, event=False):
         """
-        Handles events sent from the choice box when a step size 
-        is being selected.
+        Handles events sent from the choice box when a step size is being selected.
         """
-        try: step = int(widget.get_active_text())
+        try:
+            step = int(widget.get_active_text())
         except:
             self.parent.view_step = 1
             return
@@ -163,15 +165,16 @@ class SequencerToolBar(gtk.HBox):
             return
         if self.parent.view.step == step:
             return
-        if (step>128):
+        if (step > 128):
             self.parent.view.step = 128
-        if (step<1):
+        if (step < 1):
             self.parent.view.step = 1
         else:
             self.parent.view.step = step
         self.parent.update_all()
         player = com.get('neil.core.player')
         player.set_seqstep(step)
+
 
 class SequencerPanel(gtk.VBox):
     """
@@ -204,7 +207,7 @@ class SequencerPanel(gtk.VBox):
         self.seqliststore = gtk.ListStore(str, str)
         self.seqpatternlist = gtk.TreeView(self.seqliststore)
         self.seqpatternlist.set_rules_hint(True)
-        self.seqpatternlist.connect("button-press-event", 
+        self.seqpatternlist.connect("button-press-event",
                                     self.on_pattern_list_button)
         self.seqpatternlist.connect("enter-notify-event",
                                     self.on_mouse_over)
@@ -233,7 +236,7 @@ class SequencerPanel(gtk.VBox):
                              self.on_mouse_over)
         self.viewport = gtk.Viewport()
         self.viewport.add(self.seqview)
-        scrollwin = gtk.Table(2,2)
+        scrollwin = gtk.Table(2, 2)
         scrollwin.attach(self.viewport, 0, 1, 0, 1,
                          gtk.FILL | gtk.EXPAND, gtk.FILL | gtk.EXPAND)
         scrollwin.attach(vscroll, 1, 2, 0, 1, 0, gtk.FILL)
@@ -273,8 +276,8 @@ class SequencerPanel(gtk.VBox):
             from patterns import show_pattern_dialog
             from patterns import DLGMODE_NEW
             from neil.utils import get_new_pattern_name
-            result = show_pattern_dialog(treeview, 
-                                         get_new_pattern_name(self.plugin), 
+            result = show_pattern_dialog(treeview,
+                                         get_new_pattern_name(self.plugin),
                                          self.seqview.step, DLGMODE_NEW, False)
             if result == None:
                 return
@@ -286,12 +289,13 @@ class SequencerPanel(gtk.VBox):
                 plugin.add_pattern(pattern)
                 player = com.get('neil.core.player')
                 player.history_commit("new pattern")
+
         def on_clone(item, pattern):
             from patterns import show_pattern_dialog
             from patterns import DLGMODE_COPY
             from neil.utils import get_new_pattern_name
-            result = show_pattern_dialog(treeview, 
-                                         get_new_pattern_name(self.plugin), 
+            result = show_pattern_dialog(treeview,
+                                         get_new_pattern_name(self.plugin),
                                          self.seqview.step, DLGMODE_COPY, False)
             if result == None:
                 return
@@ -303,12 +307,13 @@ class SequencerPanel(gtk.VBox):
                 m.add_pattern(p)
                 player = com.get('neil.core.player')
                 player.history_commit("clone pattern")
+
         def on_rename(item, pattern):
             from patterns import show_pattern_dialog
             from patterns import DLGMODE_CHANGE
             from neil.utils import get_new_pattern_name
-            result = show_pattern_dialog(treeview, 
-                                         self.plugin.get_pattern_name(pattern), 
+            result = show_pattern_dialog(treeview,
+                                         self.plugin.get_pattern_name(pattern),
                                          self.plugin.get_pattern_length(pattern),
                                          DLGMODE_CHANGE, False)
             if result == None:
@@ -321,6 +326,7 @@ class SequencerPanel(gtk.VBox):
                 player = com.get('neil.core.player')
                 player.history_commit("change pattern properties")
             self.view.redraw()
+
         def on_clear(item, pattern):
             plugin = self.plugin
             length = plugin.get_pattern_length(pattern)
@@ -330,6 +336,7 @@ class SequencerPanel(gtk.VBox):
             plugin.update_pattern(pattern, new_pattern)
             player = com.get('neil.core.player')
             player.history_commit("clear pattern")
+
         def on_delete(item, pattern):
             plugin = self.plugin
             if pattern >= 0:
@@ -389,7 +396,7 @@ class SequencerPanel(gtk.VBox):
         for k, v in self.view.plugin_info.iteritems():
             v.patterngfx = {}
         self.view.update()
-        self.seqview.set_cursor_pos(0,0)
+        self.seqview.set_cursor_pos(0, 0)
         self.seqview.adjust_scrollbars()
         self.seqview.redraw()
         self.seqview.adjust_scrollbars()
@@ -403,7 +410,7 @@ class SequencerPanel(gtk.VBox):
         self.seqliststore.append([',', 'Break'])
         track = self.seqview.get_track()
         if track:
-            for pattern, key in zip(track.get_plugin().get_pattern_list(), 
+            for pattern, key in zip(track.get_plugin().get_pattern_list(),
                                     SEQKEYS):
                 self.seqliststore.append([key, pattern.get_name()])
             self.plugin = track.get_plugin()
@@ -447,6 +454,7 @@ class SequencerPanel(gtk.VBox):
 
 # end of class SequencerFrame
 
+
 class SequencerView(gtk.DrawingArea):
     """
     Sequence viewer class.
@@ -460,9 +468,9 @@ class SequencerView(gtk.DrawingArea):
         self.panel = panel
         self.hscroll = hscroll
         self.vscroll = vscroll
-        
+
         self.needfocus = True
-        
+
         # Variables that were previously defined as constants.
         self.seq_track_size = 36
         self.seq_step = 16
@@ -477,7 +485,7 @@ class SequencerView(gtk.DrawingArea):
         self.track = 0
         self.startseqtime = 0
         self.starttrack = 0
-        self.step = config.get_config().get_default_int('SequencerStep', 
+        self.step = config.get_config().get_default_int('SequencerStep',
                                                         self.seq_step)
         self.wmax = 0
         player.set_loop_end(self.step)
@@ -502,7 +510,7 @@ class SequencerView(gtk.DrawingArea):
         eventbus.document_loaded += self.redraw
         set_clipboard_text("invalid_clipboard_data")
 
-    def track_row_to_pos(self, (track,row)):
+    def track_row_to_pos(self, (track, row)):
         """
         Converts track and row to a pixel coordinate.
 
@@ -516,16 +524,16 @@ class SequencerView(gtk.DrawingArea):
         if row == -1:
             x = 0
         else:
-            x = int((((float(row) - self.startseqtime)/self.step) * 
+            x = int((((float(row) - self.startseqtime) / self.step) *
                      self.seq_row_size) + self.seq_left_margin + 0.5)
         if track == -1:
             y = 0
         else:
-            y = (((track - self.starttrack) * self.seq_track_size) + 
+            y = (((track - self.starttrack) * self.seq_track_size) +
                  self.seq_top_margin)
         return x, y
 
-    def pos_to_track_row(self, (x,y)):
+    def pos_to_track_row(self, (x, y)):
         """
         Converts pixel coordinate to a track and row.
 
@@ -544,21 +552,21 @@ class SequencerView(gtk.DrawingArea):
             track = -1
         else:
             track = ((y - self.seq_top_margin) / self.seq_track_size) + self.starttrack
-        return track,row
+        return track, row
 
     def get_endtrack(self):
         """
         Get the last visible track.
         """
-        w,h = self.get_client_size()
-        return self.pos_to_track_row((0,h))[0]
+        w, h = self.get_client_size()
+        return self.pos_to_track_row((0, h))[0]
 
     def get_endrow(self):
         """
         Get the last visible row.
         """
-        w,h = self.get_client_size()
-        return self.pos_to_track_row((w,0))[1]
+        w, h = self.get_client_size()
+        return self.pos_to_track_row((w, 0))[1]
 
     def set_cursor_pos(self, track, row):
         """
@@ -643,7 +651,7 @@ class SequencerView(gtk.DrawingArea):
             return
         if index != -1:
             pcount = t.get_plugin().get_pattern_count()
-            t.set_event(self.row, min(index, 0x10 + pcount-1))
+            t.set_event(self.row, min(index, 0x10 + pcount - 1))
         else:
             t.insert_events(self.row, self.step)
         player.history_commit("insert sequence")
@@ -663,10 +671,10 @@ class SequencerView(gtk.DrawingArea):
                                 min(self.selection_start[1], self.selection_end[1]))
         end = (max(self.selection_start[0], self.selection_end[0]),
                                 max(self.selection_start[1], self.selection_end[1]))
-        for track in range(start[0], end[0]+1):
+        for track in range(start[0], end[0] + 1):
             t = player.get_sequence(track)
             events = dict(t.get_event_list())
-            for row in range(start[1], end[1]+1):
+            for row in range(start[1], end[1] + 1):
                 if row in events:
                     yield track, row, events[row]
                 else:
@@ -679,13 +687,13 @@ class SequencerView(gtk.DrawingArea):
         @param d: Data that is to be unpacked.
         @type d: unicode
         """
-        magic,d = d[:len(self.CLIPBOARD_SEQUENCER)], d[len(self.CLIPBOARD_SEQUENCER):]
+        magic, d = d[:len(self.CLIPBOARD_SEQUENCER)], d[len(self.CLIPBOARD_SEQUENCER):]
         if magic != self.CLIPBOARD_SEQUENCER:
             raise ValueError
         while d:
-            track,d = int(d[:4],16),d[4:]
-            row,d = int(d[:8],16),d[8:]
-            value,d = int(d[:4],16),d[4:]
+            track, d = int(d[:4], 16), d[4:]
+            row, d = int(d[:8], 16), d[8:]
+            value, d = int(d[:4], 16), d[4:]
             yield track, row, value
 
     def on_popup_copy(self, *args):
@@ -697,7 +705,7 @@ class SequencerView(gtk.DrawingArea):
             return
         data = self.CLIPBOARD_SEQUENCER
         startrow = min(self.selection_start[1], self.selection_end[1])
-        for track,row,value in self.selection_range():
+        for track, row, value in self.selection_range():
             data += "%04x%08x%04x" % (track, row - startrow, value)
         set_clipboard_text(data)
 
@@ -715,9 +723,9 @@ class SequencerView(gtk.DrawingArea):
         except TypeError:
             # There is no selection.
             return
-        for t in seq.get_track_list()[start[0]:end[0]+1]:
+        for t in seq.get_track_list()[start[0]:end[0] + 1]:
             m = t.get_plugin()
-            patternsize = end[1]+self.step - start[1]
+            patternsize = end[1] + self.step - start[1]
             name = get_new_pattern_name(m)
             p = m.create_pattern(patternsize)
             p.set_name(name)
@@ -725,7 +733,7 @@ class SequencerView(gtk.DrawingArea):
             for i in xrange(m.get_pattern_count()):
                 pattern = m.get_pattern(i)
                 if pattern.get_name() == name:
-                    t.set_event(start[1], 0x10+i)
+                    t.set_event(start[1], 0x10 + i)
                     break
             player.history_commit("new pattern")
 
@@ -746,19 +754,19 @@ class SequencerView(gtk.DrawingArea):
             eventlist = []
             m = t.get_plugin()
             for time, value in t.get_event_list():
-                if (time >= start[1]) and (time < (end[1]+self.step)):
+                if (time >= start[1]) and (time < (end[1] + self.step)):
                     if value >= 0x10:
                         value -= 0x10
                         # copy contents between patterns
                         eventlist.append((time, m.get_pattern(value)))
-                        patternsize = max(patternsize, time - start[1] + 
+                        patternsize = max(patternsize, time - start[1] +
                                           m.get_pattern(value).get_row_count())
             if patternsize:
                 name = get_new_pattern_name(m)
                 p = m.create_pattern(patternsize)
                 p.set_name(name)
                 #m.add_pattern(p)
-                group_track_count = [m.get_input_connection_count(), 
+                group_track_count = [m.get_input_connection_count(),
                                      1, m.get_track_count()]
                 for time, pattern in eventlist:
                     t.set_event(time, -1)
@@ -768,7 +776,7 @@ class SequencerView(gtk.DrawingArea):
                             for ti in xrange(group_track_count[g]):
                                 for i in xrange(m.get_pluginloader().\
                                                     get_parameter_count(g)):
-                                    p.set_value(rowtime, g, ti, i, 
+                                    p.set_value(rowtime, g, ti, i,
                                                 pattern.get_value(r, g, ti, i))
                 m.add_pattern(p)
                 for i in xrange(m.get_pattern_count()):
@@ -792,7 +800,7 @@ class SequencerView(gtk.DrawingArea):
         seq = player.get_current_sequencer()
         data = get_clipboard_text()
         try:
-            for track,row,value in self.unpack_clipboard_data(data.strip()):
+            for track, row, value in self.unpack_clipboard_data(data.strip()):
                 t = seq.get_sequence(track)
                 if value == -1:
                     t.set_event(self.row + row, -1)
@@ -818,9 +826,9 @@ class SequencerView(gtk.DrawingArea):
         except TypeError:
             # There is no selection.
             return
-        for track in range(start[0], end[0]+1):
+        for track in range(start[0], end[0] + 1):
             t = seq.get_sequence(track)
-            for row in range(start[1], end[1]+1):
+            for row in range(start[1], end[1] + 1):
                 t.set_event(row, -1)
         player.history_commit("delete selection")
         player.set_callback_state(True)
@@ -841,7 +849,7 @@ class SequencerView(gtk.DrawingArea):
         track_count = seq.get_sequence_track_count()
         player.history_commit("delete track")
         # moves cursor if beyond existing tracks
-        if self.track > track_count-1:
+        if self.track > track_count - 1:
             self.set_cursor_pos(track_count - 1, self.row)
         self.adjust_scrollbars()
         self.redraw()
@@ -907,8 +915,8 @@ class SequencerView(gtk.DrawingArea):
         player = com.get('neil.core.player')
         seq = player.get_current_sequencer()
         x, y = int(event.x), int(event.y)
-        track, row = self.pos_to_track_row((x,y))
-        self.set_cursor_pos(max(min(track,seq.get_sequence_track_count()),0),self.row)
+        track, row = self.pos_to_track_row((x, y))
+        self.set_cursor_pos(max(min(track, seq.get_sequence_track_count()), 0), self.row)
 
         if self.selection_start != None:
             sel_sensitive = True
@@ -921,8 +929,8 @@ class SequencerView(gtk.DrawingArea):
         menu = Menu()
         pmenu = Menu()
         wavemenu = Menu()
-        for plugin in sorted(list(player.get_plugin_list()), lambda a,b: cmp(a.get_name().lower(),b.get_name().lower())):
-            pmenu.add_item(prepstr(plugin.get_name().replace("_","__")), self.on_popup_add_track, plugin)
+        for plugin in sorted(list(player.get_plugin_list()), lambda a, b: cmp(a.get_name().lower(), b.get_name().lower())):
+            pmenu.add_item(prepstr(plugin.get_name().replace("_", "__")), self.on_popup_add_track, plugin)
         for i in xrange(player.get_wave_count()):
             w = player.get_wave(i)
             name = "%02X. %s" % ((i + 1), prepstr(w.get_name()))
@@ -974,7 +982,7 @@ class SequencerView(gtk.DrawingArea):
 
     def set_loop_end(self, *args):
         player = com.get('neil.core.player')
-        pos = self.row# + self.step
+        pos = self.row  # + self.step
         if player.get_loop_end() != pos:
             player.set_loop_end(pos)
             if pos > player.get_song_end():
@@ -998,7 +1006,7 @@ class SequencerView(gtk.DrawingArea):
         kv = event.keyval
         # convert keypad numbers
         if gtk.gdk.keyval_from_name('KP_0') <= kv <= gtk.gdk.keyval_from_name('KP_9'):
-            kv = kv - gtk.gdk.keyval_from_name('KP_0')  + gtk.gdk.keyval_from_name('0')
+            kv = kv - gtk.gdk.keyval_from_name('KP_0') + gtk.gdk.keyval_from_name('0')
         k = gtk.gdk.keyval_name(event.keyval)
         #print kv, k, event.keyval
         arrow_down = k in ['Left', 'Right', 'Up', 'Down', 'KP_Left', 'KP_Right', 'KP_Up', 'KP_Down']
@@ -1009,10 +1017,10 @@ class SequencerView(gtk.DrawingArea):
                 self.selection_start = (self.track, self.row)
         elif arrow_down:
             self.deselect()
-        if mask & gtk.gdk.SHIFT_MASK and (k in ('KP_Add','plus','asterisk')):
+        if mask & gtk.gdk.SHIFT_MASK and (k in ('KP_Add', 'plus', 'asterisk')):
             self.panel.toolbar.increase_step()
             self.set_cursor_pos(self.track, self.row)
-        elif mask & gtk.gdk.SHIFT_MASK and (k in ('KP_Subtract','underscore')):
+        elif mask & gtk.gdk.SHIFT_MASK and (k in ('KP_Subtract', 'underscore')):
             self.panel.toolbar.decrease_step()
             self.set_cursor_pos(self.track, self.row)
         elif (mask & gtk.gdk.CONTROL_MASK):
@@ -1048,14 +1056,14 @@ class SequencerView(gtk.DrawingArea):
             elif k == 'Up' or k == 'KP_Up':
                 if self.track > 0:
                     t = seq.get_track_list()[self.track]
-                    t.move(self.track-1)
+                    t.move(self.track - 1)
                     self.track -= 1
                     player.history_commit("move track")
                     self.redraw()
             elif k == 'Down' or k == 'KP_Down':
-                if self.track < (seq.get_sequence_track_count()-1):
+                if self.track < (seq.get_sequence_track_count() - 1):
                     t = seq.get_track_list()[self.track]
-                    t.move(self.track+1)
+                    t.move(self.track + 1)
                     self.track += 1
                     player.history_commit("move track")
                     self.redraw()
@@ -1073,10 +1081,10 @@ class SequencerView(gtk.DrawingArea):
             self.set_cursor_pos(self.track, self.row + self.step)
             self.adjust_scrollbars()
         elif k == 'Up' or k == 'KP_Up':
-            self.set_cursor_pos(self.track-1, self.row)
+            self.set_cursor_pos(self.track - 1, self.row)
             self.adjust_scrollbars()
         elif k == 'Down' or k == 'KP_Down':
-            self.set_cursor_pos(self.track+1, self.row)
+            self.set_cursor_pos(self.track + 1, self.row)
             self.adjust_scrollbars()
         elif ((kv < 256) and (chr(kv).lower() in SEQKEYMAP) and
               self.selection_start == None and self.selection_end == None):
@@ -1084,7 +1092,7 @@ class SequencerView(gtk.DrawingArea):
             t = self.get_track()
             if t:
                 mp = t.get_plugin()
-                if (idx < 0x10) or ((idx-0x10) < mp.get_pattern_count()):
+                if (idx < 0x10) or ((idx - 0x10) < mp.get_pattern_count()):
                     if (idx >= 0x10):
                         newrow = self.row + mp.get_pattern(idx - 0x10).get_row_count()
                         newrow = newrow - (newrow % self.step)
@@ -1095,11 +1103,11 @@ class SequencerView(gtk.DrawingArea):
                     self.set_cursor_pos(self.track, newrow)
                     #print self.track, self.row
                     self.adjust_scrollbars()
-        elif k == 'space': # space
+        elif k == 'space':  # space
             spl = self.panel.seqpatternlist
             store, row = spl.get_selection().get_selected_rows()
             row = (row and row[0][0]) or 0
-            sel = min(max(row,0),get_item_count(spl.get_model())-1)
+            sel = min(max(row, 0), get_item_count(spl.get_model()) - 1)
             if sel >= 2:
                 sel = sel - 2 + 0x10
             self.insert_at_cursor(sel)
@@ -1110,8 +1118,8 @@ class SequencerView(gtk.DrawingArea):
         elif k == 'Insert' or  k == 'KP_Insert':
             self.insert_at_cursor()
             self.adjust_scrollbars()
-        elif k == 'period': # dot
-            m,pat,bp = self.get_pattern_at(self.track, self.row, includespecial=True)
+        elif k == 'period':  # dot
+            m, pat, bp = self.get_pattern_at(self.track, self.row, includespecial=True)
             if pat != None:
                 if pat >= 0x10:
                     pat = m.get_pattern(pat - 0x10)
@@ -1136,13 +1144,13 @@ class SequencerView(gtk.DrawingArea):
             spl = self.panel.seqpatternlist
             store, sel = spl.get_selection().get_selected_rows()
             sel = (sel and sel[0][0]) or 0
-            sel = min(max(sel-1,0),get_item_count(spl.get_model())-1)
+            sel = min(max(sel - 1, 0), get_item_count(spl.get_model()) - 1)
             spl.get_selection().select_path((sel,))
         elif k == 'Page_Down' or k == 'KP_Page_Down':
             spl = self.panel.seqpatternlist
             store, sel = spl.get_selection().get_selected_rows()
             sel = (sel and sel[0][0]) or 0
-            sel = min(max(sel+1,0),get_item_count(spl.get_model())-1)
+            sel = min(max(sel + 1, 0), get_item_count(spl.get_model()) - 1)
             spl.get_selection().select_path((sel,))
         elif k == 'Return':
             m, index, bp = self.get_pattern_at(self.track, self.row)
@@ -1254,15 +1262,15 @@ class SequencerView(gtk.DrawingArea):
                     self.deselect()
                     self.dragging = True
                     self.grab_add()
-            if event.type == gtk.gdk._2BUTTON_PRESS: # double-click
+            if event.type == gtk.gdk._2BUTTON_PRESS:  # double-click
                 m, index, bp = self.get_pattern_at(self.track, self.row)
                 if index == None:
                     track = self.get_track()
                     if track:
                         self.jump_to_pattern(track.get_plugin())
                         return
-                    self.jump_to_pattern(m, index)       
-                    
+                    self.jump_to_pattern(m, index)
+
         elif event.button == 3:
             if (x < self.seq_left_margin) and (track < track_count):
                 mp = player.get_sequence(track).get_plugin()
@@ -1387,9 +1395,9 @@ class SequencerView(gtk.DrawingArea):
     def adjust_scrollbars(self):
         w, h = self.get_client_size()
         vw, vh = self.get_virtual_size()
-        pw, ph = (int((w - self.seq_left_margin) / 
-                     float(self.seq_row_size) + 0.5), 
-                  int((h - self.seq_top_margin) / 
+        pw, ph = (int((w - self.seq_left_margin) /
+                     float(self.seq_row_size) + 0.5),
+                  int((h - self.seq_top_margin) /
                       float(self.seq_track_size) + 0.5))
         #print w, h
         #print vw, vh
@@ -1405,9 +1413,9 @@ class SequencerView(gtk.DrawingArea):
         else:
             self.vscroll.show()
         adj = self.hscroll.get_adjustment()
-        adj.set_all(self.startseqtime / self.step, 0, 
-                    int(vw + (w - self.seq_left_margin) / 
-                        float(self.seq_row_size) - 2), 
+        adj.set_all(self.startseqtime / self.step, 0,
+                    int(vw + (w - self.seq_left_margin) /
+                        float(self.seq_row_size) - 2),
                     1, 1, pw)
         adj = self.vscroll.get_adjustment()
         adj.set_all(self.starttrack, 0, vh, 1, 1, ph)
@@ -1456,10 +1464,10 @@ class SequencerView(gtk.DrawingArea):
         gc = self.window.new_gc()
         cr = self.window.cairo_create()
         colormap = gc.get_colormap()
-        drawable = self.window
+        # drawable = self.window
         width, height = self.get_client_size()
         red = colormap.alloc_color('#ff0000')
-        white = colormap.alloc_color('#ffffff')
+        # white = colormap.alloc_color('#ffffff')
         gc.set_foreground(red)
         gc.set_background(red)
         gc.line_width = 2
@@ -1487,7 +1495,7 @@ class SequencerView(gtk.DrawingArea):
                                                                 self.row))
                     cursor_width = self.seq_row_size
                     cursor_height = self.seq_track_size
-                cr.rectangle(cursor_x + 0.5, cursor_y + 0.5, 
+                cr.rectangle(cursor_x + 0.5, cursor_y + 0.5,
                              cursor_width, cursor_height)
                 cr.set_source_rgba(1.0, 0.0, 0.0, 1.0)
                 cr.set_line_width(1)
@@ -1498,7 +1506,7 @@ class SequencerView(gtk.DrawingArea):
     def draw_playpos(self):
         if not self.window:
             return
-        player = com.get('neil.core.player')
+        # player = com.get('neil.core.player')
         gc = self.window.new_gc()
         colormap = gc.get_colormap()
         white = colormap.alloc_color('#ffffff')
@@ -1594,7 +1602,7 @@ class SequencerView(gtk.DrawingArea):
         layout = pango.Layout(self.get_pango_context())
         layout.set_width(-1)
         layout.set_font_description(pango.FontDescription("sans 8"))
-        cfg = config.get_config()
+        # cfg = config.get_config()
         sequencer = player.get_current_sequencer()
         tracks = sequencer.get_track_list()
         for track_index in range(self.starttrack, len(tracks)):
@@ -1639,7 +1647,7 @@ class SequencerView(gtk.DrawingArea):
                                     if val1 != param.get_value_none() and val2 != param.get_value_none:
                                         scaled1 = (val1 - param.get_value_min()) * scale
                                         scaled2 = (val2 - param.get_value_min()) * scale
-                                        gfx.draw_line(ctx, 
+                                        gfx.draw_line(ctx,
                                                       int(1 + gfx_w * (row / float(length))),
                                                       int(1 + (gfx_h - 2) * (1.0 - scaled1)),
                                                       int(1 + gfx_w * ((row + 1) / float(length))),
@@ -1730,11 +1738,9 @@ class SequencerView(gtk.DrawingArea):
             ctx.set_foreground(colors['Weak Line'])
             drawable.draw_line(ctx, self.seq_left_margin + 1, y, width - 1, y)
         cr = self.window.cairo_create()
-        cr.rectangle(self.seq_left_margin, 0, 
-                     5, height)
+        cr.rectangle(self.seq_left_margin, 0, 5, height)
         cr.set_source_rgba(0.0, 0.0, 0.0, 0.15)
         cr.fill()
-
 
     def draw_loop_points(self, ctx, colors):
         player = com.get('neil.core.player')
@@ -1776,23 +1782,23 @@ class SequencerView(gtk.DrawingArea):
         width, height = self.get_client_size()
         cfg = config.get_config()
         colors = {
-            'Background' : colormap.alloc_color(cfg.get_color('SE Background')),
-            'Border' : colormap.alloc_color(cfg.get_color('SE Border')),
-            'Strong Line' : colormap.alloc_color(cfg.get_color('SE Strong Line')),
-            'Weak Line' : colormap.alloc_color(cfg.get_color('SE Weak Line')),
-            'Text' : colormap.alloc_color(cfg.get_color('SE Text')),
-            'Track Background' : colormap.alloc_color(cfg.get_color('SE Track Background')),
-            'Track Foreground' : colormap.alloc_color(cfg.get_color('SE Track Foreground')),
-            'Loop Line' : colormap.alloc_color(cfg.get_color('SE Loop Line')),
-            'End Marker' : colormap.alloc_color(cfg.get_color('SE End Marker')),
-            'Master Bg' : colormap.alloc_color(cfg.get_color('MV Master')),
-            'Effect Bg' : colormap.alloc_color(cfg.get_color('MV Effect')),
-            'Generator Bg' : colormap.alloc_color(cfg.get_color('MV Generator')),
-            'Controller Bg' : colormap.alloc_color(cfg.get_color('MV Controller')),
-            'Master Bg Mute' : colormap.alloc_color(cfg.get_color('MV Master Mute')),
-            'Effect Bg Mute' : colormap.alloc_color(cfg.get_color('MV Effect Mute')),
-            'Generator Bg Mute' : colormap.alloc_color(cfg.get_color('MV Generator Mute')),
-            'Controller Bg Mute' : colormap.alloc_color(cfg.get_color('MV Controller Mute'))
+            'Background': colormap.alloc_color(cfg.get_color('SE Background')),
+            'Border': colormap.alloc_color(cfg.get_color('SE Border')),
+            'Strong Line': colormap.alloc_color(cfg.get_color('SE Strong Line')),
+            'Weak Line': colormap.alloc_color(cfg.get_color('SE Weak Line')),
+            'Text': colormap.alloc_color(cfg.get_color('SE Text')),
+            'Track Background': colormap.alloc_color(cfg.get_color('SE Track Background')),
+            'Track Foreground': colormap.alloc_color(cfg.get_color('SE Track Foreground')),
+            'Loop Line': colormap.alloc_color(cfg.get_color('SE Loop Line')),
+            'End Marker': colormap.alloc_color(cfg.get_color('SE End Marker')),
+            'Master Bg': colormap.alloc_color(cfg.get_color('MV Master')),
+            'Effect Bg': colormap.alloc_color(cfg.get_color('MV Effect')),
+            'Generator Bg': colormap.alloc_color(cfg.get_color('MV Generator')),
+            'Controller Bg': colormap.alloc_color(cfg.get_color('MV Controller')),
+            'Master Bg Mute': colormap.alloc_color(cfg.get_color('MV Master Mute')),
+            'Effect Bg Mute': colormap.alloc_color(cfg.get_color('MV Effect Mute')),
+            'Generator Bg Mute': colormap.alloc_color(cfg.get_color('MV Generator Mute')),
+            'Controller Bg Mute': colormap.alloc_color(cfg.get_color('MV Controller Mute'))
             }
         # Draw the background
         ctx.set_foreground(colors['Background'])
@@ -1818,4 +1824,3 @@ __neil__ = dict(
                 SequencerView,
         ],
 )
-

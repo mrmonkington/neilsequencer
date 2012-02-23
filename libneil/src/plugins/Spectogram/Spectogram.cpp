@@ -46,11 +46,12 @@ void Spectogram::calcSpectrum() {
 	// fftw_plan plan; // double
 	fftwf_plan plan; // single
 
+	// plan = fftwf_plan_r2r_1d(n, amp, fft, FFTW_R2HC, FFTW_MEASURE); // single
 	plan = fftwf_plan_r2r_1d(n, amp, fft, FFTW_R2HC, FFTW_ESTIMATE); // single
 
 	fftwf_execute(plan); // single
 
-	spec  = (fftw_type*) fftw_malloc(sizeof(fftw_type) * (n/2 + 1));
+	spec  = (fftw_type*) fftw_malloc(sizeof(fftw_type) * ((n>>1) + 1));
 
 	HC_to_amp2(n, fft, n*n, spec);
 
@@ -64,21 +65,78 @@ void Spectogram::calcSpectrum() {
 
 }
 
+// from sndfile-spectrogram.c (sndfile-tools)
+#define ARRAY_LEN(x)	((int) (sizeof (x) / sizeof (x [0])))
+static void
+get_colour_map_value (float value, double spec_floor_db, unsigned char colour [3])
+{	static unsigned char map [][3] =
+	{	/* These values were originally calculated for a dynamic range of 180dB. */
+		{	255, 255, 255 },  /* -0dB */
+		{	240, 254, 216 },  /* -10dB */
+		{	242, 251, 185 },  /* -20dB */
+		{	253, 245, 143 },  /* -30dB */
+		{	253, 200, 102 },  /* -40dB */
+		{	252, 144,  66 },  /* -50dB */
+		{	252,  75,  32 },  /* -60dB */
+		{	237,  28,  41 },  /* -70dB */
+		{	214,   3,  64 },  /* -80dB */
+		{	183,   3, 101 },  /* -90dB */
+		{	157,   3, 122 },  /* -100dB */
+		{	122,   3, 126 },  /* -110dB */
+		{	 80,   2, 110 },  /* -120dB */
+		{	 45,   2,  89 },  /* -130dB */
+		{	 19,   2,  70 },  /* -140dB */
+		{	  1,   3,  53 },  /* -150dB */
+		{	  1,   3,  37 },  /* -160dB */
+		{	  1,   2,  19 },  /* -170dB */
+		{	  0,   0,   0 },  /* -180dB */
+	} ;
+
+	float rem ;
+	int indx ;
+
+	if (value >= 0.0)
+	{	colour = map [0] ;
+		return ;
+		} ;
+
+	value = fabs (value * (-180.0 / spec_floor_db) * 0.1) ;
+
+	indx = lrintf (floor (value)) ;
+
+	if (indx < 0)
+	{	printf ("\nError : colour map array index is %d\n\n", indx) ;
+		exit (1) ;
+		} ;
+
+	if (indx >= ARRAY_LEN (map) - 1)
+	{	colour = map [ARRAY_LEN (map) - 1] ;
+		return ;
+		} ;
+
+	rem = fmod (value, 1.0) ;
+
+	colour [0] = lrintf ((1.0 - rem) * map [indx][0] + rem * map [indx + 1][0]) ;
+	colour [1] = lrintf ((1.0 - rem) * map [indx][1] + rem * map [indx + 1][1]) ;
+	colour [2] = lrintf ((1.0 - rem) * map [indx][2] + rem * map [indx + 1][2]) ;
+
+	return ;
+} /* get_colour_map_value */
+
+guint32 Spectogram::getColor(float f) {
+	unsigned char rgb [3] = {0, 0, 0};
+	get_colour_map_value(f, -dbrange, rgb);
+	return 0xff << 24 | rgb[0] << 16 | rgb[1] << 8 | rgb[2];
+}
+
 void Spectogram::drawSpectrum(cairo_t* cr, int n, int w, int h)
 {	
+	if(!spec) return;
+	
 	const float Fs = _master_info->samples_per_second;
 
-	for (int i=0; i<=n/2; i++) {
-		float a = spec[i];
-		a = (10.0*log10(a) + dbrange) / dbrange;
-		a = std::max(0.f, std::min(1.f, a));
-
-		// ARGB
-		guint32 c = 0;
-		c |= int(0xff * a);
-		c |= int(0xff * a) << 8;
-		c |= int(0xff * a) << 16;
-		c |= 0xff << 24;
+	for (int i=1; i<=n>>1; i++) {
+		guint32 c = getColor(10.0*log10(spec[i]));
 
 		float fl;
 		float fh;
@@ -91,13 +149,20 @@ void Spectogram::drawSpectrum(cairo_t* cr, int n, int w, int h)
 			fh = 1.f - fh / 25;
 		}
 		else {
-			fl = 1.f - i / float(n/2);
-			fh = 1.f - (i-1) / float(n/2);
+			fl = 1.f - i / float(n>>1);
+			fh = 1.f - (i-1) / float(n>>1);
 		}
 				
-		for(int j=fl*h; j<=fh*h; j++)
+		for(int j=fl*h; j<=fh*h; j++) {
 			gdk_image_put_pixel (image, phase, j, c);
+		}
 	}
+
+	// for(int i=0; i<10; i++) 
+	// for(int j=0; j<h; j++) {
+	// 	guint32 c = getColor(float(j)/h * -180);
+	// 	gdk_image_put_pixel (image, i, j, c);
+	// }	
 }
 
 static gchar* format_value_callback_windowing(GtkScale *scale, gdouble value)
@@ -162,6 +227,7 @@ void Spectogram::destroy() {
 	g_source_remove(timer);
 
 	gdk_image_unref(image);
+	// gdk_visual_unref(visual);
 
 	gtk_widget_destroy(drawing_box);
 	gtk_widget_destroy(window);
@@ -206,10 +272,10 @@ bool Spectogram::invoke(zzub_event_data_t& data) {
 			// gtk_widget_set_colormap (drawing_box, gdk_colormap_new(visual, TRUE));
 
 			// pixmap = gdk_pixmap_new(drawing_box->window, 256, 256, -1);
-			int width = -1, height = -1;
-			gdk_drawable_get_size(drawing_box->window, &width, &height);
-			GdkVisual* visual = gdk_drawable_get_visual(drawing_box->window);
-			image = gdk_image_new(GDK_IMAGE_FASTEST, visual, width, height);
+			// int width = -1, height = -1;
+			// gdk_drawable_get_size(drawing_box->window, &width, &height);
+			// visual = gdk_drawable_get_visual(drawing_box->window);
+			// image = gdk_image_new(GDK_IMAGE_FASTEST, visual, width, height);
 
 			GtkWidget *hbox;
 			GtkWidget *label;
@@ -333,6 +399,16 @@ gboolean Spectogram::expose_handler(GtkWidget *widget, GdkEventExpose *event, gp
 				spectrum->drawing_box->style->fg_gc[GTK_WIDGET_STATE (spectrum->drawing_box)],
 				spectrum->image, 0, 0, 0, 0, -1, -1);
 
+
+	for(int i=1; i<10; i++) {
+		int x = (spectrum->phase + i) % w;
+		cairo_move_to(cr, x, 0);
+		cairo_line_to(cr, x, h);
+		cairo_set_line_width (cr, 1);
+		cairo_set_source_rgba(cr, 0, 0, 0, 1 - float(i) / 10);
+		cairo_stroke(cr);		
+	}
+	
 	int& x = spectrum->phase;
 	x = (x+1) % w;
 	cairo_move_to(cr, x, 0);
@@ -340,7 +416,6 @@ gboolean Spectogram::expose_handler(GtkWidget *widget, GdkEventExpose *event, gp
 	cairo_set_line_width (cr, 1);
 	cairo_set_source_rgb(cr, 1, 0, 0);
 	cairo_stroke(cr);
-
 
 	// clear the buffer so we dont lag, but leave some for later...
 	while(spectrum->data.readable() > n)
@@ -355,17 +430,6 @@ gboolean Spectogram::expose_handler(GtkWidget *widget, GdkEventExpose *event, gp
 }
 
 void Spectogram::process_events() {
-
-// if(data.readable() >= fftsize)
-// 	calcSpectrum();
-
-	// while(!data.empty() && data.readable() > fftsize)
-	// 	data.pop();
-
-	// g_return_val_if_fail(r->drawing_box, FALSE);
-	// gdk_threads_enter();
-	// gtk_widget_queue_draw(r->drawing_box);
-	// gdk_threads_leave();	
 }
 
 // Timer callback - not executed on gui thread
@@ -421,10 +485,14 @@ gboolean Spectogram::on_floor_slider_changed(GtkWidget *widget, gpointer user_da
 
 gboolean Spectogram::resize_handler(GtkWidget* da, GdkEventConfigure* event, gpointer user_data) {
 	Spectogram* s = ((Spectogram*)user_data);
-	GdkVisual* visual = gdk_drawable_get_visual(s->drawing_box->window);
-	s->image = gdk_image_new(GDK_IMAGE_FASTEST, visual, event->width, event->height);
-	// s->pixmap = gdk_pixmap_new(s->drawing_box->window, event->width, event->height, -1);
-  	// gdk_draw_rectangle(s->pixmap, da->style->black_gc, true, 0, 0, event->width, event->height);
+	
+	// s->visual = gdk_drawable_get_visual(s->drawing_box->window);
+	s->image = gdk_image_new(GDK_IMAGE_FASTEST, gdk_drawable_get_visual(da->window), event->width, event->height);
+	// s->image = gdk_image_new(GDK_IMAGE_NORMAL, s->visual, event->width, event->height);
+	// s->image = gdk_image_new(GDK_IMAGE_NORMAL, gdk_drawable_get_visual(da->window), event->width, event->height);
+
+	memset(s->image->mem, 0, s->image->width * s->image->height);
+
 	return TRUE;
 }
 

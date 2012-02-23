@@ -236,7 +236,7 @@ void Renderer::draw(int n) {
   gdk_draw_drawable(pm, osc->drawing_box->style->black_gc, pms, 0, 0, 0, 0, w/2, h);                 
   gdk_pixmap_unref(pms);
 
-    printf("%f\n", osc->phase);
+    // printf("%f\n", osc->phase);
   // osc->phase = 0;
 
   gdk_threads_leave();

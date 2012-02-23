@@ -66,6 +66,7 @@ files += [
 localenv.Append(LIBS=[
 	'FLAC',
 	'z',
+    'mad'
 ])
 
 localenv.Append(CCFLAGS=['-D_LIB','-D_LIBZZUB'])

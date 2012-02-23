@@ -40,182 +40,185 @@ Provides a class to read and write preset files.
 #~ 4 byte: number of tracks
 #~ 4 byte: number of parameters (global & track*tracks, only the mpf_state parameters)
 #~ then parameters as 32 bit int
-#~ 4 byte: size of comment string 
+#~ 4 byte: size of comment string
 #~ comment characters
 
 import zzub
 from utils import read_int, read_string, write_int, write_string
-from neil.com import com
 
-def sort_preset(a,b):
-	if a.name.lower() < b.name.lower():
-		return -1
-	elif a.name.lower() > b.name.lower():
-		return 1
-	return 0
+
+def sort_preset(a, b):
+    if a.name.lower() < b.name.lower():
+        return -1
+    elif a.name.lower() > b.name.lower():
+        return 1
+    return 0
+
 
 class Preset:
-	"""
-	A class to hold preset data.
-	"""
-	def __init__(self, f=None):
-		"""
-		Loads the preset from a file.
-		
-		@param f: handle to open preset file.
-		@type f: file
-		"""
-		self.name = ''
-		self.trackcount = 0
-		self.params = []
-		self.comment = ''
-		if f:
-			self.name = read_string(f)
-			self.trackcount = read_int(f)
-			paramcount = read_int(f)
-			for i in range(paramcount):
-				self.params.append(read_int(f))
-			self.comment = read_string(f)
-			
-	def save(self, filehandle):
-		"""
-		Writes the preset to an open filehandle.
-		
-		@param filehandle: Handle to an open preset file.
-		@type filehandle: file
-		"""
-		write_string(filehandle, self.name)
-		write_int(filehandle, self.trackcount)
-		write_int(filehandle, len(self.params))
-		for param in self.params:
-			write_int(filehandle, param)
-		write_string(filehandle, self.comment)
-			
-	def apply(self, plugin, dryrun=False):
-		"""
-		Apply the preset to a currently loaded plugin.
-		
-		@param plugin: The plugin to which to apply the preset.
-		@type plugin: zzub.Plugin
-		"""
-		pl = plugin.get_pluginloader()
-		idx = 0
-		for g in range(1,3):
-			if g == 1:
-				trackcount = 1
-				target_trackcount = 1
-			else:
-				trackcount = self.trackcount
-				target_trackcount = plugin.get_track_count()
-			for t in range(target_trackcount):
-				state_param_count = 0
-				for i in range(pl.get_parameter_count(g)):
-					p = pl.get_parameter(g,i)
-					if p.get_flags() & zzub.zzub_parameter_flag_state:
-						v = self.params[idx]
-						idx += 1
-						state_param_count += 1
-						assert v >= p.get_value_min() and v <= p.get_value_max()
-						if not dryrun:
-							plugin.set_parameter_value(g,t,i,v,0)
-				if g == 2 and (t % trackcount) == trackcount - 1:
-					# We've written all the tracks in this preset: if there are further
-					# tracks in the plugin, reset to the beginning of the preset tracks
-					# and keep writing.
-					idx -= state_param_count * trackcount
-								
-	def pickup(self, plugin):
-		"""
-		Pickup the preset from a currently loaded plugin.
-		
-		@param plugin: The plugin from which to pick up parameters.
-		@type plugin: zzub.Plugin
-		"""
-		pl = plugin.get_pluginloader()
-		self.params = []
-		self.trackcount = plugin.get_group_track_count(2)
-		for g in range(1,3):
-			if g == 1:
-				trackcount = 1
-			else:
-				trackcount = self.trackcount
-			for t in range(trackcount):
-					for i in range(pl.get_parameter_count(g)):
-						p = pl.get_parameter(g,i)
-						if p.get_flags() & zzub.zzub_parameter_flag_state:
-							self.params.append(plugin.get_parameter_value(g,t,i))
+    """
+    A class to hold preset data.
+    """
+    def __init__(self, f=None):
+        """
+        Loads the preset from a file.
+
+        @param f: handle to open preset file.
+        @type f: file
+        """
+        self.name = ''
+        self.trackcount = 0
+        self.params = []
+        self.comment = ''
+        if f:
+            self.name = read_string(f)
+            self.trackcount = read_int(f)
+            paramcount = read_int(f)
+            for i in range(paramcount):
+                self.params.append(read_int(f))
+            self.comment = read_string(f)
+
+    def save(self, filehandle):
+        """
+        Writes the preset to an open filehandle.
+
+        @param filehandle: Handle to an open preset file.
+        @type filehandle: file
+        """
+        write_string(filehandle, self.name)
+        write_int(filehandle, self.trackcount)
+        write_int(filehandle, len(self.params))
+        for param in self.params:
+            write_int(filehandle, param)
+        write_string(filehandle, self.comment)
+
+    def apply(self, plugin, dryrun=False):
+        """
+        Apply the preset to a currently loaded plugin.
+
+        @param plugin: The plugin to which to apply the preset.
+        @type plugin: zzub.Plugin
+        """
+        pl = plugin.get_pluginloader()
+        idx = 0
+        for g in range(1, 3):
+            if g == 1:
+                trackcount = 1
+                target_trackcount = 1
+            else:
+                trackcount = self.trackcount
+                target_trackcount = plugin.get_track_count()
+            for t in range(target_trackcount):
+                state_param_count = 0
+                for i in range(pl.get_parameter_count(g)):
+                    p = pl.get_parameter(g, i)
+                    if p.get_flags() & zzub.zzub_parameter_flag_state:
+                        v = self.params[idx]
+                        idx += 1
+                        state_param_count += 1
+                        assert v >= p.get_value_min() and v <= p.get_value_max()
+                        if not dryrun:
+                            plugin.set_parameter_value(g, t, i, v, 0)
+                if g == 2 and (t % trackcount) == trackcount - 1:
+                    # We've written all the tracks in this preset: if there are further
+                    # tracks in the plugin, reset to the beginning of the preset tracks
+                    # and keep writing.
+                    idx -= state_param_count * trackcount
+
+    def pickup(self, plugin):
+        """
+        Pickup the preset from a currently loaded plugin.
+
+        @param plugin: The plugin from which to pick up parameters.
+        @type plugin: zzub.Plugin
+        """
+        pl = plugin.get_pluginloader()
+        self.params = []
+        self.trackcount = plugin.get_group_track_count(2)
+        for g in range(1, 3):
+            if g == 1:
+                trackcount = 1
+            else:
+                trackcount = self.trackcount
+            for t in range(trackcount):
+                    for i in range(pl.get_parameter_count(g)):
+                        p = pl.get_parameter(g, i)
+                        if p.get_flags() & zzub.zzub_parameter_flag_state:
+                            self.params.append(plugin.get_parameter_value(g, t, i))
+
 
 class PresetCollection:
-	"""
-	A collection of plugin parameter presets.
-	"""
-	def __init__(self, filepath=None):
-		"""
-		Loads the preset collection from a file.
-		
-		@param filepath: Path to preset file.
-		@type filepath: str
-		"""
-		self.filepath = filepath
-		self.presets = []
-		self.version = 1
-		self.name = ''
-		if filepath:
-			f = file(filepath,'rb')
-			self.version = read_int(f)
-			self.name = read_string(f)
-			setcount = read_int(f)
-			for index in range(setcount):
-				self.presets.append(Preset(f))
-			self.sort()
-			
-	def save(self, filepath):
-		"""
-		Saves the preset collection to a file.
-		
-		@param filepath: Path to file.
-		@type filepath: str
-		"""
-		f = file(filepath, 'wb')
-		write_int(f, self.version)
-		write_string(f, self.name)
-		write_int(f, len(self.presets))
-		for preset in self.presets:
-			preset.save(f)
-		f.close()
-			
-	def sort(self):
-		"""
-		Sorts presets by filenames.
-		"""
-		self.presets = sorted(self.presets,sort_preset)
+    """
+    A collection of plugin parameter presets.
+    """
+    def __init__(self, filepath=None):
+        """
+        Loads the preset collection from a file.
+
+        @param filepath: Path to preset file.
+        @type filepath: str
+        """
+        self.filepath = filepath
+        self.presets = []
+        self.version = 1
+        self.name = ''
+        if filepath:
+            f = file(filepath, 'rb')
+            self.version = read_int(f)
+            self.name = read_string(f)
+            setcount = read_int(f)
+            for index in range(setcount):
+                self.presets.append(Preset(f))
+            self.sort()
+
+    def save(self, filepath):
+        """
+        Saves the preset collection to a file.
+
+        @param filepath: Path to file.
+        @type filepath: str
+        """
+        f = file(filepath, 'wb')
+        write_int(f, self.version)
+        write_string(f, self.name)
+        write_int(f, len(self.presets))
+        for preset in self.presets:
+            preset.save(f)
+        f.close()
+
+    def sort(self):
+        """
+        Sorts presets by filenames.
+        """
+        self.presets = sorted(self.presets, sort_preset)
 
 __all__ = [
-	'PresetCollection',
-	'Preset',
+    'PresetCollection',
+    'Preset',
 ]
 
 if __name__ == '__main__':
-	from config import get_plugin_aliases, get_plugin_blacklist
-	import utils, zzub, os
-	aliases = {}
-	player = zzub.Player()
-	# load blacklist file and add blacklist entries
-	for name in get_plugin_blacklist():
-		player.blacklist_plugin(name)
-	# load aliases file and add aliases
-	for name,uri in get_plugin_aliases():
-		aliases[name]=uri
-		player.add_plugin_alias(name, uri)
-	pluginpath = utils.filepath('../../lib/zzub') + os.sep
-	print "pluginpath is '%s'" % pluginpath
-	player.add_plugin_path(pluginpath)
-	player.initialize(44100)
-	prs = PresetCollection(utils.filepath('presets/makk_m4.prs'))
-	print 'collection version',prs.version
-	print 'collection name',prs.name	
-	pl = player.get_pluginloader_by_name(aliases.get(prs.name,prs.name))
-	if pl._handle:
-		for preset in prs.presets:
-			print '---'
-			print 'preset name', preset.name
+    from config import get_plugin_aliases, get_plugin_blacklist
+    import utils
+    import os
+    aliases = {}
+    player = zzub.Player()
+    # load blacklist file and add blacklist entries
+    for name in get_plugin_blacklist():
+        player.blacklist_plugin(name)
+    # load aliases file and add aliases
+    for name, uri in get_plugin_aliases():
+        aliases[name] = uri
+        player.add_plugin_alias(name, uri)
+    pluginpath = utils.filepath('../../lib/zzub') + os.sep
+    print "pluginpath is '%s'" % pluginpath
+    player.add_plugin_path(pluginpath)
+    player.initialize(44100)
+    prs = PresetCollection(utils.filepath('presets/makk_m4.prs'))
+    print 'collection version', prs.version
+    print 'collection name', prs.name
+    pl = player.get_pluginloader_by_name(aliases.get(prs.name, prs.name))
+    if pl._handle:
+        for preset in prs.presets:
+            print '---'
+            print 'preset name', preset.name

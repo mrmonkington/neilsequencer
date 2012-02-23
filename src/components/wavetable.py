@@ -129,7 +129,8 @@ class WavetablePanel(gtk.VBox):
         self.libpanel.set_preview_widget(preview)
         #self.libpanel.set_border_width(MARGIN2)
         #self.libpanel.add_shortcut_folder(config.get_config().get_freesound_samples_folder())
-        self.libpanel.add_filter(file_filter('All Supported Formats', '*.wav', '*.aif',
+        self.libpanel.add_filter(file_filter('All Supported Formats',
+                                             '*.mp3', '*.wav', '*.aif',
                                              '*.aifc', '*.aiff', '*.flac', '*.xi',
                                              '*.au', '*.paf', '*.snd', '*.voc',
                                              '*.smp', '*.iff', '*.8svx', '*.16svx',
@@ -152,6 +153,7 @@ class WavetablePanel(gtk.VBox):
         self.libpanel.add_filter(file_filter('Core Audio Format (*.caf)', '*.caf'))
         self.libpanel.add_filter(file_filter('Sound Designer II File (*.sd2)', '*.sd2'))
         self.libpanel.add_filter(file_filter('Raw Data Audio Format (*.raw)', '*.raw'))
+        self.libpanel.add_filter(file_filter('MPEG Layer 3 (*.mp3)', '*.mp3'))
         self.libpanel.set_local_only(True)
         self.libpanel.set_select_multiple(True)
         #self.append_page(self.instrpanel, gtk.Label("Instruments"))
@@ -447,7 +449,7 @@ class WavetablePanel(gtk.VBox):
         selects = self.get_sample_selection()
         if not(selects) or len(selects) > 1:
             return
-        data_entry = DataEntry(self, "Rename Instrument")
+        data_entry = DataEntry(self, "Rename Instrument", "New Name:")
         if data_entry.run() == gtk.RESPONSE_OK:
             try:
                 value = data_entry.edit.get_text()

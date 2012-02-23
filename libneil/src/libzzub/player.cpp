@@ -27,6 +27,7 @@
 #include "tools.h"
 
 #include <sndfile.h>
+#include <mad.h>
 
 #include "import.h"
 
@@ -83,6 +84,46 @@ namespace zzub {
     return strm->position();
   }
 
+
+
+//////////////////////////////////////////////////
+// MAD
+//////////////////////////////////////////////////
+  import_mad::import_mad() {
+    memset(&sfinfo, 0, sizeof(sfinfo));    
+  }
+
+  enum mad_flow zzub_mad_input(struct mad_stream *stream) {
+    return MAD_FLOW_CONTINUE;
+  }
+
+  enum mad_flow import_mad::zzub_mad_output(struct mad_header const *header, struct mad_pcm *pcm) {
+    return MAD_FLOW_CONTINUE;
+  }
+
+  enum mad_flow import_mad::zzub_mad_error(struct mad_stream *stream, struct mad_frame *frame) {
+    return MAD_FLOW_CONTINUE;
+  }
+
+  bool import_mad::open(zzub::instream* strm) {
+    memset(&sfinfo, 0, sizeof(sfinfo));
+
+// mad_decoder_init(decoder, data, zzub_mad_input, 0, 0, zzub_mad_output, zzub_mad_error, 0);
+// mad_decoder_run(&decoder, MAD_DECODER_MODE_ASYNC);
+
+
+    return true;
+  }
+
+  void import_mad::close() {
+    // mad_decoder_finish(decoder);
+  }
+
+  int import_mad::get_wave_count() { return 1; }
+  int import_mad::get_wave_level_count(int i) { return 1; }
+  bool import_mad::get_wave_level_info(int i, int level, importwave_info& info) { return false; }
+  void import_mad::read_wave_level_samples(int i, int level, void* buffer) {}
+////////////////////////////////////////////////////
 
   import_sndfile::import_sndfile() {
     sf = 0;
@@ -199,6 +240,7 @@ namespace zzub {
   waveimporter::waveimporter() {
     imp = 0;
     plugins.push_back(new import_sndfile());
+    plugins.push_back(new import_mad());
   }
 
   waveimporter::~waveimporter() {

@@ -157,7 +157,12 @@ void Spectrum::drawSpectrum(cairo_t* cr, int n, int w, int h)
 	cairo_restore(cr);
 	// cairo_stroke(cr);
 
-	cairo_set_source_rgba(cr, 1, 1, 1, .1);
+	// cairo_set_source_rgba(cr, 1, 1, 1, .1);
+	cairo_pattern_t *pat = cairo_pattern_create_linear(0, 0, 0, (h - Y_PAD));
+	cairo_pattern_add_color_stop_rgba(pat, 1, 1, 1, 1, .2);
+	cairo_pattern_add_color_stop_rgba(pat, 0, 1, 1, 1, .05);
+	cairo_set_source(cr, pat);
+
 	cairo_fill_preserve(cr);
 
 	cairo_set_line_width (cr, 1);
@@ -451,10 +456,9 @@ bool Spectrum::invoke(zzub_event_data_t& data) {
 			// glpixmap = gdk_gl_pixmap_new(visual, pixmap);
 
 
-
 			window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-			//TODO!: get parent
-			//gtk_window_set_transient_for(window, parent)
+			gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(_host->get_host_info()->host_ptr));
+
 			gtk_window_set_title(GTK_WINDOW(window), "Spectrum Analyzer");
 			gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_MOUSE);
 			gtk_signal_connect(GTK_OBJECT(window), "delete_event", GTK_SIGNAL_FUNC(&destroy_handler), gpointer(this));
@@ -718,9 +722,9 @@ gboolean Spectrum::timer_handler(Spectrum* r) {
 	// r->calcSpectrum();
 
 	g_return_val_if_fail(r->drawing_box, FALSE);
-	gdk_threads_enter();
+	// gdk_threads_enter();
 	gtk_widget_queue_draw(r->drawing_box);
-	gdk_threads_leave();
+	// gdk_threads_leave();
 
 	return TRUE;
 }

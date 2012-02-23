@@ -18,19 +18,15 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-import zzub
+from neil.utils import is_generator, is_effect, is_streamer, PropertyEventHandler, generate_ui_methods, refresh_gui
 from zzub import Player
-import neil.com as com
-
-import neil.common as common
 import gobject
-import os,sys
+import neil.com as com
+import neil.common as common
+import os
+import sys
 import time
-from neil.utils import is_generator, is_effect, is_root, is_controller, is_streamer, \
-        PropertyEventHandler, generate_ui_methods, refresh_gui
-from config import get_plugin_aliases, get_plugin_blacklist
-
-import gtk
+import zzub
 
 DOCUMENT_UI = dict(
         # insert persistent members at this level, in the format
@@ -68,22 +64,23 @@ DOCUMENT_UI = dict(
         # for the setting below, active_plugins, you can access player.get_active_plugins(),
         # player.set_active_plugins(plugins), and player.active_plugins as a property.
         # when changed, the event active_plugins_changed will be triggered.
-        active_plugins = dict(vtype=zzub.Plugin,list=True,doc="the list of active plugins."),
-        active_patterns = dict(vtype=(zzub.Plugin,int),list=True,doc="the list of active patterns (zzub.Plugin, index)."),
-        active_waves = dict(vtype=zzub.Wave,list=True,doc="the list of active waves."),
-        octave = dict(vtype=int,default=4,doc="the current octave to be used for keyjazz."),
-        autoconnect_target = dict(vtype=zzub.Plugin,doc="the plugin to connect to automatically when creating a new plugin."),
-        sequence_step = dict(vtype=int,default=64,doc="the current step size for sequencers."),
-        plugin_origin = dict(vtype=int,list=True,default=[0.0,0.0],doc="the origin position for new plugins."),
-        solo_plugin = dict(vtype=zzub.Plugin,doc="if set, the plugin that is currently set to solo."),
-        document_path = dict(vtype=str,doc="path to the current document."),
+        active_plugins = dict(vtype=zzub.Plugin, list=True, doc="the list of active plugins."),
+        active_patterns = dict(vtype=(zzub.Plugin, int), list=True, doc="the list of active patterns (zzub.Plugin, index)."),
+        active_waves = dict(vtype=zzub.Wave, list=True, doc="the list of active waves."),
+        octave = dict(vtype=int, default=4, doc="the current octave to be used for keyjazz."),
+        autoconnect_target = dict(vtype=zzub.Plugin, doc="the plugin to connect to automatically when creating a new plugin."),
+        sequence_step = dict(vtype=int, default=64, doc="the current step size for sequencers."),
+        plugin_origin = dict(vtype=int, list=True, default=[0.0, 0.0], doc="the origin position for new plugins."),
+        solo_plugin = dict(vtype=zzub.Plugin, doc="if set, the plugin that is currently set to solo."),
+        document_path = dict(vtype=str, doc="path to the current document."),
 )
+
 
 class NeilPlayer(Player, PropertyEventHandler):
     __neil__ = dict(
-            id = 'neil.core.player',
-            singleton = True,
-            categories = [
+            id='neil.core.player',
+            singleton=True,
+            categories=[
                     'pythonconsole.locals',
             ],
     )
@@ -143,32 +140,34 @@ class NeilPlayer(Player, PropertyEventHandler):
         self.__event_stats = False
         # enumerate zzub_event_types and prepare unwrappers for the different types
         self.event_id_to_name = {}
-        for enumname,cfg in self._event_types_.iteritems():
+        for enumname, cfg in self._event_types_.iteritems():
             val = getattr(zzub, enumname)
-            assert val not in self.event_id_to_name, "value %s (%s) already registered." % (val,eventname)
+            #assert val not in self.event_id_to_name, "value %s (%s) already registered." % (val, eventname)
+            # where is eventname defined?
+            assert val not in self.event_id_to_name, "value %s already registered." % (val)
             eventname = 'zzub_' + enumname[len('zzub_event_type_'):]
-            membername = cfg.get('args',None)
+            membername = cfg.get('args', None)
             args = []
             if membername:
-                union = None
+                #union = None
                 datatype = None
                 ed = zzub.EventData()
                 for argname in dir(ed):
                     if argname == membername:
                         datatype = getattr(ed, argname).__class__
                 assert datatype, "couldn't find member %s in zzub_event_data_t" % membername
-                for argname,argtype in datatype._fields_:
+                for argname, argtype in datatype._fields_:
                     args.append(argname)
             self.event_id_to_name[val] = (eventname, membername, args)
             #print "'%s', # ( %s )" % (eventname, ','.join(args + ["..."]))
         config = com.get('neil.core.config')
-        pluginpath = os.environ.get('NEIL_PLUGIN_PATH',None)
+        pluginpath = os.environ.get('NEIL_PLUGIN_PATH', None)
         if pluginpath:
             pluginpaths = pluginpath.split(os.pathsep)
 
         else:
             pluginpaths = []
-            paths = os.environ.get('LD_LIBRARY_PATH',None) # todo or PATH on mswindows
+            paths = os.environ.get('LD_LIBRARY_PATH', None)  # todo or PATH on mswindows
             print paths
             if paths:
                 paths = paths.split(os.pathsep)
@@ -181,7 +180,8 @@ class NeilPlayer(Player, PropertyEventHandler):
                             '/usr/lib',
                     ])
             for path in [os.path.join(path, 'zzub') for path in paths]:
-                if os.path.exists(path) and not path in pluginpaths: pluginpaths.append(path)
+                if os.path.exists(path) and not path in pluginpaths:
+                    pluginpaths.append(path)
             print pluginpaths
         for pluginpath in pluginpaths:
             print 'plugin path:', pluginpath
@@ -203,7 +203,7 @@ class NeilPlayer(Player, PropertyEventHandler):
         eventbus.zzub_pre_delete_pattern += self.on_pre_delete_pattern
         self._callback = zzub.zzub_callback_t(self.handle_event)
         self.set_callback(self._callback, None)
-        gobject.timeout_add(int(1000/50), self.on_handle_events)
+        gobject.timeout_add(int(1000 / 50), self.on_handle_events)
         # event queue disabling count for overlapping disable calls
         self.__disable_level = 0
 
@@ -272,7 +272,7 @@ class NeilPlayer(Player, PropertyEventHandler):
         master = self.get_plugin(0)
         self.__streamrecorder.add_input(master, zzub.zzub_connection_type_audio)
         self.set_machine_non_song(self.__streamrecorder, True)
-        self.flush(None,None)
+        self.flush(None, None)
         self.history_flush_last()
 
     def get_stream_recorder(self):
@@ -297,19 +297,19 @@ class NeilPlayer(Player, PropertyEventHandler):
         self.set_machine_non_song(self.__streamplayer, True)
 
     def preview_file(self, filepath):
-        base,ext = os.path.splitext(filepath)
+        base, ext = os.path.splitext(filepath)
         if not ext.lower() in self.__stream_ext_uri_mappings:
             return False
         uri = self.__stream_ext_uri_mappings[ext.lower()]
-        self.play_stream((4 << 4)+1, uri, filepath)
+        self.play_stream((4 << 4) + 1, uri, filepath)
         return True
 
     def preview_wave(self, w):
-        self.play_stream((4 << 4)+1, "@zzub.org/stream/wavetable;1", str(w.get_index()+1))
+        self.play_stream((4 << 4) + 1, "@zzub.org/stream/wavetable;1", str(w.get_index() + 1))
 
     def stop_preview(self):
         if self.__streamplayer:
-            self.__streamplayer.play_midi_note(zzub.zzub_note_value_off, (4 << 4)+1, 0)
+            self.__streamplayer.play_midi_note(zzub.zzub_note_value_off, (4 << 4) + 1, 0)
 
     def load_wave(self, wave, filepath):
         stream = zzub.Input.open_file(filepath)
@@ -323,7 +323,7 @@ class NeilPlayer(Player, PropertyEventHandler):
 
     def save_wave(self, wave, filepath):
         stream = zzub.Output.create_file(filepath)
-        res = wave.save_sample(0, stream)
+        #res = wave.save_sample(0, stream)
         stream.destroy()
 
     def play_stream(self, note, plugin_uri, data_url):
@@ -335,7 +335,7 @@ class NeilPlayer(Player, PropertyEventHandler):
             self.create_stream_player(plugin_uri)
         if self.__streamplayer:
             self.__streamplayer.set_stream_source(data_url)
-        self.flush(None,None)
+        self.flush(None, None)
         if self.__streamplayer:
             self.__streamplayer.play_midi_note(note, 0, 0)
         self.history_flush_last()
@@ -355,7 +355,7 @@ class NeilPlayer(Player, PropertyEventHandler):
 
     def on_pre_delete_pattern(self, plugin, index):
         sel = self.active_patterns
-        pair = (plugin,index)
+        pair = (plugin, index)
         if pair in sel:
             sel.remove(pair)
             self.active_patterns = sel
@@ -366,9 +366,9 @@ class NeilPlayer(Player, PropertyEventHandler):
             sel.remove(plugin)
             self.active_plugins = sel
         sel = self.active_patterns
-        for selplugin,index in sel:
+        for selplugin, index in sel:
             if selplugin == plugin:
-                sel.remove((selplugin,index))
+                sel.remove((selplugin, index))
         self.active_patterns = sel
 
     def load_ccm(self, filename):
@@ -398,7 +398,7 @@ class NeilPlayer(Player, PropertyEventHandler):
     def clear(self):
         self.delete_stream_player()
         self.delete_stream_recorder()
-        self.flush(None,None)
+        self.flush(None, None)
         self.history_flush_last()
         zzub.Player.clear(self)
         self.document_path = ''
@@ -485,11 +485,12 @@ class NeilPlayer(Player, PropertyEventHandler):
                 self.activate_plugin(direction)
             plugin = self.active_plugins[0]
             index = None
-        def cmp_func(a,b):
+
+        def cmp_func(a, b):
             aname = a[0].get_pattern_name(a[1])
             bname = b[0].get_pattern_name(b[1])
             return cmp(aname.lower(), bname.lower())
-        patterns = sorted([(plugin,i) for i in xrange(plugin.get_pattern_count())],cmp_func)
+        patterns = sorted([(plugin, i) for i in xrange(plugin.get_pattern_count())], cmp_func)
         if not patterns:
             return
         if direction == -1:
@@ -502,7 +503,7 @@ class NeilPlayer(Player, PropertyEventHandler):
             self.active_patterns = [patterns[failsafe]]
         else:
             pindex = patterns.index(self.active_patterns[0])
-            self.active_patterns = [patterns[(pindex+offset)%len(patterns)]]
+            self.active_patterns = [patterns[(pindex + offset) % len(patterns)]]
 
     def activate_plugin(self, direction):
         """
@@ -510,7 +511,7 @@ class NeilPlayer(Player, PropertyEventHandler):
         activated plugin name. if direction is -1, the preceeding plugin
         will be chosen. if direction is 1, the following plugin will be chosen.
         """
-        def cmp_func(a,b):
+        def cmp_func(a, b):
             return cmp(a.get_name().lower(), b.get_name().lower())
         plugins = sorted(list(self.get_plugin_list()), cmp_func)
         if not plugins:
@@ -541,10 +542,10 @@ class NeilPlayer(Player, PropertyEventHandler):
         eventbus = com.get('neil.core.eventbus')
         data = data.contents
         # prepare arguments for the specific callback
-        eventname,membername,argnames = self.event_id_to_name[data.type]
+        eventname, membername, argnames = self.event_id_to_name[data.type]
         args = []
         if membername:
-            specdata = getattr(data,membername)
+            specdata = getattr(data, membername)
             for argname in argnames:
                 value = getattr(specdata, argname)
                 if hasattr(value, 'contents'):
@@ -569,7 +570,7 @@ class NeilPlayer(Player, PropertyEventHandler):
     def can_undo(self):
         pos = self.history_get_position()
         historysize = self.history_get_size()
-        return (pos > 0) and ((pos-1) < historysize)
+        return (pos > 0) and ((pos - 1) < historysize)
 
     def can_redo(self):
         pos = self.history_get_position()
@@ -600,7 +601,7 @@ class NeilPlayer(Player, PropertyEventHandler):
             return
 
         config = com.get('neil.core.config')
-        userlunarpath = os.path.join(config.get_settings_folder(),'lunar')
+        userlunarpath = os.path.join(config.get_settings_folder(), 'lunar')
         if not os.path.isdir(userlunarpath):
             print "folder %s does not exist, creating..." % userlunarpath
             os.makedirs(userlunarpath)
@@ -633,12 +634,6 @@ class NeilPlayer(Player, PropertyEventHandler):
         # make sure a machine muted by solo is not unmuted manually
         if not self.solo_plugin or plugin == self.solo_plugin or is_effect(plugin):
             plugin.set_mute(pi.muted)
-        pi.reset_plugingfx()
-        
-    def toggle_bypass(self, plugin):
-        pi = common.get_plugin_infos().get(plugin)
-        pi.bypassed = not pi.bypassed
-        plugin.set_bypass(pi.bypassed)
         pi.reset_plugingfx()
 
     def toggle_bypass(self, plugin):
@@ -680,8 +675,8 @@ class NeilPlayer(Player, PropertyEventHandler):
             mp.add_pattern(pattern)
             active_plugins = [mp]
             active_patterns = [(mp, 0)]
-            t=self.create_sequence(mp, zzub.zzub_sequence_type_pattern)
-            t.set_event(0,16)
+            t = self.create_sequence(mp, zzub.zzub_sequence_type_pattern)
+            t.set_event(0, 16)
             if self.autoconnect_target:
                 self.autoconnect_target.add_input(mp, zzub.zzub_connection_type_audio)
 
@@ -702,12 +697,12 @@ class NeilPlayer(Player, PropertyEventHandler):
                     input = plugin.get_input_connection_plugin(index)
                     amp = plugin.get_parameter_value(zzub.zzub_parameter_group_connection, index, 0)
                     pan = plugin.get_parameter_value(zzub.zzub_parameter_group_connection, index, 1)
-                    inplugs.append((input,amp,pan))
+                    inplugs.append((input, amp, pan))
                 # then, disconnect all inputs and restore to new plugin
-                for inplug,amp,pan in inplugs:
-                    plugin.delete_input(inplug,zzub.zzub_connection_type_audio)
-                    mp.add_input(inplug,zzub.zzub_connection_type_audio)
-                    index = mp.get_input_connection_count()-1
+                for inplug, amp, pan in inplugs:
+                    plugin.delete_input(inplug, zzub.zzub_connection_type_audio)
+                    mp.add_input(inplug, zzub.zzub_connection_type_audio)
+                    index = mp.get_input_connection_count() - 1
                     mp.set_parameter_value(zzub.zzub_parameter_group_connection, index, 0, amp, False)
                     mp.set_parameter_value(zzub.zzub_parameter_group_connection, index, 1, pan, False)
             plugin.add_input(mp, zzub.zzub_connection_type_audio)
@@ -724,7 +719,7 @@ class NeilPlayer(Player, PropertyEventHandler):
                 plugin.delete_input(target, zzub.zzub_connection_type_audio)
                 # connect our new plugin to the target and restore parameters
                 mp.add_input(target, zzub.zzub_connection_type_audio)
-                index = mp.get_input_connection_count()-1
+                index = mp.get_input_connection_count() - 1
                 mp.set_parameter_value(zzub.zzub_parameter_group_connection, index, 0, amp, False)
                 mp.set_parameter_value(zzub.zzub_parameter_group_connection, index, 1, pan, False)
                 # connect the source plugin to our new plugin
@@ -741,7 +736,7 @@ class NeilPlayer(Player, PropertyEventHandler):
         common.get_plugin_infos().add_plugin(plugin)
         # remove midi mappings
         for i in range(self.get_midimapping_count()):
-            mapping =  self.get_midimapping(i)
+            mapping = self.get_midimapping(i)
             self.remove_midimapping(plugin, mapping.get_group(), mapping.get_track(), mapping.get_column())
         inplugs = []
         outplugs = []
