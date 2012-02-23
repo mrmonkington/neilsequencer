@@ -447,7 +447,7 @@ class WavetablePanel(gtk.VBox):
         selects = self.get_sample_selection()
         if not(selects) or len(selects) > 1:
             return
-        data_entry = DataEntry(self, "Rename Instrument")
+        data_entry = DataEntry(self, "Rename Instrument", "New Name:")
         if data_entry.run() == gtk.RESPONSE_OK:
             try:
                 value = data_entry.edit.get_text()
