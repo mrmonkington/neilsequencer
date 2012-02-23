@@ -226,11 +226,12 @@ namespace zzub { namespace plugins { namespace psycle_to_zzub {
 			std::cerr << "could not load module: " << path << std::endl;
 			return;
 		}
-		using namespace psycle::plugin_interface::symbols;
+		using psycle::plugin_interface::symbols::get_info_function;
+		using psycle::plugin_interface::symbols::get_info_function_name;
 		get_info_function get_info = (get_info_function) module::sym(module_handle, get_info_function_name);
 		if(!get_info) std::cerr << "not a psycle plugin: " << path << std::endl;
 		else {
-			const CMachineInfo * const psycle_info = get_info();
+			const psycle::plugin_interface::CMachineInfo * const psycle_info = get_info();
 			if(!psycle_info) std::cerr << "call to " << get_info_function_name << " failed" << std::endl;
 			else {
 				plugin_info * zzub_info(new plugin_info());
@@ -373,7 +374,8 @@ namespace zzub { namespace plugins { namespace psycle_to_zzub {
 		if(!info) return false;
 		close();
 		module_handle = module::open((info->psy_path.c_str())); if(!module_handle) return false;
-		using namespace psycle::plugin_interface::symbols;
+		using psycle::plugin_interface::symbols::get_info_function;
+		using psycle::plugin_interface::symbols::get_info_function_name;
 		get_info_function get_info = (get_info_function) module::sym(module_handle, get_info_function_name);
 		if(!get_info) {
 			std::cerr << "not a psycle plugin: " << info->name << std::endl;
@@ -389,6 +391,8 @@ namespace zzub { namespace plugins { namespace psycle_to_zzub {
 			return false;
 		}
 		psycle_plugin_param_info = psycle_info->Parameters;
+		using psycle::plugin_interface::symbols::create_machine_function;
+		using psycle::plugin_interface::symbols::create_machine_function_name;
 		create_machine_function create_machine = (create_machine_function) module::sym(module_handle, create_machine_function_name);
 		if(!create_machine)
 		{
@@ -412,7 +416,8 @@ namespace zzub { namespace plugins { namespace psycle_to_zzub {
 	bool plugin::close() {
 		if(psycle_plugin) {
 			try {
-				using namespace psycle::plugin_interface::symbols;
+				using psycle::plugin_interface::symbols::delete_machine_function;
+				using psycle::plugin_interface::symbols::delete_machine_function_name;
 				delete_machine_function delete_machine = (delete_machine_function) module::sym(module_handle, delete_machine_function_name);
 				if(delete_machine) delete_machine(*psycle_plugin);
 				else delete psycle_plugin; // some early closed-source plugins might not have a DeleteMachine function
@@ -429,10 +434,6 @@ namespace zzub { namespace plugins { namespace psycle_to_zzub {
 		return true;
 	}
 
-	void plugin::destroy() {
-		delete this;
-	}
-
 	plugin::~plugin() throw() {
 		close();
 		delete[] track_params;
@@ -441,9 +442,9 @@ namespace zzub { namespace plugins { namespace psycle_to_zzub {
 	/*********************************************************************************************************************/
 	// plugin ... implementation for psycle::plugin_interface::CFxCallback
 
-	void plugin::MessBox(char *ptxt,char *caption,unsigned int type) {
+	void plugin::MessBox(char const * message, char const * caption, unsigned int type) const {
 		#if defined _WIN64 || defined _WIN32
-			::MessageBox(::GetForegroundWindow(),ptxt,caption,type);
+			::MessageBox(::GetForegroundWindow(), message, caption, type);
 		#else
 			///\todo
 		#endif
@@ -503,7 +504,7 @@ namespace zzub { namespace plugins { namespace psycle_to_zzub {
 					const int note = ((param.note >> 4) * 12) + (param.note & 15);
 					psycle_plugin->SeqTick(i, note, 0, param.command >> 8, param.command & 0xff);
 				}
-				else psycle_plugin->SeqTick(i,psycle::plugin_interface::NOTE_NO, 0, 0, 0);
+				else psycle_plugin->SeqTick(i,psycle::plugin_interface::NOTE_NOTEOFF, 0, 0, 0);
 			}
 		}
 	}
@@ -618,12 +619,12 @@ namespace zzub { namespace plugins { namespace psycle_to_zzub {
 	///\name explicit symbol exports
 	///\{
 		extern "C" {
-			PSYCLE__PLUGIN__DYNAMIC_LINK__EXPORT
+			PSYCLE__PLUGIN__DYN_LINK__EXPORT
 			const char *
 			PSYCLE__PLUGIN__CALLING_CONVENTION // unspecified by zzub interface but safer
 			zzub_get_signature() { return ZZUB_SIGNATURE; }
 
-			PSYCLE__PLUGIN__DYNAMIC_LINK__EXPORT
+			PSYCLE__PLUGIN__DYN_LINK__EXPORT
 			zzub::plugincollection *
 			PSYCLE__PLUGIN__CALLING_CONVENTION // unspecified by zzub interface but safer
 			zzub_get_plugincollection() { return new plugin_collection(); }

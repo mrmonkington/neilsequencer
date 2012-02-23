@@ -40,55 +40,26 @@ namespace zzub { namespace plugins { namespace psycle_to_zzub {
 		public:
 			///\name implementation for psycle::plugin_interface::CFxCallback
 			///\{
-				void MessBox(char *ptxt,char *caption,unsigned int type);
-				int CallbackFunc(int cbkID,int par1,int par2,int par3) { return 0; }
-				float * unused0(int, int) {return 0; }
+				void MessBox(char const * message, char const * caption, unsigned int type) const;
+				int CallbackFunc(int /*cbkID*/, int /*par1*/, int /*par2*/, void* /*par3*/) { return 0; }
+				float * unused0(int, int) { return 0; }
 				float * unused1(int, int) { return 0; }
-				int GetTickLength() { return _master_info->samples_per_tick; }
-				int GetSamplingRate() { return _master_info->samples_per_second; }
-				int GetBPM() { return _master_info->beats_per_minute; }
-				int GetTPB() { return _master_info->ticks_per_beat; }
+				int GetTickLength() const { return _master_info->samples_per_tick; }
+				int GetSamplingRate() const { return _master_info->samples_per_second; }
+				int GetBPM() const { return _master_info->beats_per_minute; }
+				int GetTPB() const { return _master_info->ticks_per_beat; }
 			///\}
 	
 			///\name implementation for zzub::plugin
 			///\{
 				void init(zzub::archive *arc);
-				void load(zzub::archive *arc) {}
-				void save(zzub::archive *arc);
-				void destroy();
-				virtual void process_controller_events() {}
 				void process_events();
-				bool process_stereo(float **pin,float **pout,int numsamples,int mode);
-				virtual bool process_offline(float **pin, float **pout, int *numsamples, int *channels, int *samplerate) { return false; }
+				bool process_stereo(float **pin, float **pout, int numsamples, int mode);
 				void stop() { if(psycle_plugin) psycle_plugin->Stop(); }
-				void attributes_changed() {}
+				void save(zzub::archive *arc);
 				void command(int index);
 				void set_track_count(int count) { track_count = count; }
-				void mute_track(int index) { if(psycle_plugin) psycle_plugin->MuteTrack(index); }
-				bool is_track_muted(int index) const { if(psycle_plugin) return psycle_plugin->IsTrackMuted(index); return false; }
-				void midi_note(int channel,int value,int velocity) { if(psycle_plugin) psycle_plugin->MidiNote(channel,value,velocity); }
-				void midi_control_change(int ctrl,int channel,int value) {}
-				void event(unsigned int data) {}
-				const char * describe_value(int param,int value);
-				const zzub::envelope_info **get_envelope_infos() { return 0; }
-				bool play_wave(int wave,int note,float volume) { return false; }
-				void stop_wave() {}
-				int get_wave_envelope_play_position(int env) { return -1; }
-				const char *describe_param(int param) { return 0; }
-				bool set_instrument(const char *name) { return false; }
-				void get_sub_menu(int index, zzub::outstream *) {}
-				void add_input(const char *name, zzub::connection_type type) {}
-				void delete_input(const char *name, zzub::connection_type type) {}
-				void rename_input(const char *oldname,const char *newname) {}
-				void input(float **samples,int size,float amp) {}
-				bool handle_input(int index,int amp,int pan) { return false; }
-				virtual void process_midi_events(zzub::midi_message* pin, int nummessages) {}
-				virtual void get_midi_output_names(zzub::outstream *pout) {}
-				virtual void set_stream_source(const char* resource) {}
-				virtual const char* get_stream_source() { return 0; }
-				virtual void play_pattern(int index) {}
-				virtual void configure(const char *key, const char *value) {}
-				
+				const char * describe_value(int param, int value);
 			///\}
 			
 		private:
@@ -128,7 +99,7 @@ namespace zzub { namespace plugins { namespace psycle_to_zzub {
 			//zzub::metaplugin * metaplugin;
 			module::handle_type module_handle;
 			psycle::plugin_interface::CMachineInterface * psycle_plugin;
-			psycle::plugin_interface::CMachineParameter const ** psycle_plugin_param_info;
+			psycle::plugin_interface::CMachineParameter const * const * psycle_plugin_param_info;
 			int track_count;
 			char one_param_description[128];
 			
