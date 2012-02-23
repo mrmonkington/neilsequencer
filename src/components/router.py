@@ -1202,12 +1202,23 @@ class RouteView(gtk.DrawingArea):
             cpx, cpy = crx + vx * (length * 0.5), cry + vy * (length * 0.5)
 
             def make_triangle(radius):
-                t1 = (int(cpx - vx * radius + vy * radius),
-                      int(cpy - vy * radius - vx * radius))
-                t2 = (int(cpx + vx * radius),
-                      int(cpy + vy * radius))
-                t3 = (int(cpx - vx * radius - vy * radius),
-                      int(cpy - vy * radius + vx * radius))
+                ux, uy = vx, vy
+                if cfg.get_curve_arrows():
+                    # bezier curve tanget
+                    def dp(t, a, b, c, d):
+                        return -3 * (1 - t) ** 2 * a + 3 * (1 - t) ** 2 * b - 6 * t * (1 - t) * b - 3 * (t ** 2) * c + 6 * t * (1 - t) * c + 3 * (t ** 2) * d
+                    tx = dp(.5, crx, crx + vx * (length * 0.6), rx - vx * (length * 0.6), rx)
+                    ty = dp(.5, cry, cry, ry, ry)
+                    tl = (tx ** 2 + ty ** 2) ** .5
+                    ux, uy = tx / tl, ty / tl
+
+                t1 = (int(cpx - ux * radius + uy * radius),
+                      int(cpy - uy * radius - ux * radius))
+                t2 = (int(cpx + ux * radius),
+                      int(cpy + uy * radius))
+                t3 = (int(cpx - ux * radius - uy * radius),
+                      int(cpy - uy * radius + ux * radius))
+
                 return t1, t2, t3
 
             def draw_triangle(t1, t2, t3):
@@ -1220,26 +1231,25 @@ class RouteView(gtk.DrawingArea):
             bmpctx.save()
             bmpctx.translate(-0.5, -0.5)
 
+            # curve
             if cfg.get_curve_arrows():
+                # bezier curve tanget
+                def dp(t, a, b, c, d):
+                    return -3 * (1 - t) ** 2 * a + 3 * (1 - t) ** 2 * b - 6 * t * (1 - t) * b - 3 * (t ** 2) * c + 6 * t * (1 - t) * c + 3 * (t ** 2) * d
+                tx = dp(.5, crx, crx + vx * (length * 0.6), rx - vx * (length * 0.6), rx)
+                ty = dp(.5, cry, cry, ry, ry)
+                tl = (tx ** 2 + ty ** 2) ** .5
+                tx, ty = tx / tl, ty / tl
+
                 # stroke the triangle
                 draw_triangle(*tri1)
                 bmpctx.set_source_rgb(*[x * 0.5 for x in bgbrush])
                 bmpctx.set_line_width(1)
                 bmpctx.stroke()
 
-                # draw the line using two curves,
-                # we need 4 control points so the arrow lines up nicely
                 bmpctx.move_to(crx, cry)
-                # first curve, start to center
-                # bmpctx.line_to(cpx, cpy)
-                from math import exp
-                cp1, cp2 = exp(-1), exp(-2)
-                bmpctx.curve_to(crx + vx * (length * cp1), cry,
-                                cpx - vx * (length * cp2), cpy - vy * (length * cp2),
-                                cpx, cpy)
-                # second curve, center to end
-                bmpctx.curve_to(cpx + vx * (length * cp2), cpy + vy * (length * cp2),
-                                rx - vx * (length * cp1), ry,
+                bmpctx.curve_to(crx + vx * (length * 0.6), cry,
+                                rx - vx * (length * 0.6), ry,
                                 rx, ry)
 
                 bmpctx.set_line_width(4)
@@ -1251,7 +1261,7 @@ class RouteView(gtk.DrawingArea):
 
                 draw_triangle(*tri1)
                 bmpctx.fill()
-
+            # straight line
             else:
                 bmpctx.set_line_width(1)
                 bmpctx.set_source_rgb(*linepen)
@@ -1264,26 +1274,6 @@ class RouteView(gtk.DrawingArea):
                 bmpctx.fill_preserve()
                 bmpctx.set_source_rgb(*linepen)
                 bmpctx.stroke()
-
-            # # debug cps
-            # bmpctx.set_line_width(1)
-            # bmpctx.set_source_rgba(1, 0, 0, .5)
-            # bmpctx.move_to(crx, cry)
-            # bmpctx.line_to(crx + vx * (length * exp(-1)), cry)
-            # bmpctx.stroke()
-
-            # bmpctx.move_to(cpx, cpy)
-            # bmpctx.line_to(cpx - vx * (length * exp(-2)), cpy - vy * (length * exp(-2)))
-            # bmpctx.stroke()
-
-            # bmpctx.move_to(cpx, cpy)
-            # bmpctx.line_to(cpx + vx * (length * exp(-2)), cpy + vy * (length * exp(-2)))
-            # bmpctx.stroke()
-
-            # bmpctx.move_to(rx, ry)
-            # bmpctx.line_to(rx - vx * (length * exp(-1)), ry)
-            # bmpctx.stroke()
-            # # end debug cps
 
             bmpctx.restore()
 
