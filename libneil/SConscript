@@ -382,6 +382,10 @@ if (not is_cleaning()) and ('configure' in COMMAND_LINE_TARGETS):
         print "Error: no libfftw3 development files seem to be installed."
         print "libfftw3 libraries and headers are required for building."
         Exit(1)
+    if not conf.CheckCHeader('mpg123.h'):
+        print "Error: no mpg123 development files seem to be installed."
+        print "libmpg123 libraries and headers are required for building."
+        Exit(1)        
     boostgraphheaders = [
         'boost/graph/adjacency_list.hpp',
         'boost/graph/visitors.hpp',

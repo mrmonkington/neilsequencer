@@ -85,59 +85,6 @@ namespace zzub {
     return strm->position();
   }
 
-
-
-//////////////////////////////////////////////////
-// MAD
-//////////////////////////////////////////////////
-//   import_mad::import_mad() {
-//     memset(&sfinfo, 0, sizeof(sfinfo));    
-//   }
-
-//   enum mad_flow zzub_mad_input(struct mad_stream *stream) {
-//     return MAD_FLOW_CONTINUE;
-//   }
-
-//   enum mad_flow import_mad::zzub_mad_output(struct mad_header const *header, struct mad_pcm *pcm) {
-//     return MAD_FLOW_CONTINUE;
-//   }
-
-//   enum mad_flow import_mad::zzub_mad_error(struct mad_stream *stream, struct mad_frame *frame) {
-//     return MAD_FLOW_CONTINUE;
-//   }
-
-//   bool import_mad::open(zzub::instream* strm) {
-//     memset(&sfinfo, 0, sizeof(sfinfo));
-
-// // mad_decoder_init(decoder, data, zzub_mad_input, 0, 0, zzub_mad_output, zzub_mad_error, 0);
-// // mad_decoder_run(&decoder, MAD_DECODER_MODE_ASYNC);
-
-
-//     return true;
-//   }
-
-//   void import_mad::close() {
-//     // mad_decoder_finish(decoder);
-//   }
-
-//   int import_mad::get_wave_count() { 
-//     return 1; 
-//   }
-//   int import_mad::get_wave_level_count(int i) {
-//     return 1; 
-//   }
-//   bool import_mad::get_wave_level_info(int i, int level, importwave_info& info) { 
-//     return false; 
-//   }
-//   void import_mad::read_wave_level_samples(int i, int level, void* buffer) {
-
-//   }
-////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////
-// MPG123
-//////////////////////////////////////////////////
-
   ssize_t mpg123_read_cb(void* user_data, void *buf, size_t count) {
     zzub::instream* strm = (zzub::instream*)user_data ;
     return strm->read(buf, count);
@@ -147,9 +94,6 @@ namespace zzub {
     zzub::instream* strm = (zzub::instream*)user_data ;    
     strm->seek((long)offset, (int)whence);
     return strm->position();
-  }
-
-  import_mpg123::import_mpg123() {
   }
 
   bool import_mpg123::open(zzub::instream* strm) {
@@ -168,7 +112,6 @@ namespace zzub {
     // mpg123_param(mh, MPG123_ADD_FLAGS, MPG123_SEEKBUFFER, 0.);
     // mpg123_param(mh, MPG123_ADD_FLAGS, MPG123_FORCE_FLOAT, 0);
   
-    // mpg123_replace_reader(mh, 
     if(mpg123_replace_reader_handle(mh, mpg123_read_cb, mpg123_seek_cb, 0) != MPG123_OK)
     {
         fprintf(stderr, "mpg123 error: %s\n", mpg123_strerror(mh));
@@ -278,7 +221,6 @@ namespace zzub {
     fprintf( stderr, "Warning: Decoding ended prematurely because: %s\n",
             err == MPG123_ERR ? mpg123_strerror(mh) : mpg123_plain_strerror(err) );
   }
-////////////////////////////////////////////////////
 
 
   import_sndfile::import_sndfile() {
