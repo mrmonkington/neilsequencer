@@ -1204,7 +1204,7 @@ class RouteView(gtk.DrawingArea):
             def make_triangle(radius):
                 ux, uy = vx, vy
                 if cfg.get_curve_arrows():
-                    # bezier curve tanget
+                    # bezier curve tangent
                     def dp(t, a, b, c, d):
                         return -3 * (1 - t) ** 2 * a + 3 * (1 - t) ** 2 * b - 6 * t * (1 - t) * b - 3 * (t ** 2) * c + 6 * t * (1 - t) * c + 3 * (t ** 2) * d
                     tx = dp(.5, crx, crx + vx * (length * 0.6), rx - vx * (length * 0.6), rx)

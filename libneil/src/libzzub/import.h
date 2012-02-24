@@ -78,16 +78,41 @@ namespace zzub {
     importplugin* get_importer(std::string filename);
   };
 
-  struct import_mad : importplugin  {
-    SF_INFO sfinfo;
+  // struct import_mad : importplugin  {
+  //   SF_INFO sfinfo;
     
-    struct mad_decoder* decoder;
+  //   struct mad_decoder* decoder;
 
-    enum mad_flow zzub_mad_input(struct mad_stream *stream);
-    enum mad_flow zzub_mad_output(struct mad_header const *header, struct mad_pcm *pcm);
-    enum mad_flow zzub_mad_error(struct mad_stream *stream, struct mad_frame *frame);
+  //   enum mad_flow zzub_mad_input(struct mad_stream *stream);
+  //   enum mad_flow zzub_mad_output(struct mad_header const *header, struct mad_pcm *pcm);
+  //   enum mad_flow zzub_mad_error(struct mad_stream *stream, struct mad_frame *frame);
 
-    import_mad();
+  //   import_mad();
+  //   bool open(zzub::instream* strm);
+  //   int get_wave_count();
+  //   int get_wave_level_count(int i);
+  //   bool get_wave_level_info(int i, int level, importwave_info& info);
+  //   void read_wave_level_samples(int i, int level, void* buffer);
+  //   void close();
+
+  //   std::vector<std::string> get_extensions() {
+  //     std::vector<std::string> result;
+  //     result.push_back("mp3");
+  //     return result;
+  //   }
+  // };
+
+  struct import_mpg123 : importplugin  {
+    // SF_INFO sfinfo;
+    // SNDFILE *sf;
+    mpg123_handle *mh;
+    int channels;
+    int encoding;
+    long rate;
+    // ssize_t my_read(int fd, void *buf, size_t count);
+    // off_t my_seek(int fd, off_t offset, int whence);
+
+    import_mpg123();
     bool open(zzub::instream* strm);
     int get_wave_count();
     int get_wave_level_count(int i);
@@ -101,5 +126,7 @@ namespace zzub {
       return result;
     }
   };
+
+
 };
 

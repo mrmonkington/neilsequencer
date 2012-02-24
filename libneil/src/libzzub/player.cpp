@@ -28,6 +28,7 @@
 
 #include <sndfile.h>
 #include <mad.h>
+#include <mpg123.h>
 
 #include "import.h"
 
@@ -89,41 +90,196 @@ namespace zzub {
 //////////////////////////////////////////////////
 // MAD
 //////////////////////////////////////////////////
-  import_mad::import_mad() {
-    memset(&sfinfo, 0, sizeof(sfinfo));    
+//   import_mad::import_mad() {
+//     memset(&sfinfo, 0, sizeof(sfinfo));    
+//   }
+
+//   enum mad_flow zzub_mad_input(struct mad_stream *stream) {
+//     return MAD_FLOW_CONTINUE;
+//   }
+
+//   enum mad_flow import_mad::zzub_mad_output(struct mad_header const *header, struct mad_pcm *pcm) {
+//     return MAD_FLOW_CONTINUE;
+//   }
+
+//   enum mad_flow import_mad::zzub_mad_error(struct mad_stream *stream, struct mad_frame *frame) {
+//     return MAD_FLOW_CONTINUE;
+//   }
+
+//   bool import_mad::open(zzub::instream* strm) {
+//     memset(&sfinfo, 0, sizeof(sfinfo));
+
+// // mad_decoder_init(decoder, data, zzub_mad_input, 0, 0, zzub_mad_output, zzub_mad_error, 0);
+// // mad_decoder_run(&decoder, MAD_DECODER_MODE_ASYNC);
+
+
+//     return true;
+//   }
+
+//   void import_mad::close() {
+//     // mad_decoder_finish(decoder);
+//   }
+
+//   int import_mad::get_wave_count() { 
+//     return 1; 
+//   }
+//   int import_mad::get_wave_level_count(int i) {
+//     return 1; 
+//   }
+//   bool import_mad::get_wave_level_info(int i, int level, importwave_info& info) { 
+//     return false; 
+//   }
+//   void import_mad::read_wave_level_samples(int i, int level, void* buffer) {
+
+//   }
+////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////
+// MPG123
+//////////////////////////////////////////////////
+
+  ssize_t mpg123_read_cb(void* user_data, void *buf, size_t count) {
+    zzub::instream* strm = (zzub::instream*)user_data ;
+    return strm->read(buf, count);
   }
 
-  enum mad_flow zzub_mad_input(struct mad_stream *stream) {
-    return MAD_FLOW_CONTINUE;
+  off_t mpg123_seek_cb(void* user_data, off_t offset, int whence) {
+    zzub::instream* strm = (zzub::instream*)user_data ;    
+    strm->seek((long)offset, (int)whence);
+    return strm->position();
   }
 
-  enum mad_flow import_mad::zzub_mad_output(struct mad_header const *header, struct mad_pcm *pcm) {
-    return MAD_FLOW_CONTINUE;
+  import_mpg123::import_mpg123() {
   }
 
-  enum mad_flow import_mad::zzub_mad_error(struct mad_stream *stream, struct mad_frame *frame) {
-    return MAD_FLOW_CONTINUE;
-  }
+  bool import_mpg123::open(zzub::instream* strm) {
+    mh = NULL;
+    int err  = MPG123_OK;
 
-  bool import_mad::open(zzub::instream* strm) {
-    memset(&sfinfo, 0, sizeof(sfinfo));
+    err = mpg123_init();
+    if(err != MPG123_OK || (mh = mpg123_new(NULL, &err)) == NULL) {
+      fprintf(stderr, "Basic setup goes wrong: %s", mpg123_plain_strerror(err));
+      close();
+      mh = 0;
+      return false;
+    }
 
-// mad_decoder_init(decoder, data, zzub_mad_input, 0, 0, zzub_mad_output, zzub_mad_error, 0);
-// mad_decoder_run(&decoder, MAD_DECODER_MODE_ASYNC);
+    mpg123_param(mh, MPG123_VERBOSE, 2, 0); /* Brabble a bit about the parsing/decoding. */
+    // mpg123_param(mh, MPG123_ADD_FLAGS, MPG123_SEEKBUFFER, 0.);
+    // mpg123_param(mh, MPG123_ADD_FLAGS, MPG123_FORCE_FLOAT, 0);
+  
+    // mpg123_replace_reader(mh, 
+    if(mpg123_replace_reader_handle(mh, mpg123_read_cb, mpg123_seek_cb, 0) != MPG123_OK)
+    {
+        fprintf(stderr, "mpg123 error: %s\n", mpg123_strerror(mh));
+        close();
+        mh = 0;
+        return false;        
+    }
 
+    if( mpg123_open_handle(mh, strm) != MPG123_OK
+       /* Peek into track and get first output format. */
+       || mpg123_getformat(mh, &rate, &channels, &encoding) != MPG123_OK )
+    {
+           fprintf( stderr, "Trouble with mpg123: %s\n", mpg123_strerror(mh) );
+           close();
+           mh = 0;
+           return false;
+    }
+
+    if(encoding != MPG123_ENC_SIGNED_16 && encoding != MPG123_ENC_FLOAT_32)
+    { /* Signed 16 is the default output format anyways; it would actually by only different if we forced it.
+        So this check is here just for this explanation. */
+           close();
+           mh = 0;
+           fprintf(stderr, "Bad encoding: 0x%x!\n", encoding);
+           return false;
+    }
+
+    /* Ensure that this output format will not change (it could, when we allow it). */
+    mpg123_format_none(mh);
+    mpg123_format(mh, rate, channels, encoding);
+    // mpg123_format_all(mh);
+
+    printf("File is %i channels and %liHz.\n", channels, rate);
+    printf("Encoding is 0x%x\n", encoding);
+
+    mpg123_scan(mh);
 
     return true;
   }
 
-  void import_mad::close() {
-    // mad_decoder_finish(decoder);
+  void import_mpg123::close() {
+    assert(mh != 0);
+    mpg123_close(mh);
+    mpg123_delete(mh);
+    mpg123_exit();
   }
 
-  int import_mad::get_wave_count() { return 1; }
-  int import_mad::get_wave_level_count(int i) { return 1; }
-  bool import_mad::get_wave_level_info(int i, int level, importwave_info& info) { return false; }
-  void import_mad::read_wave_level_samples(int i, int level, void* buffer) {}
+  int import_mpg123::get_wave_count() { 
+    if (mh != 0) return 1;
+    return 0;
+  }
+
+  int import_mpg123::get_wave_level_count(int i) {
+    assert(i == 0);
+    if (mh != 0) return 1;
+    return 0;
+  }
+
+  bool import_mpg123::get_wave_level_info(int i, int level, importwave_info& info) { 
+    assert(i == 0);
+    assert(level == 0);
+    if (i != 0 && level != 0) {
+      return false;
+    }
+    info.channels = channels;
+
+    switch (encoding) {
+    case MPG123_ENC_SIGNED_16:
+      info.format = wave_buffer_type_si16;
+      break;      
+    case MPG123_ENC_FLOAT_32:
+      info.format = wave_buffer_type_si16;      
+      break;
+    default:
+      return false;
+    }
+
+    info.sample_count = mpg123_length(mh);
+    info.samples_per_second = rate;
+    return true;
+  }
+  void import_mpg123::read_wave_level_samples(int i, int level, void* buffer) {
+    assert(i == 0);
+    assert(level == 0);
+    importwave_info iwi;
+    if (!get_wave_level_info(i, level, iwi)) {
+      printf("error getting wave level info\n");
+      return;
+    }
+    const int buffer_size = mpg123_outblock(mh);    
+    // const int buffer_size = 2048;
+
+    size_t done = 0;
+    int samples = 0;
+    int err  = MPG123_OK;
+    do
+    {
+        int more_samples;
+            unsigned char buf[buffer_size];
+           err = mpg123_read( mh, buf, buffer_size, &done );
+      CopySamples(&buf, buffer, done / sizeof(short), iwi.format, iwi.format, 1, 1, 0, samples);
+           samples += done / sizeof(short);
+
+    } while (err==MPG123_OK);
+    
+    if(err != MPG123_DONE)
+    fprintf( stderr, "Warning: Decoding ended prematurely because: %s\n",
+            err == MPG123_ERR ? mpg123_strerror(mh) : mpg123_plain_strerror(err) );
+  }
 ////////////////////////////////////////////////////
+
 
   import_sndfile::import_sndfile() {
     sf = 0;
@@ -240,7 +396,8 @@ namespace zzub {
   waveimporter::waveimporter() {
     imp = 0;
     plugins.push_back(new import_sndfile());
-    plugins.push_back(new import_mad());
+    // plugins.push_back(new import_mad());
+    plugins.push_back(new import_mpg123());
   }
 
   waveimporter::~waveimporter() {
