@@ -789,7 +789,7 @@ class WavetablePanel(gtk.VBox):
             menu = Menu()
             menu.add_item("Load Sample", self.on_load_sample)
             menu.add_item("Save Sample", self.on_save_sample)
-            menu.add_item("Remove Instrument", self.on_delete_file)
+            menu.add_item("Remove Instrument", self.on_clear)
             menu.add_item("Rename Instrument", self.on_rename_instrument)
             menu.add_item("Swap Instrument", self.on_swap_instrument)
             menu.show_all()
