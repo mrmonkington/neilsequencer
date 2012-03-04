@@ -324,7 +324,6 @@ class PluginContextMenu(gtk.Menu):
         menu.add_check_item("_Bypass", mp.get_bypass(),
                                 self.on_popup_bypass, mp)
         menu.add_separator()
-        menu.add_separator()
         menu.add_item("_Parameters...", self.on_popup_show_params, mp)
         menu.add_item("_Attributes...", self.on_popup_show_attribs, mp)
         menu.add_item("P_resets...", self.on_popup_show_presets, mp)
