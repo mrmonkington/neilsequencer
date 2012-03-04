@@ -504,6 +504,10 @@ class PatternPanel(gtk.VBox):
             pass
         self.view.needfocus = True
 
+    def update_all(self):
+        self.view.update_font()
+        self.view.redraw()
+
 from neil.utils import fixbn, bn2mn, mn2bn, note2str, switch2str, byte2str, word2str
 
 t2c = [
