@@ -99,7 +99,7 @@ class GeneralPanel(gtk.VBox):
 	
 	self.theme = gtk.combo_box_new_text()
 	themes = os.listdir(sharedpath('themes'))
-	# self.theme.append_text('Default');
+	self.theme.append_text('Default');
 	for i, theme in enumerate(themes):
 		name = os.path.splitext(theme)[0]
 		self.theme.append_text(name);			
@@ -135,12 +135,15 @@ class GeneralPanel(gtk.VBox):
 	config.get_config().set_pattern_noteoff(self.patnoteoff.get_active())
 	config.get_config().set_curve_arrows(self.curvearrows.get_active())
 	#config.get_config().set_experimental('RackPanel', self.rackpanel.get_active())
-
-	if config.get_config().active_theme != self.theme.get_active_text():
+        theme_name = self.theme.get_active_text()
+	if config.get_config().active_theme != theme_name:
+            if theme_name == 'Default':
+                config.get_config().select_theme(None)
+            else:
 		config.get_config().select_theme(self.theme.get_active_text())
-		import neil.com
-		neil.com.get('neil.core.router.view').update_all()
-		neil.com.get('neil.core.sequencerpanel').update_all()
+            import neil.com
+            neil.com.get('neil.core.router.view').update_all()
+            neil.com.get('neil.core.sequencerpanel').update_all()
 
 class DriverPanel(gtk.VBox):
     """
