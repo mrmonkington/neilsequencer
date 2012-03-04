@@ -141,9 +141,10 @@ class GeneralPanel(gtk.VBox):
                 config.get_config().select_theme(None)
             else:
 		config.get_config().select_theme(self.theme.get_active_text())
-            import neil.com
-            neil.com.get('neil.core.router.view').update_all()
-            neil.com.get('neil.core.sequencerpanel').update_all()
+        import neil.com
+        #neil.com.get('neil.core.patternpanel').update_all()
+        neil.com.get('neil.core.router.view').update_all()
+        neil.com.get('neil.core.sequencerpanel').update_all()
 
 class DriverPanel(gtk.VBox):
     """

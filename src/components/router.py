@@ -955,6 +955,7 @@ class RouteView(gtk.DrawingArea):
 
     def update_all(self):
         self.update_colors()
+        self.redraw()
 
     def on_draw_led_timer(self):
         """
