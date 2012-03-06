@@ -291,7 +291,7 @@ class WavetablePanel(gtk.VBox):
         eventbus.zzub_wave_changed += self.update_samplelist
         eventbus.zzub_wave_changed += self.update_sampleprops
         eventbus.zzub_wave_changed += self.envelope.update
-        eventbus.zzub_wave_changed += self.waveedit.update
+        eventbus.zzub_wave_changed += self.waveedit.view.view_changed
         eventbus.active_waves_changed += self.update_samplelist
         eventbus.active_waves_changed += self.update_sampleprops
         eventbus.active_waves_changed += self.envelope.update

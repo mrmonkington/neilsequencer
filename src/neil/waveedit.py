@@ -338,8 +338,11 @@ class WaveEditView(gtk.DrawingArea):
         begin, end = self.selection
         self.level.set_loop_start(begin)
         self.level.set_loop_end(end)
+        w = self.wave
+        flags = w.get_flags()
+        flags = flags | zzub.zzub_wave_flag_loop
+        w.set_flags(flags)
         player.history_commit("set loop range")
-        self.sample_changed()
         
     def on_xfade_range(self, widget):
         player = com.get('neil.core.player')
@@ -361,7 +364,7 @@ class WaveEditView(gtk.DrawingArea):
     def sample_changed(self):
 	self.view_changed()
 
-    def view_changed(self):
+    def view_changed(self, *args):
 	self.fix_range()		
 	self.update_digest()
 	self.redraw()
