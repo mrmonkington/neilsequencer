@@ -23,6 +23,7 @@ Provides an info view which allows to enter text.
 """
 
 import gtk
+import pango
 import neil.common as common
 from neil.utils import add_scrollbars
 from neil.common import MARGIN, MARGIN0, MARGIN2, MARGIN3
@@ -84,6 +85,7 @@ class InfoView(gtk.TextView):
 	gtk.TextView.__init__(self)
 	self.set_wrap_mode(gtk.WRAP_WORD)
 	self.get_buffer().connect('changed', self.on_edit)
+        self.modify_font(pango.FontDescription('monospace 8'))
 
     def on_edit(self, buffer_):
 	"""
