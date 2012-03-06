@@ -2614,6 +2614,8 @@ class PatternView(gtk.DrawingArea):
         gc.set_foreground(background)
         drawable.draw_rectangle(gc, True, 0, 0, w, self.row_height)
         drawable.draw_rectangle(gc, True, 0, 0, PATLEFTMARGIN, h)
+        if self.lines == None:
+            return
         gc.set_foreground(pen)
         #drawable.draw_rectangle(gc, False, 0, 0, w - 1, h - 1)
         x, y = PATLEFTMARGIN, self.row_height
@@ -2627,7 +2629,7 @@ class PatternView(gtk.DrawingArea):
         drawable.draw_layout(gc, x - 5 - px, y, layout)
         # Draw a black vertical separator line
         y = self.row_height - 1
-        drawable.draw_line(gc, x, y, x, h - y)
+        drawable.draw_line(gc, x, y, x, h)
         # Draw a black horizontal separator line
         drawable.draw_line(gc, PATLEFTMARGIN, y, w, y)
         # The color of text as specified in config.py
