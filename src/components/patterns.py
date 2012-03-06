@@ -2626,8 +2626,8 @@ class PatternView(gtk.DrawingArea):
         px, py = layout.get_pixel_size()
         drawable.draw_layout(gc, x - 5 - px, y, layout)
         # Draw a black vertical separator line
-        drawable.draw_line(gc, x, 0, x, h)
         y = self.row_height - 1
+        drawable.draw_line(gc, x, y, x, h - y)
         # Draw a black horizontal separator line
         drawable.draw_line(gc, PATLEFTMARGIN, y, w, y)
         # The color of text as specified in config.py
