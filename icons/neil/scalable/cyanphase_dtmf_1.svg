@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   width="12.8pt"
+   height="12.8pt"
+   id="svg2"
+   inkscape:version="0.48.2 r9819"
+   sodipodi:docname="Cyanphase-DTMF1.svg">
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="640"
+     inkscape:window-height="480"
+     id="namedview16"
+     showgrid="false"
+     showguides="true"
+     inkscape:guide-bbox="true"
+     inkscape:zoom="14.75"
+     inkscape:cx="15.731482"
+     inkscape:cy="8"
+     inkscape:window-x="0"
+     inkscape:window-y="27"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg2">
+    <sodipodi:guide
+       orientation="0,1"
+       position="11.322034,18.915254"
+       id="guide2993" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata23">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <cc:license
+           rdf:resource="http://www.gnu.org/licenses/gpl-2.0.html" />
+        <dc:title />
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Timothee Giet</dc:title>
+          </cc:Agent>
+        </dc:creator>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs4" />
+  <g
+     id="layer1">
+    <path
+       d="M 15.9344,7.96936 C 15.9356,12.3704 12.3682,15.9387 7.96721,15.9387 3.5662,15.9387 -0.00118715,12.3704 2.96355e-7,7.96936 -0.00118715,3.56835 3.5662,0 7.96721,0 12.3682,0 15.9356,3.56835 15.9344,7.96936 z"
+       transform="matrix(1.00412,0,0,1.00412,-2.56361e-7,-0.00215818)"
+       id="path2180"
+       style="fill:#191970;fill-rule:evenodd"
+       inkscape:connector-curvature="0" />
+    <path
+       d="M 14.99998,7.9999997 C 15.00103,11.866758 11.866713,15.00187 7.999999,15.00187 4.133267,15.00187 0.998957,11.866758 1,7.9999997 0.999,4.1332679 4.133267,0.998112 7.999999,0.998112 c 3.866714,0 7.001035,3.1351559 6.999981,7.0018877 z"
+       id="path2182"
+       style="fill:#ffffe0;fill-rule:evenodd"
+       inkscape:connector-curvature="0" />
+  </g>
+  <path
+     d="m 14.444791,8.0380112 a 6.4745765,6.4745765 0 0 1 -12.949153,0 6.4745765,6.4745765 0 1 1 12.949153,0 z"
+     id="path3785-2"
+     style="fill:#3296ff;fill-opacity:1;stroke:none"
+     inkscape:connector-curvature="0" />
+  <path
+     d="m 6,5.2640104 4,0 0,7.0000006 -4,0 z"
+     id="path3811"
+     style="fill:#353535;fill-opacity:1;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+  <path
+     d="m 9,5.2640104 0,-2"
+     id="path3813"
+     style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+  <path
+     d="m 9,8.2640104 0,-2 -2,0 0,2 z"
+     id="path3815"
+     style="fill:#fbe4bf;fill-opacity:1;stroke:none" />
+</svg>

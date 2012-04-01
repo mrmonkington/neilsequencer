@@ -14,7 +14,7 @@
    width="16"
    height="16"
    id="svg2"
-   inkscape:version="0.47pre4 r22446"
+   inkscape:version="0.48.2 r9819"
    sodipodi:docname="somono_cloud.svg">
   <metadata
      id="metadata3369">
@@ -37,15 +37,15 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1280"
-     inkscape:window-height="950"
+     inkscape:window-width="1920"
+     inkscape:window-height="1033"
      id="namedview3367"
      showgrid="false"
      inkscape:zoom="14.75"
      inkscape:cx="-5.3559322"
      inkscape:cy="8"
-     inkscape:window-x="0"
-     inkscape:window-y="25"
+     inkscape:window-x="-2"
+     inkscape:window-y="24"
      inkscape:window-maximized="1"
      inkscape:current-layer="svg2" />
   <defs
@@ -88,8 +88,9 @@
      style="color:#000000;fill:#57a1ff;fill-opacity:1;fill-rule:evenodd;stroke:#211966;stroke-width:0.91626191px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
      id="path2180" />
   <path
-     style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.86660205999999984px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     d="M 5.2175546,5.9649108 C 6.1816857,2.3270459 8.8740251,3.1597025 9.9658387,5.7215015 13.508776,4.2989517 14.164947,7.2973637 12.02449,9.0524972 12.959763,11.776551 10.415703,13.425187 8.2820391,10.326298 7.2848108,13.117327 4.4361536,12.071606 4.5044298,9.498702 1.303671,9.0453339 2.3515602,4.8257144 5.2175546,5.9649108 z"
+     style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.86660206px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="M 4.8785715,6.100504 C 5.0892921,3.2685506 9.0774149,1.6003805 10.304822,5.5859083 13.847759,4.1633585 14.436133,7.6363468 12.092287,8.7135141 13.02756,11.437568 11.297059,12.611628 9.2989883,10.868671 8.30176,13.6597 3.8259841,12.410589 3.8942603,9.8376851 1.2358744,9.3165203 1.8769839,5.8426636 4.8785715,6.100504 z"
      id="path3633"
-     sodipodi:nodetypes="cccccc" />
+     sodipodi:nodetypes="cccccc"
+     inkscape:connector-curvature="0" />
 </svg>
