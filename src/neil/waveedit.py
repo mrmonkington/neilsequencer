@@ -110,6 +110,8 @@ class WaveEditView(gtk.DrawingArea):
         self.offpeak = 0.4
         self.onpeak = 0.9
         self.dragging = False
+        self.start_loop_dragging = False
+        self.end_loop_dragging = False
         self.right_dragging = False
         self.right_drag_start = 0
         self.stretching = False
@@ -353,6 +355,10 @@ class WaveEditView(gtk.DrawingArea):
                 elif self.near_end_selection_marker(mx, my):
                     self.dragging = True
                     self.startpos = begin
+                elif self.near_start_loop_marker(mx, my):
+                    self.start_loop_dragging = True
+                elif self.near_end_loop_marker(mx, my):
+                    self.end_loop_dragging = True
                 else:
                     self.startpos = s
                     self.dragging = True
@@ -430,6 +436,8 @@ class WaveEditView(gtk.DrawingArea):
                 else:
                     self.set_selection(self.startpos, s)
                 self.redraw()
+            self.start_loop_dragging = False
+            self.end_loop_dragging = False
         elif event.button == 2:
             self.right_dragging = False
 
@@ -439,6 +447,7 @@ class WaveEditView(gtk.DrawingArea):
         """
         mx, my = int(event.x), int(event.y)
         s, a = self.client_to_sample(mx, my)
+        # If mouse cursor is near one of vertical markers, change the pointer.
         if (self.near_start_selection_marker(mx, my) or
             self.near_end_selection_marker(mx, my) or
             self.near_start_loop_marker(mx, my) or
@@ -449,37 +458,17 @@ class WaveEditView(gtk.DrawingArea):
             if not self.dragging:
                 arrow = gtk.gdk.Cursor(gtk.gdk.ARROW)
                 self.window.set_cursor(arrow)
-        # Change the cursor if the mouse pointer is near selection borders.
-        #if self.selection:
-        #    begin, end = self.selection
-        #    x1, y1 = self.sample_to_client(begin, 0)
-        #    x2, y2 = self.sample_to_client(end, 0)
-        #    if (self.near_start_selection_marker(mx, my) or 
-        #        self.near_end_selection_marker(mx, my)):
-        #        resizer = gtk.gdk.Cursor(gtk.gdk.SB_H_DOUBLE_ARROW)
-        #        self.window.set_cursor(resizer)
-        #    else:
-        #        if not self.dragging:
-        #            arrow = gtk.gdk.Cursor(gtk.gdk.ARROW)
-        #            self.window.set_cursor(arrow)
-        #if loop_on:
-        #    start, end = self.level.get_loop_start(), self.level.get_loop_end()
-        #    x1, y1 = self.sample_to_client(start, 0)
-        #    x2, y2 = self.sample_to_client(end, 0)
-        #    if (((mx > x1 - 10) and (mx < x1 + 10)) or
-        #        ((mx > x2 - 10) and (mx < x2 + 10))):
-        #        resizer = gtk.gdk.Cursor(gtk.gdk.SB_H_DOUBLE_ARROW)
-        #        self.window.set_cursor(resizer)
-        #    else:
-        #        if not self.dragging:
-        #            arrow = gtk.gdk.Cursor(gtk.gdk.ARROW)
-        #            self.window.set_cursor(arrow)
+
         if self.dragging == True:
             if s < self.startpos:
                 self.set_selection(s, self.startpos)
             else:
                 self.set_selection(self.startpos, s)
                 self.redraw()
+        elif self.start_loop_dragging:
+            self.level.get_wave().set_loop_start(s)
+        elif self.end_loop_dragging:
+            self.level.get_wave().set_loop_end(s)
         elif self.right_dragging == True:
             begin, end = self.range
             diff = self.right_drag_start - s
