@@ -46,29 +46,29 @@ NEXT = 1
 
 class WaveEditPanel(gtk.VBox):
     def __init__(self, wavetable):
-	gtk.VBox.__init__(self, False, MARGIN)
-	self.wavetable = wavetable
-	self.view = WaveEditView(wavetable)
+        gtk.VBox.__init__(self, False, MARGIN)
+        self.wavetable = wavetable
+        self.view = WaveEditView(wavetable)
         self.viewport = gtk.Viewport()
         self.viewport.add(self.view)
         self.pack_start(self.viewport)
-	self.set_border_width(MARGIN)
+        self.set_border_width(MARGIN)
 
     def update(self, *args):
-	self.view.update()
+        self.view.update()
 
     def on_store_range(self, widget):
-	self.view.store_range()
+        self.view.store_range()
 
     def on_apply_slices(self, widget):
-	self.view.apply_slices()
+        self.view.apply_slices()
 
     def on_delete_range(self, widget):
-	self.view.delete_range()
-	self.wavetable.update_sampleprops()
+        self.view.delete_range()
+        self.wavetable.update_sampleprops()
 
     def on_loop_range(self, widget):
-	player = com.get('neil.core.player')
+        player = com.get('neil.core.player')
         begin, end = self.view.selection
         self.view.level.set_loop_start(begin)
         self.view.level.set_loop_end(end)
@@ -100,28 +100,28 @@ class WaveEditView(gtk.DrawingArea):
     """
 
     def __init__(self, wavetable):
-	"""
-	Initialization.
-	"""
+        """
+        Initialization.
+        """
         self.zoom_level = 0
-	self.wavetable = wavetable
-	self.wave = None
-	self.level = None
-	self.offpeak = 0.4
-	self.onpeak = 0.9
-	self.dragging = False
+        self.wavetable = wavetable
+        self.wave = None
+        self.level = None
+        self.offpeak = 0.4
+        self.onpeak = 0.9
+        self.dragging = False
         self.right_dragging = False
         self.right_drag_start = 0
-	self.stretching = False
-	gtk.DrawingArea.__init__(self)
-	self.add_events(gtk.gdk.ALL_EVENTS_MASK)
-	self.connect('button-press-event', self.on_button_down)
-	self.connect('button-release-event', self.on_button_up)
-	self.connect('motion-notify-event', self.on_motion)
-	self.connect('enter-notify-event', self.on_enter)
-	self.connect('leave-notify-event', self.on_leave)
-	self.connect('scroll-event', self.on_mousewheel)
-	self.connect("expose_event", self.expose)
+        self.stretching = False
+        gtk.DrawingArea.__init__(self)
+        self.add_events(gtk.gdk.ALL_EVENTS_MASK)
+        self.connect('button-press-event', self.on_button_down)
+        self.connect('button-release-event', self.on_button_up)
+        self.connect('motion-notify-event', self.on_motion)
+        self.connect('enter-notify-event', self.on_enter)
+        self.connect('leave-notify-event', self.on_leave)
+        self.connect('scroll-event', self.on_mousewheel)
+        self.connect("expose_event", self.expose)
 
         self.context_menu = gtk.Menu()
         
@@ -148,155 +148,155 @@ class WaveEditView(gtk.DrawingArea):
         self.menu_normalize.show()
         self.menu_normalize.connect('activate', self.on_normalize)
         self.context_menu.append(self.menu_normalize)
-       
-	self.loop_start = 0
-	self.loop_end = 150
+           
+        self.loop_start = 0
+        self.loop_end = 150
 
     def expose(self, widget, event):
-	self.context = widget.window.cairo_create()
-	self.draw(self.context)
-	return False
+        self.context = widget.window.cairo_create()
+        self.draw(self.context)
+        return False
 
     def get_client_size(self):
-	rect = self.get_allocation()
-	return rect.width, rect.height
+        rect = self.get_allocation()
+        return rect.width, rect.height
 
     def delete_range(self):
-	player = com.get('neil.core.player')
-	if self.selection:
-	    begin,end = self.selection
-	    self.level.remove_sample_range(begin, end - 1)
-	    self.selection = None
-	    player.history_commit("remove sample range")
-	    self.sample_changed()
+        player = com.get('neil.core.player')
+        if self.selection:
+            begin,end = self.selection
+            self.level.remove_sample_range(begin, end - 1)
+            self.selection = None
+            player.history_commit("remove sample range")
+            self.sample_changed()
 
     def redraw(self):
-	if self.window:
-	    w, h = self.get_client_size()
-	    self.window.invalidate_rect((0, 0, w, h), False)
+        if self.window:
+            w, h = self.get_client_size()
+            self.window.invalidate_rect((0, 0, w, h), False)
 
     def update_digest(self, channel=0):
-	w, h = self.get_client_size()
-	self.minbuffer, self.maxbuffer, self.ampbuffer = \
-	    self.level.get_samples_digest(channel, self.range[0], self.range[1],  w)
+        w, h = self.get_client_size()
+        self.minbuffer, self.maxbuffer, self.ampbuffer = \
+            self.level.get_samples_digest(channel, self.range[0], self.range[1],  w)
 
     def fix_range(self):
-	begin,end = self.range
-	begin = max(min(begin, self.level.get_sample_count() - 1), 0)
-	end = max(min(end, self.level.get_sample_count()), begin + 1)
-	self.range = [begin, end]
+        begin,end = self.range
+        begin = max(min(begin, self.level.get_sample_count() - 1), 0)
+        end = max(min(end, self.level.get_sample_count()), begin + 1)
+        self.range = [begin, end]
 
     def set_range(self, begin, end):
-	self.range = [begin, end]
-	self.view_changed()
+        self.range = [begin, end]
+        self.view_changed()
 
     def set_selection(self, begin, end):
-	if begin == end:
-	    self.selection = None
-	else:
-	    begin = max(min(begin, self.level.get_sample_count() - 1), 0)
-	    end = max(min(end, self.level.get_sample_count()), begin + 1)
-	    self.selection = [begin, end]
-	self.redraw()
+        if begin == end:
+            self.selection = None
+        else:
+            begin = max(min(begin, self.level.get_sample_count() - 1), 0)
+            end = max(min(end, self.level.get_sample_count()), begin + 1)
+            self.selection = [begin, end]
+        self.redraw()
 
     def client_to_sample(self, x, y, db=False):
-	w, h = self.get_client_size()
-	sample = self.range[0] + (float(x) / float(w)) * (self.range[1] - self.range[0])
-	if db:
-	    amp = 1.0 - (float(y) / float(h))
-	else:
-	    amp = (float(y) / float(h)) * 2.0 - 1.0
-	return int(sample + 0.5), amp
+        w, h = self.get_client_size()
+        sample = self.range[0] + (float(x) / float(w)) * (self.range[1] - self.range[0])
+        if db:
+            amp = 1.0 - (float(y) / float(h))
+        else:
+            amp = (float(y) / float(h)) * 2.0 - 1.0
+        return int(sample + 0.5), amp
 
     def sample_to_client(self, s, a):
-	w, h = self.get_client_size()
-	x = ((float(s) - self.range[0]) / (self.range[1] - self.range[0])) * w
-	y = (a + 1.0) * float(h) / 2.0
-	return x, y
+        w, h = self.get_client_size()
+        x = ((float(s) - self.range[0]) / (self.range[1] - self.range[0])) * w
+        y = (a + 1.0) * float(h) / 2.0
+        return x, y
 
     def on_mousewheel(self, widget, event):
-	"""
-	Callback that responds to mousewheeling in pattern view.
-	"""		
-	mx, my = int(event.x), int(event.y)
-	s, a = self.client_to_sample(mx,my)
-	b, e = self.range
-	diffl = s - b
-	diffr = e - s
-	if event.direction == gtk.gdk.SCROLL_DOWN:
-	    diffl *= 2
-	    diffr *= 2
-	elif event.direction == gtk.gdk.SCROLL_UP:
-	    diffl /= 2
-	    diffr /= 2
-	self.set_range(s - diffl, s + diffr)
-	self.redraw()
+        """
+        Callback that responds to mousewheeling in pattern view.
+        """     
+        mx, my = int(event.x), int(event.y)
+        s, a = self.client_to_sample(mx,my)
+        b, e = self.range
+        diffl = s - b
+        diffr = e - s
+        if event.direction == gtk.gdk.SCROLL_DOWN:
+            diffl *= 2
+            diffr *= 2
+        elif event.direction == gtk.gdk.SCROLL_UP:
+            diffl /= 2
+            diffr /= 2
+        self.set_range(s - diffl, s + diffr)
+        self.redraw()
 
     def store_range(self):
-	w = self.wave
-	origpath = w.get_path().replace('/',os.sep).replace('\\',os.sep)
-	if origpath:
-	    filename = os.path.splitext(os.path.basename(origpath))[0]
-	else:
-	    filename = w.get_name()
-	if self.selection:
-	    filename += '_selection'
-	else:
-	    filename += '_slice'
-	filename += '.wav'
-	if self.selection:
-	    title = "Export Selection"
-	else:
-	    title = "Export Slices"
-	dlg = gtk.FileChooserDialog(title, parent=self.get_toplevel(), action=gtk.FILE_CHOOSER_ACTION_SAVE,
-		buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_SAVE, gtk.RESPONSE_OK))
-	dlg.set_current_name(filename)
-	dlg.set_do_overwrite_confirmation(True)
-	dlg.add_filter(file_filter('Wave Files (*.wav)', '*.wav'))
-	response = dlg.run()
-	filepath = dlg.get_filename()
-	dlg.destroy()
-	if response != gtk.RESPONSE_OK:
-	    return
-	if self.selection:
-	    begin,end = self.selection
-	    self.wave.save_sample_range(0, filepath, begin, end)
-	else:
-	    filename, fileext = os.path.splitext(filepath)
-	    for i,x in enumerate(self.peaks):
-		if i == (len(self.peaks)-1):
-		    end = self.level.get_sample_count()
-		else:
-		    end = self.peaks[i+1]
-		filepath = "%s%03i%s" % (filename, i, fileext)
-		print filepath
-		self.wave.save_sample_range(0, filepath, x, end)
+        w = self.wave
+        origpath = w.get_path().replace('/',os.sep).replace('\\',os.sep)
+        if origpath:
+            filename = os.path.splitext(os.path.basename(origpath))[0]
+        else:
+            filename = w.get_name()
+        if self.selection:
+            filename += '_selection'
+        else:
+            filename += '_slice'
+        filename += '.wav'
+        if self.selection:
+            title = "Export Selection"
+        else:
+            title = "Export Slices"
+        dlg = gtk.FileChooserDialog(title, parent=self.get_toplevel(), action=gtk.FILE_CHOOSER_ACTION_SAVE,
+            buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_SAVE, gtk.RESPONSE_OK))
+        dlg.set_current_name(filename)
+        dlg.set_do_overwrite_confirmation(True)
+        dlg.add_filter(file_filter('Wave Files (*.wav)', '*.wav'))
+        response = dlg.run()
+        filepath = dlg.get_filename()
+        dlg.destroy()
+        if response != gtk.RESPONSE_OK:
+            return
+        if self.selection:
+            begin,end = self.selection
+            self.wave.save_sample_range(0, filepath, begin, end)
+        else:
+            filename, fileext = os.path.splitext(filepath)
+            for i, x in enumerate(self.peaks):
+                if i == (len(self.peaks)-1):
+                    end = self.level.get_sample_count()
+                else:
+                    end = self.peaks[i+1]
+                filepath = "%s%03i%s" % (filename, i, fileext)
+                print filepath
+                self.wave.save_sample_range(0, filepath, x, end)
 
     def on_enter(self, widget, event):
-	"""
-	Called when the mouse enters the wave editor.
-	"""
-	self.redraw()
+        """
+        Called when the mouse enters the wave editor.
+        """
+        self.redraw()
 
     def on_leave(self, widget, event):
-	"""
-	Called when the mouse leaves the wave editor.
-	"""
-	self.redraw()
+        """
+        Called when the mouse leaves the wave editor.
+        """
+        self.redraw()
 
     def on_button_down(self, widget, event):
-	"""
-	Callback that responds to left mouse down over the wave view.
-	"""
-	mx, my = int(event.x), int(event.y)
-	if (event.button == 1):
-	    s, a = self.client_to_sample(mx,my)
+        """
+        Callback that responds to left mouse down over the wave view.
+        """
+        mx, my = int(event.x), int(event.y)
+        if (event.button == 1):
+            s, a = self.client_to_sample(mx,my)
             # If a user double-clicks - clear the selection.
-	    if (event.type == gtk.gdk._2BUTTON_PRESS):
-		self.selection = None
-		self.dragging = False
-		self.redraw()
-	    else:
+            if (event.type == gtk.gdk._2BUTTON_PRESS):
+                self.selection = None
+                self.dragging = False
+                self.redraw()
+            else:
                 if self.selection:
                     begin, end = self.selection
                     x1, y1 = self.sample_to_client(begin, 0)
@@ -307,13 +307,13 @@ class WaveEditView(gtk.DrawingArea):
                     elif ((mx > x2 - 10) and (mx < x2 + 10)):
                         self.dragging = True
                         self.startpos = begin
-		else:
-		    self.startpos = s
+                else:
+                    self.startpos = s
                     self.dragging = True
-		self.grab_add()
-		self.redraw()
+                self.grab_add()
+                self.redraw()
         elif (event.button == 2):
-	    s, a = self.client_to_sample(mx, my)
+            s, a = self.client_to_sample(mx, my)
             self.right_dragging = True
             self.right_drag_start = s
         elif (event.button == 3):
@@ -330,11 +330,11 @@ class WaveEditView(gtk.DrawingArea):
             self.context_menu.popup(None, None, None, event.button, event.time)
 
     def on_delete_range(self, widget):
-	self.delete_range()
+        self.delete_range()
         self.sample_changed()
 
     def on_loop_range(self, widget):
-	player = com.get('neil.core.player')
+        player = com.get('neil.core.player')
         begin, end = self.selection
         self.level.set_loop_start(begin)
         self.level.set_loop_end(end)
@@ -362,17 +362,17 @@ class WaveEditView(gtk.DrawingArea):
         self.sample_changed()
 
     def sample_changed(self):
-	self.view_changed()
+        self.view_changed()
 
     def view_changed(self, *args):
-	self.fix_range()		
-	self.update_digest()
-	self.redraw()
+        self.fix_range()        
+        self.update_digest()
+        self.redraw()
 
     def on_button_up(self, widget, event):
-	"""
-	Callback that responds to mouse button up over the wave view.
-	"""
+        """
+        Callback that responds to mouse button up over the wave view.
+        """
         if event.button == 1:
             if self.dragging == True:
                 self.dragging = False
@@ -388,17 +388,17 @@ class WaveEditView(gtk.DrawingArea):
             self.right_dragging = False
 
     def on_motion(self, widget, event):
-	"""
-	Callback that responds to mouse motion over the wave view.
-	"""
-	mx, my = int(event.x), int(event.y)
-	s, a = self.client_to_sample(mx, my)
+        """
+        Callback that responds to mouse motion over the wave view.
+        """
+        mx, my = int(event.x), int(event.y)
+        s, a = self.client_to_sample(mx, my)
         # Change the cursor if the mouse pointer is near selection borders.
         if self.selection:
             begin, end = self.selection
             x1, y1 = self.sample_to_client(begin, 0)
             x2, y2 = self.sample_to_client(end, 0)
-            if (((mx > x1 - 10) and (mx < x1 + 10)) or
+            if (((mx > x1 - 10) and (mx < x1 + 10)) or 
                 ((mx > x2 - 10) and (mx < x2 + 10))):
                 resizer = gtk.gdk.Cursor(gtk.gdk.SB_H_DOUBLE_ARROW)
                 self.window.set_cursor(resizer)
@@ -406,37 +406,37 @@ class WaveEditView(gtk.DrawingArea):
                 if not self.dragging:
                     arrow = gtk.gdk.Cursor(gtk.gdk.ARROW)
                     self.window.set_cursor(arrow)
-	if self.dragging == True:
-	    if s < self.startpos:
-		self.set_selection(s, self.startpos)
-	    else:
-		self.set_selection(self.startpos, s)
-	    self.redraw()
+        if self.dragging == True:
+            if s < self.startpos:
+                self.set_selection(s, self.startpos)
+            else:
+                self.set_selection(self.startpos, s)
+                self.redraw()
         elif self.right_dragging == True:
             begin, end = self.range
             diff = self.right_drag_start - s
             self.set_range(begin + diff, end + diff)
 
     def update(self):
-	"""
-	Updates the envelope view based on the sample selected in the sample list.
-	"""
-	sel = self.wavetable.get_sample_selection()
-	self.wave = None
-	self.level = None
-	self.selection = None
-	player = com.get('neil.core.player')
-	if sel:
-	    self.wave = player.get_wave(sel[0])
-	    if self.wave.get_level_count() >= 1:
-		self.level = self.wave.get_level(0)
-		self.range = [0,self.level.get_sample_count()]
-		self.sample_changed()
-	self.redraw()
+        """
+        Updates the envelope view based on the sample selected in the sample list.
+        """
+        sel = self.wavetable.get_sample_selection()
+        self.wave = None
+        self.level = None
+        self.selection = None
+        player = com.get('neil.core.player')
+        if sel:
+            self.wave = player.get_wave(sel[0])
+            if self.wave.get_level_count() >= 1:
+                self.level = self.wave.get_level(0)
+                self.range = [0,self.level.get_sample_count()]
+                self.sample_changed()
+        self.redraw()
 
     def set_sensitive(self, enable):
-	gtk.DrawingArea.set_sensitive(self, enable)
-	self.redraw()
+        gtk.DrawingArea.set_sensitive(self, enable)
+        self.redraw()
 
     def draw_zoom_indicator(self, ctx):
         w, h = self.get_client_size()
@@ -449,7 +449,7 @@ class WaveEditView(gtk.DrawingArea):
         start = 1.0 - (sample_count - begin) / float(sample_count)
         finish = 1.0 - (sample_count - end) / float(sample_count)
         ctx.rectangle(11 + (w - 20) * start, h - 19,
-                      (w - 22) * finish - (w - 20) * start, 8)
+            (w - 22) * finish - (w - 20) * start, 8)
         ctx.fill()
 
     def draw_loop_points(self, ctx):
@@ -482,38 +482,38 @@ class WaveEditView(gtk.DrawingArea):
                 ctx.fill()
 
     def draw(self, ctx):
-	"""
-	Overriding a L{Canvas} method that paints onto an offscreen buffer.
-	Draws the envelope view graphics.
-	"""
-	w, h = self.get_client_size()
-	cfg = config.get_config()
+        """
+        Overriding a L{Canvas} method that paints onto an offscreen buffer.
+        Draws the envelope view graphics.
+        """
+        w, h = self.get_client_size()
+        cfg = config.get_config()
 
-	bgbrush = cfg.get_float_color('WE BG')
-	pen = cfg.get_float_color('WE Line')
-	brush = cfg.get_float_color('WE Fill')
-	brush2 = cfg.get_float_color('WE Peak Fill')
-	gridpen = cfg.get_float_color('WE Grid')
-	selbrush = cfg.get_float_color('WE Selection')
-	stretchbrush = cfg.get_float_color('WE Stretch Cue')
-	splitbar = cfg.get_float_color('WE Split Bar')
-	slicebar = cfg.get_float_color('WE Slice Bar')
-	onpeak = cfg.get_float_color('WE Wakeup Peaks')
-	offpeak = cfg.get_float_color('WE Sleep Peaks')
+        bgbrush = cfg.get_float_color('WE BG')
+        pen = cfg.get_float_color('WE Line')
+        brush = cfg.get_float_color('WE Fill')
+        brush2 = cfg.get_float_color('WE Peak Fill')
+        gridpen = cfg.get_float_color('WE Grid')
+        selbrush = cfg.get_float_color('WE Selection')
+        stretchbrush = cfg.get_float_color('WE Stretch Cue')
+        splitbar = cfg.get_float_color('WE Split Bar')
+        slicebar = cfg.get_float_color('WE Slice Bar')
+        onpeak = cfg.get_float_color('WE Wakeup Peaks')
+        offpeak = cfg.get_float_color('WE Sleep Peaks')
 
-	ctx.translate(0.5, 0.5)
-	ctx.set_source_rgb(*bgbrush)
-	ctx.rectangle(0, 0, w, h)
-	ctx.fill()
-	ctx.set_line_width(1)
+        ctx.translate(0.5, 0.5)
+        ctx.set_source_rgb(*bgbrush)
+        ctx.rectangle(0, 0, w, h)
+        ctx.fill()
+        ctx.set_line_width(1)
 
-	if self.level == None:
-	    return
+        if self.level == None:
+            return
 
-	player = com.get('neil.core.player')
-	ctx.set_source_rgb(*gridpen)
-	rb, re = self.range
-	rsize = re - rb
+        player = com.get('neil.core.player')
+        ctx.set_source_rgb(*gridpen)
+        rb, re = self.range
+        rsize = re - rb
         x = 0
         y = 0
         ctx.set_source_rgba(*(gridpen))
@@ -537,6 +537,7 @@ class WaveEditView(gtk.DrawingArea):
             y += (h / 8)
         ctx.stroke()
 
+        # Show wave file name at the top left corner
         ctx.move_to(2, 14)
         ctx.set_source_rgba(0.4, 0.4, 0.4, 1.0)
         pango_ctx = pangocairo.CairoContext(ctx)
@@ -551,7 +552,7 @@ class WaveEditView(gtk.DrawingArea):
         channels = 1
         if self.wave.get_flags() & zzub.zzub_wave_flag_stereo:
             channels = 2
-            
+                
         for channel in range(channels):
             #self.update_digest(channel)
             minbuffer, maxbuffer, ampbuffer = \
@@ -567,17 +568,17 @@ class WaveEditView(gtk.DrawingArea):
             ctx.fill_preserve()
             ctx.set_source_rgb(*pen)
             ctx.stroke()
-	# Draw the selection rectangle.
- 	if self.selection:
- 	    begin, end = self.selection
- 	    x1 = self.sample_to_client(begin, 0.0)[0]
- 	    x2 = self.sample_to_client(end, 0.0)[0]
- 	    if (x2 >= 0) and (x1 <= w):
- 		ctx.rectangle(x1, 0, x2 - x1, h - 1)
+        # Draw the selection rectangle.
+        if self.selection:
+            begin, end = self.selection
+            x1 = self.sample_to_client(begin, 0.0)[0]
+            x2 = self.sample_to_client(end, 0.0)[0]
+            if (x2 >= 0) and (x1 <= w):
+                ctx.rectangle(x1, 0, x2 - x1, h - 1)
                 ctx.set_source_rgba(0.0, 1.0, 0.0, 1.0)
                 ctx.set_line_width(1)
                 ctx.stroke_preserve()
- 		ctx.set_source_rgba(0.0, 1.0, 0.0, 0.2)
- 		ctx.fill()
+                ctx.set_source_rgba(0.0, 1.0, 0.0, 0.2)
+                ctx.fill()
         self.draw_loop_points(ctx)
         self.draw_zoom_indicator(ctx)
