@@ -112,6 +112,8 @@ class WaveEditView(gtk.DrawingArea):
         self.dragging = False
         self.start_loop_dragging = False
         self.end_loop_dragging = False
+        self.loop_start = 0
+        self.loop_end = 0
         self.right_dragging = False
         self.right_drag_start = 0
         self.stretching = False
@@ -425,6 +427,7 @@ class WaveEditView(gtk.DrawingArea):
         """
         Callback that responds to mouse button up over the wave view.
         """
+        player = com.get('neil.core.player')
         if event.button == 1:
             if self.dragging == True:
                 self.dragging = False
@@ -436,8 +439,14 @@ class WaveEditView(gtk.DrawingArea):
                 else:
                     self.set_selection(self.startpos, s)
                 self.redraw()
-            self.start_loop_dragging = False
-            self.end_loop_dragging = False
+            if self.start_loop_dragging:
+                self.start_loop_dragging = False
+                self.level.set_loop_start(self.loop_start)
+                player.history_commit("set loop start")
+            if self.end_loop_dragging:
+                self.end_loop_dragging = False
+                self.level.set_loop_end(self.loop_end)
+                player.history_commit("set loop end")
         elif event.button == 2:
             self.right_dragging = False
 
@@ -455,10 +464,9 @@ class WaveEditView(gtk.DrawingArea):
             resizer = gtk.gdk.Cursor(gtk.gdk.SB_H_DOUBLE_ARROW)
             self.window.set_cursor(resizer)
         else:
-            if not self.dragging:
+            if (not self.dragging) and (not self.start_loop_dragging) and (not self.end_loop_dragging):
                 arrow = gtk.gdk.Cursor(gtk.gdk.ARROW)
                 self.window.set_cursor(arrow)
-
         if self.dragging == True:
             if s < self.startpos:
                 self.set_selection(s, self.startpos)
@@ -466,13 +474,15 @@ class WaveEditView(gtk.DrawingArea):
                 self.set_selection(self.startpos, s)
                 self.redraw()
         elif self.start_loop_dragging:
-            self.level.get_wave().set_loop_start(s)
+            self.redraw()
         elif self.end_loop_dragging:
-            self.level.get_wave().set_loop_end(s)
+            self.redraw()
         elif self.right_dragging == True:
             begin, end = self.range
             diff = self.right_drag_start - s
             self.set_range(begin + diff, end + diff)
+        self.loop_start = s
+        self.loop_end = s
 
     def update(self):
         """
@@ -513,8 +523,15 @@ class WaveEditView(gtk.DrawingArea):
         width, height = self.get_client_size()
         begin, end = self.range
         if self.level.get_wave().get_flags() & zzub.zzub_wave_flag_loop:
-            loop_start = self.level.get_loop_start()
-            loop_end = self.level.get_loop_end()
+            print self.loop_start, self.loop_end
+            if self.start_loop_dragging:
+                loop_start = self.loop_start
+            else:
+                loop_start = self.level.get_loop_start()
+            if self.end_loop_dragging:
+                loop_end = self.loop_end
+            else:
+                loop_end = self.level.get_loop_end()
             ctx.set_source_rgb(1.0, 0.0, 0.0)
             ctx.set_line_width(1)
             if loop_start > begin and loop_start < end:
