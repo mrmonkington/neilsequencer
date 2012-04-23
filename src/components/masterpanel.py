@@ -174,7 +174,7 @@ class MasterPanel(gtk.VBox):
 
     __neil__ = dict(
             id='neil.core.panel.master',
-            singleton=True,
+            #singleton=True,
     )
 
     def __init__(self):

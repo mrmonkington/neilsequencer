@@ -324,34 +324,18 @@ class NeilFrame(gtk.Window):
     # Menu item that launches the about box
     tempmenu.append(make_stock_menu_item(gtk.STOCK_ABOUT, self.on_about))
     self.neilframe_menubar.append(make_submenu_item(tempmenu, "_Help"))
-    #~ # Menu Bar end
 
-    # Tool Bar
-    #self.neilframe_toolbar = com.get('neil.core.toolbar')
-    #vbox.pack_start(self.neilframe_toolbar, expand=False)
-
-    #self.neilframe_toolbar.insert(make_stock_tool_item(gtk.STOCK_NEW, self.new),-1)
-    #self.neilframe_toolbar.insert(make_stock_tool_item(gtk.STOCK_OPEN, self.on_open),-1)
-    #self.neilframe_toolbar.insert(make_stock_tool_item(gtk.STOCK_SAVE, self.on_save),-1)
-    #extrasep = gtk.SeparatorToolItem()
-    #self.neilframe_toolbar.insert(extrasep,-1)
-    #if not com.get_from_category('menuitem.toolbar', self.neilframe_toolbar):
-    #   extrasep.destroy()
-
-    self.mastertoolbar = com.get('neil.core.panel.master')
+    self.master = com.get('neil.core.panel.master')
     self.transport = com.get('neil.core.panel.transport')
     self.playback_info = com.get('neil.core.playback')
     self.framepanel = com.get('neil.core.framepanel')
 
     hbox = gtk.HBox()
-    hbox.add(self.framepanel)
-    #hbox.pack_end(self.mastertoolbar, expand=False)
+    hbox.pack_start(self.framepanel)
+    hbox.pack_end(self.master, expand=False)
     vbox.add(hbox)
 
-    #self.neilframe_statusbar = com.get('neil.core.statusbar')
-
     vbox.pack_start(self.transport, expand=False)
-    #vbox.pack_end(self.neilframe_statusbar, expand=False)
 
     self.update_title()
     gtk.window_set_default_icon_list(
@@ -372,6 +356,7 @@ class NeilFrame(gtk.Window):
     self.activated=0
 
     self.show_all()
+    self.master.hide_all()
     self.load_view()
 
     eventbus = com.get('neil.core.eventbus')

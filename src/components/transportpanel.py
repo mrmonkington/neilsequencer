@@ -224,11 +224,11 @@ class TransportPanel(gtk.HBox):
         """
         Toggle master control window
         """
+        root_window = com.get('neil.core.window.root')
         if widget.get_active():
-            self.master_control_window.show_all()
-            self.master_control_window.set_transient_for(com.get('neil.core.window.root'))
+            root_window.master.show_all()
         else:
-            self.master_control_window.hide_all()
+            root_window.master.hide_all()
 
     #def on_master_focus_out(self, widget, event):
         #self.master_control_window.hide_all()
