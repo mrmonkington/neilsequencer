@@ -864,6 +864,13 @@ def diff(oldlist, newlist):
         """
         return [x for x in newlist if x not in oldlist],[x for x in oldlist if x not in newlist] # add, remove
 
+def wave_names_generator():
+        player = com.get('neil.core.player')
+        for i in xrange(player.get_wave_count()):
+                w = player.get_wave(i)
+                name = "%02X. %s" % ((i + 1), prepstr(w.get_name()))
+                yield name
+
 from itertools import islice, chain, repeat
 
 def partition(iterable, part_len):
@@ -1074,6 +1081,12 @@ class Menu(gtk.Menu):
 
         def add_item(self, label, func, *args):
                 item = gtk.MenuItem(label=label)
+                item.connect('activate', func, *args)
+                self.append(item)
+                return item
+
+        def add_item_no_underline(self, label, func, *args):
+                item = gtk.MenuItem(label=label, use_underline=False)
                 item.connect('activate', func, *args)
                 self.append(item)
                 return item

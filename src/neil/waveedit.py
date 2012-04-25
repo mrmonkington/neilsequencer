@@ -28,7 +28,7 @@ import pangocairo
 import os, sys
 from utils import prepstr, db2linear, linear2db, note2str, file_filter
 from utils import read_int, write_int, add_scrollbars, new_image_button,\
-     filepath, add_hscrollbar, error, message
+     filepath, add_hscrollbar, error, message, Menu, wave_names_generator
 import zzub
 import config
 import common
@@ -127,31 +127,19 @@ class WaveEditView(gtk.DrawingArea):
         self.connect('scroll-event', self.on_mousewheel)
         self.connect("expose_event", self.expose)
 
-        self.context_menu = gtk.Menu()
+        self.context_menu = Menu()
         
-        self.menu_delete = gtk.MenuItem("Delete")
-        self.menu_delete.show()
-        self.menu_delete.connect('activate', self.on_delete_range)
-        self.context_menu.append(self.menu_delete)
-        
-        self.menu_loop = gtk.MenuItem("Loop")
-        self.menu_loop.show()
-        self.menu_loop.connect('activate', self.on_loop_range)
-        self.context_menu.append(self.menu_loop)
+        self.menu_delete = self.context_menu.add_item("Delete", self.on_delete_range)
+        self.menu_loop = self.context_menu.add_item("Loop", self.on_loop_range)
+        self.menu_xfade = self.context_menu.add_item("XFade", self.on_xfade_range)
 
-        self.menu_xfade = gtk.MenuItem("XFade")
-        self.menu_xfade.show()
-        self.menu_xfade.connect('activate', self.on_xfade_range)
-        self.context_menu.append(self.menu_xfade)
-        
-        separator = gtk.SeparatorMenuItem()
-        separator.show()
-        self.context_menu.append(separator)
+        player = com.get('neil.core.player')
 
-        self.menu_normalize = gtk.MenuItem("Normalize")
-        self.menu_normalize.show()
-        self.menu_normalize.connect('activate', self.on_normalize)
-        self.context_menu.append(self.menu_normalize)
+        item, self.store_submenu = self.context_menu.add_submenu("Store")
+        
+        self.context_menu.add_separator()
+
+        self.menu_normalize = self.context_menu.add_item("Normalize", self.on_normalize)
            
         self.loop_start = 0
         self.loop_end = 150
@@ -372,7 +360,7 @@ class WaveEditView(gtk.DrawingArea):
             self.right_drag_start = s
         elif (event.button == 3):
             # Menu items that need selection to function properly.
-            sensitives = [self.menu_delete, self.menu_loop, self.menu_xfade]
+            sensitives = [self.menu_delete, self.menu_loop, self.menu_xfade, self.store_submenu]
             if not self.selection:
                 # If there is no selection disable those menu items,
                 for sensitive in sensitives:
@@ -381,7 +369,11 @@ class WaveEditView(gtk.DrawingArea):
                 # otherwise enable them.
                 for sensitive in sensitives:
                     sensitive.set_sensitive(True)
-            self.context_menu.popup(None, None, None, event.button, event.time)
+                for i in self.store_submenu.get_children():
+                    self.store_submenu.remove(i)
+                for index, name in enumerate(wave_names_generator()):
+                    self.store_submenu.add_item_no_underline(name, lambda x: index + 1)
+            self.context_menu.popup(self, event)
 
     def on_delete_range(self, widget):
         self.delete_range()

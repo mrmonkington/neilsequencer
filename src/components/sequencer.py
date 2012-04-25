@@ -39,7 +39,7 @@ from neil.utils import prepstr, get_item_count
 from neil.utils import get_clipboard_text, set_clipboard_text, add_scrollbars
 from neil.utils import is_effect, is_generator, is_controller
 from neil.utils import is_root, get_new_pattern_name
-from neil.utils import Menu
+from neil.utils import Menu, wave_names_generator
 import random
 import config
 import neil.common as common
@@ -931,10 +931,8 @@ class SequencerView(gtk.DrawingArea):
         wavemenu = Menu()
         for plugin in sorted(list(player.get_plugin_list()), lambda a, b: cmp(a.get_name().lower(), b.get_name().lower())):
             pmenu.add_item(prepstr(plugin.get_name().replace("_", "__")), self.on_popup_add_track, plugin)
-        for i in xrange(player.get_wave_count()):
-            w = player.get_wave(i)
-            name = "%02X. %s" % ((i + 1), prepstr(w.get_name()))
-            wavemenu.add_item(name, self.on_popup_record_to_wave, i + 1)
+        for i, name in enumerate(wave_names_generator()):
+            wavemenu.add_item_no_underline(name, self.on_popup_record_to_wave, i + 1)
         menu.add_submenu("Add track", pmenu)
         menu.add_item("Delete track", self.on_popup_delete_track)
         menu.add_separator()
