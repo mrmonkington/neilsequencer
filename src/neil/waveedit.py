@@ -224,6 +224,13 @@ class WaveEditView(gtk.DrawingArea):
         self.set_range(s - diffl, s + diffr)
         self.redraw()
 
+    def store_selection(self, index):
+        """
+        Store the wave range marked by selection in the wave table.
+        """
+        if self.selection:
+            pass
+
     def store_range(self):
         w = self.wave
         origpath = w.get_path().replace('/',os.sep).replace('\\',os.sep)

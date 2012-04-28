@@ -2297,6 +2297,36 @@ extern "C"
     return strm->position();
   }
 
+  int zzub_wavelevel_copy_sample_range(zzub_wavelevel_t *source, int start, int end, int wave_index)
+  /*
+    Copy samples from start to end from source wavelevel 
+    and store them in waveslot number wave.
+  */
+  {
+    operation_copy_flags flags;
+    flags.copy_wavetable = true;
+    source->_player->merge_backbuffer_flags(flags);
+    wave_info_ex &wave_info = *source->_player->back.wavetable.waves[wave_index];
+    wave_info_ex &source_wave_info = *source->_player->back.wavetable.waves[source->wave];
+    wave_level_ex &source_info = source->_player->back.wavetable.waves[source->wave]->levels[source->level];
+    bool stereo = source_wave_info.flags & wave_flag_stereo;
+    if (wave_info.levels.size() > 0) {
+      // If wave levels list is not empty abort.
+      return -1;
+    } else {
+      // Otherwise allocate a new wavelevel of identical type to source.
+      zzub::wave_buffer_type format = (zzub::wave_buffer_type)source_info.format;
+      wave_info.allocate_level(0, end - start, format, stereo);
+    }
+    wave_level_ex &target_info = wave_info.levels[0];
+    // Copy samples from source to target.
+    int bytes_per_sample = source_info.get_bytes_per_sample();
+    for (int i = 0; i < (end - start) * bytes_per_sample; i++) {
+      target_info.samples[i] = source_info.samples[start + i];
+    }
+    return 0;
+  }
+
   int zzub_wave_save_sample_range(zzub_wave_t* wave, unsigned int level, zzub_output_t* datastream, int start, int end) {
     operation_copy_flags flags;
     flags.copy_wavetable = true;

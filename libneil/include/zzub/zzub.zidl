@@ -813,6 +813,7 @@ namespace zzub:
 		# 0.3: DEAD # void zzub_wavelevel_insert_sample_range(zzub_wavelevel_t* level, int start, void* buffer, int channels, int format, int numsamples)
 		def xfade(int start, int end)
 		def normalize()
+		def copy_sample_range(int start, int end, int wave_index): int
 		def get_samples_digest(int channel, int start, int end, out float[digestsize] mindigest, out float[digestsize] maxdigest, out float[digestsize] ampdigest, int digestsize)
 	
 	"Envelopes"
