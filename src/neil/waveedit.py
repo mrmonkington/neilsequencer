@@ -168,12 +168,16 @@ class WaveEditView(gtk.DrawingArea):
             self.window.invalidate_rect((0, 0, w, h), False)
 
     def update_digest(self, channel=0):
+        if self.level == None:
+            return
         w, h = self.get_client_size()
         self.minbuffer, self.maxbuffer, self.ampbuffer = \
             self.level.get_samples_digest(channel, self.range[0], self.range[1],  w)
 
     def fix_range(self):
         begin,end = self.range
+        if self.level == None:
+            return
         begin = max(min(begin, self.level.get_sample_count() - 1), 0)
         end = max(min(end, self.level.get_sample_count()), begin + 1)
         self.range = [begin, end]
@@ -379,8 +383,20 @@ class WaveEditView(gtk.DrawingArea):
                 for i in self.store_submenu.get_children():
                     self.store_submenu.remove(i)
                 for index, name in enumerate(wave_names_generator()):
-                    self.store_submenu.add_item_no_underline(name, lambda x: index + 1)
+                    self.store_submenu.add_item_no_underline(name, self.on_copy_range, index)
             self.context_menu.popup(self, event)
+
+    def on_copy_range(self, widget, index):
+        player = com.get('neil.core.player')
+        if self.selection == None:
+            message(self, "Select a region of the wave first.")
+            return
+        begin, end = self.selection
+        w = player.get_wave(index)
+        w.set_name("Copy of Selection")
+        self.level.copy_sample_range(begin, end, index)
+        player.flush(None, None)
+        player.history_flush_last()
 
     def on_delete_range(self, widget):
         self.delete_range()

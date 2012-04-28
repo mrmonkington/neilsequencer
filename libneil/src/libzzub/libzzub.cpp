@@ -2322,7 +2322,7 @@ extern "C"
     // Copy samples from source to target.
     int bytes_per_sample = source_info.get_bytes_per_sample();
     for (int i = 0; i < (end - start) * bytes_per_sample; i++) {
-      target_info.samples[i] = source_info.samples[start + i];
+      target_info.samples[i] = source_info.samples[start * bytes_per_sample + i];
     }
     return 0;
   }
