@@ -1,0 +1,38 @@
+@import url(html4css1.css);
+
+body {
+    width: 500px;
+}
+
+p {
+    font-family: "Times New Roman";
+}
+
+ul.simple {
+    padding: 0;
+    margin: 0;
+}
+
+h1 {
+    font-family: "Arial";
+}
+
+h2 {
+    font-family: "Arial";
+}
+
+h3 {
+    font-family: "Arial";
+}
+
+h4 {
+    font-family: "Arial";
+}
+
+h5 {
+    font-family: "Arial";
+}
+
+h6 {
+    font-family: "Arial";
+}
