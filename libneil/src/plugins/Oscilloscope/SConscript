@@ -37,12 +37,12 @@ localenv = pluginenv.Clone()
 
 # localenv.ParseConfig('pkg-config --cflags --libs gtk+-2.0 gthread-2.0')
 
-localenv.Append(CCFLAGS = '-pthread -g -pedantic -Wall')
+#localenv.Append(CCFLAGS = '-pthread -g -pedantic -Wall')
 
-localenv.Append(LIBS = ["X11", "gdkglext-x11-1.0"] );
-localenv.Append(CCFLAGS=' `pkg-config --cflags x11 gtk+-2.0 glib-2.0 gthread-2.0 gtkglext-1.0` ')
-localenv.Append(LINKFLAGS=' `pkg-config --libs x11 gtk+-2.0 glib-2.0 gthread-2.0 gtkglext-1.0` ')
+#localenv.Append(LIBS = ["X11", "gdkglext-x11-1.0"] );
+#localenv.Append(CCFLAGS=' `pkg-config --cflags x11 gtk+-2.0 glib-2.0 gthread-2.0 gtkglext-1.0` ')
+#localenv.Append(LINKFLAGS=' `pkg-config --libs x11 gtk+-2.0 glib-2.0 gthread-2.0 gtkglext-1.0` ')
 
-files = ["Oscilloscope.cpp", "Renderer.cpp"]
+#files = ["Oscilloscope.cpp", "Renderer.cpp"]
 
-build_plugin(localenv, "gershon_oscilloscope", files)
+#build_plugin(localenv, "gershon_oscilloscope", files)
