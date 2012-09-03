@@ -200,9 +200,7 @@ public:
 
 inline double frand()
 {
-  static long stat = 0x16BA2118;
-  stat = stat * 1103515245 + 12345;
-  return (double)stat * (1.0 / 0x80000000);
+  return (float)rand() / (float)RAND_MAX;
 }
 
 geonik_pluckedstring::geonik_pluckedstring()
