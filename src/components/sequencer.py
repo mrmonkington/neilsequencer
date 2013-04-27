@@ -737,6 +737,21 @@ class SequencerView(gtk.DrawingArea):
                     break
             player.history_commit("new pattern")
 
+    def on_popup_clone_pattern(self, *args):
+        """Create a copy of the pattern at cursor and replace the current one.
+        """
+        from neil.utils import get_new_pattern_name
+        player = com.get('neil.core.player')
+        machine, pattern_id, _ = self.get_pattern_at(self.track, self.row, includespecial=True)
+        if pattern_id is not None:
+            pattern_id -= 0x10
+            name = get_new_pattern_name(machine)
+            pattern = machine.get_pattern(pattern_id)
+            pattern.set_name(name)
+            machine.add_pattern(pattern)
+            self.insert_at_cursor(machine.get_pattern_count() + 0x10 - 1)
+            player.history_commit("clone pattern")
+        
     def on_popup_merge(self, *args):
         player = com.get('neil.core.player')
         player.set_callback_state(False)
@@ -798,7 +813,7 @@ class SequencerView(gtk.DrawingArea):
         player = com.get('neil.core.player')
         player.set_callback_state(False)
         seq = player.get_current_sequencer()
-        data = get_clipboard_text()
+        data = get_clipboard_text()            
         try:
             for track, row, value in self.unpack_clipboard_data(data.strip()):
                 t = seq.get_sequence(track)
@@ -917,7 +932,6 @@ class SequencerView(gtk.DrawingArea):
         x, y = int(event.x), int(event.y)
         track, row = self.pos_to_track_row((x, y))
         self.set_cursor_pos(max(min(track, seq.get_sequence_track_count()), 0), self.row)
-
         if self.selection_start != None:
             sel_sensitive = True
         else:
@@ -947,6 +961,7 @@ class SequencerView(gtk.DrawingArea):
         menu.add_item("Delete", self.on_popup_delete).set_sensitive(sel_sensitive)
         menu.add_separator()
         menu.add_item("Create pattern", self.on_popup_create_pattern)
+        menu.add_item("Clone pattern", self.on_popup_clone_pattern)
         menu.add_item("Merge patterns", self.on_popup_merge).set_sensitive(sel_sensitive)
         menu.show_all()
         menu.attach_to_widget(self, None)
@@ -1195,7 +1210,8 @@ class SequencerView(gtk.DrawingArea):
         plugin = track.get_plugin()
         bestmatch = None
         bestpos = row
-        for pos, value in track.get_event_list():
+        event_list = track.get_event_list()
+        for pos, value in event_list:
             if pos > row:
                 break
             elif includespecial:
@@ -1204,7 +1220,12 @@ class SequencerView(gtk.DrawingArea):
             elif (value >= 0x10):
                 bestpos = pos
                 bestmatch = value - 0x10
-        return plugin, bestmatch, bestpos
+        pattern = plugin.get_pattern(value - 0x10)
+        nrows = pattern.get_row_count()
+        if pos + nrows < row + 1:
+            return plugin, None, -1
+        else:
+            return plugin, bestmatch, bestpos
 
     def deselect(self):
         """
