@@ -160,6 +160,10 @@ namespace zzub {
     outputParameters.sampleFormat = paFloat32 | paNonInterleaved;
     outputParameters.suggestedLatency = Pa_GetDeviceInfo(out_id)->defaultLowOutputLatency;
     outputParameters.hostApiSpecificStreamInfo = NULL;
+    err = Pa_IsFormatSupported(&inputParameters, &outputParameters, samplerate);
+    if (err != paNoError) {
+      return false;
+    }
     err = Pa_OpenStream(&stream, 
                         &inputParameters, 
                         &outputParameters, 
