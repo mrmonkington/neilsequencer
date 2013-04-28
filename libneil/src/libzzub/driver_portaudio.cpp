@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <cstdio>
 #include <portaudio.h>
 #include <cassert>
 #include "timer.h"
@@ -9,6 +10,25 @@
 using namespace std;
 
 namespace zzub {
+
+  class PortAudioException: public exception {
+  public:
+    string message;
+    PortAudioException(PaError err) throw()
+    {
+      char int_str[20];
+      sprintf(int_str, "%d", err);
+      message = "PortAudio ERROR: " + string(Pa_GetErrorText(err));
+    }
+    ~PortAudioException() throw()
+    {
+
+    }
+    virtual const char* what() const throw()
+    {
+      return message.c_str();
+    }
+  };
 
   static int portaudio_callback(const void *inputBuffer,
                                 void *outputBuffer,
@@ -52,7 +72,7 @@ namespace zzub {
     PaError err;
     err = Pa_Initialize ();
     if (err != paNoError) { 
-      throw "ERROR: Cannot initialize PortAudio";
+      throw PortAudioException(err);
     }
     defaultDevice = -1;
     timer.start();
@@ -65,7 +85,7 @@ namespace zzub {
     PaError err;
     err = Pa_Terminate();
     if (err != paNoError) {
-      throw "ERROR: Cannot destroy Portaudio";
+      throw PortAudioException(err);
     }
   }
 
@@ -77,9 +97,6 @@ namespace zzub {
     this->worker = worker;
     int numDevices;
     numDevices = Pa_GetDeviceCount();
-    if( numDevices < 0 ) {
-      throw "ERROR: Pa_CountDevices returned a negative number";
-    }
     const PaDeviceInfo *deviceInfo;
     for (int i = 0; i < numDevices; i++) {
       audiodevice ad;
@@ -152,7 +169,7 @@ namespace zzub {
                         &portaudio_callback,
                         (void *)this);
     if (err != paNoError) {
-      throw "ERROR: There was an error creating an audio stream";
+      throw PortAudioException(err);
     }
     worker->work_out_device = &devices[index];
     worker->work_in_device = inIndex != -1 ? &devices[inIndex] : 0;
