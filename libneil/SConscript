@@ -48,7 +48,7 @@ def bool_converter(value):
 
 def audioengine_converter(value):
     value = value.lower()
-    if not value in ('rtaudio','portaudio'):
+    if not value in ('portaudio'):
 	print "invalid option for AUDIOENGINE:",value
 	Exit(1)
     return value
