@@ -121,7 +121,7 @@ if localenv["ALSA"] == True:
 
 
 #######################################
-# rtaudio
+# portaudio
 #######################################
 
 files += [
@@ -131,6 +131,7 @@ files += [
 localenv.Append(LIBS=[
         'pthread',
         'm',
+        'portaudio',
         ])
 
 #######################################

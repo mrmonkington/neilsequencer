@@ -1,10 +1,8 @@
 #ifndef LIBNEIL_DRIVER_PORTAUDIO_H
 #define LIBNEIL_DRIVER_PORTAUDIO_H
 
+#include <portaudio.h>
 #include <string>
-
-class RtAudio;
-
 
 namespace zzub {
 
@@ -15,8 +13,7 @@ struct audiodriver_portaudio : audiodriver {
 	zzub::timer timer;								// hires timer, for cpu-meter
 	double last_work_time;							// length of last WorkStereo
 	double cpu_load;
-
-	//RtAudio *audio;
+  PaStream *stream;
 
 	audiodriver_portaudio();
 
