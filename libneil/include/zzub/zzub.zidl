@@ -337,9 +337,6 @@ namespace zzub:
 		"Create an audio driver that uses the PortAudio API."
 		def static create_portaudio(Player player): Audiodriver
 
-		"Create an audio driver that uses the RtAudio API."
-		def static create_rtaudio(Player player): Audiodriver
-
 		"Create a silent, non-processing audio driver that has one device with the specified properties."
 		def static create_silent(Player player, string name, int out_channels, int in_channels, out int[num_rates] supported_rates, int num_rates): Audiodriver
 

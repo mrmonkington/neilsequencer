@@ -29,7 +29,7 @@
 #include "ccm.h"
 #include "zzub/zzub.h"
 
-#include "driver_rtaudio.h"
+#include "driver_portaudio.h"
 
 #include "driver_silent.h"
 
@@ -1898,15 +1898,17 @@ extern "C"
 
   /** \brief Create an audio driver that uses the PortAudio API. */
   zzub_audiodriver_t* zzub_audiodriver_create_portaudio(zzub_player_t* player) {
-    return 0;
-  }
-
-  /** \brief Create an audio driver that uses the RtAudio API. */
-  zzub_audiodriver_t* zzub_audiodriver_create_rtaudio(zzub_player_t* player) {
-    audiodriver_rtaudio* driver = new audiodriver_rtaudio();
+    audiodriver_portaudio *driver = new audiodriver_portaudio();
     driver->initialize(player);
     return driver;
   }
+
+  /** \brief Create an audio driver that uses the RtAudio API. */
+  //zzub_audiodriver_t* zzub_audiodriver_create_rtaudio(zzub_player_t* player) {
+  //  audiodriver_portaudio* driver = new audiodriver_portaudio();
+  //  driver->initialize(player);
+  //  return driver;
+  //}
 
   /** \brief Create a silent, non-processing audio driver that has one device with the specified properties. */
   zzub_audiodriver_t* zzub_audiodriver_create_silent(zzub_player_t* player, const char* name, int out_channels, int in_channels, int* supported_rates, int num_rates) {
@@ -1922,12 +1924,10 @@ extern "C"
   /** \brief Creates the preferred audio driver. */
   zzub_audiodriver_t* zzub_audiodriver_create(zzub_player_t* player) {
     {
-      zzub_audiodriver_t* d = zzub_audiodriver_create_rtaudio(player);
-      if (d) return d;
-    }
-    {
       zzub_audiodriver_t* d = zzub_audiodriver_create_portaudio(player);
-      if (d) return d;
+      if (d) {
+        return d;
+      }
     }
     return 0;
   }

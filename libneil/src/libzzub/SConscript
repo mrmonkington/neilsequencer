@@ -125,28 +125,8 @@ if localenv["ALSA"] == True:
 #######################################
 
 files += [
-    'driver_rtaudio.cpp',
+    'driver_portaudio.cpp',
     ]
-
-localenv.Append(CCFLAGS=[
-        '-DUSE_RTAUDIO',
-        ])
-
-localenv.SConscript('../rtaudio/SConscript')
-localenv.Append(LIBS=[
-        'rtaudio_static',
-        ])
-localenv.Append(CPPPATH=[
-        '../rtaudio',
-        ])
-if localenv['ALSA'] == True:
-    localenv.Append(CCFLAGS=['-D__LINUX_ALSA__'])
-    localenv.Append(LIBS=['asound'])
-if localenv['JACK'] == True:
-    localenv.Append(CCFLAGS=['-D__UNIX_JACK__'])
-    localenv.Append(LIBS=[ 'jack', localenv['LIB_RT'] ])
-if localenv['OSS'] == True:
-    localenv.Append(CCFLAGS=['-D__LINUX_OSS__'])
 
 localenv.Append(LIBS=[
         'pthread',
