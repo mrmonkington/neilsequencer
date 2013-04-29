@@ -235,7 +235,7 @@ class DriverPanel(gtk.VBox):
 	    except audiodriver.AudioInitException:
 		import traceback
 		traceback.print_exc()
-		error(self, "<b><big>There was an error initializing the audio driver.</big></b>\n\nThis can happend when the specified sampling rate or latency is not supported by a particular audio device. Change settings and try again.")
+		error(self, "<b><big>There was an error initializing the audio driver.</big></b>\n\nThis can happened when the specified sampling rate or latency is not supported by a particular audio device. Change settings and try again.")
 		raise com.exception('neil.exception.cancel')
 
 class ControllerPanel(gtk.VBox):
