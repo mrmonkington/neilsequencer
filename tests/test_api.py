@@ -20,5 +20,14 @@ class TestPortAudio(unittest.TestCase):
             zzub.zzub_audiodriver_get_name(self.driver, i, name, 1024)
             self.assertGreater(len(ctypes.string_at(name)), 0)
 
+    def testGetSampleRates(self):
+        ndevices = zzub.zzub_audiodriver_get_count(self.driver)
+        maxrates = 20
+        for i in range(ndevices):
+            result = (ctypes.c_int * maxrates)()
+            zzub.zzub_audiodriver_get_supported_samplerates(self.driver, i, result, maxrates)
+            result = [rate for rate in result]
+            self.assertNotEqual(result[0], 0)
+
 if __name__ == '__main__':
     unittest.main()
