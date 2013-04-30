@@ -415,7 +415,8 @@ class KeyboardPanel(gtk.VBox):
 	    ('en', 'English (QWERTY)'),
 	    ('de', 'Deutsch (QWERTZ)'),
 	    ('dv', 'Dvorak (\',.PYF)'),
-	    ('fr', 'French (AZERTY)')
+	    ('fr', 'French (AZERTY)'),
+        ('neo','German (XVLCWK)')
     ]
 
     def __init__(self):
