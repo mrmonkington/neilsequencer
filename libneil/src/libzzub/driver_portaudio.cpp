@@ -89,13 +89,14 @@ namespace zzub {
     }
   }
 
-  int audiodriver_portaudio::getApiDevices(int apiId) {
-
-  }
-
   void audiodriver_portaudio::initialize(audioworker *worker) {
     this->worker = worker;
     int numDevices;
+    unsigned int rates[] = {96000, 4800, 44100, 22050};
+    std::vector<unsigned int> vrates;
+    for (int i = 0; i < 4; i++) {
+      vrates.push_back(rates[i]);
+    }
     numDevices = Pa_GetDeviceCount();
     const PaDeviceInfo *deviceInfo;
     for (int i = 0; i < numDevices; i++) {
@@ -106,6 +107,7 @@ namespace zzub {
       ad.device_id = i;
       ad.out_channels = deviceInfo->maxOutputChannels;
       ad.in_channels = deviceInfo->maxInputChannels;
+      ad.rates = vrates;
       if (ad.out_channels >= 2) {
         devices.push_back(ad);
       }

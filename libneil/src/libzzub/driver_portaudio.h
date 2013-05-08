@@ -16,9 +16,7 @@ struct audiodriver_portaudio : audiodriver {
   PaStream *stream;
 
 	audiodriver_portaudio();
-
-	int getApiDevices(int apiId);
-
+  
 	virtual ~audiodriver_portaudio();	
 	virtual void initialize(audioworker *worker);	
 	virtual bool enable(bool e);	
