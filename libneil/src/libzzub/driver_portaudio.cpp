@@ -106,7 +106,9 @@ namespace zzub {
       ad.device_id = i;
       ad.out_channels = deviceInfo->maxOutputChannels;
       ad.in_channels = deviceInfo->maxInputChannels;
-      devices.push_back(ad);
+      if (ad.out_channels >= 2) {
+        devices.push_back(ad);
+      }
     }
   }
 
