@@ -55,8 +55,12 @@ namespace zzub {
     for (unsigned int i = 0; i < nBufferFrames; i++) {
       for (int j = 0; j < out_ch; j++) {
         f = self->worker->work_out_buffer[j][i];
-        if (f > 1) f = 1.0f;
-        if (f < -1) f = -1.0f;
+        if (f > 1.0) {
+          f = 1.0f;
+        }
+        if (f < -1.0) {
+          f = -1.0f;
+        }
         self->worker->work_out_buffer[j][i] = f;
       }
     }

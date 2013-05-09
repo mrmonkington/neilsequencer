@@ -347,6 +347,12 @@ def check_pkg(context, name):
     context.Result( ret )
     return ret
 
+def check_pkg_version(context, name, version):
+    context.Message("Checking to see if %s is at least version %s... " % (name, version))
+    ret = context.TryAction("pkg-config --atleast-version='%s' '%s'" % (version, name))[0]
+    context.Result(ret)
+    return ret
+
 def is_cleaning():
     import SCons.Script.Main 
     try: return SCons.Script.Main.GetOption('clean')
@@ -362,8 +368,9 @@ if (not is_cleaning()) and ('configure' in COMMAND_LINE_TARGETS):
 		    'HasExecutable' : check_has_executable,
 		    'CommandIsVersion' : check_command_is_version,
 		    'CheckCPUFlag' : check_cpu_flag,
-                    'CheckPKGConfig' : check_pkg_config,
-                    'CheckPKG': check_pkg,
+            'CheckPKGConfig' : check_pkg_config,
+            'CheckPKG' : check_pkg,
+            'CheckPKGVersion' : check_pkg_version,
 	    }
     )
     if not conf.CheckCHeader('zlib.h'):
@@ -437,6 +444,10 @@ if (not is_cleaning()) and ('configure' in COMMAND_LINE_TARGETS):
         env['GTK2'] = True
     else:
         env['GTK2'] = False
+
+    if not conf.CheckPKGVersion('portaudio-2.0', '19'):
+        print 'Error: need at least portaudio 19.'
+        Exit(1)
 
     print "Finished configuration."
     print
