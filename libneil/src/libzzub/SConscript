@@ -114,11 +114,6 @@ localenv.Append(CCFLAGS=[
         '-DPM_CHECK_ERRORS',
         '-DNEWBUFFER'
         ])
-if localenv["ALSA"] == True:
-    files += [ '${PORTMIDI_SRC_PATH}/pm_linux/pmlinuxalsa.c' ]
-    localenv.Append(LIBS=[ 'asound', ])
-    localenv.Append(CCFLAGS=[ '-DPMALSA', ])
-
 
 #######################################
 # portaudio

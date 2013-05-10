@@ -67,10 +67,6 @@ opts.Add("SIGNATURE", 'Host signature (will be set automatically)', '')
 opts.Add("CONFIGURED", 'Version for which the build is configured (will be set automatically)', '')
 opts.Add("TOOLS", 'Compiler suite to use', 'default', None, tools_converter)
 opts.Add("LLVMGCCPATH", 'Path to llvm-gcc', '')
-opts.Add("JACK", 'Support Jack Audio Connection Kit', False, None, bool_converter)
-opts.Add("AUDIOENGINE", 'Support Portaudio', "rtaudio", None, audioengine_converter)
-opts.Add("OSS", 'Support OSS', False, None, bool_converter)
-opts.Add("ALSA", 'Support ALSA', False, None, bool_converter)
 opts.Add("SSE", "Support SSE instructions", False, None, bool_converter)
 opts.Add("SSE2", "Support SSE2 instructions", False, None, bool_converter)
 opts.Add("LADSPA", "Support LADSPA plugins", False, None, bool_converter)
@@ -403,22 +399,12 @@ if (not is_cleaning()) and ('configure' in COMMAND_LINE_TARGETS):
             print "Error: no libboost-graph development files seem to be installed."
             print "libboost-graph libraries and headers are required for building."
             Exit(1)
-    if conf.CheckCHeader('alsa/asoundlib.h'):
-        env['ALSA'] = True
-    if conf.CheckCHeader('jack/jack.h'):
-        env['JACK'] = True
-    if conf.CheckCHeader('sys/soundcard.h'):
-        env['OSS'] = True
     if conf.CheckCHeader('ladspa.h'):
         env['LADSPA'] = True
     if conf.CheckCHeader('dssi.h') and conf.CheckCHeader('lo/lo.h'):
         env['DSSI'] = True
     else:
         env['DSSI'] = False
-    if not sum([env['ALSA'], env['JACK'], env['OSS']]):
-        print "Error: no sound library development files seem to be installed."
-        print "Libraries and headers for either ALSA, OSS, JACK or CoreAudio are required for building."
-        Exit(1)
     if not conf.CheckCHeader('FLAC/all.h'):
         print "Error: no FLAC library development files found."
         Exit(1)
@@ -426,6 +412,9 @@ if (not is_cleaning()) and ('configure' in COMMAND_LINE_TARGETS):
         env['MAD'] = False
     else:
         env['MAD'] = True
+    if not conf.CheckCHeader('portaudio.h'):
+        print "Error: portaudio is not available on your system."
+        Exit(1)
     if not conf.HasExecutable('xmlto'):
         print "Error: xmlto is not available on your system."
         Exit(1)
@@ -452,9 +441,6 @@ if (not is_cleaning()) and ('configure' in COMMAND_LINE_TARGETS):
     print "Finished configuration."
     print
     print "=== Using ===".center(50)
-    print "JACK:".rjust(30), yesno[env['JACK'] == True]
-    print "ALSA:".rjust(30), yesno[env['ALSA'] == True]
-    print "OSS:".rjust(30), yesno[env['OSS'] == True]
     print "GTK2:".rjust(30), yesno[env['GTK2'] == True]
     print "MAD:".rjust(30), yesno[env['MAD'] == True]
     print "Use SSE CPU Extension:".rjust(30),yesno[env['SSE'] == True]
