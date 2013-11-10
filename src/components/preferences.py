@@ -35,7 +35,7 @@ import neil.com as com
 
 import zzub
 
-samplerates = [96000,48000,44100]
+samplerates = [96000,48000,44100,22050]
 buffersizes = [32768,16384,8192,4096,2048,1024,512,256,128,64,32,16]
 
 class CancelException(Exception):
@@ -235,7 +235,7 @@ class DriverPanel(gtk.VBox):
 	    except audiodriver.AudioInitException:
 		import traceback
 		traceback.print_exc()
-		error(self, "<b><big>There was an error initializing the audio driver.</big></b>\n\nChange settings and try again.")
+		error(self, "<b><big>There was an error initializing the audio driver.</big></b>\n\nThis can happen when the specified sampling rate or latency is not supported by a particular audio device. Change settings and try again.")
 		raise com.exception('neil.exception.cancel')
 
 class ControllerPanel(gtk.VBox):
@@ -415,7 +415,8 @@ class KeyboardPanel(gtk.VBox):
 	    ('en', 'English (QWERTY)'),
 	    ('de', 'Deutsch (QWERTZ)'),
 	    ('dv', 'Dvorak (\',.PYF)'),
-	    ('fr', 'French (AZERTY)')
+	    ('fr', 'French (AZERTY)'),
+        ('neo','Neo (XVLCWK)')
     ]
 
     def __init__(self):
