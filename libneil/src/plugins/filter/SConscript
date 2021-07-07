@@ -8,4 +8,4 @@ localenv.Append(CPPFLAGS=['-O3'])
 files = ["filter.cpp"]
 
 build_plugin(localenv, "somono_filter", files)
-	     
+             

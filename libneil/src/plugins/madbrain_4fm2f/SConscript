@@ -21,6 +21,6 @@
 Import('pluginenv', 'build_plugin')
 
 build_plugin(pluginenv, 'madbrain_4fm2f', [
-	'madbrain_4fm2f.cpp',
+        'madbrain_4fm2f.cpp',
 ])
 

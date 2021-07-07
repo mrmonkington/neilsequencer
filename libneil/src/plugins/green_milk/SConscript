@@ -21,19 +21,19 @@
 Import('pluginenv', 'build_plugin')
 
 build_plugin(pluginenv, 'green_milk', files=[
-		'green_milk.cpp',
-		'adsr.cpp',
-		'chord_shapes.cpp',
-		'commands.cpp',
-		'delaylfo.cpp',
-		'envelope_follower.cpp',
-		'fast_pow.cpp',
-		'filter.cpp',
-		'lfo_waveshapes.cpp',
-		'phasor.cpp',
-		'../fft/kiss_fft.c',
-		'../fft/kiss_fftr.c',
-	],
-	helpfiles=[
-		'index.html',
-	])
+                'green_milk.cpp',
+                'adsr.cpp',
+                'chord_shapes.cpp',
+                'commands.cpp',
+                'delaylfo.cpp',
+                'envelope_follower.cpp',
+                'fast_pow.cpp',
+                'filter.cpp',
+                'lfo_waveshapes.cpp',
+                'phasor.cpp',
+                '../fft/kiss_fft.c',
+                '../fft/kiss_fftr.c',
+        ],
+        helpfiles=[
+                'index.html',
+        ])

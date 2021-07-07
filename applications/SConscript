@@ -21,6 +21,6 @@
 Import('env', 'install', 'install_recursive')
 import glob
 
-install('${APPLICATIONS_PATH}', 'neil.desktop', 0644)
+install('${APPLICATIONS_PATH}', 'neil.desktop', 0o0644)
 
 

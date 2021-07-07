@@ -21,6 +21,6 @@
 Import('pluginenv', 'build_plugin')
 
 build_plugin(pluginenv, 'MadBrains_Dynamite6', [
-	'MadBrains_Dynamite6.cpp',
+        'MadBrains_Dynamite6.cpp',
 ])
 

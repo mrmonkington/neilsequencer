@@ -20,6 +20,6 @@
 
 Import('env', 'install')
 
-install('${BIN_PATH}', 'neil', 0755)
-install('${BIN_PATH}', 'neil-combrowser', 0755)
+install('${BIN_PATH}', 'neil', 0o0755)
+install('${BIN_PATH}', 'neil-combrowser', 0o0755)
 

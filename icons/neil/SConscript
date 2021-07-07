@@ -21,11 +21,11 @@
 Import('env', 'install', 'install_recursive', 'win32')
 import glob
 
-install('${ICONS_NEIL_PATH}/16x16', glob.glob('16x16/*.png'), 0644)
-install('${ICONS_NEIL_PATH}/22x22', glob.glob('22x22/*.png'), 0644)
-install('${ICONS_NEIL_PATH}/24x24', glob.glob('24x24/*.png'), 0644)
-install('${ICONS_NEIL_PATH}/32x32', glob.glob('32x32/*.png'), 0644)
-install('${ICONS_NEIL_PATH}/scalable', glob.glob('scalable/*.svg'), 0644)
+install('${ICONS_NEIL_PATH}/16x16', glob.glob('16x16/*.png'), 0o0644)
+install('${ICONS_NEIL_PATH}/22x22', glob.glob('22x22/*.png'), 0o0644)
+install('${ICONS_NEIL_PATH}/24x24', glob.glob('24x24/*.png'), 0o0644)
+install('${ICONS_NEIL_PATH}/32x32', glob.glob('32x32/*.png'), 0o0644)
+install('${ICONS_NEIL_PATH}/scalable', glob.glob('scalable/*.svg'), 0o0644)
 if win32:
-	install('${ICONS_NEIL_PATH}/neil', 'neil.ico', 0644)
+        install('${ICONS_NEIL_PATH}/neil', 'neil.ico', 0o0644)
 

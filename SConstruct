@@ -38,9 +38,9 @@ def tools_converter(value):
 
 def bool_converter(value):
     if value == 'True':
-	return True
+        return True
     elif value == 'False':
-	return False
+        return False
     return bool(value)
 
 opts = Variables('options.conf', ARGUMENTS )
@@ -71,15 +71,15 @@ env['ICONS_HICOLOR_PATH'] = '${DESTDIR}${PREFIX}/share/icons/hicolor'
 env['PIXMAPS_PATH'] = '${DESTDIR}${PREFIX}/share/pixmaps/neil'
 
 CONFIG_PATHS = dict(
-	site_packages = 'SITE_PACKAGE_PATH',
-	applications = 'APPLICATIONS_PATH',
-	bin = 'BIN_PATH',
-	share = 'SHARE_PATH',
-	doc = 'DOC_PATH',
-	icons_neil = 'ICONS_NEIL_PATH',
-	icons_hicolor = 'ICONS_HICOLOR_PATH',
-	pixmaps = 'PIXMAPS_PATH',
-	etc = 'ETC_PATH',
+        site_packages = 'SITE_PACKAGE_PATH',
+        applications = 'APPLICATIONS_PATH',
+        bin = 'BIN_PATH',
+        share = 'SHARE_PATH',
+        doc = 'DOC_PATH',
+        icons_neil = 'ICONS_NEIL_PATH',
+        icons_hicolor = 'ICONS_HICOLOR_PATH',
+        pixmaps = 'PIXMAPS_PATH',
+        etc = 'ETC_PATH',
 )
 
 ######################################
@@ -94,40 +94,40 @@ Help( opts.GenerateHelpText( env ) )
 ######################################
 
 try:
-    umask = os.umask(022)
-    #print 'setting umask to 022 (was 0%o)' % umask
+    umask = os.umask(0o022)
+    #print 'setting umask to 0o022 (was 0%o)' % umask
 except OSError:     # ignore on systems that don't support umask
     pass
 
 import SCons
 from SCons.Script.SConscript import SConsEnvironment
 SConsEnvironment.Chmod = SCons.Action.ActionFactory(os.chmod,
-		lambda dest, mode: 'Chmod: "%s" with 0%o' % (dest, mode))
+                lambda dest, mode: 'Chmod: "%s" with 0%o' % (dest, mode))
 
 def InstallPerm(env, dir, source, perm):
     obj = env.Install(dir, source)
     for i in obj:
-	env.AddPostAction(i, env.Chmod(str(i), perm))
+        env.AddPostAction(i, env.Chmod(str(i), perm))
     return dir
 
 SConsEnvironment.InstallPerm = InstallPerm
 
 def install(target, source, perm=None):
     if not perm:
-	env.Install(dir=env.Dir(target), source=source)
+        env.Install(dir=env.Dir(target), source=source)
     else:
-	env.InstallPerm(dir=env.Dir(target), source=source, perm=perm)
+        env.InstallPerm(dir=env.Dir(target), source=source, perm=perm)
 
 env.Alias(target='install', source="${DESTDIR}${PREFIX}")
 env.Alias(target='install', source="${DESTDIR}${ETCDIR}")
 
 def install_recursive(target, path, mask):
     for f in glob.glob(os.path.join(path, mask)):
-	install(target, f)
+        install(target, f)
     for filename in os.listdir(path):
-	fullpath = os.path.join(path, filename)
-	if os.path.isdir(fullpath):
-	    install_recursive(os.path.join(target, filename), fullpath, mask)
+        fullpath = os.path.join(path, filename)
+        if os.path.isdir(fullpath):
+            install_recursive(os.path.join(target, filename), fullpath, mask)
 
 def build_path_config(target, source, env):
     outpath = str(target[0])
@@ -138,10 +138,10 @@ def build_path_config(target, source, env):
     cfg.add_section('Paths')
     remove_prefix = '${DESTDIR}'
     for key, value in CONFIG_PATHS.iteritems():
-	value = env[value]
-	if value.startswith(remove_prefix):
-	    value = value[len(remove_prefix):]
-	cfg.set('Paths', key, os.path.abspath(str(env.Dir(value))))
+        value = env[value]
+        if value.startswith(remove_prefix):
+            value = value[len(remove_prefix):]
+        cfg.set('Paths', key, os.path.abspath(str(env.Dir(value))))
     cfg.write(s)
     file(outpath, 'w').write(s.getvalue())
 
@@ -152,10 +152,10 @@ builders = dict(
 env['BUILDERS'].update(builders)
 
 Export(
-	'env', 
-	'install',
-	'install_recursive',
-	'win32', 'mac', 'posix',
+        'env', 
+        'install',
+        'install_recursive',
+        'win32', 'mac', 'posix',
 )
 
 env.SConscript('applications/SConscript')

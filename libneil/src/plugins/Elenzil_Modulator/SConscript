@@ -21,9 +21,9 @@
 Import('pluginenv', 'build_plugin')
 
 build_plugin(pluginenv, 'Elenzil_Modulator', [
-	'elenzil_modulator.cpp',
+        'elenzil_modulator.cpp',
 ],
-	helpfiles=[
-		#'elenzil_amplitude_modulator.html',
-	])
+        helpfiles=[
+                #'elenzil_amplitude_modulator.html',
+        ])
 

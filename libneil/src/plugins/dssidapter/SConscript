@@ -22,17 +22,17 @@ Import('pluginenv', 'build_plugin')
 
 dssi_pluginenv = pluginenv.Clone()
 dssi_pluginenv.Append(LIBS=[
-		'lo', 'asound'
-	])
+                'lo', 'asound'
+        ])
 dssi_pluginenv.Append(CCFLAGS=[
-		'-DUSE_LO', '-DUSE_ASOUND'
-	])
+                '-DUSE_LO', '-DUSE_ASOUND'
+        ])
 
 if pluginenv['DSSI'] == True:
-	build_plugin(dssi_pluginenv, 'dssidapter', [
-		'dssidapter.cpp',
-		'load.c',
-		'search.c',
-		'default.c'
-	])
+        build_plugin(dssi_pluginenv, 'dssidapter', [
+                'dssidapter.cpp',
+                'load.c',
+                'search.c',
+                'default.c'
+        ])
 

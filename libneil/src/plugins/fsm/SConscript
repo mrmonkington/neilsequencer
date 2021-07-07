@@ -5,4 +5,4 @@ localenv = pluginenv.Clone()
 kick_xp_files = ["kick_xp/Kick.cpp"]
 
 build_plugin(localenv, "fsm_kick_xp", kick_xp_files)
-	     
+             

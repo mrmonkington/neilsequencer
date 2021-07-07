@@ -35,12 +35,12 @@ pvenv = None
 pvbasename = None
 
 def install_extension(source):
-	install('${NEIL_INSTALL_PATH}/pluginviews/' + pvbasename, source)
+        install('${NEIL_INSTALL_PATH}/pluginviews/' + pvbasename, source)
 
 for filename in os.listdir('.'):
-	pluginview_dir_path = os.path.abspath(filename)
-	if os.path.isfile(os.path.join(pluginview_dir_path,'SConscript')):    
-		pvbasename = filename
-		pvenv = env.Copy()
-		Export('pluginview_dir_path','pvenv','install_extension')
-		env.SConscript(os.path.join(pluginview_dir_path,'SConscript'))
+        pluginview_dir_path = os.path.abspath(filename)
+        if os.path.isfile(os.path.join(pluginview_dir_path,'SConscript')):    
+                pvbasename = filename
+                pvenv = env.Copy()
+                Export('pluginview_dir_path','pvenv','install_extension')
+                env.SConscript(os.path.join(pluginview_dir_path,'SConscript'))

@@ -8,4 +8,4 @@ localenv.Append(CPPFLAGS=['-O3', '-ffast-math'])
 files = ["Cloud.cpp", "ACloud.cpp", "Grain.cpp"]
 
 build_plugin(localenv, "somono_cloud", files)
-	     
+             

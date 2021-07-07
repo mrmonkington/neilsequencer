@@ -30,42 +30,42 @@ import glob
 localenv = env.Clone()
 
 files = [
-	'compress.cpp',
-	'decompress.cpp',
-	'dummy.cpp',
-	'host.cpp',
-	'libzzub.cpp',
-	'driver.cpp',
-	'master.cpp',
-	'player.cpp',
-	'pluginloader.cpp',
-	'tools.cpp',
-	'wavetable.cpp',
-	'midi.cpp',
-	'recorder.cpp',
-	'ccm.cpp',
-	'connections.cpp',
-	'input.cpp',
-	'operations.cpp',
-	'output.cpp',
-	'song.cpp',
-	'synchronization.cpp',
-	'undo.cpp',
-	'pugixml.cpp',
-	'thread_id.cpp',
+        'compress.cpp',
+        'decompress.cpp',
+        'dummy.cpp',
+        'host.cpp',
+        'libzzub.cpp',
+        'driver.cpp',
+        'master.cpp',
+        'player.cpp',
+        'pluginloader.cpp',
+        'tools.cpp',
+        'wavetable.cpp',
+        'midi.cpp',
+        'recorder.cpp',
+        'ccm.cpp',
+        'connections.cpp',
+        'input.cpp',
+        'operations.cpp',
+        'output.cpp',
+        'song.cpp',
+        'synchronization.cpp',
+        'undo.cpp',
+        'pugixml.cpp',
+        'thread_id.cpp',
 ]
 
 # minizip and zlib dependencies
 files += [
-	'${MINIZIP_SRC_PATH}/ioapi.c',
-	'${MINIZIP_SRC_PATH}/mztools.c',
-	'${MINIZIP_SRC_PATH}/unzip.c',
-	'${MINIZIP_SRC_PATH}/zip.c',
+        '${MINIZIP_SRC_PATH}/ioapi.c',
+        '${MINIZIP_SRC_PATH}/mztools.c',
+        '${MINIZIP_SRC_PATH}/unzip.c',
+        '${MINIZIP_SRC_PATH}/zip.c',
 ]
 
 localenv.Append(LIBS=[
-	'FLAC',
-	'z',
+        'FLAC',
+        'z',
     'mad',
     'mpg123'
 ])
@@ -84,22 +84,22 @@ localenv.Append(LIBS=[
 
 if localenv['USE_SIGNATURE'] == True:
     localenv.Append(CCFLAGS=[
-	    '-DUSE_SIGNATURE'
+            '-DUSE_SIGNATURE'
     ])
 
 
 if localenv['SNDFILE']:
     localenv.Append(LIBS=[
-	    'sndfile',
+            'sndfile',
     ])
     localenv.Append(CCFLAGS=[
-	    '-DUSE_SNDFILE',
+            '-DUSE_SNDFILE',
     ])
 
 # portmidi support
 localenv.Append(CPPPATH=[
-	'${PORTMIDI_SRC_PATH}/pm_common',
-	'${PORTMIDI_SRC_PATH}/porttime'
+        '${PORTMIDI_SRC_PATH}/pm_common',
+        '${PORTMIDI_SRC_PATH}/porttime'
 ])
 
 # porttime and portmidi

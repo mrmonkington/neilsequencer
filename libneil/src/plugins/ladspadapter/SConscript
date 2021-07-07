@@ -21,9 +21,9 @@
 Import('pluginenv', 'build_plugin')
 
 if pluginenv['LADSPA'] == True:
-	build_plugin(pluginenv, 'ladspadapter', [
-		'ladspadapter.cpp',
-		'load.c',
-		'search.c',
-		'default.c',
-	])
+        build_plugin(pluginenv, 'ladspadapter', [
+                'ladspadapter.cpp',
+                'load.c',
+                'search.c',
+                'default.c',
+        ])

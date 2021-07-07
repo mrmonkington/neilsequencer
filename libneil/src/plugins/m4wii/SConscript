@@ -21,8 +21,8 @@
 Import('pluginenv', 'build_plugin')
 
 build_plugin(pluginenv, 'm4wii', files=[
-		'extresampler.cpp',
-		'm4.cpp',
-		'cubicspline.cpp',
-		'waves/waves.cpp',
-	])
+                'extresampler.cpp',
+                'm4.cpp',
+                'cubicspline.cpp',
+                'waves/waves.cpp',
+        ])

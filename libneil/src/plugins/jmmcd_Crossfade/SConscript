@@ -21,8 +21,8 @@
 Import('pluginenv', 'build_plugin')
 
 build_plugin(pluginenv, 'jmmcd_Crossfade', 
-	files=[
-	'crossfade.cpp',
-	]
+        files=[
+        'crossfade.cpp',
+        ]
 )
 

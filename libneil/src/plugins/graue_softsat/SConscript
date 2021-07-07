@@ -21,5 +21,5 @@
 Import('pluginenv', 'build_plugin')
 
 build_plugin(pluginenv, 'graue_softsat', [
-	'main.cpp',
+        'main.cpp',
 ])

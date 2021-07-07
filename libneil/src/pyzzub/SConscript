@@ -30,7 +30,7 @@ import glob
 localenv = env.Clone()
 
 files = [
-	'__init__.py',
+        '__init__.py',
 ]
 
 files = ['zzub/'+filename for filename in files]

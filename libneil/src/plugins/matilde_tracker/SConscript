@@ -21,22 +21,22 @@
 Import('env', 'pluginenv', 'build_plugin')
 
 build_plugin(pluginenv, 'matilde_tracker', files=[
-		'BuzzInstrument.cpp',
-		'BuzzSample.cpp',
-		'Channel.cpp',
-		'Envelope.cpp',
-		'ExtResampler.cpp',
-		'IInstrument.cpp',
-		'ISample.cpp',
-		'Track.cpp',
-		'Tracker.cpp',
-		'WavetableManager.cpp',
-		'../SurfsDSPLib/SRF_2PFilter.cpp',
-		'../SurfsDSPLib/SRF_Amp.cpp',
-		'../SurfsDSPLib/SRF_AutoGain.cpp',
-		'../SurfsDSPLib/SRF_DSP.cpp',
-		'../SurfsDSPLib/SRF_Resampler.cpp',
-	],
-	helpfiles=[
-		'index.html',
-	])
+                'BuzzInstrument.cpp',
+                'BuzzSample.cpp',
+                'Channel.cpp',
+                'Envelope.cpp',
+                'ExtResampler.cpp',
+                'IInstrument.cpp',
+                'ISample.cpp',
+                'Track.cpp',
+                'Tracker.cpp',
+                'WavetableManager.cpp',
+                '../SurfsDSPLib/SRF_2PFilter.cpp',
+                '../SurfsDSPLib/SRF_Amp.cpp',
+                '../SurfsDSPLib/SRF_AutoGain.cpp',
+                '../SurfsDSPLib/SRF_DSP.cpp',
+                '../SurfsDSPLib/SRF_Resampler.cpp',
+        ],
+        helpfiles=[
+                'index.html',
+        ])

@@ -10,17 +10,17 @@ import glob
 localenv = env.Copy()
 
 files = [
-	'itsex.c',
-	'module.cpp',
-	'module_mod.cpp',
-	'module_s3m.cpp',
-	'module_xm.cpp',
-	'module_it.cpp',
+        'itsex.c',
+        'module.cpp',
+        'module_mod.cpp',
+        'module_s3m.cpp',
+        'module_xm.cpp',
+        'module_it.cpp',
 ]
 
 localenv.Append(CCFLAGS=[
 ])
-	
+        
 libmodfile_static = localenv.StaticLibrary('${LIB_BUILD_PATH}/libmodfile_static', files)
 
 Export('libmodfile_static')

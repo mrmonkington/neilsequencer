@@ -20,6 +20,6 @@
 
 Import('pluginenv', 'build_plugin')
 build_plugin(pluginenv, 'CyanPhase_DTMF-1', [
-	'CyanPhase_DTMF-1.cpp'
+        'CyanPhase_DTMF-1.cpp'
 ])
 

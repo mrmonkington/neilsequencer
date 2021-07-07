@@ -23,10 +23,10 @@ Import('env', 'install', 'install_recursive')
 import glob
 
 for filename in glob.glob('*.jpeg'):
-    install('${PIXMAPS_PATH}', filename, 0644)
+    install('${PIXMAPS_PATH}', filename, 0o0644)
 
 for filename in glob.glob('*.png'):
-    install('${PIXMAPS_PATH}', filename, 0644)
+    install('${PIXMAPS_PATH}', filename, 0o0644)
 
 for filename in glob.glob('*.svg'):
-    install('${PIXMAPS_PATH}', filename, 0644)
+    install('${PIXMAPS_PATH}', filename, 0o0644)

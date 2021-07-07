@@ -21,7 +21,7 @@
 Import('pluginenv', 'build_plugin')
 
 build_plugin(pluginenv, 'zzub_livejump', files=[
-		'main.cpp',
-	],
-	helpfiles=[
-	])
+                'main.cpp',
+        ],
+        helpfiles=[
+        ])

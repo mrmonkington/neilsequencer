@@ -21,10 +21,10 @@
 Import('pluginenv', 'build_plugin')
 
 build_plugin(pluginenv, 'firesledge_parameq', files=[
-		'main.cpp',
-		'ParamEq.cpp',
-		'EqBand.cpp',
-		'basic/basic_fnc.cpp',
-		'dsp/Biquad.cpp',
-		'dsp/BiquadS.cpp',
-	])
+                'main.cpp',
+                'ParamEq.cpp',
+                'EqBand.cpp',
+                'basic/basic_fnc.cpp',
+                'dsp/Biquad.cpp',
+                'dsp/BiquadS.cpp',
+        ])

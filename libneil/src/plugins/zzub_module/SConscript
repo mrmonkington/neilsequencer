@@ -21,16 +21,16 @@
 Import('pluginenv', 'build_plugin')
 
 if pluginenv['ZZUB_MODULE']:
-	pluginenv.SConscript('libmodfile/SConscript')
-	pluginenv.Append(LIBS=[
-		'libmodfile_static',
-	])
-	pluginenv.Append(CPPPATH=[
-		'libmodfile',
-	]) 
-	
-	build_plugin(pluginenv, 'zzub_module', files=[
-			'main.cpp',
-		],
-		helpfiles=[
-		])
+        pluginenv.SConscript('libmodfile/SConscript')
+        pluginenv.Append(LIBS=[
+                'libmodfile_static',
+        ])
+        pluginenv.Append(CPPPATH=[
+                'libmodfile',
+        ]) 
+        
+        build_plugin(pluginenv, 'zzub_module', files=[
+                        'main.cpp',
+                ],
+                helpfiles=[
+                ])

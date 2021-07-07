@@ -41,16 +41,16 @@ def tools_converter(value):
 def bool_converter(value):
     value = value.lower()
     if value in ('true','enabled','on','yes','1'):
-	return True
+        return True
     elif value in ('false','disabled','off','no','0'):
-	return False
+        return False
     return bool(value)
 
 def audioengine_converter(value):
     value = value.lower()
     if not value in ('portaudio'):
-	print "invalid option for AUDIOENGINE:",value
-	Exit(1)
+        print "invalid option for AUDIOENGINE:",value
+        Exit(1)
     return value
 
 opts = Variables( 'options.conf', ARGUMENTS )
@@ -82,15 +82,15 @@ def get_revision():
     # if this is a repository, take the string from hg
     hgpath = env.WhereIs('hg', os.environ['PATH'])
     if os.path.isdir('.hg') and (hgpath != None):
-	rev = os.popen('hg id -ni').readline().strip()
-	if rev != "" and rev != "exported":
-	    revid, revn = rev.split(' ')
-	    return '%s:%s' % (revn, revid)
+        rev = os.popen('hg id -ni').readline().strip()
+        if rev != "" and rev != "exported":
+            revid, revn = rev.split(' ')
+            return '%s:%s' % (revn, revid)
     # its a release build, take the string from a special file
     if os.path.isfile('REVISION'):
-	rev = file('REVISION').readline().strip()
-	if rev != "" and rev != "exported":
-	    return rev
+        rev = file('REVISION').readline().strip()
+        if rev != "" and rev != "exported":
+            return rev
     return env['REVISION']
 
 revision = get_revision()
@@ -133,43 +133,44 @@ gcc = env['CC'] == 'gcc'
 
 if gcc:
     #env['CXXFLAGS'] += ['--no-rtti']
+    env.Append(CCFLAGS=['-std=gnu++98',])
     if env['DEBUG'] == False:
-	env.Append(CCFLAGS=[
+        env.Append(CCFLAGS=[
                 '-Wall',
-		'-Wfatal-errors',
-		#'-O1',  O2 O3 break infector and a few others
+                '-Wfatal-errors',
+                #'-O1',  O2 O3 break infector and a few others
                 '-O2',
                 '-fno-strict-aliasing',
                 '-ffast-math',
-		'-fomit-frame-pointer',
-		'-funroll-loops',
-		'-DNDEBUG',
-	])
-	env.Append(CCFLAGS=ARGUMENTS.get('CCFLAGS')) 
+                '-fomit-frame-pointer',
+                '-funroll-loops',
+                '-DNDEBUG',
+        ])
+        env.Append(CCFLAGS=ARGUMENTS.get('CCFLAGS')) 
     else:
-	env.Append(CCFLAGS=[
-		'-g',
-		'-DDEBUG',
-		'-D_DEBUG',
-	])
+        env.Append(CCFLAGS=[
+                '-g',
+                '-DDEBUG',
+                '-D_DEBUG',
+        ])
     if env['SSE2'] == True:
-	if not x86_64:
-	    env.Append(CCFLAGS=[
-		    '-march=i686', 
-	    ])
-	env.Append(CCFLAGS=[
-		'-mfpmath=sse',
-		'-msse2',
-	])
+        if not x86_64:
+            env.Append(CCFLAGS=[
+                    '-march=i686', 
+            ])
+        env.Append(CCFLAGS=[
+                '-mfpmath=sse',
+                '-msse2',
+        ])
     elif env['SSE'] == True:
-	if not x86_64:
-	    env.Append(CCFLAGS=[
-		    '-march=i686',
-	    ])
-	env.Append(CCFLAGS=[
-		'-mfpmath=sse',
-		'-msse',
-	])
+        if not x86_64:
+            env.Append(CCFLAGS=[
+                    '-march=i686',
+            ])
+        env.Append(CCFLAGS=[
+                '-mfpmath=sse',
+                '-msse',
+        ])
 
 ######################################
 # 64-bit fixes
@@ -187,7 +188,7 @@ if x86_64:
     env['BUILDERS']['StaticLibrary'] = picLibBuilder
     env['BUILDERS']['Library'] = picLibBuilder
     env.Append(CCFLAGS=[
-	    '-D__X86_64__'
+            '-D__X86_64__'
             ])
 
 ######################################
@@ -210,25 +211,25 @@ env['SIGNATURE'] = 'libzzub %s r%s %s-%s %s' % (env['LIBZZUB_VERSION'],env['REVI
 ######################################
 
 try:
-    umask = os.umask(022)
-    #print 'setting umask to 022 (was 0%o)' % umask
+    umask = os.umask(0o022)
+    #print 'setting umask to 0o022 (was 0%o)' % umask
 except OSError:         # ignore on systems that don't support umask
     pass
 
 import SCons
 from SCons.Script.SConscript import SConsEnvironment
 SConsEnvironment.Chmod = SCons.Action.ActionFactory(os.chmod,
-		lambda dest, mode: 'Chmod: "%s" with 0%o' % (dest, mode))
+                lambda dest, mode: 'Chmod: "%s" with 0%o' % (dest, mode))
 def ldconfig(dir):
     # execute only if installing into root
     if not str(env['DESTDIR']):
-	os.system('ldconfig %s' % dir)
+        os.system('ldconfig %s' % dir)
 SConsEnvironment.LdConfig = SCons.Action.ActionFactory(ldconfig, lambda dir: 'LdConfig: "%s"' % dir)
 
 def InstallPerm(env, dir, source, perm):
     obj = env.Install(dir, source)
     for i in obj:
-	env.AddPostAction(i, env.Chmod(str(i), perm))
+        env.AddPostAction(i, env.Chmod(str(i), perm))
     return dir
 
 SConsEnvironment.InstallPerm = InstallPerm
@@ -243,9 +244,9 @@ pyextpath = distutils.sysconfig.get_python_lib(prefix=pypath)
 
 def install(target, source, perm=None, symlink=False):
     if not perm:
-	return env.Install(dir=target, source=source)
+        return env.Install(dir=target, source=source)
     else:
-	return env.InstallPerm(dir=target, source=source, perm=perm)
+        return env.InstallPerm(dir=target, source=source, perm=perm)
 
 env.Alias(target='install', source=rootpath)
 env.Alias(target='install', source=pyextpath)
@@ -256,7 +257,7 @@ def install_root(source):
 def install_lib(source):
     result = install(libpath, source)
     if posix and (not env['DESTDIR']):
-	env.AddPostAction(result, env.LdConfig(libpath))
+        env.AddPostAction(result, env.LdConfig(libpath))
     return result
 def install_python_extension(name,files):
     return install(pyextpath + "/"+name, files)
@@ -265,7 +266,7 @@ def install_bin(source):
 def install_plugin(source):
     return install(pluginpath, source)
 def install_plugin_help(name, files):
-    return install("${DESTDIR}${PREFIX}/share/doc/zzub/plugins/"+name, files, 0644)
+    return install("${DESTDIR}${PREFIX}/share/doc/zzub/plugins/"+name, files, 0o0644)
 
 env['PORTMIDI_SRC_PATH'] = '${ROOTPATH}/src/portmidi'
 env['LIBZZUB_SRC_PATH'] = '${ROOTPATH}/src/libzzub'
@@ -296,10 +297,10 @@ USE_SNDFILE = env['SNDFILE']
 def check_has_executable(conf, name):
     conf.Message("Checking for %s in PATH... " % name)
     for path in os.environ['PATH'].split(os.pathsep):
-	fullpath = os.path.join(path,name)
-	if os.path.isfile(fullpath):
-	    conf.Result(fullpath)
-	    return fullpath
+        fullpath = os.path.join(path,name)
+        if os.path.isfile(fullpath):
+            conf.Result(fullpath)
+            return fullpath
     conf.Result("missing")
     return None
 
@@ -307,26 +308,26 @@ def check_command_is_version(conf, command, version):
     conf.Message("Checking for version of '%s'... " % command)
     ver = os.popen(command).read().strip()
     if ver[:len(version)] == version:
-	conf.Result(ver)
-	return ver
+        conf.Result(ver)
+        return ver
     conf.Result(ver)
     return None
 
 def check_cpu_flag(conf, flag):
     conf.Message("Checking for '%s' CPU flag... " % flag)
     if linux:
-	for line in file('/proc/cpuinfo','r'):
-	    if ':' in line:
-		v = line.index(':')
-		key,value = line[:v],line[v+1:]
-		key = key.strip()
-		value = value.strip()
-		if key == 'flags':
-		    if flag in value.split(' '):
-			conf.Result("yes")
-			return True
-	conf.Result('no')
-	return False
+        for line in file('/proc/cpuinfo','r'):
+            if ':' in line:
+                v = line.index(':')
+                key,value = line[:v],line[v+1:]
+                key = key.strip()
+                value = value.strip()
+                if key == 'flags':
+                    if flag in value.split(' '):
+                        conf.Result("yes")
+                        return True
+        conf.Result('no')
+        return False
     # XXX: add cpu flag check for other platforms
     conf.Result('ERROR: not supported for this platform.')
     return False
@@ -360,14 +361,14 @@ if (not is_cleaning()) and ('configure' in COMMAND_LINE_TARGETS):
     env['CONFIGURED'] = ''
     yesno = {True:'yes', False:'no'}
     conf = Configure(env,
-	    custom_tests = {
-		    'HasExecutable' : check_has_executable,
-		    'CommandIsVersion' : check_command_is_version,
-		    'CheckCPUFlag' : check_cpu_flag,
+            custom_tests = {
+                    'HasExecutable' : check_has_executable,
+                    'CommandIsVersion' : check_command_is_version,
+                    'CheckCPUFlag' : check_cpu_flag,
             'CheckPKGConfig' : check_pkg_config,
             'CheckPKG' : check_pkg,
             'CheckPKGVersion' : check_pkg_version,
-	    }
+            }
     )
     if not conf.CheckCHeader('zlib.h'):
         print "Error: no zlib development files seem to be installed."
@@ -393,7 +394,7 @@ if (not is_cleaning()) and ('configure' in COMMAND_LINE_TARGETS):
         'boost/graph/adjacency_list.hpp',
         'boost/graph/visitors.hpp',
         'boost/graph/depth_first_search.hpp',
-	]
+        ]
     for header in boostgraphheaders:
         if not conf.CheckCXXHeader(header):
             print "Error: no libboost-graph development files seem to be installed."
@@ -420,10 +421,10 @@ if (not is_cleaning()) and ('configure' in COMMAND_LINE_TARGETS):
         Exit(1)
 
     if conf.CheckCPUFlag('sse'):
-	env['SSE'] = True
+        env['SSE'] = True
     if conf.CheckCPUFlag('sse2'):
-	env['SSE'] = False
-	env['SSE2'] = True
+        env['SSE'] = False
+        env['SSE2'] = True
 
     if not conf.CheckPKGConfig('0.15.0'):
         print 'pkg-config >= 0.15.0 not found.'
@@ -531,32 +532,32 @@ def build_buildconfig(target, source, env):
 
     ext = os.path.splitext(os.path.basename(outfilepath))[1].lower()
     if ext == '.py':
-	ofile = file(outfilepath,"w")
-	print >> ofile, "# generated by scons, do not touch"
-	print >> ofile, "REVISION = %r" % REVISION
-	print >> ofile, "LIBDIR = %r" % LIBDIR
-	print >> ofile, "SIGNATURE = %r" % SIGNATURE
-	ofile.close()
+        ofile = file(outfilepath,"w")
+        print >> ofile, "# generated by scons, do not touch"
+        print >> ofile, "REVISION = %r" % REVISION
+        print >> ofile, "LIBDIR = %r" % LIBDIR
+        print >> ofile, "SIGNATURE = %r" % SIGNATURE
+        ofile.close()
     elif ext in ('.cpp','.c','.h','.hh'):
-	ofile = file(outfilepath,"w")
-	print >> ofile, "// generated by scons, do not touch"
-	print >> ofile, '#define ZZUB_REVISION "%s"' % REVISION
-	print >> ofile, '#define ZZUB_LIBDIR "%s"' % LIBDIR
-	print >> ofile, '#define ZZUB_SIGNATURE "%s"' % SIGNATURE
-	print >> ofile, '#define ZZUB_LIB_DIR_PATH "%s"' % str(env.Dir("${DESTDIR}${PREFIX}${LIBDIR}/zzub"))
-	print >> ofile, '#define ZZUB_SHARE_DIR_PATH "%s"' % str(env.Dir("${DESTDIR}${PREFIX}/share/zzub"))
-	ofile.close()
+        ofile = file(outfilepath,"w")
+        print >> ofile, "// generated by scons, do not touch"
+        print >> ofile, '#define ZZUB_REVISION "%s"' % REVISION
+        print >> ofile, '#define ZZUB_LIBDIR "%s"' % LIBDIR
+        print >> ofile, '#define ZZUB_SIGNATURE "%s"' % SIGNATURE
+        print >> ofile, '#define ZZUB_LIB_DIR_PATH "%s"' % str(env.Dir("${DESTDIR}${PREFIX}${LIBDIR}/zzub"))
+        print >> ofile, '#define ZZUB_SHARE_DIR_PATH "%s"' % str(env.Dir("${DESTDIR}${PREFIX}/share/zzub"))
+        ofile.close()
 
 def build_python_extension(target, source, env):
     pass
 
 builders = dict(
-	BuildConfig = Builder(action = build_buildconfig),
-	Signature = Builder(action = build_signature),
-	PyExtension = Builder(action = build_python_extension),
-	ZIDLCHeader = Builder(action = 'python ${ROOTPATH}/tools/zidl --c-header $TARGET $SOURCE'),
-	ZIDLCDef = Builder(action = 'python ${ROOTPATH}/tools/zidl --c-def $TARGET $SOURCE'),
-	ZIDLPyCtypes = Builder(action = 'python ${ROOTPATH}/tools/zidl --libversion $LIBZZUB_VERSION --py-ctypes $TARGET $SOURCE'),
+        BuildConfig = Builder(action = build_buildconfig),
+        Signature = Builder(action = build_signature),
+        PyExtension = Builder(action = build_python_extension),
+        ZIDLCHeader = Builder(action = 'python ${ROOTPATH}/tools/zidl --c-header $TARGET $SOURCE'),
+        ZIDLCDef = Builder(action = 'python ${ROOTPATH}/tools/zidl --c-def $TARGET $SOURCE'),
+        ZIDLPyCtypes = Builder(action = 'python ${ROOTPATH}/tools/zidl --libversion $LIBZZUB_VERSION --py-ctypes $TARGET $SOURCE'),
 )
 
 env['BUILDERS'].update(builders)
@@ -582,16 +583,16 @@ env.Depends(output, '${ROOTPATH}/tools/zidl')
 #######################################
 
 Export(
-	'install_lib',
-	'install_plugin',
-	'install_bin',
-	'install',
-	'install_root',
-	'install_plugin_help',
-	'install_python_extension',
-	'gcc',
-	'posix',
-	'env',
+        'install_lib',
+        'install_plugin',
+        'install_bin',
+        'install',
+        'install_root',
+        'install_plugin_help',
+        'install_python_extension',
+        'gcc',
+        'posix',
+        'env',
 )
 
 # generate signature

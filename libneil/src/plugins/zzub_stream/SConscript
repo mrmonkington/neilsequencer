@@ -21,27 +21,27 @@
 Import('pluginenv', 'build_plugin')
 
 if pluginenv['ZZUB_STREAM'] and pluginenv['MAD']:
-	# make sure libmad.lib is in 
-	pluginenv.Append(LIBS = [ "libmad", "sndfile", ] );
-	pluginenv.Append(CPPPATH = [ "resampler" ] );
+        # make sure libmad.lib is in 
+        pluginenv.Append(LIBS = [ "libmad", "sndfile", ] );
+        pluginenv.Append(CPPPATH = [ "resampler" ] );
 
 
-	pluginenv.Append(CCFLAGS = ' `pkg-config --cflags gtk+-2.0` ')
-	pluginenv.Append(LINKFLAGS = ' `pkg-config --libs gtk+-2.0` ')
+        pluginenv.Append(CCFLAGS = ' `pkg-config --cflags gtk+-2.0` ')
+        pluginenv.Append(LINKFLAGS = ' `pkg-config --libs gtk+-2.0` ')
 
 
-	build_plugin(pluginenv, 'zzub_stream', files=[
-			'main.cpp',
-			'stream_mp3.cpp',
-			'stream_wav.cpp',
-			'stream_wavetable.cpp',
-			'resample.cpp',
-		
-			'resampler/BaseVoiceState.cpp',
-			'resampler/Downsampler2Flt.cpp',
-			'resampler/InterpPack.cpp',
-			'resampler/MipMapFlt.cpp',
-			'resampler/ResamplerFlt.cpp',
-		],
-		helpfiles=[
-	])
+        build_plugin(pluginenv, 'zzub_stream', files=[
+                        'main.cpp',
+                        'stream_mp3.cpp',
+                        'stream_wav.cpp',
+                        'stream_wavetable.cpp',
+                        'resample.cpp',
+                
+                        'resampler/BaseVoiceState.cpp',
+                        'resampler/Downsampler2Flt.cpp',
+                        'resampler/InterpPack.cpp',
+                        'resampler/MipMapFlt.cpp',
+                        'resampler/ResamplerFlt.cpp',
+                ],
+                helpfiles=[
+        ])

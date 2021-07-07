@@ -8,4 +8,4 @@ localenv.Append(CPPFLAGS=['-O3'])
 files = ["FM303.cpp"]
 
 build_plugin(localenv, "somono_fm303", files)
-	     
+             

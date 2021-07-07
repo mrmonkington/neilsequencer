@@ -22,5 +22,5 @@
 Import('env', 'install', 'install_recursive')
 
 import glob
-install("${SHARE_PATH}/themes", glob.glob("*.col"), 0644)
+install("${SHARE_PATH}/themes", glob.glob("*.col"), 0o0644)
 

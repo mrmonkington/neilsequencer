@@ -22,5 +22,5 @@ Import('env', 'install', 'install_recursive')
 import glob
 
 for filename in glob.glob('*.prs'):
-	install('${SHARE_PATH}/presets', filename, 0644)
+        install('${SHARE_PATH}/presets', filename, 0o0644)
 
